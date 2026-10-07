@@ -1,7 +1,8 @@
+name: black-market
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: bdo-companion-postgres
+    container_name: black-market-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bdo_companion}
@@ -22,6 +23,7 @@ services:
       retries: 10
 
   migrate:
+    image: black-market-migrate:local
     build: .
     command: ["pnpm", "db:migrate"]
     environment:
@@ -32,11 +34,13 @@ services:
     restart: "no"
 
   api:
+    image: black-market-api:local
     build: .
     environment:
       NODE_ENV: production
       PORT: 3000
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4200}
+      MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     ports:
       - "3000:3000"
@@ -56,5 +60,18 @@ services:
       retries: 5
       start_period: 10s
 
+  web:
+    profiles: ["web"]
+    image: black-market-api:local
+    build: .
+    command: ["pnpm", "--filter", "@bdo/web", "start"]
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./apps/web/src:/workspace/apps/web/src:ro
+      - ./packages/calculators/src:/workspace/packages/calculators/src:ro
+      - ./packages/shared/src:/workspace/packages/shared/src:ro
 volumes:
   postgres_data:
+    name: ${POSTGRES_DATA_VOLUME:-black-market-postgres-data}
+    external: ${POSTGRES_DATA_EXTERNAL:-false}
