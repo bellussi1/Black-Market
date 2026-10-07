@@ -1,6 +1,8 @@
+import { sql } from "drizzle-orm";
 import {
-  integer,
+  foreignKey,
   index,
+  integer,
   numeric,
   pgEnum,
   pgTable,
@@ -8,15 +10,15 @@ import {
   smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
-  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 export const datasetStatus = pgEnum("dataset_status", [
   "loading",
   "active",
+  "archived",
   "failed",
 ]);
 
@@ -25,7 +27,9 @@ export const datasetVersions = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     source: varchar("source", { length: 80 }).notNull(),
-    version: varchar("version", { length: 120 }).notNull(),
+    version: varchar("version", { length: 160 }).notNull(),
+    region: varchar("region", { length: 12 }).notNull(),
+    locale: varchar("locale", { length: 8 }).notNull(),
     status: datasetStatus("status").notNull().default("loading"),
     checksum: varchar("checksum", { length: 128 }),
     itemCount: integer("item_count"),
@@ -36,106 +40,217 @@ export const datasetVersions = pgTable(
     finishedAt: timestamp("finished_at", { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("dataset_versions_source_version_uidx").on(
+    uniqueIndex("dataset_versions_source_version_region_locale_uidx").on(
       table.source,
       table.version,
+      table.region,
+      table.locale,
     ),
+    uniqueIndex("dataset_versions_one_active_uidx")
+      .on(table.source, table.region, table.locale)
+      .where(sql`${table.status} = 'active'`),
   ],
 );
 
-export const categories = pgTable("categories", {
-  id: varchar("id", { length: 120 }).primaryKey(),
-  parentId: varchar("parent_id", { length: 120 }).references(
-    (): AnyPgColumn => categories.id,
-    { onDelete: "set null" },
-  ),
-  slug: varchar("slug", { length: 160 }).notNull().unique(),
-  sortOrder: integer("sort_order").notNull().default(0),
-  datasetVersionId: uuid("dataset_version_id")
-    .notNull()
-    .references(() => datasetVersions.id),
-});
-
+// Item ids are stable across client extracts. Mutable catalog attributes are
+// versioned separately so a failed or newer import cannot erase the last good set.
 export const items = pgTable("items", {
   id: integer("id").primaryKey(),
-  grade: smallint("grade"),
-  weight: numeric("weight", { precision: 12, scale: 4 }),
-  datasetVersionId: uuid("dataset_version_id")
-    .notNull()
-    .references(() => datasetVersions.id),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
 });
+
+export const itemVersions = pgTable(
+  "item_versions",
+  {
+    datasetVersionId: uuid("dataset_version_id")
+      .notNull()
+      .references(() => datasetVersions.id, { onDelete: "cascade" }),
+    itemId: integer("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    grade: varchar("grade", { length: 24 }),
+    weight: numeric("weight", { precision: 12, scale: 4 }),
+    icon: text("icon"),
+    category: varchar("category", { length: 80 }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.datasetVersionId, table.itemId] }),
+    index("item_versions_item_id_idx").on(table.itemId),
+  ],
+);
 
 export const itemTranslations = pgTable(
   "item_translations",
   {
-    itemId: integer("item_id")
-      .notNull()
-      .references(() => items.id, { onDelete: "cascade" }),
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    itemId: integer("item_id").notNull(),
     language: varchar("language", { length: 8 }).notNull(),
     name: text("name").notNull(),
     description: text("description"),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.datasetVersionId, table.itemId, table.language],
+    }),
+    foreignKey({
+      name: "item_translations_version_item_fk",
+      columns: [table.datasetVersionId, table.itemId],
+      foreignColumns: [itemVersions.datasetVersionId, itemVersions.itemId],
+    }).onDelete("cascade"),
+    index("item_translations_name_prefix_idx").using(
+      "btree",
+      sql`lower(${table.name}) text_pattern_ops`,
+    ),
+  ],
+);
+
+export const categories = pgTable(
+  "categories",
+  {
     datasetVersionId: uuid("dataset_version_id")
       .notNull()
-      .references(() => datasetVersions.id),
+      .references(() => datasetVersions.id, { onDelete: "cascade" }),
+    id: varchar("id", { length: 120 }).notNull(),
+    parentId: varchar("parent_id", { length: 120 }),
+    slug: varchar("slug", { length: 160 }).notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
   },
-  (table) => [primaryKey({ columns: [table.itemId, table.language] })],
+  (table) => [
+    primaryKey({ columns: [table.datasetVersionId, table.id] }),
+    uniqueIndex("categories_version_slug_uidx").on(
+      table.datasetVersionId,
+      table.slug,
+    ),
+    foreignKey({
+      name: "categories_version_parent_fk",
+      columns: [table.datasetVersionId, table.parentId],
+      foreignColumns: [table.datasetVersionId, table.id],
+    }).onDelete("cascade"),
+  ],
+);
+
+export const categoryTranslations = pgTable(
+  "category_translations",
+  {
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    categoryId: varchar("category_id", { length: 120 }).notNull(),
+    language: varchar("language", { length: 8 }).notNull(),
+    name: text("name").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.datasetVersionId, table.categoryId, table.language],
+    }),
+    foreignKey({
+      name: "category_translations_version_category_fk",
+      columns: [table.datasetVersionId, table.categoryId],
+      foreignColumns: [categories.datasetVersionId, categories.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 export const itemCategories = pgTable(
   "item_categories",
   {
-    itemId: integer("item_id")
-      .notNull()
-      .references(() => items.id, { onDelete: "cascade" }),
-    categoryId: varchar("category_id", { length: 120 })
-      .notNull()
-      .references(() => categories.id, { onDelete: "cascade" }),
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    itemId: integer("item_id").notNull(),
+    categoryId: varchar("category_id", { length: 120 }).notNull(),
   },
-  (table) => [primaryKey({ columns: [table.itemId, table.categoryId] })],
+  (table) => [
+    primaryKey({
+      columns: [table.datasetVersionId, table.itemId, table.categoryId],
+    }),
+    foreignKey({
+      name: "item_categories_version_item_fk",
+      columns: [table.datasetVersionId, table.itemId],
+      foreignColumns: [itemVersions.datasetVersionId, itemVersions.itemId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "item_categories_version_category_fk",
+      columns: [table.datasetVersionId, table.categoryId],
+      foreignColumns: [categories.datasetVersionId, categories.id],
+    }).onDelete("cascade"),
+    index("item_categories_category_idx").on(
+      table.datasetVersionId,
+      table.categoryId,
+    ),
+  ],
 );
 
-export const recipes = pgTable("recipes", {
-  recipeKey: varchar("recipe_key", { length: 64 }).primaryKey(),
-  recipeType: varchar("recipe_type", { length: 80 }).notNull(),
-  station: varchar("station", { length: 120 }),
-  datasetVersionId: uuid("dataset_version_id")
-    .notNull()
-    .references(() => datasetVersions.id),
-});
+export const recipes = pgTable(
+  "recipes",
+  {
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    recipeKey: varchar("recipe_key", { length: 64 }).notNull(),
+    recipeType: varchar("recipe_type", { length: 80 }).notNull(),
+    station: varchar("station", { length: 120 }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.datasetVersionId, table.recipeKey] }),
+    foreignKey({
+      name: "recipes_dataset_version_fk",
+      columns: [table.datasetVersionId],
+      foreignColumns: [datasetVersions.id],
+    }).onDelete("cascade"),
+  ],
+);
 
 export const recipeIngredients = pgTable(
   "recipe_ingredients",
   {
-    recipeKey: varchar("recipe_key", { length: 64 })
-      .notNull()
-      .references(() => recipes.recipeKey, { onDelete: "cascade" }),
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    recipeKey: varchar("recipe_key", { length: 64 }).notNull(),
     position: smallint("position").notNull(),
-    itemId: integer("item_id")
-      .notNull()
-      .references(() => items.id),
-    quantity: numeric("quantity", { precision: 14, scale: 4 }).notNull(),
+    itemId: integer("item_id").notNull(),
+    quantity: numeric("quantity", { precision: 14, scale: 4 }),
   },
-  (table) => [primaryKey({ columns: [table.recipeKey, table.position] })],
+  (table) => [
+    primaryKey({
+      columns: [table.datasetVersionId, table.recipeKey, table.position],
+    }),
+    foreignKey({
+      name: "recipe_ingredients_version_recipe_fk",
+      columns: [table.datasetVersionId, table.recipeKey],
+      foreignColumns: [recipes.datasetVersionId, recipes.recipeKey],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "recipe_ingredients_version_item_fk",
+      columns: [table.datasetVersionId, table.itemId],
+      foreignColumns: [itemVersions.datasetVersionId, itemVersions.itemId],
+    }).onDelete("cascade"),
+  ],
 );
 
 export const recipeOutputs = pgTable(
   "recipe_outputs",
   {
-    recipeKey: varchar("recipe_key", { length: 64 })
-      .notNull()
-      .references(() => recipes.recipeKey, { onDelete: "cascade" }),
+    datasetVersionId: uuid("dataset_version_id").notNull(),
+    recipeKey: varchar("recipe_key", { length: 64 }).notNull(),
     position: smallint("position").notNull(),
-    itemId: integer("item_id")
-      .notNull()
-      .references(() => items.id),
-    quantity: numeric("quantity", { precision: 14, scale: 4 }).notNull(),
+    itemId: integer("item_id").notNull(),
+    quantity: numeric("quantity", { precision: 14, scale: 4 }),
   },
-  (table) => [primaryKey({ columns: [table.recipeKey, table.position] })],
+  (table) => [
+    primaryKey({
+      columns: [table.datasetVersionId, table.recipeKey, table.position],
+    }),
+    foreignKey({
+      name: "recipe_outputs_version_recipe_fk",
+      columns: [table.datasetVersionId, table.recipeKey],
+      foreignColumns: [recipes.datasetVersionId, recipes.recipeKey],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "recipe_outputs_version_item_fk",
+      columns: [table.datasetVersionId, table.itemId],
+      foreignColumns: [itemVersions.datasetVersionId, itemVersions.itemId],
+    }).onDelete("cascade"),
+  ],
 );
 
+// Market observations attach to stable game item ids, independently of which
+// client extract is currently published.
 export const marketCurrentPrices = pgTable(
   "market_current_prices",
   {
@@ -196,9 +311,11 @@ export const marketPricePoints = pgTable(
 
 export const schema = {
   categories,
+  categoryTranslations,
   datasetVersions,
   itemCategories,
   itemTranslations,
+  itemVersions,
   items,
   marketCurrentPrices,
   marketPricePoints,
@@ -209,5 +326,6 @@ export const schema = {
 
 export type DatasetVersion = typeof datasetVersions.$inferSelect;
 export type Item = typeof items.$inferSelect;
+export type ItemVersion = typeof itemVersions.$inferSelect;
 export type ItemTranslation = typeof itemTranslations.$inferSelect;
 export type Recipe = typeof recipes.$inferSelect;

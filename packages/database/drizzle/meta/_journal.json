@@ -8,6 +8,13 @@
       "when": 1791402261496,
       "tag": "0000_magical_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791404632095,
+      "tag": "0001_volatile_war_machine",
+      "breakpoints": true
     }
   ]
 }
