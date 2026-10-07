@@ -31,10 +31,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles/tailwind.css",
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles/tailwind.css", "src/styles.scss"],
             "inlineStyleLanguage": "scss"
           },
           "configurations": {
@@ -80,7 +77,11 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest"
+          }
         }
       }
     }

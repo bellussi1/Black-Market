@@ -8,7 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "typecheck": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/shared build && ng build --configuration development",
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.html\"",
-    "test": "pnpm --filter @bdo/calculators build && ng test --watch=false"
+    "test": "pnpm --filter @bdo/calculators build && ng test --watch=false",
+    "test:watch": "pnpm --filter @bdo/calculators build && ng test",
+    "test:unit": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/core/**/*.spec.ts\" --include=\"app/features/**/*-api.spec.ts\" --include=\"app/shared/formatters.spec.ts\" --include=\"app/shared/calculation-feedback.spec.ts\"",
+    "test:components": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/features/**/*-page.spec.ts\" --include=\"app/shared/tax-options.spec.ts\" --include=\"app/shared/preset-bar.spec.ts\" --include=\"app/shared/calculation-proof.spec.ts\" --include=\"app/app.spec.ts\""
   },
   "private": true,
   "packageManager": "pnpm@10.28.1",
@@ -41,6 +44,6 @@
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.20.0",
-    "vitest": "^4.0.8"
+    "vitest": "4.1.11"
   }
 }
