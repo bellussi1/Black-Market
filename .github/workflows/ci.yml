@@ -22,4 +22,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - run: pnpm --filter @bdo/web i18n:extract
+      - run: git diff --exit-code -- apps/web/src/locale/messages.pt-BR.xlf
       - run: pnpm db:check

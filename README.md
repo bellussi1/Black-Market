@@ -8,6 +8,8 @@ O frontend usa Tailwind CSS 4 e SCSS modular, com Vitest para testes unitários 
 
 ## Requisitos
 
+O foco inicial é **SA e português brasileiro**. Mercados e idiomas têm configurações independentes, com i18n nativo do Angular e preferência por dados em português quando disponíveis. Consulte [mercados e idiomas](docs/regions-and-locales.md).
+
 - Windows, macOS ou Linux
 - Node.js 24.21.0 (via NVM) e pnpm 10.28.1
 - Docker com Docker Compose para PostgreSQL local
@@ -97,6 +99,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 - [Arquitetura](docs/architecture.md)
 - [Padrões Angular, Tailwind, SCSS e Vitest](docs/angular-architecture.md)
 - [Lint, formatação e organização](docs/code-quality.md)
+- [Mercados e idiomas](docs/regions-and-locales.md)
 - [Pesquisa BDOLytics e BDO Workshop](docs/product-research.md)
 - [Banco de dados](docs/database.md)
 - [API REST](docs/api.md)

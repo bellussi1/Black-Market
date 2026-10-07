@@ -48,3 +48,7 @@ Estes exemplos são roadmap, não endpoints já implementados. Respostas de merc
 - Limitar tamanho de query e corpo, aplicar rate limit no edge/API e definir timeouts para upstream.
 - CORS permite apenas `WEB_ORIGIN` configurado; autenticação e escrita de usuário ficam fora da fase inicial.
 - Swagger descreve as rotas reais. Atualizar documentação e frontend junto com cada contrato.
+
+## Mercado e idioma
+
+SA é o mercado padrão. O mercado recebe locale (pt por padrão) e separa cache por região, ID e idioma. O catálogo recebe preferredLocale=pt para seleção com fallback na mesma região; locale continua uma seleção exata. A resposta informa o idioma real do dataset. Detalhes em [mercados e idiomas](regions-and-locales.md).
