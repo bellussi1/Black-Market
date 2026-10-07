@@ -10,11 +10,13 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
-    "lint": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\"",
+    "lint": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\" --max-warnings=0",
     "test": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && vitest run",
-    "data:import": "pnpm build && node dist/catalog/import-game-data.js"
+    "data:import": "pnpm build && node dist/catalog/import-game-data.js",
+    "lint:fix": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\" --max-warnings=0 --fix"
   },
   "dependencies": {
+    "@bdo/calculators": "workspace:*",
     "@bdo/database": "workspace:*",
     "@bdo/shared": "workspace:*",
     "@nestjs/common": "12.1.2",
@@ -26,28 +28,26 @@
     "pg": "8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "zod": "4.6.5",
-    "@bdo/calculators": "workspace:*"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "10.0.1",
     "@nestjs/cli": "12.0.8",
     "@nestjs/schematics": "12.0.6",
-    "@types/pg": "^8.23.1",
-    "@types/node": "^24.0.0",
     "@types/express": "^5.0.0",
-    "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.2.2",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
     "globals": "^17.0.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
-    "vitest": "4.1.11",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "8.71.1",
+    "vitest": "4.1.11"
   }
 }

@@ -1,0 +1,12 @@
+import tseslint from 'typescript-eslint';
+
+import {
+  formattingCompatibility,
+  organizationRules,
+  sharedIgnores,
+} from './config/eslint-shared.mjs';
+
+export default tseslint.config(sharedIgnores, {
+  files: ['packages/**/*.{ts,mts}', '*.mjs', 'config/**/*.mjs'],
+  extends: [...tseslint.configs.recommended, organizationRules, formattingCompatibility],
+});

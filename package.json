@@ -9,15 +9,26 @@
   "scripts": {
     "dev:web": "pnpm --filter @bdo/web start",
     "dev:api": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/api start:dev",
-    "lint": "pnpm -r --if-present lint",
+    "lint": "pnpm lint:packages && pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "build": "pnpm -r --if-present build",
     "db:generate": "pnpm --filter @bdo/database db:generate",
     "db:migrate": "pnpm --filter @bdo/database db:migrate",
-    "db:check": "pnpm --filter @bdo/database db:check"
+    "db:check": "pnpm --filter @bdo/database db:check",
+    "lint:packages": "eslint \"packages/**/*.{ts,mts}\" \"*.mjs\" \"config/**/*.mjs\" --max-warnings=0",
+    "lint:fix": "pnpm lint:packages --fix && pnpm -r --if-present lint:fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck"
   },
   "devDependencies": {
-    "prettier": "3.8.1"
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-simple-import-sort": "14.0.0",
+    "eslint-plugin-unused-imports": "4.4.1",
+    "prettier": "3.8.1",
+    "typescript-eslint": "8.71.1"
   }
 }
