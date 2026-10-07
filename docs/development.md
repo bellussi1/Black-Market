@@ -41,7 +41,7 @@ pnpm build
 pnpm db:check
 ```
 
-CI roda essas verificações para pull requests e pushes. Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
+CI roda essas verificações para pull requests e pushes. O lint da API compila primeiro os pacotes compartilhados para disponibilizar seus tipos em uma instalação limpa. Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
 
 ## Ambiente
 
