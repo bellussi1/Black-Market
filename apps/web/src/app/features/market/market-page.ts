@@ -1,0 +1,223 @@
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import type { MarketLookupResponse, MarketItemQuote } from '@bdo/shared';
+import { environment } from '../../../environments/environment';
+import { FormsModule } from '@angular/forms';
+import { calculateMarket, defaultTax, marketSchema, type MarketInput } from '@bdo/calculators';
+import {
+  WorkspaceStore,
+  quoteSchema,
+  evaluate,
+  silver,
+  number,
+  date,
+  validationMessage,
+  type Quote,
+} from '../../core/workspace-store';
+import { TaxOptionsComponent } from '../../shared/tax-options';
+import { PresetBar } from '../../shared/preset-bar';
+import { CalculationProof } from '../../shared/calculation-proof';
+@Component({
+  selector: 'app-market-page',
+  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
+  templateUrl: './market-page.html',
+})
+export class MarketPage implements OnDestroy {
+  private readonly http = inject(HttpClient);
+  private liveRequest?: Subscription;
+  readonly lookupId = signal('');
+  readonly lookupLoading = signal(false);
+  readonly live = signal<MarketLookupResponse | null>(null);
+  readonly lookupError = signal('');
+  readonly store = inject(WorkspaceStore);
+  readonly form = signal<MarketInput>({ ...defaultTax, price: '0', quantity: 1, cost: '0' });
+  readonly result = computed(() => evaluate(() => calculateMarket(this.form())));
+  search = '';
+  category = '';
+  favoritesOnly = false;
+  sort = 'name';
+  draft = { name: '', category: 'Outros', price: '0', stock: 0 };
+  readonly selectedId = signal('');
+  readonly error = signal('');
+  readonly selected = computed(() =>
+    this.store.data().quotes.find((q) => q.id === this.selectedId()),
+  );
+  readonly silver = silver;
+  readonly number = number;
+  readonly date = date;
+  patch(value: Partial<MarketInput>): void {
+    this.form.update((s) => ({ ...s, ...value }));
+  }
+  load(input: unknown): void {
+    this.form.set(marketSchema.parse(input));
+  }
+  get quotes(): Quote[] {
+    const rows = this.store
+      .data()
+      .quotes.filter(
+        (q) =>
+          q.region === this.store.data().region &&
+          q.name.toLocaleLowerCase().includes(this.search.toLocaleLowerCase()) &&
+          (!this.category || q.category === this.category) &&
+          (!this.favoritesOnly || q.favorite),
+      );
+    return rows.sort((a, b) =>
+      this.sort === 'price'
+        ? BigInt(a.price) < BigInt(b.price)
+          ? -1
+          : BigInt(a.price) > BigInt(b.price)
+            ? 1
+            : 0
+        : a.name.localeCompare(b.name),
+    );
+  }
+  get categories(): string[] {
+    return [
+      ...new Set(
+        this.store
+          .data()
+          .quotes.filter((q) => q.region === this.store.data().region)
+          .map((q) => q.category),
+      ),
+    ].sort();
+  }
+  saveQuote(): void {
+    this.error.set('');
+    const now = new Date().toISOString();
+    const existing = this.store
+      .data()
+      .quotes.find(
+        (q) =>
+          q.region === this.store.data().region &&
+          q.name.toLocaleLowerCase() === this.draft.name.trim().toLocaleLowerCase(),
+      );
+    const parsed = quoteSchema.safeParse({
+      ...this.draft,
+      id: existing?.id ?? crypto.randomUUID(),
+      region: this.store.data().region,
+      favorite: existing?.favorite ?? false,
+      observedAt: now,
+      history: [
+        ...(existing?.history ?? []),
+        { price: this.draft.price, stock: this.draft.stock, observedAt: now },
+      ].slice(-120),
+    });
+    if (!parsed.success) {
+      this.error.set(validationMessage(parsed.error));
+      return;
+    }
+    if (
+      this.store.update((s) => ({
+        ...s,
+        quotes: [...s.quotes.filter((q) => q.id !== parsed.data.id), parsed.data],
+      }))
+    ) {
+      this.selectedId.set(parsed.data.id);
+      this.draft = { name: '', category: 'Outros', price: '0', stock: 0 };
+    }
+  }
+  toggle(q: Quote): void {
+    this.store.update((s) => ({
+      ...s,
+      quotes: s.quotes.map((row) => (row.id === q.id ? { ...row, favorite: !row.favorite } : row)),
+    }));
+  }
+  remove(id: string): void {
+    this.store.update((s) => ({ ...s, quotes: s.quotes.filter((q) => q.id !== id) }));
+    if (this.selectedId() === id) this.selectedId.set('');
+  }
+  use(q: Quote): void {
+    this.patch({ price: q.price });
+    this.selectedId.set(q.id);
+  }
+  points(q: Quote): string {
+    const values = q.history.map((r) => BigInt(r.price));
+    const min = values.reduce((a, b) => (a < b ? a : b), values[0] ?? 0n);
+    const max = values.reduce((a, b) => (a > b ? a : b), values[0] ?? 0n);
+    return values
+      .map(
+        (v, index) =>
+          (values.length === 1 ? 500 : (index * 1000) / (values.length - 1)) +
+          ',' +
+          (max === min ? 80 : 145 - Number(((v - min) * 130n) / (max - min))),
+      )
+      .join(' ');
+  }
+  lookup(): void {
+    if (!/^[1-9]\d{0,9}$/.test(this.lookupId()) || Number(this.lookupId()) > 2_000_000_000) {
+      this.lookupError.set('Informe um ID de item válido.');
+      return;
+    }
+    this.liveRequest?.unsubscribe();
+    this.lookupLoading.set(true);
+    this.lookupError.set('');
+    this.live.set(null);
+    this.liveRequest = this.http
+      .get<MarketLookupResponse>(
+        environment.apiBaseUrl + '/api/v1/market/items/' + this.lookupId(),
+        { params: { region: this.store.data().region } },
+      )
+      .subscribe({
+        next: (response) => {
+          this.live.set(response);
+          this.lookupLoading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.lookupLoading.set(false);
+          this.lookupError.set(
+            typeof error.error?.message === 'string'
+              ? error.error.message
+              : 'A API está offline ou não conseguiu consultar o provedor.',
+          );
+        },
+      });
+  }
+  saveLive(item: MarketItemQuote): void {
+    const response = this.live();
+    if (!response || item.price === null || response.cacheStatus === 'stale' || response.region !== this.store.data().region) return;
+    const held = this.store
+      .data()
+      .quotes.find(
+        (q) => q.region === response.region && q.itemId === item.itemId && q.subId === item.subId,
+      );
+    const snapshot = {
+      price: item.price,
+      stock: item.stock,
+      observedAt: response.fetchedAt,
+      source: 'arsha' as const,
+    };
+    const history = held?.history.some(
+      (h) => h.observedAt === snapshot.observedAt && h.price === snapshot.price,
+    )
+      ? held.history
+      : [...(held?.history ?? []), snapshot].slice(-120);
+    const parsed = quoteSchema.safeParse({
+      id: held?.id ?? crypto.randomUUID(),
+      name: item.name + (item.subId ? ' · variante ' + item.subId : ''),
+      region: response.region,
+      category: 'Arsha',
+      source: 'arsha',
+      itemId: item.itemId,
+      subId: item.subId,
+      price: item.price,
+      stock: item.stock,
+      observedAt: response.fetchedAt,
+      favorite: held?.favorite ?? false,
+      history,
+    });
+    if (!parsed.success) {
+      this.lookupError.set(validationMessage(parsed.error));
+      return;
+    }
+    this.store.update((s) => ({
+      ...s,
+      quotes: [...s.quotes.filter((q) => q.id !== parsed.data.id), parsed.data],
+    }));
+    this.patch({ price: item.price });
+    this.selectedId.set(parsed.data.id);
+  }
+  ngOnDestroy(): void {
+    this.liveRequest?.unsubscribe();
+  }
+}
