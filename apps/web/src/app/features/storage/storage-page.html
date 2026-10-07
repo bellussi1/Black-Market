@@ -1,0 +1,228 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">07 / STORAGE TRACKER · RESOURCE PLANNER</p>
+    <h1>O que você tem. O que falta.</h1>
+    <p>
+      Organize materiais por armazém e acompanhe projetos de equipamento, navios e produção com
+      metas próprias.
+    </p>
+  </header>
+  <div class="tabs">
+    <button
+      type="button"
+      [class.active]="tab() === 'stock'"
+      [attr.aria-pressed]="tab() === 'stock'"
+      (click)="tab.set('stock')"
+    >
+      Armazém</button
+    ><button
+      type="button"
+      [class.active]="tab() === 'projects'"
+      [attr.aria-pressed]="tab() === 'projects'"
+      (click)="tab.set('projects')"
+    >
+      Projetos de materiais
+    </button>
+  </div>
+  @if (tab() === 'stock') {
+    <div class="metric-grid">
+      <div class="metric">
+        <span>Registros nesta região</span><strong>{{ allStock().length }}</strong>
+      </div>
+      <div class="metric">
+        <span>Valor bruto informado</span><strong>{{ silver(valuation()) }}</strong
+        ><small>Antes de impostos e disponibilidade de venda.</small>
+      </div>
+    </div>
+    <section class="panel">
+      <h2>Adicionar ou editar material</h2>
+      <div class="form-grid">
+        <label class="field">Item<input maxlength="140" [(ngModel)]="draft.name" /></label
+        ><label class="field"
+          >Armazém / personagem<input maxlength="140" [(ngModel)]="draft.location" /></label
+        ><label class="field"
+          >Quantidade disponível<input type="number" min="0" [(ngModel)]="draft.quantity" /></label
+        ><label class="field"
+          >Meta neste local<input type="number" min="0" [(ngModel)]="draft.target" /></label
+        ><label class="field"
+          >Preço unitário informado<input inputmode="numeric" [(ngModel)]="draft.price"
+        /></label>
+      </div>
+      <div class="action-row">
+        <button type="button" class="btn" (click)="saveStock()">Salvar material</button
+        ><button type="button" class="btn subtle" (click)="draft = newStock()">
+          Novo material
+        </button>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Inventário · {{ store.data().region.toUpperCase() }}</h2>
+        <button type="button" class="btn subtle" (click)="exportList()">Exportar CSV</button>
+      </div>
+      <div class="form-grid" style="margin-bottom: 20px">
+        <label class="field">Buscar item<input [(ngModel)]="search" /></label
+        ><label class="field"
+          >Local<select [(ngModel)]="location">
+            <option value="">Todos</option>
+            @for (loc of locations; track loc) {
+              <option [value]="loc">{{ loc }}</option>
+            }
+          </select></label
+        >
+      </div>
+      @if (rows.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Local</th>
+                <th>Tenho</th>
+                <th>Meta</th>
+                <th>Falta</th>
+                <th>Preço</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track row.id) {
+                <tr>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.location }}</td>
+                  <td>{{ number(row.quantity, 0) }}</td>
+                  <td>{{ number(row.target, 0) }}</td>
+                  <td>
+                    {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
+                  </td>
+                  <td>{{ silver(row.price) }}</td>
+                  <td>
+                    <button type="button" class="btn subtle" (click)="edit(row)">Editar</button>
+                    <button type="button" class="btn danger" (click)="remove(row.id)">
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">
+          <strong>Seu armazém começa aqui.</strong>Adicione materiais; a oficina de produção poderá
+          usar esse estoque.
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="panel">
+      <h2>Definir projeto</h2>
+      <label class="field"
+        >Nome do projeto<input
+          maxlength="140"
+          placeholder="Meu navio, meu equipamento, minha produção…"
+          [(ngModel)]="project.name"
+      /></label>
+      @for (material of project.materials; track $index; let k = $index) {
+        <div class="row-editor">
+          <div class="form-grid">
+            <label class="field">Material<input [(ngModel)]="material.name" /></label
+            ><label class="field"
+              >Meta total<input type="number" min="1" [(ngModel)]="material.target" /></label
+            ><label class="field"
+              >Preço unitário de compra<input inputmode="numeric" [(ngModel)]="material.price"
+            /></label>
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn danger" (click)="removeMaterial(k)">
+              Remover material
+            </button>
+          </div>
+        </div>
+      }
+      <div class="action-row">
+        <button type="button" class="btn subtle" (click)="addMaterial()">Adicionar material</button
+        ><button type="button" class="btn" (click)="saveProject()">Salvar projeto</button
+        ><button type="button" class="btn subtle" (click)="project = newProject()">
+          Novo projeto
+        </button>
+      </div>
+      @if (error()) {
+        <p class="error-box" role="alert">{{ error() }}</p>
+      }
+    </section>
+    <section class="panel">
+      <h2>Meus projetos</h2>
+      <label class="field"
+        >Acompanhar<select
+          [ngModel]="selectedProject()"
+          (ngModelChange)="selectedProject.set($event)"
+        >
+          <option value="">Escolher projeto</option>
+          @for (p of projects; track p.id) {
+            <option [value]="p.id">{{ p.name }}</option>
+          }
+        </select></label
+      >
+      @if (currentProject(); as p) {
+        <div class="action-row">
+          <button type="button" class="btn subtle" (click)="editProject(p)">Editar projeto</button
+          ><button type="button" class="btn danger" (click)="removeProject(p.id)">
+            Excluir projeto
+          </button>
+        </div>
+        <div class="metric-grid" style="margin-top: 24px">
+          <div class="metric">
+            <span>Materiais completos</span
+            ><strong>{{ completed() }} / {{ materials().length }}</strong>
+          </div>
+          <div class="metric">
+            <span>Custo dos faltantes</span><strong>{{ silver(projectCost()) }}</strong>
+          </div>
+        </div>
+        <p class="help">
+          Cada projeto consulta o estoque total desta região por nome. Materiais ainda não estão
+          reservados: projetos diferentes podem contar o mesmo estoque.
+        </p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Tenho</th>
+                <th>Meta</th>
+                <th>Falta</th>
+                <th>Custo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of materials(); track m.name) {
+                <tr>
+                  <td>
+                    {{ m.name }}
+                    <div
+                      class="progress-track"
+                      role="progressbar"
+                      [attr.aria-label]="'Progresso de ' + m.name"
+                      [attr.aria-valuenow]="m.percent"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      <span [style.width.%]="m.percent"></span>
+                    </div>
+                  </td>
+                  <td>{{ number(m.owned, 0) }}</td>
+                  <td>{{ number(m.target, 0) }}</td>
+                  <td>{{ number(m.missing, 0) }}</td>
+                  <td>{{ silver(m.cost) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">Salve um projeto e escolha-o para acompanhar os materiais.</div>
+      }
+    </section>
+  }
+</div>
