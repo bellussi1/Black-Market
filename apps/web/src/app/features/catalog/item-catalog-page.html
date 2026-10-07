@@ -1,0 +1,265 @@
+<div class="catalog-shell">
+  <header class="catalog-topbar">
+    <a class="brand" routerLink="/" aria-label="BDO Companion — início">
+      <span class="brand-mark" aria-hidden="true"><span></span></span>
+      <span class="brand-name">BDO <strong>COMPANION</strong></span>
+    </a>
+
+    <nav class="topnav" aria-label="Navegação principal">
+      <a routerLink="/">Visão geral</a>
+      <a routerLink="/database/items" aria-current="page">Catálogo</a>
+      <a routerLink="/" fragment="dados">Procedência</a>
+    </nav>
+
+    <div class="region-chip" aria-label="Região: América do Sul">
+      <span class="region-dot" aria-hidden="true"></span>
+      <span>SA <b>·</b> América do Sul</span>
+    </div>
+  </header>
+
+  <main class="catalog-main">
+    <div class="breadcrumb" aria-label="Localização">
+      <a routerLink="/">Início</a><span aria-hidden="true">/</span><span>Catálogo de itens</span>
+    </div>
+
+    <section class="catalog-hero" aria-labelledby="catalog-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> BASE DE REFERÊNCIA · BLACK DESERT ONLINE</p>
+        <h1 id="catalog-title">O mundo, item<br /><em>por item.</em></h1>
+        <p class="hero-intro">
+          Pesquise os dados do cliente do jogo, confira suas categorias e veja de qual extração
+          vieram. As cotações do mercado entram por uma fonte separada.
+        </p>
+      </div>
+
+      <aside class="source-card" aria-label="Sobre a origem do catálogo">
+        <div class="source-card-head"><span>FONTE DE REFERÊNCIA</span><span class="source-mark">01</span></div>
+        <div class="source-emblem" aria-hidden="true">
+          <span class="emblem-ring"></span><span class="emblem-core"></span>
+        </div>
+        <strong>Extração local do cliente</strong>
+        <p>Itens e receitas são importados de arquivos JSON gerados na sua máquina.</p>
+        <a href="https://github.com/iDevelopThings/bdo-data-extractor" target="_blank" rel="noreferrer">
+          Sobre o extractor <span aria-hidden="true">↗</span>
+        </a>
+      </aside>
+    </section>
+
+    @if (result()?.dataset; as dataset) {
+      <section class="dataset-strip" aria-label="Versão do catálogo">
+        <div class="dataset-state"><span></span><strong>Catálogo publicado</strong></div>
+        <div class="dataset-detail"><span>Região</span><strong>{{ dataset.region.toUpperCase() }}</strong></div>
+        <div class="dataset-detail"><span>Idioma dos dados</span><strong>{{ dataset.locale.toUpperCase() }}</strong></div>
+        <div class="dataset-detail"><span>Versão</span><strong>{{ dataset.version }}</strong></div>
+        <div class="dataset-detail"><span>Importado em</span><strong>{{ formatImportedAt(dataset.importedAt) }}</strong></div>
+      </section>
+    }
+
+    <section class="catalog-tools" aria-label="Busca e filtros do catálogo">
+      <label class="search-field">
+        <span class="search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+        </span>
+        <span class="sr-only">Buscar pelo início do nome do item</span>
+        <input
+          type="search"
+          autocomplete="off"
+          placeholder="Buscar item pelo nome..."
+          [value]="search()"
+          (input)="onSearch($event)"
+        />
+      </label>
+
+      <label class="filter-field">
+        <span>Categoria</span>
+        <select [value]="categoryId()" (change)="onCategory($event)" [disabled]="categoryError()">
+          <option value="">Todas as categorias</option>
+          @for (category of categories(); track category.id) {
+            <option [value]="category.id">{{ category.parentId ? '↳ ' : '' }}{{ category.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field grade-filter">
+        <span>Grau</span>
+        <select [value]="grade()" (change)="onGrade($event)">
+          <option value="">Todos</option>
+          @for (gradeOption of grades; track gradeOption.value) {
+            <option [value]="gradeOption.value">{{ gradeOption.label }}</option>
+          }
+        </select>
+      </label>
+
+      @if (hasFilters()) {
+        <button class="clear-filters" type="button" (click)="resetFilters()">Limpar filtros</button>
+      }
+    </section>
+
+    @if (error()) {
+      <div class="inline-alert" role="alert">
+        <span class="alert-icon" aria-hidden="true">!</span>
+        <span>{{ error() }}</span>
+        <button type="button" (click)="retry()">Tentar novamente</button>
+      </div>
+    }
+    @if (categoryError()) {
+      <div class="inline-alert subtle-alert" role="status">
+        As categorias não carregaram. A busca por nome continua disponível.
+        <button type="button" (click)="retryCategories()">Recarregar</button>
+      </div>
+    }
+
+    @if (selectedItem(); as item) {
+      <section class="item-detail" aria-label="Detalhes do item selecionado" aria-live="polite">
+        <div class="detail-monogram" aria-hidden="true">{{ item.name.charAt(0).toLocaleUpperCase() }}</div>
+        <div class="detail-copy">
+          <div class="detail-kicker">REGISTRO DO CATÁLOGO <span>#{{ item.id }}</span></div>
+          <h2>{{ item.name }}</h2>
+          <p>{{ item.description || 'O extractor não encontrou uma descrição para este item.' }}</p>
+          <div class="detail-tags">
+            <span>{{ gradeLabel(item.grade) }}</span>
+            <span>{{ formatWeight(item.weight) }}</span>
+            @for (category of item.categories; track category.id) {
+              <span>{{ category.name }}</span>
+            }
+          </div>
+          @if (detailLoading()) { <small class="detail-loading">Atualizando detalhes…</small> }
+          @if (detailError()) { <small class="detail-loading">Detalhes completos indisponíveis; exibindo os dados da lista.</small> }
+          @if (recipesProduced(); as produced) {
+            <div class="recipe-group">
+              <h3>Receitas que produzem este item <span>{{ visibleRecipeCount(produced.recipes.length) }} / {{ produced.total }}</span></h3>
+              @if (produced.recipes.length) {
+                @for (recipe of produced.recipes.slice(0, 4); track recipe.key) {
+                  <article class="recipe-row">
+                    <strong>{{ recipe.type }}</strong>
+                    <small>{{ recipe.station || 'Sem estação indicada' }}</small>
+                    <p>
+                      @for (input of recipe.inputs; track input.itemId; let last = $last) {
+                        {{ input.quantity ?? 'Qtd. não informada' }} × {{ input.name }}{{ last ? '' : ' · ' }}
+                      }
+                    </p>
+                  </article>
+                }
+              } @else if (!detailLoading()) {
+                <small class="no-recipes">Nenhuma receita de produção consta nesta extração.</small>
+              }
+            </div>
+          }
+          @if (recipesUsed(); as used) {
+            <div class="recipe-group">
+              <h3>Receitas que usam este item <span>{{ visibleRecipeCount(used.recipes.length) }} / {{ used.total }}</span></h3>
+              @if (used.recipes.length) {
+                @for (recipe of used.recipes.slice(0, 4); track recipe.key) {
+                  <article class="recipe-row">
+                    <strong>{{ recipe.type }}</strong>
+                    <small>{{ recipe.station || 'Sem estação indicada' }}</small>
+                    <p>
+                      @for (output of recipe.outputs; track output.itemId; let last = $last) {
+                        {{ output.quantity ?? 'Qtd. não informada' }} × {{ output.name }}{{ last ? '' : ' · ' }}
+                      }
+                    </p>
+                  </article>
+                }
+              } @else if (!detailLoading()) {
+                <small class="no-recipes">Nenhuma receita que use este item consta nesta extração.</small>
+              }
+            </div>
+          }
+        </div>
+        <button class="close-detail" type="button" aria-label="Fechar detalhes" (click)="closeItem()">×</button>
+      </section>
+    }
+
+    <section class="catalog-results" aria-labelledby="results-title" aria-live="polite">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow"><span></span> COLEÇÃO DE ITENS</p>
+          <h2 id="results-title">
+            @if (result()?.dataset) { {{ formatCount(result()?.total ?? 0) }} itens } @else { Catálogo }
+          </h2>
+        </div>
+        @if (result()?.dataset) {
+          <span class="results-page">Página {{ page() }} de {{ pageCount() }}</span>
+        }
+      </div>
+
+      @if (loading() && !result()) {
+        <div class="item-grid" aria-label="Carregando catálogo">
+          @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+            <div class="item-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
+          }
+        </div>
+      } @else if (!result() && error()) {
+        <div class="empty-state error-state">
+          <span class="empty-index">!</span>
+          <h3>O catálogo não respondeu.</h3>
+          <p>Verifique a API e o banco de dados e tente carregar os dados de novo.</p>
+        </div>
+      } @else if (result(); as data) {
+        @if (!data.dataset) {
+          <div class="empty-state import-state">
+            <span class="empty-index">02</span>
+            <div>
+              <p class="eyebrow"><span></span> PRIMEIRA IMPORTAÇÃO</p>
+              <h3>Nenhum catálogo ativo ainda.</h3>
+              <p>
+                Gere os arquivos <code>items.json</code>, <code>recipes.json</code> e
+                <code>marketcategories.json</code> com o extractor e importe-os localmente.
+                A versão anterior permanece publicada se uma importação falhar.
+              </p>
+              <pre><code>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</code></pre>
+            </div>
+          </div>
+        } @else if (!data.total) {
+          <div class="empty-state no-results">
+            <span class="empty-index">00</span>
+            <h3>Nenhum item corresponde a esses filtros.</h3>
+            <p>Experimente outro nome ou remova uma categoria.</p>
+            <button type="button" (click)="resetFilters()">Limpar busca e filtros</button>
+          </div>
+        } @else {
+          <div class="item-grid">
+            @for (item of data.items; track item.id) {
+              <button
+                type="button"
+                class="item-card"
+                [class.selected]="selectedItem()?.id === item.id"
+                [attr.data-grade]="item.grade || 'none'"
+                [attr.aria-label]="'Ver detalhes de ' + item.name"
+                (click)="openItem(item)"
+              >
+                <span class="item-monogram" aria-hidden="true">{{ item.name.charAt(0).toLocaleUpperCase() }}</span>
+                <span class="item-main">
+                  <span class="item-name">{{ item.name }}</span>
+                  <span class="item-category">{{ item.categories[0]?.name || item.category || 'Sem categoria' }}</span>
+                </span>
+                <span class="item-grade">{{ gradeLabel(item.grade) }}</span>
+                <span class="item-weight">{{ formatWeight(item.weight) }}</span>
+                <span class="card-arrow" aria-hidden="true">↗</span>
+              </button>
+            }
+          </div>
+
+          <nav class="pagination" aria-label="Paginação do catálogo">
+            <span>Exibindo {{ formatCount((page() - 1) * pageSize + 1) }}–{{ formatCount(rangeEnd(data.total)) }} de {{ formatCount(data.total) }}</span>
+            <div class="pagination-actions">
+              <button type="button" aria-label="Página anterior" [disabled]="page() <= 1 || loading()" (click)="goToPage(page() - 1)">←</button>
+              <span>{{ page() }} <i>/</i> {{ pageCount() }}</span>
+              <button type="button" aria-label="Próxima página" [disabled]="page() >= pageCount() || loading()" (click)="goToPage(page() + 1)">→</button>
+            </div>
+          </nav>
+        }
+      }
+    </section>
+
+    <aside class="market-note">
+      <span class="note-rule" aria-hidden="true"></span>
+      <p><strong>Referência e mercado são fontes diferentes.</strong> Este catálogo não contém cotações atuais; elas serão coletadas e exibidas com sua própria origem e horário.</p>
+    </aside>
+  </main>
+
+  <footer class="catalog-footer">
+    <span>BDO COMPANION <b>/</b> CATÁLOGO DE REFERÊNCIA</span>
+    <span>PROJETO INDEPENDENTE · SEM AFILIAÇÃO COM PEARL ABYSS</span>
+  </footer>
+</div>

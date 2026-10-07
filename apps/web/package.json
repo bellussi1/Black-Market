@@ -4,15 +4,16 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
-    "build": "ng build",
+    "build": "pnpm --filter @bdo/shared build && ng build",
     "watch": "ng build --watch --configuration development",
-    "typecheck": "ng build --configuration development",
+    "typecheck": "pnpm --filter @bdo/shared build && ng build --configuration development",
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.html\"",
     "test": "ng test --watch=false"
   },
   "private": true,
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
+    "@bdo/shared": "workspace:*",
     "@angular/animations": "22.2.1",
     "@angular/cdk": "22.2.2",
     "@angular/common": "22.2.1",

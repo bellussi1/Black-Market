@@ -5,7 +5,8 @@
       <span class="brand-name">BDO <strong>COMPANION</strong></span>
     </a>
     <nav class="topnav" aria-label="Navegação principal">
-      <a class="active" href="#inicio">Visão geral</a>
+      <a class="active" routerLink="/">Visão geral</a>
+      <a routerLink="/database/items">Catálogo</a>
       <a href="#ferramentas">Ferramentas</a>
       <a href="#dados">Fontes de dados</a>
     </nav>
@@ -24,15 +25,15 @@
           Um espaço independente para explorar o mercado, calcular produção e entender sua
           progressão — com fontes e premissas sempre à vista.
         </p>
-        <a class="primary-link" href="#ferramentas">
-          Explorar ferramentas <span aria-hidden="true">↗</span>
+        <a class="primary-link" routerLink="/database/items">
+          Explorar catálogo <span aria-hidden="true">↗</span>
         </a>
         <p class="disclaimer">Projeto comunitário, sem vínculo com a Pearl Abyss.</p>
       </div>
 
       <aside class="field-note" aria-label="Status do projeto">
         <div class="note-head">
-          <span>ESTADO DO PROJETO</span><span class="phase">FASE 01</span>
+          <span>ESTADO DO PROJETO</span><span class="phase">FASE 02</span>
         </div>
         <div class="note-map" aria-hidden="true">
           <span class="contour contour-one"></span>
@@ -50,8 +51,8 @@
           <span aria-live="polite">{{ apiStatusLabel }}</span>
         </div>
         <p class="note-copy">
-          A base técnica está pronta. Catálogo e mercado serão carregados por fontes separadas e
-          identificadas.
+          O catálogo já aceita extrações locais versionadas. Dados do mercado seguem uma coleta
+          separada.
         </p>
       </aside>
     </section>
@@ -60,9 +61,9 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow"><span></span> NO MAPA</p>
-          <h2>Ferramentas em preparação</h2>
+          <h2>Recursos do caderno</h2>
         </div>
-        <span class="section-count">03 MÓDULOS PLANEJADOS</span>
+        <span class="section-count">01 DISPONÍVEL · 02 EM PREPARAÇÃO</span>
       </div>
       <div class="tool-grid">
         @for (tool of tools; track tool.index) {
@@ -74,8 +75,12 @@
             <h3>{{ tool.title }}</h3>
             <p>{{ tool.description }}</p>
             <div class="tool-card-foot">
-              <span class="coming-soon"><i></i> Em preparação</span>
-              <span class="tool-arrow" aria-hidden="true">↗</span>
+              @if (tool.path) {
+                <a class="tool-launch" [routerLink]="tool.path">Abrir catálogo <span aria-hidden="true">↗</span></a>
+              } @else {
+                <span class="coming-soon"><i></i> Em preparação</span>
+                <span class="tool-arrow" aria-hidden="true">↗</span>
+              }
             </div>
           </article>
         }

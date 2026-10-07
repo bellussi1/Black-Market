@@ -346,6 +346,22 @@ h2 {
   color: #93998d;
   font-size: 9px;
 }
+.tool-launch {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  color: #d1a27a;
+  font-size: 10px;
+  text-decoration: none;
+}
+.tool-launch:hover {
+  color: #f0c79f;
+}
+.tool-launch:focus-visible {
+  outline: 2px solid #e5b47c;
+  outline-offset: 4px;
+}
 .coming-soon i {
   width: 5px;
   height: 5px;

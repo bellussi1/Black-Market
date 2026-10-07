@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 type ApiStatus = 'checking' | 'online' | 'offline';
@@ -12,6 +13,7 @@ interface ReadinessResponse {
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.css',
 })
@@ -22,21 +24,24 @@ export class DashboardPage implements OnInit {
   readonly tools = [
     {
       index: '01',
-      title: 'Mercado central',
-      description: 'Acompanhe preço, volume e histórico por região.',
-      category: 'Economia',
+      title: 'Catálogo de itens',
+      description: 'Pesquise itens e categorias a partir de uma extração local do cliente.',
+      category: 'Dados do jogo',
+      path: '/database/items',
     },
     {
       index: '02',
       title: 'Oficina de produção',
       description: 'Compare comprar materiais com produzir e vender.',
       category: 'Crafting',
+      path: null,
     },
     {
       index: '03',
       title: 'Progressão e enhancement',
       description: 'Modele custos, tentativas e caminhos de equipamento.',
       category: 'Progressão',
+      path: null,
     },
   ];
 
