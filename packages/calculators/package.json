@@ -8,17 +8,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "browser": "./dist/browser/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "pnpm --filter @bdo/domain build && tsc -p tsconfig.json",
+    "build": "pnpm --filter @bdo/domain build && tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
     "typecheck": "pnpm --filter @bdo/domain build && tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@bdo/domain": "workspace:*"
+    "@bdo/domain": "workspace:*",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "typescript": "6.0.3",

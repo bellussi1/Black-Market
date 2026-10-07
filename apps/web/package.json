@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0",
-    "build": "pnpm --filter @bdo/shared build && ng build",
+    "start": "pnpm --filter @bdo/calculators build && ng serve --host 0.0.0.0",
+    "build": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/shared build && ng build",
     "watch": "ng build --watch --configuration development",
-    "typecheck": "pnpm --filter @bdo/shared build && ng build --configuration development",
+    "typecheck": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/shared build && ng build --configuration development",
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.html\"",
-    "test": "ng test --watch=false"
+    "test": "pnpm --filter @bdo/calculators build && ng test --watch=false"
   },
   "private": true,
   "packageManager": "pnpm@10.28.1",
@@ -24,7 +24,9 @@
     "@angular/platform-browser": "22.2.1",
     "@angular/router": "22.2.1",
     "rxjs": "~7.8.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@bdo/calculators": "workspace:*",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@angular/build": "22.2.2",

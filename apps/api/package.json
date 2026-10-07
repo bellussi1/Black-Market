@@ -5,13 +5,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && nest build",
-    "typecheck": "pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && tsc --noEmit -p tsconfig.json",
+    "build": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && nest build",
+    "typecheck": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && tsc --noEmit -p tsconfig.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"src/**/*.ts\"",
-    "test": "pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && vitest run",
+    "test": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && vitest run",
     "data:import": "pnpm build && node dist/catalog/import-game-data.js"
   },
   "dependencies": {
@@ -26,7 +26,8 @@
     "pg": "8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@bdo/calculators": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
