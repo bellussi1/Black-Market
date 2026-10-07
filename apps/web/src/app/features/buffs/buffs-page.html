@@ -1,0 +1,152 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">09 / BUFF PRESETS</p>
+    <h1>Sua combinação, pronta.</h1>
+    <p>
+      Cadastre buffs, organize grupos exclusivos e salve combinações para PvE, PvP ou life skills.
+    </p>
+  </header>
+  <div class="work-grid">
+    <section class="panel">
+      <h2>Adicionar ou editar buff</h2>
+      <div class="form-grid">
+        <label class="field">Nome<input maxlength="140" [(ngModel)]="draft.name" /></label
+        ><label class="field"
+          >Efeito<input
+            placeholder="Ex.: EXP de treino"
+            maxlength="140"
+            [(ngModel)]="draft.effect" /></label
+        ><label class="field"
+          >Grupo exclusivo<input
+            placeholder="Livre, comida, elixir…"
+            maxlength="140"
+            [(ngModel)]="draft.group"
+          /><small
+            >“Livre” permite combinar; um grupo com outro nome permite um buff ativo.</small
+          ></label
+        ><label class="field"
+          >Valor do efeito<input type="number" [(ngModel)]="draft.value" /></label
+        ><label class="field">Unidade<input maxlength="20" [(ngModel)]="draft.unit" /></label
+        ><label class="field"
+          >Duração (minutos)<input
+            type="number"
+            min="0"
+            max="1440"
+            [(ngModel)]="draft.duration"
+          /><small>Zero para duração indefinida.</small></label
+        >
+      </div>
+      <div class="action-row">
+        <button type="button" class="btn" (click)="save()">Salvar buff</button
+        ><button type="button" class="btn subtle" (click)="draft = newBuff()">Novo buff</button>
+      </div>
+      @if (error()) {
+        <p class="error-box" role="alert">{{ error() }}</p>
+      }
+    </section>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Combinação ativa</h2>
+        <span class="badge">{{ active().length }} BUFFS</span>
+      </div>
+      @for (t of totals(); track t.effect + '|' + t.unit) {
+        <div class="metric">
+          <span>{{ t.effect }}</span
+          ><strong>{{ number(t.value) }} {{ t.unit }}</strong>
+        </div>
+      } @empty {
+        <div class="empty">Ative os buffs na biblioteca abaixo.</div>
+      }
+      <p class="help">
+        Soma efeitos com o mesmo nome e unidade. Multiplicadores, caps e regras de compatibilidade
+        do jogo precisam ser conferidos por você.
+      </p>
+      <div class="action-row">
+        <button type="button" class="btn subtle" [disabled]="!active().length" (click)="start()">
+          Iniciar timers
+        </button>
+      </div>
+      <div class="preset-bar">
+        <label class="field"
+          >Nome da combinação<input maxlength="140" [(ngModel)]="presetName" /></label
+        ><button
+          type="button"
+          class="btn"
+          [disabled]="!presetName.trim() || !active().length"
+          (click)="savePreset()"
+        >
+          Salvar combinação</button
+        ><label class="field"
+          >Combinação salva<select [(ngModel)]="selectedPreset">
+            <option value="">Escolher</option>
+            @for (p of store.data().buffPresets; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select></label
+        ><button
+          type="button"
+          class="btn subtle"
+          [disabled]="!selectedPreset"
+          (click)="loadPreset()"
+        >
+          Carregar</button
+        ><button
+          type="button"
+          class="btn danger"
+          [disabled]="!selectedPreset"
+          (click)="removePreset()"
+        >
+          Excluir
+        </button>
+      </div>
+    </section>
+  </div>
+  <section class="panel">
+    <h2>Biblioteca pessoal de buffs</h2>
+    <label class="field" style="margin-bottom: 20px"
+      >Buscar nome ou efeito<input [(ngModel)]="search"
+    /></label>
+    @if (buffs.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ativo</th>
+              <th>Buff</th>
+              <th>Efeito</th>
+              <th>Grupo</th>
+              <th>Duração</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of buffs; track b.id) {
+              <tr>
+                <td>
+                  <button
+                    type="button"
+                    class="btn subtle"
+                    [attr.aria-pressed]="isActive(b)"
+                    (click)="toggle(b)"
+                  >
+                    {{ isActive(b) ? 'Ativo' : 'Ativar' }}
+                  </button>
+                </td>
+                <td>{{ b.name }}</td>
+                <td>{{ b.effect }} {{ number(b.value) }}{{ b.unit }}</td>
+                <td>{{ b.group }}</td>
+                <td>{{ remaining(b) }}</td>
+                <td>
+                  <button type="button" class="btn subtle" (click)="edit(b)">Editar</button>
+                  <button type="button" class="btn danger" (click)="remove(b.id)">Excluir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty">Cadastre um buff acima para começar sua biblioteca.</div>
+    }
+  </section>
+</div>
