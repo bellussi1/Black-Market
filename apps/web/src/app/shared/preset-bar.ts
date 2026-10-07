@@ -1,8 +1,21 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { CalculatorKey } from '@bdo/calculators';
 import { WorkspaceStore } from '../core/workspace-store';
-@Component({ selector: 'app-preset-bar', imports: [FormsModule], templateUrl: './preset-bar.html' })
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-preset-bar',
+  imports: [FormsModule],
+  templateUrl: './preset-bar.html',
+})
 export class PresetBar {
   readonly store = inject(WorkspaceStore);
   readonly tool = input.required<CalculatorKey>();

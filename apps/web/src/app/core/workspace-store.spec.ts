@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { WorkspaceStore, workspaceSchema, emptyWorkspace } from './workspace-store';
+import { WorkspaceStore } from '../core/workspace-store';
+import { workspaceSchema, emptyWorkspace } from '../core/workspace-models';
 import { RegionPreferences } from './region-preferences';
 describe('personal workspace recovery', () => {
   const createStore = () => {

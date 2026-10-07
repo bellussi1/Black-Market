@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   calculateActivity,
@@ -12,11 +12,14 @@ import {
   type InvestmentInput,
   type TrainingInput,
 } from '@bdo/calculators';
-import { WorkspaceStore, evaluate, silver, number, date } from '../../core/workspace-store';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { evaluate } from '../../shared/calculation-feedback';
+import { silver, number, date } from '../../shared/formatters';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',
   imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
   templateUrl: './lifeskills-page.html',

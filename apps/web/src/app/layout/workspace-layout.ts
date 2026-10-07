@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RegionPreferences, regions } from '../core/region-preferences';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-workspace-layout',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, FormsModule],
   templateUrl: './workspace-layout.html',

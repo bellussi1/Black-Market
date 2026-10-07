@@ -8,7 +8,8 @@ import { CraftingPage } from './features/crafting/crafting-page';
 import { EnhancementPage } from './features/enhancement/enhancement-page';
 import { BuffsPage } from './features/buffs/buffs-page';
 import { SettingsPage } from './features/settings/settings-page';
-import { WorkspaceStore, emptyWorkspace } from './core/workspace-store';
+import { WorkspaceStore } from './core/workspace-store';
+import { emptyWorkspace } from './core/workspace-models';
 import { defaultTax } from '@bdo/calculators';
 describe('workflows without the game dataset', () => {
   beforeEach(() => {

@@ -1,10 +1,19 @@
-import { Component, Input, OnChanges, OnDestroy, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { calculators, MODEL_VERSION, type CalculatorKey } from '@bdo/calculators';
-import { validationMessage } from '../core/workspace-store';
+import { validationMessage } from '../shared/calculation-feedback';
 import { environment } from '../../environments/environment';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-calculation-proof',
   template:
     '<div class="proof"><button class="btn subtle" type="button" (click)="verify()" [disabled]="status() === \'loading\'">Conferir cálculo pela API</button><span aria-live="polite">{{ message() }}</span></div>',

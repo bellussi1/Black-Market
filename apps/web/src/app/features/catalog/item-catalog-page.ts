@@ -1,5 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, computed, inject, signal, effect, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  effect,
+  untracked,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type {
   CatalogCategory,
@@ -9,9 +19,10 @@ import type {
 } from '@bdo/shared';
 import { forkJoin, Subscription } from 'rxjs';
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { WorkspaceStore } from '../../core/workspace-store';
+import { RegionPreferences } from '../../core/region-preferences';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-item-catalog-page',
   standalone: true,
   imports: [RouterLink],
@@ -20,12 +31,12 @@ import { WorkspaceStore } from '../../core/workspace-store';
 })
 export class ItemCatalogPage implements OnInit, OnDestroy {
   private readonly api = inject(CatalogApiService);
-  private readonly workspace = inject(WorkspaceStore);
-  private lastRegion = this.workspace.data().region;
+  private readonly preferences = inject(RegionPreferences);
+  private lastRegion = this.preferences.region();
 
   constructor() {
     effect(() => {
-      const region = this.workspace.data().region;
+      const region = this.preferences.region();
       untracked(() => {
         if (region === this.lastRegion) return;
         this.lastRegion = region;
@@ -61,9 +72,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
   readonly pageCount = computed(() =>
     Math.max(1, Math.ceil((this.result()?.total ?? 0) / this.pageSize)),
   );
-  readonly hasFilters = computed(
-    () => Boolean(this.search() || this.categoryId() || this.grade()),
-  );
+  readonly hasFilters = computed(() => Boolean(this.search() || this.categoryId() || this.grade()));
 
   readonly grades = [
     { value: 'white', label: 'Branco' },
@@ -110,7 +119,9 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     if (nextPage < 1 || nextPage > this.pageCount() || nextPage === this.page()) return;
     this.page.set(nextPage);
     this.loadItems();
-    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth';
     document.querySelector('.catalog-results')?.scrollIntoView({ behavior, block: 'start' });
   }
 

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   calculateCrafting,
@@ -9,17 +9,14 @@ import {
   type CraftingInput,
   type ManualRecipe,
 } from '@bdo/calculators';
-import {
-  WorkspaceStore,
-  evaluate,
-  silver,
-  number,
-  validationMessage,
-} from '../../core/workspace-store';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { evaluate, validationMessage } from '../../shared/calculation-feedback';
+import { silver, number } from '../../shared/formatters';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-crafting-page',
   imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
   templateUrl: './crafting-page.html',

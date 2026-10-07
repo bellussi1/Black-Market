@@ -1,7 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { TaxOptions } from '@bdo/calculators';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tax-options',
   imports: [FormsModule],
   templateUrl: './tax-options.html',

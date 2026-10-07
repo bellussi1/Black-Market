@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   calculateEnhancement,
@@ -8,10 +8,13 @@ import {
   type EnhancementInput,
   type FailstackInput,
 } from '@bdo/calculators';
-import { WorkspaceStore, evaluate, silver, number, date } from '../../core/workspace-store';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { evaluate } from '../../shared/calculation-feedback';
+import { silver, number, date } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-enhancement-page',
   imports: [FormsModule, PresetBar, CalculationProof],
   templateUrl: './enhancement-page.html',

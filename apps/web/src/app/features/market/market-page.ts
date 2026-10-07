@@ -1,30 +1,32 @@
-import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  OnDestroy,
+} from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import type { MarketLookupResponse, MarketItemQuote } from '@bdo/shared';
-import { environment } from '../../../environments/environment';
+import { MarketApi } from './market-api';
 import { FormsModule } from '@angular/forms';
 import { calculateMarket, defaultTax, marketSchema, type MarketInput } from '@bdo/calculators';
-import {
-  WorkspaceStore,
-  quoteSchema,
-  evaluate,
-  silver,
-  number,
-  date,
-  validationMessage,
-  type Quote,
-} from '../../core/workspace-store';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { quoteSchema, type Quote } from '../../core/workspace-models';
+import { evaluate, validationMessage } from '../../shared/calculation-feedback';
+import { silver, number, date } from '../../shared/formatters';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
   imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
   templateUrl: './market-page.html',
 })
 export class MarketPage implements OnDestroy {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(MarketApi);
   private liveRequest?: Subscription;
   readonly lookupId = signal('');
   readonly lookupLoading = signal(false);
@@ -153,29 +155,30 @@ export class MarketPage implements OnDestroy {
     this.lookupLoading.set(true);
     this.lookupError.set('');
     this.live.set(null);
-    this.liveRequest = this.http
-      .get<MarketLookupResponse>(
-        environment.apiBaseUrl + '/api/v1/market/items/' + this.lookupId(),
-        { params: { region: this.store.data().region } },
-      )
-      .subscribe({
-        next: (response) => {
-          this.live.set(response);
-          this.lookupLoading.set(false);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.lookupLoading.set(false);
-          this.lookupError.set(
-            typeof error.error?.message === 'string'
-              ? error.error.message
-              : 'A API está offline ou não conseguiu consultar o provedor.',
-          );
-        },
-      });
+    this.liveRequest = this.api.getItem(this.lookupId(), this.store.data().region).subscribe({
+      next: (response) => {
+        this.live.set(response);
+        this.lookupLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.lookupLoading.set(false);
+        this.lookupError.set(
+          typeof error.error?.message === 'string'
+            ? error.error.message
+            : 'A API está offline ou não conseguiu consultar o provedor.',
+        );
+      },
+    });
   }
   saveLive(item: MarketItemQuote): void {
     const response = this.live();
-    if (!response || item.price === null || response.cacheStatus === 'stale' || response.region !== this.store.data().region) return;
+    if (
+      !response ||
+      item.price === null ||
+      response.cacheStatus === 'stale' ||
+      response.region !== this.store.data().region
+    )
+      return;
     const held = this.store
       .data()
       .quotes.find(

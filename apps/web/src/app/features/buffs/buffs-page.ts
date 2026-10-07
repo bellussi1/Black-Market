@@ -1,13 +1,22 @@
-import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import {
-  WorkspaceStore,
-  buffSchema,
-  number,
-  validationMessage,
-  type Buff,
-} from '../../core/workspace-store';
-@Component({ selector: 'app-buffs-page', imports: [FormsModule], templateUrl: './buffs-page.html' })
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  OnDestroy,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { buffSchema, type Buff } from '../../core/workspace-models';
+import { number } from '../../shared/formatters';
+import { validationMessage } from '../../shared/calculation-feedback';
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-buffs-page',
+  imports: [FormsModule],
+  templateUrl: './buffs-page.html',
+})
 export class BuffsPage implements OnDestroy {
   readonly store = inject(WorkspaceStore);
   draft: Buff = this.newBuff();

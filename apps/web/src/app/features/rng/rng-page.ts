@@ -1,11 +1,13 @@
-import { Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { calculateBox, defaultTax, boxSchema, type BoxInput } from '@bdo/calculators';
-import { evaluate, silver, number } from '../../core/workspace-store';
+import { evaluate } from '../../shared/calculation-feedback';
+import { silver, number } from '../../shared/formatters';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-rng-page',
   imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
   templateUrl: './rng-page.html',

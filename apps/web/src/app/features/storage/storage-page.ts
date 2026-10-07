@@ -1,17 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  WorkspaceStore,
-  workspaceSchema,
-  silver,
-  number,
-  download,
-  validationMessage,
-  type Workspace,
-} from '../../core/workspace-store';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { workspaceSchema, type Workspace } from '../../core/workspace-models';
+import { silver, number } from '../../shared/formatters';
+import { download } from '../../shared/download';
+import { validationMessage } from '../../shared/calculation-feedback';
 type Stock = Workspace['inventory'][number];
 type Project = Workspace['projects'][number];
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-storage-page',
   imports: [FormsModule],
   templateUrl: './storage-page.html',
