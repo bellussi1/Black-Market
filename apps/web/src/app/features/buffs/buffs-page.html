@@ -6,7 +6,9 @@
       Cadastre buffs, organize grupos exclusivos e salve combinações para PvE, PvP ou life skills.
     </p>
   </header>
-  <div class="work-grid">
+  <div
+    class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+  >
     <section class="panel">
       <h2>Adicionar ou editar buff</h2>
       <div class="form-grid">
@@ -107,7 +109,7 @@
       >Buscar nome ou efeito<input [(ngModel)]="search"
     /></label>
     @if (buffs.length) {
-      <div class="table-wrap">
+      <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>

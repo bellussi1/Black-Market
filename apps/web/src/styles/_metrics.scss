@@ -1,0 +1,46 @@
+@layer components {
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: #e5dbc424;
+    border: 1px solid #e5dbc424;
+    margin: 0 0 24px;
+  }
+  .metric {
+    background: var(--bm-surface);
+    padding: 22px;
+    min-width: 0;
+  }
+  .metric span {
+    display: block;
+    color: #b5beae;
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+  .metric strong {
+    display: block;
+    font-size: clamp(17px, 2vw, 24px);
+    font-weight: 500;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric small {
+    color: #9faa97;
+    display: block;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .metric.hero-metric {
+    grid-column: 1/-1;
+    background: #20291d;
+    padding: 30px 22px;
+  }
+  .metric.hero-metric strong {
+    font:
+      400 clamp(26px, 3vw, 40px) 'Iowan Old Style',
+      Georgia,
+      serif;
+    color: #ecd2b5;
+  }
+}

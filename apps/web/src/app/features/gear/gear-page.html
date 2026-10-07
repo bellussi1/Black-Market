@@ -7,7 +7,9 @@
       orçamento.
     </p>
   </header>
-  <div class="work-grid">
+  <div
+    class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+  >
     <section class="panel">
       <h2>Equipamento atual</h2>
       <div class="form-grid">
@@ -128,7 +130,7 @@
     @if (result().value; as r) {
       @if (r.upgrades.length) {
         <h3>Ordenado por prata / ponto principal</h3>
-        <div class="table-wrap">
+        <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>

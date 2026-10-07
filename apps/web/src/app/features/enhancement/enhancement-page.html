@@ -37,7 +37,9 @@
       crons/proteção no custo da tentativa. Destruição e downgrade exigem outro modelo. As chances
       não são uma tabela oficial de itens.
     </div>
-    <div class="work-grid">
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
       <section class="panel">
         <h2>Premissas da tentativa</h2>
         <div class="form-grid">
@@ -177,7 +179,7 @@
                 vector-effect="non-scaling-stroke"
               />
             </svg>
-            <div class="table-wrap">
+            <div class="max-w-full overflow-x-auto">
               <table class="data-table">
                 <thead>
                   <tr>
@@ -214,7 +216,9 @@
       Qualquer sucesso encerra a rodada e reinicia o caminho, pagando novamente o stack-base.
       Informe custos líquidos de recuperação em cada etapa.
     </div>
-    <div class="work-grid">
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
       <section class="panel">
         <h2>Caminho até o stack alvo</h2>
         <label class="field"
@@ -326,7 +330,7 @@
     <section class="panel">
       <h2>Meu histórico · {{ store.data().region.toUpperCase() }}</h2>
       @if (logs.length) {
-        <div class="table-wrap">
+        <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>

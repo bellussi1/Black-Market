@@ -16,7 +16,7 @@ import { WorkspaceStore } from '../../core/workspace-store';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './item-catalog-page.html',
-  styleUrl: './item-catalog-page.css',
+  styleUrl: './item-catalog-page.scss',
 })
 export class ItemCatalogPage implements OnInit, OnDestroy {
   private readonly api = inject(CatalogApiService);

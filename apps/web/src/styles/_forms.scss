@@ -1,0 +1,122 @@
+@layer components {
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+    color: #c2c8ba;
+    min-width: 0;
+  }
+  .field input,
+  .field select,
+  .field textarea,
+  .data-table input,
+  .data-table select {
+    min-width: 0;
+    width: 100%;
+    border: 1px solid #e5dbc43d;
+    background: var(--bm-input);
+    color: #f0eadc;
+    font: inherit;
+    font-size: 14px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 2px;
+  }
+  .field small {
+    color: #a2ae9b;
+    line-height: 1.5;
+  }
+  .field textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #e5b47c;
+    outline-offset: 2px;
+  }
+  .field input::placeholder {
+    color: #7f8e7c;
+  }
+  .tax-options {
+    border: 1px solid #e5dbc426;
+    padding: 18px;
+    margin: 24px 0;
+    min-width: 0;
+  }
+  .tax-options legend {
+    color: var(--bm-accent);
+    font-size: 12px;
+    padding: 0 6px;
+  }
+  .check-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 14px 0 0;
+  }
+  .check-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c4cabc;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  input[type='checkbox'] {
+    accent-color: var(--bm-accent);
+    width: 18px;
+    height: 18px;
+  }
+  .btn {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    gap: 8px;
+    background: var(--bm-accent);
+    color: var(--bm-background);
+    border: 1px solid var(--bm-accent);
+    font: inherit;
+    font-size: 12px;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 160ms;
+  }
+  .btn:hover {
+    background: #edbd8c;
+  }
+  .btn.subtle {
+    background: transparent;
+    color: #dfbd98;
+    border-color: #e5dbc438;
+  }
+  .btn.subtle:hover {
+    background: #263021;
+  }
+  .btn.danger {
+    color: var(--bm-danger);
+    border-color: #edafa04a;
+    background: transparent;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .action-row {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+}

@@ -1,0 +1,21 @@
+@layer components {
+  .progress-track {
+    width: 100%;
+    height: 5px;
+    background: #e5dbc425;
+    margin-top: 10px;
+  }
+  .progress-track span {
+    height: 100%;
+    display: block;
+    background: var(--bm-accent);
+    max-width: 100%;
+  }
+  .chart {
+    height: 160px;
+    width: 100%;
+    background: var(--bm-background);
+    border-bottom: 1px solid #e5dbc438;
+    margin: 20px 0;
+  }
+}

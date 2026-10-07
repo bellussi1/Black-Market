@@ -1,0 +1,18 @@
+$palette: (
+  background: #101713,
+  surface: #141d18,
+  input: #0f1712,
+  accent: #d6a577,
+  text: #eee9db,
+  muted: #aab5a3,
+  danger: #edafa0,
+  success: #b8d5a6,
+);
+
+@layer base {
+  :root {
+    @each $name, $value in $palette {
+      --bm-#{$name}: #{$value};
+    }
+  }
+}

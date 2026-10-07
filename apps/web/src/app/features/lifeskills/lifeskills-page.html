@@ -32,7 +32,9 @@
     </button>
   </div>
   @if (tab() === 'sessions') {
-    <div class="work-grid">
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
       <section class="panel">
         <h2>Dados observados da sessão</h2>
         <div class="form-grid">
@@ -150,7 +152,7 @@
         </div>
       </div>
       @if (sessions().length) {
-        <div class="table-wrap">
+        <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>
@@ -186,7 +188,9 @@
       }
     </section>
   } @else if (tab() === 'mastery') {
-    <div class="work-grid">
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
       <section class="panel">
         <h2>Investimento e ganho observado</h2>
         <div class="form-grid">
@@ -247,7 +251,9 @@
       </section>
     </div>
   } @else {
-    <div class="work-grid">
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
       <section class="panel">
         <h2>Estimador de XP</h2>
         <div class="form-grid">

@@ -1,0 +1,12 @@
+@import 'tailwindcss' source('../');
+
+/* Theme values are shared with SCSS through CSS custom properties. */
+@theme inline {
+  --color-market-background: var(--bm-background);
+  --color-market-surface: var(--bm-surface);
+  --color-market-accent: var(--bm-accent);
+  --color-market-text: var(--bm-text);
+  --color-market-muted: var(--bm-muted);
+  --color-market-danger: var(--bm-danger);
+  --color-market-success: var(--bm-success);
+}

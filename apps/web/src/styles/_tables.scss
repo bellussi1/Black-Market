@@ -1,0 +1,47 @@
+@layer components {
+  .data-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+    text-align: left;
+  }
+  .data-table th {
+    color: #a7b29f;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 12px;
+    border-bottom: 1px solid #e5dbc438;
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5dbc41a;
+    color: #dddccb;
+    vertical-align: middle;
+  }
+  .data-table td.numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .data-table input {
+    min-width: 88px;
+    max-width: 180px;
+  }
+  .empty {
+    padding: 45px 20px;
+    border: 1px dashed #e5dbc438;
+    text-align: center;
+    color: var(--bm-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .empty strong {
+    display: block;
+    color: #e2dccb;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}

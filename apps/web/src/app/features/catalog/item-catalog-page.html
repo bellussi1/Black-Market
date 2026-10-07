@@ -1,6 +1,4 @@
 <div class="catalog-shell">
-
-
   <main class="catalog-main">
     <div class="breadcrumb" aria-label="Localização">
       <a routerLink="/">Início</a><span aria-hidden="true">/</span><span>Catálogo de itens</span>
@@ -17,13 +15,19 @@
       </div>
 
       <aside class="source-card" aria-label="Sobre a origem do catálogo">
-        <div class="source-card-head"><span>FONTE DE REFERÊNCIA</span><span class="source-mark">01</span></div>
+        <div class="source-card-head">
+          <span>FONTE DE REFERÊNCIA</span><span class="source-mark">01</span>
+        </div>
         <div class="source-emblem" aria-hidden="true">
           <span class="emblem-ring"></span><span class="emblem-core"></span>
         </div>
         <strong>Extração local do cliente</strong>
         <p>Itens e receitas são importados de arquivos JSON gerados na sua máquina.</p>
-        <a href="https://github.com/iDevelopThings/bdo-data-extractor" target="_blank" rel="noreferrer">
+        <a
+          href="https://github.com/iDevelopThings/bdo-data-extractor"
+          target="_blank"
+          rel="noreferrer"
+        >
           Sobre o extractor <span aria-hidden="true">↗</span>
         </a>
       </aside>
@@ -32,17 +36,28 @@
     @if (result()?.dataset; as dataset) {
       <section class="dataset-strip" aria-label="Versão do catálogo">
         <div class="dataset-state"><span></span><strong>Catálogo publicado</strong></div>
-        <div class="dataset-detail"><span>Região</span><strong>{{ dataset.region.toUpperCase() }}</strong></div>
-        <div class="dataset-detail"><span>Idioma dos dados</span><strong>{{ dataset.locale.toUpperCase() }}</strong></div>
-        <div class="dataset-detail"><span>Versão</span><strong>{{ dataset.version }}</strong></div>
-        <div class="dataset-detail"><span>Importado em</span><strong>{{ formatImportedAt(dataset.importedAt) }}</strong></div>
+        <div class="dataset-detail">
+          <span>Região</span><strong>{{ dataset.region.toUpperCase() }}</strong>
+        </div>
+        <div class="dataset-detail">
+          <span>Idioma dos dados</span><strong>{{ dataset.locale.toUpperCase() }}</strong>
+        </div>
+        <div class="dataset-detail">
+          <span>Versão</span><strong>{{ dataset.version }}</strong>
+        </div>
+        <div class="dataset-detail">
+          <span>Importado em</span><strong>{{ formatImportedAt(dataset.importedAt) }}</strong>
+        </div>
       </section>
     }
 
     <section class="catalog-tools" aria-label="Busca e filtros do catálogo">
       <label class="search-field">
         <span class="search-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="10.8" cy="10.8" r="6.3" />
+            <path d="m15.5 15.5 4.2 4.2" />
+          </svg>
         </span>
         <span class="sr-only">Buscar pelo início do nome do item</span>
         <input
@@ -59,7 +74,9 @@
         <select [value]="categoryId()" (change)="onCategory($event)" [disabled]="categoryError()">
           <option value="">Todas as categorias</option>
           @for (category of categories(); track category.id) {
-            <option [value]="category.id">{{ category.parentId ? '↳ ' : '' }}{{ category.name }}</option>
+            <option [value]="category.id">
+              {{ category.parentId ? '↳ ' : '' }}{{ category.name }}
+            </option>
           }
         </select>
       </label>
@@ -95,9 +112,13 @@
 
     @if (selectedItem(); as item) {
       <section class="item-detail" aria-label="Detalhes do item selecionado" aria-live="polite">
-        <div class="detail-monogram" aria-hidden="true">{{ item.name.charAt(0).toLocaleUpperCase() }}</div>
+        <div class="detail-monogram" aria-hidden="true">
+          {{ item.name.charAt(0).toLocaleUpperCase() }}
+        </div>
         <div class="detail-copy">
-          <div class="detail-kicker">REGISTRO DO CATÁLOGO <span>#{{ item.id }}</span></div>
+          <div class="detail-kicker">
+            REGISTRO DO CATÁLOGO <span>#{{ item.id }}</span>
+          </div>
           <h2>{{ item.name }}</h2>
           <p>{{ item.description || 'O extractor não encontrou uma descrição para este item.' }}</p>
           <div class="detail-tags">
@@ -107,11 +128,22 @@
               <span>{{ category.name }}</span>
             }
           </div>
-          @if (detailLoading()) { <small class="detail-loading">Atualizando detalhes…</small> }
-          @if (detailError()) { <small class="detail-loading">Detalhes completos indisponíveis; exibindo os dados da lista.</small> }
+          @if (detailLoading()) {
+            <small class="detail-loading">Atualizando detalhes…</small>
+          }
+          @if (detailError()) {
+            <small class="detail-loading"
+              >Detalhes completos indisponíveis; exibindo os dados da lista.</small
+            >
+          }
           @if (recipesProduced(); as produced) {
             <div class="recipe-group">
-              <h3>Receitas que produzem este item <span>{{ visibleRecipeCount(produced.recipes.length) }} / {{ produced.total }}</span></h3>
+              <h3>
+                Receitas que produzem este item
+                <span
+                  >{{ visibleRecipeCount(produced.recipes.length) }} / {{ produced.total }}</span
+                >
+              </h3>
               @if (produced.recipes.length) {
                 @for (recipe of produced.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
@@ -119,7 +151,8 @@
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (input of recipe.inputs; track input.itemId; let last = $last) {
-                        {{ input.quantity ?? 'Qtd. não informada' }} × {{ input.name }}{{ last ? '' : ' · ' }}
+                        {{ input.quantity ?? 'Qtd. não informada' }} × {{ input.name
+                        }}{{ last ? '' : ' · ' }}
                       }
                     </p>
                   </article>
@@ -131,7 +164,10 @@
           }
           @if (recipesUsed(); as used) {
             <div class="recipe-group">
-              <h3>Receitas que usam este item <span>{{ visibleRecipeCount(used.recipes.length) }} / {{ used.total }}</span></h3>
+              <h3>
+                Receitas que usam este item
+                <span>{{ visibleRecipeCount(used.recipes.length) }} / {{ used.total }}</span>
+              </h3>
               @if (used.recipes.length) {
                 @for (recipe of used.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
@@ -139,18 +175,28 @@
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (output of recipe.outputs; track output.itemId; let last = $last) {
-                        {{ output.quantity ?? 'Qtd. não informada' }} × {{ output.name }}{{ last ? '' : ' · ' }}
+                        {{ output.quantity ?? 'Qtd. não informada' }} × {{ output.name
+                        }}{{ last ? '' : ' · ' }}
                       }
                     </p>
                   </article>
                 }
               } @else if (!detailLoading()) {
-                <small class="no-recipes">Nenhuma receita que use este item consta nesta extração.</small>
+                <small class="no-recipes"
+                  >Nenhuma receita que use este item consta nesta extração.</small
+                >
               }
             </div>
           }
         </div>
-        <button class="close-detail" type="button" aria-label="Fechar detalhes" (click)="closeItem()">×</button>
+        <button
+          class="close-detail"
+          type="button"
+          aria-label="Fechar detalhes"
+          (click)="closeItem()"
+        >
+          ×
+        </button>
       </section>
     }
 
@@ -159,7 +205,11 @@
         <div>
           <p class="eyebrow"><span></span> COLEÇÃO DE ITENS</p>
           <h2 id="results-title">
-            @if (result()?.dataset) { {{ formatCount(result()?.total ?? 0) }} itens } @else { Catálogo }
+            @if (result()?.dataset) {
+              {{ formatCount(result()?.total ?? 0) }} itens
+            } @else {
+              Catálogo
+            }
           </h2>
         </div>
         @if (result()?.dataset) {
@@ -188,8 +238,8 @@
               <h3>Nenhum catálogo ativo ainda.</h3>
               <p>
                 Gere os arquivos <code>items.json</code>, <code>recipes.json</code> e
-                <code>marketcategories.json</code> com o extractor e importe-os localmente.
-                A versão anterior permanece publicada se uma importação falhar.
+                <code>marketcategories.json</code> com o extractor e importe-os localmente. A versão
+                anterior permanece publicada se uma importação falhar.
               </p>
               <pre><code>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</code></pre>
             </div>
@@ -212,10 +262,14 @@
                 [attr.aria-label]="'Ver detalhes de ' + item.name"
                 (click)="openItem(item)"
               >
-                <span class="item-monogram" aria-hidden="true">{{ item.name.charAt(0).toLocaleUpperCase() }}</span>
+                <span class="item-monogram" aria-hidden="true">{{
+                  item.name.charAt(0).toLocaleUpperCase()
+                }}</span>
                 <span class="item-main">
                   <span class="item-name">{{ item.name }}</span>
-                  <span class="item-category">{{ item.categories[0]?.name || item.category || 'Sem categoria' }}</span>
+                  <span class="item-category">{{
+                    item.categories[0]?.name || item.category || 'Sem categoria'
+                  }}</span>
                 </span>
                 <span class="item-grade">{{ gradeLabel(item.grade) }}</span>
                 <span class="item-weight">{{ formatWeight(item.weight) }}</span>
@@ -225,11 +279,30 @@
           </div>
 
           <nav class="pagination" aria-label="Paginação do catálogo">
-            <span>Exibindo {{ formatCount((page() - 1) * pageSize + 1) }}–{{ formatCount(rangeEnd(data.total)) }} de {{ formatCount(data.total) }}</span>
+            <span
+              >Exibindo {{ formatCount((page() - 1) * pageSize + 1) }}–{{
+                formatCount(rangeEnd(data.total))
+              }}
+              de {{ formatCount(data.total) }}</span
+            >
             <div class="pagination-actions">
-              <button type="button" aria-label="Página anterior" [disabled]="page() <= 1 || loading()" (click)="goToPage(page() - 1)">←</button>
+              <button
+                type="button"
+                aria-label="Página anterior"
+                [disabled]="page() <= 1 || loading()"
+                (click)="goToPage(page() - 1)"
+              >
+                ←
+              </button>
               <span>{{ page() }} <i>/</i> {{ pageCount() }}</span>
-              <button type="button" aria-label="Próxima página" [disabled]="page() >= pageCount() || loading()" (click)="goToPage(page() + 1)">→</button>
+              <button
+                type="button"
+                aria-label="Próxima página"
+                [disabled]="page() >= pageCount() || loading()"
+                (click)="goToPage(page() + 1)"
+              >
+                →
+              </button>
             </div>
           </nav>
         }
@@ -238,9 +311,10 @@
 
     <aside class="market-note">
       <span class="note-rule" aria-hidden="true"></span>
-      <p><strong>Referência e mercado são fontes diferentes.</strong> Este catálogo não contém cotações atuais; elas serão coletadas e exibidas com sua própria origem e horário.</p>
+      <p>
+        <strong>Referência e mercado são fontes diferentes.</strong> Este catálogo não contém
+        cotações atuais; elas serão coletadas e exibidas com sua própria origem e horário.
+      </p>
     </aside>
   </main>
-
-
 </div>

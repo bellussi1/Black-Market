@@ -6,7 +6,7 @@ import { RegionPreferences, regions } from '../core/region-preferences';
   selector: 'app-workspace-layout',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, FormsModule],
   templateUrl: './workspace-layout.html',
-  styleUrl: './workspace-layout.css',
+  styleUrl: './workspace-layout.scss',
 })
 export class WorkspaceLayout {
   readonly preferences = inject(RegionPreferences);

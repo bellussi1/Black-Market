@@ -1,0 +1,35 @@
+@layer components {
+  .negative {
+    color: var(--bm-danger) !important;
+  }
+  .positive {
+    color: var(--bm-success) !important;
+  }
+  .muted,
+  .help {
+    color: var(--bm-muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .help a {
+    color: #e2b68c;
+  }
+  .notice {
+    padding: 14px 18px;
+    background: #a6874010;
+    border-left: 2px solid var(--bm-accent);
+    color: #d7c1a7;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+  .error-box {
+    color: #f0b9ab;
+    border: 1px solid #eea28a48;
+    background: #bf785210;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+}

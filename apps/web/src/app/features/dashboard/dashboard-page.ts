@@ -5,7 +5,7 @@ import { RegionPreferences } from '../../core/region-preferences';
   selector: 'app-dashboard-page',
   imports: [RouterLink],
   templateUrl: './dashboard-page.html',
-  styleUrl: './dashboard-page.css',
+  styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
   readonly preferences = inject(RegionPreferences);

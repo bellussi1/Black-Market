@@ -8,7 +8,14 @@
   "projects": {
     "web": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "standalone": true,
+          "style": "scss",
+          "skipTests": false,
+          "changeDetection": "OnPush"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -25,8 +32,10 @@
               }
             ],
             "styles": [
-              "src/styles.css"
-            ]
+              "src/styles/tailwind.css",
+              "src/styles.scss"
+            ],
+            "inlineStyleLanguage": "scss"
           },
           "configurations": {
             "production": {
@@ -44,8 +53,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                "maximumWarning": "16kB",
-                "maximumError": "20kB"
+                  "maximumWarning": "16kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"

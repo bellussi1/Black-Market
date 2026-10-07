@@ -1,0 +1,47 @@
+@layer base {
+  :root {
+    color-scheme: dark;
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    background: var(--bm-background);
+    color: var(--bm-text);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  button,
+  a {
+    font: inherit;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #e5b47c;
+    outline-offset: 4px;
+  }
+  ::selection {
+    background: #be8357;
+    color: #111814;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}

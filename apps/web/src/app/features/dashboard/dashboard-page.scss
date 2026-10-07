@@ -22,7 +22,7 @@
   margin: 24px 0;
 }
 .home-hero h1 em {
-  color: #d6a577;
+  color: var(--bm-accent);
   font-weight: 400;
 }
 .hero-copy {
@@ -90,7 +90,7 @@
     serif;
 }
 .home-stats small {
-  color: #d6a577;
+  color: var(--bm-accent);
   font-size: 10px;
 }
 .home-stats small span {
@@ -128,9 +128,9 @@
 .home-tool {
   border: 1px solid #e5dbc426;
   padding: 22px;
-  color: #eee9db;
+  color: var(--bm-text);
   text-decoration: none;
-  background: #141d18;
+  background: var(--bm-surface);
   transition:
     background 160ms,
     border-color 160ms;
@@ -148,7 +148,7 @@
   gap: 8px;
   align-items: center;
   font-size: 10px;
-  color: #d6a577;
+  color: var(--bm-accent);
 }
 .home-tool small {
   font-size: 8px;
@@ -170,7 +170,7 @@
 }
 .tool-open {
   font-size: 11px;
-  color: #d6a577;
+  color: var(--bm-accent);
   border-top: 1px solid #e5dbc41b;
   padding-top: 15px;
   margin-top: auto;

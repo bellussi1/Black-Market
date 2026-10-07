@@ -45,7 +45,7 @@
               : 'Consulta ao provedor'
         }}. Cache documentado no provedor: {{ response.upstreamCacheMinutes }} minutos.
       </p>
-      <div class="table-wrap">
+      <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
@@ -86,7 +86,9 @@
     Seu caderno reúne registros manuais e consultas que você guardou do Arsha. Preço base zero no
     provedor é exibido como indisponível; registros antigos continuam com seu horário original.
   </div>
-  <div class="work-grid">
+  <div
+    class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+  >
     <section class="panel">
       <h2>Calculadora de imposto</h2>
       <div class="form-grid">
@@ -197,7 +199,7 @@
       >
     </div>
     @if (quotes.length) {
-      <div class="table-wrap">
+      <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
@@ -267,7 +269,7 @@
       <p class="help">
         Pontos igualmente espaçados por registro. A tabela preserva os horários reais.
       </p>
-      <div class="table-wrap">
+      <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
