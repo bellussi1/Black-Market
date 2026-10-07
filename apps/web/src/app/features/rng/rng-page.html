@@ -1,0 +1,135 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">08 / RNG BOX VALUE · NIGHT VENDOR</p>
+    <h1>Quanto vale abrir?</h1>
+    <p>
+      Compare o custo da caixa com o valor esperado de resultados informados por você, depois do
+      imposto de venda.
+    </p>
+  </header>
+  <div class="notice">
+    Este modelo sorteia um resultado exclusivo por caixa. As probabilidades devem somar 100%; inclua
+    “Sem prêmio” com preço zero quando necessário. Use taxas verificadas ou reports próprios e salve
+    a origem no nome do preset.
+  </div>
+  <div class="work-grid">
+    <section class="panel">
+      <h2>Preço e resultados</h2>
+      <div class="form-grid">
+        <label class="field"
+          >Preço por caixa / oferta do vendor<input
+            inputmode="numeric"
+            [ngModel]="form().boxPrice"
+            (ngModelChange)="patch({ boxPrice: $event })" /></label
+        ><label class="field"
+          >Quantidade de caixas<input
+            type="number"
+            min="1"
+            [ngModel]="form().boxes"
+            (ngModelChange)="patch({ boxes: $event })"
+        /></label>
+      </div>
+      @for (outcome of form().outcomes; track $index; let k = $index) {
+        <div class="row-editor">
+          <div class="form-grid">
+            <label class="field"
+              >Resultado<input
+                [ngModel]="outcome.name"
+                (ngModelChange)="row(k, { name: $event })" /></label
+            ><label class="field"
+              >Probabilidade (%)<input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                [ngModel]="outcome.probability"
+                (ngModelChange)="row(k, { probability: $event })" /></label
+            ><label class="field"
+              >Quantidade do prêmio<input
+                type="number"
+                min="1"
+                [ngModel]="outcome.quantity"
+                (ngModelChange)="row(k, { quantity: $event })" /></label
+            ><label class="field"
+              >Preço de venda por unidade<input
+                inputmode="numeric"
+                [ngModel]="outcome.price"
+                (ngModelChange)="row(k, { price: $event })"
+            /></label>
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn danger" (click)="remove(k)">Remover resultado</button>
+          </div>
+        </div>
+      }
+      <div class="action-row">
+        <button type="button" class="btn subtle" (click)="add()">Adicionar resultado</button
+        ><span class="badge">{{ number(total()) }}% / 100%</span>
+      </div>
+      <app-tax-options [value]="form()" (changed)="patch($event)" /><app-preset-bar
+        tool="box"
+        [value]="form()"
+        (loaded)="load($event)"
+      /><app-calculation-proof tool="box" [value]="form()" />
+    </section>
+    <section>
+      @if (result().value; as r) {
+        <div class="metric-grid">
+          <div class="metric hero-metric">
+            <span>Lucro esperado por caixa</span
+            ><strong [class.negative]="r.expectedProfit.startsWith('-')">{{
+              silver(r.expectedProfit)
+            }}</strong
+            ><small>Valor médio probabilístico, sem garantia de retorno.</small>
+          </div>
+          <div class="metric">
+            <span>Valor líquido esperado</span><strong>{{ silver(r.expectedNet) }}</strong>
+          </div>
+          <div class="metric">
+            <span>Custo total</span><strong>{{ silver(r.totalCost) }}</strong>
+          </div>
+          <div class="metric">
+            <span>Lucro esperado de todas as caixas</span
+            ><strong>{{ silver(r.totalExpectedProfit) }}</strong>
+          </div>
+          <div class="metric">
+            <span>Chance de prêmio lucrativo por caixa</span
+            ><strong>{{ number(r.profitablePercent) }}%</strong>
+          </div>
+          <div class="metric">
+            <span>Ao menos uma caixa lucrativa</span
+            ><strong>{{ number(r.atLeastOneProfitablePercent) }}%</strong
+            ><small>Não significa que o lote inteiro será lucrativo.</small>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Composição do valor esperado</h2>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Resultado</th>
+                  <th>Chance</th>
+                  <th>Valor líquido</th>
+                  <th>Contribuição média</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of r.rows; track $index) {
+                  <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ number(row.probability) }}%</td>
+                    <td>{{ silver(row.net) }}</td>
+                    <td>{{ silver(row.contribution) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else {
+        <p class="error-box" role="alert">{{ result().error }}</p>
+      }
+    </section>
+  </div>
+</div>
