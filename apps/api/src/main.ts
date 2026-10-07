@@ -21,8 +21,8 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const apiDocument = new DocumentBuilder()
-    .setTitle('BDO Companion API')
-    .setDescription('API pública versionada do projeto pessoal BDO Companion.')
+    .setTitle('Black Market API')
+    .setDescription('API pública versionada do projeto pessoal Black Market.')
     .setVersion('1.0.0')
     .build();
   SwaggerModule.setup(

@@ -1,7 +1,7 @@
 {
   "name": "@bdo/api",
   "version": "0.1.0",
-  "description": "REST API modular do BDO Companion",
+  "description": "REST API modular do Black Market",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

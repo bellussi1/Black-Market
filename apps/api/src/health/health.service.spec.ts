@@ -8,7 +8,7 @@ describe('HealthService', () => {
 
     expect(service.healthcheck()).toMatchObject({
       status: 'ok',
-      service: 'bdo-companion-api',
+      service: 'black-market-api',
     });
     expect(database.ping).not.toHaveBeenCalled();
   });

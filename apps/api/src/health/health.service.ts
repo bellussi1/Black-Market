@@ -8,7 +8,7 @@ export class HealthService {
   healthcheck() {
     return {
       status: 'ok' as const,
-      service: 'bdo-companion-api',
+      service: 'black-market-api',
       timestamp: new Date().toISOString(),
     };
   }
