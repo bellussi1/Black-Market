@@ -4,17 +4,18 @@ NestJS expõe REST JSON em `/api/v1`; o contrato OpenAPI fica em `/api/docs`. N�
 
 ## Disponível
 
-| Rota                            | Propósito                                                                       |
-| ------------------------------- | ------------------------------------------------------------------------------- | ------ |
-| `GET /health`                   | Processo da API está ativo; não consulta banco                                  |
-| `GET /ready`                    | Confirma conexão com PostgreSQL; responde 503 se o banco não estiver disponível |
-| `/api/docs`                     | Swagger UI/OpenAPI                                                              |
-| `GET /api/v1/items`             | Busca itens do dataset ativo, com prefixo de nome, categoria, grau e paginação  |
-| `GET /api/v1/items/:id`         | Detalhes de um item no dataset ativo                                            |
-| `GET /api/v1/items/:id/recipes` | Receitas que produzem ou usam um item (`direction=produces                      | uses`) |
-| `GET /api/v1/categories`        | Categorias do Central Market no dataset ativo                                   |
+| Rota                                            | Propósito                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `GET /health`                                   | Processo da API está ativo; não consulta banco                                  |
+| `GET /ready`                                    | Confirma conexão com PostgreSQL; responde 503 se o banco não estiver disponível |
+| `/api/docs`                                     | Swagger UI/OpenAPI                                                              |
+| `GET /api/v1/items`                             | Busca itens do dataset ativo, com prefixo de nome, categoria, grau e paginação  |
+| `GET /api/v1/items/:id`                         | Detalhes de um item no dataset ativo                                            |
+| `GET /api/v1/items/:id/icon?dataset=<checksum>` | Ícone WebP local, versionado pelo checksum; 404 se ausente                      |
+| `GET /api/v1/items/:id/recipes`                 | Receitas que produzem ou usam um item (`direction=produces` ou `uses`)          |
+| `GET /api/v1/categories`                        | Categorias do Central Market no dataset ativo                                   |
 
-Itens e categorias incluem a versão, checksum, região, idioma e horário de importação do dataset. Sem uma versão ativa, as rotas de coleção retornam listas vazias e `dataset: null`; a interface orienta a executar a importação local. A região padrão é `sa`; sem `locale`, a API prefere um dataset em inglês e depois a versão ativa mais recente. A busca de nomes usa prefixo para aproveitar o índice de texto. `pageSize` aceita de 1 a 100 e o padrão é 48. O endpoint de receitas retorna até 50 relações e informa o total.
+Itens e categorias incluem a versão, checksum, região, idioma e horário de importação do dataset. Sem uma versão ativa, as rotas de coleção retornam listas vazias e `dataset: null`; a interface orienta a executar a importação local. A região padrão é `sa`; sem `locale`, a API prefere português e depois inglês na mesma região. A busca de nomes usa prefixo para aproveitar o índice de texto. `pageSize` aceita de 1 a 100 e o padrão é 48. O endpoint de receitas retorna até 50 relações, informa o total e preserva `byproductOfItemId` quando o resultado é um subproduto. Quantidade ausente é `null`.
 
 O importador é um comando local; não existe rota pública para enviar datasets:
 
@@ -23,6 +24,8 @@ pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version 
 ```
 
 O diretório deve conter `items.json`, `recipes.json` e `marketcategories.json` no formato publicado pelo [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor). A versão informada é imutável: conteúdo diferente exige um identificador novo.
+
+O parâmetro opcional `--assets <pasta>` publica ícones de itens da saída `icons` antes de ativar o catálogo. `CATALOG_ASSETS_DIR` deve apontar para essa pasta ao iniciar a API. O endpoint de imagens valida checksum, ID e caminho no manifesto, serve apenas WebP e usa cache imutável; não expõe os outros arquivos da extração. Consulte [extração local](local-extraction.md).
 
 ## Calculadoras e mercado disponíveis
 

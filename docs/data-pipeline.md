@@ -23,7 +23,7 @@ Essa extração não deve ser tratada como cópia integral de toda regra/dado do
 
 Fluxo implementado para itens, categorias de mercado e receitas:
 
-1. Depois de um patch relevante, executar o extractor contra uma instalação legítima e escolher idioma/região. O README atual lista `en`, `de`, `fr` e `sp`; a interface do projeto é pt-BR, mas os nomes de itens vêm no idioma extraído.
+1. Depois de um patch relevante, executar o extractor contra uma instalação legítima e escolher idioma/região. A instalação Steam SA foi extraída com `--lang pt --region sa`; o código lê o arquivo de localização presente na instalação, apesar da lista antiga no texto de ajuda. O procedimento reproduzível está em [extração local](local-extraction.md).
 2. Guardar `items.json`, `recipes.json` e `marketcategories.json` numa pasta local fora do Git. O extractor atual documenta comparar diretórios de saída com `diff-outputs`, mas não assumir um `gameFingerprint` em cada arquivo.
 3. Definir um rótulo imutável para `--version`, de preferência combinando versão do extractor e patch/fingerprint do cliente quando conhecidos. O importer calcula SHA-256 do conteúdo dos três JSONs e registra região, idioma, versão e hora da importação.
 4. Validar formato, IDs únicos e referências de itens nas receitas/categorias antes de escrever. Referências inválidas interrompem a importação.
@@ -36,6 +36,8 @@ pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version 
 ```
 
 É um comando manual executado na máquina que tem os arquivos extraídos; não atualiza o catálogo sozinho depois de um patch nem disponibiliza o dataset publicamente. O README do extractor informa licença não comercial para o código do projeto e não concede direitos sobre dados/assets do jogo; revisar licença e termos antes de integração ou redistribuição. Não commitar JSONs extraídos nem ícones no repositório.
+
+Na primeira extração SA/pt foram gerados 74.216 itens, 212 categorias e 5.063 receitas. O importador normaliza o formato atual (graus numéricos e referências URN), mantém 730 itens sem nome pelo ID e deduplica as receitas para 4.406 registros distintos. As 569 relações de subproduto permanecem identificadas. O catálogo e seus ícones podem ser publicados localmente pelo perfil Docker `data`; preços continuam em uma fonte separada. Os outros 20 JSONs do build foram preservados localmente para integrações futuras.
 
 ## Atualização de preços de mercado
 

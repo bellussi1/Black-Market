@@ -18,6 +18,8 @@ O domínio e TLS podem ficar na Cloudflare, mas DNS/CDN/WAF não executam o Nest
 5. Configurar domínio/API CORS para domínio final, health check `/ready`, rate limits e logs sem segredos.
 6. Validar rollback da aplicação e restauração do banco antes de carga real.
 
+O catálogo local tem ícones versionados em `data/assets/<checksum>`. Essa pasta não entra na imagem Docker nem no Git. Para uma API com ícones, configure `CATALOG_ASSETS_DIR` e um volume persistente em modo de leitura; a publicação de uma extração usa um job separado com acesso de escrita. O Compose local já configura esses mounts. Os assets do cliente permanecem locais nesta entrega; sua distribuição pública requer avaliar os direitos sobre esses arquivos. Veja [extração local](local-extraction.md).
+
 ## Controle de despesa
 
 Para a primeira validação, desenvolvimento local custa zero de hospedagem. Para uma demonstração pública, começar com os menores recursos pagos que garantam persistência; preço baixo nominal pode ter franquia, pausa, expiração e cobrança por uso. Limitar histórico de preços, backups e logs; alertas de gasto e limites de conexão devem ser configurados no provedor. Reavaliar antes de ativar coleta frequente ou login. Não prometer um custo mensal fixo sem região, tráfego, retenção e plano escolhidos.

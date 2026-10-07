@@ -40,7 +40,7 @@ O suporte `pt` aparece na [configuração do Arsha](https://github.com/guy0090/a
 
 O catálogo recebe `preferredLocale=pt`: procura português, depois inglês e depois outra extração disponível, sempre na mesma região. `locale=pt` pede um idioma exato e não faz fallback. A resposta mantém o idioma real do dataset; a tela avisa quando ele difere da preferência. Nomes e descrições não são traduzidos automaticamente.
 
-O extractor documentado atualmente fornece `en`, `de`, `fr` e `sp`. Importar seus arquivos em inglês com `--locale pt` apenas rotularia os dados incorretamente. O comando de importação conserva `en` como padrão e deve receber o idioma real dos arquivos. Para ter nomes portugueses no PostgreSQL, precisamos de uma fonte localizada válida ou de um dataset português produzido e revisado.
+A instalação Steam SA foi extraída em português em 7 de outubro de 2026. O código do extractor fixado em `5bf11bd7` lê o arquivo local `ads/languagedata_pt.loc`, embora sua ajuda ainda liste `en/de/fr/sp`. O comando de importação conserva `en` como padrão por compatibilidade e deve receber `--locale pt` para essa saída. Importar arquivos ingleses como `pt` rotularia os dados incorretamente. Consulte [extração local](local-extraction.md).
 
 ## Novo mercado
 

@@ -40,7 +40,7 @@ O catálogo fica em `http://localhost:4200/database/items`. Sem extração impor
 pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version "extractor-v0.1.9-patch-fingerprint" --region sa --locale en
 ```
 
-Use um rótulo novo em `--version` quando o conteúdo mudar. O importador calcula um checksum, valida referências e troca o catálogo ativo numa transação; os arquivos extraídos não são incluídos no repositório. O extractor lista nomes localizados em inglês, alemão, francês e espanhol; a interface permanece em português.
+Use um rótulo novo em `--version` quando o conteúdo mudar. O importador calcula um checksum, valida referências e troca o catálogo ativo numa transação; os arquivos extraídos não são incluídos no repositório. A instalação SA da Steam permite extrair nomes em português com `--lang pt`. A primeira importação local contém 74.216 itens, 212 categorias e 4.406 receitas distintas. Consulte [extração local, ícones e atualização após patches](docs/local-extraction.md) para reproduzir o fluxo com Docker.
 
 Para subir também o Angular com o Node fixado no Docker, use `docker compose --profile web up --build -d`. Abra `http://localhost:4200`. O volume existente do PostgreSQL é preservado; o nome físico do banco continua `bdo_companion` por compatibilidade.
 
