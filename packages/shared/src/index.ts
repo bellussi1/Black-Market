@@ -76,3 +76,24 @@ export interface ApiProblem {
   code: string;
   message: string;
 }
+export interface MarketItemQuote {
+  itemId: number;
+  subId: number;
+  name: string;
+  price: string | null;
+  stock: number;
+  totalTrades: string;
+  minPrice: string | null;
+  maxPrice: string | null;
+  lastSoldPrice: string | null;
+  lastSoldAt: string | null;
+}
+
+export interface MarketLookupResponse {
+  source: 'arsha';
+  region: string;
+  fetchedAt: string;
+  cacheStatus: 'fetched' | 'cached' | 'stale';
+  upstreamCacheMinutes: number;
+  items: MarketItemQuote[];
+}
