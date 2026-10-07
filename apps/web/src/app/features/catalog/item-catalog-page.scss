@@ -409,6 +409,9 @@
 .detail-copy {
   min-width: 0;
 }
+.item-description {
+  white-space: pre-line;
+}
 .detail-kicker {
   color: #c69973;
   font-size: 8px;
@@ -610,6 +613,12 @@
 .item-card[data-grade='green'] .item-grade {
   border-color: #7da57a5e;
   color: #9db896;
+}
+.item-card[data-grade='red'] .item-grade {
+  color: #d69a86;
+}
+.item-card[data-grade='purple'] .item-grade {
+  color: #c5a2e1;
 }
 .item-weight {
   grid-column: 2;

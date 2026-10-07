@@ -157,14 +157,14 @@
         aria-live="polite"
       >
         <div class="detail-monogram" aria-hidden="true">
-          {{ item.name.charAt(0).toLocaleUpperCase() }}
+          <app-item-icon [url]="iconUrl(item.id)" [name]="item.name" />
         </div>
         <div class="detail-copy">
           <div class="detail-kicker">
             <ng-container i18n>REGISTRO DO CATÁLOGO </ng-container><span>#{{ item.id }}</span>
           </div>
           <h2>{{ item.name }}</h2>
-          <p>{{ item.description || 'O extractor não encontrou uma descrição para este item.' }}</p>
+          <p class="item-description">{{ description(item.description) }}</p>
           <div class="detail-tags">
             <span>{{ gradeLabel(item.grade) }}</span>
             <span>{{ formatWeight(item.weight) }}</span>
@@ -196,6 +196,12 @@
                 @for (recipe of produced.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
                     <strong>{{ recipe.type }}</strong>
+                    @if (recipe.byproductOfItemId) {
+                      <small i18n
+                        >Subproduto de item #{{ recipe.byproductOfItemId }}; rendimento não
+                        garantido.</small
+                      >
+                    }
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (input of recipe.inputs; track input.itemId; let last = $last) {
@@ -224,6 +230,12 @@
                 @for (recipe of used.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
                     <strong>{{ recipe.type }}</strong>
+                    @if (recipe.byproductOfItemId) {
+                      <small i18n
+                        >Subproduto de item #{{ recipe.byproductOfItemId }}; rendimento não
+                        garantido.</small
+                      >
+                    }
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (output of recipe.outputs; track output.itemId; let last = $last) {
@@ -333,9 +345,9 @@
                 [attr.aria-label]="'Ver detalhes de ' + item.name"
                 (click)="openItem(item)"
               >
-                <span class="item-monogram" aria-hidden="true">{{
-                  item.name.charAt(0).toLocaleUpperCase()
-                }}</span>
+                <span class="item-monogram" aria-hidden="true">
+                  <app-item-icon [url]="item.icon ? iconUrl(item.id) : null" [name]="item.name" />
+                </span>
                 <span class="item-main">
                   <span class="item-name">{{ item.name }}</span>
                   <span class="item-category">{{

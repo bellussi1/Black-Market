@@ -776,9 +776,18 @@
         <source>Receitas que produzem este item </source>
       </segment>
     </unit>
+    <unit id="3884295484050594876">
+      <notes>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:201,202</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:235,236</note>
+      </notes>
+      <segment>
+        <source>Subproduto de item #<ph id="0" equiv="INTERPOLATION" disp="{{ recipe.byproductOfItemId }}"/>; rendimento não garantido.</source>
+      </segment>
+    </unit>
     <unit id="6695634014329883011">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:211</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:217</note>
       </notes>
       <segment>
         <source>Nenhuma receita de produção consta nesta extração.</source>
@@ -786,7 +795,7 @@
     </unit>
     <unit id="8298476584108061968">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:220</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:226</note>
       </notes>
       <segment>
         <source>Receitas que usam este item </source>
@@ -794,7 +803,7 @@
     </unit>
     <unit id="8941372301042634642">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:239</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:251</note>
       </notes>
       <segment>
         <source>Nenhuma receita que use este item consta nesta extração.</source>
@@ -802,7 +811,7 @@
     </unit>
     <unit id="6091955313475622819">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:249,250</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:261,262</note>
       </notes>
       <segment>
         <source>Fechar detalhes</source>
@@ -810,7 +819,7 @@
     </unit>
     <unit id="1780255719049096965">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:261</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:273</note>
       </notes>
       <segment>
         <source>COLEÇÃO DE ITENS</source>
@@ -818,7 +827,7 @@
     </unit>
     <unit id="5244745523642702980">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:264,265</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:276,277</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ formatCount(result()?.total ?? 0) }}"/> itens </source>
@@ -826,7 +835,7 @@
     </unit>
     <unit id="6551960703314166637">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:266</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:278</note>
       </notes>
       <segment>
         <source>Catálogo </source>
@@ -834,7 +843,7 @@
     </unit>
     <unit id="3608008600355791426">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:272</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:284</note>
       </notes>
       <segment>
         <source>Página <ph id="0" equiv="INTERPOLATION" disp="{{ page() }}"/> de <ph id="1" equiv="INTERPOLATION_1" disp="{{ pageCount() }}"/></source>
@@ -842,7 +851,7 @@
     </unit>
     <unit id="5059811669489260995">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:278</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:290</note>
       </notes>
       <segment>
         <source>Carregando catálogo</source>
@@ -850,7 +859,7 @@
     </unit>
     <unit id="4054159018466851210">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:286</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:298</note>
       </notes>
       <segment>
         <source>O catálogo não respondeu.</source>
@@ -858,7 +867,7 @@
     </unit>
     <unit id="6260060166331585343">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:289</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:301</note>
       </notes>
       <segment>
         <source>Verifique a API e o banco de dados e tente carregar os dados de novo.</source>
@@ -866,7 +875,7 @@
     </unit>
     <unit id="3124298448184213090">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:299</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:311</note>
       </notes>
       <segment>
         <source>PRIMEIRA IMPORTAÇÃO</source>
@@ -874,7 +883,7 @@
     </unit>
     <unit id="1228186625151967306">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:301</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:313</note>
       </notes>
       <segment>
         <source>Nenhum catálogo ativo ainda.</source>
@@ -882,7 +891,7 @@
     </unit>
     <unit id="9197848580340130223">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:303</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:315</note>
       </notes>
       <segment>
         <source>Gere os arquivos </source>
@@ -890,7 +899,7 @@
     </unit>
     <unit id="8263843276589983702">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:304</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:316</note>
       </notes>
       <segment>
         <source>items.json</source>
@@ -898,7 +907,7 @@
     </unit>
     <unit id="1620166891068959719">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:305</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:317</note>
       </notes>
       <segment>
         <source>recipes.json</source>
@@ -906,7 +915,7 @@
     </unit>
     <unit id="2689529312774064971">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:306</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:318</note>
       </notes>
       <segment>
         <source>e </source>
@@ -914,7 +923,7 @@
     </unit>
     <unit id="2306402814417043155">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:307</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:319</note>
       </notes>
       <segment>
         <source>marketcategories.json</source>
@@ -922,7 +931,7 @@
     </unit>
     <unit id="3049002201109259649">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:309,310</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:321,322</note>
       </notes>
       <segment>
         <source>com o extractor e importe-os localmente. A versão anterior permanece publicada se uma importação falhar. </source>
@@ -930,7 +939,7 @@
     </unit>
     <unit id="9125627923402800148">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:313</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:325</note>
       </notes>
       <segment>
         <source>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</source>
@@ -938,7 +947,7 @@
     </unit>
     <unit id="6053291135327463861">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:319</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:331</note>
       </notes>
       <segment>
         <source>Nenhum item corresponde a esses filtros.</source>
@@ -946,7 +955,7 @@
     </unit>
     <unit id="4570570128636372933">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:320</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:332</note>
       </notes>
       <segment>
         <source>Experimente outro nome ou remova uma categoria.</source>
@@ -954,7 +963,7 @@
     </unit>
     <unit id="7934330771963201423">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:322</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:334</note>
       </notes>
       <segment>
         <source>Limpar busca e filtros</source>
@@ -962,7 +971,7 @@
     </unit>
     <unit id="1264101325807399291">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:352</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:364</note>
       </notes>
       <segment>
         <source>Paginação do catálogo</source>
@@ -970,7 +979,7 @@
     </unit>
     <unit id="2148732704145609351">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:355,359</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:367,371</note>
       </notes>
       <segment>
         <source>Exibindo <ph id="0" equiv="INTERPOLATION" disp="{{ formatCount((page() - 1) * pageSize + 1) }}"/>–<ph id="1" equiv="INTERPOLATION_1" disp="{{
@@ -980,7 +989,7 @@
     </unit>
     <unit id="7537802546126980248">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:364,365</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:376,377</note>
       </notes>
       <segment>
         <source>Página anterior</source>
@@ -988,7 +997,7 @@
     </unit>
     <unit id="9194919824448822998">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:374,375</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:386,387</note>
       </notes>
       <segment>
         <source>Próxima página</source>
@@ -996,7 +1005,7 @@
     </unit>
     <unit id="4915531762429283345">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:391</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:403</note>
       </notes>
       <segment>
         <source>Referência e mercado são fontes diferentes.</source>
@@ -1004,10 +1013,42 @@
     </unit>
     <unit id="5356440097260166220">
       <notes>
-        <note category="location">src/app/features/catalog/item-catalog-page.html:394,396</note>
+        <note category="location">src/app/features/catalog/item-catalog-page.html:406,408</note>
       </notes>
       <segment>
         <source>Este catálogo não contém cotações atuais; elas serão coletadas e exibidas com sua própria origem e horário. </source>
+      </segment>
+    </unit>
+    <unit id="893267521738421044">
+      <notes>
+        <note category="location">src/app/features/catalog/item-catalog-page.ts:98</note>
+      </notes>
+      <segment>
+        <source>com o botão direito do mouse</source>
+      </segment>
+    </unit>
+    <unit id="4568071754312104646">
+      <notes>
+        <note category="location">src/app/features/catalog/item-catalog-page.ts:99</note>
+      </notes>
+      <segment>
+        <source>com o botão esquerdo do mouse</source>
+      </segment>
+    </unit>
+    <unit id="6179778708165239746">
+      <notes>
+        <note category="location">src/app/features/catalog/item-catalog-page.ts:100</note>
+      </notes>
+      <segment>
+        <source>com o comando indicado no jogo</source>
+      </segment>
+    </unit>
+    <unit id="8687582594392677085">
+      <notes>
+        <note category="location">src/app/features/catalog/item-catalog-page.ts:101</note>
+      </notes>
+      <segment>
+        <source>O cliente não contém uma descrição para este item.</source>
       </segment>
     </unit>
     <unit id="5395853059295880935">

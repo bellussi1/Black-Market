@@ -31,6 +31,12 @@ export class CatalogApiService {
   private readonly preferences = inject(RegionPreferences);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
 
+  itemIconUrl(id: number, dataset: ActiveDatasetSummary | null | undefined): string | null {
+    return dataset?.checksum
+      ? `${this.baseUrl}/items/${id}/icon?dataset=${dataset.checksum}`
+      : null;
+  }
+
   getItems(params: CatalogSearchParams) {
     let httpParams = new HttpParams()
       .set('region', this.preferences.region())

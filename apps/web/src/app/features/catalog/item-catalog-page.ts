@@ -22,12 +22,13 @@ import { forkJoin } from 'rxjs';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { preferredDataLocale, uiLocale } from '../../core/locale';
 import { RegionPreferences } from '../../core/region-preferences';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-item-catalog-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ItemIcon],
   templateUrl: './item-catalog-page.html',
   styleUrl: './item-catalog-page.scss',
 })
@@ -82,8 +83,24 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     { value: 'green', label: 'Verde' },
     { value: 'blue', label: 'Azul' },
     { value: 'yellow', label: 'Amarelo' },
-    { value: 'orange', label: 'Laranja' },
+    { value: 'red', label: 'Vermelho' },
+    { value: 'purple', label: 'Roxo' },
   ];
+
+  iconUrl(id: number): string | null {
+    return this.api.itemIconUrl(id, this.result()?.dataset);
+  }
+
+  description(text: string | null): string {
+    return (
+      text
+        ?.replace(/<PA[^>]*>/g, '')
+        .replace(/\{TextBind:USING_CLICK_RMB\}/g, $localize`com o botão direito do mouse`)
+        .replace(/\{TextBind:USING_CLICK_LMB\}/g, $localize`com o botão esquerdo do mouse`)
+        .replace(/\{TextBind:[^}]+\}/g, $localize`com o comando indicado no jogo`) ||
+      $localize`O cliente não contém uma descrição para este item.`
+    );
+  }
 
   ngOnInit(): void {
     this.loadCategories();
