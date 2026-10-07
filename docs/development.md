@@ -35,13 +35,14 @@ Editar `packages/database/src/schema.ts`, rodar `pnpm db:generate`, revisar o SQ
 
 ```powershell
 pnpm lint
+pnpm format:check
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm db:check
 ```
 
-CI roda essas verificações para pull requests e pushes. O lint da API compila primeiro os pacotes compartilhados para disponibilizar seus tipos em uma instalação limpa. Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
+CI roda essas verificações para pull requests e pushes. O lint da API compila primeiro os pacotes compartilhados para disponibilizar seus tipos em uma instalação limpa. Use `pnpm lint:fix` e depois `pnpm format` para aplicar correções; `pnpm check` executa lint, formatação e tipos. Regras e abrangência estão em [qualidade do código](code-quality.md). Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
 
 ## Ambiente
 

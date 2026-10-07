@@ -96,6 +96,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 
 - [Arquitetura](docs/architecture.md)
 - [Padrões Angular, Tailwind, SCSS e Vitest](docs/angular-architecture.md)
+- [Lint, formatação e organização](docs/code-quality.md)
 - [Pesquisa BDOLytics e BDO Workshop](docs/product-research.md)
 - [Banco de dados](docs/database.md)
 - [API REST](docs/api.md)
