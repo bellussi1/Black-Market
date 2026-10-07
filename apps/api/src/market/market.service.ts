@@ -1,3 +1,4 @@
+import { DEFAULT_DATA_LOCALE } from '@bdo/shared';
 import { HttpException, HttpStatus, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -16,10 +17,14 @@ export class MarketService {
   private active = 0;
   constructor(private readonly config: ConfigService) {}
 
-  async lookup(region: string, itemId: number): Promise<MarketLookup> {
+  async lookup(
+    region: string,
+    itemId: number,
+    locale: string = DEFAULT_DATA_LOCALE,
+  ): Promise<MarketLookup> {
     if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true))
       throw new ServiceUnavailableException('Consulta externa desativada neste deploy.');
-    const key = region + ':' + itemId;
+    const key = region + ':' + itemId + ':' + locale;
     const held = this.cache.get(key);
     const now = Date.now();
     if (held && held.expires > now) return { ...held.response, cacheStatus: 'cached' };
@@ -37,7 +42,7 @@ export class MarketService {
       );
     this.active++;
     this.requests++;
-    const request = this.fetchQuote(region, itemId, held);
+    const request = this.fetchQuote(region, itemId, locale, held);
     this.pending.set(key, request);
     try {
       return await request;
@@ -50,12 +55,13 @@ export class MarketService {
   private async fetchQuote(
     region: string,
     itemId: number,
+    locale: string,
     held?: { response: MarketLookup; expires: number; retryAt: number },
   ): Promise<MarketLookup> {
-    const key = region + ':' + itemId;
+    const key = region + ':' + itemId + ':' + locale;
     try {
       const response = await fetch(
-        'https://api.arsha.io/v2/' + region + '/item?id=' + itemId + '&lang=en',
+        'https://api.arsha.io/v2/' + region + '/item?id=' + itemId + '&lang=' + locale,
         {
           signal: AbortSignal.timeout(8000),
           headers: { Accept: 'application/json' },
@@ -86,6 +92,7 @@ export class MarketService {
       const result: MarketLookup = {
         source: 'arsha',
         region,
+        locale,
         fetchedAt: new Date().toISOString(),
         cacheStatus: 'fetched',
         upstreamCacheMinutes: 30,

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { resolve } from 'node:path';
 
+import { dataLocaleForUi, DEFAULT_REGION } from '@bdo/shared';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from '../app.module';
@@ -29,8 +30,8 @@ async function run(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const inputDirectory = args.get('--input');
   const version = args.get('--version');
-  const region = (args.get('--region') ?? 'sa').toLocaleLowerCase('en-US');
-  const locale = (args.get('--locale') ?? 'en').toLocaleLowerCase('en-US');
+  const region = (args.get('--region') ?? DEFAULT_REGION).toLocaleLowerCase('en-US');
+  const locale = dataLocaleForUi(args.get('--locale') ?? 'en');
   if (!inputDirectory || !version) {
     throw new Error(
       'Uso: pnpm --filter @bdo/api data:import -- --input <pasta> --version <fingerprint> [--region sa] [--locale en]',

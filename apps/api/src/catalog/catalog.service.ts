@@ -20,6 +20,7 @@ import type {
   CatalogRecipe,
   CatalogRecipesResponse,
 } from '@bdo/shared';
+import { CATALOG_FALLBACK_LOCALE, DEFAULT_DATA_LOCALE } from '@bdo/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 
@@ -32,7 +33,7 @@ export class CatalogService {
 
   async listItems(rawQuery: Record<string, unknown>): Promise<CatalogPage> {
     const query = parseCatalogQuery(rawQuery);
-    const dataset = await this.getActiveDataset(query.region, query.locale);
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset) {
       return {
         items: [],
@@ -113,7 +114,7 @@ export class CatalogService {
 
   async listCategories(rawQuery: Record<string, unknown>): Promise<CatalogCategoriesResponse> {
     const query = parseCatalogQuery(rawQuery, { pagination: false });
-    const dataset = await this.getActiveDataset(query.region, query.locale);
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset) return { categories: [], dataset: null };
 
     const rows = await this.database.db
@@ -150,7 +151,7 @@ export class CatalogService {
     if (!Number.isSafeInteger(itemId) || itemId < 1) {
       throw new NotFoundException('Item não encontrado.');
     }
-    const dataset = await this.getActiveDataset(query.region, query.locale);
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset) throw new NotFoundException('Não há catálogo ativo para esta região.');
 
     const [row] = await this.database.db
@@ -202,7 +203,7 @@ export class CatalogService {
     if (!Number.isSafeInteger(itemId) || itemId < 1) {
       throw new NotFoundException('Item não encontrado.');
     }
-    const dataset = await this.getActiveDataset(query.region, query.locale);
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset) return { recipes: [], total: 0, direction, dataset: null };
 
     const [itemVersion] = await this.database.db
@@ -383,7 +384,11 @@ export class CatalogService {
     return result;
   }
 
-  private async getActiveDataset(region: string, locale?: string) {
+  private async getActiveDataset(
+    region: string,
+    locale?: string,
+    preferredLocale = DEFAULT_DATA_LOCALE,
+  ) {
     const baseFilter = [
       eq(datasetVersions.source, 'bdo-data-extractor'),
       eq(datasetVersions.region, region),
@@ -395,7 +400,7 @@ export class CatalogService {
       .from(datasetVersions)
       .where(and(...baseFilter))
       .orderBy(
-        sql`case when ${datasetVersions.locale} = 'en' then 0 else 1 end`,
+        sql`case when ${datasetVersions.locale} = ${preferredLocale} then 0 when ${datasetVersions.locale} = ${CATALOG_FALLBACK_LOCALE} then 1 else 2 end`,
         desc(datasetVersions.finishedAt),
       )
       .limit(1);

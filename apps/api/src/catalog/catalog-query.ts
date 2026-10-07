@@ -1,3 +1,4 @@
+import { dataLocaleForUi, DEFAULT_DATA_LOCALE, DEFAULT_REGION } from '@bdo/shared';
 import { BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 
@@ -9,12 +10,17 @@ const querySchema = z.object({
     .string()
     .trim()
     .regex(/^[a-z0-9-]{2,12}$/i)
-    .default('sa'),
+    .default(DEFAULT_REGION),
   locale: z
     .string()
     .trim()
-    .regex(/^[a-z]{2,8}$/i)
+    .regex(/^[a-z]{2,8}(?:-[a-z0-9]{2,8})?$/i)
     .optional(),
+  preferredLocale: z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2,8}(?:-[a-z0-9]{2,8})?$/i)
+    .default(DEFAULT_DATA_LOCALE),
   page: z.coerce.number().int().min(1).max(100_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(48),
 });
@@ -25,6 +31,7 @@ export interface CatalogQuery {
   grade: string | undefined;
   region: string;
   locale: string | undefined;
+  preferredLocale: string;
   page: number;
   pageSize: number;
 }
@@ -47,7 +54,8 @@ export function parseCatalogQuery(
     categoryId: parsed.data.categoryId,
     grade: parsed.data.grade,
     region: parsed.data.region.toLocaleLowerCase('en-US'),
-    locale: parsed.data.locale?.toLocaleLowerCase('en-US'),
+    locale: parsed.data.locale ? dataLocaleForUi(parsed.data.locale) : undefined,
+    preferredLocale: dataLocaleForUi(parsed.data.preferredLocale),
     page: options.pagination === false ? 1 : parsed.data.page,
     pageSize: options.pagination === false ? 48 : parsed.data.pageSize,
   };

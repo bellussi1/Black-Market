@@ -46,6 +46,7 @@ export type ProviderItem = ReturnType<typeof normalizeArsha>[number];
 export interface MarketLookup {
   source: 'arsha';
   region: string;
+  locale: string;
   fetchedAt: string;
   cacheStatus: 'fetched' | 'cached' | 'stale';
   upstreamCacheMinutes: number;

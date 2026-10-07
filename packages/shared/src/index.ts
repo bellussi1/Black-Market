@@ -4,6 +4,8 @@ export interface DataProvenance {
   fetchedAt: string | null;
 }
 
+export * from './markets';
+
 export interface CursorPage<T> {
   items: T[];
   nextCursor: string | null;
@@ -92,6 +94,7 @@ export interface MarketItemQuote {
 export interface MarketLookupResponse {
   source: 'arsha';
   region: string;
+  locale: string;
   fetchedAt: string;
   cacheStatus: 'fetched' | 'cached' | 'stale';
   upstreamCacheMinutes: number;

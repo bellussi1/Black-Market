@@ -18,7 +18,18 @@ export class CatalogController {
   @ApiQuery({ name: 'categoryId', required: false })
   @ApiQuery({ name: 'grade', required: false })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
-  @ApiQuery({ name: 'locale', required: false, example: 'en' })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+    example: 'pt',
+    description: 'Idioma exato; sem fallback quando informado',
+  })
+  @ApiQuery({
+    name: 'preferredLocale',
+    required: false,
+    example: 'pt',
+    description: 'Preferência com fallback para o catálogo disponível na mesma região',
+  })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'pageSize', required: false, example: 48 })
   listItems(@Query() query: Record<string, unknown>) {
@@ -28,7 +39,18 @@ export class CatalogController {
   @Get('categories')
   @ApiOperation({ summary: 'Lista categorias do dataset ativo' })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
-  @ApiQuery({ name: 'locale', required: false, example: 'en' })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+    example: 'pt',
+    description: 'Idioma exato; sem fallback quando informado',
+  })
+  @ApiQuery({
+    name: 'preferredLocale',
+    required: false,
+    example: 'pt',
+    description: 'Preferência com fallback para o catálogo disponível na mesma região',
+  })
   listCategories(@Query() query: Record<string, unknown>) {
     return this.catalog.listCategories(query);
   }
@@ -37,7 +59,18 @@ export class CatalogController {
   @ApiOperation({ summary: 'Lista receitas que produzem ou usam um item' })
   @ApiQuery({ name: 'direction', required: false, enum: ['produces', 'uses'] })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
-  @ApiQuery({ name: 'locale', required: false, example: 'en' })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+    example: 'pt',
+    description: 'Idioma exato; sem fallback quando informado',
+  })
+  @ApiQuery({
+    name: 'preferredLocale',
+    required: false,
+    example: 'pt',
+    description: 'Preferência com fallback para o catálogo disponível na mesma região',
+  })
   getItemRecipes(
     @Param('id', ParseIntPipe) id: number,
     @Query() query: Record<string, unknown>,
@@ -49,7 +82,18 @@ export class CatalogController {
   @Get('items/:id')
   @ApiOperation({ summary: 'Retorna um item do dataset ativo' })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
-  @ApiQuery({ name: 'locale', required: false, example: 'en' })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+    example: 'pt',
+    description: 'Idioma exato; sem fallback quando informado',
+  })
+  @ApiQuery({
+    name: 'preferredLocale',
+    required: false,
+    example: 'pt',
+    description: 'Preferência com fallback para o catálogo disponível na mesma região',
+  })
   getItem(@Param('id', ParseIntPipe) id: number, @Query() query: Record<string, unknown>) {
     return this.catalog.getItem(id, query);
   }
