@@ -1,130 +1,96 @@
-<div class="page-shell">
-  <header class="topbar">
-    <a class="brand" href="/" aria-label="BDO Companion — início">
-      <span class="brand-mark" aria-hidden="true"><span></span></span>
-      <span class="brand-name">BDO <strong>COMPANION</strong></span>
-    </a>
-    <nav class="topnav" aria-label="Navegação principal">
-      <a class="active" routerLink="/">Visão geral</a>
-      <a routerLink="/database/items">Catálogo</a>
-      <a href="#ferramentas">Ferramentas</a>
-      <a href="#dados">Fontes de dados</a>
-    </nav>
-    <div class="region-select" aria-label="Região selecionada">
-      <span class="region-dot"></span> SA · América do Sul
-      <span class="chevron" aria-hidden="true">⌄</span>
+<div class="home-page">
+  <section class="home-hero">
+    <div>
+      <p class="tool-kicker">BLACK MARKET / BLACK DESERT ONLINE</p>
+      <h1>Planeje cada<br /><em>próximo passo.</em></h1>
+      <p class="hero-copy">
+        Sua oficina de decisões. Compare o valor de uma venda, prepare uma produção e entenda o
+        custo da próxima tentativa.
+      </p>
+      <div class="action-row">
+        <a class="btn" routerLink="/market">Calcular uma venda <span aria-hidden="true">↗</span></a
+        ><a class="btn subtle" routerLink="/crafting">Abrir oficina</a>
+      </div>
+      <p class="hero-foot">
+        Feito para o seu ritmo. Cenários e dados pessoais ficam neste navegador.
+      </p>
     </div>
-  </header>
-
-  <main id="inicio">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow"><span></span> CADERNO DE CAMPO · BLACK DESERT ONLINE</p>
-        <h1>Planeje cada<br /><em>próximo passo.</em></h1>
-        <p class="hero-intro">
-          Um espaço independente para explorar o mercado, calcular produção e entender sua
-          progressão — com fontes e premissas sempre à vista.
-        </p>
-        <a class="primary-link" routerLink="/database/items">
-          Explorar catálogo <span aria-hidden="true">↗</span>
-        </a>
-        <p class="disclaimer">Projeto comunitário, sem vínculo com a Pearl Abyss.</p>
+    <aside class="hero-note">
+      <span>UM CADERNO. MUITOS CAMINHOS.</span
+      ><svg viewBox="0 0 260 150" aria-hidden="true">
+        <path
+          d="M130 12 230 75 130 138 30 75Z M130 35 192 75 130 115 68 75Z M130 55 160 75 130 95 100 75Z"
+          fill="none"
+          stroke="#d6a577"
+          stroke-width="1"
+        />
+        <path d="M130 12V138M30 75H230" stroke="#d6a577" opacity=".3" />
+        <circle cx="130" cy="75" r="4" fill="#d6a577" /></svg
+      ><strong>A próxima decisão<br />começa com seus dados.</strong>
+      <p>
+        Informe preços, custos e chances. Guarde os cenários que importam e compare os resultados.
+      </p>
+    </aside>
+  </section>
+  <div class="home-stats">
+    @for (stat of counts(); track stat.label) {
+      <a [routerLink]="stat.path"
+        ><span>{{ stat.label }}</span
+        ><strong>{{ stat.value }}</strong
+        ><small>Abrir <span aria-hidden="true">↗</span></small></a
+      >
+    }
+  </div>
+  <section id="ferramentas">
+    <div class="home-section-head">
+      <div>
+        <p class="tool-kicker">ESCOLHA SUA FERRAMENTA</p>
+        <h2>Do mercado à próxima tentativa.</h2>
       </div>
-
-      <aside class="field-note" aria-label="Status do projeto">
-        <div class="note-head">
-          <span>ESTADO DO PROJETO</span><span class="phase">FASE 02</span>
-        </div>
-        <div class="note-map" aria-hidden="true">
-          <span class="contour contour-one"></span>
-          <span class="contour contour-two"></span>
-          <span class="contour contour-three"></span>
-          <span class="map-pin"><i></i></span>
-          <span class="coordinates">VELIA · 36°53′N</span>
-        </div>
-        <div class="note-status">
-          <span
-            class="status-light"
-            [class.online]="apiStatus() === 'online'"
-            [class.offline]="apiStatus() === 'offline'"
-          ></span>
-          <span aria-live="polite">{{ apiStatusLabel }}</span>
-        </div>
-        <p class="note-copy">
-          O catálogo já aceita extrações locais versionadas. Dados do mercado seguem uma coleta
-          separada.
-        </p>
-      </aside>
-    </section>
-
-    <section class="tool-section" id="ferramentas">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow"><span></span> NO MAPA</p>
-          <h2>Recursos do caderno</h2>
-        </div>
-        <span class="section-count">01 DISPONÍVEL · 02 EM PREPARAÇÃO</span>
-      </div>
-      <div class="tool-grid">
-        @for (tool of tools; track tool.index) {
-          <article class="tool-card">
-            <div class="tool-card-top">
-              <span class="tool-index">{{ tool.index }}</span>
-              <span class="tool-category">{{ tool.category }}</span>
-            </div>
-            <h3>{{ tool.title }}</h3>
-            <p>{{ tool.description }}</p>
-            <div class="tool-card-foot">
-              @if (tool.path) {
-                <a class="tool-launch" [routerLink]="tool.path">Abrir catálogo <span aria-hidden="true">↗</span></a>
-              } @else {
-                <span class="coming-soon"><i></i> Em preparação</span>
-                <span class="tool-arrow" aria-hidden="true">↗</span>
-              }
-            </div>
-          </article>
-        }
-      </div>
-    </section>
-
-    <section class="data-section" id="dados">
-      <div class="data-intro">
-        <p class="eyebrow"><span></span> PROCEDÊNCIA</p>
-        <h2>Dados claros.<br /><em>Decisões melhores.</em></h2>
-        <p>
-          Catálogo, preços e estimativas têm origens diferentes. Cada ferramenta vai mostrar a
-          fonte, a região e quando os dados foram atualizados.
-        </p>
-      </div>
-      <div class="source-list">
-        <div class="source-row">
-          <span class="source-number">A</span>
-          <div>
-            <strong>Dados do jogo</strong><small>Importação versionada do dataset extraído</small>
+      <span>09 ÁREAS DISPONÍVEIS</span>
+    </div>
+    <div class="home-tools">
+      @for (tool of tools; track tool.code) {
+        <a [routerLink]="tool.path" class="home-tool"
+          ><div>
+            <span>{{ tool.code }}</span
+            ><small>{{ tool.tag }}</small>
           </div>
-          <span class="source-state">A CONFIGURAR</span>
-        </div>
-        <div class="source-row">
-          <span class="source-number">B</span>
-          <div>
-            <strong>Mercado central</strong
-            ><small>Provedor comunitário; atualização periódica</small>
-          </div>
-          <span class="source-state">A CONFIGURAR</span>
-        </div>
-        <div class="source-row">
-          <span class="source-number">C</span>
-          <div>
-            <strong>BDO Workshop</strong><small>Referência de funcionalidades e fórmulas</small>
-          </div>
-          <span class="source-state reference">REFERÊNCIA</span>
-        </div>
+          <h3>{{ tool.title }}</h3>
+          <p>{{ tool.description }}</p>
+          <span class="tool-open">Abrir ferramenta <b aria-hidden="true">↗</b></span></a
+        >
+      }
+    </div>
+  </section>
+  <section id="dados" class="home-data">
+    <div>
+      <p class="tool-kicker">DE ONDE VEM CADA NÚMERO</p>
+      <h2>Premissas à vista.</h2>
+      <p>
+        As ferramentas já funcionam com suas informações. O catálogo do cliente e as cotações
+        automáticas serão conectados conforme as fontes estiverem disponíveis.
+      </p>
+    </div>
+    <dl>
+      <div>
+        <dt>Seus dados pessoais</dt>
+        <dd>
+          Preços, materiais, receitas e presets<br /><span
+            >Disponíveis agora · backup exportável</span
+          >
+        </dd>
       </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <span>BDO COMPANION <b>/</b> FERRAMENTAS INDEPENDENTES</span>
-    <span>SEM AFILIAÇÃO COM PEARL ABYSS</span>
-  </footer>
+      <div>
+        <dt>Catálogo do jogo</dt>
+        <dd>
+          Importação versionada do extractor<br /><span>Pronto para receber sua extração</span>
+        </dd>
+      </div>
+      <div>
+        <dt>Mercado automático</dt>
+        <dd>Coleta por uma fonte externa validada<br /><span>Integração pendente</span></dd>
+      </div>
+    </dl>
+  </section>
 </div>

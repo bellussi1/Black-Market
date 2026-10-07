@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal, effect, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type {
   CatalogCategory,
@@ -9,6 +9,7 @@ import type {
 } from '@bdo/shared';
 import { forkJoin, Subscription } from 'rxjs';
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { WorkspaceStore } from '../../core/workspace-store';
 
 @Component({
   selector: 'app-item-catalog-page',
@@ -19,6 +20,24 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 })
 export class ItemCatalogPage implements OnInit, OnDestroy {
   private readonly api = inject(CatalogApiService);
+  private readonly workspace = inject(WorkspaceStore);
+  private lastRegion = this.workspace.data().region;
+
+  constructor() {
+    effect(() => {
+      const region = this.workspace.data().region;
+      untracked(() => {
+        if (region === this.lastRegion) return;
+        this.lastRegion = region;
+        this.closeItem();
+        this.categoryId.set('');
+        this.categories.set([]);
+        this.page.set(1);
+        this.loadCategories();
+        this.loadItems();
+      });
+    });
+  }
   private itemsRequest?: Subscription;
   private categoriesRequest?: Subscription;
   private detailRequest?: Subscription;

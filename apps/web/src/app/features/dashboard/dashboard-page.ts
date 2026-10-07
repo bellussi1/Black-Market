@@ -1,63 +1,78 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { environment } from '../../../environments/environment';
-
-type ApiStatus = 'checking' | 'online' | 'offline';
-
-interface ReadinessResponse {
-  status: 'ok';
-  database: 'up';
-}
-
+import { RegionPreferences } from '../../core/region-preferences';
 @Component({
   selector: 'app-dashboard-page',
-  standalone: true,
   imports: [RouterLink],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.css',
 })
-export class DashboardPage implements OnInit {
-  private readonly http = inject(HttpClient);
-  readonly apiStatus = signal<ApiStatus>('checking');
-
+export class DashboardPage {
+  readonly preferences = inject(RegionPreferences);
+  readonly counts = this.preferences.counts;
   readonly tools = [
     {
-      index: '01',
-      title: 'Catálogo de itens',
-      description: 'Pesquise itens e categorias a partir de uma extração local do cliente.',
-      category: 'Dados do jogo',
+      code: '01',
+      title: 'Catálogo do jogo',
+      description: 'Itens, categorias e receitas importados da sua extração.',
       path: '/database/items',
+      tag: 'REFERÊNCIA',
     },
     {
-      index: '02',
+      code: '02',
+      title: 'Mercado e imposto',
+      description: 'Cotações pessoais, favoritos, histórico e prata líquida.',
+      path: '/market',
+      tag: 'PRATA',
+    },
+    {
+      code: '03',
       title: 'Oficina de produção',
-      description: 'Compare comprar materiais com produzir e vender.',
-      category: 'Crafting',
-      path: null,
+      description: 'Lucro de receitas, comprar ou produzir e cadeia de materiais.',
+      path: '/crafting',
+      tag: 'CRAFTING',
     },
     {
-      index: '03',
-      title: 'Progressão e enhancement',
-      description: 'Modele custos, tentativas e caminhos de equipamento.',
-      category: 'Progressão',
-      path: null,
+      code: '04',
+      title: 'Enhancement e FS',
+      description: 'Probabilidades, custos, pity e caminhos de failstack.',
+      path: '/enhancement',
+      tag: 'RISCO',
+    },
+    {
+      code: '05',
+      title: 'Progressão de gear',
+      description: 'Builds e upgrades comparados por custo de atributos.',
+      path: '/gear',
+      tag: 'PROGRESSÃO',
+    },
+    {
+      code: '06',
+      title: 'Life skills e treino',
+      description: 'Sessões, prata por hora, retorno de mastery e estimador de XP.',
+      path: '/lifeskills',
+      tag: 'RENDIMENTO',
+    },
+    {
+      code: '07',
+      title: 'Armazém e projetos',
+      description: 'Estoque por local e acompanhamento de materiais faltantes.',
+      path: '/storage',
+      tag: 'PLANEJAMENTO',
+    },
+    {
+      code: '08',
+      title: 'Caixas e Night Vendor',
+      description: 'Valor esperado de drops e ofertas com probabilidades próprias.',
+      path: '/rng',
+      tag: 'VALOR ESPERADO',
+    },
+    {
+      code: '09',
+      title: 'Buffs e combinações',
+      description: 'Biblioteca pessoal, grupos exclusivos, presets e timers.',
+      path: '/buffs',
+      tag: 'PREPARAÇÃO',
     },
   ];
-
-  ngOnInit(): void {
-    this.http.get<ReadinessResponse>(environment.apiBaseUrl + '/ready').subscribe({
-      next: (result) => this.apiStatus.set(result.status === 'ok' ? 'online' : 'offline'),
-      error: () => this.apiStatus.set('offline'),
-    });
-  }
-
-  get apiStatusLabel(): string {
-    const labels: Record<ApiStatus, string> = {
-      checking: 'Verificando API',
-      online: 'API e banco conectados',
-      offline: 'API ainda não conectada',
-    };
-    return labels[this.apiStatus()];
-  }
 }
