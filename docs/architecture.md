@@ -52,7 +52,15 @@ As regras completas de cada calculadora serão criadas junto com suas fontes ver
 
 1. Estrutura e ambiente: Angular, Nest, schema/migration, health checks, docs e CI. **Implementada nesta entrega.**
 2. Importação manual versionada de catálogo/receitas do extractor; busca e detalhes de item. **Implementada.**
-3. Integração do mercado após validar fornecedor, limites e termos; cache atual e histórico controlado.
-4. Calculadoras de crafting e enhancement com fixtures de referência, incluindo região, impostos, bônus e premissas.
+3. Mercado: consulta Arsha por ID com cache implementada. Coleta agendada e histórico global controlado permanecem no roadmap.
+4. Calculadoras manuais de mercado, crafting, enhancement, failstacks, RNG, atividade, treino e gear implementadas com testes. Tabelas específicas por item e regras automáticas dependem de datasets verificados.
 5. Contas e sincronização de preferências somente se houver necessidade; começar sem login.
 6. Mapas, planejamento e recursos adicionais conforme validação de uso.
+
+## Ferramentas pessoais e mercado sob demanda
+
+A entrega Black Market adiciona módulos calculators e market no NestJS e rotas Angular por ferramenta. O pacote calculators gera ESM para o browser e CommonJS para o backend; contém validação e regras reutilizadas nas duas plataformas. As ferramentas calculam localmente para resposta imediata e podem conferir o resultado pela API.
+
+O shell inicial carrega apenas navegação, região e contagens de metadados pessoais. A validação completa dos dados e as regras entram com as rotas de ferramenta, reduzindo o pacote inicial. RegionPreferences mantém a seleção regional; WorkspaceStore carrega e valida o backup local ao abrir uma ferramenta.
+
+Dados pessoais começam no navegador com backup versionado, sem login. O PostgreSQL continua persistindo o catálogo. MarketService consulta Arsha por ID, com cache em memória; não guarda histórico global nem cria jobs. A matriz de recursos implementados e pendentes está em feature-coverage.md.

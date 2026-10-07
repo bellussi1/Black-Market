@@ -2,7 +2,7 @@
 
 ## Implantação enxuta
 
-- **Frontend:** Cloudflare Pages para saída estática do Angular (`apps/web` como diretório base ou build no root com `pnpm --filter @bdo/web build`; publicar `apps/web/dist/web`). Usar domínio, TLS, cache de assets e regras de segurança na borda.
+- **Frontend:** Cloudflare Pages para saída estática do Angular (`apps/web` como diretório base ou build no root com `pnpm --filter @bdo/web build`; publicar `apps/web/dist/web/browser`). Usar domínio, TLS, cache de assets e regras de segurança na borda.
 - **API:** host Node/container compatível com NestJS 12 (o Dockerfile do repositório). Railway é uma opção simples de hobby, mas cobra uso e seu valor mínimo/limites mudam; comparar a página oficial de [preços Railway](https://railway.com/pricing) na data de deploy. Uma VPS pode custar menos em uso constante, com maior manutenção.
 - **PostgreSQL:** banco gerenciado no mesmo provedor/região da API reduz latência e egress. Railway oferece banco como serviço; alternativamente, PostgreSQL numa VPS ou serviço gerenciado. Não presumir que os planos gratuitos sejam persistentes, sem expiração ou adequados para produção.
 - **Cloudflare R2:** opcional; adicionar somente quando existir mídia própria com permissão de hospedagem. Não guardar arquivos de instalação do jogo.
@@ -14,7 +14,7 @@ O domínio e TLS podem ficar na Cloudflare, mas DNS/CDN/WAF não executam o Nest
 1. Criar API e PostgreSQL em uma região próxima; configurar TLS e pool pequeno.
 2. Definir `DATABASE_URL`, `PORT`, `WEB_ORIGIN` e `NODE_ENV=production` como variáveis secretas/configuração.
 3. Aplicar migrations versionadas antes de trocar tráfego; ter backup e plano de restore.
-4. Publicar `apps/web/dist/web` no Pages com fallback SPA para `index.html`.
+4. Publicar `apps/web/dist/web/browser` no Pages com fallback SPA para `index.html`.
 5. Configurar domínio/API CORS para domínio final, health check `/ready`, rate limits e logs sem segredos.
 6. Validar rollback da aplicação e restauração do banco antes de carga real.
 

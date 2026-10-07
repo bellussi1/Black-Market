@@ -1,6 +1,6 @@
-# BDO Companion
+# Black Market
 
-Projeto pessoal e independente de ferramentas para Black Desert Online. O monólito modular usa Angular 22, API REST em NestJS 12 e PostgreSQL com Drizzle ORM. Já inclui catálogo pesquisável de itens, categorias e receitas, com importação local versionada do extractor. Mercado, crafting com custos e calculadoras avançadas seguem no roadmap.
+Projeto pessoal e independente para Black Desert Online. Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Já inclui ferramentas de mercado e imposto, crafting e cadeias de materiais, enhancement e failstacks, gear, sessões de life skill, projetos, RNG boxes e buffs. Funcionam com entradas do usuário enquanto o catálogo do jogo não é importado.
 
 Não há afiliação com a Pearl Abyss. O projeto não usa endpoints internos do BDOLytics ou do BDO Workshop. Os dois sites são referências de produto documentadas em [pesquisa de funcionalidades](docs/product-research.md).
 
@@ -38,21 +38,37 @@ pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version 
 
 Use um rótulo novo em `--version` quando o conteúdo mudar. O importador calcula um checksum, valida referências e troca o catálogo ativo numa transação; os arquivos extraídos não são incluídos no repositório. O extractor lista nomes localizados em inglês, alemão, francês e espanhol; a interface permanece em português.
 
-Para subir PostgreSQL, migration e API como containers (em vez de executar a API no host), use `docker compose up --build`. O Angular segue em `pnpm dev:web`.
+Para subir também o Angular com o Node fixado no Docker, use `docker compose --profile web up --build -d`. Abra `http://localhost:4200`. O volume existente do PostgreSQL é preservado; o nome físico do banco continua `bdo_companion` por compatibilidade.
+
+## Ferramentas disponíveis sem o jogo
+
+| Rota         | Recurso                                                                           |
+| ------------ | --------------------------------------------------------------------------------- |
+| /market      | Consulta Arsha por ID, imposto, cotações, favoritos e histórico pessoal           |
+| /crafting    | Lucro de receita, presets e cadeias recursivas de materiais                       |
+| /enhancement | Chance/custo por horizonte, pity configurável, failstack e registro de tentativas |
+| /gear        | Builds e comparação de alternativas de upgrade                                    |
+| /lifeskills  | Sessões, prata/hora/energia, payback de mastery e estimador de XP                 |
+| /storage     | Estoque por local/região, metas, CSV e projetos de materiais                      |
+| /rng         | Valor esperado de caixas/ofertas de Night Vendor com chances próprias             |
+| /buffs       | Biblioteca pessoal, grupos exclusivos, combinações e timers                       |
+| /settings    | Exportação/importação validada do backup pessoal                                  |
+
+Dados pessoais e presets são locais ao navegador; não há login/sincronização nessa versão. Cálculos usam o mesmo pacote de regras no frontend e backend. A [matriz de cobertura](docs/feature-coverage.md) descreve premissas, limites e recursos ainda dependentes de datasets. Não há fórmulas ou preços fictícios de equipamentos.
 
 ## Comandos
 
-| Comando                         | Uso                                         |
-| ------------------------------- | ------------------------------------------- |
-| `pnpm dev:web` / `pnpm dev:api` | Angular e Nest em desenvolvimento           |
-| `pnpm lint` / `pnpm typecheck`  | Qualidade estática                          |
-| `pnpm test`                     | Testes unitários                            |
-| `pnpm build`                    | Build de API e frontend                     |
-| `pnpm db:generate`              | Gerar migration Drizzle após alterar schema |
-| `pnpm db:migrate`               | Aplicar migrations versionadas              |
-| `pnpm db:check`                 | Validar journal e migrations Drizzle        |
-| `docker compose up -d postgres` | Iniciar PostgreSQL local                    |
-| `pnpm --filter @bdo/api data:import -- --input <pasta> --version <versão>` | Importar catálogo local |
+| Comando                                                                    | Uso                                         |
+| -------------------------------------------------------------------------- | ------------------------------------------- |
+| `pnpm dev:web` / `pnpm dev:api`                                            | Angular e Nest em desenvolvimento           |
+| `pnpm lint` / `pnpm typecheck`                                             | Qualidade estática                          |
+| `pnpm test`                                                                | Testes unitários                            |
+| `pnpm build`                                                               | Build de API e frontend                     |
+| `pnpm db:generate`                                                         | Gerar migration Drizzle após alterar schema |
+| `pnpm db:migrate`                                                          | Aplicar migrations versionadas              |
+| `pnpm db:check`                                                            | Validar journal e migrations Drizzle        |
+| `docker compose up -d postgres`                                            | Iniciar PostgreSQL local                    |
+| `pnpm --filter @bdo/api data:import -- --input <pasta> --version <versão>` | Importar catálogo local                     |
 
 ## Estrutura
 
@@ -72,7 +88,7 @@ O sistema começa como monólito modular. A SPA é estática e pode ir para Clou
 
 O catálogo e as receitas são importados manualmente de arquivos gerados localmente pelo [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), depois de verificar licença e termos aplicáveis. Isso não oferece atualização automática a cada patch: o pipeline deve executar novamente quando houver nova versão relevante do jogo e publicar um dataset versionado de forma atômica.
 
-Não foi confirmada uma API pública oficial da Pearl Abyss para o mercado. O endpoint comunitário de Arsha observado é uma possibilidade de integração a validar, não uma dependência garantida. Consulte [pipeline e procedência](docs/data-pipeline.md). Até existir uma fonte testada e autorizada, o produto não exibe preços simulados.
+A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU através do NestJS, com cache, timeout, validação e controle de chamadas. O Arsha não é uma API oficial da Pearl Abyss nem um feed de tempo real. Cotações podem ser guardadas no caderno pessoal com origem e horário. Consulte [pipeline e procedência](docs/data-pipeline.md).
 
 ## Documentação
 
@@ -81,6 +97,7 @@ Não foi confirmada uma API pública oficial da Pearl Abyss para o mercado. O en
 - [Banco de dados](docs/database.md)
 - [API REST](docs/api.md)
 - [Pipeline e fontes](docs/data-pipeline.md)
+- [Funcionalidades e cobertura](docs/feature-coverage.md)
 - [Calculadoras](docs/calculators.md)
 - [Desenvolvimento](docs/development.md)
 - [Deploy e custos](docs/deployment.md)
