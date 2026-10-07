@@ -31,7 +31,27 @@ erDiagram
 - `market_current_prices`: último valor conhecido por região e item.
 - `market_price_points`: observações históricas indexadas por região/item/tempo e protegidas contra duplicação.
 
-Valores de preço e quantidade usam `numeric`, para evitar arredondamento de `float`. Instantes são `timestamptz`. Usuários, contas externas, favoritos e storage ainda não foram criados: o MVP não deve exigir login. Quando necessário, projetar uma tabela `users` com ID interno e provedor de identidade, sem armazenar senha de terceiros.
+Valores de preço e quantidade usam `numeric`, para evitar arredondamento de `float`. Instantes são `timestamptz`. Usuários, contas externas e estoque pessoal persistente ainda não foram criados. No produto público, consultas gratuitas não exigem login; perfil sincronizado e uploads privados exigem uma conta. Usar ID interno e provedor de identidade, sem armazenar credenciais do jogo.
+
+## Evolução para perfil, scans e recomendações
+
+Modelo proposto; tabelas ainda não implementadas:
+
+| Entidade                      | Responsabilidade                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| Usuário/identidades/sessões   | Dono dos dados e autenticação da plataforma                                                       |
+| Perfil/versões                | Região, prata, preferências, personagens, maestria por atividade, gear e buffs relevantes         |
+| Locais e snapshots de estoque | Armazém/inventário, proprietário, slots e quantidades confirmadas, momento e origem               |
+| Movimentações/reservas        | Histórico de alterações, controle de concorrência e materiais alocados a planos                   |
+| Scans/objetos/jobs            | Imagem privada, hash, expiração, tipo de tela, status, lease/retries e provedor de reconhecimento |
+| Rascunhos de scan             | Candidatos de item/quantidade, posição, incerteza e correções antes da confirmação                |
+| Sessões observadas            | Atividade/rota, duração, drops, custos, maestria/buffs e origem do relato                         |
+| Modelos de rendimento         | Fonte, versão, região, faixa de maestria, premissas e cobertura                                   |
+| Recomendações/planos          | Snapshot do perfil, versões das regras/catálogo, preços usados, passos e explicação               |
+
+Dados pessoais recebem `user_id` obrigatório e índices por dono/região/local. Relações não devem permitir associar registros de usuários diferentes. O servidor deriva o dono da sessão e aplica o filtro em toda operação. Uma confirmação de scan substitui somente os slots observados ou registra uma movimentação explícita; não zera o restante de um print parcial. Aplicação e jobs são idempotentes.
+
+Não armazenar imagens como base64 no PostgreSQL. Guardar chave privada de objeto, metadados e expiração; exclusão deve alcançar objeto e registro. Armazenar um snapshot de recomendação permite explicar resultados mesmo após preços ou perfil mudarem. Ver [visão do produto](product-vision.md).
 
 ## Publicação atômica de dataset
 

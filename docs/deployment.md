@@ -23,3 +23,15 @@ O catálogo local tem ícones versionados em `data/assets/<checksum>`. Essa past
 ## Controle de despesa
 
 Para a primeira validação, desenvolvimento local custa zero de hospedagem. Para uma demonstração pública, começar com os menores recursos pagos que garantam persistência; preço baixo nominal pode ter franquia, pausa, expiração e cobrança por uso. Limitar histórico de preços, backups e logs; alertas de gasto e limites de conexão devem ser configurados no provedor. Reavaliar antes de ativar coleta frequente ou login. Não prometer um custo mensal fixo sem região, tráfego, retenção e plano escolhidos.
+
+## Destino público do Black Market
+
+A execução local é o ambiente de desenvolvimento. O objetivo é disponibilizar consultas gratuitas e planejamento pessoal em produção. O pipeline do mantenedor publica catálogo e receitas no PostgreSQL de produção, e ícones versionados em um armazenamento de assets com CDN. Visitantes não instalam o extractor. Manter esses arquivos fora do Git não impede sua publicação por jobs próprios, observados os termos das fontes.
+
+Para prints: bucket privado separado, acesso autorizado de curta duração, quotas/tamanho efetivo, worker de processamento e expiração. Conta sincronizada, isolamento de dados e exclusão precisam estar prontos antes de abrir uploads. Proposta inicial de retenção: até sete dias, com exclusão antecipada após confirmação.
+
+Começar com a mesma imagem Docker para API e comando de worker, escalando cada processo separadamente. Uma fila durável em PostgreSQL atende a primeira fase; Redis não é requisito inicial. Não executar OCR pesado na requisição HTTP nem na instância que serve páginas sem limite de recursos.
+
+O [R2 Standard](https://developers.cloudflare.com/r2/pricing/) oferece mensalmente 10 GB-mês de armazenamento, 1 milhão de operações de classe A e 10 milhões de classe B na franquia gratuita. Saída direta de dados não tem cobrança de transferência; operações/armazenamento excedentes e serviços associados podem ser cobrados. Franquia de R2 não cobre o custo de API, PostgreSQL ou OCR.
+
+Nenhum serviço de nuvem foi criado nesta entrega. Domínio, provedor/região, orçamento e identidade precisam de configuração real antes do deploy. A ordem funcional está em [visão do produto](product-vision.md).
