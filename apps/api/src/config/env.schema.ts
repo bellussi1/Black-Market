@@ -5,6 +5,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   DATABASE_URL: z.string().url(),
   WEB_ORIGIN: z.string().url().default('http://localhost:4200'),
+  CATALOG_ASSETS_DIR: z.string().min(1).optional(),
   MARKET_PROVIDER_ENABLED: z
     .enum(['true', 'false'])
     .default('true')

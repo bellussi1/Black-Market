@@ -6,6 +6,7 @@ import { dataLocaleForUi, DEFAULT_REGION } from '@bdo/shared';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from '../app.module';
+import { publishCatalogAssets } from './catalog-assets';
 import { CatalogImporterService } from './catalog-importer.service';
 import { readExtractorDataset } from './extractor-dataset';
 
@@ -20,14 +21,15 @@ function parseArgs(argv: string[]): Map<string, string> {
     options.set(key, value);
     index += 1;
   }
-  const allowed = new Set(['--input', '--version', '--region', '--locale']);
+  const allowed = new Set(['--input', '--version', '--region', '--locale', '--assets']);
   const unknown = [...options.keys()].find((key) => !allowed.has(key));
   if (unknown) throw new Error(`Opção desconhecida: ${unknown}`);
   return options;
 }
 
 async function run(): Promise<void> {
-  const args = parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const args = parseArgs(argv[0] === '--' ? argv.slice(1) : argv);
   const inputDirectory = args.get('--input');
   const version = args.get('--version');
   const region = (args.get('--region') ?? DEFAULT_REGION).toLocaleLowerCase('en-US');
@@ -42,6 +44,14 @@ async function run(): Promise<void> {
   if (!/^[a-z]{2,8}$/i.test(locale)) throw new Error('--locale inválido.');
 
   const dataset = await readExtractorDataset(resolve(inputDirectory));
+  const assetsDirectory = args.get('--assets');
+  const assets = assetsDirectory
+    ? await publishCatalogAssets(
+        resolve(inputDirectory),
+        resolve(assetsDirectory),
+        dataset.checksum,
+      )
+    : null;
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: false,
   });
@@ -52,7 +62,7 @@ async function run(): Promise<void> {
       region,
       locale,
     });
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({ ...result, assets }, null, 2)}\n`);
   } finally {
     await app.close();
   }

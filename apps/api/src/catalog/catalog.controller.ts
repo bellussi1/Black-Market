@@ -1,12 +1,43 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Param,
+  ParseIntPipe,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { CatalogService } from './catalog.service';
+import { CatalogAssetsService } from './catalog-assets.service';
 
 @ApiTags('Catálogo')
 @Controller()
 export class CatalogController {
-  constructor(private readonly catalog: CatalogService) {}
+  constructor(
+    private readonly catalog: CatalogService,
+    private readonly assets: CatalogAssetsService,
+  ) {}
+
+  @Get('items/:id/icon')
+  @Header('Cache-Control', 'public, max-age=31536000, immutable')
+  @Header('X-Content-Type-Options', 'nosniff')
+  @ApiOperation({
+    summary: 'Retorna o ícone local de um item, versionado pelo checksum do catálogo',
+  })
+  @ApiQuery({ name: 'dataset', required: true })
+  async getIcon(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('dataset') checksum: string | undefined,
+  ) {
+    const bytes = await this.assets.getIcon(id, checksum);
+    return new StreamableFile(bytes, {
+      type: 'image/webp',
+      length: bytes.length,
+      disposition: 'inline',
+    });
+  }
 
   @Get('items')
   @ApiOperation({ summary: 'Lista e busca itens do dataset ativo' })

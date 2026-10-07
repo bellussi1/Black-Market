@@ -37,9 +37,12 @@ services:
       PORT: 3000
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4200}
       MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
+      CATALOG_ASSETS_DIR: /workspace/data/assets
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     ports:
       - '3000:3000'
+    volumes:
+      - ./data/assets:/workspace/data/assets:ro
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -67,6 +70,20 @@ services:
       - ./apps/web/src:/workspace/apps/web/src:ro
       - ./packages/calculators/src:/workspace/packages/calculators/src:ro
       - ./packages/shared/src:/workspace/packages/shared/src:ro
+
+  import:
+    profiles: ['data']
+    image: black-market-api:local
+    build: .
+    command: ['node', 'apps/api/dist/catalog/import-game-data.js']
+    environment:
+      DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
+    volumes:
+      - ./data/extracted:/workspace/data/extracted:ro
+      - ./data/assets:/workspace/data/assets
+    depends_on:
+      postgres:
+        condition: service_healthy
 volumes:
   postgres_data:
     name: ${POSTGRES_DATA_VOLUME:-black-market-postgres-data}
