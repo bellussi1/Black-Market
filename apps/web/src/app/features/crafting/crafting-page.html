@@ -1,0 +1,355 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">03 / CRAFTING WORKSHOP</p>
+    <h1>Produzir, comprar, planejar.</h1>
+    <p>
+      Compare custos reais, defina rendimentos e transforme receitas em uma lista de materiais
+      integrada ao seu armazém.
+    </p>
+  </header>
+  <div class="tabs" aria-label="Modos da oficina">
+    <button
+      type="button"
+      [class.active]="tab() === 'profit'"
+      [attr.aria-pressed]="tab() === 'profit'"
+      (click)="tab.set('profit')"
+    >
+      Lucro da receita</button
+    ><button
+      type="button"
+      [class.active]="tab() === 'chain'"
+      [attr.aria-pressed]="tab() === 'chain'"
+      (click)="tab.set('chain')"
+    >
+      Cadeia de materiais
+    </button>
+  </div>
+  @if (tab() === 'profit') {
+    <div class="work-grid">
+      <section class="panel">
+        <h2>Seu cenário de produção</h2>
+        <div class="form-grid">
+          <label class="field"
+            >Número de crafts<input
+              type="number"
+              min="1"
+              [ngModel]="form().crafts"
+              (ngModelChange)="patch({ crafts: $event })" /></label
+          ><label class="field"
+            >Rendimento médio por craft<input
+              type="number"
+              min="0.001"
+              step="0.001"
+              [ngModel]="form().yield"
+              (ngModelChange)="patch({ yield: $event })" /></label
+          ><label class="field"
+            >Preço de venda unitário<input
+              inputmode="numeric"
+              [ngModel]="form().salePrice"
+              (ngModelChange)="patch({ salePrice: $event })" /></label
+          ><label class="field"
+            >Outros custos do lote<input
+              inputmode="numeric"
+              [ngModel]="form().extraCost"
+              (ngModelChange)="patch({ extraCost: $event })" /></label
+          ><label class="field"
+            >Tempo do lote (minutos)<input
+              type="number"
+              min="0.001"
+              step="0.001"
+              [ngModel]="form().minutes"
+              (ngModelChange)="patch({ minutes: $event })"
+          /></label>
+        </div>
+        <h3>Ingredientes e preço de oportunidade</h3>
+        @for (ing of form().ingredients; track $index; let k = $index) {
+          <div class="row-editor">
+            <div class="form-grid">
+              <label class="field"
+                >Ingrediente<input
+                  maxlength="140"
+                  [ngModel]="ing.name"
+                  (ngModelChange)="ingredient(k, { name: $event })" /></label
+              ><label class="field"
+                >Quantidade por craft<input
+                  type="number"
+                  step="0.001"
+                  min="0.001"
+                  [ngModel]="ing.quantity"
+                  (ngModelChange)="ingredient(k, { quantity: $event })" /></label
+              ><label class="field"
+                >Preço unitário<input
+                  inputmode="numeric"
+                  [ngModel]="ing.price"
+                  (ngModelChange)="ingredient(k, { price: $event })" /></label
+              ><label class="field"
+                >Quantidade no armazém<input
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  [ngModel]="ing.owned"
+                  (ngModelChange)="ingredient(k, { owned: $event })"
+              /></label>
+            </div>
+            <div class="action-row">
+              <button type="button" class="btn subtle" (click)="fillStock(k)">
+                Usar armazém e cotação</button
+              ><button class="btn danger" type="button" (click)="removeIngredient(k)">
+                Remover
+              </button>
+            </div>
+          </div>
+        }
+        <div class="action-row">
+          <button class="btn subtle" type="button" (click)="addIngredient()">
+            Adicionar ingrediente
+          </button>
+        </div>
+        <app-tax-options [value]="form()" (changed)="patch($event)" /><app-preset-bar
+          tool="crafting"
+          [value]="form()"
+          (loaded)="load($event)"
+        /><app-calculation-proof tool="crafting" [value]="form()" />
+      </section>
+      <section>
+        @if (result().value; as r) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span>Lucro econômico do lote</span
+              ><strong [class.negative]="r.profit.startsWith('-')">{{ silver(r.profit) }}</strong
+              ><small>Materiais em estoque também têm valor.</small>
+            </div>
+            <div class="metric">
+              <span>Prata nova necessária</span><strong>{{ silver(r.cashCost) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Custo econômico</span><strong>{{ silver(r.economicCost) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Receita líquida</span><strong>{{ silver(r.net) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Lucro por hora</span><strong>{{ silver(r.profitPerHour) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Saída esperada</span><strong>{{ number(r.output, 3) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Margem sobre receita</span><strong>{{ number(r.marginPercent) }}%</strong>
+            </div>
+            <div class="metric">
+              <span>Custo por produto</span><strong>{{ silver(r.costPerOutput) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Venda mínima para empatar</span><strong>{{ silver(r.breakEvenPrice) }}</strong>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Materiais do lote</h2>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Necessário</th>
+                    <th>Falta</th>
+                    <th>Comprar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of r.rows; track $index) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td>{{ number(row.needed, 3) }}</td>
+                      <td>{{ number(row.missing, 3) }}</td>
+                      <td>{{ silver(row.cashCost) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else {
+          <div class="error-box" role="alert">{{ result().error }}</div>
+        }
+        <p class="notice">
+          Rendimento médio é uma premissa sua, incluindo mastery e procs observados. O resultado não
+          incorpora subprodutos ou receitas alternativas automaticamente.
+        </p>
+      </section>
+    </div>
+  } @else {
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Biblioteca de receitas manuais</h2>
+        <span class="badge">{{ store.data().recipes.length }} RECEITAS</span>
+      </div>
+      <div class="form-grid">
+        <label class="field"
+          >Produto da receita<input
+            maxlength="140"
+            placeholder="Nome do produto"
+            [(ngModel)]="draft.name" /></label
+        ><label class="field"
+          >Unidades por craft (inteiro)<input type="number" min="1" [(ngModel)]="draft.yield"
+        /></label>
+      </div>
+      @for (ing of draft.ingredients; track $index; let k = $index) {
+        <div class="row-editor">
+          <div class="form-grid">
+            <label class="field"
+              >Ingrediente<input
+                maxlength="140"
+                [(ngModel)]="ing.name"
+                [readonly]="!!ing.recipeId" /></label
+            ><label class="field"
+              >Quantidade por craft<input type="number" min="1" [(ngModel)]="ing.quantity" /></label
+            ><label class="field"
+              >Modo<select [ngModel]="ing.recipeId" (ngModelChange)="linkIngredient(k, $event)">
+                <option [ngValue]="null">Comprar / usar estoque</option>
+                @for (recipe of store.data().recipes; track recipe.id) {
+                  @if (recipe.id !== draft.id) {
+                    <option [value]="recipe.id">Produzir: {{ recipe.name }}</option>
+                  }
+                }
+              </select></label
+            ><label class="field"
+              >Preço de compra<input
+                inputmode="numeric"
+                [(ngModel)]="ing.price"
+                [disabled]="!!ing.recipeId"
+            /></label>
+          </div>
+          <div class="action-row">
+            <button class="btn danger" type="button" (click)="removeDraftIngredient(k)">
+              Remover ingrediente
+            </button>
+          </div>
+        </div>
+      }
+      <div class="action-row">
+        <button class="btn subtle" type="button" (click)="addDraftIngredient()">
+          Adicionar ingrediente</button
+        ><button class="btn" type="button" (click)="saveRecipe()">Salvar receita</button
+        ><button class="btn subtle" type="button" (click)="draft = newRecipe()">
+          Nova receita
+        </button>
+      </div>
+      @if (error()) {
+        <p class="error-box" role="alert">{{ error() }}</p>
+      }
+      @if (store.data().recipes.length) {
+        <div class="table-wrap" style="margin-top: 24px">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Rendimento</th>
+                <th>Ingredientes</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (recipe of store.data().recipes; track recipe.id) {
+                <tr>
+                  <td>{{ recipe.name }}</td>
+                  <td>{{ recipe.yield }}</td>
+                  <td>{{ recipe.ingredients.length }}</td>
+                  <td>
+                    <button class="btn subtle" type="button" (click)="editRecipe(recipe)">
+                      Editar
+                    </button>
+                    <button class="btn danger" type="button" (click)="removeRecipe(recipe.id)">
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+    <section class="panel">
+      <h2>Plano de produção</h2>
+      <div class="form-grid">
+        <label class="field"
+          >Receita alvo<select [ngModel]="target()" (ngModelChange)="target.set($event)">
+            <option value="">Escolher receita</option>
+            @for (recipe of store.data().recipes; track recipe.id) {
+              <option [value]="recipe.id">{{ recipe.name }}</option>
+            }
+          </select></label
+        ><label class="field"
+          >Quantidade desejada<input
+            type="number"
+            min="1"
+            [ngModel]="quantity()"
+            (ngModelChange)="quantity.set($event)"
+        /></label>
+      </div>
+      <p class="help">
+        Usa estoque por nome de item em todos os armazéns. Excedentes produzidos são reutilizados
+        entre ramos. O plano mostra necessidades e mantém seu inventário intacto até você
+        atualizá-lo após produzir.
+      </p>
+      @if (target()) {
+        @if (plan().value; as p) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span>Comprar materiais faltantes</span><strong>{{ silver(p.cost) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Produto alvo</span><strong>{{ p.target }}</strong>
+            </div>
+            <div class="metric">
+              <span>Quantidade</span><strong>{{ number(p.quantity, 0) }}</strong>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Demanda</th>
+                  <th>Estoque usado</th>
+                  <th>Excedente usado</th>
+                  <th>Produzir</th>
+                  <th>Comprar</th>
+                  <th>Custo</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of p.rows; track row.name) {
+                  <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ number(row.required, 0) }}</td>
+                    <td>{{ number(row.fromStock, 0) }}</td>
+                    <td>{{ number(row.fromSurplus, 0) }}</td>
+                    <td>{{ number(row.produced, 0) }}</td>
+                    <td>{{ number(row.purchased, 0) }}</td>
+                    <td>{{ silver(row.cost) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <h3>Execução — dependências primeiro</h3>
+          @for (task of p.tasks; track task.id) {
+            <p class="help">
+              {{ task.name }} · {{ number(task.crafts, 0) }} crafts ·
+              {{ number(task.produced, 0) }} unidades
+            </p>
+          }
+          <app-calculation-proof tool="production" [value]="productionInput()" />
+        } @else {
+          <p class="error-box" role="alert">{{ plan().error }}</p>
+        }
+      } @else {
+        <div class="empty">
+          <strong>Monte sua primeira cadeia.</strong>Salve uma receita e escolha o produto alvo.
+        </div>
+      }
+    </section>
+  }
+</div>
