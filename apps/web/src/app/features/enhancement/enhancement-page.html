@@ -1,0 +1,364 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">04 / ENHANCEMENT WORKSHOP</p>
+    <h1>Entenda o risco antes de tentar.</h1>
+    <p>
+      Modele tentativas, pity e custo de failstacks com chances e materiais informados por você.
+      Salve cenários para comparar depois.
+    </p>
+  </header>
+  <div class="tabs">
+    <button
+      type="button"
+      [class.active]="tab() === 'cost'"
+      [attr.aria-pressed]="tab() === 'cost'"
+      (click)="tab.set('cost')"
+    >
+      Custo e probabilidade</button
+    ><button
+      type="button"
+      [class.active]="tab() === 'stack'"
+      [attr.aria-pressed]="tab() === 'stack'"
+      (click)="tab.set('stack')"
+    >
+      Custo de failstack</button
+    ><button
+      type="button"
+      [class.active]="tab() === 'log'"
+      [attr.aria-pressed]="tab() === 'log'"
+      (click)="tab.set('log')"
+    >
+      Meus resultados
+    </button>
+  </div>
+  @if (tab() === 'cost') {
+    <div class="notice">
+      Modelo para tentativas que mantêm o mesmo equipamento e nível após falhar. Informe custos de
+      crons/proteção no custo da tentativa. Destruição e downgrade exigem outro modelo. As chances
+      não são uma tabela oficial de itens.
+    </div>
+    <div class="work-grid">
+      <section class="panel">
+        <h2>Premissas da tentativa</h2>
+        <div class="form-grid">
+          <label class="field"
+            >Chance inicial (%)<input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              [ngModel]="form().chance"
+              (ngModelChange)="patch({ chance: $event })"
+            /><small>Copie a chance exibida no jogo.</small></label
+          >
+          <label class="field"
+            >Aumento por falha (pontos percentuais)<input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              [ngModel]="form().increase"
+              (ngModelChange)="patch({ increase: $event })"
+          /></label>
+          <label class="field"
+            >Teto de chance (%)<input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              [ngModel]="form().cap"
+              (ngModelChange)="patch({ cap: $event })"
+          /></label>
+          <label class="field"
+            >Limite de tentativas do cenário<input
+              type="number"
+              min="1"
+              max="2000"
+              [ngModel]="form().limit"
+              (ngModelChange)="patch({ limit: $event })"
+          /></label>
+          <label class="field"
+            >Pity: total de falhas necessário<input
+              type="number"
+              min="0"
+              max="2000"
+              [ngModel]="form().pity"
+              (ngModelChange)="patch({ pity: $event })"
+            /><small>Zero desativa. A tentativa seguinte ao limite é garantida.</small></label
+          >
+          <label class="field"
+            >Essência já acumulada<input
+              type="number"
+              min="0"
+              [ngModel]="form().currentPity"
+              (ngModelChange)="patch({ currentPity: $event })"
+          /></label>
+          <label class="field"
+            >Materiais + crons por tentativa<input
+              inputmode="numeric"
+              [ngModel]="form().attemptCost"
+              (ngModelChange)="patch({ attemptCost: $event })"
+          /></label>
+          <label class="field"
+            >Reparo / perdas após uma falha<input
+              inputmode="numeric"
+              [ngModel]="form().failureCost"
+              (ngModelChange)="patch({ failureCost: $event })"
+          /></label>
+          <label class="field"
+            >Custo da tentativa garantida<input
+              inputmode="numeric"
+              [ngModel]="form().guaranteedCost"
+              (ngModelChange)="patch({ guaranteedCost: $event })"
+            /><small>Informe os materiais realmente consumidos no pity.</small></label
+          >
+          <label class="field"
+            >Custo inicial alocado ao stack<input
+              inputmode="numeric"
+              [ngModel]="form().stackCost"
+              (ngModelChange)="patch({ stackCost: $event })"
+          /></label>
+          <label class="field"
+            >Preço de comprar pronto<input
+              inputmode="numeric"
+              [ngModel]="form().buyPrice"
+              (ngModelChange)="patch({ buyPrice: $event })"
+          /></label>
+        </div>
+        <app-preset-bar
+          tool="enhancement"
+          [value]="form()"
+          (loaded)="load($event)"
+        /><app-calculation-proof tool="enhancement" [value]="form()" />
+      </section>
+      <section>
+        @if (result().value; as r) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span>Sucesso até {{ r.horizon }} tentativas</span
+              ><strong>{{ number(r.successPercent, 3) }}%</strong
+              ><small>Probabilidade restante de falhar: {{ number(r.failurePercent, 3) }}%</small>
+            </div>
+            <div class="metric">
+              <span>Gasto médio até esse limite</span><strong>{{ silver(r.expectedSpend) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Tentativas usadas em média</span
+              ><strong>{{ number(r.expectedAttempts, 3) }}</strong>
+            </div>
+            <div class="metric">
+              <span>50% de sucesso até</span><strong>{{ r.median ?? 'Fora do limite' }}</strong>
+            </div>
+            <div class="metric">
+              <span>90% de sucesso até</span><strong>{{ r.p90 ?? 'Fora do limite' }}</strong>
+            </div>
+            <div class="metric">
+              <span>95% de sucesso até</span><strong>{{ r.p95 ?? 'Fora do limite' }}</strong>
+            </div>
+            <div class="metric">
+              <span>Tentativa garantida</span
+              ><strong>{{ r.guaranteedAttempt ?? 'Sem pity' }}</strong>
+            </div>
+          </div>
+          <section class="panel">
+            <h2>Probabilidade acumulada</h2>
+            <svg
+              class="chart"
+              viewBox="0 0 1000 160"
+              preserveAspectRatio="none"
+              role="img"
+              aria-label="Chance acumulada de sucesso por número de tentativas"
+            >
+              <polyline
+                [attr.points]="points()"
+                fill="none"
+                stroke="#d6a577"
+                stroke-width="3"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Tentativa</th>
+                    <th>Chance da tentativa</th>
+                    <th>Sucesso acumulado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of landmarks; track row.attempt) {
+                    <tr>
+                      <td>{{ row.attempt }}</td>
+                      <td>{{ number(row.chance) }}%</td>
+                      <td>{{ number(row.successByNow, 3) }}%</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <p class="notice">
+            O gasto esperado inclui cenários que acabam sem sucesso no limite escolhido. Comparar
+            esse gasto com {{ silver(form().buyPrice) }} de compra não garante aquisição por esse
+            valor.
+          </p>
+        } @else {
+          <p class="error-box" role="alert">{{ result().error }}</p>
+        }
+      </section>
+    </div>
+  } @else if (tab() === 'stack') {
+    <div class="notice">
+      Uma rodada começa no stack-base e precisa falhar em todas as etapas para alcançar o alvo.
+      Qualquer sucesso encerra a rodada e reinicia o caminho, pagando novamente o stack-base.
+      Informe custos líquidos de recuperação em cada etapa.
+    </div>
+    <div class="work-grid">
+      <section class="panel">
+        <h2>Caminho até o stack alvo</h2>
+        <label class="field"
+          >Custo do stack-base por rodada<input
+            inputmode="numeric"
+            [ngModel]="stack().baseCost"
+            (ngModelChange)="patchStack({ baseCost: $event })"
+        /></label>
+        @for (row of stack().steps; track $index; let k = $index) {
+          <div class="row-editor">
+            <div class="form-grid">
+              <label class="field"
+                >Etapa / stack alvo<input
+                  [ngModel]="row.label"
+                  (ngModelChange)="step(k, { label: $event })" /></label
+              ><label class="field"
+                >Chance de sucesso indesejado (%)<input
+                  type="number"
+                  min="0"
+                  max="99.99"
+                  step="0.01"
+                  [ngModel]="row.chance"
+                  (ngModelChange)="step(k, { chance: $event })" /></label
+              ><label class="field"
+                >Custo da tentativa<input
+                  inputmode="numeric"
+                  [ngModel]="row.cost"
+                  (ngModelChange)="step(k, { cost: $event })" /></label
+              ><label class="field"
+                >Custo extra se falhar<input
+                  inputmode="numeric"
+                  [ngModel]="row.failureCost"
+                  (ngModelChange)="step(k, { failureCost: $event })"
+              /></label>
+            </div>
+            <div class="action-row">
+              <button type="button" class="btn danger" (click)="removeStep(k)">
+                Remover etapa
+              </button>
+            </div>
+          </div>
+        }
+        <div class="action-row">
+          <button
+            type="button"
+            class="btn subtle"
+            (click)="addStep()"
+            [disabled]="stack().steps.length >= 30"
+          >
+            Adicionar etapa
+          </button>
+        </div>
+        <app-preset-bar
+          tool="failstack"
+          [value]="stack()"
+          (loaded)="loadStack($event)"
+        /><app-calculation-proof tool="failstack" [value]="stack()" />
+      </section>
+      <section>
+        @if (stackResult().value; as r) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span>Custo médio para completar o caminho</span
+              ><strong>{{ silver(r.expectedCost) }}</strong>
+            </div>
+            <div class="metric">
+              <span>Sucesso da construção por rodada</span
+              ><strong>{{ number(r.chanceOfBuildingPercent, 4) }}%</strong>
+            </div>
+            <div class="metric">
+              <span>Rodadas em média</span><strong>{{ number(r.expectedRounds, 3) }}</strong>
+            </div>
+          </div>
+        } @else {
+          <p class="error-box" role="alert">{{ stackResult().error }}</p>
+        }
+      </section>
+    </div>
+  } @else {
+    <section class="panel">
+      <h2>Registro observado</h2>
+      <p class="help">
+        Registre o resultado que aconteceu no jogo. Esses dados são pessoais e não alteram a chance
+        teórica do próximo clique.
+      </p>
+      <div class="form-grid">
+        <label class="field"
+          >Equipamento / cenário<input [(ngModel)]="name" maxlength="140" /></label
+        ><label class="field"
+          >Resultado<select [(ngModel)]="outcome">
+            <option value="failure">Falha</option>
+            <option value="success">Sucesso</option>
+          </select></label
+        >
+      </div>
+      <p class="help">
+        Chance registrada: {{ number(form().chance) }}% · custo da tentativa:
+        {{ silver(form().attemptCost) }}. Ajuste em “Custo e probabilidade”.
+      </p>
+      <button
+        type="button"
+        class="btn"
+        [disabled]="!name.trim() || !result().value"
+        (click)="record()"
+      >
+        Registrar tentativa
+      </button>
+    </section>
+    <section class="panel">
+      <h2>Meu histórico · {{ store.data().region.toUpperCase() }}</h2>
+      @if (logs.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cenário</th>
+                <th>Data</th>
+                <th>Chance</th>
+                <th>Custo</th>
+                <th>Resultado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of logs; track log.id) {
+                <tr>
+                  <td>{{ log.name }}</td>
+                  <td>{{ date(log.createdAt) }}</td>
+                  <td>{{ number(log.chance) }}%</td>
+                  <td>{{ silver(log.cost) }}</td>
+                  <td>{{ log.outcome === 'success' ? 'Sucesso' : 'Falha' }}</td>
+                  <td>
+                    <button type="button" class="btn danger" (click)="removeLog(log.id)">
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">Seu histórico ainda está vazio.</div>
+      }
+    </section>
+  }
+</div>
