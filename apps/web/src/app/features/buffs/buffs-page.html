@@ -1,46 +1,62 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">09 / BUFF PRESETS</p>
-    <h1>Sua combinação, pronta.</h1>
+    <p class="tool-kicker"><ng-container i18n>09 / BUFF PRESETS</ng-container></p>
+    <h1><ng-container i18n>Sua combinação, pronta.</ng-container></h1>
     <p>
-      Cadastre buffs, organize grupos exclusivos e salve combinações para PvE, PvP ou life skills.
+      <ng-container i18n
+        >Cadastre buffs, organize grupos exclusivos e salve combinações para PvE, PvP ou life
+        skills.
+      </ng-container>
     </p>
   </header>
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >
     <section class="panel">
-      <h2>Adicionar ou editar buff</h2>
+      <h2><ng-container i18n>Adicionar ou editar buff</ng-container></h2>
       <div class="form-grid">
-        <label class="field">Nome<input maxlength="140" [(ngModel)]="draft.name" /></label
+        <label class="field"
+          ><ng-container i18n>Nome</ng-container
+          ><input maxlength="140" [(ngModel)]="draft.name" /></label
         ><label class="field"
-          >Efeito<input
+          ><ng-container i18n>Efeito</ng-container
+          ><input
             placeholder="Ex.: EXP de treino"
+            i18n-placeholder
             maxlength="140"
             [(ngModel)]="draft.effect" /></label
         ><label class="field"
-          >Grupo exclusivo<input
+          ><ng-container i18n>Grupo exclusivo</ng-container
+          ><input
             placeholder="Livre, comida, elixir…"
+            i18n-placeholder
             maxlength="140"
             [(ngModel)]="draft.group"
           /><small
-            >“Livre” permite combinar; um grupo com outro nome permite um buff ativo.</small
+            ><ng-container i18n
+              >“Livre” permite combinar; um grupo com outro nome permite um buff
+              ativo.</ng-container
+            ></small
           ></label
         ><label class="field"
-          >Valor do efeito<input type="number" [(ngModel)]="draft.value" /></label
-        ><label class="field">Unidade<input maxlength="20" [(ngModel)]="draft.unit" /></label
+          ><ng-container i18n>Valor do efeito</ng-container
+          ><input type="number" [(ngModel)]="draft.value" /></label
         ><label class="field"
-          >Duração (minutos)<input
-            type="number"
-            min="0"
-            max="1440"
-            [(ngModel)]="draft.duration"
-          /><small>Zero para duração indefinida.</small></label
+          ><ng-container i18n>Unidade</ng-container
+          ><input maxlength="20" [(ngModel)]="draft.unit" /></label
+        ><label class="field"
+          ><ng-container i18n>Duração (minutos)</ng-container
+          ><input type="number" min="0" max="1440" [(ngModel)]="draft.duration" /><small
+            ><ng-container i18n>Zero para duração indefinida.</ng-container></small
+          ></label
         >
       </div>
       <div class="action-row">
-        <button type="button" class="btn" (click)="save()">Salvar buff</button
-        ><button type="button" class="btn subtle" (click)="draft = newBuff()">Novo buff</button>
+        <button type="button" class="btn" (click)="save()">
+          <ng-container i18n>Salvar buff</ng-container></button
+        ><button type="button" class="btn subtle" (click)="draft = newBuff()">
+          <ng-container i18n>Novo buff</ng-container>
+        </button>
       </div>
       @if (error()) {
         <p class="error-box" role="alert">{{ error() }}</p>
@@ -48,8 +64,10 @@
     </section>
     <section class="panel">
       <div class="panel-heading">
-        <h2>Combinação ativa</h2>
-        <span class="badge">{{ active().length }} BUFFS</span>
+        <h2><ng-container i18n>Combinação ativa</ng-container></h2>
+        <span class="badge"
+          ><ng-container i18n>{{ active().length }} BUFFS</ng-container></span
+        >
       </div>
       @for (t of totals(); track t.effect + '|' + t.unit) {
         <div class="metric">
@@ -57,30 +75,36 @@
           ><strong>{{ number(t.value) }} {{ t.unit }}</strong>
         </div>
       } @empty {
-        <div class="empty">Ative os buffs na biblioteca abaixo.</div>
+        <div class="empty">
+          <ng-container i18n>Ative os buffs na biblioteca abaixo.</ng-container>
+        </div>
       }
       <p class="help">
-        Soma efeitos com o mesmo nome e unidade. Multiplicadores, caps e regras de compatibilidade
-        do jogo precisam ser conferidos por você.
+        <ng-container i18n
+          >Soma efeitos com o mesmo nome e unidade. Multiplicadores, caps e regras de
+          compatibilidade do jogo precisam ser conferidos por você.
+        </ng-container>
       </p>
       <div class="action-row">
         <button type="button" class="btn subtle" [disabled]="!active().length" (click)="start()">
-          Iniciar timers
+          <ng-container i18n>Iniciar timers </ng-container>
         </button>
       </div>
       <div class="preset-bar">
         <label class="field"
-          >Nome da combinação<input maxlength="140" [(ngModel)]="presetName" /></label
+          ><ng-container i18n>Nome da combinação</ng-container
+          ><input maxlength="140" [(ngModel)]="presetName" /></label
         ><button
           type="button"
           class="btn"
           [disabled]="!presetName.trim() || !active().length"
           (click)="savePreset()"
         >
-          Salvar combinação</button
+          <ng-container i18n>Salvar combinação</ng-container></button
         ><label class="field"
-          >Combinação salva<select [(ngModel)]="selectedPreset">
-            <option value="">Escolher</option>
+          ><ng-container i18n>Combinação salva</ng-container
+          ><select [(ngModel)]="selectedPreset">
+            <option value=""><ng-container i18n>Escolher</ng-container></option>
             @for (p of store.data().buffPresets; track p.id) {
               <option [value]="p.id">{{ p.name }}</option>
             }
@@ -91,34 +115,34 @@
           [disabled]="!selectedPreset"
           (click)="loadPreset()"
         >
-          Carregar</button
+          <ng-container i18n>Carregar</ng-container></button
         ><button
           type="button"
           class="btn danger"
           [disabled]="!selectedPreset"
           (click)="removePreset()"
         >
-          Excluir
+          <ng-container i18n>Excluir </ng-container>
         </button>
       </div>
     </section>
   </div>
   <section class="panel">
-    <h2>Biblioteca pessoal de buffs</h2>
+    <h2><ng-container i18n>Biblioteca pessoal de buffs</ng-container></h2>
     <label class="field" style="margin-bottom: 20px"
-      >Buscar nome ou efeito<input [(ngModel)]="search"
+      ><ng-container i18n>Buscar nome ou efeito</ng-container><input [(ngModel)]="search"
     /></label>
     @if (buffs.length) {
       <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Ativo</th>
-              <th>Buff</th>
-              <th>Efeito</th>
-              <th>Grupo</th>
-              <th>Duração</th>
-              <th>Ações</th>
+              <th><ng-container i18n>Ativo</ng-container></th>
+              <th><ng-container i18n>Buff</ng-container></th>
+              <th><ng-container i18n>Efeito</ng-container></th>
+              <th><ng-container i18n>Grupo</ng-container></th>
+              <th><ng-container i18n>Duração</ng-container></th>
+              <th><ng-container i18n>Ações</ng-container></th>
             </tr>
           </thead>
           <tbody>
@@ -139,8 +163,12 @@
                 <td>{{ b.group }}</td>
                 <td>{{ remaining(b) }}</td>
                 <td>
-                  <button type="button" class="btn subtle" (click)="edit(b)">Editar</button>
-                  <button type="button" class="btn danger" (click)="remove(b.id)">Excluir</button>
+                  <button type="button" class="btn subtle" (click)="edit(b)">
+                    <ng-container i18n>Editar</ng-container>
+                  </button>
+                  <button type="button" class="btn danger" (click)="remove(b.id)">
+                    <ng-container i18n>Excluir</ng-container>
+                  </button>
                 </td>
               </tr>
             }
@@ -148,7 +176,9 @@
         </table>
       </div>
     } @else {
-      <div class="empty">Cadastre um buff acima para começar sua biblioteca.</div>
+      <div class="empty">
+        <ng-container i18n>Cadastre um buff acima para começar sua biblioteca.</ng-container>
+      </div>
     }
   </section>
 </div>

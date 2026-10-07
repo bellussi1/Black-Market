@@ -8,62 +8,62 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        title: 'Black Market · Seu caderno de aventura',
+        title: $localize`Black Market · Seu caderno de aventura`,
         loadComponent: () =>
           import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
       },
       {
         path: 'database/items',
-        title: 'Black Market · Catálogo',
+        title: $localize`Black Market · Catálogo`,
         loadComponent: () =>
           import('./features/catalog/item-catalog-page').then((m) => m.ItemCatalogPage),
       },
       {
         path: 'market',
-        title: 'Black Market · Mercado',
+        title: $localize`Black Market · Mercado`,
         loadComponent: () => import('./features/market/market-page').then((m) => m.MarketPage),
       },
       {
         path: 'crafting',
-        title: 'Black Market · Produção',
+        title: $localize`Black Market · Produção`,
         loadComponent: () =>
           import('./features/crafting/crafting-page').then((m) => m.CraftingPage),
       },
       {
         path: 'enhancement',
-        title: 'Black Market · Enhancement',
+        title: $localize`Black Market · Aprimoramento`,
         loadComponent: () =>
           import('./features/enhancement/enhancement-page').then((m) => m.EnhancementPage),
       },
       {
         path: 'gear',
-        title: 'Black Market · Gear',
+        title: $localize`Black Market · Equipamentos`,
         loadComponent: () => import('./features/gear/gear-page').then((m) => m.GearPage),
       },
       {
         path: 'lifeskills',
-        title: 'Black Market · Life skills',
+        title: $localize`Black Market · Profissões`,
         loadComponent: () =>
           import('./features/lifeskills/lifeskills-page').then((m) => m.LifeskillsPage),
       },
       {
         path: 'storage',
-        title: 'Black Market · Armazém',
+        title: $localize`Black Market · Armazém`,
         loadComponent: () => import('./features/storage/storage-page').then((m) => m.StoragePage),
       },
       {
         path: 'rng',
-        title: 'Black Market · Caixas',
+        title: $localize`Black Market · Caixas`,
         loadComponent: () => import('./features/rng/rng-page').then((m) => m.RngPage),
       },
       {
         path: 'buffs',
-        title: 'Black Market · Buffs',
+        title: $localize`Black Market · Buffs`,
         loadComponent: () => import('./features/buffs/buffs-page').then((m) => m.BuffsPage),
       },
       {
         path: 'settings',
-        title: 'Black Market · Dados e backup',
+        title: $localize`Black Market · Dados e backup`,
         loadComponent: () =>
           import('./features/settings/settings-page').then((m) => m.SettingsPage),
       },

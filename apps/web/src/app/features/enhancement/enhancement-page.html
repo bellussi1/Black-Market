@@ -1,10 +1,12 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">04 / ENHANCEMENT WORKSHOP</p>
-    <h1>Entenda o risco antes de tentar.</h1>
+    <p class="tool-kicker"><ng-container i18n>04 / OFICINA DE APRIMORAMENTO</ng-container></p>
+    <h1><ng-container i18n>Entenda o risco antes de tentar.</ng-container></h1>
     <p>
-      Modele tentativas, pity e custo de failstacks com chances e materiais informados por você.
-      Salve cenários para comparar depois.
+      <ng-container i18n
+        >Modele tentativas, garantia e custo de acúmulos com chances e materiais informados por
+        você. Salve cenários para comparar depois.
+      </ng-container>
     </p>
   </header>
   <div class="tabs">
@@ -14,47 +16,53 @@
       [attr.aria-pressed]="tab() === 'cost'"
       (click)="tab.set('cost')"
     >
-      Custo e probabilidade</button
+      <ng-container i18n>Custo e probabilidade</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'stack'"
       [attr.aria-pressed]="tab() === 'stack'"
       (click)="tab.set('stack')"
     >
-      Custo de failstack</button
+      <ng-container i18n>Custo de failstack</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'log'"
       [attr.aria-pressed]="tab() === 'log'"
       (click)="tab.set('log')"
     >
-      Meus resultados
+      <ng-container i18n>Meus resultados </ng-container>
     </button>
   </div>
   @if (tab() === 'cost') {
     <div class="notice">
-      Modelo para tentativas que mantêm o mesmo equipamento e nível após falhar. Informe custos de
-      crons/proteção no custo da tentativa. Destruição e downgrade exigem outro modelo. As chances
-      não são uma tabela oficial de itens.
+      <ng-container i18n
+        >Modelo para tentativas que mantêm o mesmo equipamento e nível após falhar. Informe custos
+        de crons/proteção no custo da tentativa. Destruição e downgrade exigem outro modelo. As
+        chances não são uma tabela oficial de itens.
+      </ng-container>
     </div>
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Premissas da tentativa</h2>
+        <h2><ng-container i18n>Premissas da tentativa</ng-container></h2>
         <div class="form-grid">
           <label class="field"
-            >Chance inicial (%)<input
+            ><ng-container i18n>Chance inicial (%)</ng-container
+            ><input
               type="number"
               min="0"
               max="100"
               step="0.01"
               [ngModel]="form().chance"
               (ngModelChange)="patch({ chance: $event })"
-            /><small>Copie a chance exibida no jogo.</small></label
+            /><small
+              ><ng-container i18n>Copie a chance exibida no jogo.</ng-container></small
+            ></label
           >
           <label class="field"
-            >Aumento por falha (pontos percentuais)<input
+            ><ng-container i18n>Aumento por falha (pontos percentuais)</ng-container
+            ><input
               type="number"
               min="0"
               max="100"
@@ -63,7 +71,8 @@
               (ngModelChange)="patch({ increase: $event })"
           /></label>
           <label class="field"
-            >Teto de chance (%)<input
+            ><ng-container i18n>Teto de chance (%)</ng-container
+            ><input
               type="number"
               min="0"
               max="100"
@@ -72,7 +81,8 @@
               (ngModelChange)="patch({ cap: $event })"
           /></label>
           <label class="field"
-            >Limite de tentativas do cenário<input
+            ><ng-container i18n>Limite de tentativas do cenário</ng-container
+            ><input
               type="number"
               min="1"
               max="2000"
@@ -80,48 +90,63 @@
               (ngModelChange)="patch({ limit: $event })"
           /></label>
           <label class="field"
-            >Pity: total de falhas necessário<input
+            ><ng-container i18n>Pity: total de falhas necessário</ng-container
+            ><input
               type="number"
               min="0"
               max="2000"
               [ngModel]="form().pity"
               (ngModelChange)="patch({ pity: $event })"
-            /><small>Zero desativa. A tentativa seguinte ao limite é garantida.</small></label
+            /><small
+              ><ng-container i18n
+                >Zero desativa. A tentativa seguinte ao limite é garantida.</ng-container
+              ></small
+            ></label
           >
           <label class="field"
-            >Essência já acumulada<input
+            ><ng-container i18n>Essência já acumulada</ng-container
+            ><input
               type="number"
               min="0"
               [ngModel]="form().currentPity"
               (ngModelChange)="patch({ currentPity: $event })"
           /></label>
           <label class="field"
-            >Materiais + crons por tentativa<input
+            ><ng-container i18n>Materiais + crons por tentativa</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().attemptCost"
               (ngModelChange)="patch({ attemptCost: $event })"
           /></label>
           <label class="field"
-            >Reparo / perdas após uma falha<input
+            ><ng-container i18n>Reparo / perdas após uma falha</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().failureCost"
               (ngModelChange)="patch({ failureCost: $event })"
           /></label>
           <label class="field"
-            >Custo da tentativa garantida<input
+            ><ng-container i18n>Custo da tentativa garantida</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().guaranteedCost"
               (ngModelChange)="patch({ guaranteedCost: $event })"
-            /><small>Informe os materiais realmente consumidos no pity.</small></label
+            /><small
+              ><ng-container i18n
+                >Informe os materiais realmente consumidos no pity.</ng-container
+              ></small
+            ></label
           >
           <label class="field"
-            >Custo inicial alocado ao stack<input
+            ><ng-container i18n>Custo inicial alocado ao stack</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().stackCost"
               (ngModelChange)="patch({ stackCost: $event })"
           /></label>
           <label class="field"
-            >Preço de comprar pronto<input
+            ><ng-container i18n>Preço de comprar pronto</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().buyPrice"
               (ngModelChange)="patch({ buyPrice: $event })"
@@ -137,39 +162,50 @@
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Sucesso até {{ r.horizon }} tentativas</span
+              <span
+                ><ng-container i18n>Sucesso até {{ r.horizon }} tentativas</ng-container></span
               ><strong>{{ number(r.successPercent, 3) }}%</strong
-              ><small>Probabilidade restante de falhar: {{ number(r.failurePercent, 3) }}%</small>
+              ><small
+                ><ng-container i18n
+                  >Probabilidade restante de falhar:
+                  {{ number(r.failurePercent, 3) }}%</ng-container
+                ></small
+              >
             </div>
             <div class="metric">
-              <span>Gasto médio até esse limite</span><strong>{{ silver(r.expectedSpend) }}</strong>
+              <span><ng-container i18n>Gasto médio até esse limite</ng-container></span
+              ><strong>{{ silver(r.expectedSpend) }}</strong>
             </div>
             <div class="metric">
-              <span>Tentativas usadas em média</span
+              <span><ng-container i18n>Tentativas usadas em média</ng-container></span
               ><strong>{{ number(r.expectedAttempts, 3) }}</strong>
             </div>
             <div class="metric">
-              <span>50% de sucesso até</span><strong>{{ r.median ?? 'Fora do limite' }}</strong>
+              <span><ng-container i18n>50% de sucesso até</ng-container></span
+              ><strong>{{ r.median ?? 'Fora do limite' }}</strong>
             </div>
             <div class="metric">
-              <span>90% de sucesso até</span><strong>{{ r.p90 ?? 'Fora do limite' }}</strong>
+              <span><ng-container i18n>90% de sucesso até</ng-container></span
+              ><strong>{{ r.p90 ?? 'Fora do limite' }}</strong>
             </div>
             <div class="metric">
-              <span>95% de sucesso até</span><strong>{{ r.p95 ?? 'Fora do limite' }}</strong>
+              <span><ng-container i18n>95% de sucesso até</ng-container></span
+              ><strong>{{ r.p95 ?? 'Fora do limite' }}</strong>
             </div>
             <div class="metric">
-              <span>Tentativa garantida</span
+              <span><ng-container i18n>Tentativa garantida</ng-container></span
               ><strong>{{ r.guaranteedAttempt ?? 'Sem pity' }}</strong>
             </div>
           </div>
           <section class="panel">
-            <h2>Probabilidade acumulada</h2>
+            <h2><ng-container i18n>Probabilidade acumulada</ng-container></h2>
             <svg
               class="chart"
               viewBox="0 0 1000 160"
               preserveAspectRatio="none"
               role="img"
               aria-label="Chance acumulada de sucesso por número de tentativas"
+              i18n-aria-label
             >
               <polyline
                 [attr.points]="points()"
@@ -183,9 +219,9 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Tentativa</th>
-                    <th>Chance da tentativa</th>
-                    <th>Sucesso acumulado</th>
+                    <th><ng-container i18n>Tentativa</ng-container></th>
+                    <th><ng-container i18n>Chance da tentativa</ng-container></th>
+                    <th><ng-container i18n>Sucesso acumulado</ng-container></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -201,9 +237,11 @@
             </div>
           </section>
           <p class="notice">
-            O gasto esperado inclui cenários que acabam sem sucesso no limite escolhido. Comparar
-            esse gasto com {{ silver(form().buyPrice) }} de compra não garante aquisição por esse
-            valor.
+            <ng-container i18n
+              >O gasto esperado inclui cenários que acabam sem sucesso no limite escolhido. Comparar
+              esse gasto com {{ silver(form().buyPrice) }} de compra não garante aquisição por esse
+              valor.
+            </ng-container>
           </p>
         } @else {
           <p class="error-box" role="alert">{{ result().error }}</p>
@@ -212,17 +250,20 @@
     </div>
   } @else if (tab() === 'stack') {
     <div class="notice">
-      Uma rodada começa no stack-base e precisa falhar em todas as etapas para alcançar o alvo.
-      Qualquer sucesso encerra a rodada e reinicia o caminho, pagando novamente o stack-base.
-      Informe custos líquidos de recuperação em cada etapa.
+      <ng-container i18n
+        >Uma rodada começa no stack-base e precisa falhar em todas as etapas para alcançar o alvo.
+        Qualquer sucesso encerra a rodada e reinicia o caminho, pagando novamente o stack-base.
+        Informe custos líquidos de recuperação em cada etapa.
+      </ng-container>
     </div>
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Caminho até o stack alvo</h2>
+        <h2><ng-container i18n>Caminho até o stack alvo</ng-container></h2>
         <label class="field"
-          >Custo do stack-base por rodada<input
+          ><ng-container i18n>Custo do stack-base por rodada</ng-container
+          ><input
             inputmode="numeric"
             [ngModel]="stack().baseCost"
             (ngModelChange)="patchStack({ baseCost: $event })"
@@ -231,11 +272,11 @@
           <div class="row-editor">
             <div class="form-grid">
               <label class="field"
-                >Etapa / stack alvo<input
-                  [ngModel]="row.label"
-                  (ngModelChange)="step(k, { label: $event })" /></label
+                ><ng-container i18n>Etapa / stack alvo</ng-container
+                ><input [ngModel]="row.label" (ngModelChange)="step(k, { label: $event })" /></label
               ><label class="field"
-                >Chance de sucesso indesejado (%)<input
+                ><ng-container i18n>Chance de sucesso indesejado (%)</ng-container
+                ><input
                   type="number"
                   min="0"
                   max="99.99"
@@ -243,12 +284,14 @@
                   [ngModel]="row.chance"
                   (ngModelChange)="step(k, { chance: $event })" /></label
               ><label class="field"
-                >Custo da tentativa<input
+                ><ng-container i18n>Custo da tentativa</ng-container
+                ><input
                   inputmode="numeric"
                   [ngModel]="row.cost"
                   (ngModelChange)="step(k, { cost: $event })" /></label
               ><label class="field"
-                >Custo extra se falhar<input
+                ><ng-container i18n>Custo extra se falhar</ng-container
+                ><input
                   inputmode="numeric"
                   [ngModel]="row.failureCost"
                   (ngModelChange)="step(k, { failureCost: $event })"
@@ -256,7 +299,7 @@
             </div>
             <div class="action-row">
               <button type="button" class="btn danger" (click)="removeStep(k)">
-                Remover etapa
+                <ng-container i18n>Remover etapa </ng-container>
               </button>
             </div>
           </div>
@@ -268,7 +311,7 @@
             (click)="addStep()"
             [disabled]="stack().steps.length >= 30"
           >
-            Adicionar etapa
+            <ng-container i18n>Adicionar etapa </ng-container>
           </button>
         </div>
         <app-preset-bar
@@ -281,15 +324,16 @@
         @if (stackResult().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Custo médio para completar o caminho</span
+              <span><ng-container i18n>Custo médio para completar o caminho</ng-container></span
               ><strong>{{ silver(r.expectedCost) }}</strong>
             </div>
             <div class="metric">
-              <span>Sucesso da construção por rodada</span
+              <span><ng-container i18n>Sucesso da construção por rodada</ng-container></span
               ><strong>{{ number(r.chanceOfBuildingPercent, 4) }}%</strong>
             </div>
             <div class="metric">
-              <span>Rodadas em média</span><strong>{{ number(r.expectedRounds, 3) }}</strong>
+              <span><ng-container i18n>Rodadas em média</ng-container></span
+              ><strong>{{ number(r.expectedRounds, 3) }}</strong>
             </div>
           </div>
         } @else {
@@ -299,24 +343,30 @@
     </div>
   } @else {
     <section class="panel">
-      <h2>Registro observado</h2>
+      <h2><ng-container i18n>Registro observado</ng-container></h2>
       <p class="help">
-        Registre o resultado que aconteceu no jogo. Esses dados são pessoais e não alteram a chance
-        teórica do próximo clique.
+        <ng-container i18n
+          >Registre o resultado que aconteceu no jogo. Esses dados são pessoais e não alteram a
+          chance teórica do próximo clique.
+        </ng-container>
       </p>
       <div class="form-grid">
         <label class="field"
-          >Equipamento / cenário<input [(ngModel)]="name" maxlength="140" /></label
+          ><ng-container i18n>Equipamento / cenário</ng-container
+          ><input [(ngModel)]="name" maxlength="140" /></label
         ><label class="field"
-          >Resultado<select [(ngModel)]="outcome">
-            <option value="failure">Falha</option>
-            <option value="success">Sucesso</option>
+          ><ng-container i18n>Resultado</ng-container
+          ><select [(ngModel)]="outcome">
+            <option value="failure"><ng-container i18n>Falha</ng-container></option>
+            <option value="success"><ng-container i18n>Sucesso</ng-container></option>
           </select></label
         >
       </div>
       <p class="help">
-        Chance registrada: {{ number(form().chance) }}% · custo da tentativa:
-        {{ silver(form().attemptCost) }}. Ajuste em “Custo e probabilidade”.
+        <ng-container i18n
+          >Chance registrada: {{ number(form().chance) }}% · custo da tentativa:
+          {{ silver(form().attemptCost) }}. Ajuste em “Custo e probabilidade”.
+        </ng-container>
       </p>
       <button
         type="button"
@@ -324,22 +374,24 @@
         [disabled]="!name.trim() || !result().value"
         (click)="record()"
       >
-        Registrar tentativa
+        <ng-container i18n>Registrar tentativa </ng-container>
       </button>
     </section>
     <section class="panel">
-      <h2>Meu histórico · {{ store.data().region.toUpperCase() }}</h2>
+      <h2>
+        <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
+      </h2>
       @if (logs.length) {
         <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Cenário</th>
-                <th>Data</th>
-                <th>Chance</th>
-                <th>Custo</th>
-                <th>Resultado</th>
-                <th>Ações</th>
+                <th><ng-container i18n>Cenário</ng-container></th>
+                <th><ng-container i18n>Data</ng-container></th>
+                <th><ng-container i18n>Chance</ng-container></th>
+                <th><ng-container i18n>Custo</ng-container></th>
+                <th><ng-container i18n>Resultado</ng-container></th>
+                <th><ng-container i18n>Ações</ng-container></th>
               </tr>
             </thead>
             <tbody>
@@ -352,7 +404,7 @@
                   <td>{{ log.outcome === 'success' ? 'Sucesso' : 'Falha' }}</td>
                   <td>
                     <button type="button" class="btn danger" (click)="removeLog(log.id)">
-                      Excluir
+                      <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
                 </tr>
@@ -361,7 +413,7 @@
           </table>
         </div>
       } @else {
-        <div class="empty">Seu histórico ainda está vazio.</div>
+        <div class="empty"><ng-container i18n>Seu histórico ainda está vazio.</ng-container></div>
       }
     </section>
   }

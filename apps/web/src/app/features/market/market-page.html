@@ -1,22 +1,26 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">02 / MERCADO CENTRAL</p>
-    <h1>O valor de cada venda.</h1>
+    <p class="tool-kicker"><ng-container i18n>02 / MERCADO CENTRAL</ng-container></p>
+    <h1><ng-container i18n>O valor de cada venda.</ng-container></h1>
     <p>
-      Registre cotações da sua região, acompanhe seu histórico e calcule a prata que realmente entra
-      no armazém.
+      <ng-container i18n
+        >Registre cotações da sua região, acompanhe seu histórico e calcule a prata que realmente
+        entra no armazém.
+      </ng-container>
     </p>
   </header>
   <section class="panel">
     <div class="panel-heading">
-      <h2>Consultar mercado por ID</h2>
-      <span class="badge">API COMUNITÁRIA ARSHA</span>
+      <h2><ng-container i18n>Consultar mercado por ID</ng-container></h2>
+      <span class="badge"><ng-container i18n>API COMUNITÁRIA ARSHA</ng-container></span>
     </div>
     <div class="form-grid">
       <label class="field"
-        >ID do item<input
+        ><ng-container i18n>ID do item</ng-container
+        ><input
           inputmode="numeric"
           placeholder="ID numérico do jogo"
+          i18n-placeholder
           [ngModel]="lookupId()"
           (ngModelChange)="lookupId.set($event)"
       /></label>
@@ -24,37 +28,45 @@
     <div class="action-row">
       <button class="btn" type="button" (click)="lookup()" [disabled]="lookupLoading()">
         {{ lookupLoading() ? 'Consultando…' : 'Consultar mercado' }}</button
-      ><span class="help">Regiões suportadas: SA, NA e EU.</span>
+      ><span class="help"
+        ><ng-container i18n
+          >Mercado selecionado: {{ store.data().region.toUpperCase() }}.</ng-container
+        ></span
+      >
     </div>
     <p class="help">
-      Arsha usa cache: o preço pode ter atraso. O ID pode vir do jogo ou de uma página pública de
-      item. Seu navegador consulta somente nossa API.
+      <ng-container i18n
+        >Arsha usa cache: o preço pode ter atraso. O ID pode vir do jogo ou de uma página pública de
+        item. Seu navegador consulta somente nossa API.
+      </ng-container>
     </p>
     @if (lookupError()) {
       <p class="error-box" role="alert">{{ lookupError() }}</p>
     }
     @if (live(); as response) {
       <p class="help">
-        Fonte: Arsha · {{ response.region.toUpperCase() }} · consulta em
-        {{ date(response.fetchedAt) }} ·
-        {{
-          response.cacheStatus === 'stale'
-            ? 'Última consulta disponível; provedor indisponível agora'
-            : response.cacheStatus === 'cached'
-              ? 'Cache local'
-              : 'Consulta ao provedor'
-        }}. Cache documentado no provedor: {{ response.upstreamCacheMinutes }} minutos.
+        <ng-container i18n
+          >Fonte: Arsha · {{ response.region.toUpperCase() }} · idioma solicitado:
+          {{ response.locale || 'não informado' }} · consulta em {{ date(response.fetchedAt) }} ·
+          {{
+            response.cacheStatus === 'stale'
+              ? 'Última consulta disponível; provedor indisponível agora'
+              : response.cacheStatus === 'cached'
+                ? 'Cache local'
+                : 'Consulta ao provedor'
+          }}. Cache documentado no provedor: {{ response.upstreamCacheMinutes }} minutos.
+        </ng-container>
       </p>
       <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Item / variante</th>
-              <th>Preço base</th>
-              <th>Estoque</th>
-              <th>Transações totais</th>
-              <th>Última venda</th>
-              <th>Ação</th>
+              <th><ng-container i18n>Item / variante</ng-container></th>
+              <th><ng-container i18n>Preço base</ng-container></th>
+              <th><ng-container i18n>Estoque</ng-container></th>
+              <th><ng-container i18n>Transações totais</ng-container></th>
+              <th><ng-container i18n>Última venda</ng-container></th>
+              <th><ng-container i18n>Ação</ng-container></th>
             </tr>
           </thead>
           <tbody>
@@ -72,7 +84,7 @@
                     [disabled]="item.price === null || response.cacheStatus === 'stale'"
                     (click)="saveLive(item)"
                   >
-                    Guardar e calcular
+                    <ng-container i18n>Guardar e calcular </ng-container>
                   </button>
                 </td>
               </tr>
@@ -83,28 +95,33 @@
     }
   </section>
   <div class="notice">
-    Seu caderno reúne registros manuais e consultas que você guardou do Arsha. Preço base zero no
-    provedor é exibido como indisponível; registros antigos continuam com seu horário original.
+    <ng-container i18n
+      >Seu caderno reúne registros manuais e consultas que você guardou do Arsha. Preço base zero no
+      provedor é exibido como indisponível; registros antigos continuam com seu horário original.
+    </ng-container>
   </div>
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >
     <section class="panel">
-      <h2>Calculadora de imposto</h2>
+      <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
       <div class="form-grid">
         <label class="field"
-          >Preço por unidade<input
+          ><ng-container i18n>Preço por unidade</ng-container
+          ><input
             inputmode="numeric"
             [ngModel]="form().price"
             (ngModelChange)="patch({ price: $event })" /></label
         ><label class="field"
-          >Quantidade<input
+          ><ng-container i18n>Quantidade</ng-container
+          ><input
             type="number"
             min="1"
             [ngModel]="form().quantity"
             (ngModelChange)="patch({ quantity: $event })" /></label
         ><label class="field"
-          >Custo total de aquisição<input
+          ><ng-container i18n>Custo total de aquisição</ng-container
+          ><input
             inputmode="numeric"
             [ngModel]="form().cost"
             (ngModelChange)="patch({ cost: $event })"
@@ -113,13 +130,14 @@
       <app-tax-options [value]="form()" (changed)="patch($event)" />
       <app-preset-bar tool="market" [value]="form()" (loaded)="load($event)" />
       <p class="help">
-        Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor.
-        <a
+        <ng-container i18n
+          >Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. </ng-container
+        ><a
           href="https://www.sa.playblackdesert.com/pt-BR/Wiki?wikiNo=47"
           target="_blank"
           rel="noreferrer"
-          >Guia oficial</a
-        >. Ajuste imposto e isenção para o tipo de venda.
+          ><ng-container i18n>Guia oficial</ng-container></a
+        ><ng-container i18n>. Ajuste imposto e isenção para o tipo de venda. </ng-container>
       </p>
       <app-calculation-proof tool="market" [value]="form()" />
     </section>
@@ -127,28 +145,38 @@
       @if (result().value; as r) {
         <div class="metric-grid">
           <div class="metric hero-metric">
-            <span>Prata líquida</span><strong>{{ silver(r.net) }}</strong
-            ><small>{{ number(r.retentionPercent, 3) }}% do valor bruto</small>
+            <span><ng-container i18n>Prata líquida</ng-container></span
+            ><strong>{{ silver(r.net) }}</strong
+            ><small
+              ><ng-container i18n
+                >{{ number(r.retentionPercent, 3) }}% do valor bruto</ng-container
+              ></small
+            >
           </div>
           <div class="metric">
-            <span>Imposto efetivo</span><strong>{{ silver(r.tax) }}</strong>
+            <span><ng-container i18n>Imposto efetivo</ng-container></span
+            ><strong>{{ silver(r.tax) }}</strong>
           </div>
           <div class="metric">
-            <span>Lucro após aquisição</span
+            <span><ng-container i18n>Lucro após aquisição</ng-container></span
             ><strong [class.negative]="r.profit.startsWith('-')">{{ silver(r.profit) }}</strong>
           </div>
           <div class="metric">
-            <span>Sem Value Pack</span><strong>{{ silver(r.withoutValuePack) }}</strong>
+            <span><ng-container i18n>Sem Value Pack</ng-container></span
+            ><strong>{{ silver(r.withoutValuePack) }}</strong>
           </div>
           <div class="metric">
-            <span>Com Value Pack</span><strong>{{ silver(r.withValuePack) }}</strong>
+            <span><ng-container i18n>Com Value Pack</ng-container></span
+            ><strong>{{ silver(r.withValuePack) }}</strong>
           </div>
           <div class="metric">
-            <span>Venda bruta</span><strong>{{ silver(r.gross) }}</strong>
+            <span><ng-container i18n>Venda bruta</ng-container></span
+            ><strong>{{ silver(r.gross) }}</strong>
           </div>
           <div class="metric">
-            <span>Preço mínimo para empatar</span><strong>{{ silver(r.breakEvenPrice) }}</strong
-            ><small>Por unidade</small>
+            <span><ng-container i18n>Preço mínimo para empatar</ng-container></span
+            ><strong>{{ silver(r.breakEvenPrice) }}</strong
+            ><small><ng-container i18n>Por unidade</ng-container></small>
           </div>
         </div>
       } @else {
@@ -158,44 +186,67 @@
   </div>
   <section class="panel">
     <div class="panel-heading">
-      <h2>Caderno de cotações · {{ store.data().region.toUpperCase() }}</h2>
-      <span class="badge">CADERNO PESSOAL</span>
+      <h2>
+        <ng-container i18n
+          >Caderno de cotações · {{ store.data().region.toUpperCase() }}</ng-container
+        >
+      </h2>
+      <span class="badge"><ng-container i18n>CADERNO PESSOAL</ng-container></span>
     </div>
     <div class="row-editor">
       <div class="form-grid">
         <label class="field"
-          >Item<input placeholder="Nome do item" maxlength="140" [(ngModel)]="draft.name" /></label
-        ><label class="field">Categoria<input maxlength="140" [(ngModel)]="draft.category" /></label
+          ><ng-container i18n>Item</ng-container
+          ><input
+            placeholder="Nome do item"
+            i18n-placeholder
+            maxlength="140"
+            [(ngModel)]="draft.name" /></label
         ><label class="field"
-          >Preço unitário<input inputmode="numeric" [(ngModel)]="draft.price" /></label
+          ><ng-container i18n>Categoria</ng-container
+          ><input maxlength="140" [(ngModel)]="draft.category" /></label
         ><label class="field"
-          >Estoque observado<input type="number" min="0" [(ngModel)]="draft.stock"
+          ><ng-container i18n>Preço unitário</ng-container
+          ><input inputmode="numeric" [(ngModel)]="draft.price" /></label
+        ><label class="field"
+          ><ng-container i18n>Estoque observado</ng-container
+          ><input type="number" min="0" [(ngModel)]="draft.stock"
         /></label>
       </div>
       <div class="action-row">
-        <button class="btn" type="button" (click)="saveQuote()">Registrar cotação</button
-        ><span class="help">Registrar o mesmo item adiciona um ponto ao histórico.</span>
+        <button class="btn" type="button" (click)="saveQuote()">
+          <ng-container i18n>Registrar cotação</ng-container></button
+        ><span class="help"
+          ><ng-container i18n
+            >Registrar o mesmo item adiciona um ponto ao histórico.</ng-container
+          ></span
+        >
       </div>
     </div>
     @if (error()) {
       <p class="error-box" role="alert">{{ error() }}</p>
     }
     <div class="form-grid" style="margin: 24px 0">
-      <label class="field">Buscar<input [(ngModel)]="search" placeholder="Nome do item" /></label
+      <label class="field"
+        ><ng-container i18n>Buscar</ng-container
+        ><input [(ngModel)]="search" placeholder="Nome do item" i18n-placeholder /></label
       ><label class="field"
-        >Categoria<select [(ngModel)]="category">
-          <option value="">Todas</option>
+        ><ng-container i18n>Categoria</ng-container
+        ><select [(ngModel)]="category">
+          <option value=""><ng-container i18n>Todas</ng-container></option>
           @for (c of categories; track c) {
             <option [value]="c">{{ c }}</option>
           }
         </select></label
       ><label class="field"
-        >Ordenar<select [(ngModel)]="sort">
-          <option value="name">Nome</option>
-          <option value="price">Menor preço</option>
+        ><ng-container i18n>Ordenar</ng-container
+        ><select [(ngModel)]="sort">
+          <option value="name"><ng-container i18n>Nome</ng-container></option>
+          <option value="price"><ng-container i18n>Menor preço</ng-container></option>
         </select></label
       ><label class="check-row"
-        ><input type="checkbox" [(ngModel)]="favoritesOnly" /> Somente favoritos</label
+        ><input type="checkbox" [(ngModel)]="favoritesOnly" />
+        <ng-container i18n>Somente favoritos</ng-container></label
       >
     </div>
     @if (quotes.length) {
@@ -203,12 +254,12 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Categoria</th>
-              <th>Preço</th>
-              <th>Estoque</th>
-              <th>Registrado / consultado</th>
-              <th>Ações</th>
+              <th><ng-container i18n>Item</ng-container></th>
+              <th><ng-container i18n>Categoria</ng-container></th>
+              <th><ng-container i18n>Preço</ng-container></th>
+              <th><ng-container i18n>Estoque</ng-container></th>
+              <th><ng-container i18n>Registrado / consultado</ng-container></th>
+              <th><ng-container i18n>Ações</ng-container></th>
             </tr>
           </thead>
           <tbody>
@@ -217,7 +268,7 @@
                 <td>
                   {{ q.name }}
                   @if (q.favorite) {
-                    <span aria-label="Favorito">★</span>
+                    <span aria-label="Favorito" i18n-aria-label>★</span>
                   }
                 </td>
                 <td>{{ q.category }} · {{ q.source === 'arsha' ? 'Arsha' : 'Manual' }}</td>
@@ -226,11 +277,12 @@
                 <td>{{ date(q.observedAt) }}</td>
                 <td>
                   <div class="action-row" style="margin: 0">
-                    <button class="btn subtle" type="button" (click)="use(q)">Calcular</button
+                    <button class="btn subtle" type="button" (click)="use(q)">
+                      <ng-container i18n>Calcular</ng-container></button
                     ><button class="btn subtle" type="button" (click)="toggle(q)">
                       {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}</button
                     ><button class="btn danger" type="button" (click)="remove(q.id)">
-                      Excluir
+                      <ng-container i18n>Excluir </ng-container>
                     </button>
                   </div>
                 </td>
@@ -241,14 +293,17 @@
       </div>
     } @else {
       <div class="empty">
-        <strong>Seu caderno ainda está vazio.</strong>Registre um preço acima ou ajuste os filtros.
+        <strong><ng-container i18n>Seu caderno ainda está vazio.</ng-container></strong
+        ><ng-container i18n>Registre um preço acima ou ajuste os filtros. </ng-container>
       </div>
     }
   </section>
   @if (selected(); as q) {
     <section class="panel">
       <div class="panel-heading">
-        <h2>Histórico pessoal · {{ q.name }}</h2>
+        <h2>
+          <ng-container i18n>Histórico pessoal · {{ q.name }}</ng-container>
+        </h2>
         <span class="badge">{{ q.region.toUpperCase() }}</span>
       </div>
       <svg
@@ -267,15 +322,17 @@
         />
       </svg>
       <p class="help">
-        Pontos igualmente espaçados por registro. A tabela preserva os horários reais.
+        <ng-container i18n
+          >Pontos igualmente espaçados por registro. A tabela preserva os horários reais.
+        </ng-container>
       </p>
       <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Preço</th>
-              <th>Estoque</th>
+              <th><ng-container i18n>Data</ng-container></th>
+              <th><ng-container i18n>Preço</ng-container></th>
+              <th><ng-container i18n>Estoque</ng-container></th>
             </tr>
           </thead>
           <tbody>

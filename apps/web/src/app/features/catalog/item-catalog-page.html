@@ -1,57 +1,86 @@
 <div class="catalog-shell">
   <main class="catalog-main">
-    <div class="breadcrumb" aria-label="Localização">
-      <a routerLink="/">Início</a><span aria-hidden="true">/</span><span>Catálogo de itens</span>
+    <div class="breadcrumb" aria-label="Localização" i18n-aria-label>
+      <a routerLink="/"><ng-container i18n>Início</ng-container></a
+      ><span aria-hidden="true">/</span
+      ><span><ng-container i18n>Catálogo de itens</ng-container></span>
     </div>
 
     <section class="catalog-hero" aria-labelledby="catalog-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span></span> BASE DE REFERÊNCIA · BLACK DESERT ONLINE</p>
-        <h1 id="catalog-title">O mundo, item<br /><em>por item.</em></h1>
+        <p class="eyebrow">
+          <span></span> <ng-container i18n>BASE DE REFERÊNCIA · BLACK DESERT ONLINE</ng-container>
+        </p>
+        <h1 id="catalog-title">
+          <ng-container i18n>O mundo, item</ng-container><br /><em
+            ><ng-container i18n>por item.</ng-container></em
+          >
+        </h1>
         <p class="hero-intro">
-          Pesquise os dados do cliente do jogo, confira suas categorias e veja de qual extração
-          vieram. As cotações do mercado entram por uma fonte separada.
+          <ng-container i18n
+            >Pesquise os dados do cliente do jogo, confira suas categorias e veja de qual extração
+            vieram. As cotações do mercado entram por uma fonte separada.
+          </ng-container>
         </p>
       </div>
 
-      <aside class="source-card" aria-label="Sobre a origem do catálogo">
+      <aside class="source-card" aria-label="Sobre a origem do catálogo" i18n-aria-label>
         <div class="source-card-head">
-          <span>FONTE DE REFERÊNCIA</span><span class="source-mark">01</span>
+          <span><ng-container i18n>FONTE DE REFERÊNCIA</ng-container></span
+          ><span class="source-mark">01</span>
         </div>
         <div class="source-emblem" aria-hidden="true">
           <span class="emblem-ring"></span><span class="emblem-core"></span>
         </div>
-        <strong>Extração local do cliente</strong>
-        <p>Itens e receitas são importados de arquivos JSON gerados na sua máquina.</p>
+        <strong><ng-container i18n>Extração local do cliente</ng-container></strong>
+        <p>
+          <ng-container i18n
+            >Itens e receitas são importados de arquivos JSON gerados na sua máquina.</ng-container
+          >
+        </p>
         <a
           href="https://github.com/iDevelopThings/bdo-data-extractor"
           target="_blank"
           rel="noreferrer"
         >
-          Sobre o extractor <span aria-hidden="true">↗</span>
+          <ng-container i18n>Sobre o extractor </ng-container><span aria-hidden="true">↗</span>
         </a>
       </aside>
     </section>
 
     @if (result()?.dataset; as dataset) {
-      <section class="dataset-strip" aria-label="Versão do catálogo">
-        <div class="dataset-state"><span></span><strong>Catálogo publicado</strong></div>
-        <div class="dataset-detail">
-          <span>Região</span><strong>{{ dataset.region.toUpperCase() }}</strong>
+      @if (dataset.locale !== preferredLocale) {
+        <p class="notice" role="status">
+          <ng-container i18n
+            >Os nomes deste catálogo estão em {{ dataset.locale.toUpperCase() }}. O idioma preferido
+            ainda não tem uma extração publicada para este mercado.
+          </ng-container>
+        </p>
+      }
+      <section class="dataset-strip" aria-label="Versão do catálogo" i18n-aria-label>
+        <div class="dataset-state">
+          <span></span><strong><ng-container i18n>Catálogo publicado</ng-container></strong>
         </div>
         <div class="dataset-detail">
-          <span>Idioma dos dados</span><strong>{{ dataset.locale.toUpperCase() }}</strong>
+          <span><ng-container i18n>Região</ng-container></span
+          ><strong>{{ dataset.region.toUpperCase() }}</strong>
         </div>
         <div class="dataset-detail">
-          <span>Versão</span><strong>{{ dataset.version }}</strong>
+          <span><ng-container i18n>Idioma dos dados</ng-container></span
+          ><strong>{{ dataset.locale.toUpperCase() }}</strong>
         </div>
         <div class="dataset-detail">
-          <span>Importado em</span><strong>{{ formatImportedAt(dataset.importedAt) }}</strong>
+          <span><ng-container i18n>Versão</ng-container></span
+          ><strong>{{ dataset.version }}</strong>
+        </div>
+        <div class="dataset-detail">
+          <span><ng-container i18n>Importado em</ng-container></span
+          ><strong>{{ formatImportedAt(dataset.importedAt) }}</strong>
         </div>
       </section>
     }
 
-    <section class="catalog-tools" aria-label="Busca e filtros do catálogo">
+    <section class="catalog-tools" aria-label="Busca e filtros do catálogo" i18n-aria-label>
       <label class="search-field">
         <span class="search-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
@@ -59,20 +88,23 @@
             <path d="m15.5 15.5 4.2 4.2" />
           </svg>
         </span>
-        <span class="sr-only">Buscar pelo início do nome do item</span>
+        <span class="sr-only"
+          ><ng-container i18n>Buscar pelo início do nome do item</ng-container></span
+        >
         <input
           type="search"
           autocomplete="off"
           placeholder="Buscar item pelo nome..."
+          i18n-placeholder
           [value]="search()"
           (input)="onSearch($event)"
         />
       </label>
 
       <label class="filter-field">
-        <span>Categoria</span>
+        <span><ng-container i18n>Categoria</ng-container></span>
         <select [value]="categoryId()" (change)="onCategory($event)" [disabled]="categoryError()">
-          <option value="">Todas as categorias</option>
+          <option value=""><ng-container i18n>Todas as categorias</ng-container></option>
           @for (category of categories(); track category.id) {
             <option [value]="category.id">
               {{ category.parentId ? '↳ ' : '' }}{{ category.name }}
@@ -82,9 +114,9 @@
       </label>
 
       <label class="filter-field grade-filter">
-        <span>Grau</span>
+        <span><ng-container i18n>Grau</ng-container></span>
         <select [value]="grade()" (change)="onGrade($event)">
-          <option value="">Todos</option>
+          <option value=""><ng-container i18n>Todos</ng-container></option>
           @for (gradeOption of grades; track gradeOption.value) {
             <option [value]="gradeOption.value">{{ gradeOption.label }}</option>
           }
@@ -92,7 +124,9 @@
       </label>
 
       @if (hasFilters()) {
-        <button class="clear-filters" type="button" (click)="resetFilters()">Limpar filtros</button>
+        <button class="clear-filters" type="button" (click)="resetFilters()">
+          <ng-container i18n>Limpar filtros</ng-container>
+        </button>
       }
     </section>
 
@@ -100,24 +134,34 @@
       <div class="inline-alert" role="alert">
         <span class="alert-icon" aria-hidden="true">!</span>
         <span>{{ error() }}</span>
-        <button type="button" (click)="retry()">Tentar novamente</button>
+        <button type="button" (click)="retry()">
+          <ng-container i18n>Tentar novamente</ng-container>
+        </button>
       </div>
     }
     @if (categoryError()) {
       <div class="inline-alert subtle-alert" role="status">
-        As categorias não carregaram. A busca por nome continua disponível.
-        <button type="button" (click)="retryCategories()">Recarregar</button>
+        <ng-container i18n
+          >As categorias não carregaram. A busca por nome continua disponível. </ng-container
+        ><button type="button" (click)="retryCategories()">
+          <ng-container i18n>Recarregar</ng-container>
+        </button>
       </div>
     }
 
     @if (selectedItem(); as item) {
-      <section class="item-detail" aria-label="Detalhes do item selecionado" aria-live="polite">
+      <section
+        class="item-detail"
+        aria-label="Detalhes do item selecionado"
+        i18n-aria-label
+        aria-live="polite"
+      >
         <div class="detail-monogram" aria-hidden="true">
           {{ item.name.charAt(0).toLocaleUpperCase() }}
         </div>
         <div class="detail-copy">
           <div class="detail-kicker">
-            REGISTRO DO CATÁLOGO <span>#{{ item.id }}</span>
+            <ng-container i18n>REGISTRO DO CATÁLOGO </ng-container><span>#{{ item.id }}</span>
           </div>
           <h2>{{ item.name }}</h2>
           <p>{{ item.description || 'O extractor não encontrou uma descrição para este item.' }}</p>
@@ -129,18 +173,22 @@
             }
           </div>
           @if (detailLoading()) {
-            <small class="detail-loading">Atualizando detalhes…</small>
+            <small class="detail-loading"
+              ><ng-container i18n>Atualizando detalhes…</ng-container></small
+            >
           }
           @if (detailError()) {
             <small class="detail-loading"
-              >Detalhes completos indisponíveis; exibindo os dados da lista.</small
+              ><ng-container i18n
+                >Detalhes completos indisponíveis; exibindo os dados da lista.</ng-container
+              ></small
             >
           }
           @if (recipesProduced(); as produced) {
             <div class="recipe-group">
               <h3>
-                Receitas que produzem este item
-                <span
+                <ng-container i18n>Receitas que produzem este item </ng-container
+                ><span
                   >{{ visibleRecipeCount(produced.recipes.length) }} / {{ produced.total }}</span
                 >
               </h3>
@@ -158,15 +206,19 @@
                   </article>
                 }
               } @else if (!detailLoading()) {
-                <small class="no-recipes">Nenhuma receita de produção consta nesta extração.</small>
+                <small class="no-recipes"
+                  ><ng-container i18n
+                    >Nenhuma receita de produção consta nesta extração.</ng-container
+                  ></small
+                >
               }
             </div>
           }
           @if (recipesUsed(); as used) {
             <div class="recipe-group">
               <h3>
-                Receitas que usam este item
-                <span>{{ visibleRecipeCount(used.recipes.length) }} / {{ used.total }}</span>
+                <ng-container i18n>Receitas que usam este item </ng-container
+                ><span>{{ visibleRecipeCount(used.recipes.length) }} / {{ used.total }}</span>
               </h3>
               @if (used.recipes.length) {
                 @for (recipe of used.recipes.slice(0, 4); track recipe.key) {
@@ -183,7 +235,9 @@
                 }
               } @else if (!detailLoading()) {
                 <small class="no-recipes"
-                  >Nenhuma receita que use este item consta nesta extração.</small
+                  ><ng-container i18n
+                    >Nenhuma receita que use este item consta nesta extração.</ng-container
+                  ></small
                 >
               }
             </div>
@@ -193,6 +247,7 @@
           class="close-detail"
           type="button"
           aria-label="Fechar detalhes"
+          i18n-aria-label
           (click)="closeItem()"
         >
           ×
@@ -203,22 +258,24 @@
     <section class="catalog-results" aria-labelledby="results-title" aria-live="polite">
       <div class="results-heading">
         <div>
-          <p class="eyebrow"><span></span> COLEÇÃO DE ITENS</p>
+          <p class="eyebrow"><span></span> <ng-container i18n>COLEÇÃO DE ITENS</ng-container></p>
           <h2 id="results-title">
             @if (result()?.dataset) {
-              {{ formatCount(result()?.total ?? 0) }} itens
+              <ng-container i18n>{{ formatCount(result()?.total ?? 0) }} itens </ng-container>
             } @else {
-              Catálogo
+              <ng-container i18n>Catálogo </ng-container>
             }
           </h2>
         </div>
         @if (result()?.dataset) {
-          <span class="results-page">Página {{ page() }} de {{ pageCount() }}</span>
+          <span class="results-page"
+            ><ng-container i18n>Página {{ page() }} de {{ pageCount() }}</ng-container></span
+          >
         }
       </div>
 
       @if (loading() && !result()) {
-        <div class="item-grid" aria-label="Carregando catálogo">
+        <div class="item-grid" aria-label="Carregando catálogo" i18n-aria-label>
           @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
             <div class="item-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
           }
@@ -226,30 +283,44 @@
       } @else if (!result() && error()) {
         <div class="empty-state error-state">
           <span class="empty-index">!</span>
-          <h3>O catálogo não respondeu.</h3>
-          <p>Verifique a API e o banco de dados e tente carregar os dados de novo.</p>
+          <h3><ng-container i18n>O catálogo não respondeu.</ng-container></h3>
+          <p>
+            <ng-container i18n
+              >Verifique a API e o banco de dados e tente carregar os dados de novo.</ng-container
+            >
+          </p>
         </div>
       } @else if (result(); as data) {
         @if (!data.dataset) {
           <div class="empty-state import-state">
             <span class="empty-index">02</span>
             <div>
-              <p class="eyebrow"><span></span> PRIMEIRA IMPORTAÇÃO</p>
-              <h3>Nenhum catálogo ativo ainda.</h3>
-              <p>
-                Gere os arquivos <code>items.json</code>, <code>recipes.json</code> e
-                <code>marketcategories.json</code> com o extractor e importe-os localmente. A versão
-                anterior permanece publicada se uma importação falhar.
+              <p class="eyebrow">
+                <span></span> <ng-container i18n>PRIMEIRA IMPORTAÇÃO</ng-container>
               </p>
-              <pre><code>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</code></pre>
+              <h3><ng-container i18n>Nenhum catálogo ativo ainda.</ng-container></h3>
+              <p>
+                <ng-container i18n>Gere os arquivos </ng-container
+                ><code><ng-container i18n>items.json</ng-container></code
+                >, <code><ng-container i18n>recipes.json</ng-container></code>
+                <ng-container i18n>e </ng-container
+                ><code><ng-container i18n>marketcategories.json</ng-container></code>
+                <ng-container i18n
+                  >com o extractor e importe-os localmente. A versão anterior permanece publicada se
+                  uma importação falhar.
+                </ng-container>
+              </p>
+              <pre><code><ng-container i18n>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</ng-container></code></pre>
             </div>
           </div>
         } @else if (!data.total) {
           <div class="empty-state no-results">
             <span class="empty-index">00</span>
-            <h3>Nenhum item corresponde a esses filtros.</h3>
-            <p>Experimente outro nome ou remova uma categoria.</p>
-            <button type="button" (click)="resetFilters()">Limpar busca e filtros</button>
+            <h3><ng-container i18n>Nenhum item corresponde a esses filtros.</ng-container></h3>
+            <p><ng-container i18n>Experimente outro nome ou remova uma categoria.</ng-container></p>
+            <button type="button" (click)="resetFilters()">
+              <ng-container i18n>Limpar busca e filtros</ng-container>
+            </button>
           </div>
         } @else {
           <div class="item-grid">
@@ -278,17 +349,20 @@
             }
           </div>
 
-          <nav class="pagination" aria-label="Paginação do catálogo">
+          <nav class="pagination" aria-label="Paginação do catálogo" i18n-aria-label>
             <span
-              >Exibindo {{ formatCount((page() - 1) * pageSize + 1) }}–{{
-                formatCount(rangeEnd(data.total))
-              }}
-              de {{ formatCount(data.total) }}</span
+              ><ng-container i18n
+                >Exibindo {{ formatCount((page() - 1) * pageSize + 1) }}–{{
+                  formatCount(rangeEnd(data.total))
+                }}
+                de {{ formatCount(data.total) }}</ng-container
+              ></span
             >
             <div class="pagination-actions">
               <button
                 type="button"
                 aria-label="Página anterior"
+                i18n-aria-label
                 [disabled]="page() <= 1 || loading()"
                 (click)="goToPage(page() - 1)"
               >
@@ -298,6 +372,7 @@
               <button
                 type="button"
                 aria-label="Próxima página"
+                i18n-aria-label
                 [disabled]="page() >= pageCount() || loading()"
                 (click)="goToPage(page() + 1)"
               >
@@ -312,8 +387,13 @@
     <aside class="market-note">
       <span class="note-rule" aria-hidden="true"></span>
       <p>
-        <strong>Referência e mercado são fontes diferentes.</strong> Este catálogo não contém
-        cotações atuais; elas serão coletadas e exibidas com sua própria origem e horário.
+        <strong
+          ><ng-container i18n>Referência e mercado são fontes diferentes.</ng-container></strong
+        >
+        <ng-container i18n
+          >Este catálogo não contém cotações atuais; elas serão coletadas e exibidas com sua própria
+          origem e horário.
+        </ng-container>
       </p>
     </aside>
   </main>

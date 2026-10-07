@@ -1,12 +1,16 @@
-<a class="skip-link" href="#workspace-main">Ir para o conteúdo</a>
+<a class="skip-link" href="#workspace-main"><ng-container i18n>Ir para o conteúdo</ng-container></a>
 <div class="workspace">
   <aside class="sidebar">
-    <a class="brand" routerLink="/" aria-label="Black Market — início"
+    <a class="brand" routerLink="/" aria-label="Black Market — início" i18n-aria-label
       ><span class="brand-symbol" aria-hidden="true">◇</span
-      ><span>BLACK<br /><strong>MARKET</strong></span></a
+      ><span
+        ><ng-container i18n>BLACK</ng-container><br /><strong
+          ><ng-container i18n>MARKET</ng-container></strong
+        ></span
+      ></a
     >
-    <p class="sidebar-label">SEU CADERNO DE AVENTURA</p>
-    <nav aria-label="Ferramentas do Black Market">
+    <p class="sidebar-label"><ng-container i18n>SEU CADERNO DE AVENTURA</ng-container></p>
+    <nav aria-label="Ferramentas do Black Market" i18n-aria-label>
       @for (link of links; track link.path) {
         <a
           [routerLink]="link.path"
@@ -19,34 +23,35 @@
       }
     </nav>
     <div class="sidebar-foot">
-      <span class="tiny-dot"></span> Ferramentas independentes<br /><small
-        >BLACK DESERT ONLINE</small
-      >
+      <span class="tiny-dot"></span> <ng-container i18n>Ferramentas independentes</ng-container
+      ><br /><small>BLACK DESERT ONLINE</small>
     </div>
   </aside>
   <div class="workspace-body">
     <header class="workspace-topbar">
-      <span>BLACK DESERT ONLINE <b>/</b> CADERNO PESSOAL</span
+      <span>BLACK DESERT ONLINE <b>/</b> <ng-container i18n>CADERNO PESSOAL</ng-container></span
       ><label
-        >Região<select
-          [ngModel]="preferences.region()"
-          (ngModelChange)="preferences.setRegion($event)"
-        >
-          @for (r of regions; track r) {
-            <option [value]="r">{{ r.toUpperCase() }}</option>
+        ><ng-container i18n>Mercado</ng-container
+        ><select [ngModel]="preferences.region()" (ngModelChange)="preferences.setRegion($event)">
+          @for (market of markets(); track market.code) {
+            <option [value]="market.code">{{ market.label }}</option>
           }
         </select></label
       >
     </header>
     @if (preferences.message()) {
       <div class="storage-warning" role="status">
-        {{ preferences.message() }} <a routerLink="/settings">Dados e backup</a>
+        {{ preferences.message() }}
+        <a routerLink="/settings"><ng-container i18n>Dados e backup</ng-container></a>
       </div>
     }
     <main id="workspace-main"><router-outlet /></main>
     <footer class="workspace-footer">
-      <span>BLACK MARKET · PROJETO PESSOAL</span
-      ><span>Dados pessoais neste navegador · <a routerLink="/settings">Exportar backup</a></span>
+      <span><ng-container i18n>BLACK MARKET · PROJETO PESSOAL</ng-container></span
+      ><span
+        ><ng-container i18n>Dados pessoais neste navegador · </ng-container
+        ><a routerLink="/settings"><ng-container i18n>Exportar backup</ng-container></a></span
+      >
     </footer>
   </div>
 </div>

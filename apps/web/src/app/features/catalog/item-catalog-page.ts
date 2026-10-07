@@ -20,6 +20,7 @@ import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { preferredDataLocale, uiLocale } from '../../core/locale';
 import { RegionPreferences } from '../../core/region-preferences';
 
 @Component({
@@ -55,6 +56,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
   private detailRequest?: Subscription;
   private searchTimer?: ReturnType<typeof setTimeout>;
 
+  readonly preferredLocale = preferredDataLocale();
   readonly pageSize = 48;
   readonly result = signal<CatalogPage | null>(null);
   readonly categories = signal<CatalogCategory[]>([]);
@@ -184,18 +186,18 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
 
   formatWeight(value: string | null): string {
     if (value === null) return 'Peso não informado';
-    return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(Number(value))} LT`;
+    return `${new Intl.NumberFormat(uiLocale(), { maximumFractionDigits: 2 }).format(Number(value))} LT`;
   }
 
   formatImportedAt(value: string): string {
-    return new Intl.DateTimeFormat('pt-BR', {
+    return new Intl.DateTimeFormat(uiLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(new Date(value));
   }
 
   formatCount(value: number): string {
-    return new Intl.NumberFormat('pt-BR').format(value);
+    return new Intl.NumberFormat(uiLocale()).format(value);
   }
 
   visibleRecipeCount(total: number): number {

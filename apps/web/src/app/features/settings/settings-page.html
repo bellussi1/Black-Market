@@ -1,21 +1,25 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">10 / DADOS PESSOAIS</p>
-    <h1>Seu caderno é seu.</h1>
+    <p class="tool-kicker"><ng-container i18n>10 / DADOS PESSOAIS</ng-container></p>
+    <h1><ng-container i18n>Seu caderno é seu.</ng-container></h1>
     <p>
-      Faça backup de cotações, materiais, receitas, sessões e presets. Tudo nesta área fica no
-      armazenamento deste navegador.
+      <ng-container i18n
+        >Faça backup de cotações, materiais, receitas, sessões e presets. Tudo nesta área fica no
+        armazenamento deste navegador.
+      </ng-container>
     </p>
   </header>
   <div class="notice">
-    Limpar os dados do navegador remove seu caderno. Exporte periodicamente. Ainda não há conta nem
-    sincronização entre dispositivos; o arquivo JSON permite transferir os dados.
+    <ng-container i18n
+      >Limpar os dados do navegador remove seu caderno. Exporte periodicamente. Ainda não há conta
+      nem sincronização entre dispositivos; o arquivo JSON permite transferir os dados.
+    </ng-container>
   </div>
   <section class="panel">
     <div class="panel-heading">
-      <h2>Conteúdo local</h2>
+      <h2><ng-container i18n>Conteúdo local</ng-container></h2>
       <button type="button" class="btn" (click)="store.exportBackup()">
-        Exportar backup completo
+        <ng-container i18n>Exportar backup completo </ng-container>
       </button>
     </div>
     <div class="metric-grid">
@@ -29,43 +33,47 @@
   </section>
   @if (store.blocked()) {
     <section class="panel">
-      <h2>Recuperar armazenamento inválido</h2>
+      <h2><ng-container i18n>Recuperar armazenamento inválido</ng-container></h2>
       <p class="help">
-        Exporte o arquivo original para guardar uma cópia. Depois importe um backup válido ou comece
-        um caderno vazio.
+        <ng-container i18n
+          >Exporte o arquivo original para guardar uma cópia. Depois importe um backup válido ou
+          comece um caderno vazio.
+        </ng-container>
       </p>
       <label class="check-row"
-        ><input type="checkbox" [(ngModel)]="confirmRecoveryReset" /> Já preservei o backup original
-        e quero substituir o caderno por um vazio.</label
+        ><input type="checkbox" [(ngModel)]="confirmRecoveryReset" />
+        <ng-container i18n
+          >Já preservei o backup original e quero substituir o caderno por um vazio.</ng-container
+        ></label
       ><button
         type="button"
         class="btn danger"
         [disabled]="!confirmRecoveryReset"
         (click)="recoverEmpty()"
       >
-        Começar caderno vazio
+        <ng-container i18n>Começar caderno vazio </ng-container>
       </button>
     </section>
   }
   <section class="panel">
-    <h2>Importar backup</h2>
+    <h2><ng-container i18n>Importar backup</ng-container></h2>
     <label class="field"
-      >Arquivo JSON do Black Market<input
-        type="file"
-        accept=".json,application/json"
-        (change)="read($event)"
+      ><ng-container i18n>Arquivo JSON do Black Market</ng-container
+      ><input type="file" accept=".json,application/json" (change)="read($event)"
     /></label>
     @if (error()) {
       <p class="error-box" role="alert">{{ error() }}</p>
     }
     @if (candidate(); as data) {
-      <h3>Backup validado · {{ data.region.toUpperCase() }}</h3>
+      <h3>
+        <ng-container i18n>Backup validado · {{ data.region.toUpperCase() }}</ng-container>
+      </h3>
       <div class="max-w-full overflow-x-auto">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Conteúdo</th>
-              <th>Registros do backup</th>
+              <th><ng-container i18n>Conteúdo</ng-container></th>
+              <th><ng-container i18n>Registros do backup</ng-container></th>
             </tr>
           </thead>
           <tbody>
@@ -79,26 +87,34 @@
         </table>
       </div>
       <label class="check-row"
-        ><input type="checkbox" [(ngModel)]="confirmReplace" /> Substituir meus dados locais pelos
-        dados deste backup.</label
+        ><input type="checkbox" [(ngModel)]="confirmReplace" />
+        <ng-container i18n
+          >Substituir meus dados locais pelos dados deste backup.</ng-container
+        ></label
       >
       <div class="action-row">
         <button type="button" class="btn" [disabled]="!confirmReplace" (click)="replace()">
-          Importar e substituir</button
-        ><button type="button" class="btn subtle" (click)="candidate.set(null)">Cancelar</button>
+          <ng-container i18n>Importar e substituir</ng-container></button
+        ><button type="button" class="btn subtle" (click)="candidate.set(null)">
+          <ng-container i18n>Cancelar</ng-container>
+        </button>
       </div>
     }
   </section>
   <section class="panel">
-    <h2>Catálogo extraído e imagens</h2>
+    <h2><ng-container i18n>Catálogo extraído e imagens</ng-container></h2>
     <p class="help">
-      O catálogo do jogo é importado pela API a partir de arquivos locais do extractor. Seu backup
-      pessoal não contém esse dataset nem assets do jogo. Quando a extração estiver pronta, o
-      catálogo poderá ser preenchido mantendo seus cenários manuais.
+      <ng-container i18n
+        >O catálogo do jogo é importado pela API a partir de arquivos locais do extractor. Seu
+        backup pessoal não contém esse dataset nem assets do jogo. Quando a extração estiver pronta,
+        o catálogo poderá ser preenchido mantendo seus cenários manuais.
+      </ng-container>
     </p>
     <p class="help">
-      Mercado automático, tabelas de equipamento, fórmulas específicas por item e mapa geográfico
-      ainda dependem de fontes e regras validadas.
+      <ng-container i18n
+        >Mercado automático, tabelas de equipamento, fórmulas específicas por item e mapa geográfico
+        ainda dependem de fontes e regras validadas.
+      </ng-container>
     </p>
   </section>
 </div>

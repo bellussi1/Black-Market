@@ -1,27 +1,29 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">03 / CRAFTING WORKSHOP</p>
-    <h1>Produzir, comprar, planejar.</h1>
+    <p class="tool-kicker"><ng-container i18n>03 / OFICINA DE PRODUÇÃO</ng-container></p>
+    <h1><ng-container i18n>Produzir, comprar, planejar.</ng-container></h1>
     <p>
-      Compare custos reais, defina rendimentos e transforme receitas em uma lista de materiais
-      integrada ao seu armazém.
+      <ng-container i18n
+        >Compare custos reais, defina rendimentos e transforme receitas em uma lista de materiais
+        integrada ao seu armazém.
+      </ng-container>
     </p>
   </header>
-  <div class="tabs" aria-label="Modos da oficina">
+  <div class="tabs" aria-label="Modos da oficina" i18n-aria-label>
     <button
       type="button"
       [class.active]="tab() === 'profit'"
       [attr.aria-pressed]="tab() === 'profit'"
       (click)="tab.set('profit')"
     >
-      Lucro da receita</button
+      <ng-container i18n>Lucro da receita</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'chain'"
       [attr.aria-pressed]="tab() === 'chain'"
       (click)="tab.set('chain')"
     >
-      Cadeia de materiais
+      <ng-container i18n>Cadeia de materiais </ng-container>
     </button>
   </div>
   @if (tab() === 'profit') {
@@ -29,33 +31,38 @@
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Seu cenário de produção</h2>
+        <h2><ng-container i18n>Seu cenário de produção</ng-container></h2>
         <div class="form-grid">
           <label class="field"
-            >Número de crafts<input
+            ><ng-container i18n>Número de crafts</ng-container
+            ><input
               type="number"
               min="1"
               [ngModel]="form().crafts"
               (ngModelChange)="patch({ crafts: $event })" /></label
           ><label class="field"
-            >Rendimento médio por craft<input
+            ><ng-container i18n>Rendimento médio por craft</ng-container
+            ><input
               type="number"
               min="0.001"
               step="0.001"
               [ngModel]="form().yield"
               (ngModelChange)="patch({ yield: $event })" /></label
           ><label class="field"
-            >Preço de venda unitário<input
+            ><ng-container i18n>Preço de venda unitário</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().salePrice"
               (ngModelChange)="patch({ salePrice: $event })" /></label
           ><label class="field"
-            >Outros custos do lote<input
+            ><ng-container i18n>Outros custos do lote</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().extraCost"
               (ngModelChange)="patch({ extraCost: $event })" /></label
           ><label class="field"
-            >Tempo do lote (minutos)<input
+            ><ng-container i18n>Tempo do lote (minutos)</ng-container
+            ><input
               type="number"
               min="0.001"
               step="0.001"
@@ -63,29 +70,33 @@
               (ngModelChange)="patch({ minutes: $event })"
           /></label>
         </div>
-        <h3>Ingredientes e preço de oportunidade</h3>
+        <h3><ng-container i18n>Ingredientes e preço de oportunidade</ng-container></h3>
         @for (ing of form().ingredients; track $index; let k = $index) {
           <div class="row-editor">
             <div class="form-grid">
               <label class="field"
-                >Ingrediente<input
+                ><ng-container i18n>Ingrediente</ng-container
+                ><input
                   maxlength="140"
                   [ngModel]="ing.name"
                   (ngModelChange)="ingredient(k, { name: $event })" /></label
               ><label class="field"
-                >Quantidade por craft<input
+                ><ng-container i18n>Quantidade por craft</ng-container
+                ><input
                   type="number"
                   step="0.001"
                   min="0.001"
                   [ngModel]="ing.quantity"
                   (ngModelChange)="ingredient(k, { quantity: $event })" /></label
               ><label class="field"
-                >Preço unitário<input
+                ><ng-container i18n>Preço unitário</ng-container
+                ><input
                   inputmode="numeric"
                   [ngModel]="ing.price"
                   (ngModelChange)="ingredient(k, { price: $event })" /></label
               ><label class="field"
-                >Quantidade no armazém<input
+                ><ng-container i18n>Quantidade no armazém</ng-container
+                ><input
                   type="number"
                   step="0.001"
                   min="0"
@@ -95,16 +106,16 @@
             </div>
             <div class="action-row">
               <button type="button" class="btn subtle" (click)="fillStock(k)">
-                Usar armazém e cotação</button
+                <ng-container i18n>Usar armazém e cotação</ng-container></button
               ><button class="btn danger" type="button" (click)="removeIngredient(k)">
-                Remover
+                <ng-container i18n>Remover </ng-container>
               </button>
             </div>
           </div>
         }
         <div class="action-row">
           <button class="btn subtle" type="button" (click)="addIngredient()">
-            Adicionar ingrediente
+            <ng-container i18n>Adicionar ingrediente </ng-container>
           </button>
         </div>
         <app-tax-options [value]="form()" (changed)="patch($event)" /><app-preset-bar
@@ -117,45 +128,55 @@
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Lucro econômico do lote</span
+              <span><ng-container i18n>Lucro econômico do lote</ng-container></span
               ><strong [class.negative]="r.profit.startsWith('-')">{{ silver(r.profit) }}</strong
-              ><small>Materiais em estoque também têm valor.</small>
+              ><small
+                ><ng-container i18n>Materiais em estoque também têm valor.</ng-container></small
+              >
             </div>
             <div class="metric">
-              <span>Prata nova necessária</span><strong>{{ silver(r.cashCost) }}</strong>
+              <span><ng-container i18n>Prata nova necessária</ng-container></span
+              ><strong>{{ silver(r.cashCost) }}</strong>
             </div>
             <div class="metric">
-              <span>Custo econômico</span><strong>{{ silver(r.economicCost) }}</strong>
+              <span><ng-container i18n>Custo econômico</ng-container></span
+              ><strong>{{ silver(r.economicCost) }}</strong>
             </div>
             <div class="metric">
-              <span>Receita líquida</span><strong>{{ silver(r.net) }}</strong>
+              <span><ng-container i18n>Receita líquida</ng-container></span
+              ><strong>{{ silver(r.net) }}</strong>
             </div>
             <div class="metric">
-              <span>Lucro por hora</span><strong>{{ silver(r.profitPerHour) }}</strong>
+              <span><ng-container i18n>Lucro por hora</ng-container></span
+              ><strong>{{ silver(r.profitPerHour) }}</strong>
             </div>
             <div class="metric">
-              <span>Saída esperada</span><strong>{{ number(r.output, 3) }}</strong>
+              <span><ng-container i18n>Saída esperada</ng-container></span
+              ><strong>{{ number(r.output, 3) }}</strong>
             </div>
             <div class="metric">
-              <span>Margem sobre receita</span><strong>{{ number(r.marginPercent) }}%</strong>
+              <span><ng-container i18n>Margem sobre receita</ng-container></span
+              ><strong>{{ number(r.marginPercent) }}%</strong>
             </div>
             <div class="metric">
-              <span>Custo por produto</span><strong>{{ silver(r.costPerOutput) }}</strong>
+              <span><ng-container i18n>Custo por produto</ng-container></span
+              ><strong>{{ silver(r.costPerOutput) }}</strong>
             </div>
             <div class="metric">
-              <span>Venda mínima para empatar</span><strong>{{ silver(r.breakEvenPrice) }}</strong>
+              <span><ng-container i18n>Venda mínima para empatar</ng-container></span
+              ><strong>{{ silver(r.breakEvenPrice) }}</strong>
             </div>
           </div>
           <div class="panel">
-            <h2>Materiais do lote</h2>
+            <h2><ng-container i18n>Materiais do lote</ng-container></h2>
             <div class="max-w-full overflow-x-auto">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Material</th>
-                    <th>Necessário</th>
-                    <th>Falta</th>
-                    <th>Comprar</th>
+                    <th><ng-container i18n>Material</ng-container></th>
+                    <th><ng-container i18n>Necessário</ng-container></th>
+                    <th><ng-container i18n>Falta</ng-container></th>
+                    <th><ng-container i18n>Comprar</ng-container></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -175,66 +196,76 @@
           <div class="error-box" role="alert">{{ result().error }}</div>
         }
         <p class="notice">
-          Rendimento médio é uma premissa sua, incluindo mastery e procs observados. O resultado não
-          incorpora subprodutos ou receitas alternativas automaticamente.
+          <ng-container i18n
+            >Rendimento médio é uma premissa sua, incluindo mastery e procs observados. O resultado
+            não incorpora subprodutos ou receitas alternativas automaticamente.
+          </ng-container>
         </p>
       </section>
     </div>
   } @else {
     <section class="panel">
       <div class="panel-heading">
-        <h2>Biblioteca de receitas manuais</h2>
-        <span class="badge">{{ store.data().recipes.length }} RECEITAS</span>
+        <h2><ng-container i18n>Biblioteca de receitas manuais</ng-container></h2>
+        <span class="badge"
+          ><ng-container i18n>{{ store.data().recipes.length }} RECEITAS</ng-container></span
+        >
       </div>
       <div class="form-grid">
         <label class="field"
-          >Produto da receita<input
+          ><ng-container i18n>Produto da receita</ng-container
+          ><input
             maxlength="140"
             placeholder="Nome do produto"
+            i18n-placeholder
             [(ngModel)]="draft.name" /></label
         ><label class="field"
-          >Unidades por craft (inteiro)<input type="number" min="1" [(ngModel)]="draft.yield"
+          ><ng-container i18n>Unidades por craft (inteiro)</ng-container
+          ><input type="number" min="1" [(ngModel)]="draft.yield"
         /></label>
       </div>
       @for (ing of draft.ingredients; track $index; let k = $index) {
         <div class="row-editor">
           <div class="form-grid">
             <label class="field"
-              >Ingrediente<input
-                maxlength="140"
-                [(ngModel)]="ing.name"
-                [readonly]="!!ing.recipeId" /></label
+              ><ng-container i18n>Ingrediente</ng-container
+              ><input maxlength="140" [(ngModel)]="ing.name" [readonly]="!!ing.recipeId" /></label
             ><label class="field"
-              >Quantidade por craft<input type="number" min="1" [(ngModel)]="ing.quantity" /></label
+              ><ng-container i18n>Quantidade por craft</ng-container
+              ><input type="number" min="1" [(ngModel)]="ing.quantity" /></label
             ><label class="field"
-              >Modo<select [ngModel]="ing.recipeId" (ngModelChange)="linkIngredient(k, $event)">
-                <option [ngValue]="null">Comprar / usar estoque</option>
+              ><ng-container i18n>Modo</ng-container
+              ><select [ngModel]="ing.recipeId" (ngModelChange)="linkIngredient(k, $event)">
+                <option [ngValue]="null">
+                  <ng-container i18n>Comprar / usar estoque</ng-container>
+                </option>
                 @for (recipe of store.data().recipes; track recipe.id) {
                   @if (recipe.id !== draft.id) {
-                    <option [value]="recipe.id">Produzir: {{ recipe.name }}</option>
+                    <option [value]="recipe.id">
+                      <ng-container i18n>Produzir: {{ recipe.name }}</ng-container>
+                    </option>
                   }
                 }
               </select></label
             ><label class="field"
-              >Preço de compra<input
-                inputmode="numeric"
-                [(ngModel)]="ing.price"
-                [disabled]="!!ing.recipeId"
+              ><ng-container i18n>Preço de compra</ng-container
+              ><input inputmode="numeric" [(ngModel)]="ing.price" [disabled]="!!ing.recipeId"
             /></label>
           </div>
           <div class="action-row">
             <button class="btn danger" type="button" (click)="removeDraftIngredient(k)">
-              Remover ingrediente
+              <ng-container i18n>Remover ingrediente </ng-container>
             </button>
           </div>
         </div>
       }
       <div class="action-row">
         <button class="btn subtle" type="button" (click)="addDraftIngredient()">
-          Adicionar ingrediente</button
-        ><button class="btn" type="button" (click)="saveRecipe()">Salvar receita</button
+          <ng-container i18n>Adicionar ingrediente</ng-container></button
+        ><button class="btn" type="button" (click)="saveRecipe()">
+          <ng-container i18n>Salvar receita</ng-container></button
         ><button class="btn subtle" type="button" (click)="draft = newRecipe()">
-          Nova receita
+          <ng-container i18n>Nova receita </ng-container>
         </button>
       </div>
       @if (error()) {
@@ -245,10 +276,10 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Produto</th>
-                <th>Rendimento</th>
-                <th>Ingredientes</th>
-                <th>Ações</th>
+                <th><ng-container i18n>Produto</ng-container></th>
+                <th><ng-container i18n>Rendimento</ng-container></th>
+                <th><ng-container i18n>Ingredientes</ng-container></th>
+                <th><ng-container i18n>Ações</ng-container></th>
               </tr>
             </thead>
             <tbody>
@@ -259,10 +290,10 @@
                   <td>{{ recipe.ingredients.length }}</td>
                   <td>
                     <button class="btn subtle" type="button" (click)="editRecipe(recipe)">
-                      Editar
+                      <ng-container i18n>Editar </ng-container>
                     </button>
                     <button class="btn danger" type="button" (click)="removeRecipe(recipe.id)">
-                      Excluir
+                      <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
                 </tr>
@@ -273,17 +304,19 @@
       }
     </section>
     <section class="panel">
-      <h2>Plano de produção</h2>
+      <h2><ng-container i18n>Plano de produção</ng-container></h2>
       <div class="form-grid">
         <label class="field"
-          >Receita alvo<select [ngModel]="target()" (ngModelChange)="target.set($event)">
-            <option value="">Escolher receita</option>
+          ><ng-container i18n>Receita alvo</ng-container
+          ><select [ngModel]="target()" (ngModelChange)="target.set($event)">
+            <option value=""><ng-container i18n>Escolher receita</ng-container></option>
             @for (recipe of store.data().recipes; track recipe.id) {
               <option [value]="recipe.id">{{ recipe.name }}</option>
             }
           </select></label
         ><label class="field"
-          >Quantidade desejada<input
+          ><ng-container i18n>Quantidade desejada</ng-container
+          ><input
             type="number"
             min="1"
             [ngModel]="quantity()"
@@ -291,34 +324,39 @@
         /></label>
       </div>
       <p class="help">
-        Usa estoque por nome de item em todos os armazéns. Excedentes produzidos são reutilizados
-        entre ramos. O plano mostra necessidades e mantém seu inventário intacto até você
-        atualizá-lo após produzir.
+        <ng-container i18n
+          >Usa estoque por nome de item em todos os armazéns. Excedentes produzidos são reutilizados
+          entre ramos. O plano mostra necessidades e mantém seu inventário intacto até você
+          atualizá-lo após produzir.
+        </ng-container>
       </p>
       @if (target()) {
         @if (plan().value; as p) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Comprar materiais faltantes</span><strong>{{ silver(p.cost) }}</strong>
+              <span><ng-container i18n>Comprar materiais faltantes</ng-container></span
+              ><strong>{{ silver(p.cost) }}</strong>
             </div>
             <div class="metric">
-              <span>Produto alvo</span><strong>{{ p.target }}</strong>
+              <span><ng-container i18n>Produto alvo</ng-container></span
+              ><strong>{{ p.target }}</strong>
             </div>
             <div class="metric">
-              <span>Quantidade</span><strong>{{ number(p.quantity, 0) }}</strong>
+              <span><ng-container i18n>Quantidade</ng-container></span
+              ><strong>{{ number(p.quantity, 0) }}</strong>
             </div>
           </div>
           <div class="max-w-full overflow-x-auto">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Material</th>
-                  <th>Demanda</th>
-                  <th>Estoque usado</th>
-                  <th>Excedente usado</th>
-                  <th>Produzir</th>
-                  <th>Comprar</th>
-                  <th>Custo</th>
+                  <th><ng-container i18n>Material</ng-container></th>
+                  <th><ng-container i18n>Demanda</ng-container></th>
+                  <th><ng-container i18n>Estoque usado</ng-container></th>
+                  <th><ng-container i18n>Excedente usado</ng-container></th>
+                  <th><ng-container i18n>Produzir</ng-container></th>
+                  <th><ng-container i18n>Comprar</ng-container></th>
+                  <th><ng-container i18n>Custo</ng-container></th>
                 </tr>
               </thead>
               <tbody>
@@ -336,11 +374,13 @@
               </tbody>
             </table>
           </div>
-          <h3>Execução — dependências primeiro</h3>
+          <h3><ng-container i18n>Execução — dependências primeiro</ng-container></h3>
           @for (task of p.tasks; track task.id) {
             <p class="help">
-              {{ task.name }} · {{ number(task.crafts, 0) }} crafts ·
-              {{ number(task.produced, 0) }} unidades
+              <ng-container i18n
+                >{{ task.name }} · {{ number(task.crafts, 0) }} crafts ·
+                {{ number(task.produced, 0) }} unidades
+              </ng-container>
             </p>
           }
           <app-calculation-proof tool="production" [value]="productionInput()" />
@@ -349,7 +389,8 @@
         }
       } @else {
         <div class="empty">
-          <strong>Monte sua primeira cadeia.</strong>Salve uma receita e escolha o produto alvo.
+          <strong><ng-container i18n>Monte sua primeira cadeia.</ng-container></strong
+          ><ng-container i18n>Salve uma receita e escolha o produto alvo. </ng-container>
         </div>
       }
     </section>

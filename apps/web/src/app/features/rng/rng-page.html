@@ -1,30 +1,36 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">08 / RNG BOX VALUE · NIGHT VENDOR</p>
-    <h1>Quanto vale abrir?</h1>
+    <p class="tool-kicker"><ng-container i18n>08 / CAIXAS E VENDEDOR NOTURNO</ng-container></p>
+    <h1><ng-container i18n>Quanto vale abrir?</ng-container></h1>
     <p>
-      Compare o custo da caixa com o valor esperado de resultados informados por você, depois do
-      imposto de venda.
+      <ng-container i18n
+        >Compare o custo da caixa com o valor esperado de resultados informados por você, depois do
+        imposto de venda.
+      </ng-container>
     </p>
   </header>
   <div class="notice">
-    Este modelo sorteia um resultado exclusivo por caixa. As probabilidades devem somar 100%; inclua
-    “Sem prêmio” com preço zero quando necessário. Use taxas verificadas ou reports próprios e salve
-    a origem no nome do preset.
+    <ng-container i18n
+      >Este modelo sorteia um resultado exclusivo por caixa. As probabilidades devem somar 100%;
+      inclua “Sem prêmio” com preço zero quando necessário. Use taxas verificadas ou reports
+      próprios e salve a origem no nome do preset.
+    </ng-container>
   </div>
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >
     <section class="panel">
-      <h2>Preço e resultados</h2>
+      <h2><ng-container i18n>Preço e resultados</ng-container></h2>
       <div class="form-grid">
         <label class="field"
-          >Preço por caixa / oferta do vendor<input
+          ><ng-container i18n>Preço por caixa / oferta do vendor</ng-container
+          ><input
             inputmode="numeric"
             [ngModel]="form().boxPrice"
             (ngModelChange)="patch({ boxPrice: $event })" /></label
         ><label class="field"
-          >Quantidade de caixas<input
+          ><ng-container i18n>Quantidade de caixas</ng-container
+          ><input
             type="number"
             min="1"
             [ngModel]="form().boxes"
@@ -35,11 +41,11 @@
         <div class="row-editor">
           <div class="form-grid">
             <label class="field"
-              >Resultado<input
-                [ngModel]="outcome.name"
-                (ngModelChange)="row(k, { name: $event })" /></label
+              ><ng-container i18n>Resultado</ng-container
+              ><input [ngModel]="outcome.name" (ngModelChange)="row(k, { name: $event })" /></label
             ><label class="field"
-              >Probabilidade (%)<input
+              ><ng-container i18n>Probabilidade (%)</ng-container
+              ><input
                 type="number"
                 min="0"
                 max="100"
@@ -47,25 +53,30 @@
                 [ngModel]="outcome.probability"
                 (ngModelChange)="row(k, { probability: $event })" /></label
             ><label class="field"
-              >Quantidade do prêmio<input
+              ><ng-container i18n>Quantidade do prêmio</ng-container
+              ><input
                 type="number"
                 min="1"
                 [ngModel]="outcome.quantity"
                 (ngModelChange)="row(k, { quantity: $event })" /></label
             ><label class="field"
-              >Preço de venda por unidade<input
+              ><ng-container i18n>Preço de venda por unidade</ng-container
+              ><input
                 inputmode="numeric"
                 [ngModel]="outcome.price"
                 (ngModelChange)="row(k, { price: $event })"
             /></label>
           </div>
           <div class="action-row">
-            <button type="button" class="btn danger" (click)="remove(k)">Remover resultado</button>
+            <button type="button" class="btn danger" (click)="remove(k)">
+              <ng-container i18n>Remover resultado</ng-container>
+            </button>
           </div>
         </div>
       }
       <div class="action-row">
-        <button type="button" class="btn subtle" (click)="add()">Adicionar resultado</button
+        <button type="button" class="btn subtle" (click)="add()">
+          <ng-container i18n>Adicionar resultado</ng-container></button
         ><span class="badge">{{ number(total()) }}% / 100%</span>
       </div>
       <app-tax-options [value]="form()" (changed)="patch($event)" /><app-preset-bar
@@ -78,42 +89,52 @@
       @if (result().value; as r) {
         <div class="metric-grid">
           <div class="metric hero-metric">
-            <span>Lucro esperado por caixa</span
+            <span><ng-container i18n>Lucro esperado por caixa</ng-container></span
             ><strong [class.negative]="r.expectedProfit.startsWith('-')">{{
               silver(r.expectedProfit)
             }}</strong
-            ><small>Valor médio probabilístico, sem garantia de retorno.</small>
+            ><small
+              ><ng-container i18n
+                >Valor médio probabilístico, sem garantia de retorno.</ng-container
+              ></small
+            >
           </div>
           <div class="metric">
-            <span>Valor líquido esperado</span><strong>{{ silver(r.expectedNet) }}</strong>
+            <span><ng-container i18n>Valor líquido esperado</ng-container></span
+            ><strong>{{ silver(r.expectedNet) }}</strong>
           </div>
           <div class="metric">
-            <span>Custo total</span><strong>{{ silver(r.totalCost) }}</strong>
+            <span><ng-container i18n>Custo total</ng-container></span
+            ><strong>{{ silver(r.totalCost) }}</strong>
           </div>
           <div class="metric">
-            <span>Lucro esperado de todas as caixas</span
+            <span><ng-container i18n>Lucro esperado de todas as caixas</ng-container></span
             ><strong>{{ silver(r.totalExpectedProfit) }}</strong>
           </div>
           <div class="metric">
-            <span>Chance de prêmio lucrativo por caixa</span
+            <span><ng-container i18n>Chance de prêmio lucrativo por caixa</ng-container></span
             ><strong>{{ number(r.profitablePercent) }}%</strong>
           </div>
           <div class="metric">
-            <span>Ao menos uma caixa lucrativa</span
+            <span><ng-container i18n>Ao menos uma caixa lucrativa</ng-container></span
             ><strong>{{ number(r.atLeastOneProfitablePercent) }}%</strong
-            ><small>Não significa que o lote inteiro será lucrativo.</small>
+            ><small
+              ><ng-container i18n
+                >Não significa que o lote inteiro será lucrativo.</ng-container
+              ></small
+            >
           </div>
         </div>
         <div class="panel">
-          <h2>Composição do valor esperado</h2>
+          <h2><ng-container i18n>Composição do valor esperado</ng-container></h2>
           <div class="max-w-full overflow-x-auto">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Resultado</th>
-                  <th>Chance</th>
-                  <th>Valor líquido</th>
-                  <th>Contribuição média</th>
+                  <th><ng-container i18n>Resultado</ng-container></th>
+                  <th><ng-container i18n>Chance</ng-container></th>
+                  <th><ng-container i18n>Valor líquido</ng-container></th>
+                  <th><ng-container i18n>Contribuição média</ng-container></th>
                 </tr>
               </thead>
               <tbody>

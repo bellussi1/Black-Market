@@ -23,7 +23,7 @@ describe('MarketApi', () => {
       .getItem('676', 'eu')
       .subscribe((value) => (result = value));
     const request = TestBed.inject(HttpTestingController).expectOne(
-      `${environment.apiBaseUrl}/api/v1/market/items/676?region=eu`,
+      `${environment.apiBaseUrl}/api/v1/market/items/676?region=eu&locale=pt`,
     );
     expect(request.request.method).toBe('GET');
     request.flush({ source: 'arsha', region: 'eu', items: [] });

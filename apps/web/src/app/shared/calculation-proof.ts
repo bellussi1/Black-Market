@@ -9,8 +9,7 @@ import { validationMessage } from '../shared/calculation-feedback';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-calculation-proof',
-  template:
-    '<div class="proof"><button class="btn subtle" type="button" (click)="verify()" [disabled]="status() === \'loading\'">Conferir cálculo pela API</button><span aria-live="polite">{{ message() }}</span></div>',
+  templateUrl: './calculation-proof.html',
 })
 export class CalculationProof implements OnChanges, OnDestroy {
   @Input({ required: true }) tool!: CalculatorKey;
@@ -37,7 +36,7 @@ export class CalculationProof implements OnChanges, OnDestroy {
       return;
     }
     this.status.set('loading');
-    this.message.set('Conferindo…');
+    this.message.set($localize`Conferindo…`);
     this.request = this.http
       .post<{
         modelVersion: string;

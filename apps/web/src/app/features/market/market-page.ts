@@ -196,6 +196,7 @@ export class MarketPage implements OnDestroy {
       region: response.region,
       category: 'Arsha',
       source: 'arsha',
+      nameLocale: response.locale ?? null,
       itemId: item.itemId,
       subId: item.subId,
       price: item.price,

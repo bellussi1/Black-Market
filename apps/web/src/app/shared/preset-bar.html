@@ -1,26 +1,29 @@
 <div class="preset-bar">
   <label class="field"
-    >Nome do preset<input
+    ><ng-container i18n>Nome do preset</ng-container
+    ><input
       maxlength="140"
       placeholder="Meu cenário"
+      i18n-placeholder
       [ngModel]="name()"
       (ngModelChange)="name.set($event)"
   /></label>
   <button class="btn" type="button" [disabled]="!name().trim()" (click)="save()">
-    Salvar preset
+    <ng-container i18n>Salvar preset </ng-container>
   </button>
   <label class="field"
-    >Presets desta região<select [ngModel]="selected()" (ngModelChange)="selected.set($event)">
-      <option value="">Escolher preset</option>
+    ><ng-container i18n>Presets desta região</ng-container
+    ><select [ngModel]="selected()" (ngModelChange)="selected.set($event)">
+      <option value=""><ng-container i18n>Escolher preset</ng-container></option>
       @for (p of presets(); track p.id) {
         <option [value]="p.id">{{ p.name }}</option>
       }
     </select></label
   >
   <button class="btn subtle" type="button" [disabled]="!selected()" (click)="load()">
-    Carregar
+    <ng-container i18n>Carregar </ng-container>
   </button>
   <button class="btn subtle" type="button" [disabled]="!selected()" (click)="remove()">
-    Excluir preset
+    <ng-container i18n>Excluir preset </ng-container>
   </button>
 </div>

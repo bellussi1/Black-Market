@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-export const regions = ['sa', 'na', 'eu', 'sea', 'kr', 'jp', 'tw'] as const;
+import { DEFAULT_REGION, REGION_CODES } from '@bdo/shared';
+export const regions = REGION_CODES;
 export type Region = (typeof regions)[number];
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024;
 interface SummaryInput {
@@ -18,25 +19,29 @@ const emptySummary = {
 };
 @Injectable({ providedIn: 'root' })
 export class RegionPreferences {
-  readonly region = signal<Region>('sa');
+  readonly region = signal<Region>(DEFAULT_REGION);
   readonly message = signal('');
   readonly blocked = signal(false);
   private readonly metadata = signal(emptySummary);
   private readonly listeners = new Set<(region: Region) => void>();
   readonly counts = computed(() => [
     {
-      label: 'Cotações nesta região',
+      label: $localize`Cotações nesta região`,
       value: this.metadata().quotes.filter((r) => r.region === this.region()).length,
       path: '/market',
     },
     {
-      label: 'Materiais no armazém',
+      label: $localize`Materiais no armazém`,
       value: this.metadata().inventory.filter((r) => r.region === this.region()).length,
       path: '/storage',
     },
-    { label: 'Receitas manuais', value: this.metadata().recipes.length, path: '/crafting' },
     {
-      label: 'Presets de cálculo',
+      label: $localize`Receitas manuais`,
+      value: this.metadata().recipes.length,
+      path: '/crafting',
+    },
+    {
+      label: $localize`Presets de cálculo`,
       value: this.metadata().presets.filter((r) => r.region === this.region()).length,
       path: '/settings',
     },

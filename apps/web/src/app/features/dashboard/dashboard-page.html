@@ -1,22 +1,35 @@
 <div class="home-page">
   <section class="home-hero">
     <div>
-      <p class="tool-kicker">BLACK MARKET / BLACK DESERT ONLINE</p>
-      <h1>Planeje cada<br /><em>próximo passo.</em></h1>
+      <p class="tool-kicker">
+        <ng-container i18n>BLACK MARKET / BLACK DESERT ONLINE</ng-container>
+      </p>
+      <h1>
+        <ng-container i18n>Planeje cada</ng-container><br /><em
+          ><ng-container i18n>próximo passo.</ng-container></em
+        >
+      </h1>
       <p class="hero-copy">
-        Sua oficina de decisões. Compare o valor de uma venda, prepare uma produção e entenda o
-        custo da próxima tentativa.
+        <ng-container i18n
+          >Sua oficina de decisões. Compare o valor de uma venda, prepare uma produção e entenda o
+          custo da próxima tentativa.
+        </ng-container>
       </p>
       <div class="action-row">
-        <a class="btn" routerLink="/market">Calcular uma venda <span aria-hidden="true">↗</span></a
-        ><a class="btn subtle" routerLink="/crafting">Abrir oficina</a>
+        <a class="btn" routerLink="/market"
+          ><ng-container i18n>Calcular uma venda </ng-container><span aria-hidden="true">↗</span></a
+        ><a class="btn subtle" routerLink="/crafting"
+          ><ng-container i18n>Abrir oficina</ng-container></a
+        >
       </div>
       <p class="hero-foot">
-        Feito para o seu ritmo. Cenários e dados pessoais ficam neste navegador.
+        <ng-container i18n
+          >Feito para o seu ritmo. Cenários e dados pessoais ficam neste navegador.
+        </ng-container>
       </p>
     </div>
     <aside class="hero-note">
-      <span>UM CADERNO. MUITOS CAMINHOS.</span
+      <span><ng-container i18n>UM CADERNO. MUITOS CAMINHOS.</ng-container></span
       ><svg viewBox="0 0 260 150" aria-hidden="true">
         <path
           d="M130 12 230 75 130 138 30 75Z M130 35 192 75 130 115 68 75Z M130 55 160 75 130 95 100 75Z"
@@ -26,9 +39,16 @@
         />
         <path d="M130 12V138M30 75H230" stroke="#d6a577" opacity=".3" />
         <circle cx="130" cy="75" r="4" fill="#d6a577" /></svg
-      ><strong>A próxima decisão<br />começa com seus dados.</strong>
+      ><strong
+        ><ng-container i18n>A próxima decisão</ng-container><br /><ng-container i18n
+          >começa com seus dados.</ng-container
+        ></strong
+      >
       <p>
-        Informe preços, custos e chances. Guarde os cenários que importam e compare os resultados.
+        <ng-container i18n
+          >Informe preços, custos e chances. Guarde os cenários que importam e compare os
+          resultados.
+        </ng-container>
       </p>
     </aside>
   </section>
@@ -37,17 +57,17 @@
       <a [routerLink]="stat.path"
         ><span>{{ stat.label }}</span
         ><strong>{{ stat.value }}</strong
-        ><small>Abrir <span aria-hidden="true">↗</span></small></a
+        ><small><ng-container i18n>Abrir </ng-container><span aria-hidden="true">↗</span></small></a
       >
     }
   </div>
   <section id="ferramentas">
     <div class="home-section-head">
       <div>
-        <p class="tool-kicker">ESCOLHA SUA FERRAMENTA</p>
-        <h2>Do mercado à próxima tentativa.</h2>
+        <p class="tool-kicker"><ng-container i18n>ESCOLHA SUA FERRAMENTA</ng-container></p>
+        <h2><ng-container i18n>Do mercado à próxima tentativa.</ng-container></h2>
       </div>
-      <span>09 ÁREAS DISPONÍVEIS</span>
+      <span><ng-container i18n>09 ÁREAS DISPONÍVEIS</ng-container></span>
     </div>
     <div class="home-tools">
       @for (tool of tools; track tool.code) {
@@ -58,38 +78,48 @@
           </div>
           <h3>{{ tool.title }}</h3>
           <p>{{ tool.description }}</p>
-          <span class="tool-open">Abrir ferramenta <b aria-hidden="true">↗</b></span></a
+          <span class="tool-open"
+            ><ng-container i18n>Abrir ferramenta </ng-container><b aria-hidden="true">↗</b></span
+          ></a
         >
       }
     </div>
   </section>
   <section id="dados" class="home-data">
     <div>
-      <p class="tool-kicker">DE ONDE VEM CADA NÚMERO</p>
-      <h2>Premissas à vista.</h2>
+      <p class="tool-kicker"><ng-container i18n>DE ONDE VEM CADA NÚMERO</ng-container></p>
+      <h2><ng-container i18n>Premissas à vista.</ng-container></h2>
       <p>
-        As ferramentas já funcionam com suas informações. O catálogo do cliente e as cotações
-        automáticas serão conectados conforme as fontes estiverem disponíveis.
+        <ng-container i18n
+          >As ferramentas já funcionam com suas informações. O catálogo do cliente e as cotações
+          automáticas serão conectados conforme as fontes estiverem disponíveis.
+        </ng-container>
       </p>
     </div>
     <dl>
       <div>
-        <dt>Seus dados pessoais</dt>
+        <dt><ng-container i18n>Seus dados pessoais</ng-container></dt>
         <dd>
-          Preços, materiais, receitas e presets<br /><span
-            >Disponíveis agora · backup exportável</span
+          <ng-container i18n>Preços, materiais, receitas e presets</ng-container><br /><span
+            ><ng-container i18n>Disponíveis agora · backup exportável</ng-container></span
           >
         </dd>
       </div>
       <div>
-        <dt>Catálogo do jogo</dt>
+        <dt><ng-container i18n>Catálogo do jogo</ng-container></dt>
         <dd>
-          Importação versionada do extractor<br /><span>Pronto para receber sua extração</span>
+          <ng-container i18n>Importação versionada do extractor</ng-container><br /><span
+            ><ng-container i18n>Pronto para receber sua extração</ng-container></span
+          >
         </dd>
       </div>
       <div>
-        <dt>Mercado automático</dt>
-        <dd>Coleta por uma fonte externa validada<br /><span>Integração pendente</span></dd>
+        <dt><ng-container i18n>Mercado automático</ng-container></dt>
+        <dd>
+          <ng-container i18n>Coleta por uma fonte externa validada</ng-container><br /><span
+            ><ng-container i18n>Integração pendente</ng-container></span
+          >
+        </dd>
       </div>
     </dl>
   </section>

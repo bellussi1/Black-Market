@@ -1,0 +1,12 @@
+<div class="proof">
+  <button
+    class="btn subtle"
+    type="button"
+    (click)="verify()"
+    [disabled]="status() === 'loading'"
+    i18n
+  >
+    Conferir cálculo pela API
+  </button>
+  <span aria-live="polite">{{ message() }}</span>
+</div>

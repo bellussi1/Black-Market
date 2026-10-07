@@ -14,7 +14,9 @@ describe('MarketPage', () => {
     page.lookupId.set('676');
     page.lookup();
     const http = TestBed.inject(HttpTestingController);
-    const request = http.expectOne('http://localhost:3000/api/v1/market/items/676?region=sa');
+    const request = http.expectOne(
+      'http://localhost:3000/api/v1/market/items/676?region=sa&locale=pt',
+    );
     const item = {
       itemId: 676,
       subId: 0,

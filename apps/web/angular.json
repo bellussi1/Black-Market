@@ -32,7 +32,8 @@
               }
             ],
             "styles": ["src/styles/tailwind.css", "src/styles.scss"],
-            "inlineStyleLanguage": "scss"
+            "inlineStyleLanguage": "scss",
+            "polyfills": ["@angular/localize/init"]
           },
           "configurations": {
             "production": {
@@ -89,7 +90,20 @@
             "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           },
           "builder": "@angular-eslint/builder:lint"
+        },
+        "extract-i18n": {
+          "options": {
+            "outputPath": "src/locale",
+            "outFile": "messages.pt-BR.xlf",
+            "buildTarget": "web:build",
+            "format": "xlf2"
+          },
+          "builder": "@angular/build:extract-i18n"
         }
+      },
+      "i18n": {
+        "locales": {},
+        "sourceLocale": "pt-BR"
       }
     }
   }

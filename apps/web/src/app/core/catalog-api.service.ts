@@ -9,6 +9,7 @@ import type {
 } from '@bdo/shared';
 
 import { environment } from '../../environments/environment';
+import { preferredDataLocale } from './locale';
 import { RegionPreferences } from './region-preferences';
 
 export interface CatalogSearchParams {
@@ -33,6 +34,7 @@ export class CatalogApiService {
   getItems(params: CatalogSearchParams) {
     let httpParams = new HttpParams()
       .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale())
       .set('page', String(params.page))
       .set('pageSize', String(params.pageSize));
     if (params.q) httpParams = httpParams.set('q', params.q);
@@ -43,20 +45,21 @@ export class CatalogApiService {
 
   getCategories() {
     return this.http.get<CatalogCategoriesResponse>(`${this.baseUrl}/categories`, {
-      params: { region: this.preferences.region() },
+      params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
     });
   }
 
   getItem(id: number) {
     return this.http.get<CatalogItemResponse>(`${this.baseUrl}/items/${id}`, {
-      params: { region: this.preferences.region() },
+      params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
     });
   }
 
   getItemRecipes(id: number, direction: 'produces' | 'uses') {
     const params = new HttpParams()
       .set('direction', direction)
-      .set('region', this.preferences.region());
+      .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale());
     return this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/items/${id}/recipes`, { params });
   }
 }

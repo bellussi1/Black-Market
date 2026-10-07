@@ -1,10 +1,14 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">07 / STORAGE TRACKER · RESOURCE PLANNER</p>
-    <h1>O que você tem. O que falta.</h1>
+    <p class="tool-kicker">
+      <ng-container i18n>07 / ARMAZÉM E PLANEJAMENTO DE MATERIAIS</ng-container>
+    </p>
+    <h1><ng-container i18n>O que você tem. O que falta.</ng-container></h1>
     <p>
-      Organize materiais por armazém e acompanhe projetos de equipamento, navios e produção com
-      metas próprias.
+      <ng-container i18n
+        >Organize materiais por armazém e acompanhe projetos de equipamento, navios e produção com
+        metas próprias.
+      </ng-container>
     </p>
   </header>
   <div class="tabs">
@@ -14,57 +18,74 @@
       [attr.aria-pressed]="tab() === 'stock'"
       (click)="tab.set('stock')"
     >
-      Armazém</button
+      <ng-container i18n>Armazém</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'projects'"
       [attr.aria-pressed]="tab() === 'projects'"
       (click)="tab.set('projects')"
     >
-      Projetos de materiais
+      <ng-container i18n>Projetos de materiais </ng-container>
     </button>
   </div>
   @if (tab() === 'stock') {
     <div class="metric-grid">
       <div class="metric">
-        <span>Registros nesta região</span><strong>{{ allStock().length }}</strong>
+        <span><ng-container i18n>Registros nesta região</ng-container></span
+        ><strong>{{ allStock().length }}</strong>
       </div>
       <div class="metric">
-        <span>Valor bruto informado</span><strong>{{ silver(valuation()) }}</strong
-        ><small>Antes de impostos e disponibilidade de venda.</small>
+        <span><ng-container i18n>Valor bruto informado</ng-container></span
+        ><strong>{{ silver(valuation()) }}</strong
+        ><small
+          ><ng-container i18n>Antes de impostos e disponibilidade de venda.</ng-container></small
+        >
       </div>
     </div>
     <section class="panel">
-      <h2>Adicionar ou editar material</h2>
+      <h2><ng-container i18n>Adicionar ou editar material</ng-container></h2>
       <div class="form-grid">
-        <label class="field">Item<input maxlength="140" [(ngModel)]="draft.name" /></label
+        <label class="field"
+          ><ng-container i18n>Item</ng-container
+          ><input maxlength="140" [(ngModel)]="draft.name" /></label
         ><label class="field"
-          >Armazém / personagem<input maxlength="140" [(ngModel)]="draft.location" /></label
+          ><ng-container i18n>Armazém / personagem</ng-container
+          ><input maxlength="140" [(ngModel)]="draft.location" /></label
         ><label class="field"
-          >Quantidade disponível<input type="number" min="0" [(ngModel)]="draft.quantity" /></label
+          ><ng-container i18n>Quantidade disponível</ng-container
+          ><input type="number" min="0" [(ngModel)]="draft.quantity" /></label
         ><label class="field"
-          >Meta neste local<input type="number" min="0" [(ngModel)]="draft.target" /></label
+          ><ng-container i18n>Meta neste local</ng-container
+          ><input type="number" min="0" [(ngModel)]="draft.target" /></label
         ><label class="field"
-          >Preço unitário informado<input inputmode="numeric" [(ngModel)]="draft.price"
+          ><ng-container i18n>Preço unitário informado</ng-container
+          ><input inputmode="numeric" [(ngModel)]="draft.price"
         /></label>
       </div>
       <div class="action-row">
-        <button type="button" class="btn" (click)="saveStock()">Salvar material</button
+        <button type="button" class="btn" (click)="saveStock()">
+          <ng-container i18n>Salvar material</ng-container></button
         ><button type="button" class="btn subtle" (click)="draft = newStock()">
-          Novo material
+          <ng-container i18n>Novo material </ng-container>
         </button>
       </div>
     </section>
     <section class="panel">
       <div class="panel-heading">
-        <h2>Inventário · {{ store.data().region.toUpperCase() }}</h2>
-        <button type="button" class="btn subtle" (click)="exportList()">Exportar CSV</button>
+        <h2>
+          <ng-container i18n>Inventário · {{ store.data().region.toUpperCase() }}</ng-container>
+        </h2>
+        <button type="button" class="btn subtle" (click)="exportList()">
+          <ng-container i18n>Exportar CSV</ng-container>
+        </button>
       </div>
       <div class="form-grid" style="margin-bottom: 20px">
-        <label class="field">Buscar item<input [(ngModel)]="search" /></label
+        <label class="field"
+          ><ng-container i18n>Buscar item</ng-container><input [(ngModel)]="search" /></label
         ><label class="field"
-          >Local<select [(ngModel)]="location">
-            <option value="">Todos</option>
+          ><ng-container i18n>Local</ng-container
+          ><select [(ngModel)]="location">
+            <option value=""><ng-container i18n>Todos</ng-container></option>
             @for (loc of locations; track loc) {
               <option [value]="loc">{{ loc }}</option>
             }
@@ -76,13 +97,13 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Local</th>
-                <th>Tenho</th>
-                <th>Meta</th>
-                <th>Falta</th>
-                <th>Preço</th>
-                <th>Ações</th>
+                <th><ng-container i18n>Item</ng-container></th>
+                <th><ng-container i18n>Local</ng-container></th>
+                <th><ng-container i18n>Tenho</ng-container></th>
+                <th><ng-container i18n>Meta</ng-container></th>
+                <th><ng-container i18n>Falta</ng-container></th>
+                <th><ng-container i18n>Preço</ng-container></th>
+                <th><ng-container i18n>Ações</ng-container></th>
               </tr>
             </thead>
             <tbody>
@@ -97,9 +118,11 @@
                   </td>
                   <td>{{ silver(row.price) }}</td>
                   <td>
-                    <button type="button" class="btn subtle" (click)="edit(row)">Editar</button>
+                    <button type="button" class="btn subtle" (click)="edit(row)">
+                      <ng-container i18n>Editar</ng-container>
+                    </button>
                     <button type="button" class="btn danger" (click)="remove(row.id)">
-                      Excluir
+                      <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
                 </tr>
@@ -109,42 +132,52 @@
         </div>
       } @else {
         <div class="empty">
-          <strong>Seu armazém começa aqui.</strong>Adicione materiais; a oficina de produção poderá
-          usar esse estoque.
+          <strong><ng-container i18n>Seu armazém começa aqui.</ng-container></strong
+          ><ng-container i18n
+            >Adicione materiais; a oficina de produção poderá usar esse estoque.
+          </ng-container>
         </div>
       }
     </section>
   } @else {
     <section class="panel">
-      <h2>Definir projeto</h2>
+      <h2><ng-container i18n>Definir projeto</ng-container></h2>
       <label class="field"
-        >Nome do projeto<input
+        ><ng-container i18n>Nome do projeto</ng-container
+        ><input
           maxlength="140"
           placeholder="Meu navio, meu equipamento, minha produção…"
+          i18n-placeholder
           [(ngModel)]="project.name"
       /></label>
       @for (material of project.materials; track $index; let k = $index) {
         <div class="row-editor">
           <div class="form-grid">
-            <label class="field">Material<input [(ngModel)]="material.name" /></label
+            <label class="field"
+              ><ng-container i18n>Material</ng-container
+              ><input [(ngModel)]="material.name" /></label
             ><label class="field"
-              >Meta total<input type="number" min="1" [(ngModel)]="material.target" /></label
+              ><ng-container i18n>Meta total</ng-container
+              ><input type="number" min="1" [(ngModel)]="material.target" /></label
             ><label class="field"
-              >Preço unitário de compra<input inputmode="numeric" [(ngModel)]="material.price"
+              ><ng-container i18n>Preço unitário de compra</ng-container
+              ><input inputmode="numeric" [(ngModel)]="material.price"
             /></label>
           </div>
           <div class="action-row">
             <button type="button" class="btn danger" (click)="removeMaterial(k)">
-              Remover material
+              <ng-container i18n>Remover material </ng-container>
             </button>
           </div>
         </div>
       }
       <div class="action-row">
-        <button type="button" class="btn subtle" (click)="addMaterial()">Adicionar material</button
-        ><button type="button" class="btn" (click)="saveProject()">Salvar projeto</button
+        <button type="button" class="btn subtle" (click)="addMaterial()">
+          <ng-container i18n>Adicionar material</ng-container></button
+        ><button type="button" class="btn" (click)="saveProject()">
+          <ng-container i18n>Salvar projeto</ng-container></button
         ><button type="button" class="btn subtle" (click)="project = newProject()">
-          Novo projeto
+          <ng-container i18n>Novo projeto </ng-container>
         </button>
       </div>
       @if (error()) {
@@ -152,13 +185,11 @@
       }
     </section>
     <section class="panel">
-      <h2>Meus projetos</h2>
+      <h2><ng-container i18n>Meus projetos</ng-container></h2>
       <label class="field"
-        >Acompanhar<select
-          [ngModel]="selectedProject()"
-          (ngModelChange)="selectedProject.set($event)"
-        >
-          <option value="">Escolher projeto</option>
+        ><ng-container i18n>Acompanhar</ng-container
+        ><select [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
+          <option value=""><ng-container i18n>Escolher projeto</ng-container></option>
           @for (p of projects; track p.id) {
             <option [value]="p.id">{{ p.name }}</option>
           }
@@ -166,33 +197,37 @@
       >
       @if (currentProject(); as p) {
         <div class="action-row">
-          <button type="button" class="btn subtle" (click)="editProject(p)">Editar projeto</button
+          <button type="button" class="btn subtle" (click)="editProject(p)">
+            <ng-container i18n>Editar projeto</ng-container></button
           ><button type="button" class="btn danger" (click)="removeProject(p.id)">
-            Excluir projeto
+            <ng-container i18n>Excluir projeto </ng-container>
           </button>
         </div>
         <div class="metric-grid" style="margin-top: 24px">
           <div class="metric">
-            <span>Materiais completos</span
+            <span><ng-container i18n>Materiais completos</ng-container></span
             ><strong>{{ completed() }} / {{ materials().length }}</strong>
           </div>
           <div class="metric">
-            <span>Custo dos faltantes</span><strong>{{ silver(projectCost()) }}</strong>
+            <span><ng-container i18n>Custo dos faltantes</ng-container></span
+            ><strong>{{ silver(projectCost()) }}</strong>
           </div>
         </div>
         <p class="help">
-          Cada projeto consulta o estoque total desta região por nome. Materiais ainda não estão
-          reservados: projetos diferentes podem contar o mesmo estoque.
+          <ng-container i18n
+            >Cada projeto consulta o estoque total desta região por nome. Materiais ainda não estão
+            reservados: projetos diferentes podem contar o mesmo estoque.
+          </ng-container>
         </p>
         <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Material</th>
-                <th>Tenho</th>
-                <th>Meta</th>
-                <th>Falta</th>
-                <th>Custo</th>
+                <th><ng-container i18n>Material</ng-container></th>
+                <th><ng-container i18n>Tenho</ng-container></th>
+                <th><ng-container i18n>Meta</ng-container></th>
+                <th><ng-container i18n>Falta</ng-container></th>
+                <th><ng-container i18n>Custo</ng-container></th>
               </tr>
             </thead>
             <tbody>
@@ -221,7 +256,11 @@
           </table>
         </div>
       } @else {
-        <div class="empty">Salve um projeto e escolha-o para acompanhar os materiais.</div>
+        <div class="empty">
+          <ng-container i18n
+            >Salve um projeto e escolha-o para acompanhar os materiais.</ng-container
+          >
+        </div>
       }
     </section>
   }

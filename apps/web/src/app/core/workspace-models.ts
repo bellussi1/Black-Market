@@ -13,6 +13,7 @@ import {
   recipeSchema,
   trainingSchema,
 } from '@bdo/calculators';
+import { DEFAULT_REGION } from '@bdo/shared';
 import { z } from 'zod';
 
 import { regions } from './region-preferences';
@@ -27,6 +28,7 @@ export const quoteSchema = z.object({
   region,
   price: moneySchema,
   source: z.enum(['manual', 'arsha']).default('manual'),
+  nameLocale: z.string().max(16).nullable().default(null),
   itemId: z.number().int().positive().nullable().default(null),
   subId: z.number().int().nonnegative().nullable().default(null),
   stock: z.number().int().min(0).max(1e9),
@@ -149,7 +151,7 @@ export type Buff = z.infer<typeof buffSchema>;
 export type ToolPreset = z.infer<typeof presetSchema>;
 export const emptyWorkspace = (): Workspace => ({
   schemaVersion: 1,
-  region: 'sa',
+  region: DEFAULT_REGION,
   quotes: [],
   inventory: [],
   recipes: [],

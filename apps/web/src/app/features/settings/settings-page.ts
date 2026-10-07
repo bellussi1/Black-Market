@@ -23,7 +23,7 @@ export class SettingsPage {
       { name: 'Cotações', count: s.quotes.length },
       { name: 'Materiais', count: s.inventory.length },
       { name: 'Receitas manuais', count: s.recipes.length },
-      { name: 'Builds', count: s.gear.length },
+      { name: $localize`Conjuntos de equipamentos`, count: s.gear.length },
       { name: 'Sessões', count: s.sessions.length },
       { name: 'Buffs', count: s.buffs.length },
       { name: 'Presets de cálculo', count: s.presets.length },

@@ -1,10 +1,12 @@
 <div class="tool-page">
   <header class="tool-heading">
-    <p class="tool-kicker">06 / LIFE SKILLS · TRAINING</p>
-    <h1>Meça seu rendimento.</h1>
+    <p class="tool-kicker"><ng-container i18n>06 / PROFISSÕES E TREINO</ng-container></p>
+    <h1><ng-container i18n>Meça seu rendimento.</ng-container></h1>
     <p>
-      Registre gathering, hunting, fishing ou grind. Compare o retorno de um upgrade de mastery e
-      estime o tempo de treino a partir do seu XP medido.
+      <ng-container i18n
+        >Registre coleta, caça, pesca ou combate. Compare o retorno de uma melhoria de maestria e
+        estime o tempo de treino a partir do seu XP medido.
+      </ng-container>
     </p>
   </header>
   <div class="tabs">
@@ -14,21 +16,21 @@
       [attr.aria-pressed]="tab() === 'sessions'"
       (click)="tab.set('sessions')"
     >
-      Sessões e lucro</button
+      <ng-container i18n>Sessões e lucro</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'mastery'"
       [attr.aria-pressed]="tab() === 'mastery'"
       (click)="tab.set('mastery')"
     >
-      Retorno de mastery</button
+      <ng-container i18n>Retorno de mastery</ng-container></button
     ><button
       type="button"
       [class.active]="tab() === 'training'"
       [attr.aria-pressed]="tab() === 'training'"
       (click)="tab.set('training')"
     >
-      Tempo de treino
+      <ng-container i18n>Tempo de treino </ng-container>
     </button>
   </div>
   @if (tab() === 'sessions') {
@@ -36,66 +38,76 @@
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Dados observados da sessão</h2>
+        <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
         <div class="form-grid">
           <label class="field"
-            >Atividade / rota<input
+            ><ng-container i18n>Atividade / rota</ng-container
+            ><input
               maxlength="140"
               [ngModel]="form().name"
               (ngModelChange)="patch({ name: $event })" /></label
           ><label class="field"
-            >Duração (minutos)<input
+            ><ng-container i18n>Duração (minutos)</ng-container
+            ><input
               type="number"
               min="0.001"
               step="0.001"
               [ngModel]="form().minutes"
               (ngModelChange)="patch({ minutes: $event })" /></label
           ><label class="field"
-            >Energia consumida<input
+            ><ng-container i18n>Energia consumida</ng-container
+            ><input
               type="number"
               min="0"
               [ngModel]="form().energy"
               (ngModelChange)="patch({ energy: $event })" /></label
           ><label class="field"
-            >Prata direta / venda em NPC<input
+            ><ng-container i18n>Prata direta / venda em NPC</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().directIncome"
               (ngModelChange)="patch({ directIncome: $event })" /></label
           ><label class="field"
-            >Despesas da sessão<input
+            ><ng-container i18n>Despesas da sessão</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="form().cost"
               (ngModelChange)="patch({ cost: $event })"
           /></label>
         </div>
-        <h3>Itens para vender no mercado</h3>
+        <h3><ng-container i18n>Itens para vender no mercado</ng-container></h3>
         @for (item of form().items; track $index; let k = $index) {
           <div class="row-editor">
             <div class="form-grid">
               <label class="field"
-                >Item<input
-                  [ngModel]="item.name"
-                  (ngModelChange)="row(k, { name: $event })" /></label
+                ><ng-container i18n>Item</ng-container
+                ><input [ngModel]="item.name" (ngModelChange)="row(k, { name: $event })" /></label
               ><label class="field"
-                >Quantidade<input
+                ><ng-container i18n>Quantidade</ng-container
+                ><input
                   type="number"
                   min="1"
                   [ngModel]="item.quantity"
                   (ngModelChange)="row(k, { quantity: $event })" /></label
               ><label class="field"
-                >Preço unitário<input
+                ><ng-container i18n>Preço unitário</ng-container
+                ><input
                   inputmode="numeric"
                   [ngModel]="item.price"
                   (ngModelChange)="row(k, { price: $event })"
               /></label>
             </div>
             <div class="action-row">
-              <button type="button" class="btn danger" (click)="remove(k)">Remover item</button>
+              <button type="button" class="btn danger" (click)="remove(k)">
+                <ng-container i18n>Remover item</ng-container>
+              </button>
             </div>
           </div>
         }
         <div class="action-row">
-          <button type="button" class="btn subtle" (click)="add()">Adicionar item</button>
+          <button type="button" class="btn subtle" (click)="add()">
+            <ng-container i18n>Adicionar item</ng-container>
+          </button>
         </div>
         <app-tax-options [value]="form()" (changed)="patch($event)" /><button
           type="button"
@@ -103,7 +115,7 @@
           [disabled]="!result().value"
           (click)="save()"
         >
-          Registrar sessão</button
+          <ng-container i18n>Registrar sessão</ng-container></button
         ><app-preset-bar
           tool="activity"
           [value]="form()"
@@ -114,41 +126,53 @@
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Lucro líquido por hora</span
+              <span><ng-container i18n>Lucro líquido por hora</ng-container></span
               ><strong [class.negative]="r.perHour.startsWith('-')">{{ silver(r.perHour) }}</strong>
             </div>
             <div class="metric">
-              <span>Lucro da sessão</span><strong>{{ silver(r.profit) }}</strong>
+              <span><ng-container i18n>Lucro da sessão</ng-container></span
+              ><strong>{{ silver(r.profit) }}</strong>
             </div>
             <div class="metric">
-              <span>Prata por energia</span><strong>{{ silver(r.perEnergy) }}</strong>
+              <span><ng-container i18n>Prata por energia</ng-container></span
+              ><strong>{{ silver(r.perEnergy) }}</strong>
             </div>
             <div class="metric">
-              <span>Receita total líquida</span><strong>{{ silver(r.revenue) }}</strong>
+              <span><ng-container i18n>Receita total líquida</ng-container></span
+              ><strong>{{ silver(r.revenue) }}</strong>
             </div>
             <div class="metric">
-              <span>Venda de mercado líquida</span><strong>{{ silver(r.marketNet) }}</strong>
+              <span><ng-container i18n>Venda de mercado líquida</ng-container></span
+              ><strong>{{ silver(r.marketNet) }}</strong>
             </div>
           </div>
         } @else {
           <p class="error-box" role="alert">{{ result().error }}</p>
         }
         <p class="notice">
-          Os resultados descrevem seus drops e preços informados. Efeitos de mastery, pets, Agris e
-          buffs ficam refletidos nos valores observados; a ferramenta não prevê drops sem uma tabela
-          validada.
+          <ng-container i18n
+            >Os resultados descrevem seus drops e preços informados. Efeitos de mastery, pets, Agris
+            e buffs ficam refletidos nos valores observados; a ferramenta não prevê drops sem uma
+            tabela validada.
+          </ng-container>
         </p>
       </section>
     </div>
     <section class="panel">
-      <h2>Meu histórico · {{ store.data().region.toUpperCase() }}</h2>
+      <h2>
+        <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
+      </h2>
       <div class="metric-grid">
         <div class="metric">
-          <span>Tempo registrado</span><strong>{{ number(totals().minutes) }} min</strong>
+          <span><ng-container i18n>Tempo registrado</ng-container></span
+          ><strong
+            ><ng-container i18n>{{ number(totals().minutes) }} min</ng-container></strong
+          >
         </div>
         <div class="metric">
-          <span>Média ponderada por tempo</span><strong>{{ silver(totals().perHour) }}</strong
-          ><small>Prata líquida / hora</small>
+          <span><ng-container i18n>Média ponderada por tempo</ng-container></span
+          ><strong>{{ silver(totals().perHour) }}</strong
+          ><small><ng-container i18n>Prata líquida / hora</ng-container></small>
         </div>
       </div>
       @if (sessions().length) {
@@ -156,11 +180,11 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Atividade</th>
-                <th>Data</th>
-                <th>Duração</th>
-                <th>Lucro</th>
-                <th>Ações</th>
+                <th><ng-container i18n>Atividade</ng-container></th>
+                <th><ng-container i18n>Data</ng-container></th>
+                <th><ng-container i18n>Duração</ng-container></th>
+                <th><ng-container i18n>Lucro</ng-container></th>
+                <th><ng-container i18n>Ações</ng-container></th>
               </tr>
             </thead>
             <tbody>
@@ -168,14 +192,16 @@
                 <tr>
                   <td>{{ session.input.name }}</td>
                   <td>{{ date(session.createdAt) }}</td>
-                  <td>{{ number(session.input.minutes) }} min</td>
+                  <td>
+                    <ng-container i18n>{{ number(session.input.minutes) }} min</ng-container>
+                  </td>
                   <td>{{ silver(sessionProfit(session.input)) }}</td>
                   <td>
                     <button type="button" class="btn subtle" (click)="useSession(session.id)">
-                      Usar cenário
+                      <ng-container i18n>Usar cenário </ng-container>
                     </button>
                     <button type="button" class="btn danger" (click)="removeSession(session.id)">
-                      Excluir
+                      <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
                 </tr>
@@ -184,7 +210,9 @@
           </table>
         </div>
       } @else {
-        <div class="empty">Registre uma sessão para comparar o rendimento.</div>
+        <div class="empty">
+          <ng-container i18n>Registre uma sessão para comparar o rendimento.</ng-container>
+        </div>
       }
     </section>
   } @else if (tab() === 'mastery') {
@@ -192,25 +220,29 @@
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Investimento e ganho observado</h2>
+        <h2><ng-container i18n>Investimento e ganho observado</ng-container></h2>
         <div class="form-grid">
           <label class="field"
-            >Custo líquido do upgrade<input
+            ><ng-container i18n>Custo líquido do upgrade</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="investment().upgradeCost"
               (ngModelChange)="patchInvestment({ upgradeCost: $event })" /></label
           ><label class="field"
-            >Lucro atual por hora<input
+            ><ng-container i18n>Lucro atual por hora</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="investment().currentHourly"
               (ngModelChange)="patchInvestment({ currentHourly: $event })" /></label
           ><label class="field"
-            >Lucro previsto / medido por hora<input
+            ><ng-container i18n>Lucro previsto / medido por hora</ng-container
+            ><input
               inputmode="numeric"
               [ngModel]="investment().nextHourly"
               (ngModelChange)="patchInvestment({ nextHourly: $event })" /></label
           ><label class="field"
-            >Horas de atividade por dia<input
+            ><ng-container i18n>Horas de atividade por dia</ng-container
+            ><input
               type="number"
               min="0.001"
               max="24"
@@ -229,24 +261,28 @@
         @if (investmentResult().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Tempo para recuperar investimento</span
+              <span><ng-container i18n>Tempo para recuperar investimento</ng-container></span
               ><strong>{{
                 r.hours === null ? 'Sem retorno positivo' : number(r.hours) + ' h'
               }}</strong>
             </div>
             <div class="metric">
-              <span>Ganho por hora</span><strong>{{ silver(r.hourlyIncrease) }}</strong>
+              <span><ng-container i18n>Ganho por hora</ng-container></span
+              ><strong>{{ silver(r.hourlyIncrease) }}</strong>
             </div>
             <div class="metric">
-              <span>Dias de atividade</span><strong>{{ number(r.days) }}</strong>
+              <span><ng-container i18n>Dias de atividade</ng-container></span
+              ><strong>{{ number(r.days) }}</strong>
             </div>
           </div>
         } @else {
           <p class="error-box" role="alert">{{ investmentResult().error }}</p>
         }
         <p class="notice">
-          Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço,
-          estoque ou tempo de compra do upgrade.
+          <ng-container i18n
+            >Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço,
+            estoque ou tempo de compra do upgrade.
+          </ng-container>
         </p>
       </section>
     </div>
@@ -255,23 +291,26 @@
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
-        <h2>Estimador de XP</h2>
+        <h2><ng-container i18n>Estimador de XP</ng-container></h2>
         <div class="form-grid">
           <label class="field"
-            >XP que falta para o alvo<input
+            ><ng-container i18n>XP que falta para o alvo</ng-container
+            ><input
               type="number"
               min="1"
               [ngModel]="training().remainingXp"
               (ngModelChange)="patchTraining({ remainingXp: $event })" /></label
           ><label class="field"
-            >XP por hora medido<input
+            ><ng-container i18n>XP por hora medido</ng-container
+            ><input
               type="number"
               min="0.001"
               step="0.001"
               [ngModel]="training().xpPerHour"
               (ngModelChange)="patchTraining({ xpPerHour: $event })" /></label
           ><label class="field"
-            >Duração de cada sessão (minutos)<input
+            ><ng-container i18n>Duração de cada sessão (minutos)</ng-container
+            ><input
               type="number"
               min="1"
               max="1440"
@@ -289,18 +328,24 @@
         @if (trainingResult().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
-              <span>Tempo de treino estimado</span><strong>{{ number(r.hours, 3) }} h</strong>
+              <span><ng-container i18n>Tempo de treino estimado</ng-container></span
+              ><strong
+                ><ng-container i18n>{{ number(r.hours, 3) }} h</ng-container></strong
+              >
             </div>
             <div class="metric">
-              <span>Sessões necessárias</span><strong>{{ number(r.sessions, 0) }}</strong>
+              <span><ng-container i18n>Sessões necessárias</ng-container></span
+              ><strong>{{ number(r.sessions, 0) }}</strong>
             </div>
           </div>
         } @else {
           <p class="error-box" role="alert">{{ trainingResult().error }}</p>
         }
         <p class="notice">
-          Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de níveis,
-          breeding ou stats de cavalos.
+          <ng-container i18n
+            >Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de níveis,
+            breeding ou stats de cavalos.
+          </ng-container>
         </p>
       </section>
     </div>
