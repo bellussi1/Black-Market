@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { defaultTax } from '@bdo/calculators';
 import { describe, expect, it } from 'vitest';
-import { CraftingPage } from './crafting-page';
+
+import { emptyWorkspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
-import { defaultTax } from '@bdo/calculators';
-import { emptyWorkspace } from '../../core/workspace-models';
+import { CraftingPage } from './crafting-page';
 
 describe('CraftingPage', () => {
   useMemoryStorage();

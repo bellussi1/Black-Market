@@ -1,4 +1,4 @@
-import type { DataProvenance } from "@bdo/shared";
+import type { DataProvenance } from '@bdo/shared';
 
 export type ItemId = number;
 export type RegionCode = string;

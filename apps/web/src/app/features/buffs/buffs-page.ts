@@ -1,16 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-  OnDestroy,
-} from '@angular/core';
+import type { OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { type Buff, buffSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
-import { buffSchema, type Buff } from '../../core/workspace-models';
-import { number } from '../../shared/formatters';
 import { validationMessage } from '../../shared/calculation-feedback';
+import { number } from '../../shared/formatters';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-buffs-page',

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { calculateGear, gearSchema, type GearInput } from '@bdo/calculators';
+import { calculateGear, type GearInput, gearSchema } from '@bdo/calculators';
+
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
-import { silver, number } from '../../shared/formatters';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { number, silver } from '../../shared/formatters';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-gear-page',

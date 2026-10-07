@@ -9,15 +9,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-bdo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bdo_local_only}
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-bdo} -d ${POSTGRES_DB:-bdo_companion}",
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-bdo} -d ${POSTGRES_DB:-bdo_companion}']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -25,13 +21,13 @@ services:
   migrate:
     image: black-market-migrate:local
     build: .
-    command: ["pnpm", "db:migrate"]
+    command: ['pnpm', 'db:migrate']
     environment:
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     depends_on:
       postgres:
         condition: service_healthy
-    restart: "no"
+    restart: 'no'
 
   api:
     image: black-market-api:local
@@ -43,16 +39,16 @@ services:
       MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       migrate:
         condition: service_completed_successfully
     healthcheck:
       test:
         [
-          "CMD",
-          "node",
-          "-e",
+          'CMD',
+          'node',
+          '-e',
           "fetch('http://localhost:3000/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 10s
@@ -61,12 +57,12 @@ services:
       start_period: 10s
 
   web:
-    profiles: ["web"]
+    profiles: ['web']
     image: black-market-api:local
     build: .
-    command: ["pnpm", "--filter", "@bdo/web", "start"]
+    command: ['pnpm', '--filter', '@bdo/web', 'start']
     ports:
-      - "4200:4200"
+      - '4200:4200'
     volumes:
       - ./apps/web/src:/workspace/apps/web/src:ro
       - ./packages/calculators/src:/workspace/packages/calculators/src:ro

@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { SettingsPage } from './settings-page';
+
+import { emptyWorkspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
-import { emptyWorkspace } from '../../core/workspace-models';
+import { SettingsPage } from './settings-page';
 
 describe('SettingsPage', () => {
   useMemoryStorage();

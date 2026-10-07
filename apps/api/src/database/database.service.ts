@@ -1,6 +1,6 @@
+import { schema } from '@bdo/database/schema';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { schema } from '@bdo/database/schema';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 

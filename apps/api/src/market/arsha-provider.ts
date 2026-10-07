@@ -35,9 +35,7 @@ export function normalizeArsha(payload: unknown, expectedId: number) {
     minPrice: entry.priceMin ?? null,
     maxPrice: entry.priceMax ?? null,
     lastSoldPrice:
-      entry.lastSoldPrice && BigInt(entry.lastSoldPrice) > 0n
-        ? entry.lastSoldPrice
-        : null,
+      entry.lastSoldPrice && BigInt(entry.lastSoldPrice) > 0n ? entry.lastSoldPrice : null,
     lastSoldAt:
       entry.lastSoldTime && entry.lastSoldTime < 32_503_680_000
         ? new Date(entry.lastSoldTime * 1000).toISOString()

@@ -1,33 +1,23 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const moneySchema = z
   .string()
-  .regex(
-    /^\d{1,24}$/,
-    "Informe prata inteira, sem separadores (até 24 dígitos).",
-  );
-export const labelSchema = z
-  .string()
-  .trim()
-  .min(1, "Informe um nome.")
-  .max(140);
+  .regex(/^\d{1,24}$/, 'Informe prata inteira, sem separadores (até 24 dígitos).');
+export const labelSchema = z.string().trim().min(1, 'Informe um nome.').max(140);
 export const countSchema = z.number().int().min(0).max(1_000_000_000);
 const positiveCount = countSchema.min(1);
 const percent = z
   .number()
   .min(0)
   .max(100)
-  .refine(
-    (v) => Math.abs(v * 100 - Math.round(v * 100)) < 0.00001,
-    "Use até duas casas decimais.",
-  );
+  .refine((v) => Math.abs(v * 100 - Math.round(v * 100)) < 0.00001, 'Use até duas casas decimais.');
 const decimal = z
   .number()
   .min(0)
   .max(1_000_000)
   .refine(
     (v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 0.00001,
-    "Use até três casas decimais.",
+    'Use até três casas decimais.',
   );
 export const taxShape = {
   taxPercent: percent,
@@ -76,13 +66,10 @@ export const enhancementSchema = z
     stackCost: moneySchema,
     buyPrice: moneySchema,
   })
-  .refine(
-    (v) => v.cap >= v.chance,
-    "O teto deve ser maior ou igual à chance inicial.",
-  )
+  .refine((v) => v.cap >= v.chance, 'O teto deve ser maior ou igual à chance inicial.')
   .refine(
     (v) => (v.pity === 0 ? v.currentPity === 0 : v.currentPity <= v.pity),
-    "A essência atual deve estar entre zero e o limite de pity.",
+    'A essência atual deve estar entre zero e o limite de pity.',
   );
 export const failstackSchema = z.object({
   baseCost: moneySchema,
@@ -116,10 +103,8 @@ export const boxSchema = z
       .max(40),
   })
   .refine(
-    (v) =>
-      v.outcomes.reduce((n, r) => n + Math.round(r.probability * 100), 0) ===
-      10_000,
-    "As probabilidades dos resultados exclusivos devem somar 100%.",
+    (v) => v.outcomes.reduce((n, r) => n + Math.round(r.probability * 100), 0) === 10_000,
+    'As probabilidades dos resultados exclusivos devem somar 100%.',
   );
 export const activitySchema = z.object({
   ...taxShape,

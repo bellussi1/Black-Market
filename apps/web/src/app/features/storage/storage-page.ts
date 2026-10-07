@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
-import { workspaceSchema, type Workspace } from '../../core/workspace-models';
-import { silver, number } from '../../shared/formatters';
-import { download } from '../../shared/download';
 import { validationMessage } from '../../shared/calculation-feedback';
+import { download } from '../../shared/download';
+import { number, silver } from '../../shared/formatters';
 type Stock = Workspace['inventory'][number];
 type Project = Workspace['projects'][number];
 @Component({

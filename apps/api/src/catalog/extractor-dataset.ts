@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import { z } from 'zod';
 
 const optionalText = z.string().nullish();
@@ -131,14 +132,8 @@ function outputItem(output: z.infer<typeof recipeOutputSchema>): {
   return { itemId: output.item, quantity: output.count ?? null };
 }
 
-export async function readExtractorDataset(
-  inputDirectory: string,
-): Promise<ExtractedDataset> {
-  const filenames = [
-    'items.json',
-    'recipes.json',
-    'marketcategories.json',
-  ] as const;
+export async function readExtractorDataset(inputDirectory: string): Promise<ExtractedDataset> {
+  const filenames = ['items.json', 'recipes.json', 'marketcategories.json'] as const;
   const contents = await Promise.all(
     filenames.map((filename) => readFile(join(inputDirectory, filename))),
   );
@@ -196,9 +191,7 @@ export async function readExtractorDataset(
       const subId = `market:sub:${refKey(main.id)}:${refKey(sub.id)}`;
       const subKey = `${refKey(main.id)}:${refKey(sub.id)}`;
       if (subCategoryIds.has(subKey)) {
-        throw new Error(
-          `marketcategories.json contém subcategoria duplicada ${String(sub.id)}.`,
-        );
+        throw new Error(`marketcategories.json contém subcategoria duplicada ${String(sub.id)}.`);
       }
       subCategoryIds.set(subKey, subId);
       subCategoryNames.set(`${refKey(main.name)}:${refKey(sub.name)}`, subId);
@@ -218,8 +211,7 @@ export async function readExtractorDataset(
     const mainId =
       mainRef == null
         ? undefined
-        : (mainCategoryIds.get(refKey(mainRef)) ??
-          mainCategoryNames.get(refKey(mainRef)));
+        : (mainCategoryIds.get(refKey(mainRef)) ?? mainCategoryNames.get(refKey(mainRef)));
     const subId =
       mainId && subRef != null
         ? (subCategoryIds.get(`${refKey(mainRef ?? '')}:${refKey(subRef)}`) ??
@@ -235,9 +227,7 @@ export async function readExtractorDataset(
       grade: item.grade ?? null,
       category: item.category ?? null,
       weight: item.weight ?? null,
-      categoryIds: [
-        ...new Set([mainId, subId].filter((id): id is string => Boolean(id))),
-      ],
+      categoryIds: [...new Set([mainId, subId].filter((id): id is string => Boolean(id)))],
     };
   });
 
@@ -248,17 +238,11 @@ export async function readExtractorDataset(
       quantity: input.count ?? null,
     }));
     if (!itemIds.has(output.itemId)) {
-      throw new Error(
-        `Receita produz o item ${output.itemId}, ausente em items.json.`,
-      );
+      throw new Error(`Receita produz o item ${output.itemId}, ausente em items.json.`);
     }
-    const missingIngredient = inputs.find(
-      (input) => !itemIds.has(input.itemId),
-    );
+    const missingIngredient = inputs.find((input) => !itemIds.has(input.itemId));
     if (missingIngredient) {
-      throw new Error(
-        `Receita usa o item ${missingIngredient.itemId}, ausente em items.json.`,
-      );
+      throw new Error(`Receita usa o item ${missingIngredient.itemId}, ausente em items.json.`);
     }
     const canonical = JSON.stringify({
       output: [output.itemId, output.quantity],
@@ -277,16 +261,11 @@ export async function readExtractorDataset(
     };
   });
 
-  const distinctRecipes = new Map(
-    recipes.map((recipe) => [recipe.key, recipe]),
-  );
+  const distinctRecipes = new Map(recipes.map((recipe) => [recipe.key, recipe]));
   const checksum = createHash('sha256')
     .update(
       filenames
-        .map(
-          (filename, index) =>
-            `${filename}\0${contents[index].toString('base64')}`,
-        )
+        .map((filename, index) => `${filename}\0${contents[index].toString('base64')}`)
         .join('\0'),
     )
     .digest('hex');

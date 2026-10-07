@@ -1,5 +1,6 @@
-import { HealthService } from './health.service';
 import { describe, expect, it, vi } from 'vitest';
+
+import { HealthService } from './health.service';
 
 describe('HealthService', () => {
   it('reports the API as healthy without claiming the database is ready', () => {

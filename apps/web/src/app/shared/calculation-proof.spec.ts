@@ -1,10 +1,11 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
 import { calculateMarket, defaultTax, MODEL_VERSION } from '@bdo/calculators';
+import { describe, expect, it } from 'vitest';
+
 import { environment } from '../../environments/environment';
-import { CalculationProof } from './calculation-proof';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
+import { CalculationProof } from './calculation-proof';
 
 describe('CalculationProof', () => {
   useMemoryStorage();

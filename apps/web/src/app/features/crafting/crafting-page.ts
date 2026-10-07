@@ -3,18 +3,19 @@ import { FormsModule } from '@angular/forms';
 import {
   calculateCrafting,
   calculateProduction,
-  craftingSchema,
-  recipeSchema,
-  defaultTax,
   type CraftingInput,
+  craftingSchema,
+  defaultTax,
   type ManualRecipe,
+  recipeSchema,
 } from '@bdo/calculators';
+
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
-import { silver, number } from '../../shared/formatters';
-import { TaxOptionsComponent } from '../../shared/tax-options';
-import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { number, silver } from '../../shared/formatters';
+import { PresetBar } from '../../shared/preset-bar';
+import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-crafting-page',

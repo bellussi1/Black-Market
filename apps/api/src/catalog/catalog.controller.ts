@@ -1,5 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+
 import { CatalogService } from './catalog.service';
 
 @ApiTags('Catálogo')
@@ -49,10 +50,7 @@ export class CatalogController {
   @ApiOperation({ summary: 'Retorna um item do dataset ativo' })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
   @ApiQuery({ name: 'locale', required: false, example: 'en' })
-  getItem(
-    @Param('id', ParseIntPipe) id: number,
-    @Query() query: Record<string, unknown>,
-  ) {
+  getItem(@Param('id', ParseIntPipe) id: number, @Query() query: Record<string, unknown>) {
     return this.catalog.getItem(id, query);
   }
 }

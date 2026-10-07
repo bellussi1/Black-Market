@@ -1,7 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RequestMethod } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -25,11 +26,7 @@ async function bootstrap() {
     .setDescription('API pública versionada do projeto pessoal Black Market.')
     .setVersion('1.0.0')
     .build();
-  SwaggerModule.setup(
-    'api/docs',
-    app,
-    SwaggerModule.createDocument(app, apiDocument),
-  );
+  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, apiDocument));
 
   await app.listen(config.getOrThrow<number>('PORT'), '0.0.0.0');
 }

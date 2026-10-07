@@ -1,13 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import type { OnDestroy, OnInit } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
-  OnDestroy,
-  OnInit,
   computed,
+  effect,
   inject,
   signal,
-  effect,
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -17,7 +16,9 @@ import type {
   CatalogPage,
   CatalogRecipesResponse,
 } from '@bdo/shared';
-import { forkJoin, Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { forkJoin } from 'rxjs';
+
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 

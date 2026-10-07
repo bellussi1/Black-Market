@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import type {
   ActiveDatasetSummary,
   CatalogCategoriesResponse,
@@ -7,6 +7,7 @@ import type {
   CatalogPage,
   CatalogRecipesResponse,
 } from '@bdo/shared';
+
 import { environment } from '../../environments/environment';
 import { RegionPreferences } from './region-preferences';
 

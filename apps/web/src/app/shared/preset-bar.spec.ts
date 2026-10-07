@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
 import { defaultTax } from '@bdo/calculators';
+import { describe, expect, it, vi } from 'vitest';
+
 import { WorkspaceStore } from '../core/workspace-store';
-import { PresetBar } from './preset-bar';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
+import { PresetBar } from './preset-bar';
 
 describe('PresetBar', () => {
   useMemoryStorage();

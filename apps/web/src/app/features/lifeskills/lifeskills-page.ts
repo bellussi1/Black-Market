@@ -1,23 +1,24 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  type ActivityInput,
+  activitySchema,
   calculateActivity,
   calculateInvestment,
   calculateTraining,
-  activitySchema,
-  investmentSchema,
-  trainingSchema,
   defaultTax,
-  type ActivityInput,
   type InvestmentInput,
+  investmentSchema,
   type TrainingInput,
+  trainingSchema,
 } from '@bdo/calculators';
+
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
-import { silver, number, date } from '../../shared/formatters';
-import { TaxOptionsComponent } from '../../shared/tax-options';
-import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { date, number, silver } from '../../shared/formatters';
+import { PresetBar } from '../../shared/preset-bar';
+import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',

@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { WorkspaceStore } from '../../core/workspace-store';
-import { workspaceSchema, type Workspace, emptyWorkspace } from '../../core/workspace-models';
-import { validationMessage } from '../../shared/calculation-feedback';
 import { FormsModule } from '@angular/forms';
+
 import { MAX_BACKUP_BYTES } from '../../core/region-preferences';
+import { emptyWorkspace, type Workspace, workspaceSchema } from '../../core/workspace-models';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { validationMessage } from '../../shared/calculation-feedback';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-settings-page',

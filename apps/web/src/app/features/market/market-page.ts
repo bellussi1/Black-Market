@@ -1,24 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-  OnDestroy,
-} from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Subscription } from 'rxjs';
-import type { MarketLookupResponse, MarketItemQuote } from '@bdo/shared';
-import { MarketApi } from './market-api';
+import type { HttpErrorResponse } from '@angular/common/http';
+import type { OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { calculateMarket, defaultTax, marketSchema, type MarketInput } from '@bdo/calculators';
+import { calculateMarket, defaultTax, type MarketInput, marketSchema } from '@bdo/calculators';
+import type { MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
+import type { Subscription } from 'rxjs';
+
+import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
-import { quoteSchema, type Quote } from '../../core/workspace-models';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
-import { silver, number, date } from '../../shared/formatters';
-import { TaxOptionsComponent } from '../../shared/tax-options';
-import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { date, number, silver } from '../../shared/formatters';
+import { PresetBar } from '../../shared/preset-bar';
+import { TaxOptionsComponent } from '../../shared/tax-options';
+import { MarketApi } from './market-api';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',

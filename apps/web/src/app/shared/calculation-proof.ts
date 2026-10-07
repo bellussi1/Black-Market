@@ -1,17 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  inject,
-  signal,
-} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
-import { calculators, MODEL_VERSION, type CalculatorKey } from '@bdo/calculators';
-import { validationMessage } from '../shared/calculation-feedback';
+import type { OnChanges, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input, signal } from '@angular/core';
+import { type CalculatorKey, calculators, MODEL_VERSION } from '@bdo/calculators';
+import type { Subscription } from 'rxjs';
+
 import { environment } from '../../environments/environment';
+import { validationMessage } from '../shared/calculation-feedback';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-calculation-proof',

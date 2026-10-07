@@ -1,9 +1,10 @@
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { MarketPage } from './market-page';
+
 import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
-import { HttpTestingController } from '@angular/common/http/testing';
+import { MarketPage } from './market-page';
 
 describe('MarketPage', () => {
   useMemoryStorage();

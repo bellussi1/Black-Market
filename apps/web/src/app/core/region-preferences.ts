@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 export const regions = ['sa', 'na', 'eu', 'sea', 'kr', 'jp', 'tw'] as const;
 export type Region = (typeof regions)[number];
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024;

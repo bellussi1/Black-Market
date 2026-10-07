@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { normalizeArsha } from './arsha-provider';
 const item = {
   id: 1,
@@ -20,9 +21,7 @@ describe('Arsha adapter', () => {
     expect(() => normalizeArsha(item, 2)).toThrow();
   });
   it('rejects unsafe numbers and malformed upstream payloads', () => {
-    expect(() =>
-      normalizeArsha({ ...item, basePrice: 9007199254740992 }, 1),
-    ).toThrow();
+    expect(() => normalizeArsha({ ...item, basePrice: 9007199254740992 }, 1)).toThrow();
     expect(() => normalizeArsha({ message: 'error' }, 1)).toThrow();
   });
 });

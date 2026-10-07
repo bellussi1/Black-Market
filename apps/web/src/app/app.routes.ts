@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import type { Routes } from '@angular/router';
+
 import { WorkspaceLayout } from './layout/workspace-layout';
 export const routes: Routes = [
   {

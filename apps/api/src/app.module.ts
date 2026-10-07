@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
+import { CalculatorsModule } from './calculators/calculators.module';
+import { CatalogModule } from './catalog/catalog.module';
 import { envSchema } from './config/env.schema';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
-import { CatalogModule } from './catalog/catalog.module';
-import { CalculatorsModule } from './calculators/calculators.module';
 import { MarketModule } from './market/market.module';
 
 @Module({

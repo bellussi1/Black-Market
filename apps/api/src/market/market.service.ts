@@ -1,11 +1,7 @@
+import { HttpException, HttpStatus, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  ServiceUnavailableException,
-} from '@nestjs/common';
-import { normalizeArsha, type MarketLookup } from './arsha-provider';
+
+import { type MarketLookup, normalizeArsha } from './arsha-provider';
 
 const TTL = 30 * 60 * 1000;
 @Injectable()
@@ -22,16 +18,12 @@ export class MarketService {
 
   async lookup(region: string, itemId: number): Promise<MarketLookup> {
     if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true))
-      throw new ServiceUnavailableException(
-        'Consulta externa desativada neste deploy.',
-      );
+      throw new ServiceUnavailableException('Consulta externa desativada neste deploy.');
     const key = region + ':' + itemId;
     const held = this.cache.get(key);
     const now = Date.now();
-    if (held && held.expires > now)
-      return { ...held.response, cacheStatus: 'cached' };
-    if (held && held.retryAt > now)
-      return { ...held.response, cacheStatus: 'stale' };
+    if (held && held.expires > now) return { ...held.response, cacheStatus: 'cached' };
+    if (held && held.retryAt > now) return { ...held.response, cacheStatus: 'stale' };
     const pending = this.pending.get(key);
     if (pending) return pending;
     if (now - this.windowStart >= 60_000) {

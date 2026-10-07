@@ -1,7 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { readExtractorDataset } from './extractor-dataset';
 
 describe('readExtractorDataset', () => {
@@ -15,9 +17,7 @@ describe('readExtractorDataset', () => {
     await rm(directory, { recursive: true, force: true });
   });
 
-  async function writeFiles(
-    overrides: Record<string, unknown> = {},
-  ): Promise<void> {
+  async function writeFiles(overrides: Record<string, unknown> = {}): Promise<void> {
     const files: Record<string, unknown> = {
       'items.json': [
         {
@@ -71,14 +71,8 @@ describe('readExtractorDataset', () => {
     await writeFiles();
     const result = await readExtractorDataset(directory);
 
-    expect(result.items[0]?.categoryIds).toEqual([
-      'market:main:3',
-      'market:sub:3:7',
-    ]);
-    expect(result.items[1]?.categoryIds).toEqual([
-      'market:main:3',
-      'market:sub:3:8',
-    ]);
+    expect(result.items[0]?.categoryIds).toEqual(['market:main:3', 'market:sub:3:7']);
+    expect(result.items[1]?.categoryIds).toEqual(['market:main:3', 'market:sub:3:8']);
     expect(result.recipes[0]?.inputs).toEqual([{ itemId: 101, quantity: 4 }]);
     expect(result.recipes[0]?.outputQuantity).toBeNull();
     expect(result.checksum).toMatch(/^[a-f0-9]{64}$/);
@@ -96,9 +90,7 @@ describe('readExtractorDataset', () => {
       ],
     });
 
-    await expect(readExtractorDataset(directory)).rejects.toThrow(
-      'ausente em items.json',
-    );
+    await expect(readExtractorDataset(directory)).rejects.toThrow('ausente em items.json');
   });
 
   it('rejects duplicate item ids before starting a database import', async () => {
@@ -109,8 +101,6 @@ describe('readExtractorDataset', () => {
       ],
     });
 
-    await expect(readExtractorDataset(directory)).rejects.toThrow(
-      'IDs de item duplicados',
-    );
+    await expect(readExtractorDataset(directory)).rejects.toThrow('IDs de item duplicados');
   });
 });

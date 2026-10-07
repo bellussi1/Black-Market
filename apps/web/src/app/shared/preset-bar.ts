@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { CalculatorKey } from '@bdo/calculators';
+
 import { WorkspaceStore } from '../core/workspace-store';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

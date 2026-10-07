@@ -1,20 +1,21 @@
-import { regions } from './region-preferences';
-import { z } from 'zod';
 import {
-  inventorySchema,
-  recipeSchema,
-  gearSchema,
   activitySchema,
-  marketSchema,
+  boxSchema,
   craftingSchema,
   enhancementSchema,
   failstackSchema,
-  boxSchema,
-  trainingSchema,
+  gearSchema,
+  inventorySchema,
   investmentSchema,
-  moneySchema,
   labelSchema,
+  marketSchema,
+  moneySchema,
+  recipeSchema,
+  trainingSchema,
 } from '@bdo/calculators';
+import { z } from 'zod';
+
+import { regions } from './region-preferences';
 
 const id = z.string().min(1).max(64);
 const timestamp = z.string().refine((v) => Number.isFinite(Date.parse(v)), 'Data inválida.');

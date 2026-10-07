@@ -1,13 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  calculators,
-  MODEL_VERSION,
-  type CalculatorKey,
-} from '@bdo/calculators';
+import { type CalculatorKey, calculators, MODEL_VERSION } from '@bdo/calculators';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ZodError } from 'zod';
 
 @Injectable()
@@ -33,8 +25,7 @@ export class CalculatorsService {
           })),
         });
       }
-      if (error instanceof RangeError)
-        throw new BadRequestException(error.message);
+      if (error instanceof RangeError) throw new BadRequestException(error.message);
       throw error;
     }
   }

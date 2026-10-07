@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
 import { RegionPreferences } from '../../core/region-preferences';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

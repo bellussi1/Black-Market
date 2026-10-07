@@ -1,22 +1,22 @@
 import {
-  marketSchema,
+  activitySchema,
+  boxSchema,
   craftingSchema,
   enhancementSchema,
   failstackSchema,
-  boxSchema,
-  activitySchema,
-  trainingSchema,
-  investmentSchema,
   gearSchema,
+  investmentSchema,
+  marketSchema,
   productionSchema,
   type TaxOptions,
-} from "./models";
-export * from "./models";
+  trainingSchema,
+} from './models';
+export * from './models';
 
 const SCALE = 1_000_000_000_000n;
 const ceil = (n: bigint, d: bigint) => (n + d - 1n) / d;
 const bp = (n: number) => BigInt(Math.round(n * 100));
-const key = (name: string) => name.trim().toLocaleLowerCase("pt-BR");
+const key = (name: string) => name.trim().toLocaleLowerCase('pt-BR');
 export function retention(options: TaxOptions): {
   numerator: bigint;
   denominator: bigint;
@@ -26,9 +26,7 @@ export function retention(options: TaxOptions): {
     (10_000n - bp(options.taxPercent)) *
     (10_000n + (options.valuePack ? 3000n : 0n) + bp(options.collectionBonus));
   if (numerator > 100_000_000n)
-    throw new RangeError(
-      "Os bônus resultam numa coleta acima de 100%. Confira as premissas.",
-    );
+    throw new RangeError('Os bônus resultam numa coleta acima de 100%. Confira as premissas.');
   return { numerator, denominator: 100_000_000n };
 }
 function net(gross: bigint, options: TaxOptions): bigint {
@@ -58,22 +56,15 @@ export function calculateMarket(raw: unknown) {
     breakEvenPrice:
       r.numerator === 0n
         ? null
-        : String(
-            ceil(
-              BigInt(input.cost) * r.denominator,
-              r.numerator * BigInt(input.quantity),
-            ),
-          ),
+        : String(ceil(BigInt(input.cost) * r.denominator, r.numerator * BigInt(input.quantity))),
   };
 }
 export function calculateCrafting(raw: unknown) {
   const input = craftingSchema.parse(raw);
   const rows = input.ingredients.map((row) => {
-    const neededScaled =
-      BigInt(Math.round(row.quantity * 1000)) * BigInt(input.crafts);
+    const neededScaled = BigInt(Math.round(row.quantity * 1000)) * BigInt(input.crafts);
     const ownedScaled = BigInt(Math.round(row.owned * 1000));
-    const missingScaled =
-      neededScaled > ownedScaled ? neededScaled - ownedScaled : 0n;
+    const missingScaled = neededScaled > ownedScaled ? neededScaled - ownedScaled : 0n;
     return {
       name: row.name,
       needed: Number(neededScaled) / 1000,
@@ -82,16 +73,9 @@ export function calculateCrafting(raw: unknown) {
       cashCost: String(ceil(missingScaled * BigInt(row.price), 1000n)),
     };
   });
-  const cost = rows.reduce(
-    (sum, r) => sum + BigInt(r.economicCost),
-    BigInt(input.extraCost),
-  );
-  const cashCost = rows.reduce(
-    (sum, r) => sum + BigInt(r.cashCost),
-    BigInt(input.extraCost),
-  );
-  const outputScaled =
-    BigInt(Math.round(input.yield * 1000)) * BigInt(input.crafts);
+  const cost = rows.reduce((sum, r) => sum + BigInt(r.economicCost), BigInt(input.extraCost));
+  const cashCost = rows.reduce((sum, r) => sum + BigInt(r.cashCost), BigInt(input.extraCost));
+  const outputScaled = BigInt(Math.round(input.yield * 1000)) * BigInt(input.crafts);
   const gross = (outputScaled * BigInt(input.salePrice)) / 1000n;
   const revenue = net(gross, input);
   const profit = revenue - cost;
@@ -104,18 +88,13 @@ export function calculateCrafting(raw: unknown) {
     gross: String(gross),
     net: String(revenue),
     profit: String(profit),
-    profitPerHour: String(
-      (profit * 60_000n) / BigInt(Math.round(input.minutes * 1000)),
-    ),
+    profitPerHour: String((profit * 60_000n) / BigInt(Math.round(input.minutes * 1000))),
     costPerOutput: String(ceil(cost * 1000n, outputScaled)),
     breakEvenPrice:
       r.numerator === 0n
         ? null
-        : String(
-            ceil(cost * 1000n * r.denominator, outputScaled * r.numerator),
-          ),
-    marginPercent:
-      revenue === 0n ? null : Number((profit * 10_000n) / revenue) / 100,
+        : String(ceil(cost * 1000n * r.denominator, outputScaled * r.numerator)),
+    marginPercent: revenue === 0n ? null : Number((profit * 10_000n) / revenue) / 100,
   };
 }
 export function calculateEnhancement(raw: unknown) {
@@ -181,9 +160,7 @@ export function calculateFailstack(raw: unknown) {
     const failures = 10_000n - bp(step.chance);
     const remainingPower = 10_000n ** BigInt(i.steps.length - index - 1);
     roundCost +=
-      prefix *
-      remainingPower *
-      (10_000n * BigInt(step.cost) + failures * BigInt(step.failureCost));
+      prefix * remainingPower * (10_000n * BigInt(step.cost) + failures * BigInt(step.failureCost));
     prefix *= failures;
   });
   return {
@@ -216,20 +193,15 @@ export function calculateBox(raw: unknown) {
     expectedProfit: String(expected - BigInt(i.boxPrice)),
     totalCost: String(BigInt(i.boxPrice) * BigInt(i.boxes)),
     totalExpectedProfit: String(
-      (weightedValue * BigInt(i.boxes)) / 10_000n -
-        BigInt(i.boxPrice) * BigInt(i.boxes),
+      (weightedValue * BigInt(i.boxes)) / 10_000n - BigInt(i.boxPrice) * BigInt(i.boxes),
     ),
     profitablePercent: Number(profitableBp) / 100,
-    atLeastOneProfitablePercent:
-      (1 - Math.pow(1 - Number(profitableBp) / 10_000, i.boxes)) * 100,
+    atLeastOneProfitablePercent: (1 - Math.pow(1 - Number(profitableBp) / 10_000, i.boxes)) * 100,
   };
 }
 export function calculateActivity(raw: unknown) {
   const i = activitySchema.parse(raw);
-  const gross = i.items.reduce(
-    (sum, r) => sum + BigInt(r.price) * BigInt(r.quantity),
-    0n,
-  );
+  const gross = i.items.reduce((sum, r) => sum + BigInt(r.price) * BigInt(r.quantity), 0n);
   const marketNet = net(gross, i);
   const revenue = marketNet + BigInt(i.directIncome);
   const profit = revenue - BigInt(i.cost);
@@ -247,15 +219,10 @@ export function calculateInvestment(raw: unknown) {
   const increase = BigInt(i.nextHourly) - BigInt(i.currentHourly);
   return {
     hourlyIncrease: String(increase),
-    hours:
-      increase > 0n
-        ? Number(ceil(BigInt(i.upgradeCost) * 1000n, increase)) / 1000
-        : null,
+    hours: increase > 0n ? Number(ceil(BigInt(i.upgradeCost) * 1000n, increase)) / 1000 : null,
     days:
       increase > 0n
-        ? Number(ceil(BigInt(i.upgradeCost) * 1000n, increase)) /
-          1000 /
-          i.dailyHours
+        ? Number(ceil(BigInt(i.upgradeCost) * 1000n, increase)) / 1000 / i.dailyHours
         : null,
   };
 }
@@ -277,8 +244,7 @@ export function calculateGear(raw: unknown) {
           gain,
           mainScore: i.mainAp + i.dp + gain,
           awakeScore: i.awakeAp + i.dp + u.awakeApGain + u.dpGain,
-          costPerPoint:
-            gain > 0 ? String(ceil(BigInt(u.cost), BigInt(gain))) : null,
+          costPerPoint: gain > 0 ? String(ceil(BigInt(u.cost), BigInt(gain))) : null,
           affordable: BigInt(u.cost) <= BigInt(i.budget),
         };
       })
@@ -293,8 +259,7 @@ export function calculateGear(raw: unknown) {
 export function calculateProduction(raw: unknown) {
   const i = productionSchema.parse(raw);
   const recipes = new Map(i.recipes.map((r) => [r.id, r]));
-  if (recipes.size !== i.recipes.length)
-    throw new RangeError("IDs de receitas duplicados.");
+  if (recipes.size !== i.recipes.length) throw new RangeError('IDs de receitas duplicados.');
   const available = new Map<string, number>();
   i.inventory.forEach((r) =>
     available.set(key(r.name), (available.get(key(r.name)) ?? 0) + r.quantity),
@@ -312,10 +277,7 @@ export function calculateProduction(raw: unknown) {
       cost: bigint;
     }
   >();
-  const tasks = new Map<
-    string,
-    { id: string; name: string; crafts: number; produced: number }
-  >();
+  const tasks = new Map<string, { id: string; name: string; crafts: number; produced: number }>();
   let operations = 0;
   const rowFor = (name: string) => {
     const k = key(name);
@@ -343,16 +305,14 @@ export function calculateProduction(raw: unknown) {
   ) => {
     if (++operations > 20_000)
       throw new RangeError(
-        "A cadeia excedeu o limite de 20.000 etapas. Simplifique receitas repetidas.",
+        'A cadeia excedeu o limite de 20.000 etapas. Simplifique receitas repetidas.',
       );
     if (!Number.isSafeInteger(demand) || demand > 1e12)
-      throw new RangeError("A cadeia excedeu o limite de quantidade.");
+      throw new RangeError('A cadeia excedeu o limite de quantidade.');
     const row = rowFor(name);
     row.required += demand;
     if (!Number.isSafeInteger(row.required) || row.required > 1e12)
-      throw new RangeError(
-        "A demanda acumulada excedeu o limite de quantidade.",
-      );
+      throw new RangeError('A demanda acumulada excedeu o limite de quantidade.');
     const k = key(name);
     const held = available.get(k) ?? 0;
     const used = Math.min(held, demand);
@@ -369,21 +329,16 @@ export function calculateProduction(raw: unknown) {
       return;
     }
     if (path.includes(recipeId) || path.length >= 30)
-      throw new RangeError(
-        "Ciclo ou profundidade excessiva na cadeia de crafting.",
-      );
+      throw new RangeError('Ciclo ou profundidade excessiva na cadeia de crafting.');
     const recipe = recipes.get(recipeId);
-    if (!recipe) throw new RangeError("Uma receita vinculada foi removida.");
+    if (!recipe) throw new RangeError('Uma receita vinculada foi removida.');
     if (key(recipe.name) !== k)
       throw new RangeError(
-        "O nome do ingrediente precisa coincidir com o produto da receita vinculada.",
+        'O nome do ingrediente precisa coincidir com o produto da receita vinculada.',
       );
     const crafts = Math.ceil(missing / recipe.yield);
     recipe.ingredients.forEach((r) =>
-      take(r.name, r.quantity * crafts, r.recipeId, r.price, [
-        ...path,
-        recipeId,
-      ]),
+      take(r.name, r.quantity * crafts, r.recipeId, r.price, [...path, recipeId]),
     );
     const produced = crafts * recipe.yield;
     row.produced += produced;
@@ -399,8 +354,8 @@ export function calculateProduction(raw: unknown) {
     tasks.set(recipeId, task);
   };
   const root = recipes.get(i.recipeId);
-  if (!root) throw new RangeError("Escolha uma receita existente.");
-  take(root.name, i.quantity, root.id, "0", []);
+  if (!root) throw new RangeError('Escolha uma receita existente.');
+  take(root.name, i.quantity, root.id, '0', []);
   return {
     target: root.name,
     quantity: i.quantity,
@@ -422,4 +377,4 @@ export const calculators = {
   production: calculateProduction,
 };
 export type CalculatorKey = keyof typeof calculators;
-export const MODEL_VERSION = "1.0.0";
+export const MODEL_VERSION = '1.0.0';

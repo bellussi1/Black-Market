@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
 import { defaultTax } from '@bdo/calculators';
-import { TaxOptionsComponent } from './tax-options';
+import { describe, expect, it, vi } from 'vitest';
+
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
+import { TaxOptionsComponent } from './tax-options';
 
 describe('TaxOptionsComponent', () => {
   useMemoryStorage();

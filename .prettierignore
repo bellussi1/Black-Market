@@ -1,0 +1,16 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/coverage/
+**/.angular/
+**/out-tsc/
+**/.cache/
+*.tsbuildinfo
+pnpm-lock.yaml
+packages/database/drizzle/
+.env*
+.dev.vars*
+data/
+*.paz
+*.bss
+*.dbss

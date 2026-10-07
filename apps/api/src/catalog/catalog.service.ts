@@ -1,9 +1,16 @@
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { and, asc, count, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
+  categories,
+  categoryTranslations,
+  type DatasetVersion,
+  datasetVersions,
+  itemCategories,
+  items,
+  itemTranslations,
+  itemVersions,
+  recipeIngredients,
+  recipeOutputs,
+  recipes,
+} from '@bdo/database/schema';
 import type {
   ActiveDatasetSummary,
   CatalogCategoriesResponse,
@@ -13,19 +20,9 @@ import type {
   CatalogRecipe,
   CatalogRecipesResponse,
 } from '@bdo/shared';
-import {
-  categories,
-  categoryTranslations,
-  datasetVersions,
-  itemCategories,
-  itemTranslations,
-  itemVersions,
-  items,
-  recipeIngredients,
-  recipeOutputs,
-  recipes,
-  type DatasetVersion,
-} from '@bdo/database/schema';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
+
 import { DatabaseService } from '../database/database.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
 
@@ -114,9 +111,7 @@ export class CatalogService {
     };
   }
 
-  async listCategories(
-    rawQuery: Record<string, unknown>,
-  ): Promise<CatalogCategoriesResponse> {
+  async listCategories(rawQuery: Record<string, unknown>): Promise<CatalogCategoriesResponse> {
     const query = parseCatalogQuery(rawQuery, { pagination: false });
     const dataset = await this.getActiveDataset(query.region, query.locale);
     if (!dataset) return { categories: [], dataset: null };
@@ -132,10 +127,7 @@ export class CatalogService {
       .innerJoin(
         categoryTranslations,
         and(
-          eq(
-            categoryTranslations.datasetVersionId,
-            categories.datasetVersionId,
-          ),
+          eq(categoryTranslations.datasetVersionId, categories.datasetVersionId),
           eq(categoryTranslations.categoryId, categories.id),
           eq(categoryTranslations.language, dataset.locale),
         ),
@@ -159,8 +151,7 @@ export class CatalogService {
       throw new NotFoundException('Item não encontrado.');
     }
     const dataset = await this.getActiveDataset(query.region, query.locale);
-    if (!dataset)
-      throw new NotFoundException('Não há catálogo ativo para esta região.');
+    if (!dataset) throw new NotFoundException('Não há catálogo ativo para esta região.');
 
     const [row] = await this.database.db
       .select({
@@ -182,21 +173,11 @@ export class CatalogService {
           eq(itemTranslations.language, dataset.locale),
         ),
       )
-      .where(
-        and(
-          eq(itemVersions.datasetVersionId, dataset.id),
-          eq(items.id, itemId),
-        ),
-      )
+      .where(and(eq(itemVersions.datasetVersionId, dataset.id), eq(items.id, itemId)))
       .limit(1);
 
-    if (!row)
-      throw new NotFoundException('Item não encontrado no catálogo ativo.');
-    const categoryMap = await this.categoriesByItem(
-      dataset.id,
-      dataset.locale,
-      [itemId],
-    );
+    if (!row) throw new NotFoundException('Item não encontrado no catálogo ativo.');
+    const categoryMap = await this.categoriesByItem(dataset.id, dataset.locale, [itemId]);
     return {
       item: { ...row, categories: categoryMap.get(itemId) ?? [] },
       dataset: this.toSummary(dataset),
@@ -227,18 +208,11 @@ export class CatalogService {
     const [itemVersion] = await this.database.db
       .select({ itemId: itemVersions.itemId })
       .from(itemVersions)
-      .where(
-        and(
-          eq(itemVersions.datasetVersionId, dataset.id),
-          eq(itemVersions.itemId, itemId),
-        ),
-      )
+      .where(and(eq(itemVersions.datasetVersionId, dataset.id), eq(itemVersions.itemId, itemId)))
       .limit(1);
-    if (!itemVersion)
-      throw new NotFoundException('Item não encontrado no catálogo ativo.');
+    if (!itemVersion) throw new NotFoundException('Item não encontrado no catálogo ativo.');
 
-    const relation =
-      direction === 'produces' ? recipeOutputs : recipeIngredients;
+    const relation = direction === 'produces' ? recipeOutputs : recipeIngredients;
     const relationFilter = and(
       eq(relation.datasetVersionId, dataset.id),
       eq(relation.itemId, itemId),
@@ -270,12 +244,7 @@ export class CatalogService {
         station: recipes.station,
       })
       .from(recipes)
-      .where(
-        and(
-          eq(recipes.datasetVersionId, dataset.id),
-          inArray(recipes.recipeKey, keys),
-        ),
-      )
+      .where(and(eq(recipes.datasetVersionId, dataset.id), inArray(recipes.recipeKey, keys)))
       .orderBy(asc(recipes.recipeType), asc(recipes.recipeKey));
 
     const [inputRows, outputRows] = await Promise.all([
@@ -290,10 +259,7 @@ export class CatalogService {
         .innerJoin(
           itemTranslations,
           and(
-            eq(
-              itemTranslations.datasetVersionId,
-              recipeIngredients.datasetVersionId,
-            ),
+            eq(itemTranslations.datasetVersionId, recipeIngredients.datasetVersionId),
             eq(itemTranslations.itemId, recipeIngredients.itemId),
             eq(itemTranslations.language, dataset.locale),
           ),
@@ -304,10 +270,7 @@ export class CatalogService {
             inArray(recipeIngredients.recipeKey, keys),
           ),
         )
-        .orderBy(
-          asc(recipeIngredients.recipeKey),
-          asc(recipeIngredients.position),
-        ),
+        .orderBy(asc(recipeIngredients.recipeKey), asc(recipeIngredients.position)),
       this.database.db
         .select({
           recipeKey: recipeOutputs.recipeKey,
@@ -319,10 +282,7 @@ export class CatalogService {
         .innerJoin(
           itemTranslations,
           and(
-            eq(
-              itemTranslations.datasetVersionId,
-              recipeOutputs.datasetVersionId,
-            ),
+            eq(itemTranslations.datasetVersionId, recipeOutputs.datasetVersionId),
             eq(itemTranslations.itemId, recipeOutputs.itemId),
             eq(itemTranslations.language, dataset.locale),
           ),
@@ -403,10 +363,7 @@ export class CatalogService {
       .innerJoin(
         categoryTranslations,
         and(
-          eq(
-            categoryTranslations.datasetVersionId,
-            categories.datasetVersionId,
-          ),
+          eq(categoryTranslations.datasetVersionId, categories.datasetVersionId),
           eq(categoryTranslations.categoryId, categories.id),
           eq(categoryTranslations.language, locale),
         ),

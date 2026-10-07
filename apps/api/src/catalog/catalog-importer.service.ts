@@ -1,17 +1,18 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { and, eq, ne, sql } from 'drizzle-orm';
 import {
   categories,
   categoryTranslations,
   datasetVersions,
   itemCategories,
+  items,
   itemTranslations,
   itemVersions,
-  items,
   recipeIngredients,
   recipeOutputs,
   recipes,
 } from '@bdo/database/schema';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { and, eq, ne, sql } from 'drizzle-orm';
+
 import { DatabaseService } from '../database/database.service';
 import type { ExtractedDataset } from './extractor-dataset';
 
@@ -126,9 +127,7 @@ export class CatalogImporterService {
           sql`select pg_advisory_xact_lock(hashtextextended(${`${SOURCE}:${options.region}:${options.locale}`}, 0))`,
         );
 
-        for (const batch of batches(
-          dataset.items.map((item) => ({ id: item.id })),
-        )) {
+        for (const batch of batches(dataset.items.map((item) => ({ id: item.id })))) {
           await tx.insert(items).values(batch).onConflictDoNothing();
         }
 
@@ -279,10 +278,7 @@ export class CatalogImporterService {
           recipeKey: recipe.key,
           position: 0,
           itemId: recipe.outputItemId,
-          quantity:
-            recipe.outputQuantity === null
-              ? null
-              : String(recipe.outputQuantity),
+          quantity: recipe.outputQuantity === null ? null : String(recipe.outputQuantity),
         }));
         for (const batch of batches(outputRows)) {
           await tx

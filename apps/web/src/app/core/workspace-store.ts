@@ -1,9 +1,11 @@
-import { Injectable, signal, OnDestroy, inject } from '@angular/core';
-import { RegionPreferences } from './region-preferences';
-import { workspaceSchema, emptyWorkspace, presetSchema, type Workspace } from './workspace-models';
+import type { OnDestroy } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import type { CalculatorKey } from '@bdo/calculators';
+
 import { validationMessage } from '../shared/calculation-feedback';
 import { download } from '../shared/download';
+import { RegionPreferences } from './region-preferences';
+import { emptyWorkspace, presetSchema, type Workspace, workspaceSchema } from './workspace-models';
 
 const STORAGE_KEY = 'black-market.workspace.v1';
 

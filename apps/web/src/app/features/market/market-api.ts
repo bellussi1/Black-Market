@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import type { MarketLookupResponse } from '@bdo/shared';
-import type { Region } from '../../core/region-preferences';
+
 import { environment } from '../../../environments/environment';
+import type { Region } from '../../core/region-preferences';
 
 @Injectable({ providedIn: 'root' })
 export class MarketApi {

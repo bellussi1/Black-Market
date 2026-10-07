@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { number, silver } from './formatters';
 
 describe('formatters', () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EnhancementPage } from './enhancement-page';
+
 import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
+import { EnhancementPage } from './enhancement-page';
 
 describe('EnhancementPage', () => {
   useMemoryStorage();

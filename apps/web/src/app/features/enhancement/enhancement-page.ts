@@ -3,16 +3,17 @@ import { FormsModule } from '@angular/forms';
 import {
   calculateEnhancement,
   calculateFailstack,
-  enhancementSchema,
-  failstackSchema,
   type EnhancementInput,
+  enhancementSchema,
   type FailstackInput,
+  failstackSchema,
 } from '@bdo/calculators';
+
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
-import { silver, number, date } from '../../shared/formatters';
-import { PresetBar } from '../../shared/preset-bar';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { date, number, silver } from '../../shared/formatters';
+import { PresetBar } from '../../shared/preset-bar';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-enhancement-page',

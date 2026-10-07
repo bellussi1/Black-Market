@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { evaluate, validationMessage } from './calculation-feedback';
 
 describe('calculation feedback', () => {

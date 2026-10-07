@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
-import { RegionPreferences } from './region-preferences';
+
 import { useMemoryStorage } from '../testing/test-setup';
+import { RegionPreferences } from './region-preferences';
 
 describe('RegionPreferences', () => {
   useMemoryStorage();
