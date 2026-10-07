@@ -1,0 +1,52 @@
+<a class="skip-link" href="#workspace-main">Ir para o conteúdo</a>
+<div class="workspace">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/" aria-label="Black Market — início"
+      ><span class="brand-symbol" aria-hidden="true">◇</span
+      ><span>BLACK<br /><strong>MARKET</strong></span></a
+    >
+    <p class="sidebar-label">SEU CADERNO DE AVENTURA</p>
+    <nav aria-label="Ferramentas do Black Market">
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+          ariaCurrentWhenActive="page"
+          ><span>{{ link.code }}</span
+          >{{ link.label }}</a
+        >
+      }
+    </nav>
+    <div class="sidebar-foot">
+      <span class="tiny-dot"></span> Ferramentas independentes<br /><small
+        >BLACK DESERT ONLINE</small
+      >
+    </div>
+  </aside>
+  <div class="workspace-body">
+    <header class="workspace-topbar">
+      <span>BLACK DESERT ONLINE <b>/</b> CADERNO PESSOAL</span
+      ><label
+        >Região<select
+          [ngModel]="preferences.region()"
+          (ngModelChange)="preferences.setRegion($event)"
+        >
+          @for (r of regions; track r) {
+            <option [value]="r">{{ r.toUpperCase() }}</option>
+          }
+        </select></label
+      >
+    </header>
+    @if (preferences.message()) {
+      <div class="storage-warning" role="status">
+        {{ preferences.message() }} <a routerLink="/settings">Dados e backup</a>
+      </div>
+    }
+    <main id="workspace-main"><router-outlet /></main>
+    <footer class="workspace-footer">
+      <span>BLACK MARKET · PROJETO PESSOAL</span
+      ><span>Dados pessoais neste navegador · <a routerLink="/settings">Exportar backup</a></span>
+    </footer>
+  </div>
+</div>

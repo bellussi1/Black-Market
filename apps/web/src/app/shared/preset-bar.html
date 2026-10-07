@@ -1,0 +1,26 @@
+<div class="preset-bar">
+  <label class="field"
+    >Nome do preset<input
+      maxlength="140"
+      placeholder="Meu cenário"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
+  /></label>
+  <button class="btn" type="button" [disabled]="!name().trim()" (click)="save()">
+    Salvar preset
+  </button>
+  <label class="field"
+    >Presets desta região<select [ngModel]="selected()" (ngModelChange)="selected.set($event)">
+      <option value="">Escolher preset</option>
+      @for (p of presets(); track p.id) {
+        <option [value]="p.id">{{ p.name }}</option>
+      }
+    </select></label
+  >
+  <button class="btn subtle" type="button" [disabled]="!selected()" (click)="load()">
+    Carregar
+  </button>
+  <button class="btn subtle" type="button" [disabled]="!selected()" (click)="remove()">
+    Excluir preset
+  </button>
+</div>

@@ -1,0 +1,104 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">10 / DADOS PESSOAIS</p>
+    <h1>Seu caderno é seu.</h1>
+    <p>
+      Faça backup de cotações, materiais, receitas, sessões e presets. Tudo nesta área fica no
+      armazenamento deste navegador.
+    </p>
+  </header>
+  <div class="notice">
+    Limpar os dados do navegador remove seu caderno. Exporte periodicamente. Ainda não há conta nem
+    sincronização entre dispositivos; o arquivo JSON permite transferir os dados.
+  </div>
+  <section class="panel">
+    <div class="panel-heading">
+      <h2>Conteúdo local</h2>
+      <button type="button" class="btn" (click)="store.exportBackup()">
+        Exportar backup completo
+      </button>
+    </div>
+    <div class="metric-grid">
+      @for (row of counts(); track row.name) {
+        <div class="metric">
+          <span>{{ row.name }}</span
+          ><strong>{{ row.count }}</strong>
+        </div>
+      }
+    </div>
+  </section>
+  @if (store.blocked()) {
+    <section class="panel">
+      <h2>Recuperar armazenamento inválido</h2>
+      <p class="help">
+        Exporte o arquivo original para guardar uma cópia. Depois importe um backup válido ou comece
+        um caderno vazio.
+      </p>
+      <label class="check-row"
+        ><input type="checkbox" [(ngModel)]="confirmRecoveryReset" /> Já preservei o backup original
+        e quero substituir o caderno por um vazio.</label
+      ><button
+        type="button"
+        class="btn danger"
+        [disabled]="!confirmRecoveryReset"
+        (click)="recoverEmpty()"
+      >
+        Começar caderno vazio
+      </button>
+    </section>
+  }
+  <section class="panel">
+    <h2>Importar backup</h2>
+    <label class="field"
+      >Arquivo JSON do Black Market<input
+        type="file"
+        accept=".json,application/json"
+        (change)="read($event)"
+    /></label>
+    @if (error()) {
+      <p class="error-box" role="alert">{{ error() }}</p>
+    }
+    @if (candidate(); as data) {
+      <h3>Backup validado · {{ data.region.toUpperCase() }}</h3>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Conteúdo</th>
+              <th>Registros do backup</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of summary(data); track row.name) {
+              <tr>
+                <td>{{ row.name }}</td>
+                <td>{{ row.count }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <label class="check-row"
+        ><input type="checkbox" [(ngModel)]="confirmReplace" /> Substituir meus dados locais pelos
+        dados deste backup.</label
+      >
+      <div class="action-row">
+        <button type="button" class="btn" [disabled]="!confirmReplace" (click)="replace()">
+          Importar e substituir</button
+        ><button type="button" class="btn subtle" (click)="candidate.set(null)">Cancelar</button>
+      </div>
+    }
+  </section>
+  <section class="panel">
+    <h2>Catálogo extraído e imagens</h2>
+    <p class="help">
+      O catálogo do jogo é importado pela API a partir de arquivos locais do extractor. Seu backup
+      pessoal não contém esse dataset nem assets do jogo. Quando a extração estiver pronta, o
+      catálogo poderá ser preenchido mantendo seus cenários manuais.
+    </p>
+    <p class="help">
+      Mercado automático, tabelas de equipamento, fórmulas específicas por item e mapa geográfico
+      ainda dependem de fontes e regras validadas.
+    </p>
+  </section>
+</div>

@@ -1,0 +1,64 @@
+import { Component, computed, inject, signal } from '@angular/core';
+import {
+  WorkspaceStore,
+  workspaceSchema,
+  validationMessage,
+  type Workspace,
+  emptyWorkspace,
+} from '../../core/workspace-store';
+import { FormsModule } from '@angular/forms';
+import { MAX_BACKUP_BYTES } from '../../core/region-preferences';
+@Component({
+  selector: 'app-settings-page',
+  imports: [FormsModule],
+  templateUrl: './settings-page.html',
+})
+export class SettingsPage {
+  readonly store = inject(WorkspaceStore);
+  readonly candidate = signal<Workspace | null>(null);
+  readonly error = signal('');
+  confirmReplace = false;
+  confirmRecoveryReset = false;
+  readonly counts = computed(() => this.summary(this.store.data()));
+  summary(s: Workspace) {
+    return [
+      { name: 'Cotações', count: s.quotes.length },
+      { name: 'Materiais', count: s.inventory.length },
+      { name: 'Receitas manuais', count: s.recipes.length },
+      { name: 'Builds', count: s.gear.length },
+      { name: 'Sessões', count: s.sessions.length },
+      { name: 'Buffs', count: s.buffs.length },
+      { name: 'Presets de cálculo', count: s.presets.length },
+      { name: 'Projetos', count: s.projects.length },
+      { name: 'Tentativas', count: s.enhancementLog.length },
+      { name: 'Combinações de buffs', count: s.buffPresets.length },
+    ];
+  }
+  async read(event: Event): Promise<void> {
+    this.error.set('');
+    this.candidate.set(null);
+    this.confirmReplace = false;
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > MAX_BACKUP_BYTES) {
+      this.error.set('Use um backup JSON de até 20 MB.');
+      return;
+    }
+    try {
+      this.candidate.set(workspaceSchema.parse(JSON.parse(await file.text())));
+    } catch (error) {
+      this.error.set(validationMessage(error));
+    }
+  }
+  replace(): void {
+    if (this.confirmReplace && this.candidate()) {
+      this.store.replace(this.candidate());
+      this.candidate.set(null);
+      this.confirmReplace = false;
+    }
+  }
+  recoverEmpty(): void {
+    if (this.confirmRecoveryReset)
+      this.store.replace({ ...emptyWorkspace(), region: this.store.data().region });
+  }
+}

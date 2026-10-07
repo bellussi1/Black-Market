@@ -1,0 +1,42 @@
+<fieldset class="tax-options">
+  <legend>Coleta da venda</legend>
+  <div class="form-grid">
+    <label class="field"
+      >Imposto base (%)<input
+        type="number"
+        min="0"
+        max="100"
+        step="0.01"
+        [ngModel]="value().taxPercent"
+        (ngModelChange)="patch({ taxPercent: $event })"
+    /></label>
+    <label class="field"
+      >Fama / anel / outros bônus (%)<input
+        type="number"
+        min="0"
+        max="50"
+        step="0.01"
+        [ngModel]="value().collectionBonus"
+        (ngModelChange)="patch({ collectionBonus: $event })"
+      /><small>Bônus sobre a coleta após imposto.</small></label
+    >
+  </div>
+  <div class="check-row">
+    <label
+      ><input
+        type="checkbox"
+        [ngModel]="value().valuePack"
+        (ngModelChange)="patch({ valuePack: $event })"
+      />
+      Value Pack (+30% na coleta)</label
+    >
+    <label
+      ><input
+        type="checkbox"
+        [ngModel]="value().exempt"
+        (ngModelChange)="patch({ exempt: $event })"
+      />
+      Venda isenta</label
+    >
+  </div>
+</fieldset>
