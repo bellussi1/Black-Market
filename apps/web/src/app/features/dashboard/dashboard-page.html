@@ -1,0 +1,125 @@
+<div class="page-shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="BDO Companion — início">
+      <span class="brand-mark" aria-hidden="true"><span></span></span>
+      <span class="brand-name">BDO <strong>COMPANION</strong></span>
+    </a>
+    <nav class="topnav" aria-label="Navegação principal">
+      <a class="active" href="#inicio">Visão geral</a>
+      <a href="#ferramentas">Ferramentas</a>
+      <a href="#dados">Fontes de dados</a>
+    </nav>
+    <div class="region-select" aria-label="Região selecionada">
+      <span class="region-dot"></span> SA · América do Sul
+      <span class="chevron" aria-hidden="true">⌄</span>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> CADERNO DE CAMPO · BLACK DESERT ONLINE</p>
+        <h1>Planeje cada<br /><em>próximo passo.</em></h1>
+        <p class="hero-intro">
+          Um espaço independente para explorar o mercado, calcular produção e entender sua
+          progressão — com fontes e premissas sempre à vista.
+        </p>
+        <a class="primary-link" href="#ferramentas">
+          Explorar ferramentas <span aria-hidden="true">↗</span>
+        </a>
+        <p class="disclaimer">Projeto comunitário, sem vínculo com a Pearl Abyss.</p>
+      </div>
+
+      <aside class="field-note" aria-label="Status do projeto">
+        <div class="note-head">
+          <span>ESTADO DO PROJETO</span><span class="phase">FASE 01</span>
+        </div>
+        <div class="note-map" aria-hidden="true">
+          <span class="contour contour-one"></span>
+          <span class="contour contour-two"></span>
+          <span class="contour contour-three"></span>
+          <span class="map-pin"><i></i></span>
+          <span class="coordinates">VELIA · 36°53′N</span>
+        </div>
+        <div class="note-status">
+          <span
+            class="status-light"
+            [class.online]="apiStatus() === 'online'"
+            [class.offline]="apiStatus() === 'offline'"
+          ></span>
+          <span aria-live="polite">{{ apiStatusLabel }}</span>
+        </div>
+        <p class="note-copy">
+          A base técnica está pronta. Catálogo e mercado serão carregados por fontes separadas e
+          identificadas.
+        </p>
+      </aside>
+    </section>
+
+    <section class="tool-section" id="ferramentas">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> NO MAPA</p>
+          <h2>Ferramentas em preparação</h2>
+        </div>
+        <span class="section-count">03 MÓDULOS PLANEJADOS</span>
+      </div>
+      <div class="tool-grid">
+        @for (tool of tools; track tool.index) {
+          <article class="tool-card">
+            <div class="tool-card-top">
+              <span class="tool-index">{{ tool.index }}</span>
+              <span class="tool-category">{{ tool.category }}</span>
+            </div>
+            <h3>{{ tool.title }}</h3>
+            <p>{{ tool.description }}</p>
+            <div class="tool-card-foot">
+              <span class="coming-soon"><i></i> Em preparação</span>
+              <span class="tool-arrow" aria-hidden="true">↗</span>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="data-section" id="dados">
+      <div class="data-intro">
+        <p class="eyebrow"><span></span> PROCEDÊNCIA</p>
+        <h2>Dados claros.<br /><em>Decisões melhores.</em></h2>
+        <p>
+          Catálogo, preços e estimativas têm origens diferentes. Cada ferramenta vai mostrar a
+          fonte, a região e quando os dados foram atualizados.
+        </p>
+      </div>
+      <div class="source-list">
+        <div class="source-row">
+          <span class="source-number">A</span>
+          <div>
+            <strong>Dados do jogo</strong><small>Importação versionada do dataset extraído</small>
+          </div>
+          <span class="source-state">A CONFIGURAR</span>
+        </div>
+        <div class="source-row">
+          <span class="source-number">B</span>
+          <div>
+            <strong>Mercado central</strong
+            ><small>Provedor comunitário; atualização periódica</small>
+          </div>
+          <span class="source-state">A CONFIGURAR</span>
+        </div>
+        <div class="source-row">
+          <span class="source-number">C</span>
+          <div>
+            <strong>BDO Workshop</strong><small>Referência de funcionalidades e fórmulas</small>
+          </div>
+          <span class="source-state reference">REFERÊNCIA</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>BDO COMPANION <b>/</b> FERRAMENTAS INDEPENDENTES</span>
+    <span>SEM AFILIAÇÃO COM PEARL ABYSS</span>
+  </footer>
+</div>
