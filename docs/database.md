@@ -6,14 +6,15 @@ PostgreSQL é a persistência relacional. Drizzle ORM define schema TypeScript e
 
 ```mermaid
 erDiagram
-  DATASET_VERSIONS ||--o{ ITEMS : importa
+  DATASET_VERSIONS ||--o{ ITEM_VERSIONS : publica
   DATASET_VERSIONS ||--o{ CATEGORIES : importa
-  DATASET_VERSIONS ||--o{ ITEM_TRANSLATIONS : importa
   DATASET_VERSIONS ||--o{ RECIPES : importa
-  ITEMS ||--o{ ITEM_TRANSLATIONS : traduz
-  ITEMS ||--o{ ITEM_CATEGORIES : classifica
+  ITEMS ||--o{ ITEM_VERSIONS : identifica
+  ITEM_VERSIONS ||--o{ ITEM_TRANSLATIONS : traduz
+  ITEM_VERSIONS ||--o{ ITEM_CATEGORIES : classifica
   CATEGORIES ||--o{ ITEM_CATEGORIES : contem
   CATEGORIES ||--o{ CATEGORIES : pai
+  CATEGORIES ||--o{ CATEGORY_TRANSLATIONS : traduz
   RECIPES ||--o{ RECIPE_INGREDIENTS : consome
   RECIPES ||--o{ RECIPE_OUTPUTS : produz
   ITEMS ||--o{ RECIPE_INGREDIENTS : ingrediente
@@ -24,9 +25,9 @@ erDiagram
 
 ### Tabelas presentes no schema
 
-- `dataset_versions`: fonte, identificador da versão, checksum, contagens e estado de importação. A combinação fonte/versão é única.
-- `items`, `item_translations`, `categories`, `item_categories`: IDs estáveis do jogo e texto por idioma; uma importação nova deve preservar a versão que gerou cada registro.
-- `recipes`, `recipe_ingredients`, `recipe_outputs`: receita normalizada, estações/tipo e quantidades ordenadas.
+- `dataset_versions`: fonte, fingerprint/versão, região, idioma, checksum, contagens e estado (`loading`, `active`, `archived`, `failed`). Só uma versão pode estar ativa por fonte/região/idioma.
+- `items`: identidade estável do ID do jogo. `item_versions`, `item_translations`, `categories`, `category_translations` e `item_categories` preservam valores e textos por dataset.
+- `recipes`, `recipe_ingredients`, `recipe_outputs`: relações versionadas de receita, estação/tipo e quantidades ordenadas. Quantidade `NULL` significa que a fonte não a informou; não é convertida em zero ou um.
 - `market_current_prices`: último valor conhecido por região e item.
 - `market_price_points`: observações históricas indexadas por região/item/tempo e protegidas contra duplicação.
 
@@ -34,13 +35,13 @@ Valores de preço e quantidade usam `numeric`, para evitar arredondamento de `fl
 
 ## Publicação atômica de dataset
 
-1. Criar versão em estado `loading`.
-2. Validar os JSONs e referências de IDs antes de escrever; importar em transação/lotes.
-3. Conferir totais, checksum, categorias, traduções e integridade das receitas.
-4. Marcar como `active` e apontar a versão corrente por seleção explícita. Se falhar, marcar `failed` e manter a versão anterior disponível.
-5. Remover versões antigas só por política documentada, depois de confirmar que não há consumidores.
+1. Validar `items.json`, `recipes.json` e `marketcategories.json`, IDs e referências antes de abrir uma transação.
+2. Criar a versão em estado `loading` e importar linhas em lotes dentro de uma transação.
+3. Arquivar a versão anterior e ativar a nova na mesma transação. Uma falha reverte os dados e mantém a versão anterior ativa; o registro da tentativa fica como `failed`.
+4. Reutilizar uma versão somente se o checksum for o mesmo. Um conteúdo diferente exige novo identificador; isso impede mutação silenciosa de um snapshot.
+5. Manter versões arquivadas para rollback. Removê-las só por política documentada, depois de confirmar que nenhum consumidor ainda as consulta.
 
-A tabela de versões prepara o modelo, mas a troca atômica de versão e o importer serão implementados na fase de catálogo.
+O importador está disponível em `pnpm --filter @bdo/api data:import`. Ele não é executado no startup da API e não aceita upload remoto.
 
 ## Crescimento do mercado
 

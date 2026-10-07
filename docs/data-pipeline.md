@@ -4,7 +4,7 @@
 
 | Família | Fonte candidata | Atualização/frescor conhecido | Confiança e limite |
 |---|---|---|---|
-| Referência do jogo: itens, receitas, localização, NPCs, nodes, mapa, zonas e conhecimento | [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), lendo a instalação local do cliente | Atualiza quando o jogo é atualizado e o extractor é executado de novo. A versão atual publica um fingerprint do cliente para detectar quando a extração ficou obsoleta. | Fonte local da referência estática; requer uma instalação legítima e compatibilidade com a versão/idioma/região do cliente. É ferramenta comunitária de engenharia reversa, não API da Pearl Abyss. |
+| Referência do jogo: itens, receitas, localização, NPCs, nodes, mapa, zonas e conhecimento | [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), lendo a instalação local do cliente | Atualiza quando o jogo é atualizado e o extractor é executado de novo. O README atual descreve saídas JSON determinísticas e comparação de builds, mas não promete fingerprint do cliente embutido em `items.json`. | Fonte local da referência estática; requer uma instalação legítima e compatibilidade com a versão/idioma/região do cliente. É ferramenta comunitária de engenharia reversa, não API da Pearl Abyss. |
 | Central Market: preço, estoque, total de trades, ordens, fila e histórico | Rotas do market da Pearl Abyss documentadas pela comunidade; [Arsha](https://www.postman.com/bdomarket/arsha-io-bdo-market-api/documentation/qpavrc8/bdo-market-api-v2) oferece wrapper/cache | Documentação do Arsha declara cache de 30 minutos e descarte conforme frequência de uso. Tem WebSocket que notifica expiração de entrada de cache; isso não garante que o valor novo já esteja carregado nem constitui streaming de cada transação. | A documentação do endpoint é comunitária, não uma API pública oficialmente documentada pela Pearl Abyss. A própria documentação do Arsha diz que os endpoints não foram documentados oficialmente pela PA e que o wrapper reduz chamadas diretas ao servidor. Sem SLA garantido. |
 | Dados de usuário: presets, planos, storage e valores customizados | Usuário da aplicação | Atualiza por edição/importação do próprio usuário. | Estado pessoal, não fonte confiável do catálogo ou do preço global. O BDO Workshop declara guardar esses dados por conta ou no browser quando anônimo. |
 | Dados comunitários: reports, leaderboards e estimativas | Contribuições voluntárias em funcionalidades como DPS leaderboard ou Night Vendor | Depende de submissões e revisão; sem cadência fixa descoberta. | Crowdsourced/estimado e separado dos dados extraídos do jogo ou do market. |
@@ -17,20 +17,25 @@ Também não localizamos documentação oficial pública da Pearl Abyss para ess
 
 ## Atualização de catálogo e receitas
 
-O extractor lê dados do cliente instalado: arquivos PAZ, tabelas `.bss`/`.dbss`, XMLs de receitas e localização. Ele produz JSONs determinísticos e inclui itens, receitas, categorias de market, conhecimento, mundo, NPCs, zonas e outros conjuntos. Seu README é explícito: os dados de referência vêm do cliente, não há scraping de sites, e o extractor não faz chamadas de rede. Também explicita que **preço ao vivo não está no cliente** porque a economia do market é server-side. O repositório registra versionamento de formato e um fingerprint para detectar mudanças do cliente e indicar reextração. [README](https://github.com/iDevelopThings/bdo-data-extractor) e [changelog](https://github.com/iDevelopThings/bdo-data-extractor/blob/main/CHANGELOG.md).
+O extractor lê dados do cliente instalado: arquivos PAZ, tabelas `.bss`/`.dbss`, XMLs de receitas e localização. Ele produz JSONs determinísticos e inclui itens, receitas, categorias de market, conhecimento, mundo, NPCs, zonas e outros conjuntos. Seu README é explícito: os dados de referência vêm do cliente, não há scraping de sites, e o extractor não faz chamadas de rede. Também explicita que **preço ao vivo não está no cliente** porque a economia do market é server-side. O formato dos JSONs é versionado no changelog; o README atual documenta `diff-outputs`, mas não um `gameFingerprint` embutido nos arquivos. [README](https://github.com/iDevelopThings/bdo-data-extractor) e [changelog](https://github.com/iDevelopThings/bdo-data-extractor/blob/main/CHANGELOG.md).
 
 Essa extração não deve ser tratada como cópia integral de toda regra/dado do servidor. O próprio schema do extractor marca, por exemplo, que o yield variável por receita, os grupos de resultado de algumas receitas de manufatura e a tabela de peixes por fishing spot são server-side. Assim, cada entidade deve carregar uma indicação de completude/fonte quando algum campo depender de conhecimento comunitário, observação do jogo ou estimativa.
 
-Fluxo sugerido:
+Fluxo implementado para itens, categorias de mercado e receitas:
 
-1. Depois de um patch relevante, executar o extractor contra uma cópia local legítima do cliente e definir região/idioma adequados.
-2. Detectar necessidade de reextração por fingerprint do cliente e versão do extractor; capturar o manifest, checksum e hora da execução. O extractor mantém um `gameFingerprint` baseado nos arquivos de índice do cliente e oferece uma verificação de staleness.
-3. Validar o schema versionado, chaves/IDs, contagens, referências e mudanças de estrutura antes de importar.
-4. Carregar em staging, gerar relatório de diferenças e rejeitar relações inválidas ou datasets incompletos.
-5. Ativar a versão inteira numa transação/publicação controlada; manter a última versão boa para rollback.
-6. Guardar proveniência: `source`, `extractorVersion`, `gameFingerprint`, `gameRegion`, `locale`, `extractedAt`, `schemaVersion` e checksums.
+1. Depois de um patch relevante, executar o extractor contra uma instalação legítima e escolher idioma/região. O README atual lista `en`, `de`, `fr` e `sp`; a interface do projeto é pt-BR, mas os nomes de itens vêm no idioma extraído.
+2. Guardar `items.json`, `recipes.json` e `marketcategories.json` numa pasta local fora do Git. O extractor atual documenta comparar diretórios de saída com `diff-outputs`, mas não assumir um `gameFingerprint` em cada arquivo.
+3. Definir um rótulo imutável para `--version`, de preferência combinando versão do extractor e patch/fingerprint do cliente quando conhecidos. O importer calcula SHA-256 do conteúdo dos três JSONs e registra região, idioma, versão e hora da importação.
+4. Validar formato, IDs únicos e referências de itens nas receitas/categorias antes de escrever. Referências inválidas interrompem a importação.
+5. O comando grava em lotes dentro de uma transação, arquiva a versão ativa e ativa a nova no mesmo commit. Se falhar, a transação reverte e a versão anterior continua ativa.
 
-A primeira integração deve ser um comando/job manual que roda numa máquina com o jogo instalado. Agendar a execução é possível quando a máquina e o cliente estiverem disponíveis, mas isso não torna o catálogo um serviço remoto nem o atualiza sozinho depois de cada patch. O README do extractor informa licença não comercial para o código do projeto e não concede direitos sobre dados/assets do jogo; revisar licença e termos antes de integração ou redistribuição. Evitar commitar arquivos extraídos e ícones no repositório até essa revisão.
+Exemplo no PowerShell (substitua o caminho e o rótulo pela sua extração):
+
+```powershell
+pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version "extractor-v0.1.9-patch-fingerprint" --region sa --locale en
+```
+
+É um comando manual executado na máquina que tem os arquivos extraídos; não atualiza o catálogo sozinho depois de um patch nem disponibiliza o dataset publicamente. O README do extractor informa licença não comercial para o código do projeto e não concede direitos sobre dados/assets do jogo; revisar licença e termos antes de integração ou redistribuição. Não commitar JSONs extraídos nem ícones no repositório.
 
 ## Atualização de preços de mercado
 

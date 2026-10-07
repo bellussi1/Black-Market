@@ -51,7 +51,7 @@ As regras completas de cada calculadora serão criadas junto com suas fontes ver
 ## Fases
 
 1. Estrutura e ambiente: Angular, Nest, schema/migration, health checks, docs e CI. **Implementada nesta entrega.**
-2. Importação manual versionada de catálogo/receitas do extractor; busca e detalhes de item.
+2. Importação manual versionada de catálogo/receitas do extractor; busca e detalhes de item. **Implementada.**
 3. Integração do mercado após validar fornecedor, limites e termos; cache atual e histórico controlado.
 4. Calculadoras de crafting e enhancement com fixtures de referência, incluindo região, impostos, bônus e premissas.
 5. Contas e sincronização de preferências somente se houver necessidade; começar sem login.
