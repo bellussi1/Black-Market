@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev:web": "pnpm --filter @bdo/web start",
-    "dev:api": "pnpm --filter @bdo/database build && pnpm --filter @bdo/api start:dev",
+    "dev:api": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/api start:dev",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
