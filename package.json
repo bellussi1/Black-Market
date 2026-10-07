@@ -1,0 +1,23 @@
+{
+  "name": "bdo-companion",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "node": "^24.15.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @bdo/web start",
+    "dev:api": "pnpm --filter @bdo/database build && pnpm --filter @bdo/api start:dev",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "build": "pnpm -r --if-present build",
+    "db:generate": "pnpm --filter @bdo/database db:generate",
+    "db:migrate": "pnpm --filter @bdo/database db:migrate",
+    "db:check": "pnpm --filter @bdo/database db:check"
+  },
+  "devDependencies": {
+    "prettier": "3.8.1"
+  }
+}

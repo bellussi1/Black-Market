@@ -1,0 +1,23 @@
+node_modules/
+dist/
+coverage/
+.angular/
+.env
+.env.*
+!.env.example
+!.dev.vars.example
+.dev.vars
+.next/
+.vinext/
+.wrangler/
+*.tsbuildinfo
+*.log
+
+# Local game extraction output; never commit game files or extracted assets.
+data/
+*.paz
+*.bss
+*.dbss
+
+# Local editor state
+.vscode/
