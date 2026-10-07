@@ -1,6 +1,8 @@
 # Black Market
 
-Projeto pessoal e independente para Black Desert Online. Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Já inclui ferramentas de mercado e imposto, crafting e cadeias de materiais, enhancement e failstacks, gear, sessões de life skill, projetos, RNG boxes e buffs. Funcionam com entradas do usuário enquanto o catálogo do jogo não é importado.
+Plataforma independente de Black Desert Online voltada à comunidade brasileira, com SA e português brasileiro como padrões. O objetivo é oferecer consultas gratuitas de itens, receitas, mercado e estimativas de renda, com uma interface simples e planejamento personalizado a partir de materiais, prata, maestria e equipamentos. Veja a [visão do produto e etapas de entrega](docs/product-vision.md).
+
+A base usa Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Já há catálogo extraído e ferramentas manuais de mercado/imposto, crafting, enhancement, gear, life skills, projetos, RNG e buffs. Contas, leitura de prints, sincronização e recomendações automáticas são etapas planejadas; a aplicação ainda está em desenvolvimento local.
 
 Não há afiliação com a Pearl Abyss. O projeto não usa endpoints internos do BDOLytics ou do BDO Workshop. Os dois sites são referências de produto documentadas em [pesquisa de funcionalidades](docs/product-research.md).
 
