@@ -62,6 +62,7 @@ export interface CatalogRecipe {
   key: string;
   type: string;
   station: string | null;
+  byproductOfItemId?: number | null;
   inputs: CatalogRecipePart[];
   outputs: CatalogRecipePart[];
 }

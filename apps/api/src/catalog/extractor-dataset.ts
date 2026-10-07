@@ -7,14 +7,23 @@ import { z } from 'zod';
 const optionalText = z.string().nullish();
 const optionalWeight = z.number().finite().nonnegative().nullish();
 const marketRef = z.union([z.string(), z.number().int()]).nullish();
+const itemReference = z.union([
+  z.number().int().positive(),
+  z
+    .string()
+    .regex(/^urn::item:[1-9]\d*$/)
+    .transform((value) => Number(value.slice(10)))
+    .pipe(z.number().int().positive().safe()),
+]);
+const gradeNames = ['white', 'green', 'blue', 'yellow', 'red', 'purple'] as const;
 
 const extractedItemSchema = z
   .object({
     id: z.number().int().positive(),
-    name: z.string().trim().min(1),
+    name: z.string().trim().nullish(),
     description: optionalText,
     icon: optionalText,
-    grade: optionalText,
+    grade: z.union([z.string(), z.number().int().min(-1).max(5)]).nullish(),
     category: optionalText,
     marketCategory: marketRef,
     marketSubCategory: marketRef,
@@ -39,16 +48,16 @@ const marketCategorySchema = z
 
 const recipeItemSchema = z
   .object({
-    item: z.number().int().positive(),
+    item: itemReference,
     count: z.number().finite().nonnegative().nullish(),
   })
   .passthrough();
 
 const recipeOutputSchema = z.union([
-  z.number().int().positive(),
+  itemReference,
   z
     .object({
-      item: z.number().int().positive(),
+      item: itemReference,
       count: z.number().finite().nonnegative().nullish(),
     })
     .passthrough(),
@@ -60,6 +69,7 @@ const extractedRecipeSchema = z
     type: z.string().trim().min(1),
     station: optionalText,
     inputs: z.array(recipeItemSchema),
+    byproductOf: itemReference.nullish(),
   })
   .passthrough();
 
@@ -100,6 +110,7 @@ export interface ImportRecipe {
   type: string;
   station: string | null;
   inputs: ImportRecipeIngredient[];
+  byproductOfItemId?: number | null;
 }
 
 export interface ExtractedDataset {
@@ -221,10 +232,11 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
         : undefined;
     return {
       id: item.id,
-      name: item.name,
+      name: item.name || `Item #${item.id} (sem nome no cliente)`,
       description: item.description ?? null,
       icon: item.icon ?? null,
-      grade: item.grade ?? null,
+      grade:
+        typeof item.grade === 'number' ? (gradeNames[item.grade] ?? null) : (item.grade ?? null),
       category: item.category ?? null,
       weight: item.weight ?? null,
       categoryIds: [...new Set([mainId, subId].filter((id): id is string => Boolean(id)))],
@@ -235,7 +247,7 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
     const output = outputItem(recipe.output);
     const inputs = recipe.inputs.map((input) => ({
       itemId: input.item,
-      quantity: input.count ?? null,
+      quantity: input.count || null,
     }));
     if (!itemIds.has(output.itemId)) {
       throw new Error(`Receita produz o item ${output.itemId}, ausente em items.json.`);
@@ -244,11 +256,15 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
     if (missingIngredient) {
       throw new Error(`Receita usa o item ${missingIngredient.itemId}, ausente em items.json.`);
     }
+    if (recipe.byproductOf != null && !itemIds.has(recipe.byproductOf)) {
+      throw new Error(`Subproduto referencia o item ${recipe.byproductOf}, ausente em items.json.`);
+    }
     const canonical = JSON.stringify({
       output: [output.itemId, output.quantity],
       type: recipe.type,
       station: recipe.station ?? null,
       inputs,
+      ...(recipe.byproductOf == null ? {} : { byproductOfItemId: recipe.byproductOf }),
     });
     const key = createHash('sha256').update(canonical).digest('hex');
     return {
@@ -258,6 +274,7 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
       type: recipe.type,
       station: recipe.station ?? null,
       inputs,
+      byproductOfItemId: recipe.byproductOf ?? null,
     };
   });
 

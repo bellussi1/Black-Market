@@ -233,6 +233,7 @@ export class CatalogImporterService {
           recipeKey: recipe.key,
           recipeType: recipe.type,
           station: recipe.station,
+          byproductOfItemId: recipe.byproductOfItemId ?? null,
         }));
         for (const batch of batches(recipeRows)) {
           await tx
@@ -243,6 +244,7 @@ export class CatalogImporterService {
               set: {
                 recipeType: sql`excluded.recipe_type`,
                 station: sql`excluded.station`,
+                byproductOfItemId: sql`excluded.byproduct_of_item_id`,
               },
             });
         }

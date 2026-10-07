@@ -171,6 +171,7 @@ export const recipes = pgTable(
     recipeKey: varchar('recipe_key', { length: 64 }).notNull(),
     recipeType: varchar('recipe_type', { length: 80 }).notNull(),
     station: varchar('station', { length: 120 }),
+    byproductOfItemId: integer('byproduct_of_item_id'),
   },
   (table) => [
     primaryKey({ columns: [table.datasetVersionId, table.recipeKey] }),
@@ -179,6 +180,11 @@ export const recipes = pgTable(
       columns: [table.datasetVersionId],
       foreignColumns: [datasetVersions.id],
     }).onDelete('cascade'),
+    foreignKey({
+      name: 'recipes_byproduct_version_item_fk',
+      columns: [table.datasetVersionId, table.byproductOfItemId],
+      foreignColumns: [itemVersions.datasetVersionId, itemVersions.itemId],
+    }),
   ],
 );
 

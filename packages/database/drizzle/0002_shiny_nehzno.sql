@@ -1,0 +1,2 @@
+ALTER TABLE "recipes" ADD COLUMN "byproduct_of_item_id" integer;--> statement-breakpoint
+ALTER TABLE "recipes" ADD CONSTRAINT "recipes_byproduct_version_item_fk" FOREIGN KEY ("dataset_version_id","byproduct_of_item_id") REFERENCES "public"."item_versions"("dataset_version_id","item_id") ON DELETE no action ON UPDATE no action;

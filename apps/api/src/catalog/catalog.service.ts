@@ -243,6 +243,7 @@ export class CatalogService {
         key: recipes.recipeKey,
         type: recipes.recipeType,
         station: recipes.station,
+        byproductOfItemId: recipes.byproductOfItemId,
       })
       .from(recipes)
       .where(and(eq(recipes.datasetVersionId, dataset.id), inArray(recipes.recipeKey, keys)))
