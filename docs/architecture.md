@@ -64,3 +64,7 @@ A entrega Black Market adiciona módulos calculators e market no NestJS e rotas 
 O shell inicial carrega apenas navegação, região e contagens de metadados pessoais. A validação completa dos dados e as regras entram com as rotas de ferramenta, reduzindo o pacote inicial. RegionPreferences mantém a seleção regional; WorkspaceStore carrega e valida o backup local ao abrir uma ferramenta.
 
 Dados pessoais começam no navegador com backup versionado, sem login. O PostgreSQL continua persistindo o catálogo. MarketService consulta Arsha por ID, com cache em memória; não guarda histórico global nem cria jobs. A matriz de recursos implementados e pendentes está em feature-coverage.md.
+
+## Padrões do frontend
+
+Angular standalone com rotas lazy, OnPush e estado derivado com signals. Serviços HTTP, schemas, apresentação e persistência têm responsabilidades separadas. Tailwind 4 e SCSS usam entradas próprias e tokens comuns. Vitest roda testes unitários e de componentes pelo builder oficial Angular. A organização e os critérios para novas funcionalidades estão em [arquitetura Angular](angular-architecture.md).

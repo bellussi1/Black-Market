@@ -4,6 +4,8 @@ Projeto pessoal e independente para Black Desert Online. Angular 22, NestJS 12, 
 
 Não há afiliação com a Pearl Abyss. O projeto não usa endpoints internos do BDOLytics ou do BDO Workshop. Os dois sites são referências de produto documentadas em [pesquisa de funcionalidades](docs/product-research.md).
 
+O frontend usa Tailwind CSS 4 e SCSS modular, com Vitest para testes unitários e de componentes através do builder oficial do Angular. Consulte [padrões Angular, estilos e testes](docs/angular-architecture.md).
+
 ## Requisitos
 
 - Windows, macOS ou Linux
@@ -93,6 +95,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 ## Documentação
 
 - [Arquitetura](docs/architecture.md)
+- [Padrões Angular, Tailwind, SCSS e Vitest](docs/angular-architecture.md)
 - [Pesquisa BDOLytics e BDO Workshop](docs/product-research.md)
 - [Banco de dados](docs/database.md)
 - [API REST](docs/api.md)
