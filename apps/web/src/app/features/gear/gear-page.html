@@ -1,0 +1,169 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker">05 / GEAR PROGRESSION</p>
+    <h1>Escolha seu próximo upgrade.</h1>
+    <p>
+      Salve seu AP e DP, compare caminhos pelo custo de cada ponto e veja o que cabe no seu
+      orçamento.
+    </p>
+  </header>
+  <div class="work-grid">
+    <section class="panel">
+      <h2>Equipamento atual</h2>
+      <div class="form-grid">
+        <label class="field"
+          >AP principal<input
+            type="number"
+            min="0"
+            [ngModel]="form().mainAp"
+            (ngModelChange)="patch({ mainAp: $event })" /></label
+        ><label class="field"
+          >AP de despertar<input
+            type="number"
+            min="0"
+            [ngModel]="form().awakeAp"
+            (ngModelChange)="patch({ awakeAp: $event })" /></label
+        ><label class="field"
+          >DP<input
+            type="number"
+            min="0"
+            [ngModel]="form().dp"
+            (ngModelChange)="patch({ dp: $event })" /></label
+        ><label class="field"
+          >Orçamento de prata<input
+            inputmode="numeric"
+            [ngModel]="form().budget"
+            (ngModelChange)="patch({ budget: $event })"
+        /></label>
+      </div>
+      <p class="help">
+        Índice comparativo principal = AP principal + DP. Despertar = AP de despertar + DP. Os
+        ganhos devem considerar substituições e bônus que você observou no jogo.
+      </p>
+      <div class="preset-bar">
+        <label class="field">Nome do build<input maxlength="140" [(ngModel)]="presetName" /></label
+        ><button
+          type="button"
+          class="btn"
+          [disabled]="!presetName.trim() || !result().value"
+          (click)="save()"
+        >
+          Salvar build</button
+        ><label class="field"
+          >Build salvo<select [(ngModel)]="selected">
+            <option value="">Escolher</option>
+            @for (p of presets; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select></label
+        ><button type="button" class="btn subtle" [disabled]="!selected" (click)="load()">
+          Carregar</button
+        ><button type="button" class="btn danger" [disabled]="!selected" (click)="removePreset()">
+          Excluir
+        </button>
+      </div>
+      <app-calculation-proof tool="gear" [value]="form()" />
+    </section>
+    <section>
+      @if (result().value; as r) {
+        <div class="metric-grid">
+          <div class="metric">
+            <span>AP principal + DP</span><strong>{{ r.mainScore }}</strong>
+          </div>
+          <div class="metric">
+            <span>AP despertar + DP</span><strong>{{ r.awakeScore }}</strong>
+          </div>
+        </div>
+      } @else {
+        <p class="error-box" role="alert">{{ result().error }}</p>
+      }
+      <p class="notice">
+        Comparação manual por ganho de atributos. Brackets de AP, accuracy, monster AP e efeitos de
+        sets ainda precisam de tabelas verificadas e não estão incluídos nesse índice.
+      </p>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="panel-heading">
+      <h2>Caminhos de upgrade</h2>
+      <button type="button" class="btn subtle" (click)="add()">Adicionar alternativa</button>
+    </div>
+    @for (u of form().upgrades; track u.id; let k = $index) {
+      <div class="row-editor">
+        <div class="form-grid">
+          <label class="field"
+            >Upgrade<input [ngModel]="u.name" (ngModelChange)="row(k, { name: $event })" /></label
+          ><label class="field"
+            >Custo líquido de aquisição<input
+              inputmode="numeric"
+              [ngModel]="u.cost"
+              (ngModelChange)="row(k, { cost: $event })" /></label
+          ><label class="field"
+            >Ganho de AP principal<input
+              type="number"
+              min="0"
+              [ngModel]="u.mainApGain"
+              (ngModelChange)="row(k, { mainApGain: $event })" /></label
+          ><label class="field"
+            >Ganho de AP despertar<input
+              type="number"
+              min="0"
+              [ngModel]="u.awakeApGain"
+              (ngModelChange)="row(k, { awakeApGain: $event })" /></label
+          ><label class="field"
+            >Ganho de DP<input
+              type="number"
+              min="0"
+              [ngModel]="u.dpGain"
+              (ngModelChange)="row(k, { dpGain: $event })"
+          /></label>
+        </div>
+        <div class="action-row">
+          <button type="button" class="btn danger" (click)="remove(u.id)">
+            Remover alternativa
+          </button>
+        </div>
+      </div>
+    }
+    @if (result().value; as r) {
+      @if (r.upgrades.length) {
+        <h3>Ordenado por prata / ponto principal</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Upgrade</th>
+                <th>Custo</th>
+                <th>AP + DP final</th>
+                <th>Despertar + DP</th>
+                <th>Prata / ponto</th>
+                <th>Orçamento</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of r.upgrades; track u.id) {
+                <tr>
+                  <td>{{ u.name }}</td>
+                  <td>{{ silver(u.cost) }}</td>
+                  <td>{{ u.mainScore }}</td>
+                  <td>{{ u.awakeScore }}</td>
+                  <td>{{ silver(u.costPerPoint) }}</td>
+                  <td>
+                    <span class="badge">{{
+                      u.affordable ? 'Cabe no orçamento' : 'Acima do orçamento'
+                    }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">
+          <strong>Qual é seu próximo passo?</strong>Adicione duas alternativas para comparar o custo
+          de progressão.
+        </div>
+      }
+    }
+  </section>
+</div>
