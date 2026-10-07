@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/coverage
+.git
+.env
+data
+*.paz
+*.bss
+*.dbss
+apps/web/.angular
+apps/web/.cache
