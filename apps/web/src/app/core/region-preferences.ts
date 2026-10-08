@@ -1,4 +1,15 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import {
+  afterNextRender,
+  computed,
+  inject,
+  Injectable,
+  makeStateKey,
+  PLATFORM_ID,
+  REQUEST,
+  signal,
+  TransferState,
+} from '@angular/core';
 import { DEFAULT_REGION, REGION_CODES } from '@bdo/shared';
 export const regions = REGION_CODES;
 export type Region = (typeof regions)[number];
@@ -19,6 +30,7 @@ const emptySummary = {
 };
 @Injectable({ providedIn: 'root' })
 export class RegionPreferences {
+  private readonly document = inject(DOCUMENT);
   readonly region = signal<Region>(DEFAULT_REGION);
   readonly message = signal('');
   readonly blocked = signal(false);
@@ -47,7 +59,26 @@ export class RegionPreferences {
     },
   ]);
   constructor() {
+    const state = inject(TransferState);
+    const regionKey = makeStateKey<Region>('black-market-region');
+    const browser = isPlatformBrowser(inject(PLATFORM_ID));
+    const request = inject(REQUEST, { optional: true });
+    const cookie = browser ? (this.document.cookie ?? '') : (request?.headers.get('cookie') ?? '');
+    const selected = /(?:^|;\s*)black-market-region=([a-z]+)/.exec(cookie)?.[1];
+    if (selected && regions.includes(selected as Region)) this.region.set(selected as Region);
+    if (!browser) {
+      state.set(regionKey, this.region());
+      return;
+    }
+    if (state.hasKey(regionKey)) {
+      this.region.set(state.get(regionKey, DEFAULT_REGION));
+      state.remove(regionKey);
+      afterNextRender(() => this.restore());
+    } else this.restore();
+  }
+  private restore() {
     try {
+      let selected = this.region();
       const savedRegion = localStorage.getItem('black-market.region');
       const raw = localStorage.getItem('black-market.workspace.v1');
       if (raw && raw.length <= MAX_BACKUP_BYTES) {
@@ -75,11 +106,11 @@ export class RegionPreferences {
             presets: regionRows(summary.presets),
           });
           if (summary.region && regions.includes(summary.region as Region))
-            this.region.set(summary.region as Region);
+            selected = summary.region as Region;
         }
       }
-      if (savedRegion && regions.includes(savedRegion as Region))
-        this.region.set(savedRegion as Region);
+      if (savedRegion && regions.includes(savedRegion as Region)) selected = savedRegion as Region;
+      this.setRegion(selected);
     } catch {
       this.message.set(
         'Não foi possível ler os dados locais. Confira Dados e backup antes de editar.',
@@ -95,6 +126,7 @@ export class RegionPreferences {
     this.region.set(value as Region);
     try {
       localStorage.setItem('black-market.region', value);
+      this.document.cookie = `black-market-region=${value}; Path=/; Max-Age=31536000; SameSite=Lax${this.document.location?.protocol === 'https:' ? '; Secure' : ''}`;
     } catch {
       this.message.set('O navegador não permitiu salvar a preferência de região.');
     }

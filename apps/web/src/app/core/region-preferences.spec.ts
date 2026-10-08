@@ -1,3 +1,5 @@
+import { DOCUMENT } from '@angular/common';
+import { PLATFORM_ID, REQUEST } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +9,21 @@ import { RegionPreferences } from './region-preferences';
 describe('RegionPreferences', () => {
   useMemoryStorage();
 
+  it('does not read browser cookies while rendering a request without cookies', () => {
+    const documentMock = Object.defineProperty({ getElementById: () => null }, 'cookie', {
+      get: () => {
+        throw new Error('NotYetImplemented');
+      },
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: DOCUMENT, useValue: documentMock },
+        { provide: REQUEST, useValue: new Request('http://localhost/') },
+      ],
+    });
+    expect(TestBed.inject(RegionPreferences).region()).toBe('sa');
+  });
   it('restores a supported saved region', () => {
     localStorage.setItem('black-market.region', 'eu');
     expect(TestBed.inject(RegionPreferences).region()).toBe('eu');

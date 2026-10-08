@@ -1,14 +1,26 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta, type MetaDefinition, Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
 const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  '/termos': 'Condições de uso das ferramentas gratuitas do Black Market para Black Desert Online.',
+  '/privacidade':
+    'Como o Black Market trata seus dados, armazenamento local, conta e estatísticas opcionais.',
+  '/cookies':
+    'Cookies, armazenamento funcional e escolhas sobre estatísticas opcionais do Black Market.',
+  '/contato':
+    'Entre em contato com o responsável pelo Black Market para suporte e solicitações de privacidade.',
   '/': 'Black Market: itens, receitas e ferramentas de Black Desert Online em português brasileiro, com foco no mercado SA.',
   '/database/items':
     'Consulte itens de Black Desert Online em português, com imagens, categorias, descrições e relações de produção.',
+  '/recipes':
+    'Receitas de Black Desert Online em português, com materiais, resultados e imagens dos itens.',
+  '/reference':
+    'NPCs, missões, conhecimento, habilidades, locais e referências de Black Desert Online em português.',
+  '/world': 'Consulte bases e suas conexões de contribuição em Black Desert Online.',
   '/market':
     'Consulte preços e disponibilidade no mercado SA de Black Desert Online. Confira a origem e a data de atualização dos dados.',
   '/crafting':
@@ -50,6 +62,42 @@ export class SeoService {
   private readonly title = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
   private started = false;
+  describe(name: string, description: string) {
+    const title = name.replace(/<[^>]*>/g, '').slice(0, 120) + ' · Black Market';
+    const summary = description
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .slice(0, 180);
+    this.title.setTitle(title);
+    const tags: MetaDefinition[] = [
+      { name: 'description', content: summary },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: summary },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: summary },
+    ];
+    for (const tag of tags) this.meta.updateTag(tag);
+    const origin = this.documentOrigin();
+    if (origin) {
+      const data = {
+        '@context': 'https://schema.org',
+        '@type': 'Thing',
+        name: title.replace(' · Black Market', ''),
+        description: summary,
+        url: origin + this.pathOf(this.router.url),
+        isPartOf: { '@type': 'WebSite', name: 'Black Market', url: origin },
+      };
+      this.document.head.querySelector('script[data-black-market-schema]')?.remove();
+      const script = this.document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-black-market-schema', '');
+      script.textContent = JSON.stringify(data).replaceAll('<', '\\u003c');
+      this.document.head.appendChild(script);
+    }
+  }
+  unavailable() {
+    this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
+  }
 
   start(): void {
     if (this.started) return;
@@ -82,12 +130,24 @@ export class SeoService {
     }
 
     const origin = this.documentOrigin();
-    const knownPublicRoute = Object.hasOwn(PUBLIC_DESCRIPTIONS, path);
-    const knownRequest = Object.hasOwn(PUBLIC_DESCRIPTIONS, requestedPath);
+    const publicPage = (value: string) =>
+      Object.hasOwn(PUBLIC_DESCRIPTIONS, value) ||
+      /^\/database\/items\/[1-9]\d*$/.test(value) ||
+      /^\/recipes\/[^/]+$/.test(value) ||
+      /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(value);
+    const knownPublicRoute = publicPage(path);
+    const knownRequest = publicPage(requestedPath);
     const indexable = knownPublicRoute && knownRequest && !privateRoute && origin !== null;
     const title = routeTitle ?? 'Black Market';
     const description =
       PUBLIC_DESCRIPTIONS[path] ??
+      (path.startsWith('/reference/')
+        ? PUBLIC_DESCRIPTIONS['/reference']
+        : path.startsWith('/recipes/')
+          ? PUBLIC_DESCRIPTIONS['/recipes']
+          : path.startsWith('/database/items/')
+            ? PUBLIC_DESCRIPTIONS['/database/items']
+            : undefined) ??
       PRIVATE_DESCRIPTIONS[path] ??
       'Black Market: plataforma brasileira para jogadores de Black Desert Online.';
 
@@ -140,6 +200,7 @@ export class SeoService {
   }
 
   private clearMetadata(): void {
+    this.document.head.querySelector('script[data-black-market-schema]')?.remove();
     for (const selector of MANAGED_SELECTORS) {
       for (const tag of this.meta.getTags(selector)) this.meta.removeTagElement(tag);
     }

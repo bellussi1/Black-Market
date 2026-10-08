@@ -20,7 +20,8 @@
     "lint:fix": "pnpm lint:packages --fix && pnpm -r --if-present lint:fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck"
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck",
+    "test:ssr": "node scripts/smoke-ssr.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
