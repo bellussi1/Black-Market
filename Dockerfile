@@ -17,7 +17,7 @@ COPY packages/shared/package.json packages/shared/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm --filter @bdo/api build
+RUN pnpm --filter @bdo/api build && pnpm --filter @bdo/web build
 
 ENV NODE_ENV=production
 EXPOSE 3000

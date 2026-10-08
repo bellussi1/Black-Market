@@ -34,9 +34,17 @@ services:
     build: .
     environment:
       NODE_ENV: production
+      ANALYTICS_ENABLED: ${ANALYTICS_ENABLED:-false}
+      POSTHOG_PUBLIC_KEY: ${POSTHOG_PUBLIC_KEY:-}
+      POSTHOG_HOST: ${POSTHOG_HOST:-https://us.i.posthog.com}
       PORT: 3000
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4200}
       MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
+      MARKET_COLLECTOR_ENABLED: ${MARKET_COLLECTOR_ENABLED:-false}
+      MARKET_TRACKED_ITEMS: ${MARKET_TRACKED_ITEMS:-}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_PUBLIC_KEY: ${SUPABASE_PUBLIC_KEY:-}
       CATALOG_ASSETS_DIR: /workspace/data/assets
       CATALOG_ASSETS_PUBLIC_URL: ${CATALOG_ASSETS_PUBLIC_URL:-}
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
@@ -65,6 +73,10 @@ services:
     image: black-market-api:local
     build: .
     command: ['pnpm', '--filter', '@bdo/web', 'start']
+    environment:
+      API_BASE_URL: http://api:3000
+      NODE_ENV: development
+      NG_ALLOWED_HOSTS: localhost,127.0.0.1
     ports:
       - '4200:4200'
     volumes:
