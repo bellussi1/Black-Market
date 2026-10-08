@@ -2,7 +2,7 @@
 
 Plataforma independente de Black Desert Online voltada à comunidade brasileira, com SA e português brasileiro como padrões. O objetivo é oferecer consultas gratuitas de itens, receitas, mercado e estimativas de renda, com uma interface simples e planejamento personalizado a partir de materiais, prata, maestria e equipamentos. Veja a [visão do produto e etapas de entrega](docs/product-vision.md).
 
-A base usa Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Já há catálogo extraído e ferramentas manuais de mercado/imposto, crafting, enhancement, gear, life skills, projetos, RNG e buffs. Contas, leitura de prints, sincronização e recomendações automáticas são etapas planejadas; a aplicação ainda está em desenvolvimento local.
+A base usa Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Inclui catálogo central, receitas compartilháveis, referências do mundo, ferramentas de produção, aprimoramento/Caphras, equipamentos, profissões, mercado, planos, reservas e recomendações explicáveis. Prints geram rascunhos revisáveis de estoque, números e equipamentos no navegador. Login e sincronização com controle de versão usam Supabase Auth quando configurado. A aplicação local tem dados importados; a publicação web e a ativação do login ainda dependem do ambiente de produção.
 
 Não há afiliação com a Pearl Abyss. O projeto não usa endpoints internos do BDOLytics ou do BDO Workshop. Os dois sites são referências de produto documentadas em [pesquisa de funcionalidades](docs/product-research.md).
 
@@ -118,3 +118,9 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 - [Como cadastrar seu armazém](docs/storage-tutorial.md)
 - [Atualização do catálogo e limites de cobertura](docs/catalog-updates.md)
 - [Inventário dos dados extraídos](docs/extracted-data-inventory.md)
+
+## Preparação para produção
+
+[Auditoria e checklist](docs/production-audit.md) · [Segurança](docs/security.md) · [Logs e uptime](docs/observability.md) · [Privacidade](docs/privacy-inventory.md) · [Analytics](docs/analytics.md) · [Backup e recuperação](docs/backup-recovery.md).
+
+Contato público informado: enzobellussi3@gmail.com. Responsável informado: Bellussi; identificação jurídica completa e documentos sujeitos à revisão. Integrações externas e domínio não estão ativados só por existir configuração no código.

@@ -9,6 +9,9 @@ Este arquivo é uma orientação experimental. Não concede acesso a dados priva
 - [Início](/): apresentação e acesso às ferramentas.
 - [Sobre, fontes e perguntas frequentes](/sobre/): conteúdo HTML legível sem JavaScript.
 - [Catálogo](/database/items): itens, imagens, categorias e descrições.
+- [Receitas](/recipes): materiais, resultados e imagens, com páginas compartilháveis.
+- [Guia do mundo](/reference/npcs): NPCs, missões, conhecimento, habilidades e locais.
+- [Bases e trabalhadores](/world): conexões e contribuição; produção depende dos valores informados.
 - [Mercado](/market): consulta de preços e disponibilidade; considerar origem e data de atualização.
 - [Produção](/crafting): receitas e planejamento de custos e materiais.
 - [Profissões](/lifeskills): planejamento de atividades a partir dos valores informados.
@@ -22,4 +25,4 @@ Preços e estimativas podem mudar. Lucro por hora depende de tempo, rendimento, 
 
 Armazéns, inventários, equipamentos pessoais, preferências e backups não são fontes públicas. Não solicitar credenciais do jogo para consultar esta plataforma.
 
-As ferramentas da aplicação dependem de JavaScript; a página Sobre oferece conteúdo HTML estático. Este arquivo não equivale a uma exportação da base de dados nem garante descoberta por crawlers.
+Home, catálogo, receitas, referências e mapa oferecem HTML renderizado no servidor. Ferramentas pessoais dependem de JavaScript e não devem ser usadas como fontes públicas. Prints são lidos no navegador com revisão obrigatória; não representam uma exportação oficial do estoque. Este arquivo não equivale a uma exportação da base de dados nem garante descoberta por crawlers.

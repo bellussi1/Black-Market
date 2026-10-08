@@ -1,3 +1,5 @@
+> Atualização em 08/10/2026: reconhecimento assistido de prints está implementado no navegador com recorte/grade, números e candidatos de itens, revisão obrigatória. Ver [tutorial atual](print-import-tutorial.md) e [cobertura](feature-coverage.md). A proposta de pipeline remoto/captura passiva abaixo é pesquisa futura, não infraestrutura instalada nem funcionalidade concluída.
+
 # Importação de armazéns, inventários e perfil
 
 Decisão de produto e arquitetura em **7 de outubro de 2026**. Prioridade: SA e português brasileiro, com região/idioma explícitos para expansão futura. Complementa a [visão do produto](product-vision.md) e as pesquisas de [BDOLytics/Workshop](research/lytics-workshop.md), [Codex/Foundry](research/codex-foundry.md) e [Garmoth/Workerman/Arsha](research/garmoth-workerman-arsha.md).

@@ -1,37 +1,9 @@
-# Deploy e custos
+# Hospedagem e deploy do MVP
 
-## Implantação enxuta
+A configuração atual usa um único host Docker Compose com PostgreSQL, Nest, Angular SSR e Nginx. Cloudflare fica na entrada via Tunnel/CDN/DNS; não há Nest/PostgreSQL em Workers. Não adicionar Redis, fila/worker de OCR ou banco externo nesta fase: leitura de prints ocorre no navegador.
 
-- **Frontend:** Cloudflare Pages para saída estática do Angular (`apps/web` como diretório base ou build no root com `pnpm --filter @bdo/web build`; publicar `apps/web/dist/web/browser`). Usar domínio, TLS, cache de assets e regras de segurança na borda.
-- **API:** host Node/container compatível com NestJS 12 (o Dockerfile do repositório). Railway é uma opção simples de hobby, mas cobra uso e seu valor mínimo/limites mudam; comparar a página oficial de [preços Railway](https://railway.com/pricing) na data de deploy. Uma VPS pode custar menos em uso constante, com maior manutenção.
-- **PostgreSQL:** banco gerenciado no mesmo provedor/região da API reduz latência e egress. Railway oferece banco como serviço; alternativamente, PostgreSQL numa VPS ou serviço gerenciado. Não presumir que os planos gratuitos sejam persistentes, sem expiração ou adequados para produção.
-- **Cloudflare R2:** opcional; adicionar somente quando existir mídia própria com permissão de hospedagem. Não guardar arquivos de instalação do jogo.
+Procedimento, custos, checklists e rollback: [auditoria de produção](production-audit.md). Variáveis e identidade: [produção e contas](production-and-accounts.md). [Backup e recuperação](backup-recovery.md), [segurança](security.md), [logs/uptime](observability.md).
 
-O domínio e TLS podem ficar na Cloudflare, mas DNS/CDN/WAF não executam o NestJS nem hospedam PostgreSQL. Workers/Pages Functions têm ambiente e limites diferentes de um processo Nest tradicional. O app conecta PostgreSQL por TCP usando `DATABASE_URL`; não introduzir Hyperdrive se a API roda fora de Workers.
+Domínio, host, Tunnel e contas dos serviços ainda não configurados. Código/Compose não comprovam deploy público. Clonar Git não popula catálogo: transferir banco autorizado e data/assets/<checksum> com manifests e índice visual. Não publicar arquivos de instalação nem dumps no servidor web. Assets são montados em leitura para a aplicação; publicação do catálogo é uma tarefa separada do mantenedor.
 
-## Ambiente de produção
-
-1. Criar API e PostgreSQL em uma região próxima; configurar TLS e pool pequeno.
-2. Definir `DATABASE_URL`, `PORT`, `WEB_ORIGIN` e `NODE_ENV=production` como variáveis secretas/configuração.
-3. Aplicar migrations versionadas antes de trocar tráfego; ter backup e plano de restore.
-4. Publicar `apps/web/dist/web/browser` no Pages com fallback SPA para `index.html`.
-5. Configurar domínio/API CORS para domínio final, health check `/ready`, rate limits e logs sem segredos.
-6. Validar rollback da aplicação e restauração do banco antes de carga real.
-
-O catálogo local tem ícones versionados em `data/assets/<checksum>`. Essa pasta não entra na imagem Docker nem no Git. Para uma API com ícones, configure `CATALOG_ASSETS_DIR` e um volume persistente em modo de leitura; a publicação de uma extração usa um job separado com acesso de escrita. O Compose local já configura esses mounts. Os assets do cliente permanecem locais nesta entrega; sua distribuição pública requer avaliar os direitos sobre esses arquivos. Veja [extração local](local-extraction.md).
-
-## Controle de despesa
-
-Para a primeira validação, desenvolvimento local custa zero de hospedagem. Para uma demonstração pública, começar com os menores recursos pagos que garantam persistência; preço baixo nominal pode ter franquia, pausa, expiração e cobrança por uso. Limitar histórico de preços, backups e logs; alertas de gasto e limites de conexão devem ser configurados no provedor. Reavaliar antes de ativar coleta frequente ou login. Não prometer um custo mensal fixo sem região, tráfego, retenção e plano escolhidos.
-
-## Destino público do Black Market
-
-A execução local é o ambiente de desenvolvimento. O objetivo é disponibilizar consultas gratuitas e planejamento pessoal em produção. O pipeline do mantenedor publica catálogo e receitas no PostgreSQL de produção, e ícones versionados em um armazenamento de assets com CDN. Visitantes não instalam o extractor. Manter esses arquivos fora do Git não impede sua publicação por jobs próprios, observados os termos das fontes.
-
-Para prints: bucket privado separado, acesso autorizado de curta duração, quotas/tamanho efetivo, worker de processamento e expiração. Conta sincronizada, isolamento de dados e exclusão precisam estar prontos antes de abrir uploads. Proposta inicial de retenção: até sete dias, com exclusão antecipada após confirmação.
-
-Começar com a mesma imagem Docker para API e comando de worker, escalando cada processo separadamente. Uma fila durável em PostgreSQL atende a primeira fase; Redis não é requisito inicial. Não executar OCR pesado na requisição HTTP nem na instância que serve páginas sem limite de recursos.
-
-O [R2 Standard](https://developers.cloudflare.com/r2/pricing/) oferece mensalmente 10 GB-mês de armazenamento, 1 milhão de operações de classe A e 10 milhões de classe B na franquia gratuita. Saída direta de dados não tem cobrança de transferência; operações/armazenamento excedentes e serviços associados podem ser cobrados. Franquia de R2 não cobre o custo de API, PostgreSQL ou OCR.
-
-Nenhum serviço de nuvem foi criado nesta entrega. Domínio, provedor/região, orçamento e identidade precisam de configuração real antes do deploy. A ordem funcional está em [visão do produto](product-vision.md).
+CI compila/testa/linta e executa smoke HTTP SSR; o deploy público inicial permanece manual com imagem identificada. Não inserir secrets no Docker build context ou registrar compose config com valores. Usar arquivo privado específico para produção e volumes distintos de desenvolvimento/staging.

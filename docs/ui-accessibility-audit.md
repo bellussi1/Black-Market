@@ -60,3 +60,18 @@ Formato de achados do skill: `arquivo:linha`.
 - `apps/web/src/styles/_forms.scss:1` — controles maiores e bordas corrigidas; verificar associação semântica e mensagens de validação nos templates.
 - `apps/web/src/styles/_tables.scss:1` — leitura e quebra melhoradas; responsividade real e semântica das tabelas precisam de inspeção por página.
 - `apps/web/src/styles/_responsive.scss:1` — adaptação mobile declarada em código; inspeção visual pendente.
+
+## Revisão de código em 08/10/2026
+
+Skill web-design-guidelines aplicada nas telas novas. Labels, um main no layout, navegação semântica, imagens dimensionadas, foco global e alternativa numérica ao gesto de recorte. E-mail recebe autocomplete e nome de campo. Testes de documentos/preferências verificam semântica básica; responsividade visual, leitor de tela e Lighthouse permanecem pendentes.
+
+Contraste calculado por luminância WCAG dos tokens sólidos (não substitui verificação de todos os estados renderizados):
+
+| Tokens                   | Razão   |
+| ------------------------ | ------- |
+| text / background        | 15.00:1 |
+| muted / surface          | 8.08:1  |
+| accent / background      | 8.24:1  |
+| control-border / surface | 4.83:1  |
+
+Textos acima de 4,5:1 e borda de controle acima de 3:1 nessas combinações. Não usar border decorativa como única indicação de input/foco.
