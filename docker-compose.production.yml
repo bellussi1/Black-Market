@@ -6,6 +6,7 @@ x-logging: &logging
     max-file: '3'
 services:
   postgres:
+    networks: [database]
     logging: *logging
     image: postgres:17-alpine
     restart: unless-stopped
@@ -25,8 +26,9 @@ services:
       timeout: 5s
       retries: 10
   migrate:
+    networks: [database]
     logging: *logging
-    image: black-market:production
+    image: ${APP_IMAGE:-black-market:production}
     build: .
     command: ['pnpm', 'db:migrate']
     environment:
@@ -34,9 +36,31 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-  api:
+  permissions:
+    image: postgres:17-alpine
+    networks: [database]
     logging: *logging
-    image: black-market:production
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:-black_market}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-black_market}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Defina uma senha exclusiva da aplicação}
+    volumes:
+      - ./deploy/runtime-role.sql:/runtime-role.sql:ro
+    command:
+      [
+        'sh',
+        '-c',
+        'test "$${#POSTGRES_APP_PASSWORD}" -ge 32 && test "$$POSTGRES_APP_PASSWORD" != "$$PGPASSWORD" && psql -X -q -f /runtime-role.sql',
+      ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  api:
+    networks: [database, edge]
+    logging: *logging
+    image: ${APP_IMAGE:-black-market:production}
     user: node
     read_only: true
     tmpfs: ['/tmp']
@@ -52,7 +76,7 @@ services:
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
       DATA_CONTROLLER_NAME: ${DATA_CONTROLLER_NAME:-}
       PORT: 3000
-      DATABASE_URL: ${CONTAINER_DATABASE_URL}
+      DATABASE_URL: ${RUNTIME_DATABASE_URL:?Configure a conta restrita black_market_app}
       WEB_ORIGIN: ${PUBLIC_SITE_URL:?Configure o endereço público}
       PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
       SUPABASE_URL: ${SUPABASE_URL:-}
@@ -77,11 +101,12 @@ services:
       retries: 3
       start_period: 30s
     depends_on:
-      migrate:
+      permissions:
         condition: service_completed_successfully
   web:
+    networks: [edge]
     logging: *logging
-    image: black-market:production
+    image: ${APP_IMAGE:-black-market:production}
     user: node
     read_only: true
     tmpfs: ['/tmp']
@@ -99,14 +124,40 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
   gateway:
+    networks: [edge]
     logging: *logging
     image: nginx:1.28-alpine
     restart: unless-stopped
     ports: ['127.0.0.1:8080:80']
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on: [web, api]
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  database:
+    internal: true
+  edge:
 volumes:
   database:
     name: ${PRODUCTION_POSTGRES_VOLUME:-black-market-production-data}
