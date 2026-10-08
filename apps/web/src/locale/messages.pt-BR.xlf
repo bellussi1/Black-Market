@@ -1998,7 +1998,6 @@
         <note category="location">src/app/features/crafting/crafting-page.html:391</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:124</note>
         <note category="location">src/app/features/market/market-page.html:276</note>
-        <note category="location">src/app/features/scans/scans-page.html:233,234</note>
         <note category="location">src/app/features/storage/storage-page.html:130,131</note>
       </notes>
       <segment>
@@ -5069,8 +5068,8 @@
     <unit id="663471305194376784">
       <notes>
         <note category="location">src/app/features/recommendations/recommendations-page.html:60,61</note>
-        <note category="location">src/app/features/scans/scans-page.html:153,154</note>
-        <note category="location">src/app/features/scans/scans-page.html:196,197</note>
+        <note category="location">src/app/features/scans/scans-page.html:222,223</note>
+        <note category="location">src/app/features/scans/scans-page.html:281,282</note>
       </notes>
       <segment>
         <source>Personagem</source>
@@ -5191,7 +5190,7 @@
     <unit id="5541425023812945859">
       <notes>
         <note category="location">src/app/features/recommendations/recommendations-page.html:127,128</note>
-        <note category="location">src/app/features/scans/scans-page.html:159,160</note>
+        <note category="location">src/app/features/scans/scans-page.html:228,229</note>
       </notes>
       <segment>
         <source>Cadastrar personagem</source>
@@ -5535,12 +5534,12 @@
         <source>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</source>
       </segment>
     </unit>
-    <unit id="8690984843389863410">
+    <unit id="1086891936967915646">
       <notes>
         <note category="location">src/app/features/scans/scans-page.html:16,17</note>
       </notes>
       <segment>
-        <source> Para itens, recorte uma grade regular de espaços. Confira cada página separadamente; não some capturas sobrepostas. </source>
+        <source> Você pode usar a janela inteira: tentaremos localizar a grade de itens. Confira cada captura separadamente; imagens sobrepostas não são somadas. </source>
       </segment>
     </unit>
     <unit id="5308656495984952463">
@@ -5591,25 +5590,65 @@
         <source> A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A leitura pode confundir itens e números. </source>
       </segment>
     </unit>
-    <unit id="5590050649310436172">
+    <unit id="543175683726160591">
       <notes>
         <note category="location">src/app/features/scans/scans-page.html:52,53</note>
       </notes>
       <segment>
-        <source>2. Ajuste o recorte</source>
+        <source>2. Confira a área de leitura</source>
       </segment>
     </unit>
-    <unit id="3508764379250381255">
+    <unit id="1602933865832806124">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:60,61</note>
+        <note category="location">src/app/features/scans/scans-page.html:55,57</note>
       </notes>
       <segment>
-        <source> Selecionar recorte na imagem </source>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ columns }}"/> colunas × <ph id="1" equiv="INTERPOLATION_1" disp="{{ rows }}"/> linhas · <ph id="2" equiv="INTERPOLATION_2" disp="{{ columns * rows }}"/> espaços. Confira se o contorno cobre todos os itens e deixa os menus de fora. </source>
+      </segment>
+    </unit>
+    <unit id="646314903556355378">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:59,60</note>
+      </notes>
+      <segment>
+        <source> Encontrar grade de itens </source>
+      </segment>
+    </unit>
+    <unit id="1273998211786483948">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:65,66</note>
+      </notes>
+      <segment>
+        <source>Grades encontradas na captura</source>
+      </segment>
+    </unit>
+    <unit id="632857356186649426">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:76,77</note>
+      </notes>
+      <segment>
+        <source> Área <ph id="0" equiv="INTERPOLATION" disp="{{ $index + 1 }}"/> · <ph id="1" equiv="INTERPOLATION_1" disp="{{ area.columns }}"/> × <ph id="2" equiv="INTERPOLATION_2" disp="{{ area.rows }}"/> </source>
+      </segment>
+    </unit>
+    <unit id="8336833134387413563">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:81</note>
+      </notes>
+      <segment>
+        <source> Há mais de uma grade. Escolha a área do armazém ou inventário que deseja importar. </source>
+      </segment>
+    </unit>
+    <unit id="8254935622119688065">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:92,93</note>
+      </notes>
+      <segment>
+        <source> Selecionar área manualmente </source>
       </segment>
     </unit>
     <unit id="481201233565031131">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:63,64</note>
+        <note category="location">src/app/features/scans/scans-page.html:95,96</note>
       </notes>
       <segment>
         <source> Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos campos abaixo. </source>
@@ -5617,7 +5656,7 @@
     </unit>
     <unit id="5309401584729725476">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:75</note>
+        <note category="location">src/app/features/scans/scans-page.html:112,113</note>
       </notes>
       <segment>
         <source>Captura selecionada para revisão</source>
@@ -5625,96 +5664,84 @@
     </unit>
     <unit id="2992367835312898641">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:86</note>
+        <note category="location">src/app/features/scans/scans-page.html:128</note>
       </notes>
       <segment>
         <source>pixels. O contorno mostra a área que será lida.</source>
       </segment>
     </unit>
-    <unit id="1080565777836507076">
+    <unit id="3489349583935352221">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:90,91</note>
+        <note category="location">src/app/features/scans/scans-page.html:132,133</note>
       </notes>
       <segment>
-        <source>Área da imagem</source>
+        <source>Preparar leitura</source>
+      </segment>
+    </unit>
+    <unit id="454621098722173648">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:134,135</note>
+      </notes>
+      <segment>
+        <source>Ajustar área e tamanho da grade</source>
       </segment>
     </unit>
     <unit id="8465199387263079426">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:93,98</note>
+        <note category="location">src/app/features/scans/scans-page.html:137,143</note>
       </notes>
       <segment>
         <source>Distância da esquerda<ph id="0" equiv="TAG_INPUT" disp="&lt;input
-              type=&quot;number&quot;
-              [(ngModel)]=&quot;bounds.left&quot;
-              min=&quot;0&quot;
-              [max]=&quot;width&quot; /&gt;"/></source>
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;bounds.left&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;0&quot;
+                [max]=&quot;width&quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="275754189731370309">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:99,104</note>
+        <note category="location">src/app/features/scans/scans-page.html:144,150</note>
       </notes>
       <segment>
         <source>Distância do topo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
-              type=&quot;number&quot;
-              [(ngModel)]=&quot;bounds.top&quot;
-              min=&quot;0&quot;
-              [max]=&quot;height&quot; /&gt;"/></source>
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;bounds.top&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;0&quot;
+                [max]=&quot;height&quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="2348311108727912387">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:105,106</note>
+        <note category="location">src/app/features/scans/scans-page.html:151,157</note>
       </notes>
       <segment>
-        <source>Largura<ph id="0" equiv="TAG_INPUT" disp="&lt;input type=&quot;number&quot; [(ngModel)]=&quot;bounds.width&quot; min=&quot;9&quot; [max]=&quot;width&quot; /&gt;"/></source>
+        <source>Largura<ph id="0" equiv="TAG_INPUT" disp="&lt;input
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;bounds.width&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;9&quot;
+                [max]=&quot;width&quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="3595729035807470825">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:107,109</note>
+        <note category="location">src/app/features/scans/scans-page.html:158,165</note>
       </notes>
       <segment>
-        <source>Altura<ph id="0" equiv="TAG_INPUT" disp="&lt;input type=&quot;number&quot; [(ngModel)]=&quot;bounds.height&quot; min=&quot;8&quot; [max]=&quot;height&quot;
-          /&gt;"/></source>
-      </segment>
-    </unit>
-    <unit id="6822143513731283223">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:110,111</note>
-      </notes>
-      <segment>
-        <source>O que deseja ler?</source>
-      </segment>
-    </unit>
-    <unit id="3848933203652433886">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:112,113</note>
-      </notes>
-      <segment>
-        <source>Itens e quantidades do armazém</source>
-      </segment>
-    </unit>
-    <unit id="2524505700813305496">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:113,114</note>
-      </notes>
-      <segment>
-        <source>Um número do personagem</source>
-      </segment>
-    </unit>
-    <unit id="3142703807081676478">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:114,115</note>
-      </notes>
-      <segment>
-        <source>Equipamento do personagem</source>
+        <source>Altura<ph id="0" equiv="TAG_INPUT" disp="&lt;input
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;bounds.height&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;8&quot;
+                [max]=&quot;height&quot;
+            /&gt;"/></source>
       </segment>
     </unit>
     <unit id="6870282930428001550">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:119,120</note>
+        <note category="location">src/app/features/scans/scans-page.html:169,170</note>
       </notes>
       <segment>
         <source> Recorte um ícone de equipamento por vez e use uma linha e uma coluna. A posição, o aprimoramento e Caphras precisam ser conferidos manualmente. </source>
@@ -5722,48 +5749,90 @@
     </unit>
     <unit id="3295962296271023545">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:124,125</note>
+        <note category="location">src/app/features/scans/scans-page.html:174,180</note>
       </notes>
       <segment>
-        <source>Colunas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input type=&quot;number&quot; [(ngModel)]=&quot;columns&quot; min=&quot;1&quot; max=&quot;100&quot; /&gt;"/></source>
+        <source>Colunas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;columns&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;1&quot;
+                max=&quot;100&quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="7047093881134054108">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:126,128</note>
+        <note category="location">src/app/features/scans/scans-page.html:181,188</note>
       </notes>
       <segment>
-        <source>Linhas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input type=&quot;number&quot; [(ngModel)]=&quot;rows&quot; min=&quot;1&quot; max=&quot;100&quot;
-          /&gt;"/></source>
+        <source>Linhas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input
+                type=&quot;number&quot;
+                [(ngModel)]=&quot;rows&quot;
+                (ngModelChange)=&quot;invalidateCrop()&quot;
+                min=&quot;1&quot;
+                max=&quot;100&quot;
+            /&gt;"/></source>
       </segment>
     </unit>
-    <unit id="8285240190705353836">
+    <unit id="2994322465678969257">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:129,130</note>
+        <note category="location">src/app/features/scans/scans-page.html:189,190</note>
       </notes>
       <segment>
-        <source> O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de 100 espaços por leitura. </source>
+        <source> O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de 400 espaços por leitura. </source>
       </segment>
     </unit>
     <unit id="1838635548008242722">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:134,135</note>
+        <note category="location">src/app/features/scans/scans-page.html:194,195</note>
       </notes>
       <segment>
         <source> Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como “1,2 M”, precisam ser digitados por completo. </source>
       </segment>
     </unit>
-    <unit id="1125019451650285947">
+    <unit id="6822143513731283223">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:138,139</note>
+        <note category="location">src/app/features/scans/scans-page.html:199,200</note>
       </notes>
       <segment>
-        <source>Ler recorte</source>
+        <source>O que deseja ler?</source>
+      </segment>
+    </unit>
+    <unit id="993746691133339133">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:201,202</note>
+      </notes>
+      <segment>
+        <source>Itens do armazém ou inventário</source>
+      </segment>
+    </unit>
+    <unit id="2524505700813305496">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:202,203</note>
+      </notes>
+      <segment>
+        <source>Um número do personagem</source>
+      </segment>
+    </unit>
+    <unit id="3142703807081676478">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:203,204</note>
+      </notes>
+      <segment>
+        <source>Equipamento do personagem</source>
+      </segment>
+    </unit>
+    <unit id="5720859242498472532">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:206,207</note>
+      </notes>
+      <segment>
+        <source> Ler itens e valores </source>
       </segment>
     </unit>
     <unit id="3948464432227415568">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:142,143</note>
+        <note category="location">src/app/features/scans/scans-page.html:211,212</note>
       </notes>
       <segment>
         <source>Cancelar leitura</source>
@@ -5771,7 +5840,7 @@
     </unit>
     <unit id="2964952329552063086">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:152,153</note>
+        <note category="location">src/app/features/scans/scans-page.html:221,222</note>
       </notes>
       <segment>
         <source>3. Confira o valor</source>
@@ -5779,8 +5848,8 @@
     </unit>
     <unit id="1281581865498556620">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:155,156</note>
-        <note category="location">src/app/features/scans/scans-page.html:198,199</note>
+        <note category="location">src/app/features/scans/scans-page.html:224,225</note>
+        <note category="location">src/app/features/scans/scans-page.html:283,284</note>
       </notes>
       <segment>
         <source>Escolha seu personagem</source>
@@ -5788,7 +5857,7 @@
     </unit>
     <unit id="5969162379260698013">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:160,161</note>
+        <note category="location">src/app/features/scans/scans-page.html:229,230</note>
       </notes>
       <segment>
         <source>Campo a atualizar</source>
@@ -5796,7 +5865,7 @@
     </unit>
     <unit id="4319224908287478286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:165,166</note>
+        <note category="location">src/app/features/scans/scans-page.html:234,235</note>
       </notes>
       <segment>
         <source>Valor inteiro, sem abreviações</source>
@@ -5804,7 +5873,7 @@
     </unit>
     <unit id="5575606554895118761">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:174</note>
+        <note category="location">src/app/features/scans/scans-page.html:243</note>
       </notes>
       <segment>
         <source>Conferi o personagem, o campo e o valor no jogo.</source>
@@ -5812,71 +5881,192 @@
     </unit>
     <unit id="7637283586747146162">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:177,178</note>
+        <note category="location">src/app/features/scans/scans-page.html:246,247</note>
       </notes>
       <segment>
         <source> Atualizar personagem </source>
       </segment>
     </unit>
-    <unit id="2996436101469154549">
+    <unit id="3578471567200855052">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:182,183</note>
+        <note category="location">src/app/features/scans/scans-page.html:251,252</note>
       </notes>
       <segment>
-        <source>3. Confira os espaços encontrados</source>
+        <source>3. Revise antes de salvar</source>
       </segment>
     </unit>
     <unit id="5789122080035926399">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:184,185</note>
+        <note category="location">src/app/features/scans/scans-page.html:253,254</note>
       </notes>
       <segment>
         <source> As sugestões são comparações visuais. Itens com a mesma imagem podem ter nomes e aprimoramentos diferentes. Escolha o item correto ou busque pelo nome. </source>
       </segment>
     </unit>
+    <unit id="4548753312160863314">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:258,260</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ cells().length }}"/></pc> espaços</source>
+      </segment>
+    </unit>
+    <unit id="8035658332526107896">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:261,263</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ suggestionCount() }}"/></pc> com sugestões</source>
+      </segment>
+    </unit>
+    <unit id="7873561528728802317">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:264,266</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ includedCount() }}"/></pc> conferidos e incluídos</source>
+      </segment>
+    </unit>
+    <unit id="6035680699048106286">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:268,269</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ abbreviatedCount() }}"/></pc> quantidades abreviadas</source>
+      </segment>
+    </unit>
     <unit id="2120179952775178005">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:188,189</note>
+        <note category="location">src/app/features/scans/scans-page.html:273,274</note>
       </notes>
       <segment>
         <source>Local deste estoque</source>
       </segment>
     </unit>
+    <unit id="4654189413033101460">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:289</note>
+      </notes>
+      <segment>
+        <source>Páginas da revisão da captura</source>
+      </segment>
+    </unit>
+    <unit id="4875107781438253519">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:296</note>
+        <note category="location">src/app/features/storage/storage-page.html:155</note>
+      </notes>
+      <segment>
+        <source> Anterior </source>
+      </segment>
+    </unit>
+    <unit id="3571748834144183350">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:299,303</note>
+      </notes>
+      <segment>
+        <source>Espaços <ph id="0" equiv="INTERPOLATION" disp="{{ reviewPage() * reviewPageSize + 1 }}"/> a <ph id="1" equiv="INTERPOLATION_1" disp="{{ reviewPage() * reviewPageSize + visibleCells().length }}"/> de <ph id="2" equiv="INTERPOLATION_2" disp="{{ cells().length }}"/></source>
+      </segment>
+    </unit>
+    <unit id="512839013940185544">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:309</note>
+      </notes>
+      <segment>
+        <source> Próximos espaços </source>
+      </segment>
+    </unit>
+    <unit id="6379317310832309807">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:316,317</note>
+      </notes>
+      <segment>
+        <source>Espaço <ph id="0" equiv="INTERPOLATION" disp="{{ cell.id + 1 }}"/></source>
+      </segment>
+    </unit>
+    <unit id="2354639240905871157">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:321,322</note>
+      </notes>
+      <segment>
+        <source>Na captura</source>
+      </segment>
+    </unit>
     <unit id="8891777940858643741">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:211,212</note>
+        <note category="location">src/app/features/scans/scans-page.html:326,327</note>
       </notes>
       <segment>
         <source>Espaço recortado do print</source>
       </segment>
     </unit>
-    <unit id="7415822805286670747">
+    <unit id="1319647436883836667">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:213,214</note>
+        <note category="location">src/app/features/scans/scans-page.html:332,333</note>
       </notes>
       <segment>
-        <source>Sugestões</source>
+        <source>No catálogo</source>
+      </segment>
+    </unit>
+    <unit id="2635801333119844627">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:337,338</note>
+      </notes>
+      <segment>
+        <source>Qual é o item?</source>
       </segment>
     </unit>
     <unit id="7346985161107994493">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:219,220</note>
+        <note category="location">src/app/features/scans/scans-page.html:343,344</note>
       </notes>
       <segment>
         <source>Escolha o item correto</source>
       </segment>
     </unit>
+    <unit id="8145210443163012521">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:353,354</note>
+      </notes>
+      <segment>
+        <source>Buscar outro item pelo nome</source>
+      </segment>
+    </unit>
     <unit id="6172090032287017636">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:224,225</note>
+        <note category="location">src/app/features/scans/scans-page.html:355,356</note>
       </notes>
       <segment>
         <source>Buscar outro item</source>
       </segment>
     </unit>
+    <unit id="8345233947794114001">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:364,366</note>
+      </notes>
+      <segment>
+        <source> Possível leitura: <ph id="0" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/> (aproximadamente <ph id="1" equiv="INTERPOLATION_1" disp="{{ cell.quantityEstimate }}"/>). A leitura pode estar errada. Confira a quantidade exata no jogo e preencha abaixo. </source>
+      </segment>
+    </unit>
+    <unit id="3665621851631074090">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:370,371</note>
+      </notes>
+      <segment>
+        <source> Não foi possível ler a quantidade com segurança. Confira no jogo; ausência de número não significa uma unidade. </source>
+      </segment>
+    </unit>
+    <unit id="3497144153726008157">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:374,375</note>
+      </notes>
+      <segment>
+        <source>Quantidade exata</source>
+      </segment>
+    </unit>
     <unit id="5449016724233185474">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:242,243</note>
+        <note category="location">src/app/features/scans/scans-page.html:383,384</note>
       </notes>
       <segment>
         <source>Posição</source>
@@ -5884,7 +6074,7 @@
     </unit>
     <unit id="9111980140701891642">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:248,249</note>
+        <note category="location">src/app/features/scans/scans-page.html:389,390</note>
       </notes>
       <segment>
         <source>Escolha a posição</source>
@@ -5892,7 +6082,7 @@
     </unit>
     <unit id="5637148238605625286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:253,259</note>
+        <note category="location">src/app/features/scans/scans-page.html:394,400</note>
       </notes>
       <segment>
         <source>Nível de aprimoramento (0 a 30)<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -5900,12 +6090,12 @@
                     [(ngModel)]=&quot;cell.level&quot;
                     min=&quot;0&quot;
                     max=&quot;30&quot;
-                    (ngModelChange)=&quot;cell.reviewed = false; confirmStock = false&quot; /&gt;"/></source>
+                    (ngModelChange)=&quot;edited(cell)&quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="6084004136727606379">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:260,267</note>
+        <note category="location">src/app/features/scans/scans-page.html:401,408</note>
       </notes>
       <segment>
         <source>Nível de Caphras<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -5913,45 +6103,37 @@
                     [(ngModel)]=&quot;cell.caphras&quot;
                     min=&quot;0&quot;
                     max=&quot;20&quot;
-                    (ngModelChange)=&quot;cell.reviewed = false; confirmStock = false&quot;
+                    (ngModelChange)=&quot;edited(cell)&quot;
                 /&gt;"/></source>
       </segment>
     </unit>
-    <unit id="7631504117844625663">
+    <unit id="7655693762592081504">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:273</note>
+        <note category="location">src/app/features/scans/scans-page.html:416</note>
       </notes>
       <segment>
-        <source>Incluir este espaço</source>
-      </segment>
-    </unit>
-    <unit id="8362672755674577697">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:280</note>
-      </notes>
-      <segment>
-        <source>Conferi o item e todos os seus valores no jogo</source>
+        <source>Conferi no jogo. Incluir este item e seus valores.</source>
       </segment>
     </unit>
     <unit id="3551321110817968486">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:289,290</note>
+        <note category="location">src/app/features/scans/scans-page.html:425,426</note>
       </notes>
       <segment>
         <source>Quero substituir as quantidades dos itens incluídos neste local. Os demais itens serão mantidos.</source>
       </segment>
     </unit>
-    <unit id="8807306605466977078">
+    <unit id="8792261646630262396">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:292,293</note>
+        <note category="location">src/app/features/scans/scans-page.html:434,435</note>
       </notes>
       <segment>
-        <source>Atualizar armazém</source>
+        <source> Salvar <ph id="0" equiv="INTERPOLATION" disp="{{ includedCount() }}"/> itens no armazém </source>
       </segment>
     </unit>
     <unit id="3991687278263194140">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:296,297</note>
+        <note category="location">src/app/features/scans/scans-page.html:439,440</note>
       </notes>
       <segment>
         <source>Conferi o personagem, as posições e os níveis. Quero atualizar somente os equipamentos incluídos.</source>
@@ -5959,7 +6141,7 @@
     </unit>
     <unit id="807382760292122914">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:300</note>
+        <note category="location">src/app/features/scans/scans-page.html:443</note>
       </notes>
       <segment>
         <source> Atualizar equipamentos </source>
@@ -5967,7 +6149,7 @@
     </unit>
     <unit id="6007723282262160843">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:306,307</note>
+        <note category="location">src/app/features/scans/scans-page.html:449,450</note>
       </notes>
       <segment>
         <source>Ver meu armazém →</source>
@@ -6398,14 +6580,6 @@
       </notes>
       <segment>
         <source>Páginas da prévia do CSV</source>
-      </segment>
-    </unit>
-    <unit id="4875107781438253519">
-      <notes>
-        <note category="location">src/app/features/storage/storage-page.html:155</note>
-      </notes>
-      <segment>
-        <source> Anterior </source>
       </segment>
     </unit>
     <unit id="9165689316451340383">
