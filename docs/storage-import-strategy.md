@@ -8,7 +8,7 @@ Decisão de produto e arquitetura em **7 de outubro de 2026**. Prioridade: SA e 
 
 O catálogo central fornece IDs, nomes, categorias e imagens. O mercado fornece preços públicos datados. O jogador fornece e confirma **quantidades privadas**, local, maestria e equipamentos. A extração do cliente não popula automaticamente o armazém da conta.
 
-A base é entrada manual por catálogo e importação CSV/JSON com prévia. Nesta entrega, a importação CSV com prévia está implementada no armazenamento pessoal do navegador; **upload, OCR, leitura de vídeo, captura passiva, contas e processamento de imagens na nuvem não estão implementados**. Não apresentar esses recursos como disponíveis.
+A base é entrada manual por catálogo e importação CSV com prévia. O reconhecimento assistido de prints também está implementado localmente, com detecção de grades, candidatos por cor/forma, OCR numérico e revisão manual. Contas e sincronização explícita seguem a implementação vigente. **Vídeo, captura passiva, sincronização da conta do jogo e processamento de imagens na nuvem não estão implementados**. Ver [tutorial](print-import-tutorial.md) e [calibração/limites](ocr-validation.md); a proposta remota abaixo permanece pesquisa futura.
 
 ### O que os concorrentes demonstram
 

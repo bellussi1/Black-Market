@@ -7,9 +7,9 @@ O Black Desert não oferece exportação nativa do armazém para CSV. O arquivo 
 1. Abra o armazém ou inventário no jogo e confira a cidade/personagem. Feche dicas ou janelas que cobrem os itens e quantidades.
 2. No Windows, pressione **Win + Shift + S** e recorte a grade. Se o atalho não funcionar no jogo, use sua ferramenta de captura habitual e salve a imagem.
 3. Na página **Armazém**, clique **Importar por print**. Clique na área de colagem (ou use Tab para focá-la) e pressione **Ctrl + V**. Também é possível arrastar um arquivo ou escolher PNG/JPG/WebP.
-4. Ajuste o recorte às bordas dos espaços e informe linhas/colunas. A primeira leitura pode levar mais tempo; o limite é de 100 espaços por captura.
-5. Clique **Ler recorte**. Confira cada item e quantidade, corrija candidatos errados e marque a revisão dos espaços incluídos.
-6. Confira o local, confirme a atualização e clique **Atualizar armazém**. Não será aplicado nenhum reconhecimento sem sua revisão.
+4. Confira a grade sugerida e escolha a área quando houver dois painéis. Ajuste o recorte e linhas/colunas se necessário. A última linha precisa estar incluída; limite de 400 espaços por captura.
+5. Clique **Ler itens e valores**. Percorra as páginas da revisão, escolha os itens específicos e confira as quantidades. Estimativas abreviadas exigem preencher o total exato. Marque somente os espaços conferidos.
+6. Confira o local, confirme a atualização e clique **Salvar … itens no armazém**. Nenhum reconhecimento é aplicado sem sua revisão.
 
 Importe uma captura por vez. Se o mesmo material aparecer em várias pilhas ou prints, confira a quantidade total e inclua um único registro por item/local: a importação **substitui**, não soma. Itens fora da captura permanecem cadastrados. A junção automática de capturas com rolagem ainda não está implementada.
 

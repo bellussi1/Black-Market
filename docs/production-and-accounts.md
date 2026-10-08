@@ -24,7 +24,7 @@ docker compose --env-file .env.production -f docker-compose.production.yml build
 docker compose --env-file .env.production -f docker-compose.production.yml up -d
 ```
 
-Antes da abertura pública, restaurar um backup autorizado do catálogo e copiar `data/assets/<checksum>`, inclusive `asset_redirects.json`, `integrity.json`, ícones e `icon-index-v1.json`. Fazer backups do volume PostgreSQL e do diretório de assets em armazenamento separado. Não usar `down -v` no banco existente.
+Antes da abertura pública, restaurar um backup autorizado do catálogo e copiar `data/assets/<checksum>`, inclusive `asset_redirects.json`, `integrity.json`, ícones e `icon-index-v2.json` (v1 permanece compatível como fallback). Ver [publicação e validação do reconhecimento](ocr-validation.md). Fazer backups do volume PostgreSQL e do diretório de assets em armazenamento separado. Não usar `down -v` no banco existente.
 
 Em banco novo, suba PostgreSQL/migrações primeiro; restaure o catálogo antes de abrir API/web/gateway. Após cada restauração ou migração que crie tabelas, reexecute `permissions` com `up --force-recreate permissions`: o papel não recebe escrita automática em tabelas futuras. A API de produção recusa superusuário, criação de roles/bancos/schema, propriedade de tabelas e memberships. Não conceda o papel proprietário ao runtime para resolver erros de permissão. Ver [controles e evidências](security-hardening.md).
 
