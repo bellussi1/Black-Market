@@ -124,6 +124,10 @@
 .scan-icon-comparison img {
   border: 1px solid var(--bm-border);
 }
+.scan-icon-comparison app-item-icon {
+  width: 64px;
+  height: 64px;
+}
 .quantity-caution {
   padding: 0.75rem;
   border-left: 2px solid var(--bm-accent);

@@ -1,5 +1,6 @@
 import type { Line, Worker } from 'tesseract.js';
 
+import { readQuantityPixels } from './quantity-pixels';
 import { parseVisibleQuantity } from './visible-quantity';
 
 export interface QuantityReading {
@@ -12,6 +13,7 @@ export interface IconMatch {
   id: number;
   distance: number;
   sharedIcon: boolean;
+  sourceId?: number;
 }
 
 interface LegacyIconIndex {
@@ -61,12 +63,17 @@ export function rankColorSamples(
     }))
     .filter((row) => row.distance <= 38)
     .sort((a, b) => a.distance - b.distance)
-    .slice(0, 4);
+    .slice(0, 12);
   const matches = new Map<number, IconMatch>();
   for (const entry of ranked)
     for (const id of entry.row.ids) {
       if (!matches.has(id))
-        matches.set(id, { id, distance: entry.distance, sharedIcon: entry.row.ids.length > 1 });
+        matches.set(id, {
+          id,
+          distance: entry.distance,
+          sharedIcon: entry.row.ids.length > 1,
+          sourceId: entry.row.ids[0],
+        });
     }
   return [...matches.values()].slice(0, 100);
 }
@@ -112,16 +119,16 @@ export function rankCandidates(
 ): IconMatch[] {
   if (index.algorithm === 'rgb-top-v2') {
     const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 8;
+    canvas.width = canvas.height = 64;
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) throw new Error('Leitura de imagens indisponível neste navegador.');
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
     const samples: Uint8Array[] = [];
     // Screenshot frames and UI scaling change the visible icon inset.
-    for (const inset of [0, 0.04, 0.07, 0.1]) {
+    for (const inset of [0, 0.04, 0.07, 0.1, 0.13]) {
       context.fillStyle = '#000';
-      context.fillRect(0, 0, 8, 8);
+      context.fillRect(0, 0, 64, 64);
       const width = crop.width * (1 - inset * 2),
         height = crop.height * (1 - inset * 2);
       context.drawImage(
@@ -132,13 +139,11 @@ export function rankCandidates(
         Math.max(1, Math.floor(height * 0.8)),
         0,
         0,
-        8,
-        8,
+        64,
+        64,
       );
-      const rgba = context.getImageData(0, 0, 8, 8).data;
-      samples.push(
-        Uint8Array.from({ length: 192 }, (_, i) => rgba[Math.floor(i / 3) * 4 + (i % 3)]),
-      );
+      // Average pixels explicitly: browser thumbnail resampling differs by engine.
+      samples.push(averageRgb(context.getImageData(0, 0, 64, 64).data, 64, 8));
     }
     return rankColorSamples(samples, index);
   }
@@ -193,6 +198,116 @@ export function rankCandidates(
     }
   }
   return [...matches.values()].slice(0, 100);
+}
+export function averageRgb(rgba: ArrayLike<number>, size: number, output: number): Uint8Array {
+  const result = new Uint8Array(output * output * 3);
+  if (size % output || rgba.length !== size * size * 4) return result;
+  const step = size / output;
+  for (let y = 0; y < output; y++)
+    for (let x = 0; x < output; x++)
+      for (let c = 0; c < 3; c++) {
+        let sum = 0;
+        for (let dy = 0; dy < step; dy++)
+          for (let dx = 0; dx < step; dx++)
+            sum += rgba[((y * step + dy) * size + x * step + dx) * 4 + c];
+        result[(y * output + x) * 3 + c] = Math.round(sum / (step * step));
+      }
+  return result;
+}
+
+/** Fetch only shortlisted public icons, compare their detail and reuse them across slots. */
+export class IconRefiner {
+  private readonly icons = new Map<string, Promise<ImageBitmap | null>>();
+  private closed = false;
+  private readonly abort = new AbortController();
+  private load(url: string) {
+    let pending = this.icons.get(url);
+    if (!pending) {
+      pending = fetch(url, {
+        credentials: 'omit',
+        signal: AbortSignal.any([AbortSignal.timeout(10000), this.abort.signal]),
+      })
+        .then(async (response) => {
+          if (!response.ok) return null;
+          const bitmap = await createImageBitmap(await response.blob());
+          if (this.closed || bitmap.width > 512 || bitmap.height > 512) {
+            bitmap.close();
+            return null;
+          }
+          return bitmap;
+        })
+        .catch(() => null);
+      this.icons.set(url, pending);
+    }
+    return pending;
+  }
+  async refine(
+    image: CanvasImageSource,
+    crop: Crop,
+    matches: IconMatch[],
+    url: (id: number) => string,
+  ): Promise<IconMatch[]> {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 64;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return matches;
+    context.imageSmoothingQuality = 'high';
+    const sample = (source: CanvasImageSource, c: Crop) => {
+      context.fillStyle = '#000';
+      context.fillRect(0, 0, 64, 64);
+      context.drawImage(source, c.left, c.top, c.width, c.height, 0, 0, 64, 64);
+      return averageRgb(context.getImageData(0, 0, 64, 64).data, 64, 16);
+    };
+    const samples = [0.04, 0.07, 0.1, 0.13].map((inset) =>
+      sample(image, {
+        left: crop.left + crop.width * inset,
+        top: crop.top + crop.height * inset,
+        width: crop.width * (1 - inset * 2),
+        height: crop.height * (1 - inset * 2),
+      }),
+    );
+    const sources = [...new Set(matches.map((m) => m.sourceId ?? m.id))];
+    const distances = new Map<number, number>();
+    for (const id of sources) {
+      if (this.closed) return [];
+      const icon = await this.load(url(id));
+      if (!icon) continue;
+      const pixels = sample(icon, { left: 0, top: 0, width: icon.width, height: icon.height });
+      distances.set(
+        id,
+        Math.min(
+          ...samples.map((s) => {
+            return iconDetailDistance(s, pixels);
+          }),
+        ),
+      );
+    }
+    // Never turn a failed image request into a confident automatic selection.
+    const ranked = matches
+      .map((m) => ({ ...m, distance: distances.get(m.sourceId ?? m.id) ?? 100 }))
+      .filter((m) => m.distance <= 36)
+      .sort((a, b) => a.distance - b.distance);
+    return ranked.filter((m) => m.distance <= (ranked[0]?.distance ?? 0) + 6);
+  }
+  close() {
+    this.closed = true;
+    this.abort.abort();
+    for (const pending of this.icons.values()) void pending.then((icon) => icon?.close());
+    this.icons.clear();
+  }
+}
+export function iconDetailDistance(a: ArrayLike<number>, b: ArrayLike<number>): number {
+  if (a.length !== 768 || b.length !== 768) return Infinity;
+  let total = 0,
+    count = 0;
+  for (let i = 0; i < a.length; i++) {
+    const pixel = Math.floor(i / 3);
+    // Preserve bottom-left silhouettes, but ignore the quantity at the bottom-right.
+    if (Math.floor(pixel / 16) >= 10 && pixel % 16 >= 5) continue;
+    total += Math.abs(a[i] - b[i]);
+    count++;
+  }
+  return total / count;
 }
 export function cropCanvas(image: CanvasImageSource, crop: Crop, scale = 3) {
   const canvas = document.createElement('canvas');
@@ -260,18 +375,51 @@ export class NumberReader {
   ): Promise<QuantityReading[]> {
     if (!crops.length) return [];
     if (crops.length > 50) throw new Error('Divida a leitura em lotes de até 50 espaços.');
+    const local = crops.map((crop): QuantityReading | null => {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(crop.width);
+      canvas.height = Math.round(crop.height);
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) return null;
+      context.imageSmoothingEnabled = false;
+      context.drawImage(
+        image,
+        Math.round(crop.left),
+        Math.round(crop.top),
+        canvas.width,
+        canvas.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      );
+      const reading = readQuantityPixels(
+        context.getImageData(0, 0, canvas.width, canvas.height).data,
+        canvas.width,
+        canvas.height,
+      );
+      const parsed = reading && parseVisibleQuantity(reading.text);
+      return reading && parsed ? { ...parsed, confidence: reading.confidence } : null;
+    });
+    const unresolved = crops.map((_, i) => i).filter((i) => !local[i]);
+    if (!unresolved.length) {
+      onProgress?.(1);
+      return local as QuantityReading[];
+    }
+    const pendingCrops = unresolved.map((i) => crops[i]);
     const scale = Math.min(4, 192 / Math.max(...crops.map((crop) => crop.width)));
     const padding = 12;
-    const stride = Math.ceil(Math.max(...crops.map((crop) => crop.height)) * scale) + padding * 2;
+    const stride =
+      Math.ceil(Math.max(...pendingCrops.map((crop) => crop.height)) * scale) + padding * 2;
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(Math.max(...crops.map((crop) => crop.width)) * scale) + padding * 2;
-    canvas.height = stride * crops.length;
+    canvas.height = stride * pendingCrops.length;
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) throw new Error('Leitura de imagens indisponível.');
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.imageSmoothingEnabled = false;
-    for (const [index, crop] of crops.entries()) {
+    for (const [index, crop] of pendingCrops.entries()) {
       context.drawImage(
         image,
         crop.left,
@@ -285,7 +433,7 @@ export class NumberReader {
       );
     }
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-    for (const [row, crop] of crops.entries()) {
+    for (const [row, crop] of pendingCrops.entries()) {
       for (let y = row * stride + padding; y < row * stride + padding + crop.height * scale; y++) {
         for (let x = padding; x < padding + crop.width * scale; x++) {
           const i = (y * canvas.width + x) * 4;
@@ -306,7 +454,9 @@ export class NumberReader {
       const result = await worker.recognize(canvas, {}, { text: true, blocks: true });
       const lines =
         result.data.blocks?.flatMap((block) => block.paragraphs.flatMap((p) => p.lines)) ?? [];
-      return mapQuantityLines(lines, crops.length, stride);
+      const fallback = mapQuantityLines(lines, pendingCrops.length, stride);
+      for (const [i, original] of unresolved.entries()) local[original] = fallback[i];
+      return local as QuantityReading[];
     } finally {
       this.reportProgress = undefined;
     }

@@ -327,10 +327,11 @@
                     i18n-alt
                   />
                 </div>
-                @if (cell.item; as item) {
+                @if (cell.item ?? cell.options[0]; as item) {
                   <div>
                     <span i18n>No catálogo</span
                     ><app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                    <span>{{ item.name }}</span>
                   </div>
                 }
               </div>

@@ -25,6 +25,7 @@ import { groupItemOptions } from './item-option-groups';
 import {
   type Crop,
   type IconIndex,
+  IconRefiner,
   NumberReader,
   type QuantityReading,
   rankCandidates,
@@ -60,6 +61,7 @@ export class ScansPage implements OnDestroy {
   readonly catalog = inject(CatalogApiService);
   private readonly http = inject(HttpClient);
   private readonly reader = new NumberReader();
+  private refiner?: IconRefiner;
   private image?: ImageBitmap;
   private generation = 0;
   private region = this.store.data().region;
@@ -355,6 +357,30 @@ export class ScansPage implements OnDestroy {
             if (positions.length % 10 === 0)
               await new Promise<void>((resolve) => setTimeout(resolve, 0));
           }
+        this.refiner?.close();
+        const refiner = new IconRefiner();
+        this.refiner = refiner;
+        for (let start = 0; start < positions.length; start += 4) {
+          if (generation !== this.generation) {
+            refiner.close();
+            return;
+          }
+          this.progress.set(
+            `Comparando detalhes dos itens… ${Math.round((start / positions.length) * 100)}%`,
+          );
+          await Promise.all(
+            positions.slice(start, start + 4).map(async (position) => {
+              position.matches = await refiner.refine(
+                image,
+                position.cell,
+                position.matches,
+                (id) =>
+                  `${environment.apiBaseUrl}/api/v1/items/${id}/icon?dataset=${encodeURIComponent(index.checksum)}`,
+              );
+            }),
+          );
+        }
+        refiner.close();
         const ids = [
           ...new Set(positions.flatMap((position) => position.matches.map((match) => match.id))),
         ];
@@ -371,13 +397,30 @@ export class ScansPage implements OnDestroy {
         const drafts: CellDraft[] = positions.map(({ cell, matches }, id) => {
           const options = matches
             .map((match) => items.get(match.id))
-            .filter((item): item is CatalogItem => Boolean(item));
+            .filter((item): item is CatalogItem => Boolean(item))
+            .sort((a, b) => {
+              const da = matches.find((m) => m.id === a.id)!.distance;
+              const db = matches.find((m) => m.id === b.id)!.distance;
+              // Identical icons also occur on retired event and placeholder records.
+              // Prefer a categorized, ordinary item in the visual tie; never confirm it.
+              if (
+                da <= (matches[0]?.distance ?? 0) + 0.25 &&
+                db <= (matches[0]?.distance ?? 0) + 0.25
+              ) {
+                return (
+                  Number(Boolean(b.category)) - Number(Boolean(a.category)) ||
+                  Number(/^[\[★]/.test(a.name)) - Number(/^[\[★]/.test(b.name)) ||
+                  a.id - b.id
+                );
+              }
+              return da - db;
+            });
           const best = matches[0];
           const uniqueSuggestion =
             best &&
             !best.sharedIcon &&
-            best.distance <= 10 &&
-            (!matches[1] || matches[1].distance - best.distance >= 3);
+            best.distance <= 24 &&
+            (!matches[1] || matches[1].distance - best.distance >= 2);
           const canvas = document.createElement('canvas');
           canvas.width = 64;
           canvas.height = 64;
@@ -507,6 +550,7 @@ export class ScansPage implements OnDestroy {
   }
   cancel() {
     this.generation++;
+    this.refiner?.close();
     this.message.set('Leitura cancelada. Nenhum dado foi salvo.');
   }
   select(cell: CellDraft, item: CatalogItem | null) {
@@ -721,6 +765,7 @@ export class ScansPage implements OnDestroy {
   }
   ngOnDestroy() {
     this.generation++;
+    this.refiner?.close();
     this.image?.close();
     if (this.preview()) URL.revokeObjectURL(this.preview());
     void this.reader.close();

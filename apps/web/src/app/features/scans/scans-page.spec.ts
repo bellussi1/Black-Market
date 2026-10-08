@@ -6,11 +6,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { IconRefiner } from './print-reader';
 import { ScansPage } from './scans-page';
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
   function images() {
+    vi.spyOn(IconRefiner.prototype, 'refine').mockImplementation(
+      async (_image, _crop, matches) => matches,
+    );
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => {
       let sourceX = 0;
       return {
