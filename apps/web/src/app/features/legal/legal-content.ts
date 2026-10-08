@@ -74,7 +74,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         title: 'Finalidades e escolhas',
         paragraphs: [
           'Dados funcionais permitem atender às consultas e ao planejamento que você solicita, manter preferências, sincronizar sua cópia e proteger a operação. As bases legais dessas finalidades precisam ser validadas pelo responsável.',
-          'Estatísticas de uso são opcionais e só enviam eventos quando o recurso está configurado e você autoriza. Você pode rejeitar ou revogar essa escolha no rodapé. Não incluímos nomes, e-mail, prints, valores do seu estoque ou credenciais nesses eventos. A configuração de analytics e esta política ainda exigem validação antes do lançamento.',
+          'Estatísticas de uso são opcionais e só enviam eventos quando o recurso está configurado e você autoriza. Os eventos medem áreas visitadas e etapas/resultados agregados de algumas tarefas. Você pode rejeitar ou revogar essa escolha no rodapé. Não incluímos nomes, e-mail, texto pesquisado, IDs de itens, prints, valores do seu estoque ou credenciais nesses eventos. A configuração de analytics e esta política ainda exigem validação antes do lançamento.',
         ],
       },
       {
@@ -124,7 +124,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
       {
         title: 'Estatísticas opcionais',
         paragraphs: [
-          'Quando configurado e autorizado, PostHog Cloud recebe eventos de navegação e conclusão de tarefas com nomes de funcionalidades. Um identificador aleatório do navegador permite estimar retorno e retenção. Não enviamos sua identidade de conta. Não há gravação de sessão, captura automática de formulários ou publicidade ativada nesta versão.',
+          'Quando configurado e autorizado, PostHog Cloud recebe eventos de navegação por área e de algumas etapas de tarefas, incluindo resultados agregados de busca. Um identificador aleatório do navegador permite estimar retorno e retenção. Não enviamos sua identidade de conta, texto pesquisado, IDs/nome de item, dados do armazém, números lidos ou imagens. Não há gravação de sessão, captura automática de formulários ou publicidade ativada nesta versão.',
           'Rejeitar mantém as ferramentas disponíveis. Revogar remove o identificador local, cancela envios que ainda estejam em andamento e interrompe novos eventos. Dados que já chegaram ao prestador não são apagados automaticamente. Preferências podem ser alteradas a qualquer momento pelo rodapé.',
         ],
       },
