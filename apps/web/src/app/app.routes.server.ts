@@ -1,31 +1,57 @@
 import type { ServerRoute } from '@angular/ssr';
 import { RenderMode } from '@angular/ssr';
 
+const publicRoutes = [
+  '',
+  'database/items',
+  'database/items/:id',
+  'recipes',
+  'recipes/:key',
+  'reference',
+  'reference/:kind',
+  'reference/:kind/:id',
+  'world',
+  'market',
+  'crafting',
+  'enhancement',
+  'lifeskills',
+  'rng',
+  'buffs',
+  'termos',
+  'privacidade',
+  'cookies',
+  'contato',
+] as const;
+
+const privateRoutes = [
+  'scans',
+  'recommendations',
+  'account',
+  'profile',
+  'plans',
+  'storage',
+  'gear',
+  'settings',
+] as const;
+
 export const serverRoutes: ServerRoute[] = [
-  ...[
-    '',
-    'database/items',
-    'database/items/:id',
-    'recipes',
-    'recipes/:key',
-    'reference',
-    'reference/:kind',
-    'reference/:kind/:id',
-    'world',
-    'termos',
-    'privacidade',
-    'cookies',
-    'contato',
-  ].map(
+  ...publicRoutes.map(
     (path): ServerRoute => ({
       path,
       renderMode: RenderMode.Server,
       headers: { 'Cache-Control': 'private, max-age=0, must-revalidate', Vary: 'Cookie' },
     }),
   ),
+  ...privateRoutes.map(
+    (path): ServerRoute => ({
+      path,
+      renderMode: RenderMode.Client,
+      headers: { 'X-Robots-Tag': 'noindex,nofollow', 'Cache-Control': 'private,no-store' },
+    }),
+  ),
   {
     path: '**',
-    renderMode: RenderMode.Client,
+    renderMode: RenderMode.Server,
     headers: { 'X-Robots-Tag': 'noindex,nofollow', 'Cache-Control': 'private,no-store' },
   },
 ];

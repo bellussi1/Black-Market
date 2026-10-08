@@ -1,31 +1,92 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
 import { setTimeout } from 'node:timers/promises';
 import { resolve } from 'node:path';
-// Native HTTP regression check. No browser, game provider, cloud credential or DB required.
+// Native HTTP regression check. No game provider, cloud credential or DB required.
 const port = 4399;
+const publicOrigin = 'https://black-market.example';
+const apiRequests = [];
+const api = createServer((request, response) => {
+  const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+  apiRequests.push(path);
+  response.setHeader('Content-Type', 'application/json');
+  if (path === '/api/v1/catalog/sitemap.xml') {
+    response.setHeader('Content-Type', 'application/xml');
+    response.end(
+      '<?xml version="1.0"?><sitemapindex><sitemap><loc>https://black-market.example/sitemaps/public/1.xml</loc></sitemap></sitemapindex>',
+    );
+    return;
+  }
+  if (path === '/api/v1/catalog/sitemaps/public/1') {
+    response.setHeader('Content-Type', 'application/xml');
+    response.end(
+      '<?xml version="1.0"?><urlset><url><loc>https://black-market.example/</loc></url></urlset>',
+    );
+    return;
+  }
+  if (path === '/api/v1/categories') {
+    response.end(JSON.stringify({ categories: [], dataset: null }));
+    return;
+  }
+  if (path === '/api/v1/items') {
+    response.end(JSON.stringify({ items: [], total: 0, page: 1, pageSize: 48, dataset: null }));
+    return;
+  }
+  if (path === '/api/v1/recipes') {
+    response.end(JSON.stringify({ recipes: [], total: 0, page: 1, pageSize: 24, dataset: null }));
+    return;
+  }
+  if (path === '/api/v1/reference') {
+    response.end(
+      JSON.stringify({ kinds: [{ kind: 'npcs', label: 'NPCs', total: 0 }], updatedAt: null }),
+    );
+    return;
+  }
+  if (path === '/api/v1/reference/npcs') {
+    response.end(JSON.stringify({ items: [], total: 0, page: 1, pageSize: 24, updatedAt: null }));
+    return;
+  }
+  if (path === '/api/v1/world/nodes') {
+    response.end(JSON.stringify({ nodes: [] }));
+    return;
+  }
+  response.statusCode = 404;
+  response.end(JSON.stringify({ message: 'Not Found' }));
+});
+await new Promise((resolveListen) => api.listen(4398, '127.0.0.1', resolveListen));
 const child = spawn(process.execPath, [resolve('apps/web/dist/web/server/server.mjs')], {
   env: {
     ...process.env,
     NODE_ENV: 'production',
     PORT: String(port),
     API_BASE_URL: 'http://127.0.0.1:4398',
-    PUBLIC_SITE_URL: `http://localhost:${port}`,
+    PUBLIC_SITE_URL: publicOrigin,
   },
   stdio: ['ignore', 'ignore', 'pipe'],
 });
 let exited = false;
+let serverErrors = '';
 child.on('exit', () => {
   exited = true;
 });
-child.stderr.on('data', () => {
-  /* Details stay out of test output. Assertions expose only status. */
+child.stderr.on('data', (chunk) => {
+  serverErrors = (serverErrors + chunk.toString()).slice(-4000);
 });
+const request = (path, init = {}) =>
+  fetch(`http://127.0.0.1:${port}${path}`, {
+    ...init,
+    headers: {
+      host: 'black-market.example',
+      'x-forwarded-proto': 'https',
+      ...init.headers,
+    },
+  });
 try {
   let ready = false;
   for (let attempt = 0; attempt < 50 && !exited; attempt++) {
     try {
-      const response = await fetch(`http://localhost:${port}/robots.txt`);
+      const response = await request('/robots.txt');
       ready = response.ok;
     } catch {
       /* Starting. */
@@ -34,39 +95,111 @@ try {
     await setTimeout(100);
   }
   assert.ok(ready, 'SSR process did not start');
+  const robots = await request('/robots.txt');
+  assert.ok(
+    (await robots.text()).includes(`Sitemap: ${publicOrigin}/sitemap.xml`),
+    'robots.txt must advertise the configured sitemap',
+  );
+
   for (const [path, title] of [
     ['/', 'BLACK MARKET'],
-    ['/contato', 'enzobellussi3@gmail.com'],
+    ['/market', 'O valor de cada venda'],
+    ['/crafting', 'Produzir, comprar, planejar'],
+    ['/enhancement', 'Entenda o risco antes de tentar'],
+    ['/lifeskills', 'Meça seu rendimento'],
+    ['/rng', 'Quanto vale abrir'],
+    ['/buffs', 'Sua combinação, pronta'],
+    ['/database/items', 'O mundo, item'],
+    ['/recipes', 'Receitas'],
+    ['/reference/npcs', 'NPCs'],
+    ['/world', 'Conecte sua produção'],
+    ['/contato', 'Contato'],
     ['/termos', 'Termos de Uso'],
     ['/privacidade', 'Política de Privacidade'],
     ['/cookies', 'Cookies e armazenamento'],
-    ['/sobre/', 'Seus próximos passos'],
+    ['/sobre', 'Seus próximos passos'],
   ]) {
-    const response = await fetch(`http://localhost:${port}${path}`);
-    assert.equal(response.status, 200, `SSR ${path}`);
-    const html = await response.text();
-    assert.ok(html.includes('<h1'), `Missing public HTML for ${path}`);
-    assert.ok(html.includes(title), `Missing expected content for ${path}`);
-    assert.ok(response.headers.has('content-security-policy'));
-    const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
-    assert.ok(footer, `Missing footer for ${path}`);
-    for (const target of ['/termos', '/privacidade', '/cookies', '/contato']) {
-      assert.ok(footer.includes(`href="${target}"`), `Missing legal footer link for ${path}`);
-    }
-    assert.ok(
-      footer.includes(String(new Date().getUTCFullYear())),
-      'Missing current copyright year',
+    const response = await request(path);
+    assert.equal(
+      response.status,
+      200,
+      `SSR ${path}; API calls: ${apiRequests.join(', ')}; stderr: ${serverErrors}`,
     );
-    assert.ok(footer.includes('Preferências de privacidade'), 'Missing privacy action');
+    const html = await response.text();
+    assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `Expected one page heading for ${path}`);
+    assert.ok(html.includes(title), `Missing expected content for ${path}`);
+    assert.ok(/<html[^>]*lang="pt-BR"/.test(html), `Missing Portuguese locale on ${path}`);
+    assert.equal((html.match(/<meta name="description"/g) ?? []).length, 1);
+    assert.ok(
+      html.includes('<meta name="robots" content="index,follow"'),
+      `Missing indexable robots metadata on ${path}: ${html.match(/<head>([\s\S]*?)<\/head>/)?.[1]?.slice(0, 1200) ?? 'head missing'}\n${serverErrors}`,
+    );
+    assert.equal((html.match(/<link rel="canonical"/g) ?? []).length, 1);
+    assert.ok(html.includes(`<link rel="canonical" href="${publicOrigin}${path}"`));
+    assert.ok(html.includes(`property="og:url" content="${publicOrigin}${path}"`));
+    assert.ok(html.includes(`property="og:image" content="${publicOrigin}/og-black-market.png"`));
+    assert.ok(html.includes('name="twitter:card" content="summary_large_image"'));
+    assert.ok(html.includes('application/ld+json'));
+    assert.match(html, /<main\b/);
+    assert.ok(response.headers.has('content-security-policy'));
+    if (path !== '/sobre') {
+      const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
+      assert.ok(footer, `Missing footer for ${path}`);
+      for (const target of ['/termos', '/privacidade', '/cookies', '/contato']) {
+        assert.ok(footer.includes(`href="${target}"`), `Missing legal footer link for ${path}`);
+      }
+      assert.ok(
+        footer.includes(String(new Date().getUTCFullYear())),
+        'Missing current copyright year',
+      );
+      assert.ok(footer.includes('Preferências de privacidade'), 'Missing privacy action');
+    }
     for (const script of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (script[2].trim() && !/type=["']application\/(?:json|ld\+json)["']/.test(script[1]))
         assert.fail(`Executable inline script incompatible with CSP on ${path}`);
     }
   }
-  const personal = await fetch(`http://localhost:${port}/profile`);
+
+  const personal = await request('/profile');
   assert.equal(personal.status, 200);
   assert.equal(personal.headers.get('x-robots-tag'), 'noindex,nofollow');
-  console.log('SSR smoke: Home, four legal pages, footer, headers and personal noindex passed.');
+  const settings = await request('/settings');
+  assert.equal(settings.headers.get('x-robots-tag'), 'noindex,nofollow');
+
+  const unknown = await request('/not-a-real-page');
+  assert.equal(unknown.status, 404);
+  assert.equal(unknown.headers.get('x-robots-tag'), 'noindex,nofollow');
+  const unknownHtml = await unknown.text();
+  assert.ok(unknownHtml.includes('Esta página não existe.'));
+  assert.ok(unknownHtml.includes('<meta name="robots" content="noindex,nofollow"'));
+
+  const trailing = await request('/market/', { redirect: 'manual' });
+  assert.equal(trailing.status, 308);
+  assert.equal(trailing.headers.get('location'), '/market');
+  const aboutTrailing = await request('/sobre/', { redirect: 'manual' });
+  assert.equal(aboutTrailing.status, 308);
+  assert.equal(aboutTrailing.headers.get('location'), '/sobre');
+
+  const sitemap = await request('/sitemap.xml');
+  assert.equal(sitemap.status, 200);
+  assert.match(await sitemap.text(), /<sitemapindex/);
+  const sitemapPage = await request('/sitemaps/public/1.xml');
+  assert.equal(sitemapPage.status, 200);
+  assert.match(await sitemapPage.text(), /<urlset/);
+
+  const socialImage = await request('/og-black-market.png');
+  assert.equal(socialImage.status, 200);
+  assert.equal(socialImage.headers.get('content-type'), 'image/png');
+  const imageBytes = Buffer.from(await socialImage.arrayBuffer());
+  assert.equal(imageBytes.readUInt32BE(16), 1200);
+  assert.equal(imageBytes.readUInt32BE(20), 630);
+
+  const missingItem = await request('/database/items/999999');
+  assert.equal(missingItem.status, 404);
+  console.log(
+    'SSR smoke: public routes, metadata, social card, sitemap, canonical redirects, 404 and private noindex passed.',
+  );
 } finally {
   child.kill();
+  await new Promise((resolveClose) => api.close(resolveClose));
 }

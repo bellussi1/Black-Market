@@ -77,7 +77,7 @@ export class CatalogSitemapService {
       if (page !== 1) throw new NotFoundException();
       paths = [
         '/',
-        '/sobre/',
+        '/sobre',
         '/database/items',
         '/recipes',
         '/reference/npcs',
@@ -87,6 +87,16 @@ export class CatalogSitemapService {
         '/reference/skills',
         '/reference/lightstones',
         '/world',
+        '/market',
+        '/crafting',
+        '/enhancement',
+        '/lifeskills',
+        '/rng',
+        '/buffs',
+        '/termos',
+        '/privacidade',
+        '/cookies',
+        '/contato',
       ];
     } else if (dataset) {
       if (type === 'items') {

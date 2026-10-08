@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { RESPONSE_INIT } from '@angular/core';
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +21,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 })
 export class RecipesPage {
   private readonly seo = inject(SeoService);
+  private readonly response = inject(RESPONSE_INIT, { optional: true });
   readonly api = inject(CatalogApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly preferences = inject(RegionPreferences);
@@ -43,8 +46,11 @@ export class RecipesPage {
             ? this.api.getRecipe(key)
             : this.api.getRecipes(this.q, this.page);
           return request.pipe(
-            catchError(() => {
+            catchError((error: unknown) => {
               this.seo.unavailable();
+              if (this.response)
+                this.response.status =
+                  key && error instanceof HttpErrorResponse && error.status === 404 ? 404 : 503;
               this.message.set('Não foi possível carregar as receitas. Tente novamente.');
               return of(null);
             }),

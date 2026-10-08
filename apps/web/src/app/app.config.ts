@@ -9,11 +9,12 @@ import {
   withI18nSupport,
   withNoIncrementalHydration,
 } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
 
 import { routes } from './app.routes';
 import { uiLocale } from './core/locale';
 import { operationalErrorInterceptor, SafeFrontendErrorHandler } from './core/operational-errors';
+import { SeoService } from './core/seo.service';
 
 registerLocaleData(pt, 'pt-BR');
 
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    { provide: TitleStrategy, useExisting: SeoService },
     provideHttpClient(withInterceptors([operationalErrorInterceptor])),
     { provide: ErrorHandler, useClass: SafeFrontendErrorHandler },
     { provide: LOCALE_ID, useFactory: uiLocale },

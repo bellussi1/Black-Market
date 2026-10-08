@@ -10,9 +10,123 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 
+import { isPublicSeoPath, publicDescription } from './app/core/seo-content';
 import { securityHeaders } from './security-headers';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
+const socialImage = '/og-black-market.png';
+const socialAlt =
+  'Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português.';
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replaceAll('&amp;', '&')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>');
+}
+
+function injectSeoMetadata(
+  html: string,
+  path: string,
+  title: string,
+  response: Response,
+): Response {
+  const renderedDescription = html.match(
+    /<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["'][^>]*>/i,
+  )?.[1];
+  const description =
+    (renderedDescription && decodeHtml(renderedDescription)) ||
+    publicDescription(path) ||
+    'Black Market: plataforma brasileira para jogadores de Black Desert Online.';
+  const publicUrl = process.env['PUBLIC_SITE_URL'];
+  const origin = publicUrl ? new URL(publicUrl).origin : null;
+  const responseRobots = response.headers.get('X-Robots-Tag') ?? '';
+  const indexable =
+    response.status === 200 &&
+    isPublicSeoPath(path) &&
+    origin !== null &&
+    !responseRobots.includes('noindex');
+  const tags = [
+    `<meta name="description" content="${escapeHtml(description)}" />`,
+    `<meta name="robots" content="${indexable ? 'index,follow' : 'noindex,nofollow'}" />`,
+  ];
+
+  if (indexable && origin) {
+    const canonical = new URL(path, origin).href;
+    const image = new URL(socialImage, origin).href;
+    const structuredData =
+      path === '/'
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Black Market',
+            description,
+            url: origin,
+            inLanguage: 'pt-BR',
+          }
+        : {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: title,
+            description,
+            url: canonical,
+            inLanguage: 'pt-BR',
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'Black Market',
+              url: origin,
+              inLanguage: 'pt-BR',
+            },
+          };
+    tags.push(
+      `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
+      '<meta property="og:type" content="website" />',
+      '<meta property="og:site_name" content="Black Market" />',
+      '<meta property="og:locale" content="pt_BR" />',
+      `<meta property="og:title" content="${escapeHtml(title)}" />`,
+      `<meta property="og:description" content="${escapeHtml(description)}" />`,
+      `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
+      `<meta property="og:image" content="${escapeHtml(image)}" />`,
+      '<meta property="og:image:type" content="image/png" />',
+      '<meta property="og:image:width" content="1200" />',
+      '<meta property="og:image:height" content="630" />',
+      `<meta property="og:image:alt" content="${escapeHtml(socialAlt)}" />`,
+      `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
+      `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
+      '<meta name="twitter:card" content="summary_large_image" />',
+      `<meta name="twitter:image" content="${escapeHtml(image)}" />`,
+      `<meta name="twitter:image:alt" content="${escapeHtml(socialAlt)}" />`,
+      `<script type="application/ld+json">${JSON.stringify(structuredData).replaceAll('<', '\\u003c')}</script>`,
+    );
+  }
+
+  const managedTags =
+    /<meta\b[^>]*\b(?:name|property)=["'](?:description|robots|og:[^"']+|twitter:[^"']+)["'][^>]*>/gi;
+  const cleaned = html
+    .replace(managedTags, '')
+    .replace(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi, '')
+    .replace(/<script\b(?=[^>]*type=["']application\/ld\+json["'])[^>]*>[\s\S]*?<\/script>/gi, '');
+  const document = cleaned.replace('</head>', tags.join('') + '</head>');
+  const headers = new Headers(response.headers);
+  headers.delete('content-length');
+  headers.delete('content-encoding');
+  if (!indexable) headers.set('X-Robots-Tag', 'noindex,nofollow');
+  return new Response(document, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 const app = express();
 app.disable('x-powered-by');
@@ -32,6 +146,15 @@ app.use((_req, res, next) => {
     ))
       res.setHeader(name, value);
   next();
+});
+app.use((req, res, next) => {
+  if (req.path.length <= 1 || !req.path.endsWith('/')) {
+    next();
+    return;
+  }
+  const path = req.path.replace(/\/+$/, '') || '/';
+  const query = req.originalUrl.slice(req.path.length);
+  res.redirect(308, path + query);
 });
 const publicOrigin = process.env['PUBLIC_SITE_URL'];
 const angularApp = new AngularNodeAppEngine({
@@ -54,19 +177,64 @@ app.get('/robots.txt', (_req, res) => {
 });
 app.get('/sobre/', (_req, res, next) => {
   void readFile(join(browserDistFolder, 'sobre', 'index.html'), 'utf8')
-    .then((html) =>
-      res
+    .then((html) => {
+      const description =
+        'Conheça o Black Market: ferramentas de Black Desert para SA, fontes dos dados e importação em português brasileiro.';
+      const publicUrl = process.env['PUBLIC_SITE_URL'];
+      let metadata =
+        `<meta name="description" content="${description}" />` +
+        '<meta name="robots" content="noindex,nofollow" />';
+      if (publicUrl) {
+        const origin = new URL(publicUrl).origin;
+        const canonical = new URL('/sobre', origin).href;
+        const image = new URL('/og-black-market.png', origin).href;
+        const schema = {
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Sobre o Black Market',
+          description,
+          url: canonical,
+          inLanguage: 'pt-BR',
+          isPartOf: { '@type': 'WebSite', name: 'Black Market', url: origin, inLanguage: 'pt-BR' },
+        };
+        metadata = [
+          `<meta name="description" content="${description}" />`,
+          '<meta name="robots" content="index,follow" />',
+          `<link rel="canonical" href="${canonical}" />`,
+          '<meta property="og:type" content="website" />',
+          '<meta property="og:site_name" content="Black Market" />',
+          '<meta property="og:locale" content="pt_BR" />',
+          `<meta property="og:url" content="${canonical}" />`,
+          '<meta property="og:title" content="Black Market — Fontes dos dados e perguntas frequentes" />',
+          `<meta property="og:description" content="${description}" />`,
+          `<meta property="og:image" content="${image}" />`,
+          '<meta property="og:image:type" content="image/png" />',
+          '<meta property="og:image:width" content="1200" />',
+          '<meta property="og:image:height" content="630" />',
+          '<meta property="og:image:alt" content="Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português." />',
+          '<meta name="twitter:card" content="summary_large_image" />',
+          '<meta name="twitter:title" content="Black Market — Fontes dos dados e perguntas frequentes" />',
+          `<meta name="twitter:description" content="${description}" />`,
+          `<meta name="twitter:image" content="${image}" />`,
+          '<meta name="twitter:image:alt" content="Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português." />',
+          `<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}</script>`,
+        ].join('');
+      }
+      return res
         .set('Cache-Control', 'public, max-age=300')
         .type('html')
         .send(
-          html.replace(
-            /<span data-copyright-year>\d{4}<\/span>/,
-            '<span data-copyright-year>' + new Date().getUTCFullYear() + '</span>',
-          ),
-        ),
-    )
+          html
+            .replace('</head>', metadata + '</head>')
+            .replace(
+              /<span data-copyright-year>\d{4}<\/span>/,
+              '<span data-copyright-year>' + new Date().getUTCFullYear() + '</span>',
+            ),
+        );
+    })
     .catch(next);
 });
+app.get('/sobre/index.html', (_req, res) => res.redirect(308, '/sobre'));
 async function sitemapResponse(path: string, res: express.Response) {
   try {
     const response = await fetch(
@@ -131,7 +299,17 @@ app.use((req, res, next) => {
   angularApp
     .handle(req)
     .then((response) => {
-      if (response) return writeResponseToNodeResponse(response, res);
+      if (response) {
+        if (response.headers.get('content-type')?.includes('text/html'))
+          return response.text().then((html) => {
+            const title = decodeHtml(
+              html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? 'Black Market',
+            );
+            const metadataResponse = injectSeoMetadata(html, req.path, title, response);
+            return writeResponseToNodeResponse(metadataResponse, res);
+          });
+        return writeResponseToNodeResponse(response, res);
+      }
       if (
         /^\/(?:$|database\/items(?:\/|$)|recipes(?:\/|$)|reference(?:\/|$)|world$|termos$|privacidade$|cookies$|contato$)/.test(
           req.path,

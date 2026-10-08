@@ -5,13 +5,14 @@ import {
 } from '@angular/common/http';
 import type { ApplicationConfig } from '@angular/core';
 import { inject, mergeApplicationConfig, REQUEST } from '@angular/core';
-import { provideRouter, withNavigationErrorHandler } from '@angular/router';
+import { provideRouter, TitleStrategy, withNavigationErrorHandler } from '@angular/router';
 import { provideServerRendering, withRoutes } from '@angular/ssr';
 
 import { environment } from '../environments/environment';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
 import { serverRoutes } from './app.routes.server';
+import { SeoService } from './core/seo.service';
 
 const serverConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +34,7 @@ const serverConfig: ApplicationConfig = {
         );
       }),
     ),
+    { provide: TitleStrategy, useExisting: SeoService },
     provideServerRendering(withRoutes(serverRoutes)),
     provideHttpClient(
       withInterceptors([

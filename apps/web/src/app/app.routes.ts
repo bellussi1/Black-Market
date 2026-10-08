@@ -124,6 +124,7 @@ export const routes: Routes = [
       {
         path: 'gear',
         title: $localize`Black Market · Equipamentos`,
+        data: { private: true },
         loadComponent: () => import('./features/gear/gear-page').then((m) => m.GearPage),
       },
       {
@@ -135,6 +136,7 @@ export const routes: Routes = [
       {
         path: 'storage',
         title: $localize`Black Market · Armazém`,
+        data: { private: true },
         loadComponent: () => import('./features/storage/storage-page').then((m) => m.StoragePage),
       },
       {
@@ -150,10 +152,17 @@ export const routes: Routes = [
       {
         path: 'settings',
         title: $localize`Black Market · Dados e backup`,
+        data: { private: true },
         loadComponent: () =>
           import('./features/settings/settings-page').then((m) => m.SettingsPage),
       },
-      { path: '**', redirectTo: '' },
+      {
+        path: '**',
+        title: $localize`Black Market · Página não encontrada`,
+        data: { noindex: true },
+        loadComponent: () =>
+          import('./features/not-found/not-found-page').then((m) => m.NotFoundPage),
+      },
     ],
   },
 ];

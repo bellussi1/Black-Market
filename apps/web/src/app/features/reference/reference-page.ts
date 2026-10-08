@@ -1,9 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
   effect,
   inject,
+  RESPONSE_INIT,
   signal,
   untracked,
 } from '@angular/core';
@@ -24,6 +26,7 @@ import { referenceFields } from './reference-fields';
 })
 export class ReferencePage implements OnDestroy {
   private readonly seo = inject(SeoService);
+  private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly api = inject(ReferenceApi);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -92,6 +95,8 @@ export class ReferencePage implements OnDestroy {
       error: () => {
         this.loading.set(false);
         this.entries.set([]);
+        this.seo.unavailable();
+        if (this.response) this.response.status = 503;
         this.message.set('Não foi possível carregar esta consulta. Tente novamente mais tarde.');
       },
     });
@@ -111,10 +116,13 @@ export class ReferencePage implements OnDestroy {
         );
         this.loading.set(false);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.loading.set(false);
         this.selected.set(null);
         this.seo.unavailable();
+        if (this.response)
+          this.response.status =
+            error instanceof HttpErrorResponse && error.status === 404 ? 404 : 503;
         this.message.set('Não encontramos este registro no catálogo da região selecionada.');
       },
     });

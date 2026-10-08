@@ -1,46 +1,10 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, inject, Injectable } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { inject, Injectable } from '@angular/core';
 import { Meta, type MetaDefinition, Title } from '@angular/platform-browser';
-import { NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs';
+import type { RouterStateSnapshot } from '@angular/router';
+import { TitleStrategy } from '@angular/router';
 
-const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
-  '/termos': 'Condições de uso das ferramentas gratuitas do Black Market para Black Desert Online.',
-  '/privacidade':
-    'Como o Black Market trata seus dados, armazenamento local, conta e estatísticas opcionais.',
-  '/cookies':
-    'Cookies, armazenamento funcional e escolhas sobre estatísticas opcionais do Black Market.',
-  '/contato':
-    'Entre em contato com o responsável pelo Black Market para suporte e solicitações de privacidade.',
-  '/': 'Black Market: itens, receitas e ferramentas de Black Desert Online em português brasileiro, com foco no mercado SA.',
-  '/database/items':
-    'Consulte itens de Black Desert Online em português, com imagens, categorias, descrições e relações de produção.',
-  '/recipes':
-    'Receitas de Black Desert Online em português, com materiais, resultados e imagens dos itens.',
-  '/reference':
-    'NPCs, missões, conhecimento, habilidades, locais e referências de Black Desert Online em português.',
-  '/world':
-    'Planeje seu império de bases e trabalhadores em Black Desert Online. Compare produção diária, custos e contribuição compartilhada.',
-  '/market':
-    'Consulte preços e disponibilidade no mercado SA de Black Desert Online. Confira a origem e a data de atualização dos dados.',
-  '/crafting':
-    'Explore receitas de Black Desert Online e compare materiais, custos de produção e retorno estimado no mercado SA.',
-  '/enhancement':
-    'Planeje aprimoramentos de Black Desert Online com estimativas de probabilidade, materiais e custos.',
-  '/lifeskills':
-    'Planeje profissões de Black Desert Online considerando maestria, tempo, rendimento e custos informados.',
-  '/rng':
-    'Compare o retorno esperado de caixas de Black Desert Online com probabilidades e preços informados.',
-  '/buffs':
-    'Organize buffs de Black Desert Online e consulte seus efeitos para planejar suas atividades.',
-};
-
-const PRIVATE_DESCRIPTIONS: Readonly<Record<string, string>> = {
-  '/settings': 'Gerencie suas preferências e o backup dos seus dados no Black Market.',
-  '/storage': 'Gerencie seu armazém pessoal no Black Market.',
-  '/gear': 'Planeje seus equipamentos pessoais no Black Market.',
-};
+import { isPublicSeoPath, PRIVATE_DESCRIPTIONS, publicDescription } from './seo-content';
 
 const MANAGED_SELECTORS = [
   'name="description"',
@@ -50,19 +14,43 @@ const MANAGED_SELECTORS = [
   'property="og:type"',
   'property="og:url"',
   'property="og:site_name"',
+  'property="og:locale"',
+  'property="og:image"',
+  'property="og:image:type"',
+  'property="og:image:width"',
+  'property="og:image:height"',
+  'property="og:image:alt"',
   'name="twitter:title"',
   'name="twitter:description"',
   'name="twitter:card"',
+  'name="twitter:image"',
+  'name="twitter:image:alt"',
 ];
 
+const SHARE_IMAGE = '/og-black-market.png';
+const SHARE_IMAGE_ALT =
+  'Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português.';
+
 @Injectable({ providedIn: 'root' })
-export class SeoService {
+export class SeoService extends TitleStrategy {
   private readonly document = inject(DOCUMENT);
-  private readonly router = inject(Router);
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
-  private readonly destroyRef = inject(DestroyRef);
-  private started = false;
+  private currentUrl = '/';
+
+  override updateTitle(snapshot: RouterStateSnapshot): void {
+    const title = this.buildTitle(snapshot) ?? 'Black Market';
+    this.currentUrl = snapshot.url;
+    let route = snapshot.root;
+    let privateRoute = false;
+    while (route) {
+      privateRoute ||= route.data['private'] === true || route.data['noindex'] === true;
+      if (!route.firstChild) break;
+      route = route.firstChild;
+    }
+    this.update(snapshot.url, title, privateRoute);
+  }
+
   describe(name: string, description: string) {
     const title = name.replace(/<[^>]*>/g, '').slice(0, 120) + ' · Black Market';
     const summary = description
@@ -80,75 +68,34 @@ export class SeoService {
     for (const tag of tags) this.meta.updateTag(tag);
     const origin = this.documentOrigin();
     if (origin) {
-      const data = {
-        '@context': 'https://schema.org',
-        '@type': 'Thing',
-        name: title.replace(' · Black Market', ''),
-        description: summary,
-        url: origin + this.pathOf(this.router.url),
-        isPartOf: { '@type': 'WebSite', name: 'Black Market', url: origin },
-      };
-      this.document.head.querySelector('script[data-black-market-schema]')?.remove();
-      const script = this.document.createElement('script');
-      script.type = 'application/ld+json';
-      script.setAttribute('data-black-market-schema', '');
-      script.textContent = JSON.stringify(data).replaceAll('<', '\\u003c');
-      this.document.head.appendChild(script);
+      const path = this.pathOf(this.currentUrl);
+      const canonical = new URL(path, origin).href;
+      this.setCanonical(canonical);
+      this.addSocialMetadata(title, summary, canonical, origin);
+      this.setStructuredData(path, title, summary, canonical, origin);
     }
   }
   unavailable() {
+    this.document.head.querySelector('script[data-black-market-schema]')?.remove();
+    for (const link of this.document.head.querySelectorAll('link[rel="canonical"]')) {
+      link.remove();
+    }
+    for (const selector of MANAGED_SELECTORS.filter((value) => value !== 'name="robots"')) {
+      for (const tag of this.meta.getTags(selector)) this.meta.removeTagElement(tag);
+    }
     this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
   }
 
-  start(): void {
-    if (this.started) return;
-    this.started = true;
-    this.destroyRef.onDestroy(() => this.clearMetadata());
-
-    if (this.router.navigated) this.update(this.router.url, this.router.url);
-
-    this.router.events
-      .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((event) => this.update(event.urlAfterRedirects, event.url));
-  }
-
-  private update(url: string, requestedUrl: string): void {
+  private update(url: string, titleOverride: string, privateRoute: boolean): void {
     this.clearMetadata();
     const path = this.pathOf(url);
-    const requestedPath = this.pathOf(requestedUrl);
-    let route = this.router.routerState.snapshot.root;
-    let routeTitle: string | undefined;
-    let privateRoute = false;
-
-    while (route) {
-      routeTitle = route.title ?? routeTitle;
-      privateRoute ||= route.data['private'] === true || route.data['noindex'] === true;
-      if (!route.firstChild) break;
-      route = route.firstChild;
-    }
 
     const origin = this.documentOrigin();
-    const publicPage = (value: string) =>
-      Object.hasOwn(PUBLIC_DESCRIPTIONS, value) ||
-      /^\/database\/items\/[1-9]\d*$/.test(value) ||
-      /^\/recipes\/[^/]+$/.test(value) ||
-      /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(value);
-    const knownPublicRoute = publicPage(path);
-    const knownRequest = publicPage(requestedPath);
-    const indexable = knownPublicRoute && knownRequest && !privateRoute && origin !== null;
-    const title = routeTitle ?? 'Black Market';
+    const knownPublicRoute = isPublicSeoPath(path);
+    const indexable = knownPublicRoute && !privateRoute && origin !== null;
+    const title = titleOverride || 'Black Market';
     const description =
-      PUBLIC_DESCRIPTIONS[path] ??
-      (path.startsWith('/reference/')
-        ? PUBLIC_DESCRIPTIONS['/reference']
-        : path.startsWith('/recipes/')
-          ? PUBLIC_DESCRIPTIONS['/recipes']
-          : path.startsWith('/database/items/')
-            ? PUBLIC_DESCRIPTIONS['/database/items']
-            : undefined) ??
+      publicDescription(path) ??
       PRIVATE_DESCRIPTIONS[path] ??
       'Black Market: plataforma brasileira para jogadores de Black Desert Online.';
 
@@ -161,20 +108,73 @@ export class SeoService {
     if (!indexable || !origin) return;
 
     const canonical = new URL(path, origin).href;
-    const link = this.document.createElement('link');
-    link.rel = 'canonical';
-    link.href = canonical;
-    this.document.head.appendChild(link);
-    this.meta.addTags([
+    this.setCanonical(canonical);
+    this.addSocialMetadata(title, description, canonical, origin);
+    this.setStructuredData(path, title, description, canonical, origin);
+  }
+
+  private addSocialMetadata(title: string, description: string, canonical: string, origin: string) {
+    const image = new URL(SHARE_IMAGE, origin).href;
+    const tags: MetaDefinition[] = [
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: canonical },
       { property: 'og:site_name', content: 'Black Market' },
+      { property: 'og:locale', content: 'pt_BR' },
+      { property: 'og:image', content: image },
+      { property: 'og:image:type', content: 'image/png' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { property: 'og:image:alt', content: SHARE_IMAGE_ALT },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
-      { name: 'twitter:card', content: 'summary' },
-    ]);
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:image', content: image },
+      { name: 'twitter:image:alt', content: SHARE_IMAGE_ALT },
+    ];
+    for (const tag of tags) this.meta.updateTag(tag);
+  }
+
+  private setCanonical(canonical: string): void {
+    const link = this.document.createElement('link');
+    link.rel = 'canonical';
+    link.href = canonical;
+    this.document.head.querySelector('link[rel="canonical"]')?.replaceWith(link);
+    if (!this.document.head.querySelector('link[rel="canonical"]'))
+      this.document.head.appendChild(link);
+  }
+
+  private setStructuredData(
+    path: string,
+    title: string,
+    description: string,
+    canonical: string,
+    origin: string,
+  ): void {
+    const website = { '@type': 'WebSite', name: 'Black Market', url: origin, inLanguage: 'pt-BR' };
+    const data =
+      path === '/'
+        ? {
+            '@context': 'https://schema.org',
+            ...website,
+            description,
+          }
+        : {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: title,
+            description,
+            url: canonical,
+            inLanguage: 'pt-BR',
+            isPartOf: website,
+          };
+    this.document.head.querySelector('script[data-black-market-schema]')?.remove();
+    const script = this.document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-black-market-schema', '');
+    script.textContent = JSON.stringify(data).replaceAll('<', '\\u003c');
+    this.document.head.appendChild(script);
   }
 
   private pathOf(url: string): string {

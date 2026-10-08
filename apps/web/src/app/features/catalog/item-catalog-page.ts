@@ -6,6 +6,7 @@ import {
   computed,
   effect,
   inject,
+  RESPONSE_INIT,
   signal,
   untracked,
 } from '@angular/core';
@@ -23,6 +24,7 @@ import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { preferredDataLocale, uiLocale } from '../../core/locale';
 import { RegionPreferences } from '../../core/region-preferences';
+import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 
@@ -37,6 +39,8 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 export class ItemCatalogPage implements OnInit, OnDestroy {
   readonly recipeTypeLabel = recipeTypeLabel;
   private readonly api = inject(CatalogApiService);
+  private readonly response = inject(RESPONSE_INIT, { optional: true });
+  private readonly seo = inject(SeoService);
   private readonly analytics = inject(AnalyticsService);
   private readonly preferences = inject(RegionPreferences);
   private lastRegion = this.preferences.region();
@@ -276,6 +280,8 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
         error: (error: unknown) => {
           this.error.set(this.errorMessage(error));
           this.loading.set(false);
+          this.seo.unavailable();
+          if (this.response) this.response.status = 503;
           if (trackSearch)
             this.analytics.capture('journey_failed', {
               feature: 'catalog',

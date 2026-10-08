@@ -4,5 +4,5 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-# Add Sitemap with the real production origin when a sitemap is generated.
-# Settings and storage remain crawlable so compliant bots can see noindex.
+# The SSR handler adds the generated sitemap URL when PUBLIC_SITE_URL is set.
+# Private routes remain crawlable so compliant bots can honor their noindex header.
