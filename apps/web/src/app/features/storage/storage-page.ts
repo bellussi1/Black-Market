@@ -81,6 +81,7 @@ export class StoragePage implements OnDestroy {
     if (!file) return;
     const generation = this.importGeneration;
     const region = this.store.data().region;
+    this.analytics.capture('journey_started', { feature: 'storage', action: 'import' });
     this.importRegion.set(region);
     this.importLoading.set(true);
     try {
@@ -102,6 +103,11 @@ export class StoragePage implements OnDestroy {
           );
           const missing = ids.filter((id) => !items.has(id));
           if (missing.length) {
+            this.analytics.capture('journey_failed', {
+              feature: 'storage',
+              action: 'import',
+              status: 'failed',
+            });
             this.importMessage.set(
               $localize`Itens ausentes no catálogo desta região: ${missing.slice(0, 10).join(', ')}. Nenhum dado foi importado.`,
             );
@@ -111,6 +117,11 @@ export class StoragePage implements OnDestroy {
           this.importLoading.set(false);
         },
         error: () => {
+          this.analytics.capture('journey_failed', {
+            feature: 'storage',
+            action: 'import',
+            status: 'failed',
+          });
           this.importMessage.set(
             $localize`O catálogo não respondeu. Tente carregar o CSV novamente.`,
           );
@@ -119,6 +130,11 @@ export class StoragePage implements OnDestroy {
       });
     } catch (error) {
       if (generation !== this.importGeneration) return;
+      this.analytics.capture('journey_failed', {
+        feature: 'storage',
+        action: 'import',
+        status: 'failed',
+      });
       this.importMessage.set(
         error instanceof StorageCsvError
           ? error.message

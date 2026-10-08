@@ -100,11 +100,59 @@ describe('privacy and product analytics', () => {
       cleanProperties({
         feature: 'market',
         action: 'search',
+        result: 'matches',
         token: 'private',
         email: 'private',
         stock: 999,
       } as never),
-    ).toEqual({ feature: 'market', action: 'search' });
+    ).toEqual({ feature: 'market', action: 'search', result: 'matches' });
+    expect(
+      cleanProperties({
+        feature: 'catalog',
+        result: 'no_matches',
+        search: 'Fármaco da Harmonia',
+        itemId: 3400,
+        silver: '999999',
+      } as never),
+    ).toEqual({ feature: 'catalog', result: 'no_matches' });
+  });
+  it('captures a detail view and aggregate search outcome without user data', () => {
+    const { service, http, privacy } = setup();
+    privacy.save(true);
+    TestBed.tick();
+    http.expectOne('https://eu.i.posthog.com/i/v0/e/').flush({ status: 1 });
+    service.capture('journey_completed', {
+      feature: 'catalog',
+      action: 'search',
+      status: 'success',
+      result: 'no_matches',
+    });
+    const search = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+    expect(search.request.body.event).toBe('journey_completed');
+    expect(search.request.body.properties).toMatchObject({
+      feature: 'catalog',
+      action: 'search',
+      result: 'no_matches',
+      $ip: null,
+    });
+    expect(JSON.stringify(search.request.body)).not.toMatch(/itemId|silver|Fármaco|email/i);
+    search.flush({ status: 1 });
+    service.capture('item_detail_opened', { feature: 'catalog' });
+    const detail = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+    expect(detail.request.body.event).toBe('item_detail_opened');
+    detail.flush({ status: 1 });
+    service.capture('journey_failed', {
+      feature: 'market',
+      action: 'search',
+      status: 'failed',
+    });
+    const failure = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+    expect(failure.request.body).toMatchObject({
+      event: 'journey_failed',
+      properties: { feature: 'market', action: 'search', status: 'failed' },
+    });
+    failure.flush({ status: 1 });
+    http.verify();
   });
   it('does not initialize analytics in development', () => {
     environment.production = false;

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { AnalyticsService } from '../../core/analytics.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { ScansPage } from './scans-page';
 
@@ -66,5 +67,37 @@ describe('Screenshot entry', () => {
       preventDefault: vi.fn(),
     } as unknown as ClipboardEvent);
     expect(decode).not.toHaveBeenCalled();
+  });
+
+  it('records print reading completion as an aggregate result only', async () => {
+    const capture = vi.fn();
+    images();
+    const fixture = await renderComponent(ScansPage, {}, [
+      { provide: AnalyticsService, useValue: { capture } },
+    ]);
+    const page = fixture.componentInstance;
+    await page.file({
+      target: { files: [new File(['image'], 'private-print.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    page.mode = 'number';
+    Object.defineProperty(page, 'reader', {
+      value: { read: vi.fn().mockResolvedValue('123456'), close: vi.fn() },
+      configurable: true,
+    });
+    await page.read();
+
+    expect(capture.mock.calls).toEqual([
+      ['journey_started', { feature: 'scans', action: 'read_print' }],
+      [
+        'journey_completed',
+        {
+          feature: 'scans',
+          action: 'read_print',
+          status: 'success',
+          result: 'matches',
+        },
+      ],
+    ]);
+    expect(JSON.stringify(capture.mock.calls)).not.toMatch(/private-print|123456|image/i);
   });
 });

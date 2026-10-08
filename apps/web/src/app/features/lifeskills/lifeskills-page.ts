@@ -13,6 +13,7 @@ import {
   trainingSchema,
 } from '@bdo/calculators';
 
+import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
@@ -27,6 +28,7 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
   templateUrl: './lifeskills-page.html',
 })
 export class LifeskillsPage {
+  private readonly analytics = inject(AnalyticsService);
   readonly store = inject(WorkspaceStore);
   readonly skills = [
     { id: 'gathering', label: 'Coleta' },
@@ -102,20 +104,33 @@ export class LifeskillsPage {
     this.patch({ items: this.form().items.filter((_, k) => k !== index) });
   }
   save(): void {
+    this.analytics.capture('journey_started', { feature: 'lifeskills', action: 'save' });
     const parsed = activitySchema.safeParse(this.form());
-    if (parsed.success)
-      this.store.update((s) => ({
-        ...s,
-        sessions: [
-          ...s.sessions,
-          {
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-            region: s.region,
-            input: parsed.data,
-          },
-        ],
-      }));
+    if (!parsed.success) {
+      this.analytics.capture('journey_failed', {
+        feature: 'lifeskills',
+        action: 'save',
+        status: 'failed',
+      });
+      return;
+    }
+    const saved = this.store.update((s) => ({
+      ...s,
+      sessions: [
+        ...s.sessions,
+        {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          region: s.region,
+          input: parsed.data,
+        },
+      ],
+    }));
+    this.analytics.capture(saved ? 'journey_completed' : 'journey_failed', {
+      feature: 'lifeskills',
+      action: 'save',
+      ...(saved ? { status: 'success' as const } : { status: 'failed' as const }),
+    });
   }
   removeSession(id: string): void {
     this.store.update((s) => ({ ...s, sessions: s.sessions.filter((r) => r.id !== id) }));

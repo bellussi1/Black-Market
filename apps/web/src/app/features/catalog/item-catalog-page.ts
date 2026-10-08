@@ -19,6 +19,7 @@ import type {
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
+import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { preferredDataLocale, uiLocale } from '../../core/locale';
 import { RegionPreferences } from '../../core/region-preferences';
@@ -36,6 +37,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 export class ItemCatalogPage implements OnInit, OnDestroy {
   readonly recipeTypeLabel = recipeTypeLabel;
   private readonly api = inject(CatalogApiService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly preferences = inject(RegionPreferences);
   private lastRegion = this.preferences.region();
 
@@ -121,7 +123,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
       this.page.set(1);
-      this.loadItems();
+      this.loadItems(Boolean(this.search().trim()));
     }, 240);
   }
 
@@ -131,7 +133,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     this.categoryId.set('');
     this.grade.set('');
     this.page.set(1);
-    this.loadItems();
+    this.loadItems(true);
   }
 
   onCategory(event: Event): void {
@@ -157,6 +159,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
   }
 
   openItem(item: CatalogItem): void {
+    this.analytics.capture('item_detail_opened', { feature: 'catalog' });
     this.selectedItem.set(item);
     this.detailLoading.set(true);
     this.detailError.set(false);
@@ -245,10 +248,12 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     });
   }
 
-  private loadItems(): void {
+  private loadItems(trackSearch = false): void {
     this.itemsRequest?.unsubscribe();
     this.loading.set(true);
     this.error.set(null);
+    if (trackSearch)
+      this.analytics.capture('journey_started', { feature: 'catalog', action: 'search' });
     this.itemsRequest = this.api
       .getItems({
         q: this.search().trim(),
@@ -258,10 +263,25 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
         pageSize: this.pageSize,
       })
       .subscribe({
-        next: (result) => this.result.set(result),
+        next: (result) => {
+          this.result.set(result);
+          if (trackSearch)
+            this.analytics.capture('journey_completed', {
+              feature: 'catalog',
+              action: 'search',
+              status: 'success',
+              result: result.total > 0 ? 'matches' : 'no_matches',
+            });
+        },
         error: (error: unknown) => {
           this.error.set(this.errorMessage(error));
           this.loading.set(false);
+          if (trackSearch)
+            this.analytics.capture('journey_failed', {
+              feature: 'catalog',
+              action: 'search',
+              status: 'failed',
+            });
         },
         complete: () => this.loading.set(false),
       });

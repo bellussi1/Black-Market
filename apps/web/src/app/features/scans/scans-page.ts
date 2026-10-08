@@ -315,11 +315,24 @@ export class ScansPage implements OnDestroy {
             : 'Nenhum item foi reconhecido. Ajuste o recorte ou use o cadastro manual.',
         );
       }
+      const hasResult = mode === 'number' ? Boolean(this.numberDraft) : this.cells().length > 0;
+      this.analytics.capture('journey_completed', {
+        feature: 'scans',
+        action: 'read_print',
+        status: 'success',
+        result: hasResult ? 'matches' : 'no_matches',
+      });
     } catch {
-      if (generation === this.generation)
+      if (generation === this.generation) {
+        this.analytics.capture('journey_failed', {
+          feature: 'scans',
+          action: 'read_print',
+          status: 'failed',
+        });
         this.message.set(
           'Não foi possível concluir a leitura. Tente um recorte menor ou preencha manualmente.',
         );
+      }
     } finally {
       this.busy.set(false);
       this.progress.set('');
@@ -396,6 +409,11 @@ export class ScansPage implements OnDestroy {
         characters: state.characters.map((row) => (row.id === profile.id ? updated : row)),
       }))
     ) {
+      this.analytics.capture('journey_completed', {
+        feature: 'scans',
+        action: 'import',
+        status: 'success',
+      });
       this.message.set('Valor atualizado no personagem.');
       this.confirmNumber = false;
     }

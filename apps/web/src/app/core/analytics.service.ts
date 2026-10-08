@@ -10,6 +10,7 @@ import { environment } from '../../environments/environment';
 import { PrivacyService } from './privacy.service';
 export type AnalyticsEvent =
   | 'page_viewed'
+  | 'item_detail_opened'
   | 'journey_started'
   | 'journey_completed'
   | 'journey_failed';
@@ -39,6 +40,7 @@ export interface EventProperties {
   feature: Feature;
   action?: 'search' | 'save' | 'import' | 'calculate' | 'sync' | 'read_print';
   status?: 'success' | 'failed';
+  result?: 'matches' | 'no_matches';
 }
 export function featureOf(url: string): Feature {
   const path = url.split(/[?#]/)[0];
@@ -85,6 +87,7 @@ export function cleanProperties(value: EventProperties) {
       ? { action: value.action }
       : {}),
     ...(['success', 'failed'].includes(value.status ?? '') ? { status: value.status } : {}),
+    ...(['matches', 'no_matches'].includes(value.result ?? '') ? { result: value.result } : {}),
   };
 }
 interface Config {
@@ -174,7 +177,13 @@ export class AnalyticsService {
       !config.host ||
       !this.privacy.allowsAnalytics() ||
       this.events >= 100 ||
-      !['page_viewed', 'journey_started', 'journey_completed', 'journey_failed'].includes(event)
+      ![
+        'page_viewed',
+        'item_detail_opened',
+        'journey_started',
+        'journey_completed',
+        'journey_failed',
+      ].includes(event)
     )
       return false;
     if (!this.id) {
