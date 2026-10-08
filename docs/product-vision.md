@@ -104,6 +104,8 @@ Antes de existirem modelos suficientes, usar rendimento informado ou sessões do
 
 ## Ordem de entrega
 
+A ordem abaixo resume a visão inicial. Para executar o backlog a partir do estado atual, usar o [roadmap priorizado](roadmap.md), que diferencia funcionalidades existentes, melhorias pendentes e dependências de lançamento. Upload privado e processamento assíncrono descritos nesta visão não são requisitos da primeira entrega de prints: o reconhecimento atual ocorre no navegador, com revisão obrigatória.
+
 | Etapa                    | Entrega                                                                                                             | Critério de conclusão                                                          |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | 1. Base pública gratuita | Busca de itens/receitas, mercado SA ligado ao catálogo, frescor, calculadoras com fontes e publicação web/API/banco | Consultas por nome e links compartilháveis sem conta; nenhum preço fictício    |

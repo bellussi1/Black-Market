@@ -62,7 +62,7 @@ Para subir também o Angular com o Node fixado no Docker, use `docker compose --
 | /buffs       | Biblioteca pessoal, grupos exclusivos, combinações e timers                       |
 | /settings    | Exportação/importação validada do backup pessoal                                  |
 
-Dados pessoais e presets são locais ao navegador; não há login/sincronização nessa versão. Cálculos usam o mesmo pacote de regras no frontend e backend. A [matriz de cobertura](docs/feature-coverage.md) descreve premissas, limites e recursos ainda dependentes de datasets. Não há fórmulas ou preços fictícios de equipamentos.
+Dados pessoais e presets são locais ao navegador por padrão. Login e sincronização opcionais estão preparados no código, mas exigem configurar e validar o provedor externo antes de oferecer contas. Cálculos usam o mesmo pacote de regras no frontend e backend. A [matriz de cobertura](docs/feature-coverage.md) descreve premissas, limites e recursos ainda dependentes de datasets. O [roadmap](docs/roadmap.md) define a ordem de evolução por uso esperado, valor e dependências. Não há fórmulas ou preços fictícios de equipamentos.
 
 ## Comandos
 
@@ -90,7 +90,7 @@ packages/database/ Schema Drizzle e migrations
 docs/              Arquitetura, dados, API, deploy e pesquisa dos sites
 ```
 
-O sistema começa como monólito modular. A SPA é estática e pode ir para Cloudflare Pages. A API NestJS precisa de runtime Node.js e fica num host de containers/Node; PostgreSQL é gerenciado separadamente ou hospedado junto da API. Docker Compose é para desenvolvimento local. Detalhes e alternativas de custo estão em [deploy](docs/deployment.md).
+O sistema usa um monólito modular. O Angular tem SSR nas páginas públicas e renderização no cliente nas áreas pessoais. O Compose de produção reúne os runtimes Node de frontend/API, PostgreSQL e gateway no mesmo host, com Cloudflare como entrada planejada. Domínio e hospedagem pública ainda precisam ser configurados. Consulte [operação e publicação](docs/production-and-accounts.md) e a [auditoria de produção](docs/production-audit.md).
 
 ## Fontes e atualização de dados
 
@@ -109,6 +109,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 - [API REST](docs/api.md)
 - [Pipeline e fontes](docs/data-pipeline.md)
 - [Funcionalidades e cobertura](docs/feature-coverage.md)
+- [Roadmap e prioridades de funcionalidades](docs/roadmap.md)
 - [Calculadoras](docs/calculators.md)
 - [Desenvolvimento](docs/development.md)
 - [Deploy e custos](docs/deployment.md)
