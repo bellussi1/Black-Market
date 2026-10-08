@@ -1,5 +1,5 @@
 import { schema } from '@bdo/database/schema';
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
@@ -15,7 +15,12 @@ export class DatabaseService implements OnModuleDestroy {
       max: config.get<string>('NODE_ENV') === 'production' ? 8 : 4,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
+      statement_timeout: 15_000,
+      query_timeout: 20_000,
     });
+    this.pool.on('error', () =>
+      new Logger(DatabaseService.name).error({ event: 'database_connection_error' }),
+    );
     this.db = drizzle({ client: this.pool, schema });
   }
 
