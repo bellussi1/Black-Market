@@ -3,8 +3,8 @@
 ## Armazém e inventário
 
 1. Abra o armazém de uma cidade ou o inventário do personagem no BDO. Feche dicas que cobrem os itens.
-2. Faça uma captura nítida com a escala original. Salve como PNG, JPG ou WebP.
-3. No Black Market, abra **Importar por print** e escolha a imagem (até 10 MB e 12 milhões de pixels).
+2. Faça uma captura nítida com a escala original. No Windows, use **Win + Shift + S**, ou sua ferramenta habitual caso o atalho não funcione no jogo.
+3. No Black Market, abra **Importar por print**. Foque a área de colagem e use **Ctrl + V**, arraste um arquivo ou escolha PNG/JPG/WebP (até 10 MB e 12 milhões de pixels). Uma captura por vez; revise e aplique antes de abrir a próxima.
 4. Escolha **Itens e quantidades do armazém**. Arraste para escolher o recorte, ou ajuste esquerda, topo, largura e altura até o contorno cobrir somente uma grade regular de espaços. Informe linhas e colunas; máximo de 100 espaços por leitura.
 5. Clique em **Ler recorte**. A comparação usa os ícones do catálogo publicado. Sugestões visuais não comprovam a identidade; itens diferentes podem compartilhar a mesma imagem.
 6. Para cada espaço, escolha o item correto ou use a busca pelo nome. Confira a quantidade no jogo, marque **Incluir** e confirme a revisão. Quantidade ilegível fica vazia; informe `1` se for realmente uma unidade.
