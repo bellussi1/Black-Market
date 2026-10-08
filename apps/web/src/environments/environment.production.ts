@@ -1,3 +1,4 @@
 export const environment = {
-  apiBaseUrl: 'https://api.example.invalid',
+  production: true,
+  apiBaseUrl: '',
 };
