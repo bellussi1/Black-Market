@@ -39,7 +39,12 @@ describe('personal workspace recovery', () => {
     expect(setItem).not.toHaveBeenCalled();
     expect(store.replace(emptyWorkspace())).toBe(true);
     expect(store.blocked()).toBe(false);
-    expect(setItem).toHaveBeenCalledTimes(1);
+    // A region preference may also be written when recovery changes the current region.
+    const workspaceWrites = setItem.mock.calls.filter(
+      ([key]) => key === 'black-market.workspace.v1',
+    );
+    expect(workspaceWrites).toHaveLength(1);
+    expect(JSON.parse(workspaceWrites[0][1])).toEqual(emptyWorkspace());
   });
   it('retains in-memory changes when browser storage fails', () => {
     vi.stubGlobal('localStorage', {
