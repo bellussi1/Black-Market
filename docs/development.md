@@ -52,7 +52,7 @@ Variáveis documentadas em `.env.example`; valores de produção são secretos d
 
 Use docker compose --profile web up --build -d para iniciar API, banco e frontend em http://localhost:4200. O frontend usa Node 24.21.0 do Dockerfile e recebe mounts somente dos fontes; node_modules do Windows não é montado no Linux. Mudanças nos fontes Angular são refletidas no dev server. Após modificar regras compartilhadas, reinicie web para reconstruir o pacote. Refaça o build da imagem após mudar dependências ou backend.
 
-As ferramentas pessoais independem do extractor. Para testar manualmente, preencha campos do mercado/crafting/enhancement ou registre materiais. Os dados locais de teste pertencem à origem (host + porta) do navegador. Use outra porta para QA se não quiser misturar com seu caderno pessoal.
+As ferramentas pessoais independem do extractor. Para testar manualmente, preencha campos do mercado/crafting/enhancement ou registre materiais. Os dados locais de teste pertencem à origem (host + porta) do navegador. Use outra porta para QA se não quiser misturar com seu espaço pessoal.
 
 O conector GitHub pode ter permissões diferentes do Git Credential Manager. O remoto atual é https://github.com/bellussi1/Black-Market.git, privado. A pasta local e o banco existentes conservam seus nomes físicos; não mova volumes para acompanhar uma mudança de marca.
 

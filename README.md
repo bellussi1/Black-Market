@@ -8,6 +8,8 @@ Não há afiliação com a Pearl Abyss. O projeto não usa endpoints internos do
 
 O frontend usa Tailwind CSS 4 e SCSS modular, com Vitest para testes unitários e de componentes através do builder oficial do Angular. Consulte [padrões Angular, estilos e testes](docs/angular-architecture.md).
 
+Veja também: [pesquisa ampliada das referências](docs/research/README.md), [consumo central de itens/imagens](docs/catalog-consumption.md), [importação de armazéns](docs/storage-import-strategy.md), [acessibilidade e leitura](docs/ui-accessibility-audit.md), [SEO e crawlers](docs/discovery-and-crawlers.md) e [espaços de publicidade](docs/advertising-layout.md).
+
 ## Requisitos
 
 O foco inicial é **SA e português brasileiro**. Mercados e idiomas têm configurações independentes, com i18n nativo do Angular e preferência por dados em português quando disponíveis. Consulte [mercados e idiomas](docs/regions-and-locales.md).
@@ -94,7 +96,7 @@ O sistema começa como monólito modular. A SPA é estática e pode ir para Clou
 
 O catálogo e as receitas são importados manualmente de arquivos gerados localmente pelo [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), depois de verificar licença e termos aplicáveis. Isso não oferece atualização automática a cada patch: o pipeline deve executar novamente quando houver nova versão relevante do jogo e publicar um dataset versionado de forma atômica.
 
-A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU através do NestJS, com cache, timeout, validação e controle de chamadas. O Arsha não é uma API oficial da Pearl Abyss nem um feed de tempo real. Cotações podem ser guardadas no caderno pessoal com origem e horário. Consulte [pipeline e procedência](docs/data-pipeline.md).
+A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU através do NestJS, com cache, timeout, validação e controle de chamadas. O Arsha não é uma API oficial da Pearl Abyss nem um feed de tempo real. Cotações podem ser guardadas no espaço pessoal com origem e horário. Consulte [pipeline e procedência](docs/data-pipeline.md).
 
 ## Documentação
 
