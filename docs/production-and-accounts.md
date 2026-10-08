@@ -54,3 +54,5 @@ Com `PUBLIC_SITE_URL` definido, `/sitemap.xml` e `/sitemaps/<tipo>/<página>.xml
 A sessão de identidade usa sessionStorage por aba e PKCE; não é cookie HttpOnly. Configurar SMTP próprio antes de abrir login por e-mail ao público; o serviço padrão do Supabase limita destinatários ao time. Preferências e inventário estão em privacy-inventory.md.
 
 Bellussi e enzobellussi3@gmail.com são o responsável e contato informados pelo usuário. Identificação jurídica completa exige revisão. ANALYTICS_ENABLED=false e MARKET_COLLECTOR_ENABLED=false permanecem desligados até validação. Alertas externos e backup offsite ainda não configurados; seguir production-audit.md.
+
+O acesso por e-mail com PKCE e sessionStorage exige abrir o retorno na mesma aba que iniciou o pedido. Se o e-mail abrir outra aba, copiar o endereço do link para a aba inicial. Validar esse fluxo e Google no navegador real antes de abrir contas públicas; OAuth redirecionando a aba inicial evita essa limitação de abas.

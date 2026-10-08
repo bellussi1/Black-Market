@@ -124,3 +124,11 @@ Build anterior à última instrumentação desta entrega: 418,48 kB iniciais / 1
 A exclusão da cópia da conta agora mantém contador monotônico sem conteúdo pessoal. Testes verificam o lock, remoção de conteúdo, rejeição de versão anterior e parâmetros SQL de dono; 0006 aplica apenas DROP NOT NULL em user_workspaces.data.
 
 Build final após compatibilizar CSP com a hidratação Angular: 422,16 kB iniciais / 117,38 kB de transferência estimada. Smoke SSR passou verificando ausência de JavaScript inline incompatível. pnpm usa Node 24.21.0 no projeto; o comando node direto do host ainda aponta 24.13.0. Nginx -t passou para a configuração fornecida; isso não valida TLS/domínio público.
+
+## Ensaio local do Compose de produção e CI
+
+CI GitHub [37781129190](https://github.com/bellussi1/Black-Market/actions/runs/37781129190) passou na revisão 2f2dc3f, incluindo 95 testes, build, lint, format, tipos, extração i18n, migrações e smoke SSR sem scripts inline incompatíveis. [Lista de arquivos](changed-files.md).
+
+O Compose de produção foi executado em projeto/volume **temporários e separados**, com dump restaurado e segredo de teste, flags de mercado/analytics OFF e domínio reservado black-market.example somente como cabeçalho de teste HTTP local. Migração 0006 terminou, API ficou healthy e web/gateway iniciaram. /health, /ready, Home, Harmonia, receitas, NPCs, contato, perfil, sitemap e /sobre/ responderam 200. Páginas públicas emitiram canonical HTTPS e HSTS; perfil emitia noindex/nofollow. API/web executaram como usuário node e filesystem somente leitura conforme Compose. O banco original não foi reutilizado como volume desse ensaio.
+
+Esse teste confirma configuração e execução local; **não valida transporte TLS externo, DNS/Tunnel real, login, analytics, monitores, e-mail ou rollout público**. Ambiente temporário removido depois da verificação.
