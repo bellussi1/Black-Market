@@ -18,6 +18,7 @@
 }
 .preview img {
   width: 100%;
+  height: auto;
   display: block;
 }
 .crop {
@@ -25,6 +26,111 @@
   border: 3px solid #f6c453;
   pointer-events: none;
   box-shadow: 0 0 0 1px #161c18;
+}
+.grid-crop {
+  background-image:
+    linear-gradient(to right, #f6c45388 1px, transparent 1px),
+    linear-gradient(to bottom, #f6c45388 1px, transparent 1px);
+}
+.grid-summary {
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--bm-accent);
+  background: var(--bm-surface-raised);
+}
+.grid-area-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+.grid-area-options button[aria-pressed='true'] {
+  background: var(--bm-input);
+  border-color: var(--bm-accent);
+  color: var(--bm-accent);
+}
+.crop-adjustments summary,
+.manual-item summary {
+  min-height: 44px;
+  cursor: pointer;
+  padding-block: 0.5rem;
+  color: var(--bm-accent);
+}
+.scan-summary,
+.review-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.scan-summary > span {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--bm-border);
+  color: var(--bm-muted);
+  font-size: 14px;
+}
+.scan-summary strong {
+  color: var(--bm-text);
+  font-variant-numeric: tabular-nums;
+}
+.review-pagination {
+  justify-content: space-between;
+}
+.review-pagination > span {
+  color: var(--bm-muted);
+  font-size: 14px;
+}
+.scan-cell {
+  padding: 1rem;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+  min-width: 0;
+}
+.scan-cell.reviewed {
+  border-color: #b8d5a699;
+}
+.scan-cell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.scan-cell-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.scan-status {
+  color: var(--bm-accent);
+  font-size: 12px;
+}
+.reviewed .scan-status {
+  color: var(--bm-success);
+}
+.scan-icon-comparison {
+  display: flex;
+  gap: 1.5rem;
+  padding-block: 0.75rem;
+}
+.scan-icon-comparison > div {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 0.4rem;
+}
+.scan-icon-comparison span {
+  color: var(--bm-muted);
+  font-size: 12px;
+}
+.scan-icon-comparison img {
+  border: 1px solid var(--bm-border);
+}
+.quantity-caution {
+  padding: 0.75rem;
+  border-left: 2px solid var(--bm-accent);
+  background: #d6a57712;
+  color: #ead5bd;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .scan-cells {
   display: grid;

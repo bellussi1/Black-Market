@@ -13,8 +13,8 @@
       <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
       <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
       <li i18n>
-        Para itens, recorte uma grade regular de espaços. Confira cada página separadamente; não
-        some capturas sobrepostas.
+        Você pode usar a janela inteira: tentaremos localizar a grade de itens. Confira cada captura
+        separadamente; imagens sobrepostas não são somadas.
       </li>
     </ol>
     <div
@@ -49,7 +49,39 @@
   </section>
   @if (preview(); as image) {
     <section class="panel">
-      <h2 i18n>2. Ajuste o recorte</h2>
+      <h2 i18n>2. Confira a área de leitura</h2>
+      @if (mode === 'storage') {
+        <p class="grid-summary" i18n>
+          {{ columns }} colunas × {{ rows }} linhas · {{ columns * rows }} espaços. Confira se o
+          contorno cobre todos os itens e deixa os menus de fora.
+        </p>
+        <button type="button" (click)="suggestGrid()" [disabled]="busy()" i18n>
+          Encontrar grade de itens
+        </button>
+        @if (gridAreas().length > 1) {
+          <div
+            class="grid-area-options"
+            role="group"
+            aria-label="Grades encontradas na captura"
+            i18n-aria-label
+          >
+            @for (area of gridAreas(); track $index) {
+              <button
+                type="button"
+                (click)="useGridArea($index)"
+                [disabled]="busy()"
+                [attr.aria-pressed]="gridSuggested() && selectedArea() === $index"
+                i18n
+              >
+                Área {{ $index + 1 }} · {{ area.columns }} × {{ area.rows }}
+              </button>
+            }
+          </div>
+          <p class="help" i18n>
+            Há mais de uma grade. Escolha a área do armazém ou inventário que deseja importar.
+          </p>
+        }
+      }
       <button
         type="button"
         (click)="picking.set(!picking())"
@@ -57,7 +89,7 @@
         [disabled]="busy()"
         i18n
       >
-        Selecionar recorte na imagem
+        Selecionar área manualmente
       </button>
       <p i18n>
         Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos
@@ -72,13 +104,23 @@
           (pointerup)="cropUp($event)"
           (pointercancel)="cropUp($event)"
         >
-          <img [src]="image" [draggable]="false" alt="Captura selecionada para revisão" i18n-alt />
+          <img
+            [src]="image"
+            [width]="width"
+            [height]="height"
+            [draggable]="false"
+            alt="Captura selecionada para revisão"
+            i18n-alt
+          />
           <div
             class="crop"
             [style.left.%]="(bounds.left / width) * 100"
             [style.top.%]="(bounds.top / height) * 100"
             [style.width.%]="(bounds.width / width) * 100"
             [style.height.%]="(bounds.height / height) * 100"
+            [class.grid-crop]="mode !== 'number'"
+            [style.background-size]="100 / columns + '% ' + 100 / rows + '%'"
+            aria-hidden="true"
           ></div>
         </div>
         <figcaption>
@@ -87,55 +129,82 @@
         </figcaption>
       </figure>
       <fieldset [disabled]="busy()">
-        <legend i18n>Área da imagem</legend>
-        <div class="form-grid">
-          <label i18n
-            >Distância da esquerda<input
-              type="number"
-              [(ngModel)]="bounds.left"
-              min="0"
-              [max]="width" /></label
-          ><label i18n
-            >Distância do topo<input
-              type="number"
-              [(ngModel)]="bounds.top"
-              min="0"
-              [max]="height" /></label
-          ><label i18n
-            >Largura<input type="number" [(ngModel)]="bounds.width" min="9" [max]="width" /></label
-          ><label i18n
-            >Altura<input type="number" [(ngModel)]="bounds.height" min="8" [max]="height"
-          /></label>
-        </div>
+        <legend i18n>Preparar leitura</legend>
+        <details class="crop-adjustments" [open]="!gridSuggested()">
+          <summary i18n>Ajustar área e tamanho da grade</summary>
+          <div class="form-grid">
+            <label i18n
+              >Distância da esquerda<input
+                type="number"
+                [(ngModel)]="bounds.left"
+                (ngModelChange)="invalidateCrop()"
+                min="0"
+                [max]="width" /></label
+            ><label i18n
+              >Distância do topo<input
+                type="number"
+                [(ngModel)]="bounds.top"
+                (ngModelChange)="invalidateCrop()"
+                min="0"
+                [max]="height" /></label
+            ><label i18n
+              >Largura<input
+                type="number"
+                [(ngModel)]="bounds.width"
+                (ngModelChange)="invalidateCrop()"
+                min="9"
+                [max]="width" /></label
+            ><label i18n
+              >Altura<input
+                type="number"
+                [(ngModel)]="bounds.height"
+                (ngModelChange)="invalidateCrop()"
+                min="8"
+                [max]="height"
+            /></label>
+          </div>
+          @if (mode !== 'number') {
+            @if (mode === 'gear') {
+              <p i18n>
+                Recorte um ícone de equipamento por vez e use uma linha e uma coluna. A posição, o
+                aprimoramento e Caphras precisam ser conferidos manualmente.
+              </p>
+            }
+            <label i18n
+              >Colunas da grade<input
+                type="number"
+                [(ngModel)]="columns"
+                (ngModelChange)="invalidateCrop()"
+                min="1"
+                max="100" /></label
+            ><label i18n
+              >Linhas da grade<input
+                type="number"
+                [(ngModel)]="rows"
+                (ngModelChange)="invalidateCrop()"
+                min="1"
+                max="100"
+            /></label>
+            <p i18n>
+              O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo
+              de 400 espaços por leitura.
+            </p>
+          } @else {
+            <p i18n>
+              Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como
+              “1,2 M”, precisam ser digitados por completo.
+            </p>
+          }
+        </details>
         <label for="scan-mode" i18n>O que deseja ler?</label
         ><select id="scan-mode" [(ngModel)]="mode" (ngModelChange)="changeMode()">
-          <option value="storage" i18n>Itens e quantidades do armazém</option>
+          <option value="storage" i18n>Itens do armazém ou inventário</option>
           <option value="number" i18n>Um número do personagem</option>
           <option value="gear" i18n>Equipamento do personagem</option>
         </select>
-        @if (mode !== 'number') {
-          @if (mode === 'gear') {
-            <p i18n>
-              Recorte um ícone de equipamento por vez e use uma linha e uma coluna. A posição, o
-              aprimoramento e Caphras precisam ser conferidos manualmente.
-            </p>
-          }
-          <label i18n
-            >Colunas da grade<input type="number" [(ngModel)]="columns" min="1" max="100" /></label
-          ><label i18n
-            >Linhas da grade<input type="number" [(ngModel)]="rows" min="1" max="100"
-          /></label>
-          <p i18n>
-            O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de
-            100 espaços por leitura.
-          </p>
-        } @else {
-          <p i18n>
-            Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como
-            “1,2 M”, precisam ser digitados por completo.
-          </p>
-        }
-        <button (click)="read()" i18n>Ler recorte</button>
+        <button type="button" (click)="read()" [disabled]="!validCrop()" i18n>
+          Ler itens e valores
+        </button>
       </fieldset>
       @if (busy()) {
         <p role="status">{{ progress() }}</p>
@@ -179,11 +248,27 @@
       </section>
     } @else if (cells().length) {
       <section class="panel">
-        <h2 i18n>3. Confira os espaços encontrados</h2>
+        <h2 id="scan-review-title" i18n>3. Revise antes de salvar</h2>
         <p i18n>
           As sugestões são comparações visuais. Itens com a mesma imagem podem ter nomes e
           aprimoramentos diferentes. Escolha o item correto ou busque pelo nome.
         </p>
+        <div class="scan-summary" aria-live="polite">
+          <span i18n
+            ><strong>{{ cells().length }}</strong> espaços</span
+          >
+          <span i18n
+            ><strong>{{ suggestionCount() }}</strong> com sugestões</span
+          >
+          <span i18n
+            ><strong>{{ includedCount() }}</strong> conferidos e incluídos</span
+          >
+          @if (abbreviatedCount()) {
+            <span i18n
+              ><strong>{{ abbreviatedCount() }}</strong> quantidades abreviadas</span
+            >
+          }
+        </div>
         @if (mode === 'storage') {
           <label for="scan-location" i18n>Local deste estoque</label
           ><input
@@ -201,40 +286,96 @@
             }
           </select>
         }
+        <nav class="review-pagination" aria-label="Páginas da revisão da captura" i18n-aria-label>
+          <button
+            type="button"
+            (click)="reviewPage.set(reviewPage() - 1)"
+            [disabled]="reviewPage() === 0"
+            i18n
+          >
+            Anterior
+          </button>
+          <span aria-live="polite" i18n
+            >Espaços {{ reviewPage() * reviewPageSize + 1 }} a
+            {{ reviewPage() * reviewPageSize + visibleCells().length }} de
+            {{ cells().length }}</span
+          >
+          <button
+            type="button"
+            (click)="reviewPage.set(reviewPage() + 1)"
+            [disabled]="(reviewPage() + 1) * reviewPageSize >= cells().length"
+            i18n
+          >
+            Próximos espaços
+          </button>
+        </nav>
         <div class="scan-cells">
-          @for (cell of cells(); track cell.id) {
-            <article class="panel">
-              <img
-                [src]="cell.preview"
-                width="64"
-                height="64"
-                alt="Espaço recortado do print"
-                i18n-alt
-              /><label [for]="'scan-item-' + cell.id" i18n>Sugestões</label
+          @for (cell of visibleCells(); track cell.id) {
+            <article class="scan-cell" [class.reviewed]="cell.reviewed">
+              <div class="scan-cell-head">
+                <h3 i18n>Espaço {{ cell.id + 1 }}</h3>
+                <span class="scan-status">{{ cell.reviewed ? 'Conferido' : 'Revisar' }}</span>
+              </div>
+              <div class="scan-icon-comparison">
+                <div>
+                  <span i18n>Na captura</span>
+                  <img
+                    [src]="cell.preview"
+                    width="64"
+                    height="64"
+                    alt="Espaço recortado do print"
+                    i18n-alt
+                  />
+                </div>
+                @if (cell.item; as item) {
+                  <div>
+                    <span i18n>No catálogo</span
+                    ><app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                  </div>
+                }
+              </div>
+              <label [for]="'scan-item-' + cell.id" i18n>Qual é o item?</label
               ><select
                 [id]="'scan-item-' + cell.id"
                 [ngModel]="cell.item?.id ?? ''"
                 (ngModelChange)="choose(cell, $event)"
               >
                 <option value="" i18n>Escolha o item correto</option>
-                @for (option of cell.options; track option.id) {
-                  <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
-                }</select
-              ><app-catalog-item-picker
-                label="Buscar outro item"
-                i18n-label
-                [selectionName]="cell.item?.name ?? ''"
-                (selected)="select(cell, $event)"
-              />
-              @if (cell.item; as item) {
-                <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
-              }
+                @for (group of groupItemOptions(cell.options); track group.label) {
+                  <optgroup [label]="group.label">
+                    @for (option of group.items; track option.id) {
+                      <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
+                    }
+                  </optgroup>
+                }
+              </select>
+              <details class="manual-item" [open]="!cell.options.length">
+                <summary i18n>Buscar outro item pelo nome</summary>
+                <app-catalog-item-picker
+                  label="Buscar outro item"
+                  i18n-label
+                  [selectionName]="cell.item?.name ?? ''"
+                  (selected)="select(cell, $event)"
+                />
+              </details>
               @if (mode === 'storage') {
-                <label [for]="'scan-qty-' + cell.id" i18n>Quantidade</label
+                @if (cell.quantityEstimate !== null) {
+                  <p class="quantity-caution" i18n>
+                    Possível leitura: {{ cell.quantityText }} (aproximadamente
+                    {{ cell.quantityEstimate }}). A leitura pode estar errada. Confira a quantidade
+                    exata no jogo e preencha abaixo.
+                  </p>
+                } @else if (cell.quantityUncertain) {
+                  <p class="quantity-caution" i18n>
+                    Não foi possível ler a quantidade com segurança. Confira no jogo; ausência de
+                    número não significa uma unidade.
+                  </p>
+                }
+                <label [for]="'scan-qty-' + cell.id" i18n>Quantidade exata</label
                 ><input
                   [id]="'scan-qty-' + cell.id"
                   [(ngModel)]="cell.quantity"
-                  (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                  (ngModelChange)="edited(cell)"
                   inputmode="numeric"
                   maxlength="15"
                 />
@@ -243,7 +384,7 @@
                 ><select
                   [id]="'gear-slot-' + cell.id"
                   [(ngModel)]="cell.slot"
-                  (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                  (ngModelChange)="edited(cell)"
                 >
                   <option value="" i18n>Escolha a posição</option>
                   @for (slot of slots; track slot) {
@@ -255,29 +396,24 @@
                     [(ngModel)]="cell.level"
                     min="0"
                     max="30"
-                    (ngModelChange)="cell.reviewed = false; confirmStock = false" /></label
+                    (ngModelChange)="edited(cell)" /></label
                 ><label i18n
                   >Nível de Caphras<input
                     type="number"
                     [(ngModel)]="cell.caphras"
                     min="0"
                     max="20"
-                    (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                    (ngModelChange)="edited(cell)"
                 /></label>
               }
               <label
                 ><input
                   type="checkbox"
-                  [(ngModel)]="cell.include"
-                  (ngModelChange)="confirmStock = false"
-                /><ng-container i18n>Incluir este espaço</ng-container></label
-              ><label
-                ><input
-                  type="checkbox"
-                  [(ngModel)]="cell.reviewed"
-                  (ngModelChange)="confirmStock = false"
+                  [ngModel]="cell.reviewed"
+                  (ngModelChange)="review(cell, $event)"
+                  [disabled]="!cell.item || (mode === 'storage' && integer(cell.quantity) === null)"
                 /><ng-container i18n
-                  >Conferi o item e todos os seus valores no jogo</ng-container
+                  >Conferi no jogo. Incluir este item e seus valores.</ng-container
                 ></label
               >
             </article>
@@ -289,7 +425,14 @@
               >Quero substituir as quantidades dos itens incluídos neste local. Os demais itens
               serão mantidos.</ng-container
             ></label
-          ><button (click)="applyStock()" [disabled]="!confirmStock" i18n>Atualizar armazém</button>
+          ><button
+            type="button"
+            (click)="applyStock()"
+            [disabled]="!confirmStock || !includedCount()"
+            i18n
+          >
+            Salvar {{ includedCount() }} itens no armazém
+          </button>
         } @else {
           <label
             ><input type="checkbox" [(ngModel)]="confirmStock" /><ng-container i18n

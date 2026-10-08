@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   type OnDestroy,
@@ -20,7 +21,16 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
-import { candidates, type Crop, type IconIndex, NumberReader } from './print-reader';
+import { groupItemOptions } from './item-option-groups';
+import {
+  type Crop,
+  type IconIndex,
+  NumberReader,
+  type QuantityReading,
+  rankCandidates,
+} from './print-reader';
+import { detectStorageGrids, type GridDetection } from './storage-grid';
+import { parseVisibleQuantity } from './visible-quantity';
 
 interface CellDraft {
   id: number;
@@ -28,6 +38,9 @@ interface CellDraft {
   options: CatalogItem[];
   item: CatalogItem | null;
   quantity: string;
+  quantityText: string;
+  quantityEstimate: string | null;
+  quantityUncertain: boolean;
   include: boolean;
   reviewed: boolean;
   slot: string;
@@ -54,6 +67,25 @@ export class ScansPage implements OnDestroy {
   readonly picking = signal(false);
   private cropStart?: { x: number; y: number };
   readonly cells = signal<CellDraft[]>([]);
+  readonly reviewPage = signal(0);
+  readonly reviewPageSize = 12;
+  readonly visibleCells = computed(() =>
+    this.cells().slice(
+      this.reviewPage() * this.reviewPageSize,
+      (this.reviewPage() + 1) * this.reviewPageSize,
+    ),
+  );
+  readonly includedCount = computed(() => this.cells().filter((cell) => cell.include).length);
+  readonly suggestionCount = computed(
+    () => this.cells().filter((cell) => cell.options.length).length,
+  );
+  readonly abbreviatedCount = computed(
+    () => this.cells().filter((cell) => cell.quantityEstimate !== null).length,
+  );
+  readonly gridSuggested = signal(false);
+  readonly gridAreas = signal<GridDetection[]>([]);
+  readonly selectedArea = signal(0);
+  readonly groupItemOptions = groupItemOptions;
   readonly busy = signal(false);
   readonly progress = signal('');
   readonly message = signal('');
@@ -128,9 +160,14 @@ export class ScansPage implements OnDestroy {
     this.numberDraft = '';
     this.confirmNumber = false;
     this.confirmStock = false;
+    this.gridSuggested.set(false);
+    this.gridAreas.set([]);
+    this.reviewPage.set(0);
     if (this.mode === 'gear') {
       this.columns = 1;
       this.rows = 1;
+    } else if (this.mode === 'storage' && this.image) {
+      this.suggestGrid();
     }
   }
   async file(event: Event) {
@@ -192,10 +229,54 @@ export class ScansPage implements OnDestroy {
       if (this.preview()) URL.revokeObjectURL(this.preview());
       this.preview.set(URL.createObjectURL(file));
       this.bounds = { left: 0, top: 0, width: this.width, height: this.height };
-      this.message.set('Print aberto. Ajuste o recorte antes de ler.');
+      this.reviewPage.set(0);
+      this.gridSuggested.set(false);
+      this.gridAreas.set([]);
+      if (this.mode !== 'storage' || !this.suggestGrid()) {
+        this.message.set(
+          'Captura aberta. Selecione somente a grade de itens ou o número que deseja ler.',
+        );
+      }
     } catch {
       this.message.set('Não foi possível abrir esta imagem. Tente salvar o print novamente.');
     }
+  }
+  suggestGrid(): boolean {
+    if (!this.image || this.busy() || this.mode !== 'storage') return false;
+    try {
+      const grids = detectStorageGrids(this.image, this.width, this.height);
+      this.gridAreas.set(grids);
+      if (grids.length) {
+        this.useGridArea(0);
+        const grid = grids[0];
+        this.message.set(
+          `Grade sugerida: ${grid.columns} colunas e ${grid.rows} linhas. Confira o contorno antes de ler.`,
+        );
+        return true;
+      }
+    } catch {
+      // Manual cropping remains available when canvas inspection is unavailable.
+    }
+    this.message.set(
+      'Não localizamos uma grade regular. Selecione a área de itens e confira linhas e colunas.',
+    );
+    return false;
+  }
+  useGridArea(index: number) {
+    const grid = this.gridAreas()[index];
+    if (!grid || this.busy()) return;
+    this.bounds = { ...grid.bounds };
+    this.columns = grid.columns;
+    this.rows = grid.rows;
+    this.invalidateCrop();
+    this.selectedArea.set(index);
+    this.gridSuggested.set(true);
+  }
+  invalidateCrop() {
+    this.gridSuggested.set(false);
+    this.cells.set([]);
+    this.reviewPage.set(0);
+    this.confirmStock = false;
   }
   validCrop() {
     return (
@@ -222,9 +303,9 @@ export class ScansPage implements OnDestroy {
         !Number.isInteger(this.columns) ||
         this.rows < 1 ||
         this.columns < 1 ||
-        this.rows * this.columns > 100)
+        this.rows * this.columns > 400)
     ) {
-      this.message.set('Escolha uma grade com até 100 espaços.');
+      this.message.set('Escolha uma grade com até 400 espaços.');
       return;
     }
     const image = this.image;
@@ -241,6 +322,7 @@ export class ScansPage implements OnDestroy {
     this.numberDraft = '';
     this.confirmNumber = false;
     this.confirmStock = false;
+    this.reviewPage.set(0);
     try {
       if (mode === 'number') {
         this.progress.set('Lendo o número…');
@@ -256,10 +338,10 @@ export class ScansPage implements OnDestroy {
         this.progress.set('Preparando a comparação de itens…');
         const index = await firstValueFrom(
           this.http.get<IconIndex>(environment.apiBaseUrl + '/api/v1/catalog/icon-index', {
-            params: { region: this.readingRegion },
+            params: { region: this.readingRegion, version: '2' },
           }),
         );
-        const drafts: CellDraft[] = [];
+        const positions: { cell: Crop; matches: ReturnType<typeof rankCandidates> }[] = [];
         for (let row = 0; row < rows; row++)
           for (let column = 0; column < columns; column++) {
             if (generation !== this.generation) return;
@@ -269,53 +351,104 @@ export class ScansPage implements OnDestroy {
               width: bounds.width / columns,
               height: bounds.height / rows,
             };
-            this.progress.set(
-              `Conferindo espaço ${row * columns + column + 1} de ${rows * columns}…`,
-            );
-            const ids = candidates(image, cell, index);
-            if (!ids.length) continue;
-            const result = await firstValueFrom(
-              this.catalog.getItems({ ids, page: 1, pageSize: 100 }),
-            );
-            if (generation !== this.generation) return;
-            const quantity =
-              mode === 'gear'
-                ? ''
-                : await this.reader.read(image, {
-                    left: cell.left,
-                    top: cell.top + cell.height * 0.72,
-                    width: cell.width,
-                    height: cell.height * 0.28,
-                  });
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            canvas
-              .getContext('2d')
-              ?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, 64, 64);
-            drafts.push({
-              id: row * columns + column,
-              preview: canvas.toDataURL(),
-              options: result.items,
-              item: null,
-              quantity,
-              include: false,
-              reviewed: false,
-              slot: '',
-              level: 0,
-              caphras: 0,
-            });
-            this.cells.set([...drafts]);
-            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            positions.push({ cell, matches: rankCandidates(image, cell, index) });
+            if (positions.length % 10 === 0)
+              await new Promise<void>((resolve) => setTimeout(resolve, 0));
           }
+        const ids = [
+          ...new Set(positions.flatMap((position) => position.matches.map((match) => match.id))),
+        ];
+        const items = new Map<number, CatalogItem>();
+        for (let start = 0; start < ids.length; start += 100) {
+          if (generation !== this.generation) return;
+          this.progress.set('Buscando os nomes dos itens sugeridos…');
+          const result = await firstValueFrom(
+            this.catalog.getItems({ ids: ids.slice(start, start + 100), page: 1, pageSize: 100 }),
+          );
+          for (const item of result.items) items.set(item.id, item);
+        }
+        if (generation !== this.generation) return;
+        const drafts: CellDraft[] = positions.map(({ cell, matches }, id) => {
+          const options = matches
+            .map((match) => items.get(match.id))
+            .filter((item): item is CatalogItem => Boolean(item));
+          const best = matches[0];
+          const uniqueSuggestion =
+            best &&
+            !best.sharedIcon &&
+            best.distance <= 10 &&
+            (!matches[1] || matches[1].distance - best.distance >= 3);
+          const canvas = document.createElement('canvas');
+          canvas.width = 64;
+          canvas.height = 64;
+          canvas
+            .getContext('2d')
+            ?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, 64, 64);
+          return {
+            id,
+            preview: canvas.toDataURL(),
+            options,
+            item: uniqueSuggestion ? (items.get(best.id) ?? null) : null,
+            quantity: '',
+            quantityText: '',
+            quantityEstimate: null,
+            quantityUncertain: false,
+            include: false,
+            reviewed: false,
+            slot: '',
+            level: 0,
+            caphras: 0,
+          };
+        });
+        this.cells.set(drafts);
+        if (mode === 'storage') {
+          this.progress.set(`Lendo quantidades de ${drafts.length} espaços…`);
+          const crops = positions.map(({ cell }) => ({
+            left: cell.left + cell.width * 0.03,
+            top: cell.top + cell.height * 0.57,
+            width: cell.width * 0.94,
+            height: cell.height * 0.37,
+          }));
+          const quantities: QuantityReading[] = [];
+          // Bounded contact sheets avoid very tall canvases on wide warehouses.
+          for (let start = 0; start < crops.length; start += 50) {
+            if (generation !== this.generation) return;
+            const batch = crops.slice(start, start + 50);
+            quantities.push(
+              ...(await this.reader.readQuantities(image, batch, (progress) => {
+                if (generation === this.generation)
+                  this.progress.set(
+                    `Lendo quantidades… ${Math.round(((start + progress * batch.length) / crops.length) * 100)}%`,
+                  );
+              })),
+            );
+          }
+          if (generation !== this.generation) return;
+          this.cells.set(
+            drafts.map((draft, i) => {
+              const reading = quantities[i];
+              return {
+                ...draft,
+                quantity:
+                  reading?.value && !reading.approximate && reading.confidence >= 50
+                    ? reading.value
+                    : '',
+                quantityText: reading?.text ?? '',
+                quantityEstimate: reading?.approximate ? reading.value : null,
+                quantityUncertain: !reading?.value || reading.confidence < 50,
+              };
+            }),
+          );
+        }
         if (generation !== this.generation) return;
         this.message.set(
-          drafts.length
-            ? 'Revise os itens sugeridos e as quantidades. Marque somente os espaços conferidos.'
-            : 'Nenhum item foi reconhecido. Ajuste o recorte ou use o cadastro manual.',
+          `${drafts.length} espaços preparados para revisão. Confirme somente os itens e as quantidades que conferiu no jogo. Valores abreviados precisam da quantidade exata.`,
         );
       }
-      const hasResult = mode === 'number' ? Boolean(this.numberDraft) : this.cells().length > 0;
+      const hasResult =
+        mode === 'number'
+          ? Boolean(this.numberDraft)
+          : this.cells().some((cell) => cell.options.length > 0 || Boolean(cell.quantity));
       this.analytics.capture('journey_completed', {
         feature: 'scans',
         action: 'read_print',
@@ -358,6 +491,7 @@ export class ScansPage implements OnDestroy {
   cropUp(event: PointerEvent) {
     if (!this.cropStart) return;
     this.cropMove(event);
+    this.invalidateCrop();
     this.cropStart = undefined;
     this.picking.set(false);
   }
@@ -376,18 +510,38 @@ export class ScansPage implements OnDestroy {
     this.message.set('Leitura cancelada. Nenhum dado foi salvo.');
   }
   select(cell: CellDraft, item: CatalogItem | null) {
+    if (item && !cell.options.some((option) => option.id === item.id)) {
+      cell.options = [item, ...cell.options];
+    }
     cell.item = item;
     cell.reviewed = false;
+    cell.include = false;
     this.confirmStock = false;
+    this.cells.set([...this.cells()]);
   }
   choose(cell: CellDraft, id: string) {
     this.select(cell, cell.options.find((item) => item.id === Number(id)) ?? null);
   }
   integer(value: string) {
-    const normalized = value.trim();
-    if (!/^\d+$/.test(normalized) && !/^\d{1,3}(?:\.\d{3})+$/.test(normalized)) return null;
-    const result = Number(normalized.replaceAll('.', ''));
-    return Number.isSafeInteger(result) && result >= 0 ? result : null;
+    const parsed = parseVisibleQuantity(value);
+    return parsed && !parsed.approximate ? Number(parsed.value) : null;
+  }
+  edited(cell: CellDraft) {
+    cell.reviewed = false;
+    cell.include = false;
+    this.confirmStock = false;
+    this.cells.set([...this.cells()]);
+  }
+  review(cell: CellDraft, checked: boolean) {
+    if (
+      checked &&
+      (!cell.item || (this.mode === 'storage' && this.integer(cell.quantity) === null))
+    )
+      return;
+    cell.reviewed = checked;
+    cell.include = checked;
+    this.confirmStock = false;
+    this.cells.set([...this.cells()]);
   }
   applyNumber() {
     if (!this.confirmNumber || this.readingRegion !== this.store.data().region || this.busy())
