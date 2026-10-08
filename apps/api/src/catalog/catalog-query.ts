@@ -3,6 +3,13 @@ import { BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 
 const querySchema = z.object({
+  ids: z
+    .string()
+    .max(1100)
+    .regex(/^[1-9]\d*(?:,[1-9]\d*){0,99}$/)
+    .transform((value) => value.split(',').map(Number))
+    .pipe(z.array(z.number().int().positive().max(2147483647)).max(100))
+    .optional(),
   q: z.string().trim().max(80).optional(),
   categoryId: z.string().trim().min(1).max(120).optional(),
   grade: z.string().trim().min(1).max(24).optional(),
@@ -26,6 +33,7 @@ const querySchema = z.object({
 });
 
 export interface CatalogQuery {
+  ids?: number[];
   search: string | undefined;
   categoryId: string | undefined;
   grade: string | undefined;
@@ -50,6 +58,7 @@ export function parseCatalogQuery(
     });
   }
   return {
+    ids: parsed.data.ids,
     search: parsed.data.q || undefined,
     categoryId: parsed.data.categoryId,
     grade: parsed.data.grade,

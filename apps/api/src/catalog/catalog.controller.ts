@@ -40,6 +40,7 @@ export class CatalogController {
   }
 
   @Get('items')
+  @ApiQuery({ name: 'ids', required: false, description: 'Até 100 IDs separados por vírgula' })
   @ApiOperation({ summary: 'Lista e busca itens do dataset ativo' })
   @ApiQuery({
     name: 'q',

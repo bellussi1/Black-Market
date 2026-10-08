@@ -38,6 +38,7 @@ services:
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4200}
       MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
       CATALOG_ASSETS_DIR: /workspace/data/assets
+      CATALOG_ASSETS_PUBLIC_URL: ${CATALOG_ASSETS_PUBLIC_URL:-}
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     ports:
       - '3000:3000'

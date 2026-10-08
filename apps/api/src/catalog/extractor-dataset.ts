@@ -96,6 +96,7 @@ export interface ImportItem {
   category: string | null;
   weight: number | null;
   categoryIds: string[];
+  sourceData?: Record<string, unknown>;
 }
 
 export interface ImportRecipeIngredient {
@@ -240,6 +241,7 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
       category: item.category ?? null,
       weight: item.weight ?? null,
       categoryIds: [...new Set([mainId, subId].filter((id): id is string => Boolean(id)))],
+      sourceData: item,
     };
   });
 

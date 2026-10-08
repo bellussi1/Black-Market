@@ -3,6 +3,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -64,6 +65,7 @@ export const itemVersions = pgTable(
     weight: numeric('weight', { precision: 12, scale: 4 }),
     icon: text('icon'),
     category: varchar('category', { length: 80 }),
+    sourceData: jsonb('source_data').$type<Record<string, unknown>>().notNull().default({}),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

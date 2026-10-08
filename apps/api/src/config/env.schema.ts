@@ -6,6 +6,14 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   WEB_ORIGIN: z.string().url().default('http://localhost:4200'),
   CATALOG_ASSETS_DIR: z.string().min(1).optional(),
+  CATALOG_ASSETS_PUBLIC_URL: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z
+      .string()
+      .url()
+      .regex(/^https?:\/\//)
+      .optional(),
+  ),
   MARKET_PROVIDER_ENABLED: z
     .enum(['true', 'false'])
     .default('true')

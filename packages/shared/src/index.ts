@@ -36,7 +36,12 @@ export interface CatalogItem {
   weight: string | null;
   category: string | null;
   icon: string | null;
+  iconUrl?: string | null;
   categories: CatalogCategory[];
+}
+
+export interface CatalogItemDetail extends CatalogItem {
+  sourceData: Record<string, unknown>;
 }
 
 export interface CatalogPage {

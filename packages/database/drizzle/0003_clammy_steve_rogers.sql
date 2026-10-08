@@ -1,0 +1,1 @@
+ALTER TABLE "item_versions" ADD COLUMN "source_data" jsonb DEFAULT '{}'::jsonb NOT NULL;

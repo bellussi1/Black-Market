@@ -15,7 +15,7 @@ import type {
   ActiveDatasetSummary,
   CatalogCategoriesResponse,
   CatalogCategory,
-  CatalogItem,
+  CatalogItemDetail,
   CatalogPage,
   CatalogRecipe,
   CatalogRecipesResponse,
@@ -25,11 +25,15 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 
 import { DatabaseService } from '../database/database.service';
+import { CatalogAssetsService } from './catalog-assets.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
 
 @Injectable()
 export class CatalogService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly assets: CatalogAssetsService,
+  ) {}
 
   async listItems(rawQuery: Record<string, unknown>): Promise<CatalogPage> {
     const query = parseCatalogQuery(rawQuery);
@@ -101,10 +105,13 @@ export class CatalogService {
       rows.map((row) => row.id),
     );
     return {
-      items: rows.map((row) => ({
-        ...row,
-        categories: categoryMap.get(row.id) ?? [],
-      })),
+      items: await Promise.all(
+        rows.map(async (row) => ({
+          ...row,
+          iconUrl: await this.assets.getIconUrl(row.id, dataset.checksum),
+          categories: categoryMap.get(row.id) ?? [],
+        })),
+      ),
       total: Number(countRow?.total ?? 0),
       page: query.page,
       pageSize: query.pageSize,
@@ -145,7 +152,7 @@ export class CatalogService {
   async getItem(
     rawId: unknown,
     rawQuery: Record<string, unknown>,
-  ): Promise<{ item: CatalogItem; dataset: ActiveDatasetSummary }> {
+  ): Promise<{ item: CatalogItemDetail; dataset: ActiveDatasetSummary }> {
     const query = parseCatalogQuery(rawQuery, { pagination: false });
     const itemId = Number(rawId);
     if (!Number.isSafeInteger(itemId) || itemId < 1) {
@@ -163,6 +170,7 @@ export class CatalogService {
         weight: itemVersions.weight,
         category: itemVersions.category,
         icon: itemVersions.icon,
+        sourceData: itemVersions.sourceData,
       })
       .from(itemVersions)
       .innerJoin(items, eq(items.id, itemVersions.itemId))
@@ -180,7 +188,11 @@ export class CatalogService {
     if (!row) throw new NotFoundException('Item não encontrado no catálogo ativo.');
     const categoryMap = await this.categoriesByItem(dataset.id, dataset.locale, [itemId]);
     return {
-      item: { ...row, categories: categoryMap.get(itemId) ?? [] },
+      item: {
+        ...row,
+        iconUrl: await this.assets.getIconUrl(row.id, dataset.checksum),
+        categories: categoryMap.get(itemId) ?? [],
+      },
       dataset: this.toSummary(dataset),
     };
   }
@@ -330,6 +342,7 @@ export class CatalogService {
       eq(itemVersions.datasetVersionId, datasetVersionId),
       eq(itemTranslations.datasetVersionId, datasetVersionId),
     ];
+    if (query.ids) filters.push(inArray(items.id, query.ids));
     if (query.grade) filters.push(eq(itemVersions.grade, query.grade));
     if (query.search) {
       filters.push(

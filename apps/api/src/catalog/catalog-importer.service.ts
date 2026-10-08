@@ -177,6 +177,7 @@ export class CatalogImporterService {
           weight: item.weight === null ? null : String(item.weight),
           icon: item.icon,
           category: item.category,
+          sourceData: item.sourceData ?? {},
         }));
         for (const batch of batches(versionedItems)) {
           await tx
@@ -189,6 +190,7 @@ export class CatalogImporterService {
                 weight: sql`excluded.weight`,
                 icon: sql`excluded.icon`,
                 category: sql`excluded.category`,
+                sourceData: sql`excluded.source_data`,
               },
             });
         }

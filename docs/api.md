@@ -19,6 +19,8 @@ Itens e categorias incluem a versão, checksum, região, idioma e horário de im
 
 O importador é um comando local; não existe rota pública para enviar datasets:
 
+A busca aceita `ids=1,2,3` (até 100 IDs) para resolver materiais e arquivos CSV em lote. A lista entrega `iconUrl` e dados resumidos; o detalhe inclui `sourceData`, com os campos originais do item preservados na importação. O cliente resolve a URL de imagem recebida, sem montar caminhos dos arquivos do jogo. `CATALOG_ASSETS_PUBLIC_URL` permite usar uma origem CDN depois de publicar os assets. Veja [consumo do catálogo](catalog-consumption.md).
+
 ```powershell
 pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version "extractor-v0.1.9-patch-fingerprint" --region sa --locale en
 ```
