@@ -1,4 +1,5 @@
 import {
+  catalogNameExpression,
   categories,
   categoryTranslations,
   type DatasetVersion,
@@ -95,7 +96,7 @@ export class CatalogService {
         ),
       )
       .where(and(...filters))
-      .orderBy(asc(itemTranslations.name), asc(items.id))
+      .orderBy(...this.itemOrder(query))
       .limit(query.pageSize)
       .offset((query.page - 1) * query.pageSize);
 
@@ -345,11 +346,32 @@ export class CatalogService {
     if (query.ids) filters.push(inArray(items.id, query.ids));
     if (query.grade) filters.push(eq(itemVersions.grade, query.grade));
     if (query.search) {
-      filters.push(
-        sql`lower(${itemTranslations.name}) like ${`${query.search.toLocaleLowerCase('en-US')}%`}`,
-      );
+      if (/^[1-9]\d*$/.test(query.search) && Number(query.search) <= 2147483647) {
+        filters.push(eq(items.id, Number(query.search)));
+      } else {
+        for (const word of this.normalizedSearch(query.search).split(/\s+/).filter(Boolean)) {
+          const literal = word.replace(/[\\%_]/g, '\\$&');
+          filters.push(sql`${catalogNameExpression(itemTranslations.name)} like ${`%${literal}%`}`);
+        }
+      }
     }
     return filters;
+  }
+
+  private normalizedSearch(value: string): string {
+    return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR').trim();
+  }
+
+  private itemOrder(query: CatalogQuery): SQL[] {
+    const ordering = [asc(itemTranslations.name), asc(items.id)];
+    if (!query.search) return ordering;
+    const name = catalogNameExpression(itemTranslations.name);
+    const search = this.normalizedSearch(query.search);
+    const prefix = search.replace(/[\\%_]/g, '\\$&') + '%';
+    return [
+      sql`case when ${name} = ${search} then 0 when ${name} like ${prefix} then 1 else 2 end`,
+      ...ordering,
+    ];
   }
 
   private async categoriesByItem(

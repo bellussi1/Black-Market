@@ -45,7 +45,7 @@ export class CatalogController {
   @ApiQuery({
     name: 'q',
     required: false,
-    description: 'Prefixo do nome do item',
+    description: 'Palavras do nome sem distinção de acentos ou ID numérico',
   })
   @ApiQuery({ name: 'categoryId', required: false })
   @ApiQuery({ name: 'grade', required: false })

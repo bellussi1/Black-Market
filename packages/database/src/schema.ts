@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql, type SQLWrapper } from 'drizzle-orm';
 import {
   foreignKey,
   index,
@@ -17,6 +17,11 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const datasetStatus = pgEnum('dataset_status', ['loading', 'active', 'archived', 'failed']);
+
+/** Keep the indexed expression identical to the catalog query expression. */
+export function catalogNameExpression(name: SQLWrapper) {
+  return sql`translate(lower(${name}), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn')`;
+}
 
 export const datasetVersions = pgTable(
   'dataset_versions',
@@ -95,6 +100,10 @@ export const itemTranslations = pgTable(
     index('item_translations_name_prefix_idx').using(
       'btree',
       sql`lower(${table.name}) text_pattern_ops`,
+    ),
+    index('item_translations_name_search_idx').using(
+      'gin',
+      sql`${catalogNameExpression(table.name)} gin_trgm_ops`,
     ),
   ],
 );
