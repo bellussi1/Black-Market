@@ -8,8 +8,11 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import {
+  availableInventory,
   calculateCrafting,
   calculateProduction,
   type CraftingInput,
@@ -21,6 +24,7 @@ import {
 import type { CatalogItem, CatalogRecipe } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
+import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
@@ -37,6 +41,7 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
   templateUrl: './crafting-page.html',
 })
 export class CraftingPage implements OnDestroy {
+  private readonly analytics = inject(AnalyticsService);
   private readonly catalog = inject(CatalogApiService);
   private recipeRequest?: Subscription;
   private lastRegion = '';
@@ -49,6 +54,31 @@ export class CraftingPage implements OnDestroy {
   readonly recipeTypeLabel = recipeTypeLabel;
 
   constructor() {
+    inject(ActivatedRoute, { optional: true })
+      ?.queryParamMap.pipe(takeUntilDestroyed())
+      .subscribe((params) => {
+        const id = Number(params.get('item'));
+        if (Number.isInteger(id) && id > 0 && id <= 2147483647) {
+          this.recipeRequest?.unsubscribe();
+          this.recipeRequest = this.catalog.getItem(id).subscribe({
+            next: (response) => {
+              this.chooseRecipeProduct(response.item);
+              const key = params.get('recipe');
+              if (key) {
+                this.recipeRequest?.unsubscribe();
+                this.recipeRequest = this.catalog.getRecipe(key).subscribe({
+                  next: (result) => this.useCatalogRecipe(result.recipe),
+                  error: () =>
+                    this.recipeMessage.set(
+                      'Não foi possível abrir esta receita. Escolha uma receita disponível.',
+                    ),
+                });
+              }
+            },
+            error: () => this.recipeMessage.set('Não encontramos este item na região selecionada.'),
+          });
+        }
+      });
     effect(() => {
       const region = this.store.data().region;
       untracked(() => {
@@ -121,9 +151,8 @@ export class CraftingPage implements OnDestroy {
         itemId: part.itemId,
         name: part.name,
         quantity: part.quantity && Number(part.quantity) > 0 ? Number(part.quantity) : 1,
-        owned: this.store
-          .data()
-          .inventory.filter(
+        owned: availableInventory(this.store.data().personalPlans, this.store.data().inventory)
+          .filter(
             (entry) => entry.region === this.store.data().region && entry.itemId === part.itemId,
           )
           .reduce((sum, entry) => sum + entry.quantity, 0),
@@ -176,7 +205,10 @@ export class CraftingPage implements OnDestroy {
     recipeId: this.target(),
     quantity: this.quantity(),
     recipes: this.store.data().recipes,
-    inventory: this.store.data().inventory.filter((r) => r.region === this.store.data().region),
+    inventory: availableInventory(
+      this.store.data().personalPlans,
+      this.store.data().inventory,
+    ).filter((r) => r.region === this.store.data().region),
   }));
   readonly plan = computed(() => evaluate(() => calculateProduction(this.productionInput())));
   draft: ManualRecipe = this.newRecipe();
@@ -215,15 +247,16 @@ export class CraftingPage implements OnDestroy {
   fillStock(index: number): void {
     const row = this.form().ingredients[index];
     const name = row.name.trim().toLocaleLowerCase();
-    const stock = this.store
-      .data()
-      .inventory.filter(
-        (r) =>
-          r.region === this.store.data().region &&
-          (row.itemId && r.itemId
-            ? row.itemId === r.itemId
-            : r.name.trim().toLocaleLowerCase() === name),
-      );
+    const stock = availableInventory(
+      this.store.data().personalPlans,
+      this.store.data().inventory,
+    ).filter(
+      (r) =>
+        r.region === this.store.data().region &&
+        (row.itemId && r.itemId
+          ? row.itemId === r.itemId
+          : r.name.trim().toLocaleLowerCase() === name),
+    );
     const quote = this.store
       .data()
       .quotes.find(
@@ -249,6 +282,35 @@ export class CraftingPage implements OnDestroy {
   }
   addDraftIngredient(): void {
     this.draft.ingredients.push({ name: '', quantity: 1, price: '0', recipeId: null });
+  }
+  saveToLibrary() {
+    const product = this.recipeProduct();
+    if (!product || this.missingYield() || this.missingQuantities().length) {
+      this.recipeMessage.set('Confira rendimento e quantidades antes de preparar a receita.');
+      return;
+    }
+    this.draft = {
+      id: crypto.randomUUID(),
+      itemId: product.id,
+      name: product.name,
+      yield: this.form().yield,
+      ingredients: this.form().ingredients.map((part) => {
+        const matches = this.store
+          .data()
+          .recipes.filter((recipe) => part.itemId && recipe.itemId === part.itemId);
+        return {
+          itemId: part.itemId,
+          name: part.name,
+          quantity: part.quantity,
+          price: part.price,
+          recipeId: matches.length === 1 ? matches[0].id : null,
+        };
+      }),
+    };
+    this.tab.set('chain');
+    this.recipeMessage.set(
+      'Receita preparada para revisão. Salve-a na biblioteca para planejar a cadeia de produção.',
+    );
   }
   removeDraftIngredient(index: number): void {
     this.draft.ingredients.splice(index, 1);
@@ -283,6 +345,11 @@ export class CraftingPage implements OnDestroy {
         recipes: [...s.recipes.filter((r) => r.id !== parsed.data.id), parsed.data],
       }))
     ) {
+      this.analytics.capture('journey_completed', {
+        feature: 'crafting',
+        action: 'save',
+        status: 'success',
+      });
       this.target.set(parsed.data.id);
       this.draft = this.newRecipe();
       this.error.set('');

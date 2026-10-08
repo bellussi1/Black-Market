@@ -53,6 +53,11 @@
           </div>
         }
         <h2><ng-container i18n>Seu cenário de produção</ng-container></h2>
+        @if (recipeProduct()) {
+          <button class="btn subtle" type="button" (click)="saveToLibrary()" i18n>
+            Preparar esta receita para minha biblioteca
+          </button>
+        }
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Número de crafts</ng-container
