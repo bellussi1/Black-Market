@@ -9,7 +9,7 @@
     <section class="catalog-hero" aria-labelledby="catalog-title">
       <div class="hero-copy">
         <p class="eyebrow">
-          <span></span> <ng-container i18n>BASE DE REFERÊNCIA · BLACK DESERT ONLINE</ng-container>
+          <span></span> <ng-container i18n>ITENS DE BLACK DESERT ONLINE</ng-container>
         </p>
         <h1 id="catalog-title">
           <ng-container i18n>O mundo, item</ng-container><br /><em
@@ -18,8 +18,8 @@
         </h1>
         <p class="hero-intro">
           <ng-container i18n
-            >Pesquise os dados do cliente do jogo, confira suas categorias e veja de qual extração
-            vieram. As cotações do mercado entram por uma fonte separada.
+            >Encontre itens pelo nome ou código, confira suas categorias e veja quando os dados
+            foram atualizados. Os preços do mercado são consultados separadamente.
           </ng-container>
         </p>
       </div>
@@ -32,18 +32,15 @@
         <div class="source-emblem" aria-hidden="true">
           <span class="emblem-ring"></span><span class="emblem-core"></span>
         </div>
-        <strong><ng-container i18n>Extração local do cliente</ng-container></strong>
+        <strong><ng-container i18n>Dados do jogo</ng-container></strong>
         <p>
           <ng-container i18n
-            >Itens e receitas são importados de arquivos JSON gerados na sua máquina.</ng-container
+            >Itens, imagens e receitas do jogo, organizados para facilitar sua
+            consulta.</ng-container
           >
         </p>
-        <a
-          href="https://github.com/iDevelopThings/bdo-data-extractor"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <ng-container i18n>Sobre o extractor </ng-container><span aria-hidden="true">↗</span>
+        <a href="/sobre/" target="_blank" rel="noreferrer">
+          <ng-container i18n>Sobre nossos dados </ng-container><span aria-hidden="true">↗</span>
         </a>
       </aside>
     </section>
@@ -59,22 +56,19 @@
       }
       <section class="dataset-strip" aria-label="Versão do catálogo" i18n-aria-label>
         <div class="dataset-state">
-          <span></span><strong><ng-container i18n>Catálogo publicado</ng-container></strong>
+          <span></span><strong><ng-container i18n>Catálogo disponível</ng-container></strong>
         </div>
         <div class="dataset-detail">
           <span><ng-container i18n>Região</ng-container></span
           ><strong>{{ dataset.region.toUpperCase() }}</strong>
         </div>
         <div class="dataset-detail">
-          <span><ng-container i18n>Idioma dos dados</ng-container></span
+          <span><ng-container i18n>Idioma</ng-container></span
           ><strong>{{ dataset.locale.toUpperCase() }}</strong>
         </div>
+
         <div class="dataset-detail">
-          <span><ng-container i18n>Versão</ng-container></span
-          ><strong>{{ dataset.version }}</strong>
-        </div>
-        <div class="dataset-detail">
-          <span><ng-container i18n>Importado em</ng-container></span
+          <span><ng-container i18n>Atualizado em</ng-container></span
           ><strong>{{ formatImportedAt(dataset.importedAt) }}</strong>
         </div>
       </section>
@@ -89,7 +83,7 @@
           </svg>
         </span>
         <span class="sr-only"
-          ><ng-container i18n>Buscar pelo início do nome do item</ng-container></span
+          ><ng-container i18n>Buscar pelo nome ou código do item</ng-container></span
         >
         <input
           type="search"
@@ -129,6 +123,16 @@
         </button>
       }
     </section>
+
+    <nav class="action-row" aria-label="Sugestões de busca" i18n-aria-label>
+      <span i18n>Experimente:</span>
+      <button class="btn subtle" type="button" (click)="searchFor('Fármaco da Harmonia')" i18n>
+        Fármaco da Harmonia
+      </button>
+      <button class="btn subtle" type="button" (click)="searchFor('Pedra Negra')" i18n>
+        Pedra Negra
+      </button>
+    </nav>
 
     @if (error()) {
       <div class="inline-alert" role="alert">
@@ -195,7 +199,7 @@
               @if (produced.recipes.length) {
                 @for (recipe of produced.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
-                    <strong>{{ recipe.type }}</strong>
+                    <strong>{{ recipeTypeLabel(recipe.type) }}</strong>
                     @if (recipe.byproductOfItemId) {
                       <small i18n
                         >Subproduto de item #{{ recipe.byproductOfItemId }}; rendimento não
@@ -205,6 +209,9 @@
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (input of recipe.inputs; track input.itemId; let last = $last) {
+                        <span class="recipe-icon" aria-hidden="true"
+                          ><app-item-icon [url]="iconUrl(input)" [name]="input.name"
+                        /></span>
                         {{ input.quantity ?? 'Qtd. não informada' }} × {{ input.name
                         }}{{ last ? '' : ' · ' }}
                       }
@@ -214,7 +221,7 @@
               } @else if (!detailLoading()) {
                 <small class="no-recipes"
                   ><ng-container i18n
-                    >Nenhuma receita de produção consta nesta extração.</ng-container
+                    >Nenhuma receita de produção consta nnosso catálogo.</ng-container
                   ></small
                 >
               }
@@ -229,7 +236,7 @@
               @if (used.recipes.length) {
                 @for (recipe of used.recipes.slice(0, 4); track recipe.key) {
                   <article class="recipe-row">
-                    <strong>{{ recipe.type }}</strong>
+                    <strong>{{ recipeTypeLabel(recipe.type) }}</strong>
                     @if (recipe.byproductOfItemId) {
                       <small i18n
                         >Subproduto de item #{{ recipe.byproductOfItemId }}; rendimento não
@@ -239,6 +246,9 @@
                     <small>{{ recipe.station || 'Sem estação indicada' }}</small>
                     <p>
                       @for (output of recipe.outputs; track output.itemId; let last = $last) {
+                        <span class="recipe-icon" aria-hidden="true"
+                          ><app-item-icon [url]="iconUrl(output)" [name]="output.name"
+                        /></span>
                         {{ output.quantity ?? 'Qtd. não informada' }} × {{ output.name
                         }}{{ last ? '' : ' · ' }}
                       }
@@ -248,7 +258,7 @@
               } @else if (!detailLoading()) {
                 <small class="no-recipes"
                   ><ng-container i18n
-                    >Nenhuma receita que use este item consta nesta extração.</ng-container
+                    >Nenhuma receita que use este item consta nnosso catálogo.</ng-container
                   ></small
                 >
               }
@@ -298,7 +308,8 @@
           <h3><ng-container i18n>O catálogo não respondeu.</ng-container></h3>
           <p>
             <ng-container i18n
-              >Verifique a API e o banco de dados e tente carregar os dados de novo.</ng-container
+              >Tente novamente em alguns instantes. Se o problema continuar, volte mais
+              tarde.</ng-container
             >
           </p>
         </div>
@@ -307,22 +318,14 @@
           <div class="empty-state import-state">
             <span class="empty-index">02</span>
             <div>
-              <p class="eyebrow">
-                <span></span> <ng-container i18n>PRIMEIRA IMPORTAÇÃO</ng-container>
+              <p class="eyebrow"><span></span> <ng-container i18n>CATÁLOGO</ng-container></p>
+              <h3>
+                <ng-container i18n>Os itens desta região ainda não estão disponíveis.</ng-container>
+              </h3>
+              <p i18n>
+                Estamos preparando o catálogo desta região. Você pode continuar usando as outras
+                ferramentas.
               </p>
-              <h3><ng-container i18n>Nenhum catálogo ativo ainda.</ng-container></h3>
-              <p>
-                <ng-container i18n>Gere os arquivos </ng-container
-                ><code><ng-container i18n>items.json</ng-container></code
-                >, <code><ng-container i18n>recipes.json</ng-container></code>
-                <ng-container i18n>e </ng-container
-                ><code><ng-container i18n>marketcategories.json</ng-container></code>
-                <ng-container i18n
-                  >com o extractor e importe-os localmente. A versão anterior permanece publicada se
-                  uma importação falhar.
-                </ng-container>
-              </p>
-              <pre><code><ng-container i18n>pnpm --filter @bdo/api data:import -- --input &lt;pasta-data&gt; --version &lt;fingerprint&gt; --region sa --locale en</ng-container></code></pre>
             </div>
           </div>
         } @else if (!data.total) {

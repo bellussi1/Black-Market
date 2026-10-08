@@ -22,6 +22,7 @@ import { forkJoin } from 'rxjs';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { preferredDataLocale, uiLocale } from '../../core/locale';
 import { RegionPreferences } from '../../core/region-preferences';
+import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 
 @Component({
@@ -33,6 +34,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
   styleUrl: './item-catalog-page.scss',
 })
 export class ItemCatalogPage implements OnInit, OnDestroy {
+  readonly recipeTypeLabel = recipeTypeLabel;
   private readonly api = inject(CatalogApiService);
   private readonly preferences = inject(RegionPreferences);
   private lastRegion = this.preferences.region();
@@ -87,7 +89,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     { value: 'purple', label: 'Roxo' },
   ];
 
-  iconUrl(item: CatalogItem): string | null {
+  iconUrl(item: Pick<CatalogItem, 'iconUrl'>): string | null {
     return this.api.resolveIconUrl(item);
   }
 
@@ -121,6 +123,15 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
       this.page.set(1);
       this.loadItems();
     }, 240);
+  }
+
+  searchFor(name: string): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.search.set(name);
+    this.categoryId.set('');
+    this.grade.set('');
+    this.page.set(1);
+    this.loadItems();
   }
 
   onCategory(event: Event): void {
@@ -258,7 +269,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
 
   private errorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse && error.status === 0) {
-      return 'A API não respondeu. Confira se a API e o PostgreSQL estão iniciados.';
+      return 'Não foi possível carregar os itens. Confira sua conexão e tente novamente.';
     }
     return 'Não foi possível carregar o catálogo agora. Tente novamente.';
   }

@@ -313,16 +313,33 @@ export class CatalogService {
 
     const inputsByRecipe = new Map<string, CatalogRecipe['inputs']>();
     const outputsByRecipe = new Map<string, CatalogRecipe['outputs']>();
+    const icons = new Map(
+      await Promise.all(
+        [...new Set([...inputRows, ...outputRows].map((row) => row.itemId))].map(
+          async (id) => [id, await this.assets.getIconUrl(id, dataset.checksum)] as const,
+        ),
+      ),
+    );
     for (const row of inputRows) {
       inputsByRecipe.set(row.recipeKey, [
         ...(inputsByRecipe.get(row.recipeKey) ?? []),
-        { itemId: row.itemId, name: row.name, quantity: row.quantity },
+        {
+          itemId: row.itemId,
+          name: row.name,
+          quantity: row.quantity,
+          iconUrl: icons.get(row.itemId) ?? null,
+        },
       ]);
     }
     for (const row of outputRows) {
       outputsByRecipe.set(row.recipeKey, [
         ...(outputsByRecipe.get(row.recipeKey) ?? []),
-        { itemId: row.itemId, name: row.name, quantity: row.quantity },
+        {
+          itemId: row.itemId,
+          name: row.name,
+          quantity: row.quantity,
+          iconUrl: icons.get(row.itemId) ?? null,
+        },
       ]);
     }
 

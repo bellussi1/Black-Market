@@ -61,6 +61,7 @@ export interface CatalogRecipePart {
   itemId: number;
   name: string;
   quantity: string | null;
+  iconUrl?: string | null;
 }
 
 export interface CatalogRecipe {

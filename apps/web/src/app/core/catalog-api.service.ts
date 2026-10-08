@@ -33,7 +33,7 @@ export class CatalogApiService {
   private readonly preferences = inject(RegionPreferences);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
 
-  resolveIconUrl(item: CatalogItem): string | null {
+  resolveIconUrl(item: Pick<CatalogItem, 'iconUrl'>): string | null {
     return item.iconUrl ? new URL(item.iconUrl, environment.apiBaseUrl).href : null;
   }
 
