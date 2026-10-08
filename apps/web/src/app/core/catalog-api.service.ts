@@ -4,6 +4,7 @@ import type {
   ActiveDatasetSummary,
   CatalogCategoriesResponse,
   CatalogItem,
+  CatalogItemDetail,
   CatalogPage,
   CatalogRecipesResponse,
 } from '@bdo/shared';
@@ -13,6 +14,7 @@ import { preferredDataLocale } from './locale';
 import { RegionPreferences } from './region-preferences';
 
 export interface CatalogSearchParams {
+  ids?: readonly number[];
   q?: string;
   categoryId?: string;
   grade?: string;
@@ -21,7 +23,7 @@ export interface CatalogSearchParams {
 }
 
 export interface CatalogItemResponse {
-  item: CatalogItem;
+  item: CatalogItemDetail;
   dataset: ActiveDatasetSummary;
 }
 
@@ -30,6 +32,10 @@ export class CatalogApiService {
   private readonly http = inject(HttpClient);
   private readonly preferences = inject(RegionPreferences);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
+
+  resolveIconUrl(item: CatalogItem): string | null {
+    return item.iconUrl ? new URL(item.iconUrl, environment.apiBaseUrl).href : null;
+  }
 
   itemIconUrl(id: number, dataset: ActiveDatasetSummary | null | undefined): string | null {
     return dataset?.checksum
@@ -44,6 +50,7 @@ export class CatalogApiService {
       .set('page', String(params.page))
       .set('pageSize', String(params.pageSize));
     if (params.q) httpParams = httpParams.set('q', params.q);
+    if (params.ids?.length) httpParams = httpParams.set('ids', params.ids.join(','));
     if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
     if (params.grade) httpParams = httpParams.set('grade', params.grade);
     return this.http.get<CatalogPage>(`${this.baseUrl}/items`, { params: httpParams });

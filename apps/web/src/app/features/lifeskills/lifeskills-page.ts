@@ -16,13 +16,14 @@ import {
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
+  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
   templateUrl: './lifeskills-page.html',
 })
 export class LifeskillsPage {

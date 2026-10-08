@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.picker {
+  position: relative;
+}
+.search-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  color: #d4c2a4;
+  font-size: 12px;
+}
+.selection button {
+  padding: 3px 12px;
+  font-size: 20px;
+}
+.results {
+  margin-top: 10px;
+  border: 1px solid #d0b38b30;
+  background: #162119;
+  max-height: 320px;
+  overflow: auto;
+}
+.results p {
+  padding: 14px;
+  color: #b4bbaa;
+  font-size: 12px;
+}
+button {
+  cursor: pointer;
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+button:focus-visible {
+  outline: 2px solid #d5b48d;
+  outline-offset: -2px;
+}
+.result-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #d0b38b15;
+}
+.result-item:hover,
+.result-item:focus-visible {
+  background: #26342a;
+}
+.icon {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  background: #202c23;
+  color: #d5b48d;
+}
+.copy {
+  flex: 1;
+  min-width: 0;
+}
+.copy strong {
+  display: block;
+  font-size: 13px;
+  color: #ede7dc;
+}
+.copy small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #a4ad9c;
+}
+@media (max-width: 540px) {
+  .search-fields {
+    grid-template-columns: 1fr;
+  }
+}

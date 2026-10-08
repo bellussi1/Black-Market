@@ -38,6 +38,7 @@ export const marketSchema = z.object({
   cost: moneySchema,
 });
 export const ingredientSchema = z.object({
+  itemId: z.number().int().positive().optional(),
   name: labelSchema,
   quantity: decimal.positive(),
   owned: decimal,
@@ -93,6 +94,7 @@ export const boxSchema = z
     outcomes: z
       .array(
         z.object({
+          itemId: z.number().int().positive().optional(),
           name: labelSchema,
           probability: percent,
           quantity: positiveCount,
@@ -116,6 +118,7 @@ export const activitySchema = z.object({
   items: z
     .array(
       z.object({
+        itemId: z.number().int().positive().optional(),
         name: labelSchema,
         quantity: positiveCount,
         price: moneySchema,
@@ -150,12 +153,14 @@ export const gearSchema = z.object({
   upgrades: z.array(upgradeSchema).max(50),
 });
 export const recipeSchema = z.object({
+  itemId: z.number().int().positive().optional(),
   id: z.string().min(1).max(64),
   name: labelSchema,
   yield: positiveCount.max(1_000_000),
   ingredients: z
     .array(
       z.object({
+        itemId: z.number().int().positive().optional(),
         name: labelSchema,
         quantity: positiveCount.max(1_000_000),
         price: moneySchema,
@@ -166,6 +171,7 @@ export const recipeSchema = z.object({
     .max(30),
 });
 export const inventorySchema = z.object({
+  itemId: z.number().int().positive().optional(),
   id: z.string().min(1).max(64),
   name: labelSchema,
   location: labelSchema,

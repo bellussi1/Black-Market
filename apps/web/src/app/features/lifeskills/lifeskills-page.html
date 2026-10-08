@@ -79,10 +79,13 @@
         @for (item of form().items; track $index; let k = $index) {
           <div class="row-editor">
             <div class="form-grid">
+              <div class="field">
+                <app-catalog-item-picker
+                  [selectionName]="item.name"
+                  (selected)="row(k, { name: $event?.name || '', itemId: $event?.id })"
+                />
+              </div>
               <label class="field"
-                ><ng-container i18n>Item</ng-container
-                ><input [ngModel]="item.name" (ngModelChange)="row(k, { name: $event })" /></label
-              ><label class="field"
                 ><ng-container i18n>Quantidade</ng-container
                 ><input
                   type="number"

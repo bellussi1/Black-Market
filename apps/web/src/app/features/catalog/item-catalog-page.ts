@@ -87,8 +87,8 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
     { value: 'purple', label: 'Roxo' },
   ];
 
-  iconUrl(id: number): string | null {
-    return this.api.itemIconUrl(id, this.result()?.dataset);
+  iconUrl(item: CatalogItem): string | null {
+    return this.api.resolveIconUrl(item);
   }
 
   description(text: string | null): string {

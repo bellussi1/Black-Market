@@ -1,0 +1,84 @@
+<div class="picker">
+  <div class="search-fields">
+    <label class="field" [for]="searchId"
+      >{{ label() }}
+      <input
+        [id]="searchId"
+        type="search"
+        autocomplete="off"
+        maxlength="80"
+        placeholder="Comece pelo nome: Pedra, Carne…"
+        i18n-placeholder
+        [value]="query()"
+        (input)="search($event)"
+        (keydown.escape)="open.set(false)"
+      />
+    </label>
+    <label class="field" [for]="searchId + '-category'">
+      <ng-container i18n>Categoria</ng-container>
+      <select
+        [id]="searchId + '-category'"
+        [value]="category()"
+        (focus)="loadCategories()"
+        (change)="filter($event)"
+      >
+        <option value="" i18n>Todas</option>
+        @for (option of categories(); track option.id) {
+          <option [value]="option.id">{{ option.parentId ? '↳ ' : '' }}{{ option.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  @if (selectionName()) {
+    <div class="selection">
+      <span
+        ><ng-container i18n>Selecionado:</ng-container> <strong>{{ selectionName() }}</strong></span
+      >
+      <button type="button" (click)="clear()" aria-label="Limpar item selecionado" i18n-aria-label>
+        ×
+      </button>
+    </div>
+  }
+  @if (open()) {
+    <section
+      class="results"
+      aria-label="Resultados da busca de itens"
+      i18n-aria-label
+      [attr.aria-busy]="loading()"
+    >
+      @if (loading()) {
+        <p role="status" i18n>Buscando itens…</p>
+      } @else if (error()) {
+        <p role="alert">
+          {{ error() }} <button type="button" (click)="find()" i18n>Tentar novamente</button>
+        </p>
+      } @else if (result(); as data) {
+        @if (!data.dataset) {
+          <p i18n>O catálogo desta região ainda não está disponível.</p>
+        } @else if (!data.items.length) {
+          <p i18n>Nenhum item encontrado. Ajuste o nome ou a categoria.</p>
+        } @else {
+          @for (item of data.items; track item.id) {
+            <button class="result-item" type="button" (click)="choose(item)">
+              <span class="icon" aria-hidden="true"
+                ><app-item-icon [url]="iconUrl(item)" [name]="item.name"
+              /></span>
+              <span class="copy"
+                ><strong>{{ item.name }}</strong
+                ><small
+                  >{{ item.categories[0]?.name || item.category }} · #{{ item.id }}</small
+                ></span
+              >
+              <span aria-hidden="true">+</span>
+            </button>
+          }
+          @if (data.total > data.items.length) {
+            <p i18n>Há {{ data.total }} resultados. Refine o nome ou a categoria.</p>
+          }
+        }
+      } @else {
+        <p i18n>Digite ao menos duas letras ou escolha uma categoria.</p>
+      }
+    </section>
+  }
+</div>

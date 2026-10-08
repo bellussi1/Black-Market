@@ -74,13 +74,13 @@
         @for (ing of form().ingredients; track $index; let k = $index) {
           <div class="row-editor">
             <div class="form-grid">
+              <div class="field">
+                <app-catalog-item-picker
+                  [selectionName]="ing.name"
+                  (selected)="ingredient(k, { name: $event?.name || '', itemId: $event?.id })"
+                />
+              </div>
               <label class="field"
-                ><ng-container i18n>Ingrediente</ng-container
-                ><input
-                  maxlength="140"
-                  [ngModel]="ing.name"
-                  (ngModelChange)="ingredient(k, { name: $event })" /></label
-              ><label class="field"
                 ><ng-container i18n>Quantidade por craft</ng-container
                 ><input
                   type="number"
@@ -212,14 +212,13 @@
         >
       </div>
       <div class="form-grid">
+        <div class="field">
+          <app-catalog-item-picker
+            [selectionName]="draft.name"
+            (selected)="selectProduct($event)"
+          />
+        </div>
         <label class="field"
-          ><ng-container i18n>Produto da receita</ng-container
-          ><input
-            maxlength="140"
-            placeholder="Nome do produto"
-            i18n-placeholder
-            [(ngModel)]="draft.name" /></label
-        ><label class="field"
           ><ng-container i18n>Unidades por craft (inteiro)</ng-container
           ><input type="number" min="1" [(ngModel)]="draft.yield"
         /></label>
@@ -227,10 +226,17 @@
       @for (ing of draft.ingredients; track $index; let k = $index) {
         <div class="row-editor">
           <div class="form-grid">
+            <div class="field">
+              @if (!ing.recipeId) {
+                <app-catalog-item-picker
+                  [selectionName]="ing.name"
+                  (selected)="selectDraftIngredient(k, $event)"
+                />
+              } @else {
+                <span>{{ ing.name }}</span>
+              }
+            </div>
             <label class="field"
-              ><ng-container i18n>Ingrediente</ng-container
-              ><input maxlength="140" [(ngModel)]="ing.name" [readonly]="!!ing.recipeId" /></label
-            ><label class="field"
               ><ng-container i18n>Quantidade por craft</ng-container
               ><input type="number" min="1" [(ngModel)]="ing.quantity" /></label
             ><label class="field"

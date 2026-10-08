@@ -4,13 +4,14 @@ import { type BoxInput, boxSchema, calculateBox, defaultTax } from '@bdo/calcula
 
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-rng-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
+  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
   templateUrl: './rng-page.html',
 })
 export class RngPage {

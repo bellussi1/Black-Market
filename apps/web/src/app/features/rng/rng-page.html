@@ -40,10 +40,13 @@
       @for (outcome of form().outcomes; track $index; let k = $index) {
         <div class="row-editor">
           <div class="form-grid">
+            <div class="field">
+              <app-catalog-item-picker
+                [selectionName]="outcome.name"
+                (selected)="row(k, { name: $event?.name || '', itemId: $event?.id })"
+              />
+            </div>
             <label class="field"
-              ><ng-container i18n>Resultado</ng-container
-              ><input [ngModel]="outcome.name" (ngModelChange)="row(k, { name: $event })" /></label
-            ><label class="field"
               ><ng-container i18n>Probabilidade (%)</ng-container
               ><input
                 type="number"

@@ -11,9 +11,13 @@
   </header>
   <section class="panel">
     <div class="panel-heading">
-      <h2><ng-container i18n>Consultar mercado por ID</ng-container></h2>
+      <h2><ng-container i18n>Buscar item e consultar mercado</ng-container></h2>
       <span class="badge"><ng-container i18n>API COMUNITÁRIA ARSHA</ng-container></span>
     </div>
+    <app-catalog-item-picker
+      [selectionName]="catalogItem()?.name || ''"
+      (selected)="selectItem($event)"
+    />
     <div class="form-grid">
       <label class="field"
         ><ng-container i18n>ID do item</ng-container
@@ -96,8 +100,9 @@
   </section>
   <div class="notice">
     <ng-container i18n
-      >Seu caderno reúne registros manuais e consultas que você guardou do Arsha. Preço base zero no
-      provedor é exibido como indisponível; registros antigos continuam com seu horário original.
+      >Seus registros reúnem registros manuais e consultas que você guardou do Arsha. Preço base
+      zero no provedor é exibido como indisponível; registros antigos continuam com seu horário
+      original.
     </ng-container>
   </div>
   <div
@@ -187,24 +192,17 @@
   <section class="panel">
     <div class="panel-heading">
       <h2>
-        <ng-container i18n
-          >Caderno de cotações · {{ store.data().region.toUpperCase() }}</ng-container
-        >
+        <ng-container i18n>Minhas cotações · {{ store.data().region.toUpperCase() }}</ng-container>
       </h2>
-      <span class="badge"><ng-container i18n>CADERNO PESSOAL</ng-container></span>
+      <span class="badge"><ng-container i18n>MEUS DADOS</ng-container></span>
     </div>
     <div class="row-editor">
       <div class="form-grid">
         <label class="field"
-          ><ng-container i18n>Item</ng-container
-          ><input
-            placeholder="Nome do item"
-            i18n-placeholder
-            maxlength="140"
-            [(ngModel)]="draft.name" /></label
+          ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
         ><label class="field"
           ><ng-container i18n>Categoria</ng-container
-          ><input maxlength="140" [(ngModel)]="draft.category" /></label
+          ><input [value]="draft.category" readonly /></label
         ><label class="field"
           ><ng-container i18n>Preço unitário</ng-container
           ><input inputmode="numeric" [(ngModel)]="draft.price" /></label
@@ -293,7 +291,7 @@
       </div>
     } @else {
       <div class="empty">
-        <strong><ng-container i18n>Seu caderno ainda está vazio.</ng-container></strong
+        <strong><ng-container i18n>Sua lista de cotações ainda está vazia.</ng-container></strong
         ><ng-container i18n>Registre um preço acima ou ajuste os filtros. </ng-container>
       </div>
     }

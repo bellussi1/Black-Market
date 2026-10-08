@@ -3,13 +3,14 @@ import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { calculateMarket, defaultTax, type MarketInput, marketSchema } from '@bdo/calculators';
-import type { MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
+import type { CatalogItem, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
 import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
@@ -17,7 +18,7 @@ import { MarketApi } from './market-api';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
+  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
   templateUrl: './market-page.html',
 })
 export class MarketPage implements OnDestroy {
@@ -34,7 +35,19 @@ export class MarketPage implements OnDestroy {
   category = '';
   favoritesOnly = false;
   sort = 'name';
-  draft = { name: '', category: 'Outros', price: '0', stock: 0 };
+  draft = { name: '', category: '', price: '0', stock: 0, itemId: null as number | null };
+  readonly catalogItem = signal<CatalogItem | null>(null);
+
+  selectItem(item: CatalogItem | null): void {
+    this.catalogItem.set(item);
+    this.lookupId.set(item ? String(item.id) : '');
+    this.draft = {
+      ...this.draft,
+      name: item?.name || '',
+      category: item ? item.categories[0]?.name || item.category || $localize`Sem categoria` : '',
+      itemId: item?.id ?? null,
+    };
+  }
   readonly selectedId = signal('');
   readonly error = signal('');
   readonly selected = computed(() =>
@@ -87,7 +100,9 @@ export class MarketPage implements OnDestroy {
       .quotes.find(
         (q) =>
           q.region === this.store.data().region &&
-          q.name.toLocaleLowerCase() === this.draft.name.trim().toLocaleLowerCase(),
+          (q.itemId && this.draft.itemId
+            ? q.itemId === this.draft.itemId
+            : q.name.toLocaleLowerCase() === this.draft.name.trim().toLocaleLowerCase()),
       );
     const parsed = quoteSchema.safeParse({
       ...this.draft,
@@ -111,7 +126,7 @@ export class MarketPage implements OnDestroy {
       }))
     ) {
       this.selectedId.set(parsed.data.id);
-      this.draft = { name: '', category: 'Outros', price: '0', stock: 0 };
+      this.draft = { name: '', category: '', price: '0', stock: 0, itemId: null };
     }
   }
   toggle(q: Quote): void {
@@ -194,7 +209,10 @@ export class MarketPage implements OnDestroy {
       id: held?.id ?? crypto.randomUUID(),
       name: item.name + (item.subId ? ' · variante ' + item.subId : ''),
       region: response.region,
-      category: 'Arsha',
+      category:
+        this.catalogItem()?.id === item.itemId
+          ? this.draft.category || $localize`Sem categoria`
+          : held?.category || $localize`Sem categoria`,
       source: 'arsha',
       nameLocale: response.locale ?? null,
       itemId: item.itemId,

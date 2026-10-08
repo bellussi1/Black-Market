@@ -9,20 +9,32 @@ import {
   type ManualRecipe,
   recipeSchema,
 } from '@bdo/calculators';
+import type { CatalogItem } from '@bdo/shared';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-crafting-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof],
+  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
   templateUrl: './crafting-page.html',
 })
 export class CraftingPage {
+  selectProduct(item: CatalogItem | null): void {
+    this.draft = { ...this.draft, name: item?.name || '', itemId: item?.id };
+  }
+  selectDraftIngredient(index: number, item: CatalogItem | null): void {
+    this.draft.ingredients[index] = {
+      ...this.draft.ingredients[index],
+      name: item?.name || '',
+      itemId: item?.id,
+    };
+  }
   readonly store = inject(WorkspaceStore);
   readonly tab = signal('profit');
   readonly form = signal<CraftingInput>({
