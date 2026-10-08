@@ -47,4 +47,39 @@ describe('MarketPage', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Example');
     http.verify();
   });
+
+  it('charts only stored market observations and does not infer daily sale volume', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    const now = Date.now();
+    page.history.set([
+      {
+        fetchedAt: new Date(now - 25 * 60 * 60 * 1000).toISOString(),
+        price: '1000',
+        stock: 5,
+        totalTrades: '22',
+      },
+      {
+        fetchedAt: new Date(now - 60 * 60 * 1000).toISOString(),
+        price: '1200',
+        stock: 3,
+        totalTrades: '25',
+      },
+    ]);
+    page.historyRange.set('week');
+    page.historyMetric.set('price');
+    fixture.detectChanges();
+
+    expect(page.historyChart().samples).toBe(2);
+    expect(page.historyChart().points.split(' ')).toHaveLength(2);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'não fornece uma série confiável de volume ou média de vendas por dia/mês',
+    );
+
+    page.historyRange.set('day');
+    page.historyMetric.set('totalTrades');
+    fixture.detectChanges();
+    expect(page.historyChart().samples).toBe(1);
+    expect(page.historyChart().points).toBe('');
+  });
 });

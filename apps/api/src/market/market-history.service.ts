@@ -61,7 +61,7 @@ export class MarketHistoryService {
         ),
       )
       .orderBy(desc(marketSnapshots.fetchedAt))
-      .limit(180);
+      .limit(1500);
     return {
       region,
       itemId: id,
@@ -71,6 +71,7 @@ export class MarketHistoryService {
         fetchedAt: row.fetchedAt,
         price: row.payload['price'] ?? null,
         stock: row.payload['stock'] ?? null,
+        totalTrades: row.payload['totalTrades'] ?? null,
       })),
     };
   }

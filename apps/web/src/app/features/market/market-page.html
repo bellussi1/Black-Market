@@ -71,7 +71,7 @@
               <th><ng-container i18n>Item / variante</ng-container></th>
               <th><ng-container i18n>Preço base</ng-container></th>
               <th><ng-container i18n>Estoque</ng-container></th>
-              <th><ng-container i18n>Transações totais</ng-container></th>
+              <th><ng-container i18n>Transações (contador)</ng-container></th>
               <th><ng-container i18n>Última venda</ng-container></th>
               <th><ng-container i18n>Ação</ng-container></th>
             </tr>
@@ -103,15 +103,131 @@
   </section>
   <div class="notice">
     <details>
-      <summary i18n>Histórico de preços guardados</summary>
+      <summary i18n>Histórico observado do mercado</summary>
       <label class="field"
         ><span i18n>Variante do item selecionado</span
         ><input type="number" min="0" max="100" [(ngModel)]="historySubId" /></label
       ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
       <p role="status">{{ historyMessage() }}</p>
-      <p i18n>
-        Este histórico começa quando as consultas são guardadas. Não representa todas as vendas do
-        jogo.
+      <div class="mt-6 grid gap-4">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h3 class="font-semibold" i18n>Evolução das observações</h3>
+            <p class="help" i18n>Veja o que foi registrado pelo Black Market neste item.</p>
+          </div>
+          <div
+            class="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Período do histórico"
+            i18n-aria-label
+          >
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyRange() === 'day'"
+              (click)="historyRange.set('day')"
+              i18n
+            >
+              24 horas
+            </button>
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyRange() === 'week'"
+              (click)="historyRange.set('week')"
+              i18n
+            >
+              7 dias
+            </button>
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyRange() === 'month'"
+              (click)="historyRange.set('month')"
+              i18n
+            >
+              30 dias
+            </button>
+          </div>
+        </div>
+        <div
+          class="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Indicador do gráfico"
+          i18n-aria-label
+        >
+          <button
+            type="button"
+            class="btn subtle"
+            [attr.aria-pressed]="historyMetric() === 'price'"
+            (click)="historyMetric.set('price')"
+            i18n
+          >
+            Preço
+          </button>
+          <button
+            type="button"
+            class="btn subtle"
+            [attr.aria-pressed]="historyMetric() === 'stock'"
+            (click)="historyMetric.set('stock')"
+            i18n
+          >
+            Estoque
+          </button>
+          <button
+            type="button"
+            class="btn subtle"
+            [attr.aria-pressed]="historyMetric() === 'totalTrades'"
+            (click)="historyMetric.set('totalTrades')"
+            i18n
+          >
+            Transações
+          </button>
+        </div>
+        @if (historyChart().samples >= 2) {
+          <div class="min-w-0" aria-live="polite">
+            <svg
+              class="h-auto w-full overflow-visible text-[var(--accent)]"
+              viewBox="0 0 720 220"
+              role="img"
+              [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
+            >
+              <title>{{ historyMetricLabel() }}</title>
+              <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
+              <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
+              <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
+              <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
+              <polyline
+                [attr.points]="historyChart().points"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>
+            <div class="flex justify-between text-xs text-[var(--text-muted)]">
+              <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
+              <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
+            </div>
+            <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
+              <span>{{ date(historyChart().startAt) }}</span>
+              <span>{{ date(historyChart().endAt) }}</span>
+            </div>
+            <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
+          </div>
+        } @else {
+          <p class="notice" role="status" i18n>
+            Ainda não há duas observações válidas neste período para desenhar o gráfico. As
+            consultas começam a formar histórico depois que são registradas.
+          </p>
+        }
+      </div>
+      <p class="help mt-4" i18n>
+        O histórico representa apenas observações guardadas pelo Black Market. A fonte atual não
+        fornece uma série confiável de volume ou média de vendas por dia/mês; o contador de
+        transações é exibido como recebido, sem estimar vendas entre consultas.
       </p>
       @if (history().length) {
         <div class="overflow-x-auto">
@@ -121,14 +237,16 @@
                 <th i18n>Consulta</th>
                 <th i18n>Preço</th>
                 <th i18n>Estoque</th>
+                <th i18n>Transações (contador)</th>
               </tr>
             </thead>
             <tbody>
-              @for (point of history(); track point.fetchedAt) {
+              @for (point of historySeries(); track point.fetchedAt) {
                 <tr>
                   <td>{{ date(point.fetchedAt) }}</td>
                   <td>{{ silver(point.price) }}</td>
                   <td>{{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}</td>
+                  <td>{{ silver(point.totalTrades) }}</td>
                 </tr>
               }
             </tbody>

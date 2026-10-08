@@ -10,6 +10,7 @@ import type { Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { uiLocale } from '../../core/locale';
 import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
@@ -18,7 +19,11 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
-import { MarketApi } from './market-api';
+import { MarketApi, type MarketHistoryPoint } from './market-api';
+
+type MarketHistoryMetric = 'price' | 'stock' | 'totalTrades';
+type MarketHistoryRange = 'day' | 'week' | 'month';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
@@ -57,12 +62,92 @@ export class MarketPage implements OnDestroy {
   sort = 'name';
   draft = { name: '', category: '', price: '0', stock: 0, itemId: null as number | null };
   readonly catalogItem = signal<CatalogItem | null>(null);
-  readonly history = signal<{ fetchedAt: string; price: string | null; stock: number | null }[]>(
-    [],
-  );
+  readonly history = signal<MarketHistoryPoint[]>([]);
   readonly historyMessage = signal('');
   private historyRequest?: Subscription;
   historySubId = 0;
+  readonly historyMetric = signal<MarketHistoryMetric>('price');
+  readonly historyRange = signal<MarketHistoryRange>('week');
+  readonly historyMetricLabel = computed(() => {
+    switch (this.historyMetric()) {
+      case 'price':
+        return $localize`Preço de venda`;
+      case 'stock':
+        return $localize`Estoque disponível`;
+      case 'totalTrades':
+        return $localize`Contador de transações`;
+    }
+  });
+  readonly historySeries = computed(() => {
+    const points = this.history();
+    const now = Date.now();
+    const duration =
+      this.historyRange() === 'day'
+        ? 24 * 60 * 60 * 1000
+        : this.historyRange() === 'week'
+          ? 7 * 24 * 60 * 60 * 1000
+          : 30 * 24 * 60 * 60 * 1000;
+    if (!Number.isFinite(now)) return [];
+    return points.filter((point) => {
+      const observedAt = Date.parse(point.fetchedAt);
+      return Number.isFinite(observedAt) && observedAt >= now - duration;
+    });
+  });
+  readonly historyChart = computed(() => {
+    const points = this.historySeries()
+      .map((point) => ({ point, value: this.historyValue(point) }))
+      .filter(
+        (entry): entry is { point: MarketHistoryPoint; value: bigint } => entry.value !== null,
+      );
+    if (points.length < 2)
+      return {
+        points: '',
+        min: '—',
+        max: '—',
+        samples: points.length,
+        startAt: '',
+        endAt: '',
+      };
+
+    const values = points.map((entry) => entry.value);
+    const min = values.reduce((a, b) => (a < b ? a : b));
+    const max = values.reduce((a, b) => (a > b ? a : b));
+    const firstAt = Date.parse(points[0].point.fetchedAt);
+    const lastAt = Date.parse(points.at(-1)!.point.fetchedAt);
+    const timeSpan = Math.max(lastAt - firstAt, 1);
+    const coords = points.map(({ point, value }) => {
+      const elapsed = Date.parse(point.fetchedAt) - firstAt;
+      const x = 44 + Math.round((elapsed / timeSpan) * 640);
+      const relative = max === min ? 0.5 : Number(((value - min) * 1000n) / (max - min)) / 1000;
+      const y = 176 - Math.round(relative * 136);
+      return `${x},${y}`;
+    });
+    return {
+      points: coords.join(' '),
+      min: this.historyValueLabel(min),
+      max: this.historyValueLabel(max),
+      samples: points.length,
+      startAt: points[0].point.fetchedAt,
+      endAt: points.at(-1)!.point.fetchedAt,
+    };
+  });
+
+  private historyValue(point: MarketHistoryPoint): bigint | null {
+    const raw =
+      this.historyMetric() === 'price'
+        ? point.price
+        : this.historyMetric() === 'totalTrades'
+          ? point.totalTrades
+          : point.stock === null
+            ? null
+            : String(point.stock);
+    return raw !== null && raw !== undefined && /^\d{1,24}$/.test(raw) ? BigInt(raw) : null;
+  }
+
+  private historyValueLabel(value: bigint): string {
+    return new Intl.NumberFormat(uiLocale()).format(value);
+  }
+
   showHistory() {
     const id = Number(this.lookupId());
     if (!Number.isInteger(id) || id < 1 || id > 2147483647) {
