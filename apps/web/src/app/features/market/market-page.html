@@ -12,23 +12,26 @@
   <section class="panel">
     <div class="panel-heading">
       <h2><ng-container i18n>Buscar item e consultar mercado</ng-container></h2>
-      <span class="badge"><ng-container i18n>API COMUNITÁRIA ARSHA</ng-container></span>
+      <span class="badge"><ng-container i18n>PREÇOS DO MERCADO</ng-container></span>
     </div>
     <app-catalog-item-picker
       [selectionName]="catalogItem()?.name || ''"
       (selected)="selectItem($event)"
     />
-    <div class="form-grid">
-      <label class="field"
-        ><ng-container i18n>ID do item</ng-container
-        ><input
-          inputmode="numeric"
-          placeholder="ID numérico do jogo"
-          i18n-placeholder
-          [ngModel]="lookupId()"
-          (ngModelChange)="lookupId.set($event)"
-      /></label>
-    </div>
+    <details>
+      <summary i18n>Buscar pelo código do item</summary>
+      <div class="form-grid">
+        <label class="field"
+          ><ng-container i18n>ID do item</ng-container
+          ><input
+            inputmode="numeric"
+            placeholder="ID numérico do jogo"
+            i18n-placeholder
+            [ngModel]="lookupId()"
+            (ngModelChange)="lookupId.set($event)"
+        /></label>
+      </div>
+    </details>
     <div class="action-row">
       <button class="btn" type="button" (click)="lookup()" [disabled]="lookupLoading()">
         {{ lookupLoading() ? 'Consultando…' : 'Consultar mercado' }}</button
@@ -40,8 +43,8 @@
     </div>
     <p class="help">
       <ng-container i18n
-        >Arsha usa cache: o preço pode ter atraso. O ID pode vir do jogo ou de uma página pública de
-        item. Seu navegador consulta somente nossa API.
+        >Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um item
+        para consultar sua cotação.
       </ng-container>
     </p>
     @if (lookupError()) {
@@ -54,11 +57,11 @@
           {{ response.locale || 'não informado' }} · consulta em {{ date(response.fetchedAt) }} ·
           {{
             response.cacheStatus === 'stale'
-              ? 'Última consulta disponível; provedor indisponível agora'
+              ? 'Últimos preços disponíveis; não foi possível atualizar agora'
               : response.cacheStatus === 'cached'
-                ? 'Cache local'
-                : 'Consulta ao provedor'
-          }}. Cache documentado no provedor: {{ response.upstreamCacheMinutes }} minutos.
+                ? 'Últimos preços consultados'
+                : 'Preços consultados agora'
+          }}. Atualização da fonte a cada {{ response.upstreamCacheMinutes }} minutos.
         </ng-container>
       </p>
       <div class="max-w-full overflow-x-auto">

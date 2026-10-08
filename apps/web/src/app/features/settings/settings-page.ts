@@ -39,7 +39,7 @@ export class SettingsPage {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     if (file.size > MAX_BACKUP_BYTES) {
-      this.error.set('Use um backup JSON de até 20 MB.');
+      this.error.set('Escolha um backup do Black Market com até 20 MB.');
       return;
     }
     try {

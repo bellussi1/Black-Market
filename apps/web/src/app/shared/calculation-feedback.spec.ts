@@ -13,8 +13,10 @@ describe('calculation feedback', () => {
       }),
     ).toEqual({
       value: null,
-      error: 'O arquivo não é um JSON válido.',
+      error: 'Não foi possível abrir este arquivo. Escolha um backup do Black Market.',
     });
-    expect(validationMessage(new Error('Campo inválido'))).toBe('Campo inválido');
+    expect(validationMessage(new Error('Campo inválido'))).toBe(
+      'Não foi possível concluir. Confira os dados informados e tente novamente.',
+    );
   });
 });

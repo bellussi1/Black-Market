@@ -1,6 +1,7 @@
 import { z } from 'zod';
 export function validationMessage(error: unknown): string {
-  if (error instanceof SyntaxError) return 'O arquivo não é um JSON válido.';
+  if (error instanceof SyntaxError)
+    return 'Não foi possível abrir este arquivo. Escolha um backup do Black Market.';
   if (error instanceof z.ZodError)
     return error.issues
       .slice(0, 3)
@@ -28,7 +29,9 @@ export function validationMessage(error: unknown): string {
         };
         const field = String(i.path[i.path.length - 1] ?? '');
         const row = i.path.find((p) => typeof p === 'number');
-        let message = i.message;
+        let message = 'Confira o valor informado neste campo.';
+        if (i.code === 'custom' && !/api|docker|postgres|json|schema|dataset/i.test(i.message))
+          message = i.message;
         if (i.code === 'invalid_type') message = 'Preencha o campo com um valor válido.';
         if (i.code === 'too_small')
           message = 'Valor abaixo do mínimo permitido: ' + String(i.minimum) + '.';
@@ -42,7 +45,10 @@ export function validationMessage(error: unknown): string {
         );
       })
       .join(' · ');
-  return error instanceof Error ? error.message : 'Confira os dados informados.';
+  return error instanceof RangeError &&
+    !/must|basisPoints|api|docker|postgres|schema/i.test(error.message)
+    ? error.message
+    : 'Não foi possível concluir. Confira os dados informados e tente novamente.';
 }
 export function evaluate<T>(calculate: () => T): { value: T | null; error: string | null } {
   try {

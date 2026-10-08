@@ -50,14 +50,14 @@ export class CalculationProof implements OnChanges, OnDestroy {
           this.status.set(equal ? 'ok' : 'error');
           this.message.set(
             equal
-              ? 'Resultado confirmado pela API · modelo ' + r.modelVersion
-              : 'Os modelos ou resultados diferem. Atualize a página antes de usar o cenário.',
+              ? 'Resultado conferido.'
+              : 'O cálculo foi atualizado. Recarregue a página para conferir o resultado.',
           );
         },
         error: () => {
           this.status.set('error');
           this.message.set(
-            'A API não validou esta entrada ou está offline. O cálculo local permanece disponível.',
+            'Não foi possível conferir agora. Você pode continuar usando a calculadora e tentar novamente mais tarde.',
           );
         },
       });

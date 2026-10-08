@@ -12,7 +12,7 @@
   <div class="notice">
     <ng-container i18n
       >Limpar os dados do navegador remove seus dados pessoais. Exporte periodicamente. Ainda não há
-      conta nem sincronização entre dispositivos; o arquivo JSON permite transferir os dados.
+      conta nem sincronização entre dispositivos; o backup permite transferir seus dados.
     </ng-container>
   </div>
   <section class="panel">
@@ -33,7 +33,7 @@
   </section>
   @if (store.blocked()) {
     <section class="panel">
-      <h2><ng-container i18n>Recuperar armazenamento inválido</ng-container></h2>
+      <h2><ng-container i18n>Recuperar meus dados</ng-container></h2>
       <p class="help">
         <ng-container i18n
           >Exporte o arquivo original para guardar uma cópia. Depois importe um backup válido ou
@@ -59,7 +59,7 @@
   <section class="panel">
     <h2><ng-container i18n>Importar backup</ng-container></h2>
     <label class="field"
-      ><ng-container i18n>Arquivo JSON do Black Market</ng-container
+      ><ng-container i18n>Arquivo de backup do Black Market</ng-container
       ><input type="file" accept=".json,application/json" (change)="read($event)"
     /></label>
     @if (error()) {
@@ -103,12 +103,11 @@
     }
   </section>
   <section class="panel">
-    <h2><ng-container i18n>Catálogo extraído e imagens</ng-container></h2>
+    <h2><ng-container i18n>Itens, receitas e imagens</ng-container></h2>
     <p class="help">
       <ng-container i18n
-        >O catálogo do jogo é importado pela API a partir de arquivos locais do extractor. Seu
-        backup pessoal não contém esse dataset nem assets do jogo. Quando a extração estiver pronta,
-        o catálogo poderá ser preenchido mantendo seus cenários manuais.
+        >Os itens, receitas e imagens são fornecidos pelo Black Market. Seu backup guarda apenas
+        seus dados pessoais. Você não precisa instalar o jogo para consultar o catálogo.
       </ng-container>
     </p>
     <p class="help">

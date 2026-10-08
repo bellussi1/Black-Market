@@ -23,7 +23,7 @@ describe('CalculationProof', () => {
     expect(request.request.body).toEqual(value);
     request.flush({ modelVersion: MODEL_VERSION, result: calculateMarket(value) });
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Resultado confirmado');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Resultado conferido');
     http.verify();
   });
 
@@ -33,7 +33,7 @@ describe('CalculationProof', () => {
     const http = TestBed.inject(HttpTestingController);
     http.expectOne(url).flush({ modelVersion: 'unknown', result: calculateMarket(value) });
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('diferem');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Recarregue a página');
     expect(fixture.componentInstance.status()).toBe('error');
     http.verify();
   });
@@ -44,7 +44,9 @@ describe('CalculationProof', () => {
     const http = TestBed.inject(HttpTestingController);
     http.expectOne(url).flush({}, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('cálculo local permanece');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'continuar usando a calculadora',
+    );
     http.verify();
   });
 });

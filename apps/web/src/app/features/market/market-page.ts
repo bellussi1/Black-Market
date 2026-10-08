@@ -173,9 +173,11 @@ export class MarketPage implements OnDestroy {
       error: (error: HttpErrorResponse) => {
         this.lookupLoading.set(false);
         this.lookupError.set(
-          typeof error.error?.message === 'string'
-            ? error.error.message
-            : 'A API está offline ou não conseguiu consultar o provedor.',
+          error.status === 429
+            ? 'Você fez várias consultas em pouco tempo. Aguarde um momento e tente novamente.'
+            : error.status === 404
+              ? 'Não encontramos uma cotação para este item no mercado selecionado.'
+              : 'Não foi possível consultar os preços agora. Tente novamente mais tarde.',
         );
       },
     });
