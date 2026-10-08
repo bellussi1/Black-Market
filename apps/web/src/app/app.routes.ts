@@ -8,7 +8,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        title: $localize`Black Market · Seu caderno de aventura`,
+        title: $localize`Black Market · Seu planejador de Black Desert`,
         loadComponent: () =>
           import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
       },

@@ -82,7 +82,7 @@ export class RegionPreferences {
         this.region.set(savedRegion as Region);
     } catch {
       this.message.set(
-        'Não foi possível ler o caderno local. Confira Dados e backup antes de editar.',
+        'Não foi possível ler os dados locais. Confira Dados e backup antes de editar.',
       );
     }
   }
