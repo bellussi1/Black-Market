@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
-    "start": "pnpm --filter @bdo/calculators build && ng serve --host 0.0.0.0",
+    "start": "pnpm --filter @bdo/calculators build && ng serve --host 0.0.0.0 --poll 1000",
     "build": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/shared build && ng build",
     "watch": "ng build --watch --configuration development",
     "typecheck": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/shared build && ng build --configuration development",
@@ -13,7 +13,8 @@
     "test:unit": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/core/**/*.spec.ts\" --include=\"app/features/**/*-api.spec.ts\" --include=\"app/shared/formatters.spec.ts\" --include=\"app/shared/calculation-feedback.spec.ts\"",
     "test:components": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/features/**/*-page.spec.ts\" --include=\"app/shared/tax-options.spec.ts\" --include=\"app/shared/preset-bar.spec.ts\" --include=\"app/shared/calculation-proof.spec.ts\" --include=\"app/app.spec.ts\"",
     "lint:fix": "ng lint --fix",
-    "i18n:extract": "pnpm --filter @bdo/shared build && pnpm --filter @bdo/calculators build && ng extract-i18n"
+    "i18n:extract": "pnpm --filter @bdo/shared build && pnpm --filter @bdo/calculators build && ng extract-i18n",
+    "serve:ssr:web": "node dist/web/server/server.mjs"
   },
   "private": true,
   "packageManager": "pnpm@10.28.1",
@@ -27,10 +28,15 @@
     "@angular/localize": "22.2.1",
     "@angular/material": "22.2.2",
     "@angular/platform-browser": "22.2.1",
+    "@angular/platform-server": "22.2.1",
     "@angular/router": "22.2.1",
+    "@angular/ssr": "22.2.2",
     "@bdo/calculators": "workspace:*",
     "@bdo/shared": "workspace:*",
+    "@supabase/supabase-js": "2.117.3",
+    "express": "^5.1.0",
     "rxjs": "~7.8.2",
+    "tesseract.js": "7.0.0",
     "tslib": "^2.3.0",
     "zod": "4.6.5"
   },
@@ -40,6 +46,8 @@
     "@angular/cli": "22.2.2",
     "@angular/compiler-cli": "22.2.1",
     "@tailwindcss/postcss": "4.3.3",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.12.0",
     "angular-eslint": "22.5.0",
     "eslint": "10.12.0",
     "jsdom": "^28.0.0",
