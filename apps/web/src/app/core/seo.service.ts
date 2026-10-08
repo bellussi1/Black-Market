@@ -20,7 +20,8 @@ const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Receitas de Black Desert Online em português, com materiais, resultados e imagens dos itens.',
   '/reference':
     'NPCs, missões, conhecimento, habilidades, locais e referências de Black Desert Online em português.',
-  '/world': 'Consulte bases e suas conexões de contribuição em Black Desert Online.',
+  '/world':
+    'Planeje seu império de bases e trabalhadores em Black Desert Online. Compare produção diária, custos e contribuição compartilhada.',
   '/market':
     'Consulte preços e disponibilidade no mercado SA de Black Desert Online. Confira a origem e a data de atualização dos dados.',
   '/crafting':

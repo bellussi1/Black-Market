@@ -21,10 +21,11 @@ import { evaluate } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
 import { connectionRoute, type WorldNode } from './node-routing';
+import { WorkerEmpireComponent } from './worker-empire';
 @Component({
   selector: 'app-world-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker],
+  imports: [FormsModule, RouterLink, CatalogItemPicker, WorkerEmpireComponent],
   templateUrl: './world-page.html',
   styleUrl: './world-page.scss',
 })

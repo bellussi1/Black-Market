@@ -26,6 +26,17 @@ export function validationMessage(error: unknown): string {
           location: 'Local',
           target: 'Meta',
           region: 'Região',
+          cityNodeId: 'Cidade do trabalhador',
+          nodeId: 'Base de destino',
+          workerId: 'Trabalhador',
+          cycleMinutes: 'Duração do ciclo',
+          hoursPerDay: 'Horas de produção por dia',
+          contributionBudget: 'Orçamento de contribuição',
+          extraContribution: 'Contribuição adicional',
+          costPerCycle: 'Custo por ciclo',
+          lodgingSlots: 'Vagas de alojamento',
+          contribution: 'Contribuição',
+          level: 'Nível',
         };
         const field = String(i.path[i.path.length - 1] ?? '');
         const row = i.path.find((p) => typeof p === 'number');

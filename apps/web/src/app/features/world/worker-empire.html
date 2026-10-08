@@ -1,0 +1,499 @@
+<section class="empire" aria-labelledby="empire-title">
+  <header class="empire-heading">
+    <div>
+      <p class="tool-kicker" i18n>SEU IMPÉRIO DE PRODUÇÃO</p>
+      <h2 id="empire-title" i18n>Mais resultado com a mesma contribuição.</h2>
+      <p class="help" i18n>
+        Cadastre trabalhadores, compare tarefas e veja o resultado conjunto. Use a duração completa
+        e os rendimentos que você observa no jogo.
+      </p>
+    </div>
+    <button type="button" class="btn subtle" (click)="reset()" i18n>Novo império</button>
+  </header>
+  @if (message()) {
+    <p class="notice" role="status">{{ message() }}</p>
+  }
+  @if (store.message()) {
+    <p class="notice" role="status">{{ store.message() }}</p>
+  }
+  @if (saved().length) {
+    <details class="panel">
+      <summary i18n>Meus impérios salvos</summary>
+      @for (plan of saved(); track plan.id) {
+        <div class="saved-row">
+          <span>{{ plan.name }} · {{ plan.workers.length }} trabalhadores</span>
+          <button
+            type="button"
+            class="btn subtle"
+            (click)="load(plan)"
+            [attr.aria-label]="'Carregar ' + plan.name"
+            i18n
+          >
+            Carregar
+          </button>
+          <button
+            type="button"
+            class="btn subtle"
+            (click)="deleteSaved(plan.id)"
+            [attr.aria-label]="'Excluir ' + plan.name"
+            i18n
+          >
+            Excluir
+          </button>
+        </div>
+      }
+    </details>
+  }
+  <section class="panel" aria-labelledby="empire-settings">
+    <h3 id="empire-settings" i18n>1. Sua rotina</h3>
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Nome do império</span
+        ><input maxlength="140" [ngModel]="draft().name" (ngModelChange)="patch({ name: $event })"
+      /></label>
+      <label class="field"
+        ><span i18n>Horas de produção por dia</span
+        ><input
+          type="number"
+          min="0"
+          max="24"
+          step="0.5"
+          [ngModel]="draft().hoursPerDay"
+          (ngModelChange)="patch({ hoursPerDay: $event })"
+      /></label>
+      <label class="field"
+        ><span i18n>Contribuição total destinada ao império</span
+        ><input
+          type="number"
+          min="0"
+          max="10000"
+          [ngModel]="draft().contributionBudget"
+          (ngModelChange)="patch({ contributionBudget: $event })"
+      /></label>
+    </div>
+    <details>
+      <summary i18n>Imposto e bônus de venda</summary>
+      <app-tax-options [value]="draft()" (changed)="tax($event)" />
+    </details>
+    <p class="help" i18n>
+      As horas pressupõem jogo aberto e alimentação suficiente. Custos de alimentação entram em cada
+      tarefa. Não simulamos produção contínua enquanto você está desconectado.
+    </p>
+  </section>
+  <section class="panel" aria-labelledby="empire-workers">
+    <h3 id="empire-workers" i18n>2. Trabalhadores e cidades</h3>
+    <label class="field"
+      ><span i18n>Buscar uma base para os seletores</span
+      ><input type="search" [ngModel]="nodeSearch()" (ngModelChange)="nodeSearch.set($event)"
+    /></label>
+    <form (ngSubmit)="addWorker()">
+      <div class="form-grid">
+        <label class="field"
+          ><span i18n>Nome do trabalhador</span
+          ><input
+            name="workerName"
+            required
+            maxlength="140"
+            [(ngModel)]="worker.name"
+            placeholder="Ex.: Trabalhador de Velia"
+            i18n-placeholder
+        /></label>
+        <label class="field"
+          ><span i18n>Cidade de origem</span
+          ><select name="workerCity" required [(ngModel)]="worker.cityNodeId">
+            <option value="" i18n>Escolha a cidade</option>
+            @for (node of selectable(); track node.id) {
+              <option [value]="node.id">{{ node.name }}</option>
+            }
+          </select></label
+        >
+        <label class="field"
+          ><span i18n>Espécie</span
+          ><select name="workerSpecies" [(ngModel)]="worker.species">
+            <option value="other" i18n>Outro</option>
+            <option value="goblin" i18n>Goblin</option>
+            <option value="human" i18n>Humano</option>
+            <option value="giant" i18n>Gigante</option>
+          </select></label
+        >
+        <label class="field"
+          ><span i18n>Nível</span
+          ><input
+            name="workerLevel"
+            type="number"
+            min="1"
+            max="40"
+            required
+            [(ngModel)]="worker.level"
+        /></label>
+      </div>
+      <button type="submit" class="btn subtle" i18n>Adicionar ou atualizar trabalhador</button>
+    </form>
+    <div class="worker-list">
+      @for (entry of draft().workers; track entry.id) {
+        <article class="worker-row">
+          <div>
+            <strong>{{ entry.name }}</strong>
+            <p class="help">
+              {{ nodeName(entry.cityNodeId) }} · {{ speciesName(entry.species) }} · nível
+              {{ entry.level }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn subtle"
+            (click)="editWorker(entry)"
+            [attr.aria-label]="'Editar trabalhador ' + entry.name"
+            i18n
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            class="btn subtle"
+            (click)="removeWorker(entry.id)"
+            [attr.aria-label]="'Remover trabalhador ' + entry.name"
+            i18n
+          >
+            Remover
+          </button>
+        </article>
+      } @empty {
+        <p class="help" i18n>Comece com um trabalhador. Você pode ampliar o império depois.</p>
+      }
+    </div>
+    @if (cities().length) {
+      <details>
+        <summary i18n>Alojamento e infraestrutura das cidades</summary>
+        <p class="help" i18n>
+          Informe o custo conjunto de alojamento e armazém que você destina a este império em cada
+          cidade. Conte casas compartilhadas uma vez. Uma vaga gratuita pode ter custo zero.
+        </p>
+        <div class="form-grid">
+          <label class="field"
+            ><span i18n>Cidade</span
+            ><select [ngModel]="cityNodeId" (ngModelChange)="editCity($event)">
+              <option value="" i18n>Escolha</option>
+              @for (city of cities(); track city) {
+                <option [value]="city">{{ nodeName(city) }}</option>
+              }
+            </select></label
+          >
+          <label class="field"
+            ><span i18n>Contribuição da infraestrutura</span
+            ><input type="number" min="0" max="10000" [(ngModel)]="cityContribution"
+          /></label>
+          <label class="field"
+            ><span i18n>Vagas de alojamento disponíveis</span
+            ><input type="number" min="0" max="100" [(ngModel)]="lodgingSlots"
+          /></label>
+        </div>
+        <button type="button" class="btn subtle" (click)="addCity()" i18n>
+          Guardar custos no rascunho
+        </button>
+        @for (city of draft().cities; track city.nodeId) {
+          <p>
+            {{ nodeName(city.nodeId) }} · {{ city.contribution }} CP · {{ city.lodgingSlots }} vagas
+          </p>
+        }
+      </details>
+    }
+  </section>
+  <section class="panel" aria-labelledby="empire-tasks">
+    <h3 id="empire-tasks" i18n>3. Produção de cada trabalhador</h3>
+    <p class="help" i18n>
+      O tempo inclui trabalho e ida/volta. Espécie e nível identificam o trabalhador; o rendimento
+      observado já deve refletir suas habilidades e condições da base.
+    </p>
+    <form (ngSubmit)="addTask()">
+      <div class="form-grid">
+        <label class="field"
+          ><span i18n>Nome da tarefa</span
+          ><input
+            name="taskName"
+            required
+            maxlength="140"
+            [(ngModel)]="task.name"
+            placeholder="Ex.: Produção de batata"
+            i18n-placeholder
+        /></label>
+        <label class="field"
+          ><span i18n>Trabalhador</span
+          ><select name="taskWorker" required [(ngModel)]="task.workerId">
+            <option value="" i18n>Escolha</option>
+            @for (entry of draft().workers; track entry.id) {
+              <option [value]="entry.id">{{ entry.name }}</option>
+            }
+          </select></label
+        >
+        <label class="field"
+          ><span i18n>Base de destino</span
+          ><select name="taskNode" required [(ngModel)]="task.nodeId">
+            <option value="" i18n>Escolha</option>
+            @for (node of selectable(); track node.id) {
+              <option [value]="node.id">{{ node.name }}</option>
+            }
+          </select></label
+        >
+        <label class="field"
+          ><span i18n>Ciclo completo observado (minutos)</span
+          ><input
+            name="taskMinutes"
+            type="number"
+            min="0.001"
+            max="10080"
+            step="0.001"
+            required
+            [(ngModel)]="task.cycleMinutes"
+        /></label>
+        <label class="field"
+          ><span i18n>Alimentação e outros custos por ciclo</span
+          ><input name="taskCost" inputmode="numeric" required [(ngModel)]="task.costPerCycle"
+        /></label>
+        <label class="field"
+          ><span i18n>CP de produção adicional à rota</span
+          ><input
+            name="taskCp"
+            type="number"
+            min="0"
+            max="10000"
+            required
+            [(ngModel)]="task.extraContribution"
+        /></label>
+      </div>
+      <p class="help" i18n>
+        O CP adicional serve para uma sub-base de produção que não esteja incluída na rota exibida.
+        Confira no jogo para não contar o mesmo investimento duas vezes.
+      </p>
+      <fieldset>
+        <legend i18n>Produtos e subprodutos por ciclo</legend>
+        <div class="form-grid">
+          <label class="field"
+            ><span i18n>Quantidade média observada</span
+            ><input
+              name="outputQuantity"
+              type="number"
+              min="0.001"
+              max="1000000"
+              step="0.001"
+              [(ngModel)]="quantity"
+          /></label>
+          <label class="field"
+            ><span i18n>Preço unitário confirmado (prata)</span
+            ><input
+              name="outputPrice"
+              inputmode="numeric"
+              [(ngModel)]="outputPrice"
+              placeholder="Deixe vazio se não souber"
+              i18n-placeholder
+          /></label>
+        </div>
+        <app-catalog-item-picker (selected)="addOutput($event)" />
+        @for (item of task.outputs; track item.itemId) {
+          <div class="saved-row">
+            <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+            ><span
+              >{{ item.quantity }} por ciclo ·
+              {{ item.price === null ? 'Preço não informado' : silver(item.price) }}</span
+            >
+            <button
+              type="button"
+              class="btn subtle"
+              (click)="removeOutput(item.itemId)"
+              [attr.aria-label]="'Remover produto ' + item.name"
+              i18n
+            >
+              Remover
+            </button>
+          </div>
+        }
+      </fieldset>
+      <label class="check"
+        ><input name="taskEnabled" type="checkbox" [(ngModel)]="task.enabled" /><span i18n
+          >Incluir tarefa no total do império</span
+        ></label
+      >
+      <button type="submit" class="btn subtle" [disabled]="!draft().workers.length" i18n>
+        Adicionar ou atualizar tarefa
+      </button>
+    </form>
+  </section>
+  @if (result().value; as result) {
+    <section class="panel summary" aria-labelledby="empire-summary">
+      <h3 id="empire-summary" i18n>Seu império em um dia</h3>
+      <div class="empire-metrics">
+        <div class="metric">
+          <span i18n>Resultado após imposto e custos</span
+          ><strong>{{ result.net === null ? 'Dados incompletos' : silver(result.net) }}</strong>
+        </div>
+        <div class="metric">
+          <span i18n>Contribuição comprometida</span
+          ><strong
+            >{{
+              result.contributionKnown ? result.contribution : 'Pelo menos ' + result.contribution
+            }}
+            CP</strong
+          >
+        </div>
+        <div class="metric">
+          <span i18n>Prata por contribuição / dia</span
+          ><strong>{{
+            result.perContribution === null ? 'Não calculado' : silver(result.perContribution)
+          }}</strong>
+        </div>
+        <div class="metric">
+          <span i18n>CP economizado por conexões compartilhadas</span
+          ><strong>{{ result.sharedSavings }} CP</strong>
+        </div>
+      </div>
+      <p class="help">
+        Conexões: {{ result.connectionContribution }} CP · Cidades: {{ result.cityContribution }} CP
+        · Produção adicional: {{ result.extraContribution }} CP.
+      </p>
+      <p class="help">
+        {{ result.newConnectionContribution }} CP de novas conexões, além dos custos de cidade e
+        produção. Investimentos existentes continuam contando no orçamento total.
+      </p>
+      @if (result.contributionKnown) {
+        <p [class.notice]="result.remainingContribution < 0">
+          Saldo do orçamento: {{ result.remainingContribution }} CP.
+        </p>
+      }
+      @for (warning of result.warnings; track $index) {
+        <p class="notice" role="status">{{ warning }}</p>
+      }
+      @if (result.usedNodeIds.length) {
+        <details>
+          <summary i18n>Conexões utilizadas e investimentos existentes</summary>
+          <p class="help" i18n>
+            Marque bases já investidas para priorizar rotas com menor necessidade de contribuição
+            nova. O custo total ainda inclui essas bases.
+          </p>
+          @for (id of result.usedNodeIds; track id) {
+            <label class="check"
+              ><input
+                type="checkbox"
+                [checked]="draft().investedNodeIds.includes(id)"
+                (change)="invested(id)"
+              /><span>{{ nodeName(id) }}</span></label
+            >
+          }
+          @for (id of draft().investedNodeIds; track id) {
+            @if (!result.usedNodeIds.includes(id)) {
+              <label class="check"
+                ><input type="checkbox" checked (change)="invested(id)" /><span
+                  >{{ nodeName(id) }} · fora das rotas atuais</span
+                ></label
+              >
+            }
+          }
+        </details>
+      }
+    </section>
+    <section class="panel" aria-labelledby="empire-compare">
+      <h3 id="empire-compare" i18n>Comparar tarefas</h3>
+      <div class="form-grid">
+        <label class="field"
+          ><span i18n>Filtrar pela cidade do trabalhador</span
+          ><select [ngModel]="cityFilter()" (ngModelChange)="cityFilter.set($event)">
+            <option value="" i18n>Todas</option>
+            @for (city of cities(); track city) {
+              <option [value]="city">{{ nodeName(city) }}</option>
+            }
+          </select></label
+        >
+        <label class="field"
+          ><span i18n>Ordenar por</span
+          ><select [ngModel]="order()" (ngModelChange)="order.set($event)">
+            <option value="net" i18n>Maior resultado diário</option>
+            <option value="cp" i18n>Maior resultado por CP da rota isolada</option>
+          </select></label
+        >
+      </div>
+      <p class="help" i18n>
+        A ordenação por CP compara rota e produção isoladas, sem infraestrutura da cidade. O resumo
+        acima usa conexões compartilhadas. Isto não é uma otimização global automática.
+      </p>
+      <div class="task-grid">
+        @for (row of ranked(); track row.id) {
+          <article class="task-card" [class.paused]="!row.enabled">
+            <p class="tool-kicker">{{ row.enabled ? 'NO IMPÉRIO' : 'SÓ COMPARAÇÃO' }}</p>
+            <h4>{{ row.name }}</h4>
+            <p>{{ row.worker.name }} · {{ nodeName(row.worker.cityNodeId) }}</p>
+            <strong class="task-return">{{
+              row.net === null || !row.route ? 'Dados incompletos' : silver(row.net) + ' / dia'
+            }}</strong>
+            <p>
+              {{ row.cycles }} ciclos completos ·
+              {{ row.standaloneContribution ?? 'CP desconhecido' }}
+              {{ row.standaloneContribution === null ? '' : 'CP na rota e produção isoladas' }}
+            </p>
+            <ul>
+              @for (item of row.outputs; track item.itemId) {
+                <li>
+                  <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+                  >: {{ item.dailyQuantity }} / dia
+                </li>
+              }
+            </ul>
+            @if (row.route; as route) {
+              <details>
+                <summary i18n>Ver conexão</summary>
+                <ol>
+                  @for (node of route.nodes; track node.id) {
+                    <li>{{ node.name }} · {{ node.contribution }} CP</li>
+                  }
+                </ol>
+              </details>
+            } @else {
+              <p class="notice" i18n>Conexão não disponível. Confira cidade e destino.</p>
+            }
+            <div class="task-actions">
+              <button
+                type="button"
+                class="btn subtle"
+                (click)="toggle(row.id)"
+                [attr.aria-label]="(row.enabled ? 'Pausar ' : 'Incluir ') + row.name"
+              >
+                {{ row.enabled ? 'Pausar' : 'Incluir no império' }}
+              </button>
+              <button
+                type="button"
+                class="btn subtle"
+                (click)="editTask(row.id)"
+                [attr.aria-label]="'Editar tarefa ' + row.name"
+                i18n
+              >
+                Editar</button
+              ><button
+                type="button"
+                class="btn subtle"
+                (click)="removeTask(row.id)"
+                [attr.aria-label]="'Remover tarefa ' + row.name"
+                i18n
+              >
+                Remover
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <p class="help" i18n>
+            Adicione uma tarefa para comparar produção, custos e contribuição.
+          </p>
+        }
+      </div>
+    </section>
+  } @else {
+    <p class="notice" role="status">{{ result().error }}</p>
+  }
+  <div class="empire-save">
+    <button class="btn" type="button" (click)="save()" [disabled]="store.blocked()" i18n>
+      Salvar meu império</button
+    ><a routerLink="/settings" i18n>Exportar meus dados</a>
+  </div>
+  <p class="help" i18n>
+    Este planejamento não acessa sua conta do jogo. Preços e rendimentos são informados por você;
+    não há atualização automática de drops, habilidades, distância, recursos regionais ou
+    alimentação. Os cálculos são estimativas, sem garantia de venda.
+  </p>
+</section>

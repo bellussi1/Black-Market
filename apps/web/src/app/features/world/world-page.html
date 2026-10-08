@@ -7,6 +7,7 @@
       trabalhadores com o rendimento e a duração que você observa.
     </p>
   </header>
+  <app-worker-empire [nodes]="nodes()" />
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
