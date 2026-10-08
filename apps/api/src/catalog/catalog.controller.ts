@@ -11,6 +11,8 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { CatalogService } from './catalog.service';
 import { CatalogAssetsService } from './catalog-assets.service';
+import { parseCatalogQuery } from './catalog-query';
+import { CatalogSitemapService } from './catalog-sitemap.service';
 
 @ApiTags('Catálogo')
 @Controller()
@@ -18,7 +20,43 @@ export class CatalogController {
   constructor(
     private readonly catalog: CatalogService,
     private readonly assets: CatalogAssetsService,
+    private readonly sitemap: CatalogSitemapService,
   ) {}
+  @Get('catalog/sitemap.xml')
+  @Header('Content-Type', 'application/xml; charset=utf-8')
+  @Header('Cache-Control', 'public, max-age=3600')
+  sitemapIndex() {
+    return this.sitemap.index();
+  }
+  @Get('catalog/sitemaps/:type/:page')
+  @Header('Content-Type', 'application/xml; charset=utf-8')
+  @Header('Cache-Control', 'public, max-age=3600')
+  sitemapPage(@Param('type') type: string, @Param('page', ParseIntPipe) page: number) {
+    return this.sitemap.page(type, page);
+  }
+
+  @Get('catalog/icon-index')
+  @Header('Cache-Control', 'public, max-age=300')
+  async iconIndex(@Query() raw: Record<string, unknown>) {
+    const query = parseCatalogQuery(raw, { pagination: false });
+    const dataset = await this.catalog.getActiveDataset(
+      query.region,
+      query.locale,
+      query.preferredLocale,
+    );
+    return this.assets.getIconIndex(dataset?.checksum ?? null);
+  }
+
+  @Get('recipes')
+  @ApiOperation({ summary: 'Pesquisa receitas pelo nome do produto' })
+  listRecipes(@Query() query: Record<string, unknown>) {
+    return this.catalog.listRecipes(query);
+  }
+  @Get('recipes/:key')
+  @ApiOperation({ summary: 'Receita com materiais, resultados e imagens' })
+  recipe(@Param('key') key: string, @Query() query: Record<string, unknown>) {
+    return this.catalog.recipe(key, query);
+  }
 
   @Get('items/:id/icon')
   @Header('Cache-Control', 'public, max-age=31536000, immutable')

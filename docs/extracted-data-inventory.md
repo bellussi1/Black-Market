@@ -2,33 +2,33 @@
 
 Relatório gerado pela leitura dos arquivos reais listados em `.build-outputs.json`. Contagens descrevem a extração, não comprovam cobertura integral do jogo. Campos são preservados como encontrados; tabelas, probabilidades e relações ainda precisam de validação antes de virar funcionalidades.
 
-Itens, receitas e categorias estão integrados. As demais coleções permanecem como arquivos locais; não são automaticamente consumidas pelas telas. Ícones de itens têm publicação separada. Os arquivos não contêm o armazém, a prata ou os equipamentos pessoais de uma conta.
+Itens, receitas e categorias estão integrados. Coleções selecionadas de 19 outros arquivos alimentam 26 tipos de referência (87.165 registros nesta extração). A integração preserva dados originais; não significa que todos os campos estejam interpretados ou participem de cálculos. Metadados e mapa-base continuam locais. Ícones de itens têm publicação separada. Os arquivos não contêm o armazém, a prata ou os equipamentos pessoais de uma conta.
 
-| Arquivo                      |   Tamanho | Coleções / registros                                                | Situação            |
-| ---------------------------- | --------: | ------------------------------------------------------------------- | ------------------- |
-| adventure_journals.json      |   1.31 MB | journals: 13; bonuses: 98; totalBonuses: 10                         | Integração pendente |
-| caphras.json                 |   0.28 MB | raiz: 10                                                            | Integração pendente |
-| character_progression.json   |   1.48 MB | classes: 32; levelRules: 6157; breath: 51; strength: 51; health: 51 | Integração pendente |
-| characters.json              |   3.83 MB | raiz: 4186                                                          | Integração pendente |
-| class_skills.json            |   3.28 MB | groups: 2820; trees: 62; treeMetadata: 2                            | Integração pendente |
-| crystal_rules.json           |   0.00 MB | groups: 42; specialSlots: 7                                         | Integração pendente |
-| fishingspots.json            |   0.06 MB | raiz: 402                                                           | Integração pendente |
-| item_enhancements.json       | 269.50 MB | raiz: 30058                                                         | Integração pendente |
-| item_improvements.json       |   0.33 MB | rows: 3816                                                          | Integração pendente |
-| item_sets.json               |   0.04 MB | raiz: 100                                                           | Integração pendente |
-| items.json                   |  79.01 MB | raiz: 74216                                                         | Integrado           |
-| knowledge.json               |   8.26 MB | entries: 12604; themes: 939                                         | Integração pendente |
-| life_skill_progression.json  |   0.11 MB | raiz: 15                                                            | Integração pendente |
-| lightstone_combinations.json |   0.11 MB | combinations: 165; aliases: 105                                     | Integração pendente |
-| manufacture.json             |   0.93 MB | raiz: 7066                                                          | Integração pendente |
-| marketcategories.json        |   0.01 MB | raiz: 18                                                            | Integrado           |
-| mastery.json                 |   0.01 MB | cooking: 61; alchemy: 61; processing: 76                            | Integração pendente |
-| npcs.json                    |   0.67 MB | raiz: 2491                                                          | Integração pendente |
-| quests.json                  |  11.15 MB | raiz: 19248                                                         | Integração pendente |
-| recipes.json                 |   1.01 MB | raiz: 5063                                                          | Integrado           |
-| world.json                   |  10.37 MB | territories: 14; regions: 1594; nodes: 1080                         | Integração pendente |
-| worldmap.json                |   0.00 MB | transform: 2                                                        | Integração pendente |
-| zones.json                   |   0.48 MB | raiz: 112                                                           | Integração pendente |
+| Arquivo                      |   Tamanho | Coleções / registros                                                | Situação                            |
+| ---------------------------- | --------: | ------------------------------------------------------------------- | ----------------------------------- |
+| adventure_journals.json      |   1.31 MB | journals: 13; bonuses: 98; totalBonuses: 10                         | Referências selecionadas integradas |
+| caphras.json                 |   0.28 MB | raiz: 10                                                            | Referências selecionadas integradas |
+| character_progression.json   |   1.48 MB | classes: 32; levelRules: 6157; breath: 51; strength: 51; health: 51 | Referências selecionadas integradas |
+| characters.json              |   3.83 MB | raiz: 4186                                                          | Referências selecionadas integradas |
+| class_skills.json            |   3.28 MB | groups: 2820; trees: 62; treeMetadata: 2                            | Referências selecionadas integradas |
+| crystal_rules.json           |   0.00 MB | groups: 42; specialSlots: 7                                         | Referências selecionadas integradas |
+| fishingspots.json            |   0.06 MB | raiz: 402                                                           | Referências selecionadas integradas |
+| item_enhancements.json       | 269.50 MB | raiz: 30058                                                         | Referências selecionadas integradas |
+| item_improvements.json       |   0.33 MB | rows: 3816                                                          | Referências selecionadas integradas |
+| item_sets.json               |   0.04 MB | raiz: 100                                                           | Referências selecionadas integradas |
+| items.json                   |  79.01 MB | raiz: 74216                                                         | Integrado                           |
+| knowledge.json               |   8.26 MB | entries: 12604; themes: 939                                         | Referências selecionadas integradas |
+| life_skill_progression.json  |   0.11 MB | raiz: 15                                                            | Referências selecionadas integradas |
+| lightstone_combinations.json |   0.11 MB | combinations: 165; aliases: 105                                     | Referências selecionadas integradas |
+| manufacture.json             |   0.93 MB | raiz: 7066                                                          | Referências selecionadas integradas |
+| marketcategories.json        |   0.01 MB | raiz: 18                                                            | Integrado                           |
+| mastery.json                 |   0.01 MB | cooking: 61; alchemy: 61; processing: 76                            | Referências selecionadas integradas |
+| npcs.json                    |   0.67 MB | raiz: 2491                                                          | Referências selecionadas integradas |
+| quests.json                  |  11.15 MB | raiz: 19248                                                         | Referências selecionadas integradas |
+| recipes.json                 |   1.01 MB | raiz: 5063                                                          | Integrado                           |
+| world.json                   |  10.37 MB | territories: 14; regions: 1594; nodes: 1080                         | Referências selecionadas integradas |
+| worldmap.json                |   0.00 MB | transform: 2                                                        | Metadados locais                    |
+| zones.json                   |   0.48 MB | raiz: 112                                                           | Referências selecionadas integradas |
 
 ## Campos por conjunto
 

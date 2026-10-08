@@ -1,12 +1,47 @@
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { z } from 'zod';
 
 import { iconPath, readIcon, readIconAliases } from './catalog-assets';
 
 @Injectable()
 export class CatalogAssetsService {
+  private readonly indices = new Map<string, unknown>();
+  async getIconIndex(checksum: string | null) {
+    if (!checksum || !/^[a-f0-9]{64}$/.test(checksum))
+      throw new NotFoundException('Leitura de imagens indisponível.');
+    const cached = this.indices.get(checksum);
+    if (cached) return cached;
+    try {
+      const path = join(
+        this.config.getOrThrow<string>('CATALOG_ASSETS_DIR'),
+        checksum,
+        'icon-index-v1.json',
+      );
+      if ((await stat(path)).size > 8 * 1024 * 1024) throw new Error('Índice grande.');
+      const schema = z.object({
+        algorithm: z.literal('dhash-top-v1'),
+        checksum: z.literal(checksum),
+        entries: z
+          .array(
+            z.object({
+              hash: z.string().regex(/^[a-f0-9]{16}$/),
+              ids: z.array(z.number().int().positive()).max(74216),
+            }),
+          )
+          .max(100000),
+      });
+      const result = schema.parse(JSON.parse(await readFile(path, 'utf8')));
+      if (this.indices.size >= 2) this.indices.delete(this.indices.keys().next().value!);
+      this.indices.set(checksum, result);
+      return result;
+    } catch {
+      throw new NotFoundException('Leitura de imagens indisponível no momento.');
+    }
+  }
   private readonly manifests = new Map<string, Promise<Record<string, string>>>();
 
   constructor(private readonly config: ConfigService) {}

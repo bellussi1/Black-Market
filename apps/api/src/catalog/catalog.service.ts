@@ -36,6 +36,103 @@ export class CatalogService {
     private readonly assets: CatalogAssetsService,
   ) {}
 
+  async listRecipes(rawQuery: Record<string, unknown>) {
+    const query = parseCatalogQuery(rawQuery);
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset)
+      return { recipes: [], total: 0, page: query.page, pageSize: query.pageSize, dataset: null };
+    const filters = [eq(recipes.datasetVersionId, dataset.id), eq(recipeOutputs.position, 0)];
+    if (query.search)
+      for (const word of this.normalizedSearch(query.search).split(/\s+/))
+        filters.push(
+          sql`${catalogNameExpression(itemTranslations.name)} like ${'%' + word.replace(/[\\%_]/g, '\\$&') + '%'}`,
+        );
+    const relation = and(
+      eq(recipeOutputs.datasetVersionId, recipes.datasetVersionId),
+      eq(recipeOutputs.recipeKey, recipes.recipeKey),
+    );
+    const translated = and(
+      eq(itemTranslations.datasetVersionId, recipes.datasetVersionId),
+      eq(itemTranslations.itemId, recipeOutputs.itemId),
+      eq(itemTranslations.language, dataset.locale),
+    );
+    const [total] = await this.database.db
+      .select({ total: count() })
+      .from(recipes)
+      .innerJoin(recipeOutputs, relation)
+      .innerJoin(itemTranslations, translated)
+      .where(and(...filters));
+    const rows = await this.database.db
+      .select({
+        key: recipes.recipeKey,
+        type: recipes.recipeType,
+        station: recipes.station,
+        itemId: recipeOutputs.itemId,
+        name: itemTranslations.name,
+        quantity: recipeOutputs.quantity,
+      })
+      .from(recipes)
+      .innerJoin(recipeOutputs, relation)
+      .innerJoin(itemTranslations, translated)
+      .where(and(...filters))
+      .orderBy(asc(itemTranslations.name), asc(recipes.recipeKey))
+      .limit(query.pageSize)
+      .offset((query.page - 1) * query.pageSize);
+    return {
+      recipes: await Promise.all(
+        rows.map(async (row) => ({
+          ...row,
+          iconUrl: await this.assets.getIconUrl(row.itemId, dataset.checksum),
+        })),
+      ),
+      total: Number(total?.total ?? 0),
+      page: query.page,
+      pageSize: query.pageSize,
+      dataset: this.toSummary(dataset),
+    };
+  }
+
+  async recipe(key: string, rawQuery: Record<string, unknown>) {
+    if (key.length > 160) throw new NotFoundException('Receita não encontrada.');
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset) throw new NotFoundException('Receitas indisponíveis nesta região.');
+    const [row] = await this.database.db
+      .select({
+        key: recipes.recipeKey,
+        type: recipes.recipeType,
+        station: recipes.station,
+        byproductOfItemId: recipes.byproductOfItemId,
+      })
+      .from(recipes)
+      .where(and(eq(recipes.datasetVersionId, dataset.id), eq(recipes.recipeKey, key)))
+      .limit(1);
+    if (!row) throw new NotFoundException('Receita não encontrada.');
+    const parts = async (table: typeof recipeIngredients | typeof recipeOutputs) => {
+      const members = await this.database.db
+        .select({ itemId: table.itemId, name: itemTranslations.name, quantity: table.quantity })
+        .from(table)
+        .innerJoin(
+          itemTranslations,
+          and(
+            eq(itemTranslations.datasetVersionId, table.datasetVersionId),
+            eq(itemTranslations.itemId, table.itemId),
+            eq(itemTranslations.language, dataset.locale),
+          ),
+        )
+        .where(and(eq(table.datasetVersionId, dataset.id), eq(table.recipeKey, key)))
+        .orderBy(asc(table.position));
+      return Promise.all(
+        members.map(async (member) => ({
+          ...member,
+          iconUrl: await this.assets.getIconUrl(member.itemId, dataset.checksum),
+        })),
+      );
+    };
+    const [inputs, outputs] = await Promise.all([parts(recipeIngredients), parts(recipeOutputs)]);
+    return { recipe: { ...row, inputs, outputs }, dataset: this.toSummary(dataset) };
+  }
+
   async listItems(rawQuery: Record<string, unknown>): Promise<CatalogPage> {
     const query = parseCatalogQuery(rawQuery);
     const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
@@ -437,11 +534,7 @@ export class CatalogService {
     return result;
   }
 
-  private async getActiveDataset(
-    region: string,
-    locale?: string,
-    preferredLocale = DEFAULT_DATA_LOCALE,
-  ) {
+  async getActiveDataset(region: string, locale?: string, preferredLocale = DEFAULT_DATA_LOCALE) {
     const baseFilter = [
       eq(datasetVersions.source, 'bdo-data-extractor'),
       eq(datasetVersions.region, region),

@@ -50,18 +50,58 @@ for (const filename of manifest.files) {
   globalThis.gc?.();
 }
 const integrated = new Set(['items.json', 'recipes.json', 'marketcategories.json']);
+const references = new Set([
+  'adventure_journals.json',
+  'caphras.json',
+  'character_progression.json',
+  'characters.json',
+  'class_skills.json',
+  'crystal_rules.json',
+  'fishingspots.json',
+  'item_enhancements.json',
+  'item_improvements.json',
+  'item_sets.json',
+  'knowledge.json',
+  'life_skill_progression.json',
+  'lightstone_combinations.json',
+  'manufacture.json',
+  'mastery.json',
+  'npcs.json',
+  'quests.json',
+  'world.json',
+  'zones.json',
+]);
+const selectedSections = {
+  'adventure_journals.json': ['journals', 'bonuses'],
+  'character_progression.json': ['classes'],
+  'class_skills.json': ['groups', 'trees'],
+  'crystal_rules.json': ['groups'],
+  'item_improvements.json': ['rows'],
+  'knowledge.json': ['entries', 'themes'],
+  'lightstone_combinations.json': ['combinations'],
+  'mastery.json': ['cooking', 'alchemy', 'processing'],
+  'world.json': ['nodes', 'regions', 'territories'],
+};
+const referenceCollections = reports
+  .filter((report) => references.has(report.filename))
+  .flatMap((report) =>
+    report.collections.filter((collection) =>
+      (selectedSections[report.filename] ?? ['raiz']).includes(collection.path),
+    ),
+  );
+const referenceCount = referenceCollections.reduce((sum, collection) => sum + collection.count, 0);
 const lines = [
   '# Inventário dos dados extraídos',
   '',
   'Relatório gerado pela leitura dos arquivos reais listados em `.build-outputs.json`. Contagens descrevem a extração, não comprovam cobertura integral do jogo. Campos são preservados como encontrados; tabelas, probabilidades e relações ainda precisam de validação antes de virar funcionalidades.',
   '',
-  'Itens, receitas e categorias estão integrados. As demais coleções permanecem como arquivos locais; não são automaticamente consumidas pelas telas. Ícones de itens têm publicação separada. Os arquivos não contêm o armazém, a prata ou os equipamentos pessoais de uma conta.',
+  `Itens, receitas e categorias estão integrados. Coleções selecionadas de ${references.size} outros arquivos alimentam ${referenceCollections.length} tipos de referência (${referenceCount.toLocaleString('pt-BR')} registros nesta extração). A integração preserva dados originais; não significa que todos os campos estejam interpretados ou participem de cálculos. Metadados e mapa-base continuam locais. Ícones de itens têm publicação separada. Os arquivos não contêm o armazém, a prata ou os equipamentos pessoais de uma conta.`,
   '',
   '| Arquivo | Tamanho | Coleções / registros | Situação |',
   '| --- | ---: | --- | --- |',
   ...reports.map(
     (report) =>
-      `| ${report.filename} | ${(report.size / 1024 / 1024).toFixed(2)} MB | ${report.collections.map((collection) => `${collection.path}: ${collection.count}`).join('; ') || 'metadados'} | ${integrated.has(report.filename) ? 'Integrado' : 'Integração pendente'} |`,
+      `| ${report.filename} | ${(report.size / 1024 / 1024).toFixed(2)} MB | ${report.collections.map((collection) => `${collection.path}: ${collection.count}`).join('; ') || 'metadados'} | ${integrated.has(report.filename) ? 'Integrado' : references.has(report.filename) ? 'Referências selecionadas integradas' : 'Metadados locais'} |`,
   ),
   '',
   '## Campos por conjunto',

@@ -37,7 +37,11 @@ try {
     } | ConvertTo-Json
     return
   }
-  if (-not $taskNeedsImport) { Write-Output 'O catálogo corresponde ao cliente instalado. Nenhuma importação necessária.'; return }
+  if (-not $taskNeedsImport) {
+    & (Join-Path $PSScriptRoot 'publish-reference-data.ps1') -ExtractionVersion $taskVersion -Region $Region -Locale $Locale -DatabaseUser $DatabaseUser -DatabaseName $DatabaseName
+    Write-Output 'O catálogo corresponde ao cliente instalado. Referências e índice de imagens conferidos.'
+    return
+  }
 
   if (-not (Test-Path -LiteralPath $taskExtraction)) {
     & (Join-Path $PSScriptRoot 'extract-game-data.ps1') -GamePath $taskGame -Locale $Locale -Region $Region -ExtractorCommit $ExtractorCommit
@@ -61,6 +65,7 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Falha na migração; publicação interrompida.' }
   docker compose --profile data run --rm --no-deps import node apps/api/dist/catalog/import-game-data.js --input "/workspace/data/extracted/$taskVersion" --assets /workspace/data/assets --version $taskImportVersion --region $Region --locale $Locale
   if ($LASTEXITCODE -ne 0) { throw 'Falha na importação. O catálogo anterior permanece ativo.' }
+  & (Join-Path $PSScriptRoot 'publish-reference-data.ps1') -ExtractionVersion $taskVersion -Region $Region -Locale $Locale -DatabaseUser $DatabaseUser -DatabaseName $DatabaseName
   docker compose up -d --no-deps api
   if ($LASTEXITCODE -ne 0) { throw 'Catálogo publicado; confira a inicialização da aplicação.' }
   Set-Content -LiteralPath (Join-Path $taskWorkspace 'data/current-extraction.txt') -Value $taskVersion -Encoding utf8NoBOM
