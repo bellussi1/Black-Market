@@ -9,6 +9,22 @@
       </ng-container>
     </p>
   </header>
+  <section class="panel">
+    <label class="field"
+      ><span i18n>Preencher com meu personagem</span
+      ><select [(ngModel)]="profileId" (change)="useProfile()">
+        <option value="" i18n>Escolha um personagem</option>
+        @for (profile of profiles; track profile.id) {
+          <option [value]="profile.id">{{ profile.name }}</option>
+        }
+      </select></label
+    >
+    <p class="help" i18n>
+      PA, PD e orçamento vêm da ficha que você salvou. Confira os ganhos das melhorias antes de
+      comparar.
+    </p>
+  </section>
+  <app-equipment-reference />
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >

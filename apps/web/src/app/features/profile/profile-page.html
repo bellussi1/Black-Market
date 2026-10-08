@@ -1,0 +1,103 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>MEU PERSONAGEM</p>
+    <h1 i18n>Seu ponto de partida.</h1>
+    <p i18n>
+      Informe os valores que vê no jogo. Prata, energia, equipamentos e maestria ajudam a comparar
+      atividades. Você pode corrigir tudo a qualquer momento.
+    </p>
+  </header>
+  @if (message()) {
+    <p class="notice" role="status">{{ message() }}</p>
+  }
+  <section class="panel">
+    <div class="action-row">
+      <label class="field"
+        ><span i18n>Personagem salvo</span
+        ><select [(ngModel)]="selected" (change)="load()">
+          <option value="" i18n>Novo personagem</option>
+          @for (profile of profiles(); track profile.id) {
+            <option [value]="profile.id">{{ profile.name }}</option>
+          }
+        </select></label
+      ><button class="btn subtle" type="button" (click)="create()" i18n>Novo</button>
+    </div>
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Nome ou apelido</span><input [(ngModel)]="draft.name" maxlength="80" /></label
+      ><label class="field"
+        ><span i18n>Prata disponível</span
+        ><input [(ngModel)]="draft.silver" inputmode="numeric" /></label
+      ><label class="field"
+        ><span i18n>Energia disponível</span
+        ><input type="number" min="0" max="2000" [(ngModel)]="draft.energy" /></label
+      ><label class="field"
+        ><span i18n>Tempo ativo disponível (minutos)</span
+        ><input type="number" min="1" max="1440" [(ngModel)]="draft.activeMinutes" /></label
+      ><label class="field"
+        ><span i18n>Tempo AFK disponível (minutos)</span
+        ><input type="number" min="0" max="1440" [(ngModel)]="draft.afkMinutes"
+      /></label>
+    </div>
+    <h2 i18n>Atributos mostrados no jogo</h2>
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>PA principal</span
+        ><input type="number" [(ngModel)]="draft.mainAp" min="0" max="5000" /></label
+      ><label class="field"
+        ><span i18n>PA de despertar</span
+        ><input type="number" [(ngModel)]="draft.awakeAp" min="0" max="5000" /></label
+      ><label class="field"
+        ><span i18n>PD</span><input type="number" [(ngModel)]="draft.dp" min="0" max="5000"
+      /></label>
+    </div>
+    <h2 i18n>Maestria por profissão</h2>
+    <p class="help" i18n>
+      Maestria pode incluir buffs temporários. Sozinha, ela não determina o rendimento por hora.
+    </p>
+    <div class="form-grid">
+      @for (skill of skills; track skill) {
+        <label class="field"
+          ><span>{{ skillLabels[skill] }}</span
+          ><input type="number" min="0" max="5000" [(ngModel)]="draft.mastery[skill]"
+        /></label>
+      }
+    </div>
+    <h2 i18n>Equipamentos e ferramenta</h2>
+    <label class="field"
+      ><span i18n>Espaço do equipamento</span
+      ><select [(ngModel)]="slot">
+        @for (position of slots; track position) {
+          <option [value]="position">{{ slotLabels[position] }}</option>
+        }
+      </select></label
+    ><app-catalog-item-picker (selected)="equip($event)" />
+    @for (part of draft.gear; track part.slot) {
+      <div class="row-editor">
+        <strong>{{ slotLabels[part.slot] }} · {{ part.name }}</strong>
+        <div class="form-grid">
+          <label class="field"
+            ><span i18n>Nível de aprimoramento</span
+            ><input type="number" min="0" max="30" [(ngModel)]="part.level" /></label
+          ><label class="field"
+            ><span i18n>Nível de Caphras</span
+            ><input type="number" min="0" max="20" [(ngModel)]="part.caphras"
+          /></label>
+        </div>
+        <button class="btn subtle" type="button" (click)="removeGear(part.slot)" i18n>
+          Remover equipamento
+        </button>
+      </div>
+    }
+    <p class="help" i18n>
+      Equipamentos são ligados aos itens do catálogo. Use os valores de PA/PD mostrados no jogo para
+      considerar também bônus, cristais e livros.
+    </p>
+    <div class="action-row">
+      <button class="btn" type="button" (click)="save()" i18n>Salvar personagem</button
+      ><button class="btn danger" type="button" (click)="remove()" [disabled]="!selected" i18n>
+        Excluir personagem selecionado
+      </button>
+    </div>
+  </section>
+</div>

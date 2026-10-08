@@ -5,11 +5,12 @@ import { calculateGear, type GearInput, gearSchema } from '@bdo/calculators';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { EquipmentReference } from '../../shared/equipment-reference/equipment-reference';
 import { number, silver } from '../../shared/formatters';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-gear-page',
-  imports: [FormsModule, CalculationProof],
+  imports: [FormsModule, CalculationProof, EquipmentReference],
   templateUrl: './gear-page.html',
 })
 export class GearPage {
@@ -20,6 +21,20 @@ export class GearPage {
   selected = '';
   readonly silver = silver;
   readonly number = number;
+  profileId = '';
+  get profiles() {
+    return this.store.data().characters.filter((row) => row.region === this.store.data().region);
+  }
+  useProfile() {
+    const profile = this.profiles.find((row) => row.id === this.profileId);
+    if (profile)
+      this.patch({
+        mainAp: profile.mainAp,
+        awakeAp: profile.awakeAp,
+        dp: profile.dp,
+        budget: profile.silver,
+      });
+  }
   get presets() {
     return this.store.data().gear.filter((r) => r.region === this.store.data().region);
   }
