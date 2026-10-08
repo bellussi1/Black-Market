@@ -9,6 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
@@ -28,7 +29,7 @@ type Project = Workspace['projects'][number];
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-storage-page',
-  imports: [FormsModule, CatalogItemPicker],
+  imports: [FormsModule, RouterLink, CatalogItemPicker],
   templateUrl: './storage-page.html',
 })
 export class StoragePage implements OnDestroy {

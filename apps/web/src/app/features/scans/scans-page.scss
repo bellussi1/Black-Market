@@ -1,6 +1,17 @@
 :host {
   display: block;
 }
+.capture-drop {
+  margin-block: 1rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--bm-control-border);
+  background: var(--bm-input);
+  color: var(--bm-text);
+}
+.capture-drop:focus-visible {
+  outline: 3px solid var(--bm-focus);
+  outline-offset: 3px;
+}
 .preview {
   position: relative;
   max-width: 100%;

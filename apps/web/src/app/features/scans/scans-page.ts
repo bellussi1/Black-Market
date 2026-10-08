@@ -136,11 +136,33 @@ export class ScansPage implements OnDestroy {
   async file(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    await this.openImage(file);
+  }
+  async paste(event: ClipboardEvent) {
+    const files = Array.from(event.clipboardData?.files ?? []);
+    if (!files.length) return;
+    event.preventDefault();
+    await this.openFiles(files);
+  }
+  dragOver(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = this.busy() ? 'none' : 'copy';
+  }
+  async drop(event: DragEvent) {
+    event.preventDefault();
+    await this.openFiles(Array.from(event.dataTransfer?.files ?? []));
+  }
+  private async openFiles(files: File[]) {
+    if (this.busy()) return;
+    if (files.length !== 1) {
+      this.message.set('Importe uma captura por vez. Revise e salve antes de abrir a próxima.');
+      return;
+    }
+    await this.openImage(files[0]);
+  }
+  private async openImage(file: File) {
+    if (this.busy()) return;
     const generation = ++this.generation;
-    this.cells.set([]);
-    this.numberDraft = '';
-    this.confirmStock = false;
-    this.confirmNumber = false;
     if (
       !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) ||
       file.size > 10 * 1024 * 1024
@@ -159,6 +181,10 @@ export class ScansPage implements OnDestroy {
         this.message.set('O print é muito grande. Recorte a parte que deseja importar.');
         return;
       }
+      this.cells.set([]);
+      this.numberDraft = '';
+      this.confirmStock = false;
+      this.confirmNumber = false;
       this.image?.close();
       this.image = image;
       this.width = image.width;

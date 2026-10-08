@@ -29,41 +29,70 @@
     </button>
   </div>
   @if (tab() === 'stock') {
-    <section class="panel" aria-labelledby="storage-import-title">
+    <section class="panel" aria-labelledby="storage-start-title">
+      <p class="tool-kicker" i18n>SEM PLANILHA PARA COMEÇAR</p>
+      <h2 id="storage-start-title" i18n>Traga seus materiais por print.</h2>
+      <p class="help" i18n>
+        O BDO não exporta seu armazém em CSV. Para cadastrar muitos materiais, experimente a leitura
+        assistida de uma captura. Para poucos itens, a busca manual pode ser mais rápida.
+      </p>
+      <ol>
+        <li i18n>
+          Abra o armazém ou inventário no jogo, confira a cidade e deixe os itens e quantidades
+          visíveis.
+        </li>
+        <li i18n>
+          Capture a grade de itens. Na tela de importação, cole com Ctrl + V, arraste a imagem ou
+          escolha um arquivo.
+        </li>
+        <li i18n>
+          Ajuste o recorte e a grade, leia, confira os itens e quantidades e confirme o local antes
+          de salvar.
+        </li>
+      </ol>
+      <div class="action-row">
+        <a class="btn" routerLink="/scans" i18n>Importar por print</a
+        ><a class="btn subtle" href="#storage-manual-title" i18n>Cadastrar poucos itens</a>
+      </div>
       <details>
-        <summary i18n>Como trazer meu armazém do jogo?</summary>
+        <summary i18n>Como fazer a captura e evitar itens duplicados?</summary>
         <p class="help" i18n>
-          O jogo não exporta seu armazém para uma planilha. Você não precisa de um arquivo para
-          começar: use a busca de itens abaixo e informe as quantidades que vê no jogo.
-        </p>
-        <ol>
-          <li i18n>
-            Abra o armazém no BDO e confira a cidade. Para o inventário, use o nome do personagem
-            como local.
-          </li>
-          <li i18n>
-            Em “Adicionar ou editar material”, busque o item pelo nome, selecione-o e copie a
-            quantidade exibida no jogo.
-          </li>
-          <li i18n>
-            Confira o local e salve. Repita para os materiais que deseja acompanhar. Meta e preço
-            podem ficar em zero.
-          </li>
-          <li i18n>
-            Para editar muitos itens, exporte a planilha dos materiais cadastrados, altere as
-            quantidades e importe de volta.
-          </li>
-        </ol>
-        <p class="help" i18n>
-          Se preferir começar por uma planilha, baixe o modelo abaixo e preencha as cinco colunas. O
-          código do item aparece no resultado da busca. “meta” e “preco” podem ficar vazios;
-          mantenha os separadores entre as colunas.
+          No Windows, use Win + Shift + S e selecione a grade. Se o jogo não permitir esse atalho,
+          use sua ferramenta de captura habitual e escolha a imagem salva.
         </p>
         <p class="help" i18n>
-          O arquivo precisa estar salvo como CSV UTF-8, separado por ponto e vírgula. Confira a
-          prévia antes de confirmar. Prints ainda não são reconhecidos automaticamente.
+          Não cubra os itens com dicas ou outras janelas. Mantenha a escala original. Se precisar
+          rolar o armazém, importe uma captura por vez e confira os itens repetidos ou divididos em
+          pilhas.
+        </p>
+        <p class="help" i18n>
+          O reconhecimento pode errar: você sempre revisa antes de aplicar. A quantidade substitui o
+          mesmo item e local; itens fora da captura permanecem. Não há soma automática de prints
+          sobrepostos.
         </p>
       </details>
+      <p class="help" i18n>
+        A imagem é lida neste navegador. Não é enviada para sua conta. Você não precisa informar
+        senha do jogo nem instalar um programa.
+      </p>
+    </section>
+    <details class="panel">
+      <summary i18n>Já tenho uma planilha: importar ou baixar modelo CSV</summary>
+      <p class="help" i18n>
+        O CSV vem de uma planilha sua ou da exportação dos materiais já cadastrados no Black Market.
+        Não existe um botão para exportar esse arquivo diretamente do jogo.
+      </p>
+      <ol>
+        <li i18n>Baixe o modelo ou exporte os materiais cadastrados nesta plataforma.</li>
+        <li i18n>
+          Na planilha, preencha código do item, quantidade e local. O código aparece na busca do
+          catálogo; meta e preço são opcionais.
+        </li>
+        <li i18n>
+          Salve como CSV UTF-8, separado por ponto e vírgula. Importe o arquivo, revise a prévia e
+          confirme.
+        </li>
+      </ol>
       <div class="panel-heading">
         <h2 id="storage-import-title" i18n>Importar armazém por CSV</h2>
         <button class="btn subtle" type="button" (click)="downloadImportTemplate()" i18n>
@@ -161,10 +190,10 @@
         </div>
       }
       <p class="help" i18n>
-        A leitura de prints está planejada e terá revisão antes de salvar. Este CSV não acessa sua
-        conta ou os arquivos do jogo.
+        Este arquivo organiza os materiais cadastrados por você. Não acessa sua conta ou os arquivos
+        do jogo.
       </p>
-    </section>
+    </details>
     <div class="metric-grid">
       <div class="metric">
         <span><ng-container i18n>Registros nesta região</ng-container></span
@@ -179,7 +208,9 @@
       </div>
     </div>
     <section class="panel">
-      <h2><ng-container i18n>Adicionar ou editar material</ng-container></h2>
+      <h2 id="storage-manual-title" tabindex="-1">
+        <ng-container i18n>Adicionar ou editar material</ng-container>
+      </h2>
       <app-catalog-item-picker [selectionName]="draft.name" (selected)="selectStock($event)" />
       <div class="form-grid">
         <label class="field"

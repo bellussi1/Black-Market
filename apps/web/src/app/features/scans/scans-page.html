@@ -17,7 +17,24 @@
         some capturas sobrepostas.
       </li>
     </ol>
-    <label for="print-file" i18n>Print PNG, JPG ou WebP — até 10 MB</label
+    <div
+      class="capture-drop"
+      tabindex="0"
+      role="group"
+      aria-label="Área para colar ou arrastar uma captura do jogo"
+      i18n-aria-label
+      (paste)="paste($event)"
+      (dragover)="dragOver($event)"
+      (drop)="drop($event)"
+    >
+      <strong i18n>Cole ou arraste seu print aqui</strong>
+      <p i18n>
+        No Windows, capture com Win + Shift + S. Depois, clique nesta área ou chegue até ela com Tab
+        e pressione Ctrl + V.
+      </p>
+      <p class="help" i18n>Uma captura por vez. Você também pode escolher um arquivo abaixo.</p>
+    </div>
+    <label for="print-file" i18n>Escolher imagem PNG, JPG ou WebP — até 10 MB</label
     ><input
       id="print-file"
       type="file"
