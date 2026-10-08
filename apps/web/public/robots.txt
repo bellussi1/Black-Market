@@ -1,0 +1,8 @@
+# Public content may be crawled. This file is not an access control mechanism.
+# Private pages must enforce authentication and send noindex in HTML/HTTP headers.
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Add Sitemap with the real production origin when a sitemap is generated.
+# Settings and storage remain crawlable so compliant bots can see noindex.

@@ -1,0 +1,25 @@
+# Black Market
+
+> Plataforma brasileira para jogadores de Black Desert Online, com foco inicial em SA e português brasileiro.
+
+Este arquivo é uma orientação experimental. Não concede acesso a dados privados e não substitui robots.txt, autenticação ou condições de uso.
+
+## Consulta pública
+
+- [Início](/): apresentação e acesso às ferramentas.
+- [Sobre, fontes e perguntas frequentes](/sobre/): conteúdo HTML legível sem JavaScript.
+- [Catálogo](/database/items): itens, imagens, categorias e descrições.
+- [Mercado](/market): consulta de preços e disponibilidade; considerar origem e data de atualização.
+- [Produção](/crafting): receitas e planejamento de custos e materiais.
+- [Profissões](/lifeskills): planejamento de atividades a partir dos valores informados.
+- [Aprimoramento](/enhancement): planejamento de materiais, probabilidades e custos.
+- [Caixas](/rng): estimativas de retorno com os valores informados.
+- [Buffs](/buffs): organização de efeitos para atividades.
+
+## Interpretação
+
+Preços e estimativas podem mudar. Lucro por hora depende de tempo, rendimento, impostos, liquidez e custos, além da maestria. Não apresentar estimativas como garantia de lucro.
+
+Armazéns, inventários, equipamentos pessoais, preferências e backups não são fontes públicas. Não solicitar credenciais do jogo para consultar esta plataforma.
+
+As ferramentas da aplicação dependem de JavaScript; a página Sobre oferece conteúdo HTML estático. Este arquivo não equivale a uma exportação da base de dados nem garante descoberta por crawlers.

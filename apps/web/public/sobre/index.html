@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101713" />
+    <meta
+      name="description"
+      content="Conheça o Black Market: catálogo e ferramentas de Black Desert para SA, fontes dos dados e importação de materiais em português brasileiro."
+    />
+    <title>Black Market — Fontes dos dados e perguntas frequentes</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        background: #101713;
+        color: #eee9db;
+        font:
+          16px/1.7 'Segoe UI',
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 860px;
+        margin: auto;
+        padding: 56px 24px;
+      }
+      h1,
+      h2 {
+        font-family: Georgia, serif;
+        line-height: 1.2;
+        text-wrap: balance;
+      }
+      h1 {
+        font-size: clamp(32px, 5vw, 52px);
+      }
+      h2 {
+        font-size: 26px;
+        margin-top: 40px;
+      }
+      a {
+        color: #e0bb91;
+        text-underline-offset: 4px;
+      }
+      a:focus-visible {
+        outline: 3px solid #f3cc95;
+        outline-offset: 5px;
+      }
+      .kicker {
+        color: #c3ceb9;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+      }
+      .intro {
+        font-size: 18px;
+      }
+      section {
+        border-top: 1px solid #6b796b;
+        margin-top: 32px;
+        padding-top: 8px;
+      }
+      li {
+        margin: 10px 0;
+      }
+      footer {
+        margin-top: 40px;
+        color: #c3ceb9;
+      }
+      .notice {
+        padding: 20px;
+        background: #18251c;
+        border-left: 3px solid #d6a577;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav aria-label="Voltar à plataforma"><a href="/">← Black Market</a></nav>
+      <p class="kicker">BLACK DESERT ONLINE · SA · PORTUGUÊS BRASILEIRO</p>
+      <h1>Seus próximos passos começam com informação.</h1>
+      <p class="intro">
+        O Black Market reúne um catálogo de itens e ferramentas para comparar custos, organizar
+        materiais e planejar atividades em Black Desert Online.
+      </p>
+      <p>
+        O projeto está em desenvolvimento. Recursos disponíveis e limitações são apresentados nas
+        telas; contas, leitura de prints e recomendações automáticas ainda estão planejadas.
+      </p>
+      <section aria-labelledby="tools-title">
+        <h2 id="tools-title">Ferramentas disponíveis</h2>
+        <ul>
+          <li>
+            <a href="/database/items">Catálogo de itens</a>: nomes, imagens, categorias, descrições
+            e receitas relacionadas.
+          </li>
+          <li>
+            <a href="/market">Mercado e imposto</a>: consulta de cotação por item, custos e valor
+            líquido de venda.
+          </li>
+          <li>
+            <a href="/crafting">Oficina de produção</a>: ingredientes, custos, rendimento informado
+            e planejamento de materiais.
+          </li>
+          <li>
+            <a href="/lifeskills">Profissões</a>: sessões registradas, prata por hora e comparação
+            de atividades.
+          </li>
+          <li>
+            <a href="/storage">Armazém pessoal</a>: seleção de materiais e importação por CSV com
+            prévia.
+          </li>
+        </ul>
+      </section>
+      <section aria-labelledby="sources-title">
+        <h2 id="sources-title">De onde vêm os dados?</h2>
+        <p>
+          Itens, categorias, receitas e imagens vêm de uma extração versionada do cliente SA do
+          jogo, feita pelo mantenedor com o
+          <a href="https://github.com/iDevelopThings/bdo-data-extractor" rel="noopener noreferrer"
+            >bdo-data-extractor</a
+          >. A API do Black Market fornece esses dados às ferramentas.
+        </p>
+        <p>
+          Preços vêm do provedor comunitário
+          <a href="https://github.com/guy0090/api.arsha.io" rel="noopener noreferrer">Arsha</a>. Ele
+          mantém cache, e respostas podem ter atraso ou ficar indisponíveis. Cada consulta informa
+          sua origem e horário; não representa um feed de cada transação do jogo.
+        </p>
+        <p>
+          Quantidades de armazém, valores personalizados e resultados de sessões são informados pelo
+          jogador. Um print ou CSV não comprova automaticamente o estoque atual da conta.
+        </p>
+      </section>
+      <section aria-labelledby="questions-title">
+        <h2 id="questions-title">Perguntas frequentes</h2>
+        <h3>Preciso executar o extractor para usar o site?</h3>
+        <p>
+          Não. A operação da plataforma mantém o catálogo central. O jogador consulta os dados pela
+          interface.
+        </p>
+        <h3>Como importar meu armazém?</h3>
+        <p>
+          Selecione itens pelo catálogo ou use o modelo CSV da página Armazém. Revise os nomes,
+          quantidades e locais antes de confirmar. Somente as linhas importadas são atualizadas.
+        </p>
+        <h3>Já é possível importar por print?</h3>
+        <p>
+          A leitura de prints está planejada. Será necessário revisar itens parecidos, quantidades e
+          capturas sobrepostas antes de salvar. Ela ainda não está disponível nesta versão.
+        </p>
+        <h3>Maestria determina quanto vou ganhar por hora?</h3>
+        <p>
+          Não sozinha. Rendimento depende também de atividade, rota, ritmo, energia, ferramenta,
+          buffs, custos e preços. Resultados observados e estimativas devem ser apresentados
+          separadamente.
+        </p>
+        <h3>Os dados pessoais são sincronizados?</h3>
+        <p>
+          A versão atual guarda dados pessoais no navegador, com exportação de backup. Contas e
+          sincronização entre dispositivos estão planejadas.
+        </p>
+      </section>
+      <p class="notice">
+        Black Market é independente e não é uma produção da Pearl Abyss. Black Desert Online e seus
+        assets pertencem aos respectivos titulares.
+      </p>
+      <footer>
+        <p>
+          Atualizado em <time datetime="2026-10-07">7 de outubro de 2026</time>.
+          <a href="/settings">Dados e backup</a> ·
+          <a href="/llms.txt">Resumo para ferramentas de leitura</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
