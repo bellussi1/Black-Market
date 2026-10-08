@@ -6,20 +6,26 @@ import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
 import { visibleMarkets } from '../core/market-configuration';
-import { PrivacyService } from '../core/privacy.service';
 import { RegionPreferences } from '../core/region-preferences';
 import { AdSlot } from '../shared/ad-slot/ad-slot';
+import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-workspace-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, FormsModule, AdSlot, PrivacyControls],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    FormsModule,
+    AdSlot,
+    PrivacyControls,
+    PlatformFooter,
+  ],
   templateUrl: './workspace-layout.html',
   styleUrl: './workspace-layout.scss',
 })
 export class WorkspaceLayout {
-  readonly privacy = inject(PrivacyService);
-  readonly year = new Date().getFullYear();
   private readonly router = inject(Router);
   private readonly path = signal(this.router.url);
   readonly showAds = computed(

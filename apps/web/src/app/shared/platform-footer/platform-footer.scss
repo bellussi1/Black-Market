@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.platform-footer {
+  margin-top: 60px;
+  padding-block: 32px 24px;
+  border-top: 1px solid var(--bm-border);
+  color: var(--bm-muted);
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.footer-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.footer-identity,
+nav {
+  min-width: 0;
+}
+nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+a,
+button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--bm-accent);
+}
+a:hover,
+button:hover {
+  color: var(--bm-text);
+}
+.footer-brand {
+  gap: 10px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  color: var(--bm-text);
+}
+.footer-brand > span:first-child {
+  color: var(--bm-accent);
+  font-size: 24px;
+}
+p {
+  margin: 0;
+}
+.footer-identity p {
+  max-width: 34ch;
+  margin-block: 8px;
+}
+button {
+  max-width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--bm-control-border);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--bm-focus);
+  outline-offset: 3px;
+}
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bm-border);
+  font-size: 12px;
+}
+.footer-bottom p:last-child {
+  max-width: 80ch;
+}
+@media (max-width: 760px) {
+  .footer-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+  }
+}

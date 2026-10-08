@@ -1,0 +1,30 @@
+<footer class="platform-footer" aria-label="Informações do Black Market" i18n-aria-label>
+  <div class="footer-content">
+    <div class="footer-identity">
+      <a class="footer-brand" routerLink="/" aria-label="Black Market — início" i18n-aria-label>
+        <span aria-hidden="true">◇</span> <span translate="no">BLACK MARKET</span>
+      </a>
+      <p i18n>Ferramentas para a comunidade brasileira de Black Desert Online.</p>
+      <a href="/sobre/" i18n>Sobre a plataforma e as fontes</a>
+    </div>
+    <nav aria-label="Documentos da plataforma" i18n-aria-label>
+      <a routerLink="/termos" i18n>Termos de Uso</a>
+      <a routerLink="/privacidade" i18n>Política de Privacidade</a>
+      <a routerLink="/cookies" i18n>Cookies e armazenamento</a>
+    </nav>
+    <nav aria-label="Suporte e escolhas" i18n-aria-label>
+      <a routerLink="/contato" i18n>Contato e suporte</a>
+      <a routerLink="/settings" i18n>Meus dados e backup</a>
+      <button type="button" (click)="privacy.open.set(true)" i18n>
+        Preferências de privacidade
+      </button>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <p>© {{ year }} <span translate="no">Black Market</span></p>
+    <p i18n>
+      Plataforma independente, sem afiliação com a Pearl Abyss. Marcas e imagens do jogo pertencem
+      aos respectivos titulares.
+    </p>
+  </div>
+</footer>
