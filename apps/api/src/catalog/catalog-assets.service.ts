@@ -13,16 +13,19 @@ export class CatalogAssetsService {
   async getIconIndex(checksum: string | null) {
     if (!checksum || !/^[a-f0-9]{64}$/.test(checksum))
       throw new NotFoundException('Leitura de imagens indisponível.');
-    const cached = this.indices.get(checksum);
-    if (cached) return cached;
     try {
-      const path = join(
-        this.config.getOrThrow<string>('CATALOG_ASSETS_DIR'),
-        checksum,
-        'icon-index-v1.json',
-      );
+      const root = join(this.config.getOrThrow<string>('CATALOG_ASSETS_DIR'), checksum);
+      let path = join(root, 'icon-index-v2.json');
+      try {
+        await stat(path);
+      } catch (error) {
+        if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
+        path = join(root, 'icon-index-v1.json');
+      }
+      const cached = this.indices.get(path);
+      if (cached) return cached;
       if ((await stat(path)).size > 8 * 1024 * 1024) throw new Error('Índice grande.');
-      const schema = z.object({
+      const legacySchema = z.object({
         algorithm: z.literal('dhash-top-v1'),
         checksum: z.literal(checksum),
         entries: z
@@ -34,9 +37,22 @@ export class CatalogAssetsService {
           )
           .max(100000),
       });
+      const colorSchema = z.object({
+        algorithm: z.literal('rgb-top-v2'),
+        checksum: z.literal(checksum),
+        entries: z
+          .array(
+            z.object({
+              rgb: z.string().regex(/^[A-Za-z0-9+/]{256}$/),
+              ids: z.array(z.number().int().positive()).min(1).max(74216),
+            }),
+          )
+          .max(100000),
+      });
+      const schema = z.union([colorSchema, legacySchema]);
       const result = schema.parse(JSON.parse(await readFile(path, 'utf8')));
       if (this.indices.size >= 2) this.indices.delete(this.indices.keys().next().value!);
-      this.indices.set(checksum, result);
+      this.indices.set(path, result);
       return result;
     } catch {
       throw new NotFoundException('Leitura de imagens indisponível no momento.');
