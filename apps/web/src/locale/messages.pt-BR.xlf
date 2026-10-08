@@ -6010,7 +6010,7 @@
     </unit>
     <unit id="2635801333119844627">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:337,338</note>
+        <note category="location">src/app/features/scans/scans-page.html:338,339</note>
       </notes>
       <segment>
         <source>Qual é o item?</source>
@@ -6018,7 +6018,7 @@
     </unit>
     <unit id="7346985161107994493">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:343,344</note>
+        <note category="location">src/app/features/scans/scans-page.html:344,345</note>
       </notes>
       <segment>
         <source>Escolha o item correto</source>
@@ -6026,7 +6026,7 @@
     </unit>
     <unit id="8145210443163012521">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:353,354</note>
+        <note category="location">src/app/features/scans/scans-page.html:354,355</note>
       </notes>
       <segment>
         <source>Buscar outro item pelo nome</source>
@@ -6034,7 +6034,7 @@
     </unit>
     <unit id="6172090032287017636">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:355,356</note>
+        <note category="location">src/app/features/scans/scans-page.html:356,357</note>
       </notes>
       <segment>
         <source>Buscar outro item</source>
@@ -6042,7 +6042,7 @@
     </unit>
     <unit id="8345233947794114001">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:364,366</note>
+        <note category="location">src/app/features/scans/scans-page.html:365,367</note>
       </notes>
       <segment>
         <source> Possível leitura: <ph id="0" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/> (aproximadamente <ph id="1" equiv="INTERPOLATION_1" disp="{{ cell.quantityEstimate }}"/>). A leitura pode estar errada. Confira a quantidade exata no jogo e preencha abaixo. </source>
@@ -6050,7 +6050,7 @@
     </unit>
     <unit id="3665621851631074090">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:370,371</note>
+        <note category="location">src/app/features/scans/scans-page.html:371,372</note>
       </notes>
       <segment>
         <source> Não foi possível ler a quantidade com segurança. Confira no jogo; ausência de número não significa uma unidade. </source>
@@ -6058,7 +6058,7 @@
     </unit>
     <unit id="3497144153726008157">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:374,375</note>
+        <note category="location">src/app/features/scans/scans-page.html:375,376</note>
       </notes>
       <segment>
         <source>Quantidade exata</source>
@@ -6066,7 +6066,7 @@
     </unit>
     <unit id="5449016724233185474">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:383,384</note>
+        <note category="location">src/app/features/scans/scans-page.html:384,385</note>
       </notes>
       <segment>
         <source>Posição</source>
@@ -6074,7 +6074,7 @@
     </unit>
     <unit id="9111980140701891642">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:389,390</note>
+        <note category="location">src/app/features/scans/scans-page.html:390,391</note>
       </notes>
       <segment>
         <source>Escolha a posição</source>
@@ -6082,7 +6082,7 @@
     </unit>
     <unit id="5637148238605625286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:394,400</note>
+        <note category="location">src/app/features/scans/scans-page.html:395,401</note>
       </notes>
       <segment>
         <source>Nível de aprimoramento (0 a 30)<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6095,7 +6095,7 @@
     </unit>
     <unit id="6084004136727606379">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:401,408</note>
+        <note category="location">src/app/features/scans/scans-page.html:402,409</note>
       </notes>
       <segment>
         <source>Nível de Caphras<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6109,7 +6109,7 @@
     </unit>
     <unit id="7655693762592081504">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:416</note>
+        <note category="location">src/app/features/scans/scans-page.html:417</note>
       </notes>
       <segment>
         <source>Conferi no jogo. Incluir este item e seus valores.</source>
@@ -6117,7 +6117,7 @@
     </unit>
     <unit id="3551321110817968486">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:425,426</note>
+        <note category="location">src/app/features/scans/scans-page.html:426,427</note>
       </notes>
       <segment>
         <source>Quero substituir as quantidades dos itens incluídos neste local. Os demais itens serão mantidos.</source>
@@ -6125,7 +6125,7 @@
     </unit>
     <unit id="8792261646630262396">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:434,435</note>
+        <note category="location">src/app/features/scans/scans-page.html:435,436</note>
       </notes>
       <segment>
         <source> Salvar <ph id="0" equiv="INTERPOLATION" disp="{{ includedCount() }}"/> itens no armazém </source>
@@ -6133,7 +6133,7 @@
     </unit>
     <unit id="3991687278263194140">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:439,440</note>
+        <note category="location">src/app/features/scans/scans-page.html:440,441</note>
       </notes>
       <segment>
         <source>Conferi o personagem, as posições e os níveis. Quero atualizar somente os equipamentos incluídos.</source>
@@ -6141,7 +6141,7 @@
     </unit>
     <unit id="807382760292122914">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:443</note>
+        <note category="location">src/app/features/scans/scans-page.html:444</note>
       </notes>
       <segment>
         <source> Atualizar equipamentos </source>
@@ -6149,7 +6149,7 @@
     </unit>
     <unit id="6007723282262160843">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:449,450</note>
+        <note category="location">src/app/features/scans/scans-page.html:450,451</note>
       </notes>
       <segment>
         <source>Ver meu armazém →</source>
