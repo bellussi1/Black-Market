@@ -1,8 +1,15 @@
 import { DEFAULT_DATA_LOCALE } from '@bdo/shared';
-import { HttpException, HttpStatus, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Optional,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { type MarketLookup, normalizeArsha } from './arsha-provider';
+import { MarketHistoryService } from './market-history.service';
 
 const TTL = 30 * 60 * 1000;
 @Injectable()
@@ -15,7 +22,10 @@ export class MarketService {
   private windowStart = Date.now();
   private requests = 0;
   private active = 0;
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    @Optional() private readonly history?: MarketHistoryService,
+  ) {}
 
   async lookup(
     region: string,
@@ -23,9 +33,21 @@ export class MarketService {
     locale: string = DEFAULT_DATA_LOCALE,
   ): Promise<MarketLookup> {
     if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true))
-      throw new ServiceUnavailableException('Consulta externa desativada neste deploy.');
+      throw new ServiceUnavailableException('A consulta de preços está indisponível no momento.');
     const key = region + ':' + itemId + ':' + locale;
-    const held = this.cache.get(key);
+    let held = this.cache.get(key);
+    if (!held && this.history) {
+      try {
+        const saved = await this.history.latest(region, itemId, locale);
+        if (saved) {
+          held = { response: saved, expires: Date.parse(saved.fetchedAt) + TTL, retryAt: 0 };
+          if (this.cache.size >= 200) this.cache.delete(this.cache.keys().next().value!);
+          this.cache.set(key, held);
+        }
+      } catch {
+        /* In-memory quotes remain usable when persistence is unavailable. */
+      }
+    }
     const now = Date.now();
     if (held && held.expires > now) return { ...held.response, cacheStatus: 'cached' };
     if (held && held.retryAt > now) return { ...held.response, cacheStatus: 'stale' };
@@ -105,6 +127,13 @@ export class MarketService {
         expires: Date.now() + TTL,
         retryAt: 0,
       });
+      if (this.history) {
+        try {
+          await this.history.save(result);
+        } catch {
+          /* Never replace a valid upstream price with a persistence error. */
+        }
+      }
       return result;
     } catch {
       if (held) {

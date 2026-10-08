@@ -10,6 +10,7 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { MarketService } from './market.service';
+import { MarketHistoryService } from './market-history.service';
 const querySchema = z.object({
   region: z.enum(MARKET_PROVIDER_REGIONS).default(DEFAULT_REGION),
   locale: z.preprocess(
@@ -21,7 +22,23 @@ const querySchema = z.object({
 @ApiTags('Mercado')
 @Controller('market')
 export class MarketController {
-  constructor(private readonly market: MarketService) {}
+  constructor(
+    private readonly market: MarketService,
+    private readonly history: MarketHistoryService,
+  ) {}
+  @Get('items/:id/history')
+  historyFor(@Param('id') itemId: string, @Query() query: Record<string, unknown>) {
+    const input = querySchema
+      .extend({ subId: z.coerce.number().int().min(0).max(100).default(0) })
+      .safeParse({ ...query, itemId });
+    if (!input.success) throw new BadRequestException('Confira o item e a região.');
+    return this.history.history(
+      input.data.region,
+      input.data.itemId,
+      input.data.subId,
+      input.data.locale,
+    );
+  }
   @Get('items/:id')
   @ApiOperation({ summary: 'Consulta um ID no Arsha, com cache de 30 minutos' })
   @ApiQuery({ name: 'region', required: false, enum: [...MARKET_PROVIDER_REGIONS] })
