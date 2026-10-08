@@ -6,9 +6,12 @@ Atualizado em 08/10/2026. As capturas fornecidas foram usadas para calibrar e va
 
 - Detector local: luminância, periodicidade e verificação dos quatro lados dos espaços. Exclui colunas de menu, separa painéis vizinhos e sugere até quatro áreas, com ajuste manual disponível. Não identifica cidade, dono do inventário ou rolagem.
 - Até 400 espaços; revisão paginada em 12. Espaços desconhecidos e vazios permanecem disponíveis, sem inferir uma unidade.
-- `rgb-top-v2`: assinatura RGB 8 × 8 dos 80% superiores do ícone, fundo preto e redimensionamento `fit: fill`, preservando as bordas laterais como no canvas. Compara quatro recortes e tolera pequena mudança de luminosidade. Cor/forma não comprovam identidade.
+- `rgb-top-v2`: assinatura RGB 8 × 8 dos 80% superiores do ícone, fundo preto e redimensionamento `fit: fill`. O navegador calcula médias explícitas dos pixels e compara cinco recortes para selecionar até 12 fontes candidatas. Isso reduz diferenças entre motores de redimensionamento.
+- Segunda etapa: carrega apenas os ícones públicos candidatos e compara detalhes em 16 × 16, preservando a silhueta e mascarando o canto inferior direito onde aparecem os números. Reutiliza downloads entre espaços, processa quatro espaços por vez, limita cada download a dez segundos e cancela pedidos pendentes ao cancelar a leitura. Os bitmaps são liberados ao concluir. A imagem do usuário continua local; os pedidos levam somente IDs públicos e o checksum do catálogo.
+- A revisão exibe nome e ícone sugeridos mesmo quando a identidade ainda exige escolha. Empates visuais priorizam registros categorizados e comuns na apresentação; isso não comprova qual variante está no jogo nem confirma o estoque.
 - Aliases do mesmo arquivo determinam ícones compartilhados; arquivos com assinaturas parecidas permanecem separados. O índice antigo `dhash-top-v1` continua aceito.
-- Tesseract.js existente, carregado sob demanda, lê números em folhas de contato de até 50 recortes por lote. Linhas que cruzam espaços e fragmentos ambíguos são recusados.
+- Leitura local de silhuetas de dígitos calibradas com um exemplo autorizado: segmentação da faixa numérica, comparação de proporção/forma e concordância entre pelo menos dois de três limiares. Os modelos guardam somente pequenos padrões binários dos dígitos. Não são uma rede neural nem um modelo universal para todas as fontes.
+- Tesseract.js existente é carregado sob demanda para os espaços não resolvidos pela leitura local, em folhas de contato de até 50 recortes. Linhas que cruzam espaços e fragmentos ambíguos são recusados.
 - `k/K` e `m/M` geram estimativas, nunca quantidades exatas pré-preenchidas. Inteiros são sugeridos a partir de confiança 50 do OCR; esse limiar **não significa 50% de precisão medida**. Tudo exige revisão.
 - Correção de item, quantidade, posição, aprimoramento e Caphras desfaz a revisão da linha e a confirmação final. Importar preserva os demais itens e reservas.
 - Analytics não recebe imagens, nomes de arquivo, texto OCR ou quantidades privadas. Nenhum estoque pessoal foi alterado durante a validação.
@@ -32,6 +35,12 @@ Foram examinadas as sete imagens novas e as duas anteriores:
 O script passou nos nove casos; a recusa do layout irregular é esperada. Isso **não demonstra cobertura de todos os layouts**. Tempos locais do detector ficaram aproximadamente entre 0,14 e 1,80 segundos, com imagens limitadas a 1.100 pixels no maior eixo. São medições com Node/Sharp, não Core Web Vitals ou tempo de OCR no navegador.
 
 Não foi medida a acurácia global de identificação ou quantidade: falta uma referência completa, confirmada pelo jogador, por espaço. A execução no navegador mostrou erros em capturas borradas, inclusive confusão entre dígitos e abreviações. Sugestões, estimativas e campos pendentes são exibidos para correção.
+
+### Regressão de reconhecimento em 08/10/2026
+
+Na captura nítida de inventário/depósito lado a lado, a primeira página foi conferida no navegador com as quantidades **48, 11, 7, 16, 4, 2, 5, 3, 2, 3, 14 e 33**: doze campos corretos e preenchidos, contra quatro campos corretos/preenchidos observados antes nesta mesma amostra. Ela também participou da calibração; **12/12 não é uma medida de generalização**. Os testes de regressão guardam somente máscaras binárias de pequenos recortes, sem a captura original.
+
+O catálogo passou a apresentar as famílias visuais de corda, pirilampo, intensificadores, poções e poções de tendão de baleia. Existem imagens literalmente iguais em registros distintos: por exemplo, uma poção compartilha desenho com um registro de batom, e cordas normais/eventos/outros objetos podem compartilhar desenho. Por isso a leitura mantém variantes na seleção e solicita confirmação; reconhecer o desenho não prova o ID exato. Imagens borradas e outras fontes ainda podem resultar em campos vazios ou sugestões incorretas.
 
 ## Repetir sem guardar capturas no Git
 
