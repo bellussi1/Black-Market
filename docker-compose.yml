@@ -90,6 +90,9 @@ services:
     build: .
     command: ['node', 'apps/api/dist/catalog/import-game-data.js']
     environment:
+      NODE_ENV: development
+      MARKET_COLLECTOR_ENABLED: 'false'
+      MARKET_PROVIDER_ENABLED: 'false'
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
     volumes:
       - ./data/extracted:/workspace/data/extracted:ro
