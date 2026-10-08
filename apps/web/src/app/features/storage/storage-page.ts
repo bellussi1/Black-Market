@@ -13,6 +13,7 @@ import type { CatalogItem } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
+import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import type { StorageCsvRow } from '../../core/storage-csv';
 import { parseStorageCsv, StorageCsvError } from '../../core/storage-csv';
@@ -31,6 +32,7 @@ type Project = Workspace['projects'][number];
   templateUrl: './storage-page.html',
 })
 export class StoragePage implements OnDestroy {
+  private readonly analytics = inject(AnalyticsService);
   private readonly catalog = inject(CatalogApiService);
   private importRequest?: Subscription;
   private importGeneration = 0;
@@ -179,6 +181,11 @@ export class StoragePage implements OnDestroy {
       return { ...state, inventory };
     });
     if (saved) {
+      this.analytics.capture('journey_completed', {
+        feature: 'storage',
+        action: 'import',
+        status: 'success',
+      });
       this.cancelImport();
       this.importMessage.set(
         $localize`Importação concluída. Itens fora das linhas importadas foram mantidos.`,

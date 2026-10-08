@@ -1,0 +1,290 @@
+<div class="tool-page guided-page">
+  <header class="page-heading">
+    <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+    <h1 i18n>Importar por print</h1>
+    <p i18n>
+      Abra uma captura do jogo. A imagem é lida neste navegador e não é enviada para sua conta.
+      Confira cada resultado antes de salvar.
+    </p>
+  </header>
+  <section class="panel">
+    <h2 i18n>1. Escolha a captura</h2>
+    <ol>
+      <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
+      <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
+      <li i18n>
+        Para itens, recorte uma grade regular de espaços. Confira cada página separadamente; não
+        some capturas sobrepostas.
+      </li>
+    </ol>
+    <label for="print-file" i18n>Print PNG, JPG ou WebP — até 10 MB</label
+    ><input
+      id="print-file"
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      (change)="file($event)"
+      [disabled]="busy()"
+    />
+    <p i18n>
+      A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A
+      leitura pode confundir itens e números.
+    </p>
+  </section>
+  @if (preview(); as image) {
+    <section class="panel">
+      <h2 i18n>2. Ajuste o recorte</h2>
+      <button
+        type="button"
+        (click)="picking.set(!picking())"
+        [attr.aria-pressed]="picking()"
+        [disabled]="busy()"
+        i18n
+      >
+        Selecionar recorte na imagem
+      </button>
+      <p i18n>
+        Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos
+        campos abaixo.
+      </p>
+      <figure>
+        <div
+          class="preview"
+          [class.picking]="picking()"
+          (pointerdown)="cropDown($event)"
+          (pointermove)="cropMove($event)"
+          (pointerup)="cropUp($event)"
+          (pointercancel)="cropUp($event)"
+        >
+          <img [src]="image" [draggable]="false" alt="Captura selecionada para revisão" i18n-alt />
+          <div
+            class="crop"
+            [style.left.%]="(bounds.left / width) * 100"
+            [style.top.%]="(bounds.top / height) * 100"
+            [style.width.%]="(bounds.width / width) * 100"
+            [style.height.%]="(bounds.height / height) * 100"
+          ></div>
+        </div>
+        <figcaption>
+          {{ width }} × {{ height }}
+          <ng-container i18n>pixels. O contorno mostra a área que será lida.</ng-container>
+        </figcaption>
+      </figure>
+      <fieldset [disabled]="busy()">
+        <legend i18n>Área da imagem</legend>
+        <div class="form-grid">
+          <label i18n
+            >Distância da esquerda<input
+              type="number"
+              [(ngModel)]="bounds.left"
+              min="0"
+              [max]="width" /></label
+          ><label i18n
+            >Distância do topo<input
+              type="number"
+              [(ngModel)]="bounds.top"
+              min="0"
+              [max]="height" /></label
+          ><label i18n
+            >Largura<input type="number" [(ngModel)]="bounds.width" min="9" [max]="width" /></label
+          ><label i18n
+            >Altura<input type="number" [(ngModel)]="bounds.height" min="8" [max]="height"
+          /></label>
+        </div>
+        <label for="scan-mode" i18n>O que deseja ler?</label
+        ><select id="scan-mode" [(ngModel)]="mode" (ngModelChange)="changeMode()">
+          <option value="storage" i18n>Itens e quantidades do armazém</option>
+          <option value="number" i18n>Um número do personagem</option>
+          <option value="gear" i18n>Equipamento do personagem</option>
+        </select>
+        @if (mode !== 'number') {
+          @if (mode === 'gear') {
+            <p i18n>
+              Recorte um ícone de equipamento por vez e use uma linha e uma coluna. A posição, o
+              aprimoramento e Caphras precisam ser conferidos manualmente.
+            </p>
+          }
+          <label i18n
+            >Colunas da grade<input type="number" [(ngModel)]="columns" min="1" max="100" /></label
+          ><label i18n
+            >Linhas da grade<input type="number" [(ngModel)]="rows" min="1" max="100"
+          /></label>
+          <p i18n>
+            O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de
+            100 espaços por leitura.
+          </p>
+        } @else {
+          <p i18n>
+            Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como
+            “1,2 M”, precisam ser digitados por completo.
+          </p>
+        }
+        <button (click)="read()" i18n>Ler recorte</button>
+      </fieldset>
+      @if (busy()) {
+        <p role="status">{{ progress() }}</p>
+        <button (click)="cancel()" i18n>Cancelar leitura</button>
+      }
+    </section>
+  }
+  @if (message()) {
+    <p role="status">{{ message() }}</p>
+  }
+  @if (preview() && !busy()) {
+    @if (mode === 'number') {
+      <section class="panel">
+        <h2 i18n>3. Confira o valor</h2>
+        <label for="scan-profile" i18n>Personagem</label
+        ><select id="scan-profile" [(ngModel)]="profileId">
+          <option value="" i18n>Escolha seu personagem</option>
+          @for (profile of profiles(); track profile.id) {
+            <option [value]="profile.id">{{ profile.name }}</option>
+          }</select
+        ><a routerLink="/profile" i18n>Cadastrar personagem</a
+        ><label for="scan-field" i18n>Campo a atualizar</label
+        ><select id="scan-field" [(ngModel)]="field" (ngModelChange)="confirmNumber = false">
+          @for (option of numericFields; track option.id) {
+            <option [value]="option.id">{{ option.name }}</option>
+          }</select
+        ><label for="scan-number" i18n>Valor inteiro, sem abreviações</label
+        ><input
+          id="scan-number"
+          [(ngModel)]="numberDraft"
+          (ngModelChange)="confirmNumber = false"
+          inputmode="numeric"
+          maxlength="30"
+        /><label
+          ><input type="checkbox" [(ngModel)]="confirmNumber" /><ng-container i18n
+            >Conferi o personagem, o campo e o valor no jogo.</ng-container
+          ></label
+        ><button (click)="applyNumber()" [disabled]="!confirmNumber" i18n>
+          Atualizar personagem
+        </button>
+      </section>
+    } @else if (cells().length) {
+      <section class="panel">
+        <h2 i18n>3. Confira os espaços encontrados</h2>
+        <p i18n>
+          As sugestões são comparações visuais. Itens com a mesma imagem podem ter nomes e
+          aprimoramentos diferentes. Escolha o item correto ou busque pelo nome.
+        </p>
+        @if (mode === 'storage') {
+          <label for="scan-location" i18n>Local deste estoque</label
+          ><input
+            id="scan-location"
+            [(ngModel)]="location"
+            maxlength="120"
+            (ngModelChange)="confirmStock = false"
+          />
+        } @else {
+          <label for="gear-profile" i18n>Personagem</label
+          ><select id="gear-profile" [(ngModel)]="profileId">
+            <option value="" i18n>Escolha seu personagem</option>
+            @for (profile of profiles(); track profile.id) {
+              <option [value]="profile.id">{{ profile.name }}</option>
+            }
+          </select>
+        }
+        <div class="scan-cells">
+          @for (cell of cells(); track cell.id) {
+            <article class="panel">
+              <img
+                [src]="cell.preview"
+                width="64"
+                height="64"
+                alt="Espaço recortado do print"
+                i18n-alt
+              /><label [for]="'scan-item-' + cell.id" i18n>Sugestões</label
+              ><select
+                [id]="'scan-item-' + cell.id"
+                [ngModel]="cell.item?.id ?? ''"
+                (ngModelChange)="choose(cell, $event)"
+              >
+                <option value="" i18n>Escolha o item correto</option>
+                @for (option of cell.options; track option.id) {
+                  <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
+                }</select
+              ><app-catalog-item-picker
+                label="Buscar outro item"
+                i18n-label
+                [selectionName]="cell.item?.name ?? ''"
+                (selected)="select(cell, $event)"
+              />
+              @if (cell.item; as item) {
+                <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+              }
+              @if (mode === 'storage') {
+                <label [for]="'scan-qty-' + cell.id" i18n>Quantidade</label
+                ><input
+                  [id]="'scan-qty-' + cell.id"
+                  [(ngModel)]="cell.quantity"
+                  (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                  inputmode="numeric"
+                  maxlength="15"
+                />
+              } @else {
+                <label [for]="'gear-slot-' + cell.id" i18n>Posição</label
+                ><select
+                  [id]="'gear-slot-' + cell.id"
+                  [(ngModel)]="cell.slot"
+                  (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                >
+                  <option value="" i18n>Escolha a posição</option>
+                  @for (slot of slots; track slot) {
+                    <option [value]="slot">{{ slotLabels[slot] }}</option>
+                  }</select
+                ><label i18n
+                  >Nível de aprimoramento (0 a 30)<input
+                    type="number"
+                    [(ngModel)]="cell.level"
+                    min="0"
+                    max="30"
+                    (ngModelChange)="cell.reviewed = false; confirmStock = false" /></label
+                ><label i18n
+                  >Nível de Caphras<input
+                    type="number"
+                    [(ngModel)]="cell.caphras"
+                    min="0"
+                    max="20"
+                    (ngModelChange)="cell.reviewed = false; confirmStock = false"
+                /></label>
+              }
+              <label
+                ><input
+                  type="checkbox"
+                  [(ngModel)]="cell.include"
+                  (ngModelChange)="confirmStock = false"
+                /><ng-container i18n>Incluir este espaço</ng-container></label
+              ><label
+                ><input
+                  type="checkbox"
+                  [(ngModel)]="cell.reviewed"
+                  (ngModelChange)="confirmStock = false"
+                /><ng-container i18n
+                  >Conferi o item e todos os seus valores no jogo</ng-container
+                ></label
+              >
+            </article>
+          }
+        </div>
+        @if (mode === 'storage') {
+          <label
+            ><input type="checkbox" [(ngModel)]="confirmStock" /><ng-container i18n
+              >Quero substituir as quantidades dos itens incluídos neste local. Os demais itens
+              serão mantidos.</ng-container
+            ></label
+          ><button (click)="applyStock()" [disabled]="!confirmStock" i18n>Atualizar armazém</button>
+        } @else {
+          <label
+            ><input type="checkbox" [(ngModel)]="confirmStock" /><ng-container i18n
+              >Conferi o personagem, as posições e os níveis. Quero atualizar somente os
+              equipamentos incluídos.</ng-container
+            ></label
+          ><button (click)="applyGear()" [disabled]="!confirmStock" i18n>
+            Atualizar equipamentos
+          </button>
+        }
+      </section>
+    }
+  }
+  <a routerLink="/storage" i18n>Ver meu armazém →</a>
+</div>
