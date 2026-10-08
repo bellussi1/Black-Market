@@ -5,6 +5,7 @@ export interface DataProvenance {
 }
 
 export * from './markets';
+export * from './platform';
 
 export interface CursorPage<T> {
   items: T[];
@@ -77,6 +78,22 @@ export interface CatalogRecipesResponse {
   recipes: CatalogRecipe[];
   total: number;
   direction: 'produces' | 'uses';
+  dataset: ActiveDatasetSummary | null;
+}
+
+export interface RecipeListResponse {
+  recipes: {
+    key: string;
+    type: string;
+    station: string | null;
+    itemId: number;
+    name: string;
+    quantity: string | null;
+    iconUrl: string | null;
+  }[];
+  total: number;
+  page: number;
+  pageSize: number;
   dataset: ActiveDatasetSummary | null;
 }
 
