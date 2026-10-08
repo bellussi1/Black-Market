@@ -9,6 +9,41 @@
       </ng-container>
     </p>
   </header>
+  <section class="panel">
+    <h2 i18n>Contexto da atividade</h2>
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Uso do tempo</span
+        ><select [ngModel]="form().mode ?? 'active'" (ngModelChange)="patch({ mode: $event })">
+          <option value="active" i18n>Ativo</option>
+          <option value="afk" i18n>AFK</option>
+        </select></label
+      ><label class="field"
+        ><span i18n>Profissão desta sessão</span
+        ><select
+          [ngModel]="form().skill ?? ''"
+          (ngModelChange)="patch({ skill: $event || undefined })"
+        >
+          <option value="" i18n>Não informada</option>
+          @for (skill of skills; track skill.id) {
+            <option [value]="skill.id">{{ skill.label }}</option>
+          }
+        </select></label
+      ><label class="field"
+        ><span i18n>Maestria usada na sessão</span
+        ><input
+          type="number"
+          min="0"
+          max="5000"
+          [ngModel]="form().mastery"
+          (ngModelChange)="patch({ mastery: $event ?? undefined })"
+      /></label>
+    </div>
+    <p class="help" i18n>
+      As recomendações comparam o rendimento observado. Uma mudança de maestria exige uma nova
+      sessão; não aplicamos multiplicadores desconhecidos.
+    </p>
+  </section>
   <div class="tabs">
     <button
       type="button"

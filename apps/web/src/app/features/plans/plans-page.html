@@ -1,0 +1,99 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>MEUS PLANOS</p>
+    <h1 i18n>Do objetivo à próxima tarefa.</h1>
+    <p i18n>
+      Organize os materiais e reserve o que já possui. A mesma quantidade não pode ser reservada em
+      dois planos. Reservas não retiram materiais do jogo nem alteram seu estoque.
+    </p>
+  </header>
+  @if (message()) {
+    <p class="notice" role="status">{{ message() }}</p>
+  }
+  <section class="panel">
+    <h2 i18n>Criar ou editar plano</h2>
+    <label class="field"
+      ><span i18n>Objetivo</span><input [(ngModel)]="draft.name" maxlength="140" /></label
+    ><label class="field"
+      ><span i18n>Quantidade do material a adicionar</span
+      ><input type="number" min="1" [(ngModel)]="quantity" /></label
+    ><app-catalog-item-picker (selected)="add($event)" />
+    @for (material of draft.materials; track material.itemId) {
+      <div class="row-editor">
+        <strong>{{ material.name }}</strong
+        ><label class="field"
+          ><span i18n>Quantidade necessária</span
+          ><input type="number" min="1" [(ngModel)]="material.quantity" /></label
+        ><button class="btn subtle" type="button" (click)="removeMaterial(material.itemId)" i18n>
+          Remover material
+        </button>
+      </div>
+    }
+    <label class="field"
+      ><span i18n>Próxima tarefa</span><input [(ngModel)]="task" maxlength="300" /></label
+    ><button class="btn subtle" type="button" (click)="addTask()" i18n>Adicionar tarefa</button>
+    @for (taskRow of draft.tasks; track taskRow.id) {
+      <p>{{ taskRow.label }}</p>
+    }
+    <div class="action-row">
+      <button class="btn" type="button" (click)="save()" i18n>Salvar plano</button>
+    </div>
+  </section>
+  @for (plan of plans(); track plan.id) {
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>{{ plan.name }}</h2>
+        <span class="badge">{{ statusLabel(plan.status) }}</span>
+      </div>
+      @if (plan.estimatedProfit !== null) {
+        <p i18n>
+          Retorno estimado: {{ silver(plan.estimatedProfit) }} · {{ plan.minutes }} minutos
+        </p>
+      }
+      <ul>
+        @for (material of plan.materials; track material.itemId) {
+          <li>
+            {{ material.name }} ·
+            <span i18n
+              >{{ material.quantity }} necessários · {{ stock(plan, material.itemId) }} no
+              armazém</span
+            >
+          </li>
+        }
+      </ul>
+      @for (taskRow of plan.tasks; track taskRow.id) {
+        <label class="check-row"
+          ><input type="checkbox" [checked]="taskRow.done" (change)="toggle(plan, taskRow.id)" />{{
+            taskRow.label
+          }}</label
+        >
+      }
+      <div class="action-row">
+        <button class="btn subtle" type="button" (click)="edit(plan)" i18n>Editar</button>
+        @if (plan.status === 'draft') {
+          <button
+            class="btn"
+            type="button"
+            (click)="status(plan, 'reserved')"
+            [disabled]="!plan.materials.length"
+            i18n
+          >
+            Reservar materiais
+          </button>
+        }
+        @if (plan.status === 'reserved' || plan.status === 'draft') {
+          <button class="btn subtle" type="button" (click)="status(plan, 'completed')" i18n>
+            Marcar concluído</button
+          ><button class="btn subtle" type="button" (click)="status(plan, 'cancelled')" i18n>
+            Cancelar plano
+          </button>
+        }
+      </div>
+    </section>
+  }
+  @if (!plans().length) {
+    <p class="notice" i18n>
+      Comece com um objetivo e alguns materiais, ou transforme uma recomendação em plano.
+    </p>
+  }
+</div>

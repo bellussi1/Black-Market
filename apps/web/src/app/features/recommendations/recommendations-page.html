@@ -1,0 +1,130 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>GANHAR PRATA</p>
+    <h1 i18n>O que fazer agora?</h1>
+    <p i18n>
+      Compare suas sessões e cenários de produção com o tempo, a prata e a energia disponíveis. Toda
+      sugestão mostra a origem e as condições da estimativa.
+    </p>
+  </header>
+  @if (message()) {
+    <p class="notice" role="status">{{ message() }}</p>
+  }
+  <section class="panel">
+    <h2 i18n>Vender o que já possui</h2>
+    <p i18n>
+      Confira o valor de venda do estoque livre. Materiais reservados ficam de fora. Sem saber o
+      tempo para vender, não tratamos este valor como prata por hora.
+    </p>
+    <label
+      ><input type="checkbox" [(ngModel)]="valuePack" /><span i18n
+        >Tenho Pacote Econômico para recolher as vendas</span
+      ></label
+    >
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th i18n>Item</th>
+            <th i18n>Quantidade livre</th>
+            <th i18n>Recebimento estimado</th>
+            <th i18n>Consulta</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (option of saleOptions(); track option.id) {
+            <tr>
+              <td>
+                <a routerLink="/market" [queryParams]="{ item: option.id }">{{ option.name }}</a>
+              </td>
+              <td>{{ option.quantity }}</td>
+              <td>
+                {{ option.net === null ? 'Informe um preço no mercado' : silver(option.net) }}
+              </td>
+              <td>{{ option.observedAt ?? 'Preço informado manualmente' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" i18n>
+                Cadastre os itens do armazém e seus preços para comparar vendas.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  @if (profile(); as player) {
+    <section class="panel">
+      <label class="field"
+        ><span i18n>Personagem</span
+        ><select [ngModel]="player.id" (ngModelChange)="selected.set($event)">
+          @for (row of profiles(); track row.id) {
+            <option [value]="row.id">{{ row.name }}</option>
+          }
+        </select></label
+      >
+      <p i18n>
+        {{ player.activeMinutes }} minutos ativos · {{ silver(player.silver) }} disponíveis ·
+        {{ player.energy }} de energia
+      </p>
+      <a routerLink="/profile" i18n>Editar personagem e preferências</a>
+    </section>
+    @for (row of suggestions(); track row.id) {
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>{{ row.name }}</h2>
+          <span class="badge">{{ row.basis }}</span>
+        </div>
+        @if (row.perHour !== null) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span i18n>Prata estimada por hora</span><strong>{{ silver(row.perHour) }}</strong>
+            </div>
+            <div class="metric">
+              <span i18n>Retorno neste período</span><strong>{{ silver(row.profit) }}</strong>
+            </div>
+            <div class="metric">
+              <span i18n>Desembolso estimado</span><strong>{{ silver(row.cashCost) }}</strong>
+            </div>
+          </div>
+        } @else {
+          <p class="notice" i18n>
+            Faltam dados ou recursos para comparar esta opção com seu personagem.
+          </p>
+        }
+        <p i18n>{{ row.minutes }} minutos · {{ row.energy }} de energia</p>
+        <ul>
+          @for (warning of row.warnings; track $index) {
+            <li>{{ warning }}</li>
+          }
+        </ul>
+        <button class="btn" type="button" (click)="createPlan(row)" i18n>
+          Transformar em plano
+        </button>
+      </section>
+    }
+    @if (!suggestions().length) {
+      <section class="panel">
+        <h2 i18n>Crie sua primeira comparação</h2>
+        <p i18n>
+          Registre uma sessão de coleta/profissão ou salve um cenário na oficina. Não inventamos
+          rendimentos para atividades que você ainda não informou.
+        </p>
+        <div class="action-row">
+          <a class="btn" routerLink="/lifeskills" i18n>Registrar atividade</a
+          ><a class="btn subtle" routerLink="/crafting" i18n>Planejar produção</a>
+        </div>
+      </section>
+    }
+  } @else {
+    <section class="panel">
+      <h2 i18n>Comece pelo seu personagem</h2>
+      <p i18n>
+        Informe prata, energia e tempo disponível. Depois, registre uma atividade ou salve uma
+        receita para comparar.
+      </p>
+      <a class="btn" routerLink="/profile" i18n>Cadastrar personagem</a>
+    </section>
+  }
+</div>

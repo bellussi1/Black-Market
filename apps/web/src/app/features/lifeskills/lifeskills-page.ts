@@ -28,6 +28,19 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
 })
 export class LifeskillsPage {
   readonly store = inject(WorkspaceStore);
+  readonly skills = [
+    { id: 'gathering', label: 'Coleta' },
+    { id: 'cooking', label: 'Culinária' },
+    { id: 'alchemy', label: 'Alquimia' },
+    { id: 'processing', label: 'Processamento' },
+    { id: 'fishing', label: 'Pesca' },
+    { id: 'hunting', label: 'Caça' },
+    { id: 'training', label: 'Treino' },
+    { id: 'farming', label: 'Cultivo' },
+    { id: 'sailing', label: 'Navegação' },
+    { id: 'barter', label: 'Permuta' },
+    { id: 'trading', label: 'Comércio' },
+  ];
   readonly tab = signal('sessions');
   readonly form = signal<ActivityInput>({
     ...defaultTax,
