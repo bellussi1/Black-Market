@@ -1,66 +1,123 @@
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { DestroyRef, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { Subject } from 'rxjs';
+
 export interface PrivacyChoices {
   version: 1;
   analytics: boolean;
   updatedAt: string;
 }
-const KEY = 'black-market.privacy.v1';
+export const PRIVACY_KEY = 'black-market.privacy.v1';
+export const PRIVACY_LIFETIME = 180 * 86400000;
+export function validPrivacyChoices(raw: unknown, now = Date.now()): PrivacyChoices | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const value = raw as Record<string, unknown>;
+  if (
+    Object.keys(value).length !== 3 ||
+    value['version'] !== 1 ||
+    typeof value['analytics'] !== 'boolean' ||
+    typeof value['updatedAt'] !== 'string'
+  )
+    return null;
+  const timestamp = Date.parse(value['updatedAt']);
+  const age = now - timestamp;
+  if (
+    !Number.isFinite(timestamp) ||
+    new Date(timestamp).toISOString() !== value['updatedAt'] ||
+    age < 0 ||
+    age >= PRIVACY_LIFETIME
+  )
+    return null;
+  return { version: 1, analytics: value['analytics'], updatedAt: value['updatedAt'] };
+}
+
 @Injectable({ providedIn: 'root' })
 export class PrivacyService {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
-  readonly choices = signal<PrivacyChoices | null>(null);
+  private readonly document = inject(DOCUMENT);
+  private readonly state = signal<PrivacyChoices | null>(null);
+  private readonly changed = new Subject<PrivacyChoices | null>();
+  readonly changes = this.changed.asObservable();
+  readonly choices = this.state.asReadonly();
   readonly open = signal(false);
   readonly optionalAvailable = signal(false);
+  readonly storageWarning = signal<string | null>(null);
+  private sessionOnly = false;
+  private timer?: ReturnType<typeof setTimeout>;
+
   constructor() {
     const destroy = inject(DestroyRef);
     if (this.browser) {
       this.load();
-      const listener = (event: StorageEvent) => {
-        if (event.key === KEY) this.load();
+      const storage = (event: StorageEvent) => {
+        if (event.key === PRIVACY_KEY || event.key === null) {
+          this.sessionOnly = false;
+          this.load();
+        }
       };
-      window.addEventListener('storage', listener);
-      destroy.onDestroy(() => window.removeEventListener('storage', listener));
+      const refresh = () => {
+        if (this.sessionOnly) this.update(validPrivacyChoices(this.state()));
+        else this.load();
+      };
+      const visible = () => {
+        if (this.document.visibilityState === 'visible') refresh();
+      };
+      window.addEventListener('storage', storage);
+      window.addEventListener('focus', refresh);
+      this.document.addEventListener('visibilitychange', visible);
+      destroy.onDestroy(() => {
+        window.removeEventListener('storage', storage);
+        window.removeEventListener('focus', refresh);
+        this.document.removeEventListener('visibilitychange', visible);
+        clearTimeout(this.timer);
+        this.changed.complete();
+      });
     }
   }
   private load() {
+    let choice: PrivacyChoices | null = null;
     try {
-      const raw = JSON.parse(localStorage.getItem(KEY) ?? 'null') as unknown;
-      this.choices.set(null);
-      if (
-        raw &&
-        typeof raw === 'object' &&
-        'version' in raw &&
-        raw.version === 1 &&
-        'analytics' in raw &&
-        typeof raw.analytics === 'boolean' &&
-        'updatedAt' in raw &&
-        typeof raw.updatedAt === 'string'
-      ) {
-        const age = Date.now() - Date.parse(raw.updatedAt);
-        if (age >= 0 && age < 180 * 86400000)
-          this.choices.set({ version: 1, analytics: raw.analytics, updatedAt: raw.updatedAt });
-      }
+      choice = validPrivacyChoices(JSON.parse(localStorage.getItem(PRIVACY_KEY) ?? 'null'));
     } catch {
-      this.choices.set(null);
+      /* Fail closed when a saved choice cannot be read. */
+    }
+    this.update(choice);
+  }
+  private update(choice: PrivacyChoices | null) {
+    clearTimeout(this.timer);
+    this.state.set(choice);
+    // Consumers cancel optional requests synchronously, without waiting for an Angular effect.
+    this.changed.next(choice);
+    if (choice && this.browser) {
+      const remaining = Date.parse(choice.updatedAt) + PRIVACY_LIFETIME - Date.now();
+      this.timer = setTimeout(
+        () => this.update(validPrivacyChoices(this.state())),
+        Math.min(86400000, Math.max(0, remaining)),
+      );
     }
   }
   save(analytics: boolean) {
     const value: PrivacyChoices = { version: 1, analytics, updatedAt: new Date().toISOString() };
-    this.choices.set(value);
-    this.open.set(false);
+    this.storageWarning.set(null);
     if (this.browser) {
       try {
-        localStorage.setItem(KEY, JSON.stringify(value));
+        localStorage.setItem(PRIVACY_KEY, JSON.stringify(value));
+        this.sessionOnly = false;
       } catch {
-        /* Session choice still applies. */
+        this.sessionOnly = true;
+        this.storageWarning.set(
+          'Não foi possível guardar sua escolha. Ela vale enquanto esta página estiver aberta.',
+        );
       }
     }
+    this.update(value);
+    // Keep the panel open to explain a session-only choice when browser storage is blocked.
+    this.open.set(this.storageWarning() !== null);
   }
   allowsAnalytics() {
-    return this.choices()?.analytics === true;
+    return validPrivacyChoices(this.state())?.analytics === true;
   }
   needsChoice() {
-    return this.optionalAvailable() && !this.choices();
+    return this.optionalAvailable() && !validPrivacyChoices(this.state());
   }
 }

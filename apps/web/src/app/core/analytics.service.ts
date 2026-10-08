@@ -107,22 +107,15 @@ export class AnalyticsService {
   private events = 0;
   private readonly revoked = new Subject<void>();
   constructor() {
+    this.privacy.changes.pipe(takeUntilDestroyed(this.destroy)).subscribe((choice) => {
+      if (choice?.analytics !== true) this.disable();
+    });
     effect(() => {
       const consent = this.privacy.allowsAnalytics(),
         config = this.config();
       untracked(() => {
         if (!consent) {
-          this.revoked.next();
-          if (this.browser) {
-            try {
-              localStorage.removeItem('black-market.analytics.v1');
-            } catch {
-              /* Nothing persisted. */
-            }
-          }
-          this.id = '';
-          this.lastPage = '';
-          this.lastConsent = false;
+          this.disable();
           return;
         }
         if (config?.enabled && !this.lastConsent) {
@@ -132,15 +125,30 @@ export class AnalyticsService {
       });
     });
   }
+  private disable() {
+    this.revoked.next();
+    if (this.browser) {
+      try {
+        localStorage.removeItem('black-market.analytics.v1');
+      } catch {
+        /* Storage may be unavailable; the in-memory identity is still removed. */
+      }
+    }
+    this.id = '';
+    this.lastPage = '';
+    this.lastConsent = false;
+  }
   start() {
     if (this.started || !this.browser || !environment.production) return;
     this.started = true;
     this.http
       .get<Config>(environment.apiBaseUrl + '/api/v1/analytics/config', { transferCache: false })
+      .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (config) => {
           this.config.set(config);
-          this.privacy.optionalAvailable.set(config.enabled);
+          this.privacy.optionalAvailable.set(Boolean(config.enabled && config.key && config.host));
+          if (!config.enabled) this.disable();
         },
         error: () => this.config.set(null),
       });

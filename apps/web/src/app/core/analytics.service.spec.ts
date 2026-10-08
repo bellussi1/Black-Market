@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { environment } from '../../environments/environment';
 import { useMemoryStorage } from '../testing/test-setup';
 import { AnalyticsService, cleanProperties } from './analytics.service';
-import { PrivacyService } from './privacy.service';
+import { PRIVACY_KEY, PrivacyService } from './privacy.service';
 
 describe('privacy and product analytics', () => {
   useMemoryStorage();
@@ -60,10 +60,23 @@ describe('privacy and product analytics', () => {
     service.capture('journey_completed', { feature: 'scans', action: 'import', status: 'success' });
     const pending = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
     privacy.save(false);
-    TestBed.tick();
     expect(pending.cancelled).toBe(true);
     expect(localStorage.getItem('black-market.analytics.v1')).toBeNull();
     expect(service.capture('journey_completed', { feature: 'scans' })).toBe(false);
+    http.verify({ ignoreCancelled: true });
+  });
+  it('revokes analytics immediately when another tab clears saved preferences', () => {
+    const { service, http, privacy } = setup();
+    privacy.save(true);
+    TestBed.tick();
+    http.expectOne('https://eu.i.posthog.com/i/v0/e/').flush({ status: 1 });
+    service.capture('journey_completed', { feature: 'market', action: 'search' });
+    const pending = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+    localStorage.removeItem(PRIVACY_KEY);
+    window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    expect(privacy.allowsAnalytics()).toBe(false);
+    expect(pending.cancelled).toBe(true);
+    expect(localStorage.getItem('black-market.analytics.v1')).toBeNull();
     http.verify({ ignoreCancelled: true });
   });
   it('persists preference and expires invalid or older choices', () => {
