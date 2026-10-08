@@ -16,7 +16,7 @@ export class DashboardPage {
     {
       code: '01',
       title: $localize`Catálogo do jogo`,
-      description: $localize`Itens, categorias e receitas importados da sua extração.`,
+      description: $localize`Itens, imagens, categorias e receitas do jogo, em português.`,
       path: '/database/items',
       tag: $localize`REFERÊNCIA`,
     },

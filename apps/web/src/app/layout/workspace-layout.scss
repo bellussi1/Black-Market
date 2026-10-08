@@ -1,6 +1,29 @@
 :host {
   display: block;
 }
+.workspace-footer nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.workspace-footer nav a,
+.workspace-footer button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.workspace-footer button {
+  font: inherit;
+  background: transparent;
+  color: var(--bm-text);
+  border: 1px solid var(--bm-control-border);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.workspace-footer {
+  flex-wrap: wrap;
+  line-height: 1.6;
+}
 .content-frame {
   min-width: 0;
 }
@@ -63,6 +86,9 @@
 .sidebar nav {
   display: grid;
   gap: 3px;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-gutter: stable;
 }
 .sidebar nav a {
   min-height: 44px;

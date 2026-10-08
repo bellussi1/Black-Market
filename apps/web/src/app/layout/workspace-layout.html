@@ -66,6 +66,21 @@
         ><a routerLink="/settings"><ng-container i18n>Exportar backup</ng-container></a> ·
         <a href="/sobre/"><ng-container i18n>Sobre e fontes</ng-container></a></span
       >
+      <nav aria-label="Suporte e privacidade" i18n-aria-label>
+        <a routerLink="/termos" i18n>Termos de Uso</a
+        ><a routerLink="/privacidade" i18n>Política de Privacidade</a
+        ><a routerLink="/cookies" i18n>Cookies</a><a routerLink="/contato" i18n>Contato e suporte</a
+        ><button type="button" (click)="privacy.open.set(true)" i18n>
+          Preferências de privacidade
+        </button>
+      </nav>
+      <span
+        >© {{ year }} Black Market ·
+        <ng-container i18n
+          >Plataforma independente, sem afiliação com a Pearl Abyss.</ng-container
+        ></span
+      >
     </footer>
+    <app-privacy-controls />
   </div>
 </div>

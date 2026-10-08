@@ -6,6 +6,92 @@ export const routes: Routes = [
     path: '',
     component: WorkspaceLayout,
     children: [
+      ...[
+        { path: 'termos', legal: 'terms', title: 'Termos de Uso' },
+        { path: 'privacidade', legal: 'privacy', title: 'Política de Privacidade' },
+        { path: 'cookies', legal: 'cookies', title: 'Cookies' },
+        { path: 'contato', legal: 'contact', title: 'Contato' },
+      ].map((page) => ({
+        path: page.path,
+        title: 'Black Market · ' + page.title,
+        data: { legal: page.legal },
+        loadComponent: () =>
+          import('./features/legal/legal-page').then((module) => module.LegalPage),
+      })),
+      {
+        path: 'scans',
+        title: $localize`Black Market · Importar por print`,
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/scans/scans-page').then((module) => module.ScansPage),
+      },
+      {
+        path: 'recipes/:key',
+        title: $localize`Black Market · Receita`,
+        loadComponent: () =>
+          import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
+      },
+      {
+        path: 'recipes',
+        title: $localize`Black Market · Receitas`,
+        loadComponent: () =>
+          import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
+      },
+      {
+        path: 'database/items/:id',
+        title: $localize`Black Market · Item`,
+        loadComponent: () =>
+          import('./features/catalog/item-detail-page').then((module) => module.ItemDetailPage),
+      },
+      {
+        path: 'world',
+        title: $localize`Black Market · Bases e trabalhadores`,
+        loadComponent: () =>
+          import('./features/world/world-page').then((module) => module.WorldPage),
+      },
+      {
+        path: 'recommendations',
+        title: $localize`Black Market · Ganhar prata`,
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/recommendations/recommendations-page').then(
+            (module) => module.RecommendationsPage,
+          ),
+      },
+      {
+        path: 'account',
+        title: $localize`Black Market · Minha conta`,
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/account/account-page').then((module) => module.AccountPage),
+      },
+      {
+        path: 'profile',
+        title: $localize`Black Market · Meu personagem`,
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/profile/profile-page').then((module) => module.ProfilePage),
+      },
+      {
+        path: 'plans',
+        title: $localize`Black Market · Meus planos`,
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/plans/plans-page').then((module) => module.PlansPage),
+      },
+      {
+        path: 'reference/:kind/:id',
+        title: $localize`Black Market · Referência`,
+        loadComponent: () =>
+          import('./features/reference/reference-page').then((module) => module.ReferencePage),
+      },
+      {
+        path: 'reference/:kind',
+        title: $localize`Black Market · Referências`,
+        loadComponent: () =>
+          import('./features/reference/reference-page').then((module) => module.ReferencePage),
+      },
+      { path: 'reference', redirectTo: 'reference/npcs', pathMatch: 'full' },
       {
         path: '',
         title: $localize`Black Market · Seu planejador de Black Desert`,
