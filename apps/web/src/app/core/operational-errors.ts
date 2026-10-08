@@ -14,9 +14,9 @@ export class OperationalErrors {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private sent = 0;
+  private readonly reported = new Set<string>();
   report(kind: 'runtime' | 'unhandled_rejection' | 'http', status?: number, requestId?: string) {
     if (!this.browser || !environment.production || this.sent >= 5) return;
-    this.sent++;
     const feature = featureOf(this.router.url),
       area = [
         'catalog',
@@ -29,17 +29,38 @@ export class OperationalErrors {
         'plans',
         'account',
         'scans',
+        'world',
+        'gear',
+        'enhancement',
+        'lifeskills',
+        'recommendations',
+        'rng',
+        'buffs',
+        'settings',
+        'legal',
+        'home',
       ].includes(feature)
         ? feature
         : 'other';
+    const validStatus =
+      Number.isInteger(status) && status! >= 0 && status! <= 599 ? status : undefined;
+    const validId = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+      requestId ?? '',
+    )
+      ? requestId
+      : undefined;
+    const signature = JSON.stringify([kind, area, validStatus, validId]);
+    if (this.reported.has(signature)) return;
+    this.reported.add(signature);
+    this.sent++;
     this.http
       .post(
         environment.apiBaseUrl + '/api/v1/telemetry/errors',
         {
           kind,
           area,
-          ...(status === undefined ? {} : { status }),
-          ...(/^[a-f0-9-]{36}$/.test(requestId ?? '') ? { requestId } : {}),
+          ...(validStatus === undefined ? {} : { status: validStatus }),
+          ...(validId === undefined ? {} : { requestId: validId }),
         },
         { transferCache: false },
       )

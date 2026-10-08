@@ -156,7 +156,7 @@ app.use(
         level: 'ERROR',
         environment: process.env['NODE_ENV'] ?? 'development',
         event: 'web_exception',
-        cause: error instanceof Error ? error.name : 'Unknown',
+        cause: error instanceof Error ? 'InternalError' : 'Unknown',
         requestId: res.locals['requestId'],
       }),
     );
@@ -176,10 +176,26 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
     if (error) {
-      throw error;
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'ERROR',
+          environment: process.env['NODE_ENV'] ?? 'development',
+          event: 'web_startup_failed',
+        }),
+      );
+      process.exitCode = 1;
+      return;
     }
 
-    console.log(`Node Express server listening on http://localhost:${port}`);
+    console.log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'INFO',
+        environment: process.env['NODE_ENV'] ?? 'development',
+        event: 'web_started',
+      }),
+    );
   });
 }
 
