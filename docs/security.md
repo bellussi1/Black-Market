@@ -24,3 +24,5 @@ Não houve pentest externo, prova de ausência absoluta de vulnerabilidades, log
 No servidor SSR, confiar somente em X-Forwarded-Proto no modo de produção; o gateway privado define HTTPS explicitamente para a entrada Tunnel. Não confiar em Forwarded/X-Forwarded-Host enviados por visitantes. Angular valida host em lista explícita, evitando origens arbitrárias para canonical e fetch de SSR.
 
 A inspeção HTTP encontrou scripts inline gerados por replay de eventos e CSS crítico. O MVP desativa replay de eventos e inlineCritical no build, mantendo hidratação e stylesheet minificado normal, para respeitar script-src sem unsafe-inline. O smoke SSR verifica que HTML público não emite JavaScript inline incompatível. Reavaliar nonce por resposta apenas se houver benefício medido para esses recursos.
+
+Angular 22 ativa hidratação incremental/replay por padrão; a configuração usa withNoIncrementalHydration para impedir scripts inline de replay e mantém a hidratação normal. connect-src libera apenas o endereço de identidade configurado, sem wildcard de projetos Supabase.

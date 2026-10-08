@@ -122,3 +122,5 @@ Build anterior à última instrumentação desta entrega: 418,48 kB iniciais / 1
 - Lighthouse, navegador real, login externo, entrega de eventos, uptime/e-mail, backup externo/agendamento, TLS e rollback público: NÃO VERIFICADO.
 
 A exclusão da cópia da conta agora mantém contador monotônico sem conteúdo pessoal. Testes verificam o lock, remoção de conteúdo, rejeição de versão anterior e parâmetros SQL de dono; 0006 aplica apenas DROP NOT NULL em user_workspaces.data.
+
+Build final após compatibilizar CSP com a hidratação Angular: 422,16 kB iniciais / 117,38 kB de transferência estimada. Smoke SSR passou verificando ausência de JavaScript inline incompatível. pnpm usa Node 24.21.0 no projeto; o comando node direto do host ainda aponta 24.13.0. Nginx -t passou para a configuração fornecida; isso não valida TLS/domínio público.

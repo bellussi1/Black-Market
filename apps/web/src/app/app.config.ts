@@ -7,6 +7,7 @@ import {
   provideClientHydration,
   withHttpTransferCacheOptions,
   withI18nSupport,
+  withNoIncrementalHydration,
 } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: SafeFrontendErrorHandler },
     { provide: LOCALE_ID, useFactory: uiLocale },
     provideClientHydration(
+      withNoIncrementalHydration(),
       withI18nSupport(),
       withHttpTransferCacheOptions({
         filter: (request) =>
