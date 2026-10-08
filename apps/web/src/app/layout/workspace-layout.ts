@@ -1,17 +1,36 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 
+import { ADVERTISING } from '../core/advertising';
 import { visibleMarkets } from '../core/market-configuration';
 import { RegionPreferences } from '../core/region-preferences';
+import { AdSlot } from '../shared/ad-slot/ad-slot';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-workspace-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, FormsModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, FormsModule, AdSlot],
   templateUrl: './workspace-layout.html',
   styleUrl: './workspace-layout.scss',
 })
 export class WorkspaceLayout {
+  private readonly router = inject(Router);
+  private readonly path = signal(this.router.url);
+  readonly showAds = computed(
+    () =>
+      ADVERTISING.previewSlots &&
+      !['/settings', '/storage', '/gear'].some((route) => this.path().startsWith(route)),
+  );
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((event) => this.path.set(event.urlAfterRedirects));
+  }
   readonly preferences = inject(RegionPreferences);
   readonly markets = computed(() => visibleMarkets(this.preferences.region()));
   readonly links = [

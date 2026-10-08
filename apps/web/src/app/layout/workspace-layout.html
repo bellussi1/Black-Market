@@ -9,7 +9,7 @@
         ></span
       ></a
     >
-    <p class="sidebar-label"><ng-container i18n>SEU CADERNO DE AVENTURA</ng-container></p>
+    <p class="sidebar-label"><ng-container i18n>SEU PLANEJADOR DE BDO</ng-container></p>
     <nav aria-label="Ferramentas do Black Market" i18n-aria-label>
       @for (link of links; track link.path) {
         <a
@@ -29,7 +29,7 @@
   </aside>
   <div class="workspace-body">
     <header class="workspace-topbar">
-      <span>BLACK DESERT ONLINE <b>/</b> <ng-container i18n>CADERNO PESSOAL</ng-container></span
+      <span>BLACK DESERT ONLINE <b>/</b> <ng-container i18n>MEUS DADOS</ng-container></span
       ><label
         ><ng-container i18n>Mercado</ng-container
         ><select [ngModel]="preferences.region()" (ngModelChange)="preferences.setRegion($event)">
@@ -45,12 +45,26 @@
         <a routerLink="/settings"><ng-container i18n>Dados e backup</ng-container></a>
       </div>
     }
-    <main id="workspace-main"><router-outlet /></main>
+    <div class="content-frame" [class.with-ad-rails]="showAds()">
+      @if (showAds()) {
+        <div class="ad-rail"><app-ad-slot format="rail" /></div>
+      }
+      <main id="workspace-main" tabindex="-1">
+        <router-outlet />
+        @if (showAds()) {
+          <div class="ad-banner"><app-ad-slot /></div>
+        }
+      </main>
+      @if (showAds()) {
+        <div class="ad-rail"><app-ad-slot format="rail" /></div>
+      }
+    </div>
     <footer class="workspace-footer">
-      <span><ng-container i18n>BLACK MARKET · PROJETO PESSOAL</ng-container></span
+      <span><ng-container i18n>BLACK MARKET · COMUNIDADE BRASILEIRA</ng-container></span
       ><span
         ><ng-container i18n>Dados pessoais neste navegador · </ng-container
-        ><a routerLink="/settings"><ng-container i18n>Exportar backup</ng-container></a></span
+        ><a routerLink="/settings"><ng-container i18n>Exportar backup</ng-container></a> ·
+        <a href="/sobre/"><ng-container i18n>Sobre e fontes</ng-container></a></span
       >
     </footer>
   </div>

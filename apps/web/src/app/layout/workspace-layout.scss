@@ -1,6 +1,26 @@
 :host {
   display: block;
 }
+.content-frame {
+  min-width: 0;
+}
+.ad-rail {
+  display: none;
+}
+.ad-banner {
+  margin: 32px 0;
+}
+@media (min-width: 1800px) {
+  .with-ad-rails {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr) 160px;
+    gap: 24px;
+  }
+  .ad-rail {
+    display: block;
+    padding-top: 46px;
+  }
+}
 .workspace {
   display: grid;
   grid-template-columns: 238px minmax(0, 1fr);
@@ -35,7 +55,7 @@
   color: var(--bm-accent);
 }
 .sidebar-label {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.13em;
   color: #a6a99e;
   margin: 35px 10px 15px;
@@ -77,12 +97,12 @@
 .sidebar-foot {
   margin-top: auto;
   color: #acb3a3;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 2;
   padding: 24px 10px 0;
 }
 .sidebar-foot small {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.12em;
 }
 .tiny-dot {
@@ -105,7 +125,7 @@
   gap: 15px;
   border-bottom: 1px solid #eee9db18;
   color: #aeb3a5;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.12em;
 }
 .workspace-topbar b {
@@ -116,7 +136,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0;
 }
 .workspace-topbar select {
@@ -134,7 +154,7 @@
   justify-content: space-between;
   gap: 15px;
   color: #a2ab9c;
-  font-size: 10px;
+  font-size: 12px;
 }
 .workspace-footer a,
 .storage-warning a {
@@ -167,7 +187,7 @@
     padding: 24px 10px;
   }
   .sidebar nav a {
-    font-size: 11px;
+    font-size: 12px;
     gap: 8px;
   }
   .workspace-body {
@@ -226,7 +246,7 @@
     height: 60px;
   }
   .workspace-topbar > span {
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 0.07em;
   }
   .workspace-topbar b {
