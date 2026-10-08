@@ -889,7 +889,7 @@
     <unit id="5154030547704147591">
       <notes>
         <note category="location">src/app/features/catalog/item-catalog-page.html:6</note>
-        <note category="location">src/app/layout/workspace-layout.ts:52</note>
+        <note category="location">src/app/layout/workspace-layout.ts:58</note>
       </notes>
       <segment>
         <source>Catálogo de itens</source>
@@ -2348,7 +2348,7 @@
     <unit id="7415557894659238539">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:25</note>
-        <note category="location">src/app/layout/workspace-layout.ts:54</note>
+        <note category="location">src/app/layout/workspace-layout.ts:60</note>
       </notes>
       <segment>
         <source>Mercado e imposto</source>
@@ -2373,7 +2373,7 @@
     <unit id="1158920009339485739">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:32</note>
-        <note category="location">src/app/layout/workspace-layout.ts:55</note>
+        <note category="location">src/app/layout/workspace-layout.ts:61</note>
       </notes>
       <segment>
         <source>Oficina de produção</source>
@@ -2398,7 +2398,7 @@
     <unit id="6885976538957674191">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:39</note>
-        <note category="location">src/app/layout/workspace-layout.ts:56</note>
+        <note category="location">src/app/layout/workspace-layout.ts:62</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos (FS)</source>
@@ -2423,7 +2423,7 @@
     <unit id="7047059125297036658">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:46</note>
-        <note category="location">src/app/layout/workspace-layout.ts:57</note>
+        <note category="location">src/app/layout/workspace-layout.ts:63</note>
       </notes>
       <segment>
         <source>Progressão de equipamentos</source>
@@ -2448,7 +2448,7 @@
     <unit id="1601991508266323295">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:53</note>
-        <note category="location">src/app/layout/workspace-layout.ts:58</note>
+        <note category="location">src/app/layout/workspace-layout.ts:64</note>
       </notes>
       <segment>
         <source>Profissões e treino</source>
@@ -2473,7 +2473,7 @@
     <unit id="5268345290125776938">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:60</note>
-        <note category="location">src/app/layout/workspace-layout.ts:59</note>
+        <note category="location">src/app/layout/workspace-layout.ts:65</note>
       </notes>
       <segment>
         <source>Armazém e projetos</source>
@@ -2498,7 +2498,7 @@
     <unit id="3487828683297229196">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:67</note>
-        <note category="location">src/app/layout/workspace-layout.ts:61</note>
+        <note category="location">src/app/layout/workspace-layout.ts:67</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
@@ -2523,7 +2523,7 @@
     <unit id="1066166934309898114">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:74</note>
-        <note category="location">src/app/layout/workspace-layout.ts:62</note>
+        <note category="location">src/app/layout/workspace-layout.ts:68</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -3304,57 +3304,35 @@
         <source>Adicione duas alternativas para comparar o custo de progressão. </source>
       </segment>
     </unit>
-    <unit id="3921906068819530435">
+    <unit id="3207511890238610421">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:30,31</note>
+        <note category="location">src/app/features/legal/legal-page.html:7,8</note>
       </notes>
       <segment>
-        <source>Responsável e contato</source>
+        <source>Última atualização:</source>
       </segment>
     </unit>
-    <unit id="7546059765554833653">
+    <unit id="8118144252081121616">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:34,35</note>
+        <note category="location">src/app/features/legal/legal-page.html:11</note>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:10</note>
       </notes>
       <segment>
-        <source>Identificação do responsável ainda não publicada.</source>
+        <source>Documentos da plataforma</source>
       </segment>
     </unit>
-    <unit id="576665182908142265">
+    <unit id="6638063410941106713">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:39,40</note>
+        <note category="location">src/app/features/legal/legal-page.html:13,15</note>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
-        <source>Canal público de contato ainda não configurado.</source>
-      </segment>
-    </unit>
-    <unit id="2552879274211192916">
-      <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:42,43</note>
-      </notes>
-      <segment>
-        <source> Alterar preferências de privacidade </source>
-      </segment>
-    </unit>
-    <unit id="5582934967752656654">
-      <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:45</note>
-      </notes>
-      <segment>
-        <source>Informações institucionais</source>
-      </segment>
-    </unit>
-    <unit id="5991171731662712758">
-      <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:46,47</note>
-      </notes>
-      <segment>
-        <source>Termos</source>
+        <source>Termos de Uso</source>
       </segment>
     </unit>
     <unit id="334697507462663584">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:47,48</note>
+        <note category="location">src/app/features/legal/legal-page.html:16,18</note>
       </notes>
       <segment>
         <source>Privacidade</source>
@@ -3362,19 +3340,77 @@
     </unit>
     <unit id="4516124744118816397">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:48</note>
-        <note category="location">src/app/layout/workspace-layout.html:72</note>
+        <note category="location">src/app/features/legal/legal-page.html:18,19</note>
       </notes>
       <segment>
         <source>Cookies</source>
       </segment>
     </unit>
-    <unit id="1236061678414703716">
+    <unit id="4195026889157980213">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.ts:48,49</note>
+        <note category="location">src/app/features/legal/legal-page.html:20,22</note>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
-        <source>Contato</source>
+        <source>Contato e suporte</source>
+      </segment>
+    </unit>
+    <unit id="5276681313104980336">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:25,26</note>
+      </notes>
+      <segment>
+        <source>Documento em revisão</source>
+      </segment>
+    </unit>
+    <unit id="8912642124474993818">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:27,28</note>
+      </notes>
+      <segment>
+        <source> Este texto descreve o MVP e não foi juridicamente validado. Antes da abertura pública, precisam de revisão: </source>
+      </segment>
+    </unit>
+    <unit id="1157019259303417042">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:37</note>
+        <note category="location">src/app/features/legal/legal-page.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Nesta página</source>
+      </segment>
+    </unit>
+    <unit id="3921906068819530435">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:45,46</note>
+        <note category="location">src/app/features/legal/legal-page.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Responsável e contato</source>
+      </segment>
+    </unit>
+    <unit id="7546059765554833653">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:61,63</note>
+      </notes>
+      <segment>
+        <source>Identificação do responsável ainda não publicada.</source>
+      </segment>
+    </unit>
+    <unit id="576665182908142265">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:66,68</note>
+      </notes>
+      <segment>
+        <source>Canal público de contato ainda não configurado.</source>
+      </segment>
+    </unit>
+    <unit id="2552879274211192916">
+      <notes>
+        <note category="location">src/app/features/legal/legal-page.html:70,71</note>
+      </notes>
+      <segment>
+        <source> Alterar preferências de privacidade </source>
       </segment>
     </unit>
     <unit id="989063945271255833">
@@ -4653,7 +4689,7 @@
     <unit id="6914995339590461813">
       <notes>
         <note category="location">src/app/features/recipes/recipes-page.html:4,5</note>
-        <note category="location">src/app/layout/workspace-layout.ts:53</note>
+        <note category="location">src/app/layout/workspace-layout.ts:59</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -5268,7 +5304,7 @@
       <notes>
         <note category="location">src/app/features/scans/scans-page.html:4,5</note>
         <note category="location">src/app/features/storage/storage-page.html:54,55</note>
-        <note category="location">src/app/layout/workspace-layout.ts:60</note>
+        <note category="location">src/app/layout/workspace-layout.ts:66</note>
       </notes>
       <segment>
         <source>Importar por print</source>
@@ -7277,6 +7313,7 @@
     <unit id="4238688687797785495">
       <notes>
         <note category="location">src/app/layout/workspace-layout.html:4</note>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:4</note>
       </notes>
       <segment>
         <source>Black Market — início</source>
@@ -7333,95 +7370,15 @@
     <unit id="8296682803771094999">
       <notes>
         <note category="location">src/app/layout/workspace-layout.html:45</note>
-        <note category="location">src/app/layout/workspace-layout.ts:63</note>
+        <note category="location">src/app/layout/workspace-layout.ts:69</note>
       </notes>
       <segment>
         <source>Dados e backup</source>
       </segment>
     </unit>
-    <unit id="6964374366518820726">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:63</note>
-      </notes>
-      <segment>
-        <source>BLACK MARKET · COMUNIDADE BRASILEIRA</source>
-      </segment>
-    </unit>
-    <unit id="6369089579211742061">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:65</note>
-      </notes>
-      <segment>
-        <source>Dados pessoais neste navegador · </source>
-      </segment>
-    </unit>
-    <unit id="2729317969739014337">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:66</note>
-      </notes>
-      <segment>
-        <source>Exportar backup</source>
-      </segment>
-    </unit>
-    <unit id="7684267583324605152">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:67</note>
-      </notes>
-      <segment>
-        <source>Sobre e fontes</source>
-      </segment>
-    </unit>
-    <unit id="668903856858937572">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:69</note>
-      </notes>
-      <segment>
-        <source>Suporte e privacidade</source>
-      </segment>
-    </unit>
-    <unit id="6638063410941106713">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:70,71</note>
-      </notes>
-      <segment>
-        <source>Termos de Uso</source>
-      </segment>
-    </unit>
-    <unit id="4575036972922159781">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:71,72</note>
-      </notes>
-      <segment>
-        <source>Política de Privacidade</source>
-      </segment>
-    </unit>
-    <unit id="4195026889157980213">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:72,73</note>
-      </notes>
-      <segment>
-        <source>Contato e suporte</source>
-      </segment>
-    </unit>
-    <unit id="4842633360808462307">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:74,75</note>
-      </notes>
-      <segment>
-        <source> Preferências de privacidade </source>
-      </segment>
-    </unit>
-    <unit id="6316022619432948235">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.html:80</note>
-      </notes>
-      <segment>
-        <source>Plataforma independente, sem afiliação com a Pearl Abyss.</source>
-      </segment>
-    </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:50</note>
+        <note category="location">src/app/layout/workspace-layout.ts:56</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
@@ -7429,7 +7386,7 @@
     </unit>
     <unit id="4360351327676000154">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:51</note>
+        <note category="location">src/app/layout/workspace-layout.ts:57</note>
       </notes>
       <segment>
         <source>Visão geral</source>
@@ -7437,7 +7394,7 @@
     </unit>
     <unit id="7338913928758216034">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:64</note>
+        <note category="location">src/app/layout/workspace-layout.ts:70</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -7445,7 +7402,7 @@
     </unit>
     <unit id="1012592931481663403">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:65</note>
+        <note category="location">src/app/layout/workspace-layout.ts:71</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
@@ -7453,7 +7410,7 @@
     </unit>
     <unit id="2542523064477800184">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:66</note>
+        <note category="location">src/app/layout/workspace-layout.ts:72</note>
       </notes>
       <segment>
         <source>Meu personagem</source>
@@ -7461,7 +7418,7 @@
     </unit>
     <unit id="3031009167976274068">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:67</note>
+        <note category="location">src/app/layout/workspace-layout.ts:73</note>
       </notes>
       <segment>
         <source>Meus planos</source>
@@ -7469,7 +7426,7 @@
     </unit>
     <unit id="6030563743846874138">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:68</note>
+        <note category="location">src/app/layout/workspace-layout.ts:74</note>
       </notes>
       <segment>
         <source>Minha conta</source>
@@ -7785,6 +7742,78 @@
       </notes>
       <segment>
         <source>Produção</source>
+      </segment>
+    </unit>
+    <unit id="3393234810386049284">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:1</note>
+      </notes>
+      <segment>
+        <source>Informações do Black Market</source>
+      </segment>
+    </unit>
+    <unit id="8127166623284039231">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:7,8</note>
+      </notes>
+      <segment>
+        <source>Ferramentas para a comunidade brasileira de Black Desert Online.</source>
+      </segment>
+    </unit>
+    <unit id="3395387156013877446">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Sobre a plataforma e as fontes</source>
+      </segment>
+    </unit>
+    <unit id="4575036972922159781">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
+      </notes>
+      <segment>
+        <source>Política de Privacidade</source>
+      </segment>
+    </unit>
+    <unit id="6036113794590889458">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
+      </notes>
+      <segment>
+        <source>Cookies e armazenamento</source>
+      </segment>
+    </unit>
+    <unit id="1175025131859267802">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:15</note>
+      </notes>
+      <segment>
+        <source>Suporte e escolhas</source>
+      </segment>
+    </unit>
+    <unit id="4924989744861567151">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:17,18</note>
+      </notes>
+      <segment>
+        <source>Meus dados e backup</source>
+      </segment>
+    </unit>
+    <unit id="4842633360808462307">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:19,20</note>
+      </notes>
+      <segment>
+        <source> Preferências de privacidade </source>
+      </segment>
+    </unit>
+    <unit id="2430455619969964389">
+      <notes>
+        <note category="location">src/app/shared/platform-footer/platform-footer.html:26,27</note>
+      </notes>
+      <segment>
+        <source> Plataforma independente, sem afiliação com a Pearl Abyss. Marcas e imagens do jogo pertencem aos respectivos titulares. </source>
       </segment>
     </unit>
     <unit id="7920021458356555283">
