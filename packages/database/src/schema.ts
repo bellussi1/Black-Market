@@ -302,7 +302,73 @@ export const marketPricePoints = pgTable(
   ],
 );
 
+export const referenceRecords = pgTable(
+  'reference_records',
+  {
+    datasetVersionId: uuid('dataset_version_id')
+      .notNull()
+      .references(() => datasetVersions.id, { onDelete: 'cascade' }),
+    kind: varchar('kind', { length: 40 }).notNull(),
+    id: varchar('id', { length: 120 }).notNull(),
+    name: text('name').notNull(),
+    searchName: text('search_name').notNull(),
+    data: jsonb('data').$type<Record<string, unknown>>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.datasetVersionId, table.kind, table.id] }),
+    index('reference_name_search_idx').using('gin', sql`${table.searchName} gin_trgm_ops`),
+  ],
+);
+
+export const referenceCollections = pgTable(
+  'reference_collections',
+  {
+    datasetVersionId: uuid('dataset_version_id')
+      .notNull()
+      .references(() => datasetVersions.id, { onDelete: 'cascade' }),
+    kind: varchar('kind', { length: 40 }).notNull(),
+    checksum: varchar('checksum', { length: 64 }).notNull(),
+    count: integer('count').notNull(),
+    importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.datasetVersionId, table.kind] })],
+);
+
+export const userWorkspaces = pgTable('user_workspaces', {
+  userId: uuid('user_id').primaryKey(),
+  version: integer('version').notNull().default(1),
+  data: jsonb('data').$type<Record<string, unknown>>(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const marketSnapshots = pgTable(
+  'market_snapshots',
+  {
+    region: varchar('region', { length: 12 }).notNull(),
+    itemId: integer('item_id').notNull(),
+    subId: integer('sub_id').notNull(),
+    locale: varchar('locale', { length: 8 }).notNull(),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.region, table.itemId, table.subId, table.locale, table.fetchedAt],
+    }),
+    index('market_snapshots_history_idx').on(
+      table.region,
+      table.itemId,
+      table.subId,
+      table.fetchedAt,
+    ),
+  ],
+);
+
 export const schema = {
+  referenceRecords,
+  referenceCollections,
+  userWorkspaces,
+  marketSnapshots,
   categories,
   categoryTranslations,
   datasetVersions,

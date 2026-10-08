@@ -36,6 +36,20 @@
       "when": 1791427441809,
       "tag": "0004_kind_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791429315616,
+      "tag": "0005_handy_thor_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791463381335,
+      "tag": "0006_narrow_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

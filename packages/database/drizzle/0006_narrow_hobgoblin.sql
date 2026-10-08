@@ -1,0 +1,1 @@
+ALTER TABLE "user_workspaces" ALTER COLUMN "data" DROP NOT NULL;
