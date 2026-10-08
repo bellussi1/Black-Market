@@ -31,6 +31,27 @@
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
       <section class="panel">
+        <h2 i18n>Comece pelo que deseja produzir</h2>
+        <app-catalog-item-picker
+          [selectionName]="recipeProduct()?.name || ''"
+          (selected)="chooseRecipeProduct($event)"
+        />
+        @if (recipeLoading()) {
+          <p role="status" i18n>Buscando receitas…</p>
+        }
+        @if (recipeMessage()) {
+          <p class="help" role="status">{{ recipeMessage() }}</p>
+        }
+        @if (catalogRecipes().length > 1) {
+          <p class="help" i18n>Escolha a receita para preencher os materiais:</p>
+          <div class="action-row">
+            @for (recipe of catalogRecipes(); track recipe.key; let index = $index) {
+              <button class="btn subtle" type="button" (click)="useCatalogRecipe(recipe)">
+                {{ recipeTypeLabel(recipe.type) }} · {{ index + 1 }}
+              </button>
+            }
+          </div>
+        }
         <h2><ng-container i18n>Seu cenário de produção</ng-container></h2>
         <div class="form-grid">
           <label class="field"
@@ -41,8 +62,11 @@
               [ngModel]="form().crafts"
               (ngModelChange)="patch({ crafts: $event })" /></label
           ><label class="field"
-            ><ng-container i18n>Rendimento médio por craft</ng-container
-            ><input
+            ><ng-container i18n>Rendimento médio por produção</ng-container>
+            @if (missingYield()) {
+              <small i18n>Não informado na receita. Preencha para calcular.</small>
+            }
+            <input
               type="number"
               min="0.001"
               step="0.001"
@@ -81,8 +105,11 @@
                 />
               </div>
               <label class="field"
-                ><ng-container i18n>Quantidade por craft</ng-container
-                ><input
+                ><ng-container i18n>Quantidade por produção</ng-container>
+                @if (missingQuantities().includes(ing.itemId ?? -1)) {
+                  <small i18n>Confira a quantidade deste material.</small>
+                }
+                <input
                   type="number"
                   step="0.001"
                   min="0.001"
@@ -122,7 +149,10 @@
           tool="crafting"
           [value]="form()"
           (loaded)="load($event)"
-        /><app-calculation-proof tool="crafting" [value]="form()" />
+        />
+        @if (result().value) {
+          <app-calculation-proof tool="crafting" [value]="form()" />
+        }
       </section>
       <section>
         @if (result().value; as r) {
@@ -192,8 +222,13 @@
               </table>
             </div>
           </div>
-        } @else {
+        } @else if (result().error) {
           <div class="error-box" role="alert">{{ result().error }}</div>
+        } @else {
+          <p class="notice" i18n>
+            Escolha um produto para carregar os materiais ou monte seu cenário. O resultado aparece
+            quando os campos estiverem preenchidos.
+          </p>
         }
         <p class="notice">
           <ng-container i18n
