@@ -9,6 +9,13 @@ import type { Region } from '../../core/region-preferences';
 @Injectable({ providedIn: 'root' })
 export class MarketApi {
   private readonly http = inject(HttpClient);
+  history(itemId: number, region: Region, subId = 0) {
+    return this.http.get<{
+      points: { fetchedAt: string; price: string | null; stock: number | null }[];
+    }>(`${environment.apiBaseUrl}/api/v1/market/items/${itemId}/history`, {
+      params: { region, subId, locale: preferredDataLocale() },
+    });
+  }
 
   getItem(itemId: string, region: Region) {
     return this.http.get<MarketLookupResponse>(

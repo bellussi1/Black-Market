@@ -102,6 +102,40 @@
     }
   </section>
   <div class="notice">
+    <details>
+      <summary i18n>Histórico de preços guardados</summary>
+      <label class="field"
+        ><span i18n>Variante do item selecionado</span
+        ><input type="number" min="0" max="100" [(ngModel)]="historySubId" /></label
+      ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
+      <p role="status">{{ historyMessage() }}</p>
+      <p i18n>
+        Este histórico começa quando as consultas são guardadas. Não representa todas as vendas do
+        jogo.
+      </p>
+      @if (history().length) {
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th i18n>Consulta</th>
+                <th i18n>Preço</th>
+                <th i18n>Estoque</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (point of history(); track point.fetchedAt) {
+                <tr>
+                  <td>{{ date(point.fetchedAt) }}</td>
+                  <td>{{ silver(point.price) }}</td>
+                  <td>{{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </details>
     <ng-container i18n
       >Seus registros reúnem registros manuais e consultas que você guardou do Arsha. Preço base
       zero no provedor é exibido como indisponível; registros antigos continuam com seu horário

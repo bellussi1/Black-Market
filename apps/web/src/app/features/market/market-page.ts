@@ -1,11 +1,15 @@
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { calculateMarket, defaultTax, type MarketInput, marketSchema } from '@bdo/calculators';
 import type { CatalogItem, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
+import { AnalyticsService } from '../../core/analytics.service';
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
@@ -22,6 +26,22 @@ import { MarketApi } from './market-api';
   templateUrl: './market-page.html',
 })
 export class MarketPage implements OnDestroy {
+  private readonly analytics = inject(AnalyticsService);
+  constructor() {
+    const catalog = inject(CatalogApiService);
+    inject(ActivatedRoute, { optional: true })
+      ?.queryParamMap.pipe(takeUntilDestroyed())
+      .subscribe((params) => {
+        const id = Number(params.get('item'));
+        if (Number.isInteger(id) && id > 0 && id <= 2147483647) {
+          this.liveRequest?.unsubscribe();
+          this.liveRequest = catalog.getItem(id).subscribe({
+            next: (result) => this.selectItem(result.item),
+            error: () => this.lookupError.set('Não encontramos este item na região selecionada.'),
+          });
+        }
+      });
+  }
   private readonly api = inject(MarketApi);
   private liveRequest?: Subscription;
   readonly lookupId = signal('');
@@ -37,8 +57,42 @@ export class MarketPage implements OnDestroy {
   sort = 'name';
   draft = { name: '', category: '', price: '0', stock: 0, itemId: null as number | null };
   readonly catalogItem = signal<CatalogItem | null>(null);
+  readonly history = signal<{ fetchedAt: string; price: string | null; stock: number | null }[]>(
+    [],
+  );
+  readonly historyMessage = signal('');
+  private historyRequest?: Subscription;
+  historySubId = 0;
+  showHistory() {
+    const id = Number(this.lookupId());
+    if (!Number.isInteger(id) || id < 1 || id > 2147483647) {
+      this.historyMessage.set('Escolha um item para consultar seu histórico.');
+      return;
+    }
+    this.historyRequest?.unsubscribe();
+    this.history.set([]);
+    this.historyMessage.set('Carregando histórico…');
+    this.historyRequest = this.api
+      .history(id, this.store.data().region, this.historySubId)
+      .subscribe({
+        next: (response) => {
+          this.history.set(response.points);
+          this.historyMessage.set(
+            response.points.length
+              ? ''
+              : 'Ainda não há observações guardadas para este item e variante.',
+          );
+        },
+        error: () =>
+          this.historyMessage.set('Não foi possível carregar o histórico. Tente novamente.'),
+      });
+  }
 
   selectItem(item: CatalogItem | null): void {
+    this.historyRequest?.unsubscribe();
+    this.history.set([]);
+    this.historyMessage.set('');
+    this.historySubId = 0;
     this.catalogItem.set(item);
     this.lookupId.set(item ? String(item.id) : '');
     this.draft = {
@@ -162,15 +216,26 @@ export class MarketPage implements OnDestroy {
       return;
     }
     this.liveRequest?.unsubscribe();
+    this.analytics.capture('journey_started', { feature: 'market', action: 'search' });
     this.lookupLoading.set(true);
     this.lookupError.set('');
     this.live.set(null);
     this.liveRequest = this.api.getItem(this.lookupId(), this.store.data().region).subscribe({
       next: (response) => {
+        this.analytics.capture('journey_completed', {
+          feature: 'market',
+          action: 'search',
+          status: 'success',
+        });
         this.live.set(response);
         this.lookupLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
+        this.analytics.capture('journey_failed', {
+          feature: 'market',
+          action: 'search',
+          status: 'failed',
+        });
         this.lookupLoading.set(false);
         this.lookupError.set(
           error.status === 429
@@ -238,5 +303,6 @@ export class MarketPage implements OnDestroy {
   }
   ngOnDestroy(): void {
     this.liveRequest?.unsubscribe();
+    this.historyRequest?.unsubscribe();
   }
 }
