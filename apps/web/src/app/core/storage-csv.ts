@@ -6,9 +6,11 @@ export interface StorageCsvRow {
   price?: string;
 }
 
+export class StorageCsvError extends Error {}
+
 /** CSV with quoted cells and escaped quotes; reference data is resolved by the API. */
 export function parseStorageCsv(text: string): StorageCsvRow[] {
-  if (text.length > 200_000) throw new Error($localize`O CSV aceita até 200 KB.`);
+  if (text.length > 200_000) throw new StorageCsvError($localize`O CSV aceita até 200 KB.`);
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = '';
@@ -36,18 +38,19 @@ export function parseStorageCsv(text: string): StorageCsvRow[] {
       cell += character;
     }
     if (rows.length > 501 || row.length > 5)
-      throw new Error($localize`O CSV aceita até 500 itens e cinco colunas.`);
+      throw new StorageCsvError($localize`O CSV aceita até 500 itens e cinco colunas.`);
   }
-  if (quoted) throw new Error($localize`O CSV contém aspas sem fechamento.`);
+  if (quoted) throw new StorageCsvError($localize`O CSV contém aspas sem fechamento.`);
   row.push(cell);
   if (row.some((value) => value.trim())) rows.push(row);
   const header = rows.shift()?.map((value) => value.trim());
   if (header?.join(';') !== 'itemId;quantidade;local;meta;preco') {
-    throw new Error(
+    throw new StorageCsvError(
       $localize`Use as colunas itemId;quantidade;local;meta;preco. Baixe o modelo para começar.`,
     );
   }
-  if (!rows.length || rows.length > 500) throw new Error($localize`Informe entre 1 e 500 itens.`);
+  if (!rows.length || rows.length > 500)
+    throw new StorageCsvError($localize`Informe entre 1 e 500 itens.`);
   const seen = new Set<string>();
   return rows.map((values, index) => {
     const [rawId, rawQuantity, rawLocation, rawTarget, rawPrice] = values.map((value) =>
@@ -66,16 +69,19 @@ export function parseStorageCsv(text: string): StorageCsvRow[] {
       !location ||
       location.length > 140
     ) {
-      throw new Error($localize`Linha ${index + 2}. Confira ID, quantidade e local.`);
+      throw new StorageCsvError($localize`Linha ${index + 2}. Confira ID, quantidade e local.`);
     }
     if (rawTarget && (!/^\d+$/.test(rawTarget) || Number(rawTarget) > 1e9)) {
-      throw new Error($localize`Linha ${index + 2}. A meta deve ser um inteiro de 0 a 1 bilhão.`);
+      throw new StorageCsvError(
+        $localize`Linha ${index + 2}. A meta deve ser um inteiro de 0 a 1 bilhão.`,
+      );
     }
     if (rawPrice && !/^\d{1,24}$/.test(rawPrice)) {
-      throw new Error($localize`Linha ${index + 2}. Informe prata sem separadores.`);
+      throw new StorageCsvError($localize`Linha ${index + 2}. Informe prata sem separadores.`);
     }
     const key = `${itemId}:${location.toLocaleLowerCase('pt-BR')}`;
-    if (seen.has(key)) throw new Error($localize`Linha ${index + 2}. Item e local repetidos.`);
+    if (seen.has(key))
+      throw new StorageCsvError($localize`Linha ${index + 2}. Item e local repetidos.`);
     seen.add(key);
     return {
       itemId,

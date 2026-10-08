@@ -15,7 +15,7 @@ import { forkJoin } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import type { StorageCsvRow } from '../../core/storage-csv';
-import { parseStorageCsv } from '../../core/storage-csv';
+import { parseStorageCsv, StorageCsvError } from '../../core/storage-csv';
 import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
@@ -81,7 +81,7 @@ export class StoragePage implements OnDestroy {
     this.importRegion.set(region);
     this.importLoading.set(true);
     try {
-      if (file.size > 200_000) throw new Error($localize`O CSV aceita até 200 KB.`);
+      if (file.size > 200_000) throw new StorageCsvError($localize`O CSV aceita até 200 KB.`);
       const rows = parseStorageCsv(await file.text());
       if (generation !== this.importGeneration) return;
       const ids = [...new Set(rows.map((row) => row.itemId))];
@@ -117,7 +117,9 @@ export class StoragePage implements OnDestroy {
     } catch (error) {
       if (generation !== this.importGeneration) return;
       this.importMessage.set(
-        error instanceof Error ? error.message : $localize`Não foi possível ler o CSV.`,
+        error instanceof StorageCsvError
+          ? error.message
+          : $localize`Não foi possível abrir a planilha. Escolha o arquivo novamente.`,
       );
       this.importLoading.set(false);
     }
@@ -295,19 +297,24 @@ export class StoragePage implements OnDestroy {
     this.store.update((s) => ({ ...s, inventory: s.inventory.filter((r) => r.id !== id) }));
   }
   exportList(): void {
+    if (this.rows.length > 500) {
+      this.error.set(
+        'A planilha aceita até 500 materiais. Use os filtros de local ou nome para exportar em partes.',
+      );
+      return;
+    }
+    if (this.rows.some((row) => !row.itemId)) {
+      this.error.set(
+        'Antes de exportar, edite os materiais antigos e selecione o item na busca. Assim, a planilha poderá ser importada de volta.',
+      );
+      return;
+    }
     const safe = (v: string) =>
       '"' + (/^[=+\-@]/.test(v) ? "'" + v : v).replaceAll('"', '""') + '"';
     const text = [
-      'Item;Local;Quantidade;Meta;Falta;Preço unitário',
+      'itemId;quantidade;local;meta;preco',
       ...this.rows.map((r) =>
-        [
-          safe(r.name),
-          safe(r.location),
-          r.quantity,
-          r.target,
-          Math.max(0, r.target - r.quantity),
-          r.price,
-        ].join(';'),
+        [r.itemId, r.quantity, safe(r.location), r.target, r.price].join(';'),
       ),
     ].join('\n');
     download('black-market-materiais.csv', '\uFEFF' + text, 'text/csv;charset=utf-8');

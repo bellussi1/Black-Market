@@ -30,6 +30,40 @@
   </div>
   @if (tab() === 'stock') {
     <section class="panel" aria-labelledby="storage-import-title">
+      <details>
+        <summary i18n>Como trazer meu armazém do jogo?</summary>
+        <p class="help" i18n>
+          O jogo não exporta seu armazém para uma planilha. Você não precisa de um arquivo para
+          começar: use a busca de itens abaixo e informe as quantidades que vê no jogo.
+        </p>
+        <ol>
+          <li i18n>
+            Abra o armazém no BDO e confira a cidade. Para o inventário, use o nome do personagem
+            como local.
+          </li>
+          <li i18n>
+            Em “Adicionar ou editar material”, busque o item pelo nome, selecione-o e copie a
+            quantidade exibida no jogo.
+          </li>
+          <li i18n>
+            Confira o local e salve. Repita para os materiais que deseja acompanhar. Meta e preço
+            podem ficar em zero.
+          </li>
+          <li i18n>
+            Para editar muitos itens, exporte a planilha dos materiais cadastrados, altere as
+            quantidades e importe de volta.
+          </li>
+        </ol>
+        <p class="help" i18n>
+          Se preferir começar por uma planilha, baixe o modelo abaixo e preencha as cinco colunas. O
+          código do item aparece no resultado da busca. “meta” e “preco” podem ficar vazios;
+          mantenha os separadores entre as colunas.
+        </p>
+        <p class="help" i18n>
+          O arquivo precisa estar salvo como CSV UTF-8, separado por ponto e vírgula. Confira a
+          prévia antes de confirmar. Prints ainda não são reconhecidos automaticamente.
+        </p>
+      </details>
       <div class="panel-heading">
         <h2 id="storage-import-title" i18n>Importar armazém por CSV</h2>
         <button class="btn subtle" type="button" (click)="downloadImportTemplate()" i18n>
