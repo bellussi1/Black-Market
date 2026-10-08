@@ -1,8 +1,10 @@
-param([Parameter(Mandatory)][string]$Dump, [string]$ComposeFile='docker-compose.yml', [string]$EnvFile='.env')
+param([Parameter(Mandatory)][string]$Dump, [string]$ComposeFile='docker-compose.yml', [string]$EnvFile='.env', [switch]$AllowUnverified)
 $ErrorActionPreference='Stop'
 $taskDump = (Resolve-Path -LiteralPath $Dump).Path
+if (-not (Test-Path -LiteralPath ($taskDump + '.json')) -and -not $AllowUnverified) { throw 'O manifesto do backup não foi encontrado. Verifique a origem ou use -AllowUnverified explicitamente para um dump externo.' }
 if (Test-Path -LiteralPath ($taskDump + '.json')) {
   $taskManifest = Get-Content -LiteralPath ($taskDump + '.json') -Raw | ConvertFrom-Json
+  if ($taskManifest.sha256 -notmatch '^[a-fA-F0-9]{64}$' -or $taskManifest.dump -ne [IO.Path]::GetFileName($taskDump)) { throw 'Manifesto inválido ou pertencente a outro backup.' }
   if ((Get-FileHash -LiteralPath $taskDump -Algorithm SHA256).Hash -ne $taskManifest.sha256) { throw 'Checksum incorreto.' }
 }
 $taskName = 'black_market_restore_' + (Get-Date -Format 'yyyyMMddHHmmss')
