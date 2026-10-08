@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../environments/environment';
 import { useMemoryStorage } from '../testing/test-setup';
-import { operationalErrorInterceptor,OperationalErrors } from './operational-errors';
+import { operationalErrorInterceptor, OperationalErrors } from './operational-errors';
 describe('minimal operational telemetry', () => {
   useMemoryStorage();
   const original = environment.production;
