@@ -123,7 +123,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 
 ## Preparação para produção
 
-[Auditoria e checklist](docs/production-audit.md) · [Segurança](docs/security.md) · [Logs e uptime](docs/observability.md) · [Privacidade](docs/privacy-inventory.md) · [Analytics](docs/analytics.md) · [Backup e recuperação](docs/backup-recovery.md).
+[Auditoria e checklist](docs/production-audit.md) · [Segurança](docs/security.md) · [Logs e uptime](docs/observability.md) · [Privacidade](docs/privacy-inventory.md) · [Footer e páginas legais](docs/legal-pages.md) · [Analytics](docs/analytics.md) · [Backup e recuperação](docs/backup-recovery.md).
 
 Contato público informado: enzobellussi3@gmail.com. Responsável informado: Bellussi; identificação jurídica completa e documentos sujeitos à revisão. Integrações externas e domínio não estão ativados só por existir configuração no código.
 
