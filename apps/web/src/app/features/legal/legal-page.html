@@ -1,0 +1,74 @@
+<article class="tool-page legal-page" aria-labelledby="legal-title">
+  <header class="tool-heading">
+    <p class="tool-kicker" translate="no">BLACK MARKET</p>
+    <h1 id="legal-title">{{ document().title }}</h1>
+    <p>{{ document().intro }}</p>
+    <p class="legal-date">
+      <span i18n>Última atualização:</span>
+      <time [attr.datetime]="updatedOn">{{ updatedLabel }}</time>
+    </p>
+  </header>
+  <nav class="legal-navigation" aria-label="Documentos da plataforma" i18n-aria-label>
+    <a routerLink="/termos" routerLinkActive="active" ariaCurrentWhenActive="page" i18n
+      >Termos de Uso</a
+    >
+    <a routerLink="/privacidade" routerLinkActive="active" ariaCurrentWhenActive="page" i18n
+      >Privacidade</a
+    >
+    <a routerLink="/cookies" routerLinkActive="active" ariaCurrentWhenActive="page" i18n>Cookies</a>
+    <a routerLink="/contato" routerLinkActive="active" ariaCurrentWhenActive="page" i18n
+      >Contato e suporte</a
+    >
+  </nav>
+  @if (document().reviewPoints; as points) {
+    <aside class="panel legal-review" aria-labelledby="legal-review-title">
+      <h2 id="legal-review-title" i18n>Documento em revisão</h2>
+      <p i18n>
+        Este texto descreve o MVP e não foi juridicamente validado. Antes da abertura pública,
+        precisam de revisão:
+      </p>
+      <ul>
+        @for (point of points; track point) {
+          <li>{{ point }}</li>
+        }
+      </ul>
+    </aside>
+  }
+  <nav class="legal-summary" aria-label="Nesta página" i18n-aria-label>
+    <p i18n>Nesta página</p>
+    <ul>
+      @for (section of document().sections; track section.title) {
+        <li>
+          <a [href]="'#legal-section-' + $index">{{ section.title }}</a>
+        </li>
+      }
+      <li><a href="#legal-contact" i18n>Responsável e contato</a></li>
+    </ul>
+  </nav>
+  @for (section of document().sections; track section.title) {
+    <section class="panel" [attr.aria-labelledby]="'legal-section-' + $index">
+      <h2 [id]="'legal-section-' + $index">{{ section.title }}</h2>
+      @for (paragraph of section.paragraphs; track $index) {
+        <p>{{ paragraph }}</p>
+      }
+    </section>
+  }
+  <section class="panel legal-contact" aria-labelledby="legal-contact">
+    <h2 id="legal-contact" i18n>Responsável e contato</h2>
+    @if (config().controllerName) {
+      <p>{{ config().controllerName }}</p>
+    } @else {
+      <p i18n>Identificação do responsável ainda não publicada.</p>
+    }
+    @if (config().contactEmail; as email) {
+      <a [href]="'mailto:' + email">{{ email }}</a>
+    } @else {
+      <p i18n>Canal público de contato ainda não configurado.</p>
+    }
+    <div class="action-row">
+      <button type="button" class="btn subtle" (click)="privacy.open.set(true)" i18n>
+        Alterar preferências de privacidade
+      </button>
+    </div>
+  </section>
+</article>

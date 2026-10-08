@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +9,7 @@ import { environment } from '../../../environments/environment';
 import { PrivacyService } from '../../core/privacy.service';
 import { PrivacyControls } from '../../shared/privacy-controls/privacy-controls';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
-import { legalDocuments } from './legal-content';
+import { legalDocuments, legalUpdatedOn } from './legal-content';
 import { LegalPage } from './legal-page';
 describe('legal navigation and privacy controls', () => {
   useMemoryStorage();
@@ -24,10 +25,55 @@ describe('legal navigation and privacy controls', () => {
       const element = fixture.nativeElement as HTMLElement;
       expect(element.querySelector('h1')?.textContent).toContain(legalDocuments[key].title);
       expect(element.querySelector('a[href="mailto:enzobellussi3@gmail.com"]')).not.toBeNull();
-      expect(element.querySelectorAll('nav a').length).toBe(4);
+      expect(element.querySelectorAll('nav[aria-label="Documentos da plataforma"] a').length).toBe(
+        4,
+      );
       expect(element.querySelectorAll('main').length).toBe(0);
+      expect(element.querySelectorAll('h1').length).toBe(1);
+      expect(element.querySelector('time')?.getAttribute('datetime')).toBe(legalUpdatedOn);
+      for (const link of element.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
+        expect(element.querySelector(link.getAttribute('href')!)).not.toBeNull();
+      }
+      for (const section of element.querySelectorAll('section[aria-labelledby]')) {
+        expect(element.querySelector('#' + section.getAttribute('aria-labelledby'))).not.toBeNull();
+      }
+      if (key !== 'contact')
+        expect(element.textContent).toContain('não foi juridicamente validado');
     });
   }
+  it('navigates all four public legal routes and marks the current document', async () => {
+    await renderComponent(PrivacyControls, {}, [
+      provideRouter([
+        ...Object.entries({
+          termos: 'terms',
+          privacidade: 'privacy',
+          cookies: 'cookies',
+          contato: 'contact',
+        }).map(([path, legal]) => ({ path, component: LegalPage, data: { legal } })),
+      ]),
+    ]);
+    const harness = await RouterTestingHarness.create();
+    for (const [path, key] of Object.entries({
+      termos: 'terms',
+      privacidade: 'privacy',
+      cookies: 'cookies',
+      contato: 'contact',
+    })) {
+      await harness.navigateByUrl('/' + path, LegalPage);
+      for (const request of TestBed.inject(HttpTestingController).match(
+        environment.apiBaseUrl + '/api/v1/platform/config',
+      )) {
+        request.flush({ contactEmail: 'enzobellussi3@gmail.com', controllerName: 'Bellussi' });
+      }
+      harness.detectChanges();
+      const element = harness.routeNativeElement!;
+      expect(element.querySelector('h1')?.textContent).toContain(legalDocuments[key].title);
+      expect(element.querySelector('nav a[aria-current="page"]')?.getAttribute('href')).toBe(
+        '/' + path,
+      );
+    }
+    TestBed.inject(HttpTestingController).verify();
+  });
   it('shows optional preferences only when configured and permits rejection then selective acceptance', async () => {
     const fixture = await renderComponent(PrivacyControls);
     const privacy = TestBed.inject(PrivacyService);
