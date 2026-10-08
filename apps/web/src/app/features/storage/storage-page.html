@@ -29,6 +29,80 @@
     </button>
   </div>
   @if (tab() === 'stock') {
+    <section class="panel" aria-labelledby="storage-import-title">
+      <div class="panel-heading">
+        <h2 id="storage-import-title" i18n>Importar armazém por CSV</h2>
+        <button class="btn subtle" type="button" (click)="downloadImportTemplate()" i18n>
+          Baixar modelo
+        </button>
+      </div>
+      <p class="help" i18n>
+        Informe o ID do item, quantidade e local. Os nomes vêm do catálogo. Meta e preço são
+        opcionais; o preço informado é seu, não uma cotação atual.
+      </p>
+      <label class="field"
+        ><ng-container i18n>Arquivo CSV · até 500 itens</ng-container>
+        <input type="file" accept=".csv,text/csv" (change)="readImport($event)" />
+      </label>
+      @if (importLoading()) {
+        <p role="status" i18n>Validando os itens no catálogo…</p>
+      }
+      @if (importMessage()) {
+        <p role="status" aria-live="polite">{{ importMessage() }}</p>
+      }
+      @if (importRows().length) {
+        <p i18n>
+          Prévia de {{ importRows().length }} linhas · {{ importRegion().toUpperCase() }}. Ao
+          confirmar, a quantidade substitui o registro do mesmo item e local; ela não é somada.
+        </p>
+        <div class="max-w-full overflow-x-auto">
+          <table class="data-table">
+            <caption class="sr-only" i18n>
+              Prévia dos primeiros vinte itens do CSV
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col" i18n>Item</th>
+                <th scope="col" i18n>Local</th>
+                <th scope="col" i18n>Quantidade</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of importRows().slice(0, 20); track $index) {
+                <tr>
+                  <td>{{ row.name }} · #{{ row.itemId }}</td>
+                  <td>{{ row.location }}</td>
+                  <td>{{ number(row.quantity, 0) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <label class="check-row"
+          ><input type="checkbox" [checked]="importConfirmed()" (change)="confirmImport($event)" />
+          <ng-container i18n
+            >Revisei as linhas e quero atualizar estes itens. Outros registros serão
+            mantidos.</ng-container
+          >
+        </label>
+        <div class="action-row">
+          <button
+            class="btn"
+            type="button"
+            (click)="applyImport()"
+            [disabled]="!importConfirmed()"
+            i18n
+          >
+            Confirmar importação
+          </button>
+          <button class="btn subtle" type="button" (click)="cancelImport()" i18n>Cancelar</button>
+        </div>
+      }
+      <p class="help" i18n>
+        A leitura de prints está planejada e terá revisão antes de salvar. Este CSV não acessa sua
+        conta ou os arquivos do jogo.
+      </p>
+    </section>
     <div class="metric-grid">
       <div class="metric">
         <span><ng-container i18n>Registros nesta região</ng-container></span
@@ -44,10 +118,10 @@
     </div>
     <section class="panel">
       <h2><ng-container i18n>Adicionar ou editar material</ng-container></h2>
+      <app-catalog-item-picker [selectionName]="draft.name" (selected)="selectStock($event)" />
       <div class="form-grid">
         <label class="field"
-          ><ng-container i18n>Item</ng-container
-          ><input maxlength="140" [(ngModel)]="draft.name" /></label
+          ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
         ><label class="field"
           ><ng-container i18n>Armazém / personagem</ng-container
           ><input maxlength="140" [(ngModel)]="draft.location" /></label
@@ -153,10 +227,13 @@
       @for (material of project.materials; track $index; let k = $index) {
         <div class="row-editor">
           <div class="form-grid">
+            <div class="field">
+              <app-catalog-item-picker
+                [selectionName]="material.name"
+                (selected)="selectMaterial(k, $event)"
+              />
+            </div>
             <label class="field"
-              ><ng-container i18n>Material</ng-container
-              ><input [(ngModel)]="material.name" /></label
-            ><label class="field"
               ><ng-container i18n>Meta total</ng-container
               ><input type="number" min="1" [(ngModel)]="material.target" /></label
             ><label class="field"

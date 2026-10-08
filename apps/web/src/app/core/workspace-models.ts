@@ -90,6 +90,7 @@ export const workspaceSchema = z
           materials: z
             .array(
               z.object({
+                itemId: z.number().int().positive().optional(),
                 name: labelSchema,
                 target: z.number().int().min(1).max(1e9),
                 price: moneySchema,
