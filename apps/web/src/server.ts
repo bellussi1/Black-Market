@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -51,10 +52,20 @@ app.get('/robots.txt', (_req, res) => {
         (origin ? 'Sitemap: ' + new URL(origin).origin + '/sitemap.xml\n' : ''),
     );
 });
-app.get('/sobre/', (_req, res) => {
-  res
-    .set('Cache-Control', 'public, max-age=300')
-    .sendFile(join(browserDistFolder, 'sobre', 'index.html'));
+app.get('/sobre/', (_req, res, next) => {
+  void readFile(join(browserDistFolder, 'sobre', 'index.html'), 'utf8')
+    .then((html) =>
+      res
+        .set('Cache-Control', 'public, max-age=300')
+        .type('html')
+        .send(
+          html.replace(
+            /<span data-copyright-year>\d{4}<\/span>/,
+            '<span data-copyright-year>' + new Date().getUTCFullYear() + '</span>',
+          ),
+        ),
+    )
+    .catch(next);
 });
 async function sitemapResponse(path: string, res: express.Response) {
   try {

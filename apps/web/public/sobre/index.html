@@ -71,6 +71,16 @@
         margin-top: 40px;
         color: #c3ceb9;
       }
+      footer nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+      }
+      footer a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+      }
       .notice {
         padding: 20px;
         background: #18251c;
@@ -172,7 +182,15 @@
         Black Market é independente e não é uma produção da Pearl Abyss. Black Desert Online e seus
         assets pertencem aos respectivos titulares.
       </p>
-      <footer>
+      <footer aria-label="Informações do Black Market">
+        <nav aria-label="Documentos e suporte">
+          <a href="/termos">Termos de Uso</a>
+          <a href="/privacidade">Política de Privacidade</a>
+          <a href="/cookies">Cookies e armazenamento</a>
+          <a href="/contato">Contato e suporte</a>
+          <a href="/cookies#legal-contact">Preferências de privacidade</a>
+        </nav>
+        <p>© <span data-copyright-year>2026</span> Black Market · Comunidade brasileira</p>
         <p>
           Atualizado em <time datetime="2026-10-08">8 de outubro de 2026</time>.
           <a href="/settings">Dados e backup</a> ·
