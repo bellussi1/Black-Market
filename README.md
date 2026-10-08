@@ -112,3 +112,9 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 - [Calculadoras](docs/calculators.md)
 - [Desenvolvimento](docs/development.md)
 - [Deploy e custos](docs/deployment.md)
+
+### Atualização e uso do catálogo
+
+- [Como cadastrar seu armazém](docs/storage-tutorial.md)
+- [Atualização do catálogo e limites de cobertura](docs/catalog-updates.md)
+- [Inventário dos dados extraídos](docs/extracted-data-inventory.md)
