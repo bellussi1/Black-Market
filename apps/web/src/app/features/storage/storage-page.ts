@@ -40,6 +40,7 @@ export class StoragePage implements OnDestroy {
   readonly importMessage = signal('');
   readonly importRegion = signal('');
   readonly importConfirmed = signal(false);
+  readonly importPage = signal(0);
   constructor() {
     effect(() => {
       const region = this.store.data().region;
@@ -67,6 +68,7 @@ export class StoragePage implements OnDestroy {
     this.importRows.set([]);
     this.importLoading.set(false);
     this.importConfirmed.set(false);
+    this.importPage.set(0);
   }
 
   async readImport(event: Event): Promise<void> {

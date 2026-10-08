@@ -58,7 +58,7 @@
         <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <caption class="sr-only" i18n>
-              Prévia dos primeiros vinte itens do CSV
+              Prévia paginada dos itens do CSV
             </caption>
             <thead>
               <tr>
@@ -68,7 +68,10 @@
               </tr>
             </thead>
             <tbody>
-              @for (row of importRows().slice(0, 20); track $index) {
+              @for (
+                row of importRows().slice(importPage() * 20, (importPage() + 1) * 20);
+                track $index
+              ) {
                 <tr>
                   <td>{{ row.name }} · #{{ row.itemId }}</td>
                   <td>{{ row.location }}</td>
@@ -78,6 +81,31 @@
             </tbody>
           </table>
         </div>
+        <nav class="action-row" aria-label="Páginas da prévia do CSV" i18n-aria-label>
+          <button
+            class="btn subtle"
+            type="button"
+            [disabled]="importPage() === 0"
+            (click)="importPage.set(importPage() - 1)"
+            i18n
+          >
+            Anterior
+          </button>
+          <span i18n
+            >Linhas {{ importPage() * 20 + 1 }} a
+            {{ importRows().slice(0, (importPage() + 1) * 20).length }} de
+            {{ importRows().length }}</span
+          >
+          <button
+            class="btn subtle"
+            type="button"
+            [disabled]="(importPage() + 1) * 20 >= importRows().length"
+            (click)="importPage.set(importPage() + 1)"
+            i18n
+          >
+            Próxima
+          </button>
+        </nav>
         <label class="check-row"
           ><input type="checkbox" [checked]="importConfirmed()" (change)="confirmImport($event)" />
           <ng-container i18n
