@@ -11,7 +11,10 @@ Código e configuração preparados; não há hospedagem pública, domínio nem 
 Defina em um arquivo de ambiente fora do Git:
 
 - `POSTGRES_DB`, `POSTGRES_USER` e uma senha própria em `POSTGRES_PASSWORD`.
-- `CONTAINER_DATABASE_URL`, com esses mesmos dados e host `postgres`; caracteres especiais devem ser codificados na URL.
+- `CONTAINER_DATABASE_URL`, com credenciais de migração/administrador e host `postgres`; caracteres especiais devem ser codificados na URL. Essa credencial não é fornecida à API de produção.
+- `POSTGRES_APP_PASSWORD`, senha aleatória exclusiva da aplicação, com pelo menos 32 caracteres, diferente da senha administrativa.
+- `RUNTIME_DATABASE_URL`, usando `black_market_app`, essa senha e host `postgres`. A etapa `permissions` cria/atualiza o papel após migrações.
+- `APP_IMAGE`, tag imutável da revisão a publicar. Se usar digest de uma imagem já publicada, não execute build com o digest como tag.
 - `PUBLIC_SITE_URL`, o endereço HTTPS real, sem caminho.
 - `PRODUCTION_POSTGRES_VOLUME`, um nome exclusivo para o banco de produção.
 - Opcionalmente `CATALOG_ASSETS_PUBLIC_URL` para assets versionados publicados em armazenamento/CDN.
@@ -22,6 +25,8 @@ docker compose --env-file .env.production -f docker-compose.production.yml up -d
 ```
 
 Antes da abertura pública, restaurar um backup autorizado do catálogo e copiar `data/assets/<checksum>`, inclusive `asset_redirects.json`, `integrity.json`, ícones e `icon-index-v1.json`. Fazer backups do volume PostgreSQL e do diretório de assets em armazenamento separado. Não usar `down -v` no banco existente.
+
+Em banco novo, suba PostgreSQL/migrações primeiro; restaure o catálogo antes de abrir API/web/gateway. Após cada restauração ou migração que crie tabelas, reexecute `permissions` com `up --force-recreate permissions`: o papel não recebe escrita automática em tabelas futuras. A API de produção recusa superusuário, criação de roles/bancos/schema, propriedade de tabelas e memberships. Não conceda o papel proprietário ao runtime para resolver erros de permissão. Ver [controles e evidências](security-hardening.md).
 
 Cloudflare fornece a entrada/CDN; esta configuração não executa Nest e PostgreSQL em Workers. O custo do host depende do provedor escolhido. Não há promessa de hospedagem integral gratuita. A base local com catálogo e referências ocupou aproximadamente 498 MB no PostgreSQL durante esta entrega, sem histórico de mercado ou contas em uso. Extração/importação pesada deve ficar no host do mantenedor, evitando competir com consultas públicas.
 

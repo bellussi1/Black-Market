@@ -126,3 +126,5 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 [Auditoria e checklist](docs/production-audit.md) · [Segurança](docs/security.md) · [Logs e uptime](docs/observability.md) · [Privacidade](docs/privacy-inventory.md) · [Analytics](docs/analytics.md) · [Backup e recuperação](docs/backup-recovery.md).
 
 Contato público informado: enzobellussi3@gmail.com. Responsável informado: Bellussi; identificação jurídica completa e documentos sujeitos à revisão. Integrações externas e domínio não estão ativados só por existir configuração no código.
+
+Veja [segurança e infraestrutura implementadas](docs/security-hardening.md) para conta restrita PostgreSQL, limites de entrada, isolamento do Compose, testes e configuração manual de backups/produção.

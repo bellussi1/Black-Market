@@ -4,7 +4,7 @@
 
 `scripts/backup-database.ps1` gera pg_dump custom, copia para data/backups e grava manifesto SHA-256, UTC e revisão Git. `-ApplyRetention` mantém até 7 dias distintos mais 4 semanas distintas entre os dumps gerados; poda apenas arquivos com prefixo específico dentro do diretório validado no projeto. Não usar diretório público ou versionar backups. O script não inclui arquivos de imagens.
 
-`scripts/restore-drill.ps1` confere manifesto quando presente, cria banco com nome reservado de verificação, restaura com pg_restore --exit-on-error --no-owner e consulta tabelas/catálogo/referências. Remove apenas o banco que criou. O banco original é preservado. Um ensaio foi executado no PostgreSQL local em 08/10/2026; evidência da contagem está na auditoria final.
+`scripts/restore-drill.ps1` exige manifesto com nome e SHA-256 válidos por padrão; dump externo sem manifesto exige -AllowUnverified explícito após verificar sua origem. Em seguida, cria banco com nome reservado de verificação, restaura com pg_restore --exit-on-error --no-owner e consulta tabelas/catálogo/referências. Remove apenas o banco que criou. O banco original é preservado. Um ensaio foi executado no PostgreSQL local em 08/10/2026; evidência da contagem está na auditoria final.
 
 ```powershell
 pwsh -File scripts/backup-database.ps1 -ComposeFile docker-compose.production.yml -EnvFile .env.production -ApplyRetention
@@ -25,3 +25,7 @@ Copiar dump/manifesto e `data/assets/<checksum>` para armazenamento externo priv
 4. Copiar assets do checksum esperado e verificar integrity.json. Subir aplicação da revisão correspondente e executar smoke checks.
 5. Trocar entrada somente após aprovação operacional; manter volume anterior para retorno. Não usar `down -v` e não sobrescrever o banco de origem durante diagnóstico.
 6. Testar mensalmente e antes de migração relevante. Documentar duração, volume, revisão e resultado sem dados pessoais.
+
+## Helper Linux e controles adicionais
+
+`scripts/backup-database.sh` usa Docker Compose e coreutils, sem exigir PowerShell. Gera dump e manifesto, protege gravação com lock/arquivo parcial e aplica retenção opcional com APPLY_RETENTION=1. Ver [agendamento e evidências de restauração](security-hardening.md). Agendamento e cópia externa permanecem pendentes.

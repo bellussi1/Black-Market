@@ -2,12 +2,14 @@
 
 ## Controles
 
+Atualização: [controles adicionais, arquivos e testes](security-hardening.md) incluem papel restrito do banco, rede interna, limites de corpo por finalidade e backups Linux. As configurações externas continuam pendentes de validação.
+
 - Tokens Bearer verificados em Supabase Auth via getUser; UUID do dono vem da identidade confirmada. Não aceitar userId enviado pelo visitante.
 - Workspace com SELECT/UPDATE/DELETE filtrados pelo dono e versão esperada; transação e advisory lock em gravações. Retorno privado/no-store. Testar duas contas reais ainda exige credenciais.
 - CORS com uma origem HTTP(S) normalizada, métodos/cabeçalhos explícitos e credentials=false. Origem estrangeira em escrita pessoal é rejeitada.
 - Não há autenticação por cookie ou credenciais ambientes enviadas automaticamente; CSRF clássico por cookie não se aplica ao Bearer atual. PKCE para retorno de identidade; SameSite=Lax/Secure no cookie funcional de região.
 - CSP na resposta web de produção: self para código, jsDelivr/WASM/worker para OCR sob demanda, sem unsafe-eval; inline de estilos para Angular. HSTS apenas na origem HTTPS. DENY, nosniff, Permissions-Policy e políticas de referência. CSP precisa de validação em navegador com login e OCR reais antes de publicar.
-- Middleware nativo limitado em memória: workspace/market 30 requisições/min/IP; telemetria 10/min/IP, mapa limitado a 10 mil chaves. Gateway reduz mercado a 10/min. Limitador por processo, apropriado para instância única.
+- Middleware nativo limitado em memória: workspace/market/calculadoras 30 requisições/min/IP; telemetria 10/min/IP; consultas públicas 240/min/IP (health, OPTIONS e ícones preservados), mapa limitado a 10 mil chaves. Gateway reduz mercado a 10/min. Limitador por processo, apropriado para instância única.
 - Validação Zod em contratos e listagens, limites de body e assets, propriedades operacionais restritas. SQL Drizzle parametrizado. Renderização de conteúdo por texto/escape Angular; sem HTML arbitrário importado.
 - Filtro global sem erro original sensível; Swagger desativado em produção. Logs mínimos e rotação. Timeouts de pool/query.
 - Supabase aceita chave publicável/anon; rejeita secret/service_role. .env fora do Git. Arquivo exemplo só tem valores locais explicitamente demonstrativos.
