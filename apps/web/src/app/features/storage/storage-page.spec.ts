@@ -20,4 +20,25 @@ describe('Storage import guidance', () => {
       'Não existe um botão para exportar esse arquivo diretamente do jogo',
     );
   });
+  it('renders user-provided names as text rather than executable markup', async () => {
+    const fixture = await renderComponent(StoragePage);
+    fixture.componentInstance.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'markup',
+          region: 'sa',
+          name: '<img src=x onerror=alert(1)>',
+          location: 'Velia',
+          quantity: 1,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('td img')).toBeNull();
+    expect(element.textContent).toContain('<img src=x onerror=alert(1)>');
+  });
 });
