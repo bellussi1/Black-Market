@@ -12,12 +12,13 @@ import {
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
+import { EquipmentReference } from '../../shared/equipment-reference/equipment-reference';
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-enhancement-page',
-  imports: [FormsModule, PresetBar, CalculationProof],
+  imports: [FormsModule, PresetBar, CalculationProof, EquipmentReference],
   templateUrl: './enhancement-page.html',
 })
 export class EnhancementPage {

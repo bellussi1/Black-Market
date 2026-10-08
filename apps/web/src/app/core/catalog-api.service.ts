@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import type {
@@ -6,7 +7,9 @@ import type {
   CatalogItem,
   CatalogItemDetail,
   CatalogPage,
+  CatalogRecipe,
   CatalogRecipesResponse,
+  RecipeListResponse,
 } from '@bdo/shared';
 
 import { environment } from '../../environments/environment';
@@ -31,10 +34,13 @@ export interface CatalogItemResponse {
 export class CatalogApiService {
   private readonly http = inject(HttpClient);
   private readonly preferences = inject(RegionPreferences);
+  private readonly document = inject(DOCUMENT);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
 
   resolveIconUrl(item: Pick<CatalogItem, 'iconUrl'>): string | null {
-    return item.iconUrl ? new URL(item.iconUrl, environment.apiBaseUrl).href : null;
+    return item.iconUrl
+      ? new URL(item.iconUrl, environment.apiBaseUrl || this.document.baseURI).href
+      : null;
   }
 
   itemIconUrl(id: number, dataset: ActiveDatasetSummary | null | undefined): string | null {
@@ -74,5 +80,26 @@ export class CatalogApiService {
       .set('region', this.preferences.region())
       .set('preferredLocale', preferredDataLocale());
     return this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/items/${id}/recipes`, { params });
+  }
+
+  getRecipes(q: string, page: number) {
+    return this.http.get<RecipeListResponse>(`${this.baseUrl}/recipes`, {
+      params: {
+        q,
+        page,
+        pageSize: 24,
+        region: this.preferences.region(),
+        preferredLocale: preferredDataLocale(),
+      },
+    });
+  }
+
+  getRecipe(key: string) {
+    return this.http.get<{ recipe: CatalogRecipe; dataset: ActiveDatasetSummary }>(
+      `${this.baseUrl}/recipes/${encodeURIComponent(key)}`,
+      {
+        params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
+      },
+    );
   }
 }

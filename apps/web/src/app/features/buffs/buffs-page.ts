@@ -1,6 +1,7 @@
 import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { type Buff, buffSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -9,7 +10,7 @@ import { number } from '../../shared/formatters';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-buffs-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './buffs-page.html',
 })
 export class BuffsPage implements OnDestroy {

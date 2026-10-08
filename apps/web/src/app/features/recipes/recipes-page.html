@@ -1,0 +1,87 @@
+<div class="tool-page guided-page">
+  <header class="page-heading">
+    <p class="eyebrow" i18n>DO MATERIAL AO RESULTADO</p>
+    <h1 i18n>Receitas</h1>
+    <p i18n>
+      Consulte materiais e resultados conhecidos. Quantidades ausentes precisam ser conferidas antes
+      de calcular.
+    </p>
+  </header>
+  @if (loading()) {
+    <p role="status" i18n>Carregando receitas…</p>
+  }
+  @if (message()) {
+    <p role="alert">{{ message() }}</p>
+  }
+  @if (recipe(); as selected) {
+    <section class="panel">
+      <a routerLink="/recipes" i18n>← Todas as receitas</a>
+      <h2>{{ selected.outputs[0]?.name || typeLabel(selected.type) }}</h2>
+      <p>{{ typeLabel(selected.type) }}</p>
+      <h3 i18n>Materiais</h3>
+      <ul>
+        @for (part of selected.inputs; track $index) {
+          <li>
+            <app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" /><a
+              [routerLink]="['/database/items', part.itemId]"
+              >{{ part.name }}</a
+            >
+            · {{ part.quantity ?? 'Quantidade não informada' }}
+          </li>
+        }
+      </ul>
+      <h3 i18n>Resultados</h3>
+      <ul>
+        @for (part of selected.outputs; track $index) {
+          <li>
+            <app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" /><a
+              [routerLink]="['/database/items', part.itemId]"
+              >{{ part.name }}</a
+            >
+            · {{ part.quantity ?? 'Rendimento não informado' }}
+          </li>
+        }
+      </ul>
+      @if (selected.outputs[0]; as output) {
+        <a routerLink="/crafting" [queryParams]="{ item: output.itemId, recipe: selected.key }" i18n
+          >Calcular produção →</a
+        >
+      }
+    </section>
+  } @else {
+    <form class="panel" (ngSubmit)="search()">
+      <label for="recipe-search" i18n>O que você quer produzir?</label
+      ><input
+        id="recipe-search"
+        name="q"
+        [(ngModel)]="q"
+        maxlength="80"
+        placeholder="Ex.: cerveja"
+        i18n-placeholder
+      /><button type="submit" i18n>Buscar</button>
+    </form>
+    @if (result(); as list) {
+      <p>{{ list.total }} <ng-container i18n>receitas disponíveis nesta região</ng-container></p>
+      <section class="cards">
+        @for (row of list.recipes; track row.key) {
+          <article class="panel">
+            <app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" />
+            <h2>
+              <a [routerLink]="['/recipes', row.key]">{{ row.name }}</a>
+            </h2>
+            <p>{{ typeLabel(row.type) }}</p>
+          </article>
+        } @empty {
+          <p i18n>Nenhuma receita encontrada. Tente outra palavra.</p>
+        }
+      </section>
+      <nav aria-label="Páginas de receitas" i18n-aria-label>
+        <button (click)="move(-1)" [disabled]="page === 1" i18n>Anterior</button
+        ><span> {{ page }} </span
+        ><button (click)="move(1)" [disabled]="page * list.pageSize >= list.total" i18n>
+          Próxima
+        </button>
+      </nav>
+    }
+  }
+</div>

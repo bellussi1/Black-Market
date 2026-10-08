@@ -1,0 +1,88 @@
+@layer components {
+  .guided-page {
+    .page-heading {
+      margin-bottom: 2rem;
+    }
+    .page-heading h1 {
+      font: 400 clamp(34px, 4vw, 56px)/1.12 var(--bm-font-display);
+      margin: 0 0 1rem;
+    }
+    .page-heading p {
+      max-width: 68ch;
+      color: var(--bm-muted);
+    }
+    .eyebrow {
+      color: var(--bm-accent);
+      font-size: 12px;
+      letter-spacing: 0.16em;
+    }
+    label {
+      display: block;
+      margin-block: 0.75rem;
+      color: var(--bm-text);
+    }
+    input:not([type='checkbox']),
+    select {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      padding: 10px 12px;
+      font: inherit;
+      background: var(--bm-input);
+      color: var(--bm-text);
+      border: 1px solid var(--bm-control-border);
+      border-radius: 2px;
+    }
+    input[type='checkbox'] {
+      width: 20px;
+      height: 20px;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+      accent-color: var(--bm-accent);
+    }
+    button {
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 1px solid var(--bm-accent);
+      color: var(--bm-background);
+      background: var(--bm-accent);
+      cursor: pointer;
+      font: inherit;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    button:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+    :is(input, select, button, a):focus-visible {
+      outline: 3px solid var(--bm-focus);
+      outline-offset: 3px;
+    }
+    fieldset {
+      min-width: 0;
+      border: 1px solid var(--bm-border);
+      padding: 1rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 1rem;
+    }
+    li {
+      margin-block: 0.75rem;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr);
+      gap: 0.5rem 1rem;
+    }
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    dt {
+      color: var(--bm-muted);
+    }
+  }
+}

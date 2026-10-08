@@ -1,0 +1,132 @@
+<div class="tool-page">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>BASES E TRABALHADORES</p>
+    <h1 i18n>Conecte sua produção.</h1>
+    <p i18n>
+      Veja as posições e conexões registradas no jogo. Compare uma rota de contribuição e simule
+      trabalhadores com o rendimento e a duração que você observa.
+    </p>
+  </header>
+  @if (message()) {
+    <p class="notice" role="status">{{ message() }}</p>
+  }
+  @if (loading()) {
+    <p role="status" i18n>Carregando conexões…</p>
+  }
+  <section class="panel">
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Filtrar bases pelo nome</span
+        ><input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Partida</span
+        ><select [ngModel]="start()" (ngModelChange)="start.set($event)">
+          <option value="" i18n>Escolha uma base</option>
+          @for (node of filtered(); track node.id) {
+            <option [value]="node.id">{{ node.name }}</option>
+          }
+        </select></label
+      ><label class="field"
+        ><span i18n>Destino</span
+        ><select [ngModel]="destination()" (ngModelChange)="destination.set($event)">
+          <option value="" i18n>Escolha uma base</option>
+          @for (node of filtered(); track node.id) {
+            <option [value]="node.id">{{ node.name }}</option>
+          }
+        </select></label
+      >
+    </div>
+    <svg
+      viewBox="0 0 1000 1000"
+      role="img"
+      aria-label="Mapa das conexões entre bases; a rota selecionada fica destacada"
+      i18n-aria-label
+    >
+      @for (edge of edges(); track $index) {
+        <line [attr.x1]="edge.x1" [attr.y1]="edge.y1" [attr.x2]="edge.x2" [attr.y2]="edge.y2" />
+      }
+      @for (node of markers(); track node.id) {
+        <circle
+          [attr.cx]="node.px"
+          [attr.cy]="node.py"
+          [attr.r]="inRoute(node.id) ? 5 : node.main ? 2.5 : 1.5"
+          [class.selected]="inRoute(node.id)"
+        >
+          <title>{{ node.name }}</title>
+        </circle>
+      }
+    </svg>
+    @if (route(); as route) {
+      <h2 i18n>{{ route.contribution }} pontos de contribuição na rota</h2>
+      <ol>
+        @for (node of route.nodes; track node.id) {
+          <li>
+            <a [routerLink]="['/reference', 'nodes', node.id]">{{ node.name }}</a> ·
+            {{ node.contribution }}
+          </li>
+        }
+      </ol>
+    } @else if (start() && destination()) {
+      <p class="notice" i18n>Não encontramos uma conexão disponível entre essas bases.</p>
+    }
+    <p class="help" i18n>
+      O mapa mostra coordenadas e conexões, sem a imagem de fundo do jogo. O custo soma as bases da
+      rota; investimentos existentes, alojamento e requisitos adicionais devem ser conferidos no
+      jogo.
+    </p>
+  </section>
+  <section class="panel">
+    <h2 i18n>Estimar produção de trabalhadores</h2>
+    <app-catalog-item-picker
+      [selectionName]="workerItem()?.name ?? ''"
+      (selected)="workerItem.set($event)"
+    />
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Duração de um ciclo (minutos)</span
+        ><input
+          type="number"
+          min="0.001"
+          [ngModel]="cycleMinutes()"
+          (ngModelChange)="cycleMinutes.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Número de ciclos</span
+        ><input
+          type="number"
+          min="1"
+          [ngModel]="cycles()"
+          (ngModelChange)="cycles.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Quantidade média por ciclo</span
+        ><input
+          type="number"
+          min="1"
+          [ngModel]="quantity()"
+          (ngModelChange)="quantity.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Preço unitário</span
+        ><input
+          inputmode="numeric"
+          [ngModel]="price()"
+          (ngModelChange)="price.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Custo de alimentação e outros custos</span
+        ><input inputmode="numeric" [ngModel]="cost()" (ngModelChange)="cost.set($event)"
+      /></label>
+    </div>
+    @if (workerItem()) {
+      @if (worker().value; as result) {
+        <div class="metric">
+          <span i18n>Retorno estimado por hora</span><strong>{{ silver(result.perHour) }}</strong>
+        </div>
+      } @else {
+        <p class="notice" role="status">{{ worker().error }}</p>
+      }
+    }
+    <p class="help" i18n>
+      A simulação usa as quantidades informadas e o imposto padrão, sem pacote econômico. Não prevê
+      drops aleatórios, habilidade do trabalhador, alojamento ou liquidez do mercado
+      automaticamente.
+    </p>
+  </section>
+</div>
