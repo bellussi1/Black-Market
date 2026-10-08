@@ -11,6 +11,12 @@
       "browser": "./dist/browser/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./workspace": {
+      "types": "./dist/workspace.d.ts",
+      "browser": "./dist/browser/workspace.js",
+      "require": "./dist/workspace.js",
+      "default": "./dist/workspace.js"
     }
   },
   "scripts": {
@@ -20,6 +26,7 @@
   },
   "dependencies": {
     "@bdo/domain": "workspace:*",
+    "@bdo/shared": "workspace:*",
     "zod": "4.6.5"
   },
   "devDependencies": {

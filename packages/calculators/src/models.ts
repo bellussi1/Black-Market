@@ -110,8 +110,25 @@ export const boxSchema = z
   );
 export const activitySchema = z.object({
   ...taxShape,
+  mode: z.enum(['active', 'afk']).optional(),
+  skill: z
+    .enum([
+      'gathering',
+      'cooking',
+      'alchemy',
+      'processing',
+      'fishing',
+      'hunting',
+      'training',
+      'trading',
+      'farming',
+      'sailing',
+      'barter',
+    ])
+    .optional(),
+  mastery: z.number().int().min(0).max(5000).optional(),
   name: labelSchema,
-  minutes: decimal.positive(),
+  minutes: decimal.min(0.001),
   energy: countSchema,
   cost: moneySchema,
   directIncome: moneySchema,
