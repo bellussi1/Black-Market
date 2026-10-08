@@ -19,6 +19,7 @@ import {
 
 const regions = REGION_CODES;
 import { characterSchema, personalPlanSchema, reservationIssues } from './personal';
+import { workerEmpireSchema } from './worker-empire';
 
 const id = z.string().min(1).max(64);
 const timestamp = z.string().refine((v) => Number.isFinite(Date.parse(v)), 'Data inválida.');
@@ -75,6 +76,7 @@ export const workspaceSchema = z
     schemaVersion: z.literal(1),
     characters: z.array(characterSchema).max(30).default([]),
     personalPlans: z.array(personalPlanSchema).max(200).default([]),
+    workerEmpires: z.array(workerEmpireSchema).max(30).default([]),
     region,
     quotes: z.array(quoteSchema).max(300),
     inventory: z.array(inventorySchema.extend({ region: region.default('sa') })).max(1000),
@@ -140,6 +142,7 @@ export const workspaceSchema = z
       'buffPresets',
       'characters',
       'personalPlans',
+      'workerEmpires',
     ] as const;
     for (const name of collections) {
       const seen = new Set<string>();
@@ -162,6 +165,7 @@ export const emptyWorkspace = (): Workspace => ({
   schemaVersion: 1,
   characters: [],
   personalPlans: [],
+  workerEmpires: [],
   region: DEFAULT_REGION,
   quotes: [],
   inventory: [],
