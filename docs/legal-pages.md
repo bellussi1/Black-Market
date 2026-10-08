@@ -8,7 +8,7 @@ O componente `PlatformFooter` é compartilhado por todas as rotas Angular e cont
 
 A interface preserva a paleta verde, tipografia e controles existentes. Links e botões têm altura mínima de 44px e foco visível. Footer passa de três colunas para uma em até 760px; sumário legal passa para uma coluna em até 600px. Texto e contato longo podem quebrar linhas; não há dimensões horizontais fixas. Cada página tem um h1, seções nomeadas, sumário com âncoras e navegação com `aria-current`. A atualização do documento é explícita em `legalUpdatedOn`, não a data automática do copyright.
 
-Preferências abrem o `PrivacyService` e o painel já existente; a ação funciona também quando analytics não está configurado. Ela não autoriza coleta por si só. Não foi adicionada outra solução de consentimento.
+Preferências abrem o `PrivacyService` e o painel já existente; a ação funciona também quando analytics não está configurado. Ela não autoriza coleta por si só. O componente só oferece a categoria opcional se o serviço estiver disponível, permite revogar escolha anterior, comunica falha de persistência e devolve foco após fechar por teclado. Não foi adicionada outra solução de consentimento.
 
 ## Conteúdo conforme funcionalidades reais
 
@@ -35,7 +35,7 @@ Fontes de referência consultadas em 08/10/2026: [texto da LGPD](https://www.pla
 
 ## Testes e limites
 
-- Vitest/Angular: quatro documentos, h1 único, data semântica, destinos das âncoras, seções nomeadas, contato, aviso de revisão, navegação real das quatro rotas com indicador atual, links do footer, ano e foco/acionamento do botão de preferências.
+- Vitest/Angular: quatro documentos, h1 único, data semântica, destinos das âncoras, seções nomeadas, contato, aviso de revisão, navegação real das quatro rotas com indicador atual, links do footer, ano, rejeição/aceite seletivo, revogação quando analytics está indisponível, foco com Escape e aviso quando a escolha não pode ser salva.
 - `pnpm test:legal:layout`: contratos CSS de quebra, colunas móveis, alvos de toque e foco. Contraste calculado dos tokens de texto/link contra fundo e superfície: mínimo **7,80:1**. O script entra no CI.
 - `pnpm test:ssr`: HTML real de Home, páginas legais e Sobre, presença dos links legais no footer, ano, preferências, headers e ausência de JavaScript inline incompatível com CSP; preserva teste de noindex pessoal.
 - Compilação e lint executados. Nenhum teste de navegador visual ou leitor de tela foi declarado concluído; JSDOM não mede geometria, zoom ou reflow.

@@ -74,14 +74,14 @@ export const legalDocuments: Record<string, LegalDocument> = {
         title: 'Finalidades e escolhas',
         paragraphs: [
           'Dados funcionais permitem atender às consultas e ao planejamento que você solicita, manter preferências, sincronizar sua cópia e proteger a operação. As bases legais dessas finalidades precisam ser validadas pelo responsável.',
-          'Estatísticas de uso são opcionais e ficam desligadas até sua autorização e a configuração do serviço. Você pode rejeitar ou revogar essa escolha no rodapé. Não incluímos nomes, e-mail, prints, valores do seu estoque ou credenciais nesses eventos.',
+          'Estatísticas de uso são opcionais e só enviam eventos quando o recurso está configurado e você autoriza. Você pode rejeitar ou revogar essa escolha no rodapé. Não incluímos nomes, e-mail, prints, valores do seu estoque ou credenciais nesses eventos. A configuração de analytics e esta política ainda exigem validação antes do lançamento.',
         ],
       },
       {
         title: 'Serviços envolvidos',
         paragraphs: [
-          'A plataforma guarda a cópia sincronizada em seu banco de dados. Supabase Auth fornece identidade quando ativado. Cloudflare pode atender à entrada e proteção; Better Stack pode verificar a disponibilidade pública. PostHog Cloud recebe estatísticas de funcionalidades apenas quando configurado e autorizado. A presença destes serviços na política não significa que todos estejam ativados.',
-          'O mecanismo de leitura de prints baixa arquivos técnicos de reconhecimento na primeira utilização. Isso envolve conexões a provedores de distribuição de arquivos; a imagem permanece no navegador. Prestadores de infraestrutura podem processar dados técnicos de conexão. Não presumimos anonimato só por uma ferramenta não usar cookies.',
+          'A plataforma guarda a cópia sincronizada em seu banco de dados quando você confirma. Supabase Auth fornece identidade quando ativado. Cloudflare pode atender à entrada e proteção; Better Stack pode verificar a disponibilidade pública. PostHog Cloud recebe estatísticas de funcionalidades somente em produção, se estiver configurado e autorizado. A presença destes serviços na política não significa que todos estejam ativados.',
+          'O mecanismo de leitura de prints baixa arquivos técnicos de reconhecimento na primeira utilização, depois de você iniciar a leitura. Isso envolve conexões aos provedores de distribuição dos arquivos; a imagem permanece no navegador. A aplicação também envia relatos operacionais mínimos ao próprio serviço quando ocorre um erro relevante; isso é distinto das estatísticas opcionais e exige avaliação de finalidade e base legal. Prestadores de infraestrutura podem processar dados técnicos de conexão. Não presumimos anonimato só por uma ferramenta não usar cookies.',
           'Serviços podem tratar dados fora do Brasil. A configuração de regiões, contratos, garantias de transferência e retenção precisa ser validada antes da ativação pública.',
         ],
       },
@@ -89,7 +89,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         title: 'Conservação e remoção',
         paragraphs: [
           'Dados locais permanecem até você remover o armazenamento ou substituir a cópia. Preferências de privacidade expiram após 180 dias para solicitar nova escolha. Sair da conta não apaga o estoque deste navegador. Excluir a cópia da conta remove seu conteúdo, mantendo apenas uma referência de identidade, versão e horário para evitar sobrescritas por dispositivos antigos; a retenção dessa referência exige definição pelo responsável.',
-          'Estatísticas opcionais usam um identificador aleatório deste navegador, removido ao revogar a escolha. Isso impede novas emissões; não apaga automaticamente eventos já recebidos pelo prestador. A retenção de dados remotos, backups e eventos deve ser definida pelo responsável e informada antes da publicação.',
+          'Estatísticas opcionais usam um identificador aleatório deste navegador, removido ao rejeitar ou revogar a escolha. A revogação cancela envios pendentes e impede novos eventos; não apaga automaticamente eventos já recebidos pelo prestador. Se o navegador bloquear o armazenamento local, a escolha vale somente enquanto esta página estiver aberta. A retenção de dados remotos, backups e eventos deve ser definida pelo responsável e informada antes da publicação.',
           'Registros operacionais são substituídos conforme o volume armazenado, sem prazo em dias garantido nesta versão. Excluir a cópia sincronizada não exclui automaticamente a identidade de acesso, os registros operacionais ou todas as cópias de segurança. Solicite orientação pelo contato abaixo.',
         ],
       },
@@ -117,15 +117,15 @@ export const legalDocuments: Record<string, LegalDocument> = {
       {
         title: 'Funcionalidades necessárias',
         paragraphs: [
-          'A preferência de mercado usa o cookie black-market-region. Os dados das ferramentas, preferências de privacidade e backups usam armazenamento local deste navegador. Informações de acesso, quando você entra na conta, usam armazenamento da sessão. Não são cookies de publicidade.',
-          'O cookie de mercado pode durar até um ano. A preferência de privacidade solicita nova escolha após 180 dias. Os dados locais das ferramentas permanecem até você removê-los. A sessão de acesso é limitada a esta aba; sua validade também depende do serviço de identidade.',
+          'A preferência de mercado usa o cookie black-market-region, com duração de até um ano. O estoque, personagem, configurações e demais dados das ferramentas ficam no armazenamento local deste navegador. A escolha de privacidade também fica no armazenamento local por até 180 dias. Quando você inicia o acesso à conta, a sessão e o verificador PKCE usam armazenamento da sessão do navegador; essa sessão não é um cookie HttpOnly. Não são cookies de publicidade.',
+          'Dados locais permanecem até você removê-los pelas ferramentas ou pelo navegador. Se o navegador impedir a gravação da escolha de privacidade, ela vale apenas enquanto a página estiver aberta e o painel informa essa limitação.',
         ],
       },
       {
         title: 'Estatísticas opcionais',
         paragraphs: [
           'Quando configurado e autorizado, PostHog Cloud recebe eventos de navegação e conclusão de tarefas com nomes de funcionalidades. Um identificador aleatório do navegador permite estimar retorno e retenção. Não enviamos sua identidade de conta. Não há gravação de sessão, captura automática de formulários ou publicidade ativada nesta versão.',
-          'Rejeitar mantém as ferramentas disponíveis. Revogar remove o identificador local e interrompe novos eventos. Preferências podem ser alteradas a qualquer momento pelo rodapé.',
+          'Rejeitar mantém as ferramentas disponíveis. Revogar remove o identificador local, cancela envios que ainda estejam em andamento e interrompe novos eventos. Dados que já chegaram ao prestador não são apagados automaticamente. Preferências podem ser alteradas a qualquer momento pelo rodapé.',
         ],
       },
       {
@@ -138,8 +138,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
       {
         title: 'Serviços externos',
         paragraphs: [
-          'O acesso à conta e a distribuição de arquivos de reconhecimento têm políticas próprias dos respectivos prestadores. Cloudflare pode processar dados técnicos da conexão para segurança. O monitoramento de disponibilidade consulta páginas públicas. A lista de prestadores deve ser conferida na Política de Privacidade.',
-          'Não há GA4, GTM, Clarity ou coleta simultânea de Cloudflare Web Analytics adicionada pelo código. Caso o mantenedor ative um recurso de estatísticas automaticamente pelo provedor, ele precisa ser inventariado e vinculado às escolhas pertinentes antes do lançamento.',
+          'O acesso à conta e a distribuição de arquivos de reconhecimento têm políticas próprias dos respectivos prestadores. Cloudflare pode processar dados técnicos da conexão para segurança. O monitoramento de disponibilidade consulta páginas públicas sem inserir ferramenta de analytics no navegador. A lista de prestadores deve ser conferida na Política de Privacidade.',
+          'O código não carrega GA4, GTM, Clarity, SDK PostHog, replay ou publicidade. O PostHog, quando configurado, recebe eventos por solicitação HTTP somente após autorização. Cloudflare Web Analytics não está incluído pelo código; a configuração no painel de hospedagem não foi verificada e precisa ser conferida antes da publicação para evitar coleta não inventariada.',
         ],
       },
     ],
