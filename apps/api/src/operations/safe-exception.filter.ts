@@ -49,8 +49,11 @@ export class SafeExceptionFilter implements ExceptionFilter {
         event: 'http_exception',
         requestId: request.requestId,
         status: problem.statusCode,
-        cause: exception instanceof Error ? exception.constructor.name : 'Unknown',
+        cause: exception instanceof HttpException ? 'HttpException' : 'InternalError',
       });
-    if (!response.headersSent) response.status(problem.statusCode).json(problem);
+    if (!response.headersSent) {
+      response.setHeader('Cache-Control', 'no-store');
+      response.status(problem.statusCode).json(problem);
+    }
   }
 }

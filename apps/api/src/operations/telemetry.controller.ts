@@ -1,7 +1,18 @@
 import { publicContact } from '@bdo/shared';
-import { BadRequestException, Body, Controller, Get, Header, Logger, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Header,
+  Logger,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
+
+import type { CorrelatedRequest } from './request-controls';
 const reportSchema = z
   .object({
     kind: z.enum(['runtime', 'unhandled_rejection', 'http']),
@@ -16,6 +27,16 @@ const reportSchema = z
       'plans',
       'account',
       'scans',
+      'world',
+      'gear',
+      'enhancement',
+      'lifeskills',
+      'recommendations',
+      'rng',
+      'buffs',
+      'settings',
+      'legal',
+      'home',
       'other',
     ]),
     status: z.number().int().min(0).max(599).optional(),
@@ -26,10 +47,17 @@ const reportSchema = z
 export class TelemetryController {
   private readonly logger = new Logger('Frontend');
   @Post('errors')
-  report(@Body() body: unknown) {
+  @Header('Cache-Control', 'no-store')
+  report(@Body() body: unknown, @Req() request?: CorrelatedRequest) {
     const parsed = reportSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException();
-    this.logger.warn({ event: 'frontend_error', ...parsed.data });
+    const { requestId: sourceRequestId, ...context } = parsed.data;
+    this.logger.warn({
+      event: 'frontend_error',
+      ...context,
+      requestId: request?.requestId,
+      sourceRequestId,
+    });
     return { received: true };
   }
 }

@@ -14,6 +14,7 @@ import { StructuredLogger } from './operations/structured-logger';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+    abortOnError: false,
     bodyParser: false,
   });
   const config = app.get(ConfigService);
@@ -60,4 +61,7 @@ async function bootstrap() {
   await app.listen(config.getOrThrow<number>('PORT'), '0.0.0.0');
 }
 
-void bootstrap();
+void bootstrap().catch(() => {
+  new StructuredLogger(process.env['NODE_ENV'] ?? 'development').error({ event: 'startup_failed' });
+  process.exit(1);
+});

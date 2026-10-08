@@ -14,11 +14,15 @@ class FixtureController {
   workspace(body: unknown) {
     return { bytes: JSON.stringify(body)?.length ?? 0 };
   }
+  failure() {
+    throw new Error('postgres://admin:private@host/db token=private');
+  }
 }
 Controller('api/v1')(FixtureController);
 for (const [method, path] of [
   ['calculate', 'calculators/fixture'],
   ['workspace', 'workspace'],
+  ['failure', 'calculators/failure'],
 ] as const) {
   Post(path)(
     FixtureController.prototype,
@@ -33,12 +37,12 @@ Module({ controllers: [FixtureController] })(FixtureModule);
 describe('HTTP security through the native Nest adapter', () => {
   let app: NestExpressApplication;
   let url: string;
+  const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() };
   beforeAll(async () => {
     app = await NestFactory.create<NestExpressApplication>(FixtureModule, {
       logger: false,
       bodyParser: false,
     });
-    const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() };
     app.use(requestControls(logger, 'production', 'https://platform.example'));
     app.useGlobalFilters(new SafeExceptionFilter(logger));
     app.useBodyParser('json', { limit: '256kb', type: (request) => jsonRequest(request, false) });
@@ -98,5 +102,25 @@ describe('HTTP security through the native Nest adapter', () => {
     expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
     expect(response.headers.get('strict-transport-security')).toBe('max-age=31536000');
     expect(response.headers.get('x-request-id')).toMatch(/^[a-f0-9-]{36}$/);
+  });
+  it('correlates safe global exception logs with the response and forbids error caching', async () => {
+    logger.error.mockClear();
+    const response = await fetch(url + '/api/v1/calculators/failure?token=private', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'X-Request-ID': 'private' },
+      body: '{}',
+    });
+    expect(response.status).toBe(500);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    const body = (await response.json()) as { requestId: string };
+    expect(body.requestId).toBe(response.headers.get('x-request-id'));
+    expect(logger.error).toHaveBeenCalledWith({
+      event: 'http_exception',
+      requestId: body.requestId,
+      status: 500,
+      cause: 'InternalError',
+    });
+    expect(JSON.stringify(body)).not.toContain('private');
+    expect(JSON.stringify(logger.error.mock.calls)).not.toContain('private');
   });
 });

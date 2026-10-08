@@ -1,6 +1,6 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   AnalyticsConfigController,
@@ -8,6 +8,30 @@ import {
   TelemetryController,
 } from './telemetry.controller';
 describe('public operational configuration', () => {
+  it('separates the telemetry request from the original failed request', () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    try {
+      new TelemetryController().report(
+        {
+          kind: 'http',
+          area: 'world',
+          status: 503,
+          requestId: 'b1b7c9b4-8cc3-48a9-ae63-f960c37164bc',
+        },
+        { requestId: 'receipt' } as never,
+      );
+      expect(warn).toHaveBeenCalledWith({
+        event: 'frontend_error',
+        kind: 'http',
+        area: 'world',
+        status: 503,
+        requestId: 'receipt',
+        sourceRequestId: 'b1b7c9b4-8cc3-48a9-ae63-f960c37164bc',
+      });
+    } finally {
+      warn.mockRestore();
+    }
+  });
   it('rejects sensitive telemetry payloads and unknown areas', () => {
     const controller = new TelemetryController();
     expect(() =>

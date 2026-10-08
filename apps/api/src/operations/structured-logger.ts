@@ -5,6 +5,7 @@ export function logEntry(message: unknown, level: LogLevel, context: string, env
     for (const key of [
       'event',
       'requestId',
+      'sourceRequestId',
       'method',
       'route',
       'status',
@@ -24,12 +25,17 @@ export function logEntry(message: unknown, level: LogLevel, context: string, env
     fields['message'] = message
       .replace(/(?:postgres(?:ql)?:\/\/)[^\s]+/gi, '[conexão removida]')
       .replace(/(?:bearer|token|password|secret)[=: ]+[^\s]+/gi, '[valor removido]')
+      .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, '[e-mail removido]')
+      .replace(/https?:\/\/[^\s]+/gi, '[endereço removido]')
+      .replace(/(?:cookie|authorization)[=: ]+[^\r\n]+/gi, '[credencial removida]')
       .slice(0, 500);
   return {
     timestamp: new Date().toISOString(),
     level: level === 'log' ? 'INFO' : level.toUpperCase(),
-    environment,
-    context,
+    environment: ['development', 'production', 'test'].includes(environment)
+      ? environment
+      : 'unknown',
+    context: /^[A-Za-z0-9_.:-]{1,80}$/.test(context) ? context : 'BlackMarket',
     ...fields,
   };
 }
