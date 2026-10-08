@@ -7874,31 +7874,39 @@
     </unit>
     <unit id="5599932154766330630">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:20,21</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:25,26</note>
       </notes>
       <segment>
         <source>Sua privacidade</source>
       </segment>
     </unit>
-    <unit id="4727189793200776975">
+    <unit id="4206149841715303217">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:22,23</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:27,29</note>
       </notes>
       <segment>
-        <source> O armazenamento necessário mantém suas preferências e dados do jogo. Estatísticas opcionais ajudam a entender o uso das ferramentas, sem enviar seu nome, e-mail, estoque ou prints. </source>
+        <source> As ferramentas guardam dados neste dispositivo. Se você confirmar a sincronização, uma cópia será enviada à sua conta. Estatísticas são opcionais e não incluem sua conta, estoque nem prints. </source>
       </segment>
     </unit>
     <unit id="4233266262566694591">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:26,27</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:31,32</note>
       </notes>
       <segment>
         <source>Como usamos cookies e armazenamento</source>
       </segment>
     </unit>
+    <unit id="2236392630766770858">
+      <notes>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:33,34</note>
+      </notes>
+      <segment>
+        <source>Necessários: sempre ativos para as funções que você usa.</source>
+      </segment>
+    </unit>
     <unit id="2290142998288020154">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:28,29</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:35,36</note>
       </notes>
       <segment>
         <source>Aceitar estatísticas</source>
@@ -7906,7 +7914,7 @@
     </unit>
     <unit id="4819481049727269512">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:29,30</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:36,37</note>
       </notes>
       <segment>
         <source>Rejeitar opcionais</source>
@@ -7914,7 +7922,7 @@
     </unit>
     <unit id="8678675799713450261">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:30,31</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:37,38</note>
       </notes>
       <segment>
         <source>Personalizar</source>
@@ -7922,7 +7930,8 @@
     </unit>
     <unit id="7733877625555077778">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:33</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:40</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:69</note>
       </notes>
       <segment>
         <source> Fechar preferências </source>
@@ -7930,7 +7939,7 @@
     </unit>
     <unit id="3720719884536054197">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:38,39</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:45,46</note>
       </notes>
       <segment>
         <source>Necessários: sempre ativos para os recursos solicitados.</source>
@@ -7938,18 +7947,34 @@
     </unit>
     <unit id="2445128555676770148">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:44</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:52,53</note>
       </notes>
       <segment>
         <source>Estatísticas de uso opcionais</source>
       </segment>
     </unit>
-    <unit id="560455758618907981">
+    <unit id="462322724208633651">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:45,46</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:55</note>
       </notes>
       <segment>
-        <source>Salvar escolhas</source>
+        <source> Salvar escolhas </source>
+      </segment>
+    </unit>
+    <unit id="8435487305481921481">
+      <notes>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:60</note>
+      </notes>
+      <segment>
+        <source> Estatísticas opcionais estão indisponíveis. Nenhuma ferramenta opcional será iniciada. </source>
+      </segment>
+    </unit>
+    <unit id="5301133474069323282">
+      <notes>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:64</note>
+      </notes>
+      <segment>
+        <source> Revogar autorização anterior </source>
       </segment>
     </unit>
     <unit id="3803192353703347339">

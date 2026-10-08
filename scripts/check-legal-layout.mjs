@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(path, 'utf8');
 const footer = read('apps/web/src/app/shared/platform-footer/platform-footer.scss');
 const legal = read('apps/web/src/app/features/legal/legal-page.scss');
+const privacy = read('apps/web/src/app/shared/privacy-controls/privacy-controls.scss');
 for (const css of [footer, legal]) {
   assert.match(css, /overflow-wrap:\s*anywhere/, 'Long content must wrap');
   assert.match(css, /min-height:\s*44px/, 'Links need an adequate touch target');
@@ -18,6 +19,16 @@ for (const css of [footer, legal]) {
 }
 assert.match(footer, /@media\s*\(max-width:\s*760px\)/);
 assert.match(legal, /@media\s*\(max-width:\s*600px\)/);
+assert.match(privacy, /overflow-wrap:\s*anywhere/);
+assert.match(privacy, /min-height:\s*44px/);
+assert.match(privacy, /:focus-visible/);
+assert.doesNotMatch(
+  privacy.match(/\.privacy-panel\s*\{([^}]+)\}/)?.[1] ?? '',
+  /^\s*width:\s*\d+px/m,
+  'Privacy panel must not use a fixed horizontal width',
+);
+assert.match(privacy, /@media\s*\(max-width:\s*600px\)/);
+assert.match(privacy, /max-height:\s*min\(85dvh/);
 const tokens = read('apps/web/src/styles/_tokens.scss');
 const color = (name) => {
   const hex = tokens.match(new RegExp(`\\b${name}:\\s*#([a-f0-9]{6})`, 'i'))?.[1];

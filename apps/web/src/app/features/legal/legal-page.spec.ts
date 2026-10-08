@@ -93,10 +93,15 @@ describe('legal navigation and privacy controls', () => {
       .find((row) => row.textContent?.includes('Personalizar'))!
       .click();
     fixture.detectChanges();
-    expect(element.querySelector('label input[type="checkbox"]')).not.toBeNull();
-    fixture.componentInstance.analytics = true;
-    privacy.save(fixture.componentInstance.analytics);
+    const checkbox = element.querySelector<HTMLInputElement>('label input[type="checkbox"]')!;
+    expect(checkbox).not.toBeNull();
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    Array.from(element.querySelectorAll('button'))
+      .find((row) => row.textContent?.includes('Salvar escolhas'))!
+      .click();
     fixture.detectChanges();
     expect(privacy.allowsAnalytics()).toBe(true);
+    expect(JSON.parse(localStorage.getItem('black-market.privacy.v1')!).analytics).toBe(true);
   });
 });
