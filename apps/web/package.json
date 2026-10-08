@@ -11,7 +11,7 @@
     "test": "pnpm --filter @bdo/calculators build && ng test --watch=false",
     "test:watch": "pnpm --filter @bdo/calculators build && ng test",
     "test:unit": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/core/**/*.spec.ts\" --include=\"app/features/**/*-api.spec.ts\" --include=\"app/shared/formatters.spec.ts\" --include=\"app/shared/calculation-feedback.spec.ts\"",
-    "test:components": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/features/**/*-page.spec.ts\" --include=\"app/shared/tax-options.spec.ts\" --include=\"app/shared/preset-bar.spec.ts\" --include=\"app/shared/calculation-proof.spec.ts\" --include=\"app/app.spec.ts\"",
+    "test:components": "pnpm --filter @bdo/calculators build && ng test --watch=false --include=\"app/features/**/*-page.spec.ts\" --include=\"app/shared/tax-options.spec.ts\" --include=\"app/shared/preset-bar.spec.ts\" --include=\"app/shared/calculation-proof.spec.ts\" --include=\"app/shared/platform-footer/*.spec.ts\" --include=\"app/app.spec.ts\"",
     "lint:fix": "ng lint --fix",
     "i18n:extract": "pnpm --filter @bdo/shared build && pnpm --filter @bdo/calculators build && ng extract-i18n",
     "serve:ssr:web": "node dist/web/server/server.mjs"

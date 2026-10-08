@@ -38,6 +38,9 @@ try {
     ['/', 'BLACK MARKET'],
     ['/contato', 'enzobellussi3@gmail.com'],
     ['/termos', 'Termos de Uso'],
+    ['/privacidade', 'Política de Privacidade'],
+    ['/cookies', 'Cookies e armazenamento'],
+    ['/sobre/', 'Seus próximos passos'],
   ]) {
     const response = await fetch(`http://localhost:${port}${path}`);
     assert.equal(response.status, 200, `SSR ${path}`);
@@ -45,6 +48,16 @@ try {
     assert.ok(html.includes('<h1'), `Missing public HTML for ${path}`);
     assert.ok(html.includes(title), `Missing expected content for ${path}`);
     assert.ok(response.headers.has('content-security-policy'));
+    const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
+    assert.ok(footer, `Missing footer for ${path}`);
+    for (const target of ['/termos', '/privacidade', '/cookies', '/contato']) {
+      assert.ok(footer.includes(`href="${target}"`), `Missing legal footer link for ${path}`);
+    }
+    assert.ok(
+      footer.includes(String(new Date().getUTCFullYear())),
+      'Missing current copyright year',
+    );
+    assert.ok(footer.includes('Preferências de privacidade'), 'Missing privacy action');
     for (const script of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (script[2].trim() && !/type=["']application\/(?:json|ld\+json)["']/.test(script[1]))
         assert.fail(`Executable inline script incompatible with CSP on ${path}`);
@@ -53,7 +66,7 @@ try {
   const personal = await fetch(`http://localhost:${port}/profile`);
   assert.equal(personal.status, 200);
   assert.equal(personal.headers.get('x-robots-tag'), 'noindex,nofollow');
-  console.log('SSR smoke: Home, contact, terms, headers and personal noindex passed.');
+  console.log('SSR smoke: Home, four legal pages, footer, headers and personal noindex passed.');
 } finally {
   child.kill();
 }

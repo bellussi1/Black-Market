@@ -23,6 +23,7 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm test:ssr
+      - run: pnpm test:legal:layout
       - run: pnpm --filter @bdo/web i18n:extract
       - run: git diff --exit-code -- apps/web/src/locale/messages.pt-BR.xlf
       - run: pnpm db:check

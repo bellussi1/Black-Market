@@ -21,7 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck",
-    "test:ssr": "node scripts/smoke-ssr.mjs"
+    "test:ssr": "node scripts/smoke-ssr.mjs",
+    "test:legal:layout": "node scripts/check-legal-layout.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
