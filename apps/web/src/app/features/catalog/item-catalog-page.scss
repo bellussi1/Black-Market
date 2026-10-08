@@ -41,7 +41,7 @@
   border: 1px solid #d7b38e;
 }
 .brand-name {
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.19em;
 }
 .brand-name strong {
@@ -60,7 +60,7 @@
   place-items: center;
   position: relative;
   color: #8d9589;
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: none;
   transition: color 180ms ease;
 }
@@ -82,7 +82,7 @@
   align-items: center;
   gap: 8px;
   color: #aeb3a6;
-  font-size: 10px;
+  font-size: 12px;
 }
 .region-chip b {
   color: #cf9a6d;
@@ -104,7 +104,7 @@
   align-items: center;
   margin: 25px 0 0;
   color: #717a70;
-  font-size: 10px;
+  font-size: 12px;
 }
 .breadcrumb a {
   color: #a6a99c;
@@ -126,7 +126,7 @@
   gap: 9px;
   margin: 0;
   color: #a9a998;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.19em;
 }
 .eyebrow > span {
@@ -179,7 +179,7 @@
   display: flex;
   justify-content: space-between;
   color: #818a7c;
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.16em;
 }
 .source-mark {
@@ -218,7 +218,7 @@
   max-width: 245px;
   margin: 8px 0 13px;
   color: #91998c;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.6;
 }
 .source-card > a {
@@ -226,7 +226,7 @@
   align-items: center;
   gap: 7px;
   color: #d1a27a;
-  font-size: 10px;
+  font-size: 12px;
   text-decoration: none;
 }
 .source-card > a:hover {
@@ -251,7 +251,7 @@
 }
 .dataset-state {
   color: #c9d0bd;
-  font-size: 10px;
+  font-size: 12px;
 }
 .dataset-state > span {
   width: 6px;
@@ -263,11 +263,11 @@
   border-left: 1px solid #e5dbc41d;
   padding-left: 18px;
   color: #858d82;
-  font-size: 9px;
+  font-size: 12px;
 }
 .dataset-detail strong {
   color: #d2cfbf;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 .catalog-tools {
@@ -321,7 +321,7 @@
   display: grid;
   gap: 5px;
   color: #8d9589;
-  font-size: 9px;
+  font-size: 12px;
 }
 .filter-field select {
   width: 100%;
@@ -332,7 +332,7 @@
   background: var(--bm-background);
   color: #d8d7ca;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 .filter-field select:disabled {
   opacity: 0.55;
@@ -344,7 +344,7 @@
   background: transparent;
   color: #cba078;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .clear-filters:hover {
@@ -359,7 +359,7 @@
   border: 1px solid #c77c6950;
   background: #281c19;
   color: #e5b4a7;
-  font-size: 11px;
+  font-size: 12px;
 }
 .inline-alert button {
   min-height: 38px;
@@ -369,7 +369,7 @@
   color: inherit;
   cursor: pointer;
   padding: 0 12px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .alert-icon {
   width: 17px;
@@ -378,7 +378,7 @@
   place-items: center;
   border: 1px solid currentColor;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 12px;
 }
 .subtle-alert {
   border-color: #d7c49c30;
@@ -414,7 +414,7 @@
 }
 .detail-kicker {
   color: #c69973;
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.16em;
 }
 .detail-kicker span {
@@ -431,7 +431,7 @@
 .detail-copy p {
   margin: 0;
   color: #a3a89a;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
 }
 .detail-tags {
@@ -444,13 +444,13 @@
   padding: 5px 8px;
   border: 1px solid #d9ccb520;
   color: #c7c6b8;
-  font-size: 9px;
+  font-size: 12px;
 }
 .detail-loading {
   display: block;
   margin-top: 8px;
   color: #bb9a77;
-  font-size: 9px;
+  font-size: 12px;
 }
 .recipe-group {
   margin-top: 14px;
@@ -462,7 +462,7 @@
   gap: 10px;
   margin: 11px 0 5px;
   color: #c8c6b9;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 .recipe-group h3 span {
@@ -477,19 +477,19 @@
 }
 .recipe-row strong {
   color: #dedacc;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 .recipe-row small,
 .no-recipes {
   color: #92998b;
-  font-size: 9px;
+  font-size: 12px;
 }
 .recipe-row p {
   grid-column: 1 / -1;
   margin: 0;
   color: #9da397;
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.6;
 }
 .close-detail {
@@ -527,7 +527,7 @@
 }
 .results-page {
   color: #828b80;
-  font-size: 10px;
+  font-size: 12px;
 }
 .item-grid {
   display: grid;
@@ -577,7 +577,7 @@
   display: block;
   overflow: hidden;
   color: #e2dfd2;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -587,7 +587,7 @@
   overflow: hidden;
   margin-top: 5px;
   color: #818a7e;
-  font-size: 9px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -598,7 +598,7 @@
   padding: 4px 6px;
   border: 1px solid #d0ccb125;
   color: #acae9f;
-  font-size: 8px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .item-card[data-grade='yellow'] .item-grade,
@@ -626,7 +626,7 @@
   align-self: end;
   margin-top: 8px;
   color: #9a9f91;
-  font-size: 9px;
+  font-size: 12px;
 }
 .card-arrow {
   grid-column: 3;
@@ -666,17 +666,17 @@
   max-width: 680px;
   margin: 0;
   color: #9ca397;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 .empty-state code {
   padding: 1px 4px;
   background: #202921;
   color: #e2c09b;
-  font-size: 10px;
+  font-size: 12px;
 }
 .import-state .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
 }
 .import-state pre {
   max-width: 790px;
@@ -686,7 +686,7 @@
   border-left: 2px solid #c89166;
   background: #0e1511;
   color: #d1b18e;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -703,7 +703,7 @@
   background: transparent;
   color: #dbb18a;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 12px;
 }
 .item-skeleton {
   min-height: 83px;
@@ -739,7 +739,7 @@
   padding: 13px 0;
   border-top: 1px solid #e4d7be20;
   color: #858d82;
-  font-size: 10px;
+  font-size: 12px;
 }
 .pagination-actions {
   display: flex;
@@ -791,7 +791,7 @@
   max-width: 800px;
   margin: 0;
   color: #899184;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.7;
 }
 .market-note strong {
@@ -806,7 +806,7 @@
   gap: 12px;
   border-top: 1px solid #e4d7be20;
   color: #70796e;
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.14em;
 }
 .catalog-footer b {
@@ -868,13 +868,13 @@
     height: 25px;
   }
   .brand-name {
-    font-size: 9px;
+    font-size: 12px;
   }
   .topnav {
     gap: 14px;
   }
   .topnav a {
-    font-size: 10px;
+    font-size: 12px;
   }
   .topnav a:first-child,
   .topnav a:last-child {
@@ -882,7 +882,7 @@
   }
   .region-chip {
     gap: 6px;
-    font-size: 9px;
+    font-size: 12px;
   }
   .catalog-hero {
     grid-template-columns: 1fr;
@@ -931,7 +931,7 @@
   .dataset-detail {
     min-height: 22px;
     padding-left: 10px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .dataset-detail:first-of-type {
     border-left: 0;
@@ -950,7 +950,7 @@
   }
   .filter-field select {
     height: 44px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .clear-filters {
     grid-column: 1 / -1;
@@ -985,7 +985,7 @@
     font-size: 25px;
   }
   .results-page {
-    font-size: 9px;
+    font-size: 12px;
   }
   .item-grid {
     grid-template-columns: 1fr;

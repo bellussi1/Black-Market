@@ -5,6 +5,10 @@ $palette: (
   accent: #d6a577,
   text: #eee9db,
   muted: #aab5a3,
+  border: #3b493d,
+  control-border: #7c8c7a,
+  focus: #e5b47c,
+  surface-raised: #20291d,
   danger: #edafa0,
   success: #b8d5a6,
 );
@@ -14,5 +18,7 @@ $palette: (
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }
+    --bm-font-body: 'Avenir Next', 'Segoe UI', sans-serif;
+    --bm-font-display: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   }
 }

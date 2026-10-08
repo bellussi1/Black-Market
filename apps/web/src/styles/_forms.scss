@@ -8,8 +8,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-size: 12px;
-    color: #c2c8ba;
+    font-size: 14px;
+    color: var(--bm-text);
     min-width: 0;
   }
   .field input,
@@ -19,17 +19,18 @@
   .data-table select {
     min-width: 0;
     width: 100%;
-    border: 1px solid #e5dbc43d;
+    border: 1px solid var(--bm-control-border);
     background: var(--bm-input);
-    color: #f0eadc;
+    color: var(--bm-text);
     font: inherit;
-    font-size: 14px;
+    font-size: 16px;
     min-height: 44px;
     padding: 10px 12px;
     border-radius: 2px;
   }
   .field small {
-    color: #a2ae9b;
+    color: var(--bm-muted);
+    font-size: 14px;
     line-height: 1.5;
   }
   .field textarea {
@@ -39,21 +40,24 @@
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 2px solid #e5b47c;
+    outline: 3px solid var(--bm-focus);
     outline-offset: 2px;
   }
-  .field input::placeholder {
-    color: #7f8e7c;
+  .field input::placeholder,
+  .field textarea::placeholder,
+  .data-table input::placeholder {
+    color: var(--bm-muted);
+    opacity: 1;
   }
   .tax-options {
-    border: 1px solid #e5dbc426;
+    border: 1px solid var(--bm-border);
     padding: 18px;
     margin: 24px 0;
     min-width: 0;
   }
   .tax-options legend {
     color: var(--bm-accent);
-    font-size: 12px;
+    font-size: 14px;
     padding: 0 6px;
   }
   .check-row {
@@ -66,9 +70,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #c4cabc;
-    font-size: 12px;
+    color: var(--bm-text);
+    font-size: 14px;
+    cursor: pointer;
     min-height: 44px;
+    min-width: 44px;
   }
   input[type='checkbox'] {
     accent-color: var(--bm-accent);
@@ -81,31 +87,37 @@
     align-items: center;
     justify-content: center;
     min-height: 44px;
+    min-width: 44px;
     gap: 8px;
     background: var(--bm-accent);
     color: var(--bm-background);
     border: 1px solid var(--bm-accent);
     font: inherit;
-    font-size: 12px;
+    font-size: 14px;
     padding: 10px 16px;
     text-decoration: none;
     border-radius: 2px;
-    transition: background 160ms;
+    transition:
+      background-color 160ms,
+      border-color 160ms,
+      color 160ms;
+    overflow-wrap: anywhere;
+    text-align: center;
   }
   .btn:hover {
     background: #edbd8c;
   }
   .btn.subtle {
     background: transparent;
-    color: #dfbd98;
-    border-color: #e5dbc438;
+    color: var(--bm-accent);
+    border-color: var(--bm-control-border);
   }
   .btn.subtle:hover {
     background: #263021;
   }
   .btn.danger {
     color: var(--bm-danger);
-    border-color: #edafa04a;
+    border-color: var(--bm-danger);
     background: transparent;
   }
   .btn:disabled {

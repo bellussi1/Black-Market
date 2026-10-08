@@ -1,7 +1,9 @@
 @layer base {
   :root {
     color-scheme: dark;
-    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    font-family: var(--bm-font-body);
+    font-size: 16px;
+    line-height: 1.6;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -19,15 +21,39 @@
   }
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
   }
   button,
   a {
     font: inherit;
   }
   button:focus-visible,
-  a:focus-visible {
-    outline: 2px solid #e5b47c;
+  a:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid var(--bm-focus);
     outline-offset: 4px;
+  }
+  button,
+  a,
+  summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: #d6a57740;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    scroll-margin-top: 6rem;
+  }
+  p {
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+  img {
+    max-width: 100%;
   }
   ::selection {
     background: #be8357;
@@ -42,6 +68,8 @@
     *::after {
       transition-duration: 0.01ms !important;
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
     }
   }
 }
