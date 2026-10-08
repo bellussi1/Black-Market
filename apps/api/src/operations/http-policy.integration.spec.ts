@@ -1,0 +1,102 @@
+import { Body, Controller, Module, Post } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { apiCorsOptions, jsonRequest } from './http-policy';
+import { requestControls } from './request-controls';
+import { SafeExceptionFilter } from './safe-exception.filter';
+
+class FixtureController {
+  calculate(body: unknown) {
+    return { bytes: JSON.stringify(body)?.length ?? 0 };
+  }
+  workspace(body: unknown) {
+    return { bytes: JSON.stringify(body)?.length ?? 0 };
+  }
+}
+Controller('api/v1')(FixtureController);
+for (const [method, path] of [
+  ['calculate', 'calculators/fixture'],
+  ['workspace', 'workspace'],
+] as const) {
+  Post(path)(
+    FixtureController.prototype,
+    method,
+    Object.getOwnPropertyDescriptor(FixtureController.prototype, method)!,
+  );
+  Body()(FixtureController.prototype, method, 0);
+}
+class FixtureModule {}
+Module({ controllers: [FixtureController] })(FixtureModule);
+
+describe('HTTP security through the native Nest adapter', () => {
+  let app: NestExpressApplication;
+  let url: string;
+  beforeAll(async () => {
+    app = await NestFactory.create<NestExpressApplication>(FixtureModule, {
+      logger: false,
+      bodyParser: false,
+    });
+    const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    app.use(requestControls(logger, 'production', 'https://platform.example'));
+    app.useGlobalFilters(new SafeExceptionFilter(logger));
+    app.useBodyParser('json', { limit: '256kb', type: (request) => jsonRequest(request, false) });
+    app.useBodyParser('json', { limit: '20mb', type: (request) => jsonRequest(request, true) });
+    app.enableCors(apiCorsOptions('https://platform.example'));
+    await app.listen(0, '127.0.0.1');
+    url = await app.getUrl();
+  });
+  afterAll(async () => {
+    await app?.close();
+  });
+  it('enforces body limits without reducing the personal backup limit', async () => {
+    const body = JSON.stringify({ data: 'x'.repeat(300000) });
+    const common = await fetch(url + '/api/v1/calculators/fixture', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    });
+    expect(common.status).toBe(413);
+    expect(await common.text()).not.toContain('xxxx');
+    const workspace = await fetch(url + '/api/v1/workspace', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    });
+    expect(workspace.status).toBe(201);
+    const oversized = await fetch(url + '/api/v1/workspace', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data: 'x'.repeat(21 * 1024 * 1024) }),
+    });
+    expect(oversized.status).toBe(413);
+  });
+  it('handles CORS and rejects foreign workspace writes', async () => {
+    const allowed = await fetch(url + '/api/v1/calculators/fixture', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://platform.example', 'Access-Control-Request-Method': 'POST' },
+    });
+    expect(allowed.headers.get('access-control-allow-origin')).toBe('https://platform.example');
+    expect(allowed.headers.get('access-control-allow-credentials')).toBeNull();
+    const foreign = await fetch(url + '/api/v1/workspace', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.test', 'content-type': 'application/json' },
+      body: '{}',
+    });
+    expect(foreign.status).toBe(403);
+    expect(foreign.headers.get('access-control-allow-origin')).toBeNull();
+  });
+  it('returns safe JSON errors and security headers', async () => {
+    const response = await fetch(url + '/api/v1/calculators/fixture', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{"secret":',
+    });
+    expect(response.status).toBe(400);
+    expect(await response.text()).not.toContain('secret');
+    expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
+    expect(response.headers.get('strict-transport-security')).toBe('max-age=31536000');
+    expect(response.headers.get('x-request-id')).toMatch(/^[a-f0-9-]{36}$/);
+  });
+});

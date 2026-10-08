@@ -41,4 +41,28 @@ describe('environment boundaries', () => {
       expect(String(error)).not.toContain('private-secret');
     }
   });
+  it('rejects credentials or tracking parameters in public URLs and non-Postgres connections', () => {
+    for (const PUBLIC_SITE_URL of [
+      'https://user:secret@platform.example',
+      'https://platform.example?token=secret',
+      'https://platform.example/path',
+    ])
+      expect(envSchema.safeParse({ ...local, PUBLIC_SITE_URL }).success).toBe(false);
+    expect(
+      envSchema.safeParse({
+        ...local,
+        SUPABASE_URL: 'https://user:secret@identity.example',
+        SUPABASE_PUBLIC_KEY: 'sb_publishable_example_public_key',
+      }).success,
+    ).toBe(false);
+    expect(envSchema.safeParse({ DATABASE_URL: 'https://database.example' }).success).toBe(false);
+    expect(() =>
+      validateEnvironment({
+        ...local,
+        NODE_ENV: 'production',
+        WEB_ORIGIN: 'https://platform.example',
+        PUBLIC_SITE_URL: 'private-secret',
+      }),
+    ).toThrow('PUBLIC_SITE_URL');
+  });
 });

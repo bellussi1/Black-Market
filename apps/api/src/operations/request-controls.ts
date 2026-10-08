@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import type { LoggerService } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
+import { isWorkspacePath } from './http-policy';
+
 export type CorrelatedRequest = Request & { requestId?: string };
 export class WindowLimiter {
   private readonly windows = new Map<string, { count: number; until: number }>();
@@ -58,21 +60,27 @@ export function requestControls(logger: LoggerService, environment: string, webO
       else if (res.statusCode >= 400) logger.warn(event);
       else if (!['/health', '/ready'].includes(req.path)) logger.log(event);
     });
-    const sensitive =
-      req.path.startsWith('/api/v1/workspace') ||
-      req.path.startsWith('/api/v1/market/') ||
-      req.path === '/api/v1/telemetry/errors';
+    const workspace = isWorkspacePath(req.path);
+    const market = req.path.startsWith('/api/v1/market/');
+    const telemetry = req.path === '/api/v1/telemetry/errors';
+    const calculate = req.path.startsWith('/api/v1/calculators/');
+    const publicRequest =
+      req.path.startsWith('/api/v1/') && !/^\/api\/v1\/items\/[1-9]\d*\/icon$/.test(req.path);
+    const group = workspace
+      ? 'workspace'
+      : market
+        ? 'market'
+        : telemetry
+          ? 'telemetry'
+          : calculate
+            ? 'calculate'
+            : 'public';
     if (
-      sensitive &&
+      publicRequest &&
+      req.method !== 'OPTIONS' &&
       !limiter.take(
-        (req.ip ?? 'unknown') +
-          ':' +
-          (req.path.includes('/market/')
-            ? 'market'
-            : req.path.includes('/workspace')
-              ? 'workspace'
-              : 'telemetry'),
-        req.path.includes('/telemetry/') ? 10 : 30,
+        (req.ip ?? 'unknown') + ':' + group,
+        telemetry ? 10 : workspace || market || calculate ? 30 : 240,
       )
     ) {
       res.setHeader('Retry-After', '60');
@@ -85,10 +93,10 @@ export function requestControls(logger: LoggerService, environment: string, webO
       return;
     }
     if (
-      req.path.startsWith('/api/v1/workspace') &&
+      workspace &&
       !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
-      req.headers.origin &&
-      req.headers.origin !== webOrigin
+      ((req.headers.origin && req.headers.origin !== webOrigin) ||
+        req.headers['sec-fetch-site'] === 'cross-site')
     ) {
       res.status(403).json({
         statusCode: 403,

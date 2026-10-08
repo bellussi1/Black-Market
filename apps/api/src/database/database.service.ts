@@ -4,6 +4,12 @@ import { ConfigService } from '@nestjs/config';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
+import {
+  RUNTIME_PRIVILEGES_QUERY,
+  type RuntimePrivileges,
+  runtimeRoleIsRestricted,
+} from './runtime-role';
+
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
   private readonly pool: Pool;
@@ -27,6 +33,16 @@ export class DatabaseService implements OnModuleDestroy {
   async ping(): Promise<boolean> {
     await this.pool.query('select 1');
     return true;
+  }
+
+  async assertRuntimePrivileges(): Promise<void> {
+    const result = await this.pool.query<RuntimePrivileges>(RUNTIME_PRIVILEGES_QUERY);
+    if (!runtimeRoleIsRestricted(result.rows[0])) {
+      await this.pool.end();
+      throw new Error(
+        'A aplicação de produção exige uma conta restrita do banco. Use credenciais separadas para migrações.',
+      );
+    }
   }
 
   async onModuleDestroy(): Promise<void> {

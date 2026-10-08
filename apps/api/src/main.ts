@@ -5,15 +5,22 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import { DatabaseService } from './database/database.service';
+import { apiCorsOptions, jsonRequest } from './operations/http-policy';
 import { requestControls } from './operations/request-controls';
 import { SafeExceptionFilter } from './operations/safe-exception.filter';
 import { StructuredLogger } from './operations/structured-logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    bodyParser: false,
+  });
   const config = app.get(ConfigService);
   const logger = new StructuredLogger(config.getOrThrow<string>('NODE_ENV'));
   app.useLogger(logger);
+  if (config.get<string>('NODE_ENV') === 'production')
+    await app.get(DatabaseService).assertRuntimePrivileges();
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app
     .getHttpAdapter()
@@ -30,7 +37,8 @@ async function bootstrap() {
     ),
   );
   app.useGlobalFilters(new SafeExceptionFilter(logger));
-  app.useBodyParser('json', { limit: '20mb' });
+  app.useBodyParser('json', { limit: '256kb', type: (request) => jsonRequest(request, false) });
+  app.useBodyParser('json', { limit: '20mb', type: (request) => jsonRequest(request, true) });
 
   app.setGlobalPrefix('api/v1', {
     exclude: [
@@ -38,14 +46,7 @@ async function bootstrap() {
       { path: 'ready', method: RequestMethod.GET },
     ],
   });
-  app.enableCors({
-    origin: config.getOrThrow<string>('WEB_ORIGIN'),
-    credentials: false,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['X-Request-ID', 'Retry-After'],
-    maxAge: 600,
-  });
+  app.enableCors(apiCorsOptions(config.getOrThrow<string>('WEB_ORIGIN')));
   app.enableShutdownHooks();
 
   const apiDocument = new DocumentBuilder()

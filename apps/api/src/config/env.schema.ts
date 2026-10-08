@@ -68,7 +68,10 @@ export const envSchema = z
         .refine(isPublicIdentityKey, 'Use somente a chave pública de identidade.')
         .optional(),
     ),
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z
+      .string()
+      .url()
+      .regex(/^postgres(?:ql)?:\/\//),
     WEB_ORIGIN: z
       .string()
       .url()
@@ -98,6 +101,29 @@ export const envSchema = z
       .default(''),
   })
   .superRefine((value, context) => {
+    for (const name of ['PUBLIC_SITE_URL', 'SUPABASE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
+      const raw = value[name];
+      if (!raw) continue;
+      let url: URL;
+      try {
+        url = new URL(raw);
+      } catch {
+        continue;
+      }
+      if (
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        (name === 'PUBLIC_SITE_URL' && url.pathname !== '/')
+      )
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message:
+            'Use um endereço sem credenciais, parâmetros ou fragmentos; o endereço público deve conter somente a origem.',
+        });
+    }
     if (Boolean(value.SUPABASE_URL) !== Boolean(value.SUPABASE_PUBLIC_KEY))
       context.addIssue({
         code: 'custom',
@@ -111,6 +137,15 @@ export const envSchema = z
         message: 'Configure a chave pública antes de ativar estatísticas.',
       });
     if (value.NODE_ENV === 'production') {
+      if (
+        value.CATALOG_ASSETS_PUBLIC_URL &&
+        !value.CATALOG_ASSETS_PUBLIC_URL.startsWith('https://')
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['CATALOG_ASSETS_PUBLIC_URL'],
+          message: 'Produção exige imagens externas em HTTPS.',
+        });
       if (!value.PUBLIC_SITE_URL?.startsWith('https://'))
         context.addIssue({
           code: 'custom',
@@ -123,12 +158,22 @@ export const envSchema = z
           path: ['WEB_ORIGIN'],
           message: 'Produção exige origem HTTPS.',
         });
-      if (value.PUBLIC_SITE_URL && new URL(value.PUBLIC_SITE_URL).origin !== value.WEB_ORIGIN)
-        context.addIssue({
-          code: 'custom',
-          path: ['WEB_ORIGIN'],
-          message: 'A origem deve corresponder ao endereço público.',
-        });
+      if (value.PUBLIC_SITE_URL) {
+        try {
+          if (new URL(value.PUBLIC_SITE_URL).origin !== value.WEB_ORIGIN)
+            context.addIssue({
+              code: 'custom',
+              path: ['WEB_ORIGIN'],
+              message: 'A origem deve corresponder ao endereço público.',
+            });
+        } catch {
+          context.addIssue({
+            code: 'custom',
+            path: ['PUBLIC_SITE_URL'],
+            message: 'Configure um endereço público válido.',
+          });
+        }
+      }
     }
   });
 
