@@ -30,8 +30,13 @@ export type IconIndex = LegacyIconIndex | ColorIconIndex;
 
 const decodedColors = new WeakMap<ColorIconIndex, { pixels: Uint8Array; ids: number[] }[]>();
 // The lower rows may contain the screenshot's quantity overlay.
-const colorWeights = Array.from({ length: 192 }, (_, i) => (i >= 144 ? 0.55 : 1));
-const colorWeightTotal = colorWeights.reduce((total, weight) => total + weight, 0);
+const colorWeights = Array.from({ length: 192 }, (_, i) => {
+  const pixel = Math.floor(i / 3);
+  // Pearl marker and enhancement glyphs commonly occupy the upper corner.
+  if (Math.floor(pixel / 8) < 2 && pixel % 8 < 4) return 0;
+  return i >= 144 ? 0.55 : 1;
+});
+const colorWeightTotal = colorWeights.reduce<number>((total, weight) => total + weight, 0);
 
 /** Shape and color comparison, tolerant of a small uniform background brightness shift. */
 export function colorDistance(a: ArrayLike<number>, b: ArrayLike<number>): number {
@@ -302,7 +307,8 @@ export function iconDetailDistance(a: ArrayLike<number>, b: ArrayLike<number>): 
     count = 0;
   for (let i = 0; i < a.length; i++) {
     const pixel = Math.floor(i / 3);
-    // Preserve bottom-left silhouettes, but ignore the quantity at the bottom-right.
+    // Enhancement text/pearl markers and long counters are not icon evidence.
+    if (Math.floor(pixel / 16) < 4 || Math.floor(pixel / 16) >= 14) continue;
     if (Math.floor(pixel / 16) >= 10 && pixel % 16 >= 5) continue;
     total += Math.abs(a[i] - b[i]);
     count++;
@@ -329,11 +335,49 @@ export function cropCanvas(image: CanvasImageSource, crop: Crop, scale = 3) {
   return canvas;
 }
 export class NumberReader {
+  constructor(private readonly readPixels: typeof readQuantityPixels = readQuantityPixels) {}
   private worker?: Worker;
   private initializing?: Promise<Worker>;
   private reportProgress?: (progress: number) => void;
+  private cancellation = new AbortController();
+  private epoch = 0;
+  private cancellable<T>(operation: Promise<T>): Promise<T> {
+    const signal = this.cancellation.signal;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('A leitura demorou demais.'));
+      }, 90_000);
+      const cleanup = () => {
+        clearTimeout(timeout);
+        signal.removeEventListener('abort', cancel);
+      };
+      const cancel = () => {
+        cleanup();
+        reject(new Error('Leitura cancelada.'));
+      };
+      if (signal.aborted) {
+        cancel();
+        void operation.catch(() => undefined);
+        return;
+      }
+      signal.addEventListener('abort', cancel, { once: true });
+      operation.then(
+        (value) => {
+          cleanup();
+          resolve(value);
+        },
+        (error) => {
+          cleanup();
+          reject(error);
+        },
+      );
+    });
+  }
   private async getWorker() {
     if (!this.worker) {
+      const signal = this.cancellation.signal;
+      const epoch = this.epoch;
       this.initializing ??= import('tesseract.js')
         .then(async ({ createWorker, PSM }) => {
           const worker = await createWorker('eng', 1, {
@@ -342,6 +386,7 @@ export class NumberReader {
             },
           });
           try {
+            if (signal.aborted) throw new Error('Leitura cancelada.');
             await worker.setParameters({
               tessedit_char_whitelist: '0123456789.,kKmM',
               tessedit_pageseg_mode: PSM.SINGLE_LINE,
@@ -353,10 +398,10 @@ export class NumberReader {
           }
         })
         .catch((error: unknown) => {
-          this.initializing = undefined;
+          if (epoch === this.epoch) this.initializing = undefined;
           throw error;
         });
-      this.worker = await this.initializing;
+      this.worker = await this.cancellable(this.initializing);
     }
     return this.worker;
   }
@@ -364,7 +409,9 @@ export class NumberReader {
     const worker = await this.getWorker();
     const { PSM } = await import('tesseract.js');
     await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
-    const result = await worker.recognize(cropCanvas(image, crop), {}, { text: true });
+    const result = await this.cancellable(
+      worker.recognize(cropCanvas(image, crop), {}, { text: true }),
+    );
     const parsed = parseVisibleQuantity(result.data.text);
     return parsed && !parsed.approximate ? parsed.value : '';
   }
@@ -373,6 +420,7 @@ export class NumberReader {
     crops: readonly Crop[],
     onProgress?: (progress: number) => void,
   ): Promise<QuantityReading[]> {
+    const epoch = this.epoch;
     if (!crops.length) return [];
     if (crops.length > 50) throw new Error('Divida a leitura em lotes de até 50 espaços.');
     const local = crops.map((crop): QuantityReading | null => {
@@ -393,7 +441,7 @@ export class NumberReader {
         canvas.width,
         canvas.height,
       );
-      const reading = readQuantityPixels(
+      const reading = this.readPixels(
         context.getImageData(0, 0, canvas.width, canvas.height).data,
         canvas.width,
         canvas.height,
@@ -446,25 +494,39 @@ export class NumberReader {
       }
     }
     context.putImageData(pixels, 0, 0);
-    const worker = await this.getWorker();
-    const { PSM } = await import('tesseract.js');
-    await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
     this.reportProgress = onProgress;
     try {
-      const result = await worker.recognize(canvas, {}, { text: true, blocks: true });
+      const worker = await this.getWorker();
+      const { PSM } = await import('tesseract.js');
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
+      const result = await this.cancellable(
+        worker.recognize(canvas, {}, { text: true, blocks: true }),
+      );
       const lines =
         result.data.blocks?.flatMap((block) => block.paragraphs.flatMap((p) => p.lines)) ?? [];
       const fallback = mapQuantityLines(lines, pendingCrops.length, stride);
       for (const [i, original] of unresolved.entries()) local[original] = fallback[i];
       return local as QuantityReading[];
+    } catch {
+      if (epoch !== this.epoch) throw new Error('Leitura cancelada.');
+      void this.close();
+      // An unavailable fallback must not discard the exact local readings.
+      return local.map(
+        (reading) => reading ?? { text: '', value: null, approximate: false, confidence: 0 },
+      );
     } finally {
       this.reportProgress = undefined;
     }
   }
   async close() {
-    const worker = this.worker ?? (await this.initializing?.catch(() => undefined));
-    await worker?.terminate();
+    this.epoch++;
+    this.cancellation.abort();
+    const pending = this.initializing;
+    const current = this.worker;
     this.worker = undefined;
     this.initializing = undefined;
+    this.cancellation = new AbortController();
+    const worker = current ?? (await pending?.catch(() => undefined));
+    await worker?.terminate();
   }
 }

@@ -29,6 +29,9 @@ describe('Screenshot entry', () => {
         }),
       } as unknown as CanvasRenderingContext2D;
     });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
+      'data:image/jpeg;base64,fixture',
+    );
     const bitmap = { width: 100, height: 100, close: vi.fn() };
     const decode = vi.fn().mockResolvedValue(bitmap);
     vi.stubGlobal('createImageBitmap', decode);
@@ -154,17 +157,27 @@ describe('Screenshot entry', () => {
     expect(page.store.data().inventory[0].id).toBe(savedId);
     TestBed.inject(HttpTestingController).verify();
   });
-  it('accepts one dropped image and rejects multiple captures without decoding', async () => {
+  it('accepts batches, detects exact duplicates and enforces eight captures', async () => {
     const decode = images();
     const fixture = await renderComponent(ScansPage);
     const file = new File(['fixture'], 'print.png', { type: 'image/png' });
     const drop = (files: File[]) => ({ dataTransfer: { files }, preventDefault: vi.fn() });
     await fixture.componentInstance.drop(drop([file]) as unknown as DragEvent);
-    expect(decode).toHaveBeenCalledOnce();
+    expect(decode).toHaveBeenCalledTimes(2);
     decode.mockClear();
     await fixture.componentInstance.drop(drop([file, file]) as unknown as DragEvent);
+    expect(decode).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.jobs()).toHaveLength(3);
+    expect(
+      fixture.componentInstance
+        .jobs()
+        .slice(1)
+        .every((job) => job.status === 'duplicate'),
+    ).toBe(true);
+    decode.mockClear();
+    await fixture.componentInstance.drop(drop(Array(6).fill(file)) as unknown as DragEvent);
     expect(decode).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.message()).toContain('uma captura por vez');
+    expect(fixture.componentInstance.message()).toContain('8 capturas');
   });
   it('preserves the review on invalid files and refuses new files during recognition', async () => {
     const decode = images();
@@ -216,5 +229,161 @@ describe('Screenshot entry', () => {
       ],
     ]);
     expect(JSON.stringify(capture.mock.calls)).not.toMatch(/private-print|123456|image/i);
+  });
+  it('processes eight captures sequentially and keeps completed reviews on cancellation', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: {
+        files: Array.from(
+          { length: 8 },
+          (_, i) => new File([String(i)], `capture-${i}.png`, { type: 'image/png' }),
+        ),
+      },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    expect(page.jobs()).toHaveLength(8);
+    const order: string[] = [];
+    let active = 0,
+      maxActive = 0;
+    vi.spyOn(page, 'read').mockImplementation(async () => {
+      active++;
+      maxActive = Math.max(maxActive, active);
+      const job = page.activeJob()!;
+      order.push(job.id);
+      await Promise.resolve();
+      job.status = 'ready';
+      page.jobs.set([...page.jobs()]);
+      active--;
+    });
+    await page.readBatch();
+    expect(order).toHaveLength(8);
+    expect(maxActive).toBe(1);
+    expect(page.jobs().every((job) => job.status === 'ready')).toBe(true);
+    page.jobs()[6].status = 'queued';
+    page.jobs()[7].status = 'queued';
+    page.jobs.set([...page.jobs()]);
+    vi.mocked(page.read).mockImplementation(async () => {
+      page.activeJob()!.status = 'cancelled';
+      page.cancel();
+    });
+    await page.readBatch();
+    expect(
+      page
+        .jobs()
+        .slice(0, 6)
+        .every((job) => job.status === 'ready'),
+    ).toBe(true);
+    expect(page.jobs()[7].status).toBe('queued');
+    expect(page.store.data().inventory).toEqual([]);
+  });
+  it('validates replacement before releasing the original and accepts replacement at capacity', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: {
+        files: Array.from(
+          { length: 8 },
+          (_, i) => new File([String(i)], `${i}.png`, { type: 'image/png' }),
+        ),
+      },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const first = page.jobs()[0];
+    await page.replaceJob(first.id, {
+      target: { files: [new File(['bad'], 'bad.txt', { type: 'text/plain' })] },
+    } as unknown as Event);
+    expect(page.jobs()).toContain(first);
+    expect(page.jobs()).toHaveLength(8);
+    await page.replaceJob(first.id, {
+      target: { files: [new File(['replacement'], 'new.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    expect(page.jobs()).toHaveLength(8);
+    expect(page.jobs()).not.toContain(first);
+    expect(page.jobs().at(-1)!.file.name).toBe('new.png');
+  });
+  it('requires review and duplicate decisions, persists provenance, and never erases unseen items on partial updates', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: {
+        files: [
+          new File(['one'], 'one.png', { type: 'image/png' }),
+          new File(['two'], 'two.png', { type: 'image/png' }),
+        ],
+      },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const item = { id: 212, name: 'Corda', icon: null } as CatalogItem;
+    const draft = (quantity: string) => ({
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      quantity,
+      quantityText: quantity,
+      quantityEstimate: null,
+      quantityUncertain: false,
+      include: true,
+      reviewed: true,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    });
+    const jobs = page.jobs();
+    jobs[0].cells = [draft('48')];
+    jobs[1].cells = [draft('48')];
+    for (const job of jobs) job.status = 'ready';
+    page.cells.set(jobs[0].cells);
+    page.jobs.set([...jobs]);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'unseen',
+          name: 'Outro item',
+          itemId: 999,
+          region: 'sa',
+          location: 'Velia',
+          quantity: 7,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(1);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.message()).toContain('repetido');
+    expect(page.store.data().inventory).toHaveLength(1);
+    const key = page.duplicateGroups()[0][0];
+    page.chooseDuplicate(key, 'maximum');
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(2);
+    expect(page.store.data().inventory.find((row) => row.itemId === 212)).toMatchObject({
+      quantity: 48,
+      sources: [
+        { hash: jobs[0].hash, slot: 0, capture: 1 },
+        { hash: jobs[1].hash, slot: 0, capture: 2 },
+      ],
+    });
+    expect(page.store.data().screenshotImports).toHaveLength(1);
+    expect(localStorage.getItem('black-market.workspace.v1')).not.toContain('one.png');
+    const saved = JSON.parse(localStorage.getItem('black-market.workspace.v1')!);
+    expect(saved.inventory.find((row: { itemId: number }) => row.itemId === 212).quantity).toBe(48);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(2);
+    page.updateMode.set('replace');
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(2);
+    expect(page.message()).toContain('local inteiro');
   });
 });

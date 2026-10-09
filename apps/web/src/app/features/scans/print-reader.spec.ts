@@ -22,7 +22,9 @@ describe('Color icon comparison', () => {
       changed = source.slice();
     changed[(15 * 16 + 15) * 3] = 255;
     expect(iconDetailDistance(source, changed)).toBe(0);
-    changed[(15 * 16 + 1) * 3] = 255;
+    changed[(3 * 16 + 8) * 3] = 255;
+    expect(iconDetailDistance(source, changed)).toBe(0);
+    changed[(12 * 16 + 1) * 3] = 255;
     expect(iconDetailDistance(source, changed)).toBeGreaterThan(0);
     expect(iconDetailDistance(new Uint8Array(1), changed)).toBe(Infinity);
   });

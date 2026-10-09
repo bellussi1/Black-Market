@@ -123,10 +123,13 @@
 }
 .scan-icon-comparison img {
   border: 1px solid var(--bm-border);
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 .scan-icon-comparison app-item-icon {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
 }
 .quantity-caution {
   padding: 0.75rem;
@@ -147,4 +150,78 @@
 }
 figure {
   margin: 1rem 0;
+}
+
+.batch-jobs {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+.batch-job {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+}
+.batch-job.active {
+  border-color: var(--bm-accent);
+}
+.capture-thumb {
+  align-self: start;
+  display: grid;
+  gap: 0.5rem;
+}
+.capture-thumb img {
+  width: 120px;
+  height: 80px;
+  object-fit: contain;
+}
+.batch-job strong {
+  overflow-wrap: anywhere;
+}
+.batch-job fieldset {
+  display: grid;
+  gap: 0.5rem;
+}
+.batch-job input[type='file'] {
+  max-width: 100%;
+}
+.batch-panel {
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 650px) {
+  .batch-job {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .capture-thumb {
+    justify-self: start;
+  }
+  .batch-job .action-row {
+    align-items: stretch;
+  }
+}
+
+.batch-jobs {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+.batch-job {
+  grid-template-columns: minmax(0, 1fr);
+}
+.capture-list > summary {
+  cursor: pointer;
+  color: var(--bm-accent);
+  min-height: 44px;
+  padding: 0.75rem 0;
+}
+.capture-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+.capture-tabs button[aria-pressed='true'] {
+  border-color: var(--bm-accent);
+  color: var(--bm-accent);
 }
