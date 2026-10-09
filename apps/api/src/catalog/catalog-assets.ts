@@ -62,23 +62,34 @@ export async function publishCatalogAssets(
   const staging = exists ? null : await mkdtemp(join(assetsRoot, '.staging-'));
   const hashes = new Map<string, string>();
   const available = new Set<string>();
-  for (const relative of paths) {
-    const source = iconPath(input, relative);
-    try {
-      const bytes = await readIcon(source);
-      if (staging) {
-        const destination = iconPath(staging, relative);
-        await mkdir(dirname(destination), { recursive: true });
-        await writeFile(destination, bytes);
+  let nextPath = 0;
+  let failed = false;
+  const results = await Promise.allSettled(
+    Array.from({ length: Math.min(8, paths.length) }, async () => {
+      while (!failed) {
+        const relative = paths[nextPath++];
+        if (relative === undefined) return;
+        const source = iconPath(input, relative);
+        try {
+          const bytes = await readIcon(source);
+          if (staging) {
+            const destination = iconPath(staging, relative);
+            await mkdir(dirname(destination), { recursive: true });
+            await writeFile(destination, bytes);
+          }
+          hashes.set(relative, createHash('sha256').update(bytes).digest('hex'));
+          available.add(relative);
+        } catch (error) {
+          // The extractor can advertise a missing or undecodable archive entry.
+          if (error instanceof Error && 'code' in error && error.code === 'ENOENT') continue;
+          failed = true;
+          throw error;
+        }
       }
-      hashes.set(relative, createHash('sha256').update(bytes).digest('hex'));
-      available.add(relative);
-    } catch (error) {
-      // The extractor can advertise a missing or undecodable archive entry.
-      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') continue;
-      throw error;
-    }
-  }
+    }),
+  );
+  const failure = results.find((result) => result.status === 'rejected');
+  if (failure?.status === 'rejected') throw failure.reason;
   const published = Object.fromEntries(
     Object.entries(items).filter(([, path]) => available.has(path)),
   );
