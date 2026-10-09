@@ -1,11 +1,11 @@
 <div class="tool-page">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>02 / MERCADO CENTRAL</ng-container></p>
-    <h1><ng-container i18n>O valor de cada venda.</ng-container></h1>
+    <h1><ng-container i18n>Mercado Central</ng-container></h1>
     <p>
       <ng-container i18n
-        >Registre cotações da sua região, acompanhe seu histórico e calcule a prata que realmente
-        entra no armazém.
+        >Selecione um item para consultar preço e estoque. Compare o valor bruto com a prata
+        recebida depois das taxas.
       </ng-container>
     </p>
   </header>
@@ -56,6 +56,34 @@
       <p class="error-box" role="alert">{{ lookupError() }}</p>
     }
     @if (live(); as response) {
+      <div class="market-view-toolbar">
+        <div class="segmented-control" role="group" aria-label="Exibição de preços" i18n-aria-label>
+          <button
+            type="button"
+            [attr.aria-pressed]="priceView() === 'gross'"
+            (click)="priceView.set('gross')"
+            i18n
+          >
+            Preço bruto
+          </button>
+          <button
+            type="button"
+            [attr.aria-pressed]="priceView() === 'net'"
+            (click)="priceView.set('net')"
+            i18n
+          >
+            Recebimento líquido
+          </button>
+        </div>
+        <label
+          ><input
+            type="checkbox"
+            [ngModel]="form().valuePack"
+            (ngModelChange)="setValuePack($event)"
+          />
+          Value Pack</label
+        >
+      </div>
       <p class="help">
         <ng-container i18n
           >Fonte: Arsha · {{ response.region.toUpperCase() }} · idioma solicitado:
@@ -74,7 +102,7 @@
           <thead>
             <tr>
               <th><ng-container i18n>Item / variante</ng-container></th>
-              <th><ng-container i18n>Preço base</ng-container></th>
+              <th>{{ priceView() === 'gross' ? 'Preço bruto / unidade' : 'Líquido / unidade' }}</th>
               <th><ng-container i18n>Estoque</ng-container></th>
               <th><ng-container i18n>Transações (contador)</ng-container></th>
               <th><ng-container i18n>Última venda</ng-container></th>
@@ -84,8 +112,16 @@
           <tbody>
             @for (item of response.items; track item.subId) {
               <tr>
-                <td>{{ item.name }} · {{ item.subId }}</td>
-                <td>{{ silver(item.price) }}</td>
+                <td>
+                  <span class="market-item-name"
+                    ><app-item-icon
+                      [url]="quoteIcon()"
+                      [name]="item.name"
+                      [grade]="catalogItem()?.grade ?? null"
+                    />{{ item.name }} · {{ item.subId }}</span
+                  >
+                </td>
+                <td>{{ silver(priceView() === 'gross' ? item.price : netPrice(item.price)) }}</td>
                 <td>{{ number(item.stock, 0) }}</td>
                 <td>{{ silver(item.totalTrades) }}</td>
                 <td>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Sem horário informado' }}</td>
@@ -292,7 +328,7 @@
             (ngModelChange)="patch({ cost: $event })"
         /></label>
       </div>
-      <app-tax-options [value]="form()" (changed)="patch($event)" />
+      <app-tax-options [value]="form()" (changed)="setTaxes($event)" />
       <app-preset-bar tool="market" [value]="form()" (loaded)="load($event)" />
       <p class="help">
         <ng-container i18n

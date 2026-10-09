@@ -1,10 +1,24 @@
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { calculateMarket, defaultTax, type MarketInput, marketSchema } from '@bdo/calculators';
+import {
+  calculateMarket,
+  defaultTax,
+  type MarketInput,
+  marketSchema,
+  type TaxOptions,
+} from '@bdo/calculators';
 import type { CatalogItem, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
@@ -17,6 +31,7 @@ import { evaluate, validationMessage } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { date, number, silver } from '../../shared/formatters';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
@@ -34,12 +49,25 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     PresetBar,
     CalculationProof,
     CatalogItemPicker,
+    ItemIcon,
   ],
   templateUrl: './market-page.html',
 })
 export class MarketPage implements OnDestroy {
   private readonly analytics = inject(AnalyticsService);
   constructor() {
+    effect(() => {
+      const region = this.store.data().region;
+      untracked(() => {
+        if (region === this.quoteRegion) return;
+        this.quoteRegion = region;
+        this.liveRequest?.unsubscribe();
+        this.live.set(null);
+        this.history.set([]);
+        this.lookupLoading.set(false);
+        if (this.lookupId()) this.lookup();
+      });
+    });
     const catalog = inject(CatalogApiService);
     inject(ActivatedRoute, { optional: true })
       ?.queryParamMap.pipe(takeUntilDestroyed())
@@ -47,7 +75,8 @@ export class MarketPage implements OnDestroy {
         const id = Number(params.get('item'));
         if (Number.isInteger(id) && id > 0 && id <= 2147483647) {
           this.liveRequest?.unsubscribe();
-          this.liveRequest = catalog.getItem(id).subscribe({
+          this.itemRequest?.unsubscribe();
+          this.itemRequest = catalog.getItem(id).subscribe({
             next: (result) => this.selectItem(result.item),
             error: () => this.lookupError.set('Não encontramos este item na região selecionada.'),
           });
@@ -55,13 +84,26 @@ export class MarketPage implements OnDestroy {
       });
   }
   private readonly api = inject(MarketApi);
+  private readonly catalog = inject(CatalogApiService);
   private liveRequest?: Subscription;
+  private itemRequest?: Subscription;
   readonly lookupId = signal('');
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');
   readonly store = inject(WorkspaceStore);
-  readonly form = signal<MarketInput>({ ...defaultTax, price: '0', quantity: 1, cost: '0' });
+  private quoteRegion = this.store.data().region;
+  readonly form = signal<MarketInput>({
+    ...defaultTax,
+    ...this.store.data().taxOptions,
+    price: '0',
+    quantity: 1,
+    cost: '0',
+  });
+  readonly priceView = signal<'gross' | 'net'>('gross');
+  readonly quoteIcon = computed(() =>
+    this.catalogItem() ? this.catalog.resolveIconUrl(this.catalogItem()!) : null,
+  );
   readonly result = computed(() => evaluate(() => calculateMarket(this.form())));
   search = '';
   category = '';
@@ -181,6 +223,9 @@ export class MarketPage implements OnDestroy {
   }
 
   selectItem(item: CatalogItem | null): void {
+    this.liveRequest?.unsubscribe();
+    this.live.set(null);
+    this.lookupLoading.set(false);
     this.historyRequest?.unsubscribe();
     this.history.set([]);
     this.historyMessage.set('');
@@ -193,6 +238,27 @@ export class MarketPage implements OnDestroy {
       category: item ? item.categories[0]?.name || item.category || $localize`Sem categoria` : '',
       itemId: item?.id ?? null,
     };
+    if (item) this.lookup();
+  }
+  netPrice(price: string | null): string | null {
+    if (price === null) return null;
+    const result = evaluate(() =>
+      calculateMarket({ ...this.form(), price, quantity: 1, cost: '0' }),
+    );
+    return result.value?.net ?? null;
+  }
+  setTaxes(value: MarketInput | TaxOptions) {
+    this.patch(value);
+    const parsed = marketSchema.safeParse(this.form());
+    if (!parsed.success) return;
+    const { taxPercent, valuePack, collectionBonus, exempt } = parsed.data;
+    this.store.update((state) => ({
+      ...state,
+      taxOptions: { taxPercent, valuePack, collectionBonus, exempt },
+    }));
+  }
+  setValuePack(valuePack: boolean) {
+    this.setTaxes({ ...this.form(), valuePack });
   }
   readonly selectedId = signal('');
   readonly error = signal('');
@@ -394,6 +460,7 @@ export class MarketPage implements OnDestroy {
     this.selectedId.set(parsed.data.id);
   }
   ngOnDestroy(): void {
+    this.itemRequest?.unsubscribe();
     this.liveRequest?.unsubscribe();
     this.historyRequest?.unsubscribe();
   }
