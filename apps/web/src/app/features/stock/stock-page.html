@@ -1,11 +1,12 @@
-<div class="tool-page">
+<div class="tool-page stock-page">
   <header class="page-heading">
     <p class="eyebrow" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
     <h1>{{ kind === 'storage' ? 'Meus armazéns' : 'Meus inventários' }}</h1>
     <p i18n>Importe capturas, confira o que já possui e corrija quantidades quando precisar.</p>
     <div class="action-row">
       <a class="btn" routerLink="/scans" [queryParams]="{ type: kind }" i18n>Importar capturas</a
-      ><button type="button" (click)="newItem()" i18n>Adicionar item manualmente</button
+      ><button class="btn subtle" type="button" (click)="newItem()" i18n>
+        Adicionar item manualmente</button
       ><a routerLink="/settings" i18n>Dados e backup</a>
     </div>
   </header>
@@ -32,17 +33,32 @@
         </select></label
       >
     </div>
-    <div class="action-row">
-      <button type="button" (click)="view.set('grid')" [attr.aria-pressed]="view() === 'grid'" i18n>
-        Grade</button
-      ><button
-        type="button"
-        (click)="view.set('list')"
-        [attr.aria-pressed]="view() === 'list'"
-        i18n
+    <div class="stock-toolbar">
+      <span class="help" i18n
+        >{{ rows().length }} registros · {{ store.data().region.toUpperCase() }}</span
       >
-        Lista</button
-      ><span i18n>{{ rows().length }} registros</span>
+      <div
+        class="segmented-control"
+        role="group"
+        aria-label="Visualização dos itens"
+        i18n-aria-label
+      >
+        <button
+          type="button"
+          (click)="view.set('grid')"
+          [attr.aria-pressed]="view() === 'grid'"
+          i18n
+        >
+          Grade</button
+        ><button
+          type="button"
+          (click)="view.set('list')"
+          [attr.aria-pressed]="view() === 'list'"
+          i18n
+        >
+          Lista
+        </button>
+      </div>
     </div>
     <div class="stock-items" [class.list]="view() === 'list'">
       @for (row of visibleRows(); track row.id) {
@@ -71,6 +87,7 @@
               Editar
             </button>
             <button
+              class="btn danger"
               type="button"
               (click)="remove(row)"
               [attr.aria-label]="'Remover ' + row.name"
@@ -81,10 +98,18 @@
           </div>
         </article>
       } @empty {
-        <p i18n>Nenhum item encontrado. Comece importando uma captura ou adicionando um item.</p>
+        <div class="stock-empty empty-workspace">
+          <h2 i18n>Nenhum item nesta seleção</h2>
+          <p class="help" i18n>
+            Importe uma captura para começar ou ajuste a pesquisa e o destino.
+          </p>
+          <a class="btn subtle" routerLink="/scans" [queryParams]="{ type: kind }" i18n
+            >Importar capturas</a
+          >
+        </div>
       }
     </div>
-    <nav class="action-row" aria-label="Páginas dos itens" i18n-aria-label>
+    <nav class="action-row pagination-bar" aria-label="Páginas dos itens" i18n-aria-label>
       <button (click)="page.update(previousPage)" [disabled]="page() === 0" i18n>Anterior</button
       ><span i18n>Página {{ page() + 1 }}</span
       ><button (click)="page.update(nextPage)" [disabled]="(page() + 1) * 48 >= rows().length" i18n>
@@ -122,7 +147,7 @@
           [(ngModel)]="draft.quantity"
       /></label>
       <div class="action-row">
-        <button (click)="save()" i18n>Salvar alteração</button
+        <button class="btn" (click)="save()" i18n>Salvar alteração</button
         ><button (click)="draft = null" i18n>Cancelar</button>
       </div>
     </section>
@@ -133,10 +158,10 @@
     </button>
   }
   @if (message()) {
-    <p role="status">{{ message() }}</p>
+    <p class="status-message" role="status">{{ message() }}</p>
   }
-  <section class="panel">
-    <h2 i18n>Importações recentes</h2>
+  <details class="panel">
+    <summary i18n>Importações recentes</summary>
     <p i18n>
       Histórico deste navegador, incluído no backup. As imagens originais não são guardadas.
     </p>
@@ -150,5 +175,5 @@
         <li i18n>Nenhuma importação confirmada.</li>
       }
     </ul>
-  </section>
+  </details>
 </div>

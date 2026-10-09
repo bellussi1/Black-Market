@@ -4,7 +4,7 @@
     <h1>Personagens e família</h1>
     <p>Comece pelo nome. Complete somente os dados necessários para sua próxima atividade.</p>
   </header>
-  <div class="segmented-control">
+  <div class="workspace-tabs" role="group" aria-label="Dados pessoais">
     <button
       type="button"
       [attr.aria-pressed]="tab() === 'character'"
@@ -39,127 +39,142 @@
       </details>
     </section>
     @if (current(); as profile) {
-      <section class="panel">
-        <div class="panel-heading">
-          <h2>{{ profile.name }}</h2>
-          <span class="badge"
-            >{{ profile.className || 'Classe opcional' }} · Nv. {{ profile.level }}</span
-          >
-        </div>
-        <div class="form-grid">
-          <label
-            >Nome<input
-              [ngModel]="profile.name"
-              (blur)="saveCharacter({ name: $any($event.target).value })"
-              maxlength="80" /></label
-          ><label
-            >Classe<input
-              [ngModel]="profile.className"
-              (blur)="saveCharacter({ className: $any($event.target).value })"
-              maxlength="40"
-              placeholder="Opcional" /></label
-          ><label
-            >Especialização<select
-              [ngModel]="profile.specialization"
-              (ngModelChange)="saveCharacter({ specialization: $event })"
+      <div class="player-workbench">
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>{{ profile.name }}</h2>
+            <span class="badge"
+              >{{ profile.className || 'Classe opcional' }} · Nv. {{ profile.level }}</span
             >
-              <option value="succession">Sucessão</option>
-              <option value="awakening">Despertar</option>
-            </select></label
-          >
-        </div>
-        <p class="help">Edições válidas são salvas ao sair do campo.</p>
-        <details>
-          <summary>Atributos, peso e inventário</summary>
-          <div class="form-grid">
-            @for (field of numericFields; track field.key) {
-              <label
-                >{{ field.label
-                }}<input
-                  type="number"
-                  [min]="field.key === 'level' ? 1 : 0"
-                  [max]="field.max"
-                  [ngModel]="profile[field.key]"
-                  (blur)="saveNumber(field.key, $any($event.target).value)"
-              /></label>
-            }
           </div>
-          <p class="help">
-            PA e PD são valores da ficha confirmados no jogo. Eles não são deduzidos dos ícones.
-          </p>
-        </details>
-        <details>
-          <summary>Maestria por atividade</summary>
-          <p class="help">
-            Registre a maestria mostrada na ficha com o conjunto atual. O nível da profissão
-            pertence à família.
-          </p>
           <div class="form-grid">
-            @for (skill of skills; track skill) {
-              <label
-                >{{ skillLabels[skill]
-                }}<input
-                  type="number"
-                  min="0"
-                  max="5000"
-                  [ngModel]="profile.mastery[skill]"
-                  (blur)="saveMastery(skill, $any($event.target).value)"
-              /></label>
-            }
+            <label
+              >Nome<input
+                [ngModel]="profile.name"
+                (blur)="saveCharacter({ name: $any($event.target).value })"
+                maxlength="80" /></label
+            ><label
+              >Classe<input
+                [ngModel]="profile.className"
+                (blur)="saveCharacter({ className: $any($event.target).value })"
+                maxlength="40"
+                placeholder="Opcional" /></label
+            ><label
+              >Especialização<select
+                [ngModel]="profile.specialization"
+                (ngModelChange)="saveCharacter({ specialization: $event })"
+              >
+                <option value="succession">Sucessão</option>
+                <option value="awakening">Despertar</option>
+              </select></label
+            >
           </div>
-        </details>
-      </section>
-      <section class="panel">
-        <h2>Conjuntos e complementos</h2>
-        @for (
-          group of [
-            { key: 'artifacts', label: 'Artefatos', limit: 2 },
-            { key: 'lightstones', label: 'Pedras de luz', limit: 4 },
-            { key: 'crystals', label: 'Cristais', limit: 20 },
-            { key: 'pearlOutfits', label: 'Trajes de pérola', limit: 20 },
-          ];
-          track group.key
-        ) {
+          <p class="help">Edições válidas são salvas ao sair do campo.</p>
           <details>
-            <summary>
-              {{ group.label }} · {{ $any(profile)[group.key]?.length ?? 0 }} / {{ group.limit }}
-            </summary>
-            <app-catalog-item-picker
-              [label]="group.label"
-              (selected)="accessory($any(group.key), $event)"
-            />
-            @for (item of $any(profile)[group.key] ?? []; track $index) {
-              <div class="action-row">
-                <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
-                ><button type="button" (click)="removeAccessory($any(group.key), $index)">
-                  Remover
-                </button>
-              </div>
-            }
+            <summary>Atributos, peso e inventário</summary>
+            <div class="form-grid">
+              @for (field of numericFields; track field.key) {
+                <label
+                  >{{ field.label
+                  }}<input
+                    type="number"
+                    [min]="field.key === 'level' ? 1 : 0"
+                    [max]="field.max"
+                    [ngModel]="profile[field.key]"
+                    (blur)="saveNumber(field.key, $any($event.target).value)"
+                /></label>
+              }
+            </div>
             <p class="help">
-              Registro pessoal. Os efeitos e combinações não são calculados sem dados verificados.
+              PA e PD são valores da ficha confirmados no jogo. Eles não são deduzidos dos ícones.
             </p>
           </details>
-        }
-        <details>
-          <summary>Presets de equipamentos e cristais</summary>
-          <label
-            >Nome do conjunto<input
-              [(ngModel)]="presetName"
-              maxlength="80"
-              placeholder="Coleta, combate, culinária…" /></label
-          ><button type="button" (click)="savePreset()">Salvar conjunto atual</button
-          ><label
-            >Conjunto salvo<select [(ngModel)]="presetId">
-              <option value="">Escolha</option>
-              @for (preset of profile.activityPresets ?? []; track preset.id) {
-                <option [value]="preset.id">{{ preset.name }}</option>
+          <details>
+            <summary>Maestria por atividade</summary>
+            <p class="help">
+              Registre a maestria mostrada na ficha com o conjunto atual. O nível da profissão
+              pertence à família.
+            </p>
+            <div class="form-grid">
+              @for (skill of skills; track skill) {
+                <label
+                  >{{ skillLabels[skill]
+                  }}<input
+                    type="number"
+                    min="0"
+                    max="5000"
+                    [ngModel]="profile.mastery[skill]"
+                    (blur)="saveMastery(skill, $any($event.target).value)"
+                /></label>
               }
-            </select></label
-          ><button type="button" (click)="applyPreset()" [disabled]="!presetId">
-            Aplicar ao personagem</button
-          ><button type="button" (click)="undoPreset()">Desfazer aplicação</button>
-        </details>
+            </div>
+          </details>
+        </section>
+        <section class="panel">
+          <h2>Conjuntos e complementos</h2>
+          @for (
+            group of [
+              { key: 'artifacts', label: 'Artefatos', limit: 2 },
+              { key: 'lightstones', label: 'Pedras de luz', limit: 4 },
+              { key: 'crystals', label: 'Cristais', limit: 20 },
+              { key: 'pearlOutfits', label: 'Trajes de pérola', limit: 20 },
+            ];
+            track group.key
+          ) {
+            <details>
+              <summary>
+                {{ group.label }} · {{ $any(profile)[group.key]?.length ?? 0 }} / {{ group.limit }}
+              </summary>
+              <app-catalog-item-picker
+                [label]="group.label"
+                (selected)="accessory($any(group.key), $event)"
+              />
+              @for (item of $any(profile)[group.key] ?? []; track $index) {
+                <div class="action-row">
+                  <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+                  ><button type="button" (click)="removeAccessory($any(group.key), $index)">
+                    Remover
+                  </button>
+                </div>
+              }
+              <p class="help">
+                Registro pessoal. Os efeitos e combinações não são calculados sem dados verificados.
+              </p>
+            </details>
+          }
+          <details>
+            <summary>Presets de equipamentos e cristais</summary>
+            <label
+              >Nome do conjunto<input
+                [(ngModel)]="presetName"
+                maxlength="80"
+                placeholder="Coleta, combate, culinária…" /></label
+            ><button type="button" (click)="savePreset()">Salvar conjunto atual</button
+            ><label
+              >Conjunto salvo<select [(ngModel)]="presetId">
+                <option value="">Escolha</option>
+                @for (preset of profile.activityPresets ?? []; track preset.id) {
+                  <option [value]="preset.id">{{ preset.name }}</option>
+                }
+              </select></label
+            ><button type="button" (click)="applyPreset()" [disabled]="!presetId">
+              Aplicar ao personagem</button
+            ><button type="button" (click)="undoPreset()">Desfazer aplicação</button>
+          </details>
+        </section>
+      </div>
+    } @else {
+      <section class="panel empty-workspace">
+        <p class="eyebrow">SEU PRIMEIRO PERSONAGEM</p>
+        <h2>Um nome é suficiente para começar</h2>
+        <p class="help">
+          Adicione um personagem acima para organizar equipamentos e inventário. Receitas e preços
+          já estão disponíveis sem cadastro.
+        </p>
+        <div class="action-row">
+          <a class="btn subtle" routerLink="/recipes">Explorar receitas</a
+          ><a class="btn subtle" routerLink="/market">Consultar mercado</a>
+        </div>
       </section>
     }
   } @else {

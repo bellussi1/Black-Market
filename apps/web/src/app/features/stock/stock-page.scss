@@ -4,11 +4,12 @@
 .stock-items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
-  gap: 1rem;
+  gap: 8px;
   margin-block: 1rem;
 }
 .stock-items.list {
   grid-template-columns: 1fr;
+  gap: 1px;
 }
 .stock-item {
   display: flex;
@@ -48,6 +49,33 @@ li {
 .stock-item {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
+  transition: border-color 160ms;
+}
+.stock-item:hover {
+  border-color: var(--bm-control-border);
+}
+.stock-items.list .stock-item {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+.stock-items.list .stock-item > .stock-actions {
+  grid-column: 3;
+}
+.stock-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  gap: 16px;
+}
+.stock-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 20px;
+}
+.stock-item > .stock-actions .btn {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 12px;
 }
 .stock-item > .stock-actions {
   grid-column: 1/-1;

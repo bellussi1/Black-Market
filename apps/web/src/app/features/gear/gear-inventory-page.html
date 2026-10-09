@@ -31,12 +31,19 @@
   @if (profile(); as current) {
     <section class="panel" aria-label="Atributos informados do personagem" i18n-aria-label>
       <h2 i18n>Atributos da ficha</h2>
-      <div class="action-row"><strong>PA {{ current.mainAp }}</strong><strong i18n>Despertar {{ current.awakeAp }}</strong><strong>PD {{ current.dp }}</strong></div>
-      <p i18n>Valores informados por você ou confirmados na importação. Zero pode representar um campo ainda não preenchido; não calculamos esses atributos pela imagem dos itens.</p>
+      <div class="action-row">
+        <strong>PA {{ current.mainAp }}</strong
+        ><strong i18n>Despertar {{ current.awakeAp }}</strong
+        ><strong>PD {{ current.dp }}</strong>
+      </div>
+      <p i18n>
+        Valores informados por você ou confirmados na importação. Zero pode representar um campo
+        ainda não preenchido; não calculamos esses atributos pela imagem dos itens.
+      </p>
     </section>
     <app-equipment-sheet [profile]="current" [showStatistics]="false" />
-    <section class="panel">
-      <h2 i18n>Adicionar ou corrigir equipamento</h2>
+    <details class="panel">
+      <summary i18n>Adicionar ou corrigir equipamento manualmente</summary>
       <app-catalog-item-picker
         label="Equipamento"
         [selectionName]="item?.name ?? ''"
@@ -61,13 +68,15 @@
         /></label>
       </div>
       <p class="help" i18n>
-        0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam
-        1 a 10. Confira o item e o nível antes de substituir esta posição.
+        0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1 a 10.
+        Confira o item e o nível antes de substituir esta posição.
       </p>
-      <button type="button" (click)="save()" i18n>Confirmar equipamento nesta posição</button>
-    </section>
+      <button class="btn" type="button" (click)="save()" i18n>
+        Confirmar equipamento nesta posição
+      </button>
+    </details>
   }
   @if (message()) {
-    <p role="status">{{ message() }}</p>
+    <p class="status-message" role="status">{{ message() }}</p>
   }
 </div>

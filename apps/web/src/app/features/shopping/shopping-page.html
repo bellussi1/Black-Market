@@ -9,73 +9,88 @@
     <a class="btn" routerLink="/recipes">Explorar uma receita</a>
   </header>
   @if (message()) {
-    <p role="status">
+    <p class="status-message" role="status">
       {{ message() }} <button type="button" (click)="undo()">Desfazer remoção</button>
     </p>
   }
   @if (plans().length) {
-    <section class="panel">
-      <div class="panel-heading">
-        <h2>{{ plans().length }} planos · {{ missingCount() }} materiais faltantes</h2>
-        <a routerLink="/scans">Atualizar estoque por captura →</a>
+    <div class="workspace-summary">
+      <div>
+        <small>PLANOS DE PRODUÇÃO</small><strong>{{ plans().length }} planos</strong>
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Material</th>
-            <th>Necessário</th>
-            <th>Alocado do estoque</th>
-            <th>Falta obter</th>
-            <th>Próximo passo</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of visibleRows(); track row.itemId) {
-            <tr>
-              <td>
-                <a [routerLink]="['/database/items', row.itemId]">{{ row.name }}</a>
-              </td>
-              <td>{{ row.required.toLocaleString('pt-BR') }}</td>
-              <td>{{ row.available.toLocaleString('pt-BR') }}</td>
-              <td>
-                <strong [class.negative]="row.missing > 0">{{
-                  row.missing.toLocaleString('pt-BR')
-                }}</strong>
-              </td>
-              <td>
-                <a routerLink="/market" [queryParams]="{ item: row.itemId }">Preço</a> ·
-                <a [routerLink]="['/recipes/items', row.itemId]">Produzir / obter</a>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <nav class="action-row" aria-label="Páginas da lista de materiais">
-        <button type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">
-          Anterior</button
-        ><span>Página {{ page() + 1 }}</span
-        ><button
-          type="button"
-          [disabled]="(page() + 1) * pageSize >= rows().length"
-          (click)="page.set(page() + 1)"
-        >
-          Próxima
-        </button>
-      </nav>
-      <p class="help">
-        Esta lista não reserva nem consome seus itens. Alterações na árvore precisam ser salvas
-        novamente. Quantidades dependem dos rendimentos informados no cenário.
-      </p>
-    </section>
-    <section class="panel">
-      <h2>Planos incluídos</h2>
-      @for (plan of plans(); track plan.id) {
-        <div class="shopping-plan">
-          <a [routerLink]="['/recipes/items', plan.sourceItemId]">{{ plan.name }}</a
-          ><button type="button" (click)="remove(plan)">Remover da lista</button>
+      <div>
+        <small>MATERIAIS A OBTER</small><strong>{{ missingCount() }} de {{ rows().length }}</strong>
+      </div>
+      <div>
+        <small>ESTOQUE CONSIDERADO</small
+        ><strong>{{ store.data().region.toUpperCase() }} · confirmado</strong>
+      </div>
+      <a class="btn subtle" routerLink="/scans">Atualizar por captura</a>
+    </div>
+    <div class="shopping-workbench">
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Materiais consolidados</h2>
+          <span class="badge">ESTOQUE ALOCADO</span>
         </div>
-      }
-    </section>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th class="numeric">Necessário</th>
+              <th class="numeric">Do estoque</th>
+              <th class="numeric">Falta obter</th>
+              <th>Próximo passo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of visibleRows(); track row.itemId) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/database/items', row.itemId]">{{ row.name }}</a>
+                </td>
+                <td class="numeric">{{ row.required.toLocaleString('pt-BR') }}</td>
+                <td class="numeric positive">{{ row.available.toLocaleString('pt-BR') }}</td>
+                <td class="numeric">
+                  <strong [class.negative]="row.missing > 0">{{
+                    row.missing.toLocaleString('pt-BR')
+                  }}</strong>
+                </td>
+                <td>
+                  <a routerLink="/market" [queryParams]="{ item: row.itemId }">Preço</a> ·
+                  <a [routerLink]="['/recipes/items', row.itemId]">Produzir / obter</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <nav class="action-row pagination-bar" aria-label="Páginas da lista de materiais">
+          <button type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">
+            Anterior</button
+          ><span>Página {{ page() + 1 }}</span
+          ><button
+            type="button"
+            [disabled]="(page() + 1) * pageSize >= rows().length"
+            (click)="page.set(page() + 1)"
+          >
+            Próxima
+          </button>
+        </nav>
+        <p class="help">
+          Esta lista não reserva nem consome seus itens. Alterações na árvore precisam ser salvas
+          novamente. Quantidades dependem dos rendimentos informados no cenário.
+        </p>
+      </section>
+      <section class="panel">
+        <h2>Planos incluídos</h2>
+        @for (plan of plans(); track plan.id) {
+          <div class="shopping-plan">
+            <a [routerLink]="['/recipes/items', plan.sourceItemId]">{{ plan.name }}</a
+            ><button type="button" (click)="remove(plan)">Remover da lista</button>
+          </div>
+        }
+      </section>
+    </div>
   } @else {
     <section class="panel empty-workspace">
       <h2>O próximo plano começa em uma receita</h2>
