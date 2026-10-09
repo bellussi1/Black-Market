@@ -785,11 +785,12 @@ export class ScansPage implements OnDestroy {
             best.distance <= 24 &&
             (!matches[1] || matches[1].distance - best.distance >= 2);
           const canvas = document.createElement('canvas');
-          canvas.width = 64;
-          canvas.height = 64;
+          const previewScale = 64 / Math.max(cell.width, cell.height);
+          canvas.width = Math.max(1, Math.round(cell.width * previewScale));
+          canvas.height = Math.max(1, Math.round(cell.height * previewScale));
           canvas
             .getContext('2d')
-            ?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, 64, 64);
+            ?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, canvas.width, canvas.height);
           return {
             id,
             score: best?.distance,
