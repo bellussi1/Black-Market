@@ -12,11 +12,12 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 
 @Component({
   selector: 'app-recipes-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, ItemIcon],
+  imports: [FormsModule, RouterLink, ItemIcon, RecipeTree],
   templateUrl: './recipes-page.html',
 })
 export class RecipesPage {

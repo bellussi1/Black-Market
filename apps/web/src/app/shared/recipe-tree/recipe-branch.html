@@ -1,0 +1,94 @@
+<article class="ingredient">
+  <div class="ingredient-main">
+    <app-item-icon [url]="catalog.resolveIconUrl(node().part)" [name]="node().part.name" />
+    <div>
+      <strong>{{ node().part.name }}</strong>
+      @if (allocation(); as row) {
+        <p i18n>
+          Necessário {{ row.required }} · Do estoque {{ row.fromStock }} · De sobras
+          {{ row.fromSurplus }} · Faltam {{ row.missing }}
+        </p>
+        <span class="ingredient-state">{{
+          row.missing === 0 ? 'Disponível' : row.fromStock > 0 ? 'Parcial' : 'Faltante'
+        }}</span>
+      } @else {
+        <p i18n>Quantidade por operação: {{ node().part.quantity ?? 'não informada' }}</p>
+      }
+    </div>
+  </div>
+  <div class="ingredient-actions">
+    <button class="btn subtle" (click)="emit('source')" i18n>Onde obter?</button>
+    @if (node().recipe) {
+      <button
+        class="btn subtle"
+        [attr.aria-expanded]="node().expanded"
+        [attr.aria-controls]="'branch-' + node().path"
+        (click)="emit(node().expanded ? 'collapse' : 'expand')"
+      >
+        {{ node().expanded ? 'Recolher etapas' : 'Abrir etapas' }}</button
+      ><button class="btn subtle" (click)="emit('buy')" i18n>Comprar em vez de produzir</button>
+    } @else {
+      <button class="btn subtle" (click)="emit('expand')" [disabled]="node().loading" i18n>
+        Ver como produzir
+      </button>
+    }
+  </div>
+  <details>
+    <summary i18n>Conferir quantidade exigida no jogo</summary>
+    <label
+      ><span i18n>Unidades deste ingrediente por operação</span
+      ><input
+        type="number"
+        min="1"
+        max="1000000"
+        [ngModel]="node().part.quantity"
+        (ngModelChange)="emit('quantity', $event)"
+    /></label>
+  </details>
+  @if (node().loading) {
+    <p role="status" i18n>Buscando origens de produção…</p>
+  }
+  @if (node().message) {
+    <p role="status">{{ node().message }}</p>
+  }
+  @if (node().options.length > 1) {
+    <label
+      ><span i18n>Método de produção</span
+      ><select [ngModel]="node().recipe?.key ?? ''" (ngModelChange)="emit('choose', $event)">
+        <option value="" i18n>Escolha uma receita</option>
+        @for (option of node().options; track option.key) {
+          <option [value]="option.key">
+            {{ typeLabel(option.type) }} · {{ option.inputs.length }}
+            <ng-container i18n>ingredientes</ng-container> · {{ option.key.slice(0, 6) }}
+          </option>
+        }
+      </select></label
+    >
+  }
+  @if (node().recipe && node().expanded) {
+    <div class="branch-children" [id]="'branch-' + node().path">
+      <label
+        ><span i18n>Rendimento por operação (cenário)</span
+        ><input
+          type="number"
+          min="0.001"
+          max="1000000"
+          step="0.001"
+          [ngModel]="node().yield"
+          (ngModelChange)="emit('yield', $event)"
+      /></label>
+      @if (!node().yield) {
+        <p class="help" i18n>
+          O catálogo não informa o rendimento. Confirme no jogo antes de calcular.
+        </p>
+      }
+      @for (child of node().children; track child.path) {
+        <app-recipe-branch
+          [node]="child"
+          [allocations]="allocations()"
+          (action)="action.emit($event)"
+        />
+      }
+    </div>
+  }
+</article>

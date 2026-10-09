@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { type CharacterProfile, characterSchema, gearSlots, lifeSkills } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 
@@ -15,11 +16,12 @@ import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
 import { silver } from '../../shared/formatters';
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CatalogItemPicker],
+  imports: [FormsModule, CatalogItemPicker, RouterLink, EquipmentSheet],
   templateUrl: './profile-page.html',
 })
 export class ProfilePage {
@@ -28,6 +30,12 @@ export class ProfilePage {
     effect(() => {
       const region = this.store.data().region;
       untracked(() => {
+        const active = this.store.activeCharacter();
+        if (active && this.selected !== active.id) {
+          this.selected = active.id;
+          this.load();
+          return;
+        }
         if (this.draft.region !== region) this.create();
       });
     });
@@ -90,6 +98,7 @@ export class ProfilePage {
       this.store.update((state) => ({
         ...state,
         characters: [...state.characters.filter((row) => row.id !== parsed.data.id), parsed.data],
+        activeCharacterId: parsed.data.id,
       }))
     ) {
       this.analytics.capture('journey_completed', {
@@ -104,6 +113,8 @@ export class ProfilePage {
   load() {
     const profile = this.profiles().find((row) => row.id === this.selected);
     if (profile) this.draft = structuredClone(profile);
+    if (profile && this.store.data().activeCharacterId !== profile.id)
+      this.store.update((s) => ({ ...s, activeCharacterId: profile.id }));
     this.message.set('');
   }
   create() {

@@ -14,6 +14,7 @@
     <p role="alert">{{ message() }}</p>
   }
   @if (recipe(); as selected) {
+    <app-recipe-tree [recipe]="selected" />
     <section class="panel">
       <a routerLink="/recipes" i18n>← Todas as receitas</a>
       <h2>{{ selected.outputs[0]?.name || typeLabel(selected.type) }}</h2>

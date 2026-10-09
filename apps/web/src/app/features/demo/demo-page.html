@@ -1,0 +1,204 @@
+<div class="tool-page guided-page">
+  <header class="page-heading">
+    <p class="eyebrow" i18n>CONHEÇA A PLATAFORMA COM UM PERFIL COMPLETO</p>
+    <h1 i18n>Experimente com um jogador de exemplo</h1>
+    <p i18n>
+      Revise uma família fictícia com personagens, equipamentos, materiais e profissões. Depois,
+      explore os cálculos usando esses dados.
+    </p>
+  </header>
+  <section class="panel">
+    <h2 i18n>1. Preparar o exemplo</h2>
+    <p i18n>
+      Os itens vêm do catálogo da região. Saldos, preços, resultados de atividades e atributos são
+      simulados. O exemplo fica apenas nesta sessão, sem substituir seus dados ou sincronizar com
+      sua conta.
+    </p>
+    <button class="btn" (click)="prepare()" [disabled]="loading()" i18n>
+      Preparar demonstração
+    </button>
+    @if (loading()) {
+      <p role="status" i18n>Conferindo os itens do catálogo…</p>
+    }
+    @if (message()) {
+      <p role="alert">{{ message() }}</p>
+    }
+  </section>
+  @if (draft(); as data) {
+    <section class="panel">
+      <h2 i18n>2. Confira a família e o personagem</h2>
+      <p i18n>
+        Valores de PA e PD representam uma ficha simulada e não são recalculados pelos equipamentos.
+        Você poderá corrigir o perfil completo depois.
+      </p>
+      <div class="form-grid">
+        <label class="field"
+          ><span i18n>Família</span
+          ><input
+            [(ngModel)]="data.characters[0].familyName"
+            (ngModelChange)="edited()"
+            maxlength="80"
+        /></label>
+        <label class="field"
+          ><span i18n>Personagem</span
+          ><input [(ngModel)]="data.characters[0].name" (ngModelChange)="edited()" maxlength="80"
+        /></label>
+        <label class="field"
+          ><span i18n>Classe</span
+          ><input
+            [(ngModel)]="data.characters[0].className"
+            (ngModelChange)="edited()"
+            maxlength="40"
+        /></label>
+        <label class="field"
+          ><span i18n>Nível</span
+          ><input
+            type="number"
+            min="1"
+            max="100"
+            [(ngModel)]="data.characters[0].level"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>Prata do personagem</span
+          ><input
+            inputmode="numeric"
+            [(ngModel)]="data.characters[0].silver"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>Prata compartilhada da família</span
+          ><input inputmode="numeric" [(ngModel)]="data.familySilver" (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>PA principal</span
+          ><input
+            type="number"
+            min="0"
+            [(ngModel)]="data.characters[0].mainAp"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>PA de despertar</span
+          ><input
+            type="number"
+            min="0"
+            [(ngModel)]="data.characters[0].awakeAp"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>PD</span
+          ><input
+            type="number"
+            min="0"
+            [(ngModel)]="data.characters[0].dp"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>Energia</span
+          ><input
+            type="number"
+            min="0"
+            [(ngModel)]="data.characters[0].energy"
+            (ngModelChange)="edited()"
+        /></label>
+        <label class="field"
+          ><span i18n>Contribuição</span
+          ><input
+            type="number"
+            min="0"
+            [(ngModel)]="data.characters[0].contribution"
+            (ngModelChange)="edited()"
+        /></label>
+      </div>
+      <details>
+        <summary i18n>Equipamentos e maestria do exemplo</summary>
+        <p i18n>
+          Combate e conjunto de profissão são configurações diferentes. A maestria informada inclui
+          o conjunto de profissão e bônus do cenário.
+        </p>
+        @for (part of data.characters[0].gear; track part.slot) {
+          <div class="row-editor">
+            <app-item-icon [url]="icons().get(part.itemId) ?? null" [name]="part.name" /><strong>{{
+              part.name
+            }}</strong
+            ><label
+              ><span i18n>Nível de aprimoramento</span
+              ><input
+                type="number"
+                min="0"
+                max="30"
+                [(ngModel)]="part.level"
+                (ngModelChange)="edited()"
+            /></label>
+          </div>
+        }
+        @for (skill of skills; track skill) {
+          <label class="field"
+            ><span>{{ skillLabels[skill] }}</span
+            ><input
+              type="number"
+              min="0"
+              max="5000"
+              [ngModel]="data.characters[0].mastery[skill]"
+              (ngModelChange)="data.characters[0].mastery[skill] = $event; edited()"
+          /></label>
+        }
+      </details>
+    </section>
+    <section class="panel">
+      <h2 i18n>Materiais identificados</h2>
+      <p i18n>
+        Confira as quantidades por local. Os preços abaixo são exemplos, não cotações atuais.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th i18n>Item</th>
+              <th i18n>Local</th>
+              <th i18n>Quantidade</th>
+              <th i18n>Preço simulado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data.inventory; track row.id) {
+              <tr>
+                <td>
+                  <app-item-icon [url]="icons().get(row.itemId!) ?? null" [name]="row.name" />{{
+                    row.name
+                  }}
+                </td>
+                <td>{{ row.location }}</td>
+                <td>
+                  <input
+                    [attr.aria-label]="'Quantidade de ' + row.name + ' em ' + row.location"
+                    type="number"
+                    min="0"
+                    max="1000000000"
+                    [(ngModel)]="row.quantity"
+                    (ngModelChange)="edited()"
+                  />
+                </td>
+                <td>{{ silver(row.price) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel">
+      <h2 i18n>3. Importar e explorar</h2>
+      <label
+        ><input type="checkbox" [(ngModel)]="confirmed" /><span i18n
+          >Conferi o exemplo e entendi que seus dados e preços são simulados.</span
+        ></label
+      >
+      <div class="action-row">
+        <button class="btn" [disabled]="!confirmed" (click)="confirm()" i18n>
+          Importar demonstração</button
+        ><a routerLink="/" i18n>Voltar ao início</a>
+      </div>
+    </section>
+  }
+</div>

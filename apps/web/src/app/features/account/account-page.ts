@@ -109,6 +109,10 @@ export class AccountPage {
     });
   }
   async upload() {
+    if (this.store.demoActive()) {
+      this.message.set('Saia da demonstração para sincronizar seus dados pessoais.');
+      return;
+    }
     if (!this.confirmUpload || this.cloudVersion() === null) return;
     await this.perform(async () => {
       const owner = this.identity.userId();

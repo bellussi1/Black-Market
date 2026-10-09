@@ -1,0 +1,193 @@
+@if (root(); as product) {
+  <section class="panel">
+    <div class="panel-heading">
+      <h2 i18n>Planeje os materiais, etapa por etapa</h2>
+      <span class="badge"
+        >{{ mastery().label }} · {{ mastery().value ?? '—' }}
+        <ng-container i18n>de maestria</ng-container></span
+      >
+    </div>
+    <p i18n>
+      Expanda apenas os ingredientes que deseja produzir. Recolher uma etapa mantém o método
+      escolhido. Comprar em vez de produzir muda a lista de materiais.
+    </p>
+    @if (store.demoActive()) {
+      <p class="notice" i18n>
+        Rendimentos de 2,5 são premissas ilustrativas do exemplo. Não representam uma taxa garantida
+        do jogo nem um bônus calculado de maestria.
+      </p>
+    }
+    <div class="form-grid">
+      <label class="field"
+        ><span i18n>Unidades adicionais que quero produzir</span
+        ><input
+          type="number"
+          min="1"
+          max="1000000000"
+          [ngModel]="target()"
+          (ngModelChange)="target.set($event)" /></label
+      ><label class="field"
+        ><span i18n>Rendimento por operação (cenário)</span
+        ><input
+          type="number"
+          min="0.001"
+          max="1000000"
+          step="0.001"
+          [ngModel]="product.yield"
+          (ngModelChange)="setRootYield($event)"
+      /></label>
+    </div>
+    <p class="help" i18n>
+      A maestria vem do personagem ativo. Rendimento e efeitos específicos precisam ser conferidos;
+      os coeficientes extraídos ainda não têm interpretação validada para todas as profissões.
+    </p>
+    <div class="tabs" aria-label="Visualização dos materiais" i18n-aria-label>
+      <button [attr.aria-pressed]="view() === 'tree'" (click)="view.set('tree')" i18n>
+        Árvore de etapas</button
+      ><button [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')" i18n>
+        Lista consolidada
+      </button>
+    </div>
+    @if (plan(); as result) {
+      @for (warning of result.warnings; track warning) {
+        <p class="notice" role="status">{{ warning }}</p>
+      }
+      @if (result.value; as calculated) {
+        <p>
+          <strong i18n>Compra estimada: {{ silver(calculated.cost) }}</strong>
+          @if (result.knownCostOnly) {
+            <span i18n>· custo parcial, há materiais sem preço</span>
+          }
+        </p>
+        <p class="help" i18n>
+          Materiais próprios reduzem a compra, mas têm valor econômico. Este total é o desembolso
+          estimado dos materiais faltantes; não é lucro líquido. Operações com rendimento médio são
+          estimativas.
+        </p>
+        @if (result.unknownPrices.length) {
+          <p class="help" i18n>
+            Sem cotação para: {{ result.unknownPrices.join(', ') }}. Consulte o mercado antes de
+            decidir.
+          </p>
+        }
+        @if (view() === 'list') {
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th i18n>Material</th>
+                  <th i18n>Necessário</th>
+                  <th i18n>Do estoque</th>
+                  <th i18n>Produzir</th>
+                  <th i18n>Obter fora</th>
+                  <th i18n>Custo conhecido</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of calculated.rows; track row.itemId ?? row.name) {
+                  <tr>
+                    <td>
+                      {{ row.name }}
+                      @if (row.itemId) {
+                        <a routerLink="/market" [queryParams]="{ item: row.itemId }" i18n
+                          >Ver mercado</a
+                        >
+                      }
+                    </td>
+                    <td>{{ row.required }}</td>
+                    <td>{{ row.fromStock }}</td>
+                    <td>{{ row.produced }}</td>
+                    <td>{{ row.purchased }}</td>
+                    <td>{{ silver(row.cost) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+      @if (view() === 'tree') {
+        @for (child of product.children; track child.path) {
+          <app-recipe-branch
+            [node]="child"
+            [allocations]="result.value?.allocations ?? []"
+            (action)="action($event)"
+          />
+        }
+      }
+    }
+    <div class="action-row">
+      <a
+        class="btn"
+        routerLink="/crafting"
+        [queryParams]="{
+          item: product.part.itemId,
+          recipe: recipe().key,
+          yield: product.yield,
+          target: target(),
+        }"
+        i18n
+        >Comparar custo, venda e imposto</a
+      ><a routerLink="/storage" i18n>Conferir estoque e reservas</a>
+    </div>
+    @if (contextLoading()) {
+      <p role="status" i18n>Consultando informações do ingrediente…</p>
+    }
+    @if (contextMessage()) {
+      <p role="status">{{ contextMessage() }}</p>
+    }
+    @if (context(); as info) {
+      <aside class="panel" aria-label="Informações do ingrediente" i18n-aria-label>
+        <div class="panel-heading">
+          <h3>{{ info.item.name }}</h3>
+          <button class="btn subtle" (click)="context.set(null)" i18n>Fechar detalhes</button>
+        </div>
+        <app-item-icon [url]="catalog.resolveIconUrl(info.item)" [name]="info.item.name" />
+        <p>{{ plain(info.item.description) }}</p>
+        <p i18n>Possuo {{ owned(info.item.id) }} unidades nos armazenamentos da região.</p>
+        @if (quote(info.item.id); as price) {
+          <p i18n>
+            Preço salvo: {{ silver(price.price) }} por unidade. Confira a atualização antes de
+            produzir.
+          </p>
+        } @else {
+          <p i18n>Preço de mercado ainda não consultado.</p>
+        }
+        <h4 i18n>Bases de produção conhecidas</h4>
+        <ul>
+          @for (node of info.origins.nodes; track node.id) {
+            <li>
+              <strong>{{ node.name }}</strong> · {{ node.contribution ?? '—' }} CP
+              <a routerLink="/world" [queryParams]="{ node: node.id }" i18n>Ver no mapa</a> ·
+              <a [routerLink]="['/reference/nodes', node.id]" i18n>Ver conexões e território</a>
+            </li>
+          } @empty {
+            <li i18n>Não há base de produção vinculada a este item na extração disponível.</li>
+          }
+        </ul>
+        <h4 i18n>Outras origens</h4>
+        <p i18n>
+          Receitas e métodos abaixo vêm do catálogo. Locais de coleta, vendedores, drops e
+          requisitos ausentes não são presumidos.
+        </p>
+        <ul>
+          @for (method of info.recipes; track method.key) {
+            <li>
+              <a [routerLink]="['/recipes', method.key]">{{ typeLabel(method.type) }}</a>
+            </li>
+          } @empty {
+            <li i18n>
+              Nenhuma receita de produção conhecida. Consulte a descrição e as referências.
+            </li>
+          }
+        </ul>
+        <div class="action-row">
+          <a routerLink="/market" [queryParams]="{ item: info.item.id }" i18n>Consultar mercado</a
+          ><a [routerLink]="['/database/items', info.item.id]" i18n
+            >Ver usos e informações completas</a
+          >
+        </div>
+      </aside>
+    }
+  </section>
+}

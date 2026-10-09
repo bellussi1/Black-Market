@@ -173,7 +173,7 @@ export const recipeSchema = z.object({
   itemId: z.number().int().positive().optional(),
   id: z.string().min(1).max(64),
   name: labelSchema,
-  yield: positiveCount.max(1_000_000),
+  yield: decimal.positive().max(1_000_000),
   ingredients: z
     .array(
       z.object({

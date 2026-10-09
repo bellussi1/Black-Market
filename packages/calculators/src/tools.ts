@@ -260,15 +260,21 @@ export function calculateProduction(raw: unknown) {
   const i = productionSchema.parse(raw);
   const recipes = new Map(i.recipes.map((r) => [r.id, r]));
   if (recipes.size !== i.recipes.length) throw new RangeError('IDs de receitas duplicados.');
+  const stockKey = (name: string, itemId?: number) =>
+    itemId === undefined ? key(name) : `item:${itemId}`;
   const available = new Map<string, number>();
   i.inventory.forEach((r) =>
-    available.set(key(r.name), (available.get(key(r.name)) ?? 0) + r.quantity),
+    available.set(
+      stockKey(r.name, r.itemId),
+      (available.get(stockKey(r.name, r.itemId)) ?? 0) + r.quantity,
+    ),
   );
   const initialStock = new Map(available);
   const rows = new Map<
     string,
     {
       name: string;
+      itemId?: number;
       required: number;
       fromStock: number;
       fromSurplus: number;
@@ -279,12 +285,23 @@ export function calculateProduction(raw: unknown) {
   >();
   const tasks = new Map<string, { id: string; name: string; crafts: number; produced: number }>();
   let operations = 0;
-  const rowFor = (name: string) => {
-    const k = key(name);
+  const allocations: {
+    path: string;
+    itemId?: number;
+    required: number;
+    fromStock: number;
+    fromSurplus: number;
+    missing: number;
+    crafts: number;
+    produced: number;
+  }[] = [];
+  const rowFor = (name: string, itemId?: number) => {
+    const k = stockKey(name, itemId);
     let row = rows.get(k);
     if (!row) {
       row = {
         name,
+        itemId,
         required: 0,
         fromStock: 0,
         fromSurplus: 0,
@@ -302,6 +319,8 @@ export function calculateProduction(raw: unknown) {
     recipeId: string | null,
     price: string,
     path: string[],
+    itemId?: number,
+    branchPath = 'root',
   ) => {
     if (++operations > 20_000)
       throw new RangeError(
@@ -309,11 +328,11 @@ export function calculateProduction(raw: unknown) {
       );
     if (!Number.isSafeInteger(demand) || demand > 1e12)
       throw new RangeError('A cadeia excedeu o limite de quantidade.');
-    const row = rowFor(name);
+    const row = rowFor(name, itemId);
     row.required += demand;
     if (!Number.isSafeInteger(row.required) || row.required > 1e12)
       throw new RangeError('A demanda acumulada excedeu o limite de quantidade.');
-    const k = key(name);
+    const k = stockKey(name, itemId);
     const held = available.get(k) ?? 0;
     const used = Math.min(held, demand);
     available.set(k, held - used);
@@ -322,6 +341,17 @@ export function calculateProduction(raw: unknown) {
     row.fromStock += originalUsed;
     row.fromSurplus += used - originalUsed;
     const missing = demand - used;
+    const allocation = {
+      path: branchPath,
+      itemId,
+      required: demand,
+      fromStock: originalUsed,
+      fromSurplus: used - originalUsed,
+      missing,
+      crafts: 0,
+      produced: 0,
+    };
+    allocations.push(allocation);
     if (!missing) return;
     if (!recipeId) {
       row.purchased += missing;
@@ -332,15 +362,25 @@ export function calculateProduction(raw: unknown) {
       throw new RangeError('Ciclo ou profundidade excessiva na cadeia de crafting.');
     const recipe = recipes.get(recipeId);
     if (!recipe) throw new RangeError('Uma receita vinculada foi removida.');
-    if (key(recipe.name) !== k)
+    if (stockKey(recipe.name, recipe.itemId) !== k)
       throw new RangeError(
         'O nome do ingrediente precisa coincidir com o produto da receita vinculada.',
       );
     const crafts = Math.ceil(missing / recipe.yield);
-    recipe.ingredients.forEach((r) =>
-      take(r.name, r.quantity * crafts, r.recipeId, r.price, [...path, recipeId]),
+    recipe.ingredients.forEach((r, index) =>
+      take(
+        r.name,
+        r.quantity * crafts,
+        r.recipeId,
+        r.price,
+        [...path, recipeId],
+        r.itemId,
+        `${branchPath}/${index}`,
+      ),
     );
-    const produced = crafts * recipe.yield;
+    const produced = Math.floor(crafts * recipe.yield);
+    allocation.crafts = crafts;
+    allocation.produced = produced;
     row.produced += produced;
     available.set(k, (available.get(k) ?? 0) + produced - missing);
     const task = tasks.get(recipeId) ?? {
@@ -355,13 +395,14 @@ export function calculateProduction(raw: unknown) {
   };
   const root = recipes.get(i.recipeId);
   if (!root) throw new RangeError('Escolha uma receita existente.');
-  take(root.name, i.quantity, root.id, '0', []);
+  take(root.name, i.quantity, root.id, '0', [], root.itemId);
   return {
     target: root.name,
     quantity: i.quantity,
     cost: String([...rows.values()].reduce((sum, r) => sum + r.cost, 0n)),
     rows: [...rows.values()].map((r) => ({ ...r, cost: String(r.cost) })),
     tasks: [...tasks.values()],
+    allocations,
   };
 }
 export const calculators = {

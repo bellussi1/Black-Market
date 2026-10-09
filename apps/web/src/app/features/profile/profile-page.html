@@ -11,6 +11,10 @@
     <p class="notice" role="status">{{ message() }}</p>
   }
   <section class="panel">
+    <a class="btn subtle" routerLink="/demo" i18n>Importar um personagem de exemplo</a>
+    @if (selected) {
+      <app-equipment-sheet [profile]="draft" />
+    }
     <div class="action-row">
       <label class="field"
         ><span i18n>Personagem salvo</span

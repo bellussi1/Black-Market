@@ -14,6 +14,19 @@ const RECIPE_TYPES: Readonly<Record<string, string>> = {
   ROYALGIFT_ALCHEMY: $localize`Alquimia imperial`,
   ROYALGIFT_COOK: $localize`Culinária imperial`,
 };
+export const lifeSkillLabels: Readonly<Record<string, string>> = {
+  cooking: $localize`Culinária`,
+  alchemy: $localize`Alquimia`,
+  processing: $localize`Processamento`,
+  gathering: $localize`Coleta`,
+  fishing: $localize`Pesca`,
+  hunting: $localize`Caça`,
+  training: $localize`Treino`,
+  farming: $localize`Cultivo`,
+  sailing: $localize`Navegação`,
+  barter: $localize`Permuta`,
+  trading: $localize`Comércio`,
+};
 export function recipeTypeLabel(type: string): string {
   return RECIPE_TYPES[type] ?? $localize`Produção`;
 }

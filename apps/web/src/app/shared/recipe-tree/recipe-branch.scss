@@ -1,0 +1,63 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.ingredient {
+  padding: 0.9rem;
+  border: 1px solid var(--bm-border);
+  margin-block: 0.65rem;
+  background: var(--bm-surface, #101a15);
+}
+.ingredient-main {
+  display: flex;
+  align-items: start;
+  gap: 0.8rem;
+  min-width: 0;
+}
+.ingredient-main div {
+  min-width: 0;
+}
+.ingredient-main strong {
+  overflow-wrap: anywhere;
+}
+.ingredient-main p {
+  font-size: 0.875rem;
+  margin-block: 0.4rem;
+  color: var(--bm-muted);
+}
+.ingredient-state {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--bm-border);
+}
+.ingredient-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+.branch-children {
+  padding-left: min(3vw, 1rem);
+  border-left: 2px solid var(--bm-accent);
+  margin-block: 0.75rem;
+}
+.ingredient label {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 24rem;
+}
+.ingredient input,
+.ingredient select {
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .branch-children {
+    padding-left: 0.35rem;
+  }
+  .ingredient {
+    padding: 0.65rem;
+  }
+  .ingredient-actions .btn {
+    min-height: 44px;
+  }
+}

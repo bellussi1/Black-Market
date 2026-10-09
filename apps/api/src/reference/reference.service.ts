@@ -55,6 +55,34 @@ export class ReferenceService {
     });
     return { nodes, updatedAt: dataset.finishedAt };
   }
+  async itemSources(itemId: number, query: Record<string, unknown>) {
+    if (!Number.isSafeInteger(itemId) || itemId < 1 || itemId > 2147483647)
+      throw new BadRequestException('Item inválido.');
+    const dataset = await this.dataset(query);
+    if (!dataset) return { nodes: [], updatedAt: null };
+    const rows = await this.database.db
+      .select({ id: referenceRecords.id, name: referenceRecords.name, data: referenceRecords.data })
+      .from(referenceRecords)
+      .where(
+        and(
+          eq(referenceRecords.datasetVersionId, dataset.id),
+          eq(referenceRecords.kind, 'nodes'),
+          sql`${referenceRecords.data} @> ${JSON.stringify({ products: { urns: [`urn::item:${itemId}`] } })}::jsonb`,
+        ),
+      )
+      .limit(50);
+    return {
+      nodes: rows.map((r) => ({
+        id: r.id,
+        name: r.name.replace(/<[^>]*>/g, ''),
+        territory: typeof r.data['territory'] === 'string' ? r.data['territory'] : null,
+        managerNode: typeof r.data['managerNode'] === 'string' ? r.data['managerNode'] : null,
+        contribution: typeof r.data['contribution'] === 'number' ? r.data['contribution'] : null,
+        position: Array.isArray(r.data['position']) ? r.data['position'] : null,
+      })),
+      updatedAt: dataset.finishedAt,
+    };
+  }
   private async dataset(query: Record<string, unknown>) {
     const parsed = parseCatalogQuery(query, { pagination: false });
     return this.catalog.getActiveDataset(parsed.region, parsed.locale, parsed.preferredLocale);
