@@ -5,15 +5,61 @@
 .recipe-explorer {
   max-width: 1600px;
 }
+.recipe-explorer .tool-heading {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+.recipe-explorer .tool-heading h1 {
+  font-size: 32px;
+  margin-bottom: 0;
+}
+.recipe-explorer .tool-heading p[hidden] {
+  display: none;
+}
+.ingredient-preview summary {
+  font-size: 13px;
+  color: var(--bm-muted);
+  padding-bottom: 0;
+}
 .search-panel {
   border-top: 2px solid var(--bm-accent);
+  padding: 0 20px;
+}
+.search-panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  font-size: 13px;
+  list-style: none;
+}
+.search-panel > summary::after {
+  content: '+';
+  color: var(--bm-accent);
+  margin-left: auto;
+  font-size: 20px;
+}
+.search-panel[open] > summary::after {
+  content: '−';
+}
+.search-panel > summary span {
+  color: var(--bm-muted);
+}
+.search-panel > summary strong {
+  color: var(--bm-text);
+  font-weight: 500;
+}
+.search-panel[open] > summary {
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--bm-border);
 }
 .item-toolbar {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin: 8px 0 0;
+  font-size: 13px;
 }
 .recipe-methods label {
   display: block;
@@ -26,14 +72,17 @@
 .method-ingredients {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 8px;
+  margin-top: 12px;
 }
 .method-ingredients span {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
+  padding: 6px 10px;
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
 }
 .recipe-cards {
   display: grid;

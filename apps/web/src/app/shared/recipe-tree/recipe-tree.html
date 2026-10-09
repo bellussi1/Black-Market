@@ -7,54 +7,60 @@
       </div>
       <span class="badge">{{ recipe() ? typeLabel(recipe()!.type) : 'Explorar obtenção' }}</span>
     </div>
-    <div class="form-grid">
-      <label i18n
-        >Quantidade total desejada<input
-          type="number"
-          min="1"
-          max="1000000"
-          [ngModel]="target()"
-          (ngModelChange)="target.set($event)"
-      /></label>
-      @if (product.recipe) {
-        <label i18n
-          >Rendimento por operação · cenário<input
-            type="number"
-            min=".001"
-            max="1000000"
-            step=".001"
-            [ngModel]="product.yield"
-            (ngModelChange)="setRootYield($event)"
-        /></label>
-      }
-    </div>
-    <p class="help" i18n>
-      Rendimentos médios são cenários, não produção garantida. Maestria não altera este rendimento
-      automaticamente. Campos ausentes precisam ser confirmados no jogo.
-    </p>
-    <details>
-      <summary i18n>Quais estoques entram no cálculo?</summary>
-      <div class="stock-selection">
-        @for (location of locations(); track location.key) {
-          <label
-            ><input
-              type="checkbox"
-              [ngModel]="!excludedLocations().includes(location.key)"
-              (ngModelChange)="toggleLocation(location.key, $event)"
-            />{{ location.name }} · {{ location.count }} registros
-            @if (location.old) {
-              <small>· {{ location.old }} sem atualização recente</small>
+    <div class="production-configuration">
+      <div class="production-method"><ng-content select="[recipe-method]" /></div>
+      <div class="scenario-settings">
+        <div class="form-grid">
+          <label i18n
+            >Quantidade total desejada<input
+              type="number"
+              min="1"
+              max="1000000"
+              [ngModel]="target()"
+              (ngModelChange)="target.set($event)"
+          /></label>
+          @if (product.recipe) {
+            <label i18n
+              >Rendimento por operação · cenário<input
+                type="number"
+                min=".001"
+                max="1000000"
+                step=".001"
+                [ngModel]="product.yield"
+                (ngModelChange)="setRootYield($event)"
+            /></label>
+          }
+        </div>
+        <p class="help" i18n>
+          Rendimentos médios são cenários, não produção garantida. Maestria não altera este
+          rendimento automaticamente. Campos ausentes precisam ser confirmados no jogo.
+        </p>
+        <details>
+          <summary i18n>Quais estoques entram no cálculo?</summary>
+          <div class="stock-selection">
+            @for (location of locations(); track location.key) {
+              <label
+                ><input
+                  type="checkbox"
+                  [ngModel]="!excludedLocations().includes(location.key)"
+                  (ngModelChange)="toggleLocation(location.key, $event)"
+                />{{ location.name }} · {{ location.count }} registros
+                @if (location.old) {
+                  <small>· {{ location.old }} sem atualização recente</small>
+                }
+              </label>
+            } @empty {
+              <p i18n>Nenhum estoque importado. <a routerLink="/scans">Importar capturas</a></p>
             }
-          </label>
-        } @empty {
-          <p i18n>Nenhum estoque importado. <a routerLink="/scans">Importar capturas</a></p>
-        }
+          </div>
+          <p class="help" i18n>
+            Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas
+            parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao
+            simular.
+          </p>
+        </details>
       </div>
-      <p class="help" i18n>
-        Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas
-        parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao simular.
-      </p>
-    </details>
+    </div>
   </section>
   <div class="tabs" aria-label="Visualização da produção" i18n-aria-label>
     <button type="button" [attr.aria-pressed]="view() === 'graph'" (click)="view.set('graph')" i18n>
@@ -83,39 +89,42 @@
       @if (planMessage()) {
         <p role="status">{{ planMessage() }}</p>
       }
-      <div class="production-totals" aria-label="Estimativas da produção" i18n-aria-label>
-        <div>
-          <small i18n>Materiais faltantes · preço conhecido</small
-          ><strong>{{
-            result.knownCostOnly && calculated.cost === '0'
-              ? 'Sem cotações'
-              : silver(calculated.cost)
-          }}</strong
-          ><span>{{
-            result.knownCostOnly
-              ? 'Total parcial: faltam cotações'
-              : 'Referência para compra dos materiais'
-          }}</span>
+      <details class="production-estimates">
+        <summary i18n>Custos e premissas · {{ calculated.tasks.length }} etapas planejadas</summary>
+        <div class="production-totals" aria-label="Estimativas da produção" i18n-aria-label>
+          <div>
+            <small i18n>Materiais faltantes · preço conhecido</small
+            ><strong>{{
+              result.knownCostOnly && calculated.cost === '0'
+                ? 'Sem cotações'
+                : silver(calculated.cost)
+            }}</strong
+            ><span>{{
+              result.knownCostOnly
+                ? 'Total parcial: faltam cotações'
+                : 'Referência para compra dos materiais'
+            }}</span>
+          </div>
+          <div>
+            <small i18n>Comprar o produto faltante pronto</small
+            ><strong>{{ buyCost() === null ? 'Sem cotação' : silver(buyCost()) }}</strong
+            ><span i18n>Preço de referência, sujeito a estoque</span>
+          </div>
+          <div>
+            <small i18n>Etapas planejadas</small><strong>{{ calculated.tasks.length }}</strong
+            ><span i18n>Métodos escolhidos da cadeia</span>
+          </div>
         </div>
-        <div>
-          <small i18n>Comprar o produto faltante pronto</small
-          ><strong>{{ buyCost() === null ? 'Sem cotação' : silver(buyCost()) }}</strong
-          ><span i18n>Preço de referência, sujeito a estoque</span>
-        </div>
-        <div>
-          <small i18n>Etapas planejadas</small><strong>{{ calculated.tasks.length }}</strong
-          ><span i18n>Métodos escolhidos da cadeia</span>
-        </div>
-      </div>
-      <p class="help" i18n>
-        Materiais próprios reduzem o desembolso, mas têm valor econômico. Custos de coleta, energia,
-        ferramentas e tempo não estão incluídos. Valores salvos podem estar antigos; preço não
-        garante uma compra. Valores de trabalhadores são referências de compra, não custos reais de
-        produção da base.
-      </p>
-      @if (result.unknownPrices.length) {
-        <p class="help">Sem preço: {{ result.unknownPrices.join(', ') }}.</p>
-      }
+        <p class="help" i18n>
+          Materiais próprios reduzem o desembolso, mas têm valor econômico. Custos de coleta,
+          energia, ferramentas e tempo não estão incluídos. Valores salvos podem estar antigos;
+          preço não garante uma compra. Valores de trabalhadores são referências de compra, não
+          custos reais de produção da base.
+        </p>
+        @if (result.unknownPrices.length) {
+          <p class="help">Sem preço: {{ result.unknownPrices.join(', ') }}.</p>
+        }
+      </details>
     }
     <div class="exploration-layout">
       <div class="exploration-main">

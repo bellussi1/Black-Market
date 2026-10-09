@@ -5,6 +5,44 @@
 .production-settings {
   border-top: 2px solid var(--bm-accent);
 }
+.production-configuration {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.production-configuration:has(> .production-method:empty) {
+  grid-template-columns: 1fr;
+}
+.production-method:empty {
+  display: none;
+}
+.production-method {
+  min-width: 0;
+  padding-right: 24px;
+  border-right: 1px solid var(--bm-border);
+}
+.production-estimates {
+  margin: 16px 0;
+  padding: 0 16px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+}
+.production-estimates > summary {
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--bm-accent);
+}
+.production-settings .panel-heading {
+  margin-bottom: 12px;
+}
+.production-settings .help {
+  font-size: 12px;
+  margin-top: 8px;
+}
+.production-settings details > summary {
+  font-size: 13px;
+}
 .production-totals {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

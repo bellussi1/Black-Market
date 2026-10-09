@@ -2,12 +2,16 @@
   <header class="tool-heading">
     <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
     <h1 i18n>Oficina de produção</h1>
-    <p i18n>
+    <p [hidden]="!!item()" i18n>
       Do produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e
       aproveite o que já está no seu armazém.
     </p>
   </header>
-  <section class="panel search-panel">
+  <details class="panel search-panel" [open]="!item()">
+    <summary>
+      <span i18n>Pesquisar item</span
+      ><strong>{{ item()?.name ?? 'Escolha o produto que deseja explorar' }}</strong>
+    </summary>
     <app-catalog-item-picker
       label="Qual item você quer explorar?"
       i18n-label
@@ -18,60 +22,64 @@
       Todos os itens do catálogo podem ser pesquisados, mesmo sem receita. A categoria filtra os
       resultados pelo cadastro do jogo.
     </p>
-  </section>
+  </details>
   @if (loading()) {
-    <p role="status" i18n>Carregando item e receitas…</p>
+    <p class="loading-state" role="status" i18n>Carregando item e receitas…</p>
   }
   @if (message()) {
-    <p role="alert">
+    <p class="error-box" role="alert">
       {{ message() }} <button type="button" (click)="retry()" i18n>Tentar novamente</button>
     </p>
   }
   @if (item(); as selected) {
-    <div class="item-toolbar">
-      <a routerLink="/recipes" i18n>← Explorar outro item</a
-      ><a [routerLink]="['/database/items', selected.id]" i18n>Informações do catálogo</a>
-    </div>
-    @if (alternatives().length) {
-      <section class="recipe-methods panel">
-        <label for="root-recipe" i18n>Como você quer obter este item?</label
-        ><select id="root-recipe" [value]="recipe()?.key ?? ''" (change)="choose($event)">
-          <option value="" i18n>Obter pronto / consultar fontes</option>
-          @for (method of alternatives(); track method.key) {
-            <option [value]="method.key">
-              {{ methodLabel(method) }}
-            </option>
-          }
-        </select>
-        <p class="help" i18n>
-          {{ alternatives().length }} variantes disponíveis. Uma única receita entra no plano;
-          trocá-la substitui suas ramificações.
-        </p>
-        @if (recipe(); as method) {
-          <div class="method-ingredients">
-            @for (part of method.inputs; track $index) {
-              <span
-                ><app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" />{{
-                  part.name
-                }}
-                × {{ part.quantity ?? 'a confirmar' }}</span
-              >
-            }
-          </div>
-        }
-      </section>
-    } @else {
-      <p class="notice" i18n>
-        Não há receita vinculada a este item na extração disponível. Explore a descrição e as fontes
-        conhecidas; não presumimos que a compra seja a única origem.
-      </p>
-    }
     <app-recipe-tree
       [recipe]="recipe()"
       [selectedItem]="selected"
       [datasetVersion]="dataset()?.version ?? ''"
       (rootMethod)="setMethod($event)"
-    />
+    >
+      <div recipe-method>
+        @if (alternatives().length) {
+          <section class="recipe-methods">
+            <label for="root-recipe" i18n>Como você quer obter este item?</label
+            ><select id="root-recipe" (change)="choose($event)">
+              <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
+              @for (method of alternatives(); track method.key) {
+                <option [value]="method.key" [selected]="method.key === recipe()?.key">
+                  {{ methodLabel(method) }}
+                </option>
+              }
+            </select>
+            <div class="item-toolbar">
+              <span class="help" i18n
+                >{{ alternatives().length }} variantes · um método por plano</span
+              >
+              <a [routerLink]="['/database/items', selected.id]" i18n>Informações do item →</a>
+            </div>
+            @if (recipe(); as method) {
+              <details class="ingredient-preview">
+                <summary i18n>{{ method.inputs.length }} ingredientes por operação</summary>
+                <div class="method-ingredients">
+                  @for (part of method.inputs; track $index) {
+                    <span
+                      ><app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" />{{
+                        part.name
+                      }}
+                      × {{ part.quantity ?? 'a confirmar' }}</span
+                    >
+                  }
+                </div>
+              </details>
+            }
+          </section>
+        } @else {
+          <p class="notice" i18n>
+            Não há receita vinculada a este item na extração disponível. Explore a descrição e as
+            fontes conhecidas; não presumimos que a compra seja a única origem.
+          </p>
+        }
+      </div>
+    </app-recipe-tree>
   } @else if (result(); as list) {
     <section>
       <div class="panel-heading">
@@ -90,7 +98,7 @@
           <p i18n>Nenhuma receita publicada. Use a pesquisa para consultar um item do catálogo.</p>
         }
       </div>
-      <nav class="action-row" aria-label="Páginas de receitas" i18n-aria-label>
+      <nav class="action-row pagination-bar" aria-label="Páginas de receitas" i18n-aria-label>
         <button (click)="move(-1)" [disabled]="page === 1" i18n>Anterior</button
         ><span>{{ page }}</span
         ><button (click)="move(1)" [disabled]="page * list.pageSize >= list.total" i18n>
@@ -100,10 +108,13 @@
     </section>
   }
   @if (dataset(); as data) {
-    <p class="dataset-provenance">
-      Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
-      {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
-      rendimentos podem ter lacunas ou divergências.
-    </p>
+    <details class="dataset-provenance">
+      <summary i18n>Fonte e versão do catálogo · {{ data.region.toUpperCase() }}</summary>
+      <p>
+        Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
+        {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
+        rendimentos podem ter lacunas ou divergências.
+      </p>
+    </details>
   }
 </div>

@@ -50,9 +50,14 @@ describe('Universal recipe explorer', () => {
     await fixture.whenStable();
     expect(fixture.componentInstance.item()?.id).toBe(5301);
     expect(fixture.componentInstance.alternatives()).toHaveLength(2);
+    const methodSelector = fixture.nativeElement.querySelector(
+      '.production-method select',
+    ) as HTMLSelectElement;
+    expect(methodSelector.value).toBe(variants[0].key);
     fixture.componentInstance.choose({ target: { value: variants[1].key } } as unknown as Event);
     fixture.detectChanges();
     expect(fixture.componentInstance.recipe()?.inputs[0].itemId).toBe(5600);
+    expect(methodSelector.value).toBe(variants[1].key);
     expect(fixture.nativeElement.querySelector('app-recipe-tree').textContent).toContain(
       'Erva Daninha',
     );
