@@ -11,7 +11,8 @@
 </div>
 <p class="help" i18n>
   Arraste o fundo para navegar. Use os controles de zoom ou as setas do teclado com a área
-  selecionada.
+  selecionada. Ingredientes conectados são necessários em conjunto; bases de obtenção são
+  alternativas.
 </p>
 @if (layout().truncated) {
   <p role="status" i18n>
@@ -72,15 +73,17 @@
               entry.depth === 0
                 ? 'PRODUTO FINAL'
                 : entry.node.recipe
-                  ? 'PRODUZIR'
+                  ? 'PRODUZIR · ' + typeLabel(entry.node.recipe.type)
                   : 'OBTER / EXPLORAR'
             }}</small
-            ><strong>{{ entry.node.part.name }}</strong></span
+            ><strong [attr.title]="entry.node.category ?? 'Categoria não consultada'">{{
+              entry.node.part.name
+            }}</strong></span
           >
         </button>
         @if (allocation(entry.node.path); as row) {
           <p>
-            Precisa {{ row.required }} · estoque {{ row.fromStock }}<br /><span>{{
+            Precisa {{ row.required }} · estoque usado {{ row.fromStock }}<br /><span>{{
               row.missing === 0 ? 'Disponível' : 'Faltam ' + row.missing
             }}</span>
           </p>
@@ -90,6 +93,9 @@
               >Quantidade total a calcular</span
             >
           </p>
+        }
+        @if (entry.node.category) {
+          <span class="node-category">{{ entry.node.category }}</span>
         }
         <button
           type="button"
@@ -104,9 +110,69 @@
               ? 'Carregando…'
               : entry.node.expanded
                 ? '− Recolher'
-                : '+ Explorar produção'
+                : origins().get(entry.node.part.itemId)?.length && !entry.node.recipe
+                  ? '+ Abrir origens'
+                  : '+ Explorar produção'
           }}
         </button>
+        @if (entry.node.message) {
+          <span class="node-message" role="status">{{ entry.node.message }}</span>
+        }
+      </article>
+    }
+    @for (entry of layout().sources; track entry.path) {
+      <article class="graph-node source-node" [style.left.px]="entry.x" [style.top.px]="entry.y">
+        @if (entry.source; as source) {
+          <button
+            type="button"
+            class="node-select"
+            (click)="locationSelected.emit({ path: entry.itemPath, source })"
+          >
+            <span class="source-symbol" aria-hidden="true">⌖</span>
+            <span
+              ><small i18n>LOCALIZAÇÃO · ALTERNATIVA</small
+              ><strong>{{
+                source.activity === 'grinding'
+                  ? source.name
+                  : (source.managerNodeName ?? source.name)
+              }}</strong></span
+            >
+          </button>
+          <p>{{ source.territoryName ?? 'Região não vinculada' }}<br />{{ source.name }}</p>
+          <button
+            type="button"
+            class="expand-node"
+            (click)="locationSelected.emit({ path: entry.itemPath, source })"
+            i18n
+          >
+            Ver localização e recursos
+          </button>
+        } @else if (entry.kind === 'more') {
+          <button type="button" class="node-select" (click)="emit(entry.itemPath, 'source')">
+            <span class="source-symbol" aria-hidden="true">…</span
+            ><span
+              ><small i18n>LOCAIS AGRUPADOS</small
+              ><strong>+ {{ entry.remaining }} alternativas</strong></span
+            >
+          </button>
+          <p i18n>Consulte todos os locais no painel do item.</p>
+          <button type="button" class="expand-node" (click)="emit(entry.itemPath, 'source')" i18n>
+            Ver todas as fontes
+          </button>
+        } @else {
+          <button type="button" class="node-select" (click)="emit(entry.itemPath, 'source')">
+            <span class="source-symbol" aria-hidden="true">{{
+              entry.activity === 'grinding' ? '⚔' : '⚒'
+            }}</span>
+            <span
+              ><small i18n>MÉTODO DE OBTENÇÃO</small
+              ><strong>{{
+                entry.activity === 'grinding' ? 'Combate · drops' : 'Trabalhadores'
+              }}</strong></span
+            >
+          </button>
+          <p i18n>Escolha um dos locais vinculados.<br />Não é necessário usar todos.</p>
+        }
       </article>
     }
   </div>

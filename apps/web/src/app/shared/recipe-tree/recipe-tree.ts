@@ -8,12 +8,18 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { availableInventory, calculateMarket, type TaxOptions } from '@bdo/calculators';
+import {
+  availableInventory,
+  calculateMarket,
+  personalPlanSchema,
+  type TaxOptions,
+} from '@bdo/calculators';
 import type {
   CatalogItemDetail,
   CatalogRecipe,
@@ -32,6 +38,7 @@ import { TaxOptionsComponent } from '../tax-options';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
+import { RecipeSessions } from './recipe-session';
 import {
   nodeFor,
   patchNode,
@@ -48,6 +55,50 @@ import {
   styleUrl: './recipe-tree.scss',
 })
 export class RecipeTree {
+  readonly planMessage = signal('');
+  saveShoppingList() {
+    const result = this.plan()?.value,
+      root = this.root();
+    if (!result || !root) return;
+    const state = this.store.data();
+    const existing = state.personalPlans.find(
+      (plan) =>
+        plan.region === state.region &&
+        plan.sourceItemId === root.part.itemId &&
+        plan.status === 'draft',
+    );
+    const parsed = personalPlanSchema.safeParse({
+      id: existing?.id ?? crypto.randomUUID(),
+      name: this.target().toLocaleString('pt-BR') + ' × ' + root.part.name,
+      region: state.region,
+      createdAt: new Date().toISOString(),
+      sourceItemId: root.part.itemId,
+      excludedStockLocations: this.excludedLocations(),
+      materials: result.rows
+        .filter((row) => row.purchased + row.fromStock > 0)
+        .map((row) => ({
+          itemId: row.itemId,
+          name: row.name,
+          quantity: row.purchased + row.fromStock,
+        })),
+    });
+    if (!parsed.success) {
+      this.planMessage.set(
+        'A lista excede os limites de planejamento. Reduza a quantidade ou a árvore.',
+      );
+      return;
+    }
+    if (
+      this.store.update((workspace) => ({
+        ...workspace,
+        personalPlans: [
+          ...workspace.personalPlans.filter((plan) => plan.id !== parsed.data.id),
+          parsed.data,
+        ],
+      }))
+    )
+      this.planMessage.set('Lista salva. O estoque será recalculado ao abrir o planejamento.');
+  }
   readonly recipe = input<CatalogRecipe | null>(null);
   readonly selectedItem = input<CatalogItemDetail | null>(null);
   readonly datasetVersion = input('');
@@ -55,6 +106,8 @@ export class RecipeTree {
   readonly store = inject(WorkspaceStore);
   readonly catalog = inject(CatalogApiService);
   private readonly knowledge = inject(RecipeKnowledge);
+  private readonly sessions = inject(RecipeSessions);
+  private sessionKey = '';
   private readonly market = inject(MarketApi);
   private readonly destroyRef = inject(DestroyRef);
   readonly region = computed(() => this.store.data().region);
@@ -81,6 +134,7 @@ export class RecipeTree {
   readonly contextLoading = signal(false);
   readonly contextMessage = signal('');
   readonly selectedLocation = signal<ItemSources['nodes'][number] | null>(null);
+  readonly origins = signal(new Map<number, ItemSources['nodes']>());
   readonly typeLabel = recipeTypeLabel;
   readonly silver = silver;
   readonly partName = (part: CatalogRecipePart) => part.name;
@@ -90,6 +144,7 @@ export class RecipeTree {
   private contextRevision = 0;
   private marketRevision = 0;
   private selectionIdentity = '';
+  private readonly expansions = new Map<string, symbol>();
   readonly locations = computed(() => {
     const groups = new Map<string, { key: string; name: string; count: number; old: number }>();
     for (const row of this.store.data().inventory.filter((r) => r.region === this.region())) {
@@ -128,7 +183,7 @@ export class RecipeTree {
     return parts;
   });
   readonly points = computed(() => {
-    const nodes = this.context()?.origins.nodes.filter((n) => n.position?.length === 3) ?? [];
+    const nodes = this.contextSources().filter((n) => n.position?.length === 3);
     if (!nodes.length) return [];
     const xs = nodes.map((n) => n.position![0]),
       zs = nodes.map((n) => n.position![2]),
@@ -173,8 +228,17 @@ export class RecipeTree {
       const recipe = this.recipe(),
         item = this.selectedItem();
       this.knowledge.useVersion(this.datasetVersion());
-      const identity = this.region() + '/' + (item?.id ?? recipe?.outputs[0]?.itemId ?? '');
+      const identity =
+        this.region() +
+        '/' +
+        this.datasetVersion() +
+        '/' +
+        (item?.id ?? recipe?.outputs[0]?.itemId ?? '');
+      // A root-method output is echoed by the page. Keep the already updated tree and context.
+      if (identity === this.selectionIdentity && untracked(this.root)?.recipe?.key === recipe?.key)
+        return;
       this.revision++;
+      this.expansions.clear();
       this.contextRevision++;
       this.marketRevision++;
       this.context.set(null);
@@ -186,8 +250,10 @@ export class RecipeTree {
       this.historyMessage.set('');
       if (identity !== this.selectionIdentity) {
         this.livePrices.set(new Map());
+        this.origins.set(new Map());
         this.selectionIdentity = identity;
       }
+      this.sessionKey = identity + '/' + (recipe?.key ?? 'external');
       this.selectedPath.set('root');
       this.selectedLocation.set(null);
       const output = item
@@ -200,6 +266,23 @@ export class RecipeTree {
             : nodeFor(output, 'root')
           : null,
       );
+      if (item?.categories[0])
+        this.patch('root', (node) => ({ ...node, category: item.categories[0].name }));
+      const session = this.sessions.get(this.sessionKey);
+      if (session) {
+        this.root.set(session.root);
+        this.target.set(session.target);
+        this.view.set(session.view);
+        this.excludedLocations.set(session.excludedLocations);
+      }
+    });
+    effect(() => {
+      const root = this.root(),
+        target = this.target(),
+        view = this.view(),
+        excludedLocations = this.excludedLocations();
+      if (root && this.sessionKey)
+        this.sessions.save(this.sessionKey, { root, target, view, excludedLocations });
     });
   }
   toggleLocation(key: string, included: boolean) {
@@ -241,6 +324,7 @@ export class RecipeTree {
       return;
     }
     if (event.action === 'buy') {
+      this.cancelExpansions(node.path);
       if (node.path === 'root') this.rootMethod.emit(null);
       this.patch(node.path, (n) => ({
         ...n,
@@ -248,6 +332,7 @@ export class RecipeTree {
         children: [],
         expanded: false,
         yield: null,
+        loading: false,
         acquisition: { kind: 'external', label: 'Obter pronto' },
       }));
       return;
@@ -279,7 +364,9 @@ export class RecipeTree {
           }));
           return;
         }
-        this.patch(node.path, (n) => withRecipe(n, recipe));
+        if (!this.canChoose(node, recipe)) return;
+        this.cancelExpansions(node.path);
+        this.patch(node.path, (n) => withRecipe({ ...n, loading: false }, recipe));
         if (node.path === 'root') this.rootMethod.emit(recipe);
       }
       return;
@@ -288,6 +375,13 @@ export class RecipeTree {
       this.patch(node.path, (n) => ({ ...n, expanded: true }));
       return;
     }
+    if (this.origins().get(node.part.itemId)?.length) {
+      this.patch(node.path, (n) => ({ ...n, expanded: true }));
+      this.selectedPath.set(node.path);
+      this.showContext(this.find(node.path)!);
+      return;
+    }
+    if (node.loading) return;
     if (
       this.ancestors(node.path).includes(node.part.itemId) ||
       node.path.split('/').length > 12 ||
@@ -301,13 +395,31 @@ export class RecipeTree {
       return;
     }
     const revision = this.revision;
+    const request = Symbol();
+    this.expansions.set(node.path, request);
     this.patch(node.path, (n) => ({ ...n, loading: true, message: '' }));
     this.knowledge
       .produces(node.part.itemId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
-          if (revision !== this.revision) return;
+          if (revision !== this.revision || this.expansions.get(node.path) !== request) return;
+          this.expansions.delete(node.path);
+          if (this.datasetVersion() && response.dataset?.version !== this.datasetVersion()) {
+            this.patch(node.path, (n) => ({
+              ...n,
+              loading: false,
+              message: 'O catálogo mudou. Reabra o produto para usar a mesma versão dos dados.',
+            }));
+            return;
+          }
+          if (
+            response.recipes.length === 1 &&
+            !this.canChoose(this.find(node.path)!, response.recipes[0])
+          ) {
+            this.patch(node.path, (n) => ({ ...n, loading: false }));
+            return;
+          }
           this.patch(node.path, (n) => {
             const ready = {
               ...n,
@@ -323,14 +435,44 @@ export class RecipeTree {
           this.showContext(this.find(node.path)!);
         },
         error: () => {
-          if (revision === this.revision)
+          if (revision === this.revision && this.expansions.get(node.path) === request) {
+            this.expansions.delete(node.path);
             this.patch(node.path, (n) => ({
               ...n,
               loading: false,
               message: 'Não foi possível carregar as receitas. Tente novamente.',
             }));
+          }
         },
       });
+  }
+  private cancelExpansions(path: string) {
+    for (const key of this.expansions.keys())
+      if (key === path || key.startsWith(path + '/')) this.expansions.delete(key);
+    if (this.selectedPath().startsWith(path + '/')) {
+      this.contextRevision++;
+      this.marketRevision++;
+      this.context.set(null);
+      this.contextLoading.set(false);
+      this.marketResult.set(null);
+      this.marketLoading.set(false);
+      this.selectedLocation.set(null);
+      this.selectedPath.set(path);
+    }
+  }
+  private canChoose(node: RecipeNode, recipe: CatalogRecipe) {
+    if (
+      !recipe.outputs.some((part) => part.itemId === node.part.itemId) ||
+      node.path.split('/').length > 12 ||
+      this.count() - this.count(node) + 1 + recipe.inputs.length > 500
+    ) {
+      this.patch(node.path, (n) => ({
+        ...n,
+        message: 'Receita incompatível ou limite da árvore excedido. Explore outra origem.',
+      }));
+      return false;
+    }
+    return true;
   }
   private ancestors(path: string) {
     const parts = path.split('/'),
@@ -346,7 +488,8 @@ export class RecipeTree {
   private count(node = this.root()): number {
     return node ? 1 + node.children.reduce((n, c) => n + this.count(c), 0) : 0;
   }
-  showContext(node: RecipeNode) {
+  showContext(node: RecipeNode, locationId?: string) {
+    this.selectedPath.set(node.path);
     const revision = ++this.contextRevision,
       region = this.region();
     this.contextLoading.set(true);
@@ -392,8 +535,28 @@ export class RecipeTree {
           uses: result.uses?.recipes ?? [],
           incomplete: Object.values(result).some((v) => v === null),
         });
+        if (result.item?.item.categories[0])
+          this.patch(node.path, (n) => ({ ...n, category: result.item!.item.categories[0].name }));
+        if (result.origins) {
+          const sources = [...result.origins.nodes, ...(result.origins.spots ?? [])];
+          this.origins.update((known) => new Map(known).set(node.part.itemId, sources));
+          if (sources.length && !this.find(node.path)?.recipe)
+            this.patch(node.path, (n) => ({ ...n, expanded: true }));
+          if (locationId)
+            this.selectedLocation.set(sources.find((source) => source.id === locationId) ?? null);
+        }
         this.contextLoading.set(false);
       });
+  }
+  openLocation(event: { path: string; source: ItemSources['nodes'][number] }) {
+    const node = this.find(event.path);
+    if (!node) return;
+    if (this.context()?.node.path === node.path) {
+      this.selectedPath.set(node.path);
+      this.selectedLocation.set(
+        this.contextSources().find((source) => source.id === event.source.id) ?? null,
+      );
+    } else this.showContext(node, event.source.id);
   }
   consultMarket() {
     const node = this.context()?.node;
@@ -505,19 +668,27 @@ export class RecipeTree {
   selectedNode() {
     return this.find(this.selectedPath());
   }
-  chooseWorker(source: ItemSources['nodes'][number]) {
+  selectedAllocation() {
+    return this.plan()?.value?.allocations.find((row) => row.path === this.selectedPath());
+  }
+  contextSources() {
+    const origins = this.context()?.origins;
+    return origins ? [...origins.nodes, ...(origins.spots ?? [])] : [];
+  }
+  chooseSource(source: ItemSources['nodes'][number]) {
     const node = this.selectedNode();
     if (
       !node ||
       node.recipe ||
-      !this.context()?.origins.nodes.some((candidate) => candidate.id === source.id)
+      !this.contextSources().some((candidate) => candidate.id === source.id)
     )
       return;
     this.patch(node.path, (n) => ({
       ...n,
       acquisition: {
-        kind: 'workers',
-        label: source.managerNodeName ?? source.name,
+        kind: source.activity === 'grinding' ? 'grinding' : 'workers',
+        label:
+          source.activity === 'grinding' ? source.name : (source.managerNodeName ?? source.name),
         sourceId: source.id,
       },
     }));
@@ -531,7 +702,9 @@ export class RecipeTree {
             ? this.typeLabel(node.recipe.type)
             : node.acquisition?.kind === 'workers'
               ? 'Trabalhadores · ' + node.acquisition.label
-              : 'Obter fora / consultar fontes',
+              : node.acquisition?.kind === 'grinding'
+                ? 'Combate · ' + node.acquisition.label
+                : 'Obter fora / consultar fontes',
         );
       for (const child of node.children) visit(child);
     };

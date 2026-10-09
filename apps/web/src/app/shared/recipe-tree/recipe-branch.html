@@ -3,8 +3,14 @@
     <app-item-icon [url]="catalog.resolveIconUrl(node().part)" [name]="node().part.name" />
     <div>
       <strong>{{ node().part.name }}</strong>
+      @if (node().category) {
+        <p>{{ node().category }}</p>
+      }
       @if (node().acquisition?.kind === 'workers') {
         <p>Origem escolhida: {{ node().acquisition?.label }} · trabalhadores</p>
+      }
+      @if (node().acquisition?.kind === 'grinding') {
+        <p>Origem escolhida: {{ node().acquisition?.label }} · combate convencional</p>
       }
       @if (allocation(); as row) {
         <p i18n>

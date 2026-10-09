@@ -2,6 +2,8 @@
 
 Atualizado em 9 de outubro de 2026. Mercado SA e catálogo em português como padrões.
 
+O catálogo foi reextraído após a atualização do cliente em 9/10. Veja a [auditoria de receitas e procedimento para próximos patches](recipe-catalog-update.md). As contagens da extração anterior abaixo são históricas. A consulta de receitas por item agora busca todas as páginas, incluindo relações além do antigo limite de 50.
+
 ## Escopo entregue
 
 - Pesquisa universal reutiliza o catálogo central: nome, categorias, resultados com ícones e IDs. Não exige uma receita para abrir um item.
@@ -10,11 +12,16 @@ Atualizado em 9 de outubro de 2026. Mercado SA e catálogo em português como pa
 - Em telas até 1050 px, etapas hierárquicas substituem o grafo. A lista consolidada permanece disponível sem reiniciar quantidade ou seleção de estoques.
 - Painel contextual: descrição do jogo, categoria, quantidades conhecidas por local, receitas, usos, produção por trabalhadores, território, coordenadas, conexões e produtos vinculados, cotação e histórico observado.
 - Uma base conhecida pode ser escolhida como origem depois de selecionar obtenção externa, em vez de fabricar o material. A lista mantém esse rótulo; não calcula automaticamente velocidade nem custo operacional dos trabalhadores.
+- Fontes conhecidas aparecem no grafo como método de obtenção → localização. Trabalhadores e combate convencional são métodos separados. Cada método mostra até três locais e agrupa os demais em um acesso ao painel, mantendo o limite global de 200 nós.
+- Spots de grind são consultados pelo vínculo explícito `zones.loot.urns`. O painel mostra território da base associada, AP/DP do catálogo e monstros registrados no spot. Não atribui o item a uma criatura específica, não informa taxas ausentes e não confunde combate com Hunting ou coleta de criaturas abatidas.
+- Pan, zoom e filtro de ramificação sobrevivem à alternância entre grafo e lista. Respostas de sub-receitas de outra versão e expansões pendentes de caminhos substituídos são descartadas.
 - Campos ausentes e preços desconhecidos são sinalizados. Rendimento por operação é um cenário informado, sem coeficiente de maestria presumido.
 - Nenhuma simulação modifica os itens importados. Impostos usam a configuração existente. Preferências de imposto só são salvas quando o usuário as altera.
 - Outras calculadoras, mundo/império completo e demais módulos continuam suspensos.
 
 ## Referência observada
+
+Prioridade atual: **Desktop First**, conforme orientação do usuário. O layout adaptativo existente foi preservado; refinamentos de responsividade ficam fora do escopo atual.
 
 A [página pública do BDOLytics](https://bdolytics.com/en/crafting/1411:030aef873a21), consultada em 9/10/2026, exibiu Perfume of Envy, duas variantes, quantidade desejada, abas Overview/Recipe Variants/Graph/Analytics/Weight, materiais consolidados, estoque, preço personalizado e imposto. Selecionar Graph exibiu nós, conexões, controles e minimapa; a lateral manteve a cadeia de ingredientes. Totais de custo, lucro, tempo e lucro/hora estavam presentes.
 
@@ -24,20 +31,24 @@ Isso descreve a interface observada, não a validação das fórmulas nem o func
 
 A consulta local durante a implementação encontrou **74.216 itens e 4.406 receitas** no catálogo SA/pt, versão `sa-pt-meta-337651819fe3-loc-db615a33d45a-ext-5bf11bd7-catalog-v2`, importada em 8/10/2026.
 
-| Relação                                                | Cobertura desta entrega                                                                                                                       |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Item → receita → ingredientes/resultados               | Relações importadas, com IDs estáveis e variantes. Nem todos os rendimentos estão disponíveis.                                                |
-| Item → trabalhadores → base/território                 | Relações explícitas em `world.json`; nomes relacionados resolvidos somente na mesma versão.                                                   |
-| Base → coordenadas/conexões/produtos                   | Coordenadas finitas validadas; visualização relativa, não um mapa topográfico. CP exibido é da produção, não o investimento total do império. |
-| Coleta, caça, combate, pesca, NPCs e outras atividades | Descrição do jogo quando existente. Não há cobertura estruturada completa de ferramentas, criaturas, vendedores, requisitos e spots.          |
-| Mercado                                                | Arsha através do backend existente, sob ação do usuário. Variante base, região, origem, horário e estado de cache; preço não garante compra.  |
-| Estoque pessoal                                        | Registros revisados e vinculados por ID. Quantidades conhecidas, não uma sincronização automática com o jogo.                                 |
+| Relação                                       | Cobertura desta entrega                                                                                                                       |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Item → receita → ingredientes/resultados      | Relações importadas, com IDs estáveis e variantes. Nem todos os rendimentos estão disponíveis.                                                |
+| Item → trabalhadores → base/território        | Relações explícitas em `world.json`; nomes relacionados resolvidos somente na mesma versão.                                                   |
+| Base → coordenadas/conexões/produtos          | Coordenadas finitas validadas; visualização relativa, não um mapa topográfico. CP exibido é da produção, não o investimento total do império. |
+| Coleta, caça, pesca, NPCs e outras atividades | Descrição do jogo quando existente. Não há cobertura estruturada completa de ferramentas, criaturas, vendedores, requisitos e spots.          |
+| Mercado                                       | Arsha através do backend existente, sob ação do usuário. Variante base, região, origem, horário e estado de cache; preço não garante compra.  |
+| Estoque pessoal                               | Registros revisados e vinculados por ID. Quantidades conhecidas, não uma sincronização automática com o jogo.                                 |
+
+Os spots de combate vêm dos vínculos de loot em `zones.json` (112 spots no arquivo local). A categoria do menu não é tratada como território: resolvemos o território através do node vinculado. Coordenadas de spots representam essa base, não posições exatas de monstros.
 
 Exemplo de divergência real: a receita extraída de **Reagente Líquido Limpo #5301** informa duas unidades de sal; sua descrição informa uma. O rendimento de saída é nulo. A interface mostra os dados disponíveis e permite corrigir quantidades como cenário; não altera o catálogo nem promete que o dado bruto esteja correto.
 
 Cotações novas ficam apenas na sessão do explorador; cotações salvas anteriormente também são usadas com seu horário. Valores marcados como antigos pelo provedor não substituem preços no cálculo. Parte das receitas que usam um material é limitada pelas consultas existentes a 50 resultados; a relação não deve ser interpretada como exaustiva.
 
 ## Como usar
+
+Para explorar drops, pesquise **Pedra Negra #16001**, selecione **Obter pronto / consultar fontes** e abra os detalhes do produto. O grafo revela combate e spots conhecidos; os locais excedentes ficam agrupados. Ao escolher um spot, o rótulo de origem permanece na lista, sem presumir custo operacional ou taxa de drop.
 
 1. Abra **Explorar receitas** e busque um item, mesmo que seja matéria-prima.
 2. Se houver várias receitas, escolha a combinação de materiais adequada. A nova variante substitui a anterior.
@@ -63,6 +74,8 @@ Cotações novas ficam apenas na sessão do explorador; cotações salvas anteri
 
 ## Validação e reprodução
 
+Validação dos refinamentos em 9/10/2026: **174 testes de frontend, 65 de backend e 24 dos cálculos passaram**. Compilação de produção de frontend/backend via Docker e lint dos arquivos do explorador/fontes passaram. O lint global ainda aponta ordenação de imports em `scans-page.ts`, arquivo com alterações anteriores preservadas. No navegador, o fluxo Reagente Líquido Limpo → Água Purificada → Garrafa Cheia de Água do Rio foi confirmado com alvo 10, rendimento de cenário 2,5 no produto e 1 na filtragem: 8 sal, 4 erva, 4 garrafas e 4 grama. A Pedra Negra revelou spots vinculados e agrupamento. As categorias do menu de grind apresentaram divergências geográficas; a consulta usa o território da base vinculada, sem converter essas categorias em regiões. A build desta revisão mediu receitas em 77,31 kB bruto / 20,36 kB estimado, mantendo o aviso inicial existente de 901,01 kB. Os números abaixo registram a validação da implementação anterior.
+
 Resultado desta entrega: **163 testes de frontend, 63 de backend e 24 do pacote de cálculos passaram**. Lint, formatação, compilação de frontend/backend e smoke SSR (incluindo as novas rotas públicas e proteção dos módulos suspensos) passaram. A build de produção mediu o módulo lazy de receitas em **67,59 kB** bruto / **18,32 kB** de transferência estimada; o carregamento inicial ficou em **901,01 kB** bruto / **207,77 kB** estimado. O aviso existente de orçamento inicial de 500 kB permanece; essas medidas não são Core Web Vitals nem um benchmark de rede real.
 
 ```powershell
@@ -85,7 +98,7 @@ Não há medição de precisão geral dos dados, produtividade real, Core Web Vi
 ## Enriquecimento futuro
 
 1. Revisar quantidades e interpretar rendimentos/probabilidades com fontes verificáveis, preservando versão/região.
-2. Vincular recursos de gathering/hunting/monstros/pesca e lojas de NPCs por IDs; descrever mecanismos distintos, sem transformar qualquer abate em Hunting.
+2. Vincular recursos de gathering/hunting/pesca e lojas de NPCs por IDs; ampliar loot de spots com vínculos específicos a monstros quando disponíveis; descrever mecanismos distintos, sem transformar qualquer abate em Hunting.
 3. Adicionar mapa topográfico apenas com coordenadas e arte compatíveis; o painel geográfico atual é modular.
 4. Ampliar paginação de usos/fontes, métricas de tempo e custos de trabalhadores quando houver dados suficientes.
 5. Salvar planos de exploração se o uso justificar. Esta entrega mantém a arquitetura e os dados pessoais atuais.

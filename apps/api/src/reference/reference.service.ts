@@ -71,16 +71,37 @@ export class ReferenceService {
         ),
       )
       .limit(51);
+    const spots = await this.database.db
+      .select({ id: referenceRecords.id, name: referenceRecords.name, data: referenceRecords.data })
+      .from(referenceRecords)
+      .where(
+        and(
+          eq(referenceRecords.datasetVersionId, dataset.id),
+          eq(referenceRecords.kind, 'zones'),
+          sql`${referenceRecords.data} @> ${JSON.stringify({ loot: { urns: [`urn::item:${itemId}`] } })}::jsonb`,
+        ),
+      )
+      .limit(51);
     const relatedIds = [
       ...new Set(
         rows
           .flatMap((r) => [r.data['territory'], r.data['managerNode']])
+          .concat(
+            spots.map((r) => {
+              const node = r.data['node'];
+              return node && typeof node === 'object' && 'urn' in node ? node.urn : null;
+            }),
+          )
           .filter((id): id is string => typeof id === 'string'),
       ),
     ];
     const related = relatedIds.length
       ? await this.database.db
-          .select({ id: referenceRecords.id, name: referenceRecords.name })
+          .select({
+            id: referenceRecords.id,
+            name: referenceRecords.name,
+            data: referenceRecords.data,
+          })
           .from(referenceRecords)
           .where(
             and(
@@ -89,7 +110,42 @@ export class ReferenceService {
             ),
           )
       : [];
-    const names = new Map(related.map((r) => [r.id, r.name.replace(/<[^>]*>/g, '')]));
+    // UI categories are not geographical territories. Resolve geography through the linked node.
+    const territoryIds = [
+      ...new Set(
+        related
+          .map((r) => r.data?.['territory'])
+          .filter(
+            (id): id is string =>
+              typeof id === 'string' && !related.some((record) => record.id === id),
+          ),
+      ),
+    ];
+    const territories = territoryIds.length
+      ? await this.database.db
+          .select({ id: referenceRecords.id, name: referenceRecords.name })
+          .from(referenceRecords)
+          .where(
+            and(
+              eq(referenceRecords.datasetVersionId, dataset.id),
+              eq(referenceRecords.kind, 'territories'),
+              inArray(referenceRecords.id, territoryIds),
+            ),
+          )
+      : [];
+    const names = new Map(
+      [...related, ...territories].map((r) => [r.id, r.name.replace(/<[^>]*>/g, '')]),
+    );
+    const coordinates = (value: unknown) =>
+      Array.isArray(value) &&
+      value.length === 3 &&
+      value.every((v) => typeof v === 'number' && Number.isFinite(v))
+        ? value
+        : null;
+    const objectName = (value: unknown) =>
+      value && typeof value === 'object' && 'name' in value && typeof value.name === 'string'
+        ? value.name.replace(/<[^>]*>/g, '')
+        : null;
     return {
       nodes: rows.slice(0, 50).map((r) => ({
         id: r.id,
@@ -124,7 +180,41 @@ export class ReferenceService {
             ? r.data['products'].urns.filter((id): id is string => typeof id === 'string')
             : [],
       })),
-      truncated: rows.length > 50,
+      spots: spots.slice(0, 50).map((r) => {
+        const node = r.data['node'];
+        const nodeId =
+          node && typeof node === 'object' && 'urn' in node && typeof node.urn === 'string'
+            ? node.urn
+            : null;
+        const loot = r.data['loot'];
+        const ecology = r.data['ecology'];
+        const linkedNode = related.find((record) => record.id === nodeId);
+        const territory =
+          typeof linkedNode?.data?.['territory'] === 'string' ? linkedNode.data['territory'] : null;
+        const combat = (value: unknown) =>
+          typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+        return {
+          id: r.id,
+          name: r.name.replace(/<[^>]*>/g, ''),
+          activity: 'grinding' as const,
+          territory,
+          territoryName: territory ? (names.get(territory) ?? null) : null,
+          managerNode: nodeId,
+          managerNodeName: nodeId ? (names.get(nodeId) ?? objectName(node)) : objectName(node),
+          contribution: null,
+          position: coordinates(linkedNode?.data?.['position']),
+          products:
+            loot && typeof loot === 'object' && 'urns' in loot && Array.isArray(loot.urns)
+              ? loot.urns.filter((id): id is string => typeof id === 'string')
+              : [],
+          monsters: Array.isArray(ecology)
+            ? [...new Set(ecology.map(objectName).filter((name): name is string => name !== null))]
+            : [],
+          sheetAP: combat(r.data['sheetAP']),
+          sheetDP: combat(r.data['sheetDP']),
+        };
+      }),
+      truncated: rows.length > 50 || spots.length > 50,
       dataset: { version: dataset.version, region: dataset.region, locale: dataset.locale },
       updatedAt: dataset.finishedAt,
     };

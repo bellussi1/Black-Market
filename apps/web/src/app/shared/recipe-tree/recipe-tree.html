@@ -75,6 +75,14 @@
       <p class="notice" role="status">{{ warning }}</p>
     }
     @if (result.value; as calculated) {
+      <div class="action-row">
+        <button type="button" class="btn" (click)="saveShoppingList()" i18n>
+          Salvar lista de materiais</button
+        ><a routerLink="/shopping" i18n>Abrir planejamento →</a>
+      </div>
+      @if (planMessage()) {
+        <p role="status">{{ planMessage() }}</p>
+      }
       <div class="production-totals" aria-label="Estimativas da produção" i18n-aria-label>
         <div>
           <small i18n>Materiais faltantes · preço conhecido</small
@@ -162,16 +170,16 @@
         } @else if (view() === 'list') {
           <p i18n>Confirme rendimentos e quantidades para gerar a lista consolidada.</p>
         }
-        @if (view() === 'graph') {
-          <div class="desktop-graph">
-            <app-recipe-graph
-              [root]="product"
-              [allocations]="result.value?.allocations ?? []"
-              [selected]="selectedPath()"
-              (action)="action($event)"
-            />
-          </div>
-        }
+        <div class="desktop-graph" [hidden]="view() !== 'graph'">
+          <app-recipe-graph
+            [root]="product"
+            [allocations]="result.value?.allocations ?? []"
+            [selected]="selectedPath()"
+            [origins]="origins()"
+            (action)="action($event)"
+            (locationSelected)="openLocation($event)"
+          />
+        </div>
         @if (view() !== 'list') {
           <div [class.mobile-tree]="view() === 'graph'">
             <app-recipe-branch
@@ -213,6 +221,12 @@
             >
           </div>
           <h4 i18n>Materiais conhecidos no seu estoque</h4>
+          @if (selectedAllocation(); as allocation) {
+            <p>
+              Necessário {{ allocation.required }} · estoque usado {{ allocation.fromStock }} ·
+              sobras usadas {{ allocation.fromSurplus }} · faltam {{ allocation.missing }}.
+            </p>
+          }
           <ul>
             @for (row of holdings(info.node.part.itemId); track row.id) {
               <li>{{ row.quantity }} · {{ row.location }} · {{ date(row.updatedAt) }}</li>
@@ -311,7 +325,19 @@
             <p i18n>Não há produção de trabalhadores vinculada neste catálogo.</p>
           }
           @if (info.origins.truncated) {
-            <p i18n>Exibindo as primeiras 50 bases vinculadas.</p>
+            <p i18n>Exibindo até 50 locais por método; a lista possui mais relações no catálogo.</p>
+          }
+          <h4 i18n>Combate convencional · spots de grind</h4>
+          @for (source of info.origins.spots ?? []; track source.id) {
+            <button type="button" class="source-option" (click)="selectedLocation.set(source)">
+              <strong>{{ source.name }}</strong
+              ><small
+                >{{ source.territoryName ?? 'Território não identificado' }} · drops
+                registrados</small
+              >
+            </button>
+          } @empty {
+            <p i18n>Nenhum spot com drop deste item vinculado no catálogo.</p>
           }
           @if (points().length) {
             <h4 i18n>Localizações conhecidas</h4>
@@ -319,7 +345,7 @@
               class="source-map"
               viewBox="0 0 360 200"
               role="img"
-              aria-label="Esquema das coordenadas de bases de produção"
+              aria-label="Esquema das coordenadas de locais de obtenção"
               i18n-aria-label
             >
               @for (point of points(); track point.node.id) {
@@ -331,34 +357,67 @@
             </svg>
             <p class="help" i18n>
               Esquema relativo das coordenadas do jogo. Não é um mapa topográfico. Selecione uma
-              base acima para ver os detalhes.
+              localização acima para ver os detalhes.
             </p>
           }
           @if (selectedLocation(); as location) {
             <section class="location-detail">
-              <h4>{{ location.managerNodeName ?? location.name }}</h4>
+              <h4>
+                {{
+                  location.activity === 'grinding'
+                    ? location.name
+                    : (location.managerNodeName ?? location.name)
+                }}
+              </h4>
               <p>
                 {{ location.territoryName ?? 'Território não identificado' }} · {{ location.name }}
               </p>
-              <p>CP da produção: {{ location.contribution ?? 'não informado' }}</p>
-              <p>Coordenadas: {{ location.position?.join(', ') ?? 'não disponíveis' }}</p>
-              @if (selectedNode()?.recipe) {
+              @if (location.activity === 'grinding') {
+                <p i18n>
+                  Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas.
+                </p>
+                <p>
+                  AP de equipamento: {{ location.sheetAP ?? 'não informado' }} · DP de equipamento:
+                  {{ location.sheetDP ?? 'não informado' }}
+                </p>
+                <p>
+                  Monstros registrados no spot:
+                  {{ location.monsters?.join(', ') || 'não informados' }}
+                </p>
                 <p class="help" i18n>
-                  Selecione obter pronto em vez de produzir para escolher uma base como origem.
+                  O item está vinculado ao loot do spot; isso não confirma qual criatura o fornece.
+                  Probabilidades e rendimento não foram informados.
                 </p>
               } @else {
-                <button type="button" (click)="chooseWorker(location)" i18n>
-                  Usar esta base como origem
+                <p>CP da produção: {{ location.contribution ?? 'não informado' }}</p>
+              }
+              <p>Material vinculado: {{ info.node.part.name }}.</p>
+              <p>
+                {{
+                  location.activity === 'grinding'
+                    ? 'Coordenadas da base vinculada'
+                    : 'Coordenadas da produção'
+                }}: {{ location.position?.join(', ') ?? 'não disponíveis' }}
+              </p>
+              @if (selectedNode()?.recipe) {
+                <p class="help" i18n>
+                  Selecione obter pronto em vez de produzir para escolher este local como origem.
+                </p>
+              } @else {
+                <button type="button" (click)="chooseSource(location)" i18n>
+                  Usar este local como origem
                 </button>
               }
               <p>
                 {{ location.links?.length ?? 0 }} conexões registradas ·
                 {{ location.products?.length ?? 0 }} produtos vinculados.
               </p>
-              <p class="help" i18n>
-                Conexões, alojamento e trabalho podem exigir CP adicional. O custo acima não é o
-                investimento total do império.
-              </p>
+              @if (location.activity !== 'grinding') {
+                <p class="help" i18n>
+                  Conexões, alojamento e trabalho podem exigir CP adicional. O custo acima não é o
+                  investimento total do império.
+                </p>
+              }
             </section>
           }
           <p class="help" i18n>

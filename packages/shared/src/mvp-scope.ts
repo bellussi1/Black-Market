@@ -29,6 +29,7 @@ const enabledRoots = new Set([
   'recipes',
   'database',
   'profile',
+  'shopping',
   'settings',
   'termos',
   'privacidade',

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { emptyWorkspace } from '../../core/workspace-models';
 import { isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
+import type { ItemSources } from './recipe-knowledge';
 import {
   nodeFor,
   patchNode,
@@ -152,6 +153,78 @@ describe('Recipe graph planning', () => {
   });
 });
 describe('Progressive graph layout', () => {
+  it('reveals separate acquisition methods and real locations only on expanded acquisition leaves', () => {
+    const root = nodeFor(part(16001), 'root');
+    const origins = new Map<number, ItemSources['nodes']>([
+      [
+        16001,
+        [
+          {
+            id: 'spot:3',
+            name: 'Floresta Mansha',
+            activity: 'grinding',
+            territory: null,
+            managerNode: null,
+            contribution: null,
+            position: null,
+          },
+          {
+            id: 'node:1',
+            name: 'Mineração',
+            territory: null,
+            managerNode: null,
+            contribution: 1,
+            position: [1, 2, 3],
+          },
+        ],
+      ],
+    ]);
+    expect(layoutRecipeGraph(root, '', origins).sources).toEqual([]);
+    root.expanded = true;
+    const graph = layoutRecipeGraph(root, '', origins);
+    expect(graph.sources.filter((n) => n.kind === 'method').map((n) => n.activity)).toEqual([
+      'workers',
+      'grinding',
+    ]);
+    expect(graph.sources.filter((n) => n.kind === 'location')).toHaveLength(2);
+    expect(graph.edges).toHaveLength(4);
+    expect(new Set(graph.sources.map((n) => `${n.x}/${n.y}`)).size).toBe(4);
+    expect(planRecipeTree(root, 5, emptyWorkspace()).value?.rows).toHaveLength(1);
+    const crafted = withRecipe(root, recipe('main', 16001, [[2, '1']]));
+    expect(layoutRecipeGraph(crafted, '', origins).sources).toEqual([]);
+  });
+  it('groups many alternative locations without expanding a gigantic graph', () => {
+    const root = { ...nodeFor(part(1), 'root'), expanded: true };
+    const origins = new Map<number, ItemSources['nodes']>([
+      [
+        1,
+        Array.from({ length: 400 }, (_, i) => ({
+          id: String(i),
+          name: 'Local',
+          territory: null,
+          managerNode: null,
+          contribution: null,
+          position: null,
+        })),
+      ],
+    ]);
+    const graph = layoutRecipeGraph(root, '', origins);
+    expect(graph.nodes.length + graph.sources.length).toBe(6);
+    expect(graph.sources.find((n) => n.kind === 'more')?.remaining).toBe(397);
+    expect(graph.truncated).toBe(false);
+    const large = withRecipe(
+      nodeFor(part(0), 'root'),
+      recipe(
+        'large',
+        0,
+        Array.from({ length: 40 }, () => [1, '1'] as [number, string]),
+      ),
+    );
+    large.children = large.children.map((child) => ({ ...child, expanded: true }));
+    const bounded = layoutRecipeGraph(large, '', origins);
+    expect(bounded.nodes.length + bounded.sources.length).toBe(200);
+    expect(bounded.truncated).toBe(true);
+  });
   it('renders selected descendants and highlights the ancestry without deleting hidden data', () => {
     let root = withRecipe(
       nodeFor(part(1), 'root'),

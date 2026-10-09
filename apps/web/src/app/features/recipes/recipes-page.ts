@@ -148,9 +148,11 @@ export class RecipesPage {
         this.dataset.set(data.item.dataset);
         this.alternatives.set(data.recipes.recipes);
         this.recipe.set(
-          data.recipes.recipes.find((r) => r.key === data.selectedKey) ??
-            data.recipes.recipes[0] ??
-            null,
+          data.selectedKey === 'external'
+            ? null
+            : (data.recipes.recipes.find((r) => r.key === data.selectedKey) ??
+                data.recipes.recipes[0] ??
+                null),
         );
         this.seo.describe(
           data.item.item.name + ' · Receitas e obtenção',
@@ -165,7 +167,16 @@ export class RecipesPage {
   }
   choose(event: Event) {
     const key = (event.target as HTMLSelectElement).value;
-    this.recipe.set(this.alternatives().find((r) => r.key === key) ?? null);
+    this.setMethod(this.alternatives().find((r) => r.key === key) ?? null);
+  }
+  setMethod(recipe: CatalogRecipe | null) {
+    this.recipe.set(recipe);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { recipe: recipe?.key ?? 'external' },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
   move(delta: number) {
     this.page += delta;

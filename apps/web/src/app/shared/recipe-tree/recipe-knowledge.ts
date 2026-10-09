@@ -18,7 +18,12 @@ export interface ItemSources {
     managerNodeName?: string | null;
     links?: string[];
     products?: string[];
+    activity?: 'workers' | 'grinding';
+    monsters?: string[];
+    sheetAP?: number | null;
+    sheetDP?: number | null;
   }[];
+  spots?: ItemSources['nodes'];
   updatedAt: string | null;
   truncated?: boolean;
   dataset?: { version: string; region: string; locale: string };

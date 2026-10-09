@@ -14,7 +14,8 @@ export interface RecipeNode {
   options: CatalogRecipe[];
   loading: boolean;
   message: string;
-  acquisition?: { kind: 'external' | 'workers'; label: string; sourceId?: string };
+  category?: string;
+  acquisition?: { kind: 'external' | 'workers' | 'grinding'; label: string; sourceId?: string };
 }
 export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
   return {

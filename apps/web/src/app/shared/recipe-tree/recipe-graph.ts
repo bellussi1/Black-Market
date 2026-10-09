@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   input,
   output,
   signal,
@@ -13,9 +14,11 @@ import { inject } from '@angular/core';
 import type { calculateProduction } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import type { BranchAction } from './recipe-branch';
 import { isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
+import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
 @Component({
   selector: 'app-recipe-graph',
@@ -27,21 +30,29 @@ import type { RecipeNode } from './recipe-tree-model';
 export class RecipeGraph {
   constructor() {
     afterNextRender(() => this.center());
+    effect(() => {
+      const focus = this.focus();
+      if (focus && !layoutRecipeGraph(this.root()).nodes.some((entry) => entry.node.path === focus))
+        this.focus.set('');
+    });
   }
   readonly root = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly selected = input('root');
   readonly action = output<BranchAction>();
+  readonly origins = input<ReadonlyMap<number, ItemSources['nodes']>>(new Map());
+  readonly locationSelected = output<{ path: string; source: ItemSources['nodes'][number] }>();
   readonly catalog = inject(CatalogApiService);
   readonly zoom = signal(1);
   readonly pan = signal({ x: 24, y: 24 });
   readonly focus = signal('');
-  readonly layout = computed(() => layoutRecipeGraph(this.root(), this.focus()));
+  readonly layout = computed(() => layoutRecipeGraph(this.root(), this.focus(), this.origins()));
   readonly transform = computed(
     () => `translate(${this.pan().x}px, ${this.pan().y}px) scale(${this.zoom()})`,
   );
   readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
   readonly ancestor = isGraphAncestor;
+  readonly typeLabel = recipeTypeLabel;
   private keyboardNavigation = false;
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);

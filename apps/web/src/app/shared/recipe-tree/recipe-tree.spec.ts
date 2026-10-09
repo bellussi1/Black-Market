@@ -1,4 +1,4 @@
-import type { CatalogItemDetail, CatalogRecipe } from '@bdo/shared';
+import type { CatalogItemDetail, CatalogRecipe, CatalogRecipesResponse } from '@bdo/shared';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -52,6 +52,124 @@ function providers() {
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('saves external material requirements only after the yield is known and updates the same draft', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans).toHaveLength(0);
+    tree.setRootYield(1);
+    tree.target.set(500);
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans[0]).toMatchObject({
+      sourceItemId: 5301,
+      status: 'draft',
+      materials: [{ itemId: 9001, quantity: 1000 }],
+    });
+    tree.target.set(100);
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans).toHaveLength(1);
+    expect(tree.store.data().personalPlans[0].materials[0].quantity).toBe(200);
+  });
+  it('preserves pan, zoom and focused branch when switching to the consolidated list', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    tree.setRootYield(1);
+    const graph = tree.graph()!;
+    graph.pan.set({ x: -200, y: -80 });
+    graph.zoom.set(0.65);
+    graph.focus.set('root/0');
+    tree.view.set('list');
+    fixture.detectChanges();
+    tree.view.set('graph');
+    fixture.detectChanges();
+    expect(tree.graph()).toBe(graph);
+    expect(graph.pan()).toEqual({ x: -200, y: -80 });
+    expect(graph.zoom()).toBe(0.65);
+    expect(graph.focus()).toBe('root/0');
+  });
+  it('rejects sub-recipes from a newer dataset before adding their ingredients', async () => {
+    const dependencies = providers();
+    dependencies.knowledge.produces.mockReturnValueOnce(
+      of({ recipes: [recipe], dataset: { version: 'new' } }) as unknown as ReturnType<
+        typeof dependencies.knowledge.produces
+      >,
+    );
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item, datasetVersion: 'old' },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    tree.action({ path: 'root/0', action: 'expand' });
+    expect(tree.root()?.children[0].recipe).toBeNull();
+    expect(tree.root()?.children[0].loading).toBe(false);
+    expect(tree.root()?.children[0].message).toContain('catálogo mudou');
+  });
+  it('discards an expansion response after the user chooses external acquisition', async () => {
+    const dependencies = providers();
+    const pending = new Subject<CatalogRecipesResponse>();
+    dependencies.knowledge.produces.mockReturnValueOnce(
+      pending as unknown as ReturnType<typeof dependencies.knowledge.produces>,
+    );
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    tree.action({ path: 'root/0', action: 'expand' });
+    tree.action({ path: 'root/0', action: 'buy' });
+    pending.next({
+      recipes: [{ ...recipe, outputs: [recipe.inputs[0]] }],
+      total: 1,
+      direction: 'produces',
+      dataset: null,
+    });
+    pending.complete();
+    expect(tree.root()?.children[0].recipe).toBeNull();
+    expect(tree.root()?.children[0].loading).toBe(false);
+  });
+  it('reveals grind spots and retains a selected combat origin without manufacturing it', async () => {
+    const dependencies = providers();
+    const spot = {
+      id: 'spot:3',
+      name: 'Floresta Mansha',
+      activity: 'grinding',
+      territory: null,
+      managerNode: null,
+      contribution: null,
+      position: null,
+    };
+    dependencies.knowledge.sources.mockReturnValue(
+      of({ nodes: [], spots: [spot], updatedAt: null }) as unknown as ReturnType<
+        typeof dependencies.knowledge.sources
+      >,
+    );
+    const fixture = await renderComponent(RecipeTree, { selectedItem: item }, dependencies.list);
+    const tree = fixture.componentInstance;
+    tree.action({ path: 'root', action: 'source' });
+    fixture.detectChanges();
+    expect(tree.graph()?.layout().sources).toHaveLength(2);
+    tree.openLocation({ path: 'root', source: tree.contextSources()[0] });
+    tree.chooseSource(tree.selectedLocation()!);
+    fixture.detectChanges();
+    expect(tree.root()?.acquisition?.kind).toBe('grinding');
+    tree.action({ path: 'root', action: 'collapse' });
+    tree.action({ path: 'root', action: 'expand' });
+    expect(tree.root()?.acquisition?.kind).toBe('grinding');
+    expect(tree.plan()?.value?.tasks).toEqual([]);
+    expect(fixture.nativeElement.textContent).toContain('Não é Hunting');
+  });
   it('renders the real catalog recipe with unknown yield, then recalculates an explicit scenario', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(

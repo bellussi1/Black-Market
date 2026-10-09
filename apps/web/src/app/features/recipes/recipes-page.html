@@ -1,7 +1,7 @@
 <div class="tool-page recipe-explorer">
   <header class="tool-heading">
     <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
-    <h1 i18n>Descubra de onde vem.</h1>
+    <h1 i18n>Oficina de produção</h1>
     <p i18n>
       Do produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e
       aproveite o que já está no seu armazém.
@@ -70,7 +70,7 @@
       [recipe]="recipe()"
       [selectedItem]="selected"
       [datasetVersion]="dataset()?.version ?? ''"
-      (rootMethod)="recipe.set($event)"
+      (rootMethod)="setMethod($event)"
     />
   } @else if (result(); as list) {
     <section>

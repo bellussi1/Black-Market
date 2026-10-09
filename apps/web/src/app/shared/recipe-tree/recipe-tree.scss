@@ -145,6 +145,9 @@
 .mobile-tree {
   display: none;
 }
+.desktop-graph[hidden] {
+  display: none;
+}
 @media (max-width: 1050px) {
   .exploration-layout {
     grid-template-columns: minmax(0, 1fr);

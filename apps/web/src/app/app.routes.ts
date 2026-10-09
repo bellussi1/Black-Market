@@ -134,6 +134,13 @@ export const routes: Routes = [
       },
 
       {
+        path: 'shopping',
+        title: 'Black Market · Lista de materiais',
+        data: { private: true },
+        loadComponent: () =>
+          import('./features/shopping/shopping-page').then((m) => m.ShoppingPage),
+      },
+      {
         path: 'plans',
 
         title: $localize`Black Market · Meus planos`,

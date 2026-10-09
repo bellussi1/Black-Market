@@ -3,18 +3,21 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CatalogService } from '../catalog/catalog.service';
 import type { DatabaseService } from '../database/database.service';
 import { ReferenceService } from './reference.service';
-function service(rows: unknown[]) {
+function service(rows: unknown[], spots: unknown[] = []) {
   const select = vi
     .fn()
     .mockReturnValueOnce({
       from: () => ({ where: () => ({ limit: () => Promise.resolve(rows) }) }),
     })
     .mockReturnValueOnce({
+      from: () => ({ where: () => ({ limit: () => Promise.resolve(spots) }) }),
+    })
+    .mockReturnValueOnce({
       from: () => ({
         where: () =>
           Promise.resolve([
             { id: 'territory', name: 'Balenos' },
-            { id: 'manager', name: 'Fazenda Loggia' },
+            { id: 'manager', name: 'Fazenda Loggia', data: { territory: 'territory' } },
           ]),
       }),
     });
@@ -35,6 +38,61 @@ function service(rows: unknown[]) {
   };
 }
 describe('Item acquisition sources', () => {
+  it('does not turn a UI category into a region when the linked world node is unknown', async () => {
+    const { instance } = service(
+      [],
+      [
+        {
+          id: 'spot',
+          name: 'Spot',
+          data: {
+            mainCategory: { name: 'Categoria do menu' },
+            sheetAP: -1,
+            sheetDP: '100',
+          },
+        },
+      ],
+    );
+    const result = await instance.itemSources(16001, {});
+    expect(result.spots?.[0]).toMatchObject({
+      territoryName: null,
+      position: null,
+      sheetAP: null,
+      sheetDP: null,
+    });
+  });
+  it('returns explicitly linked grind loot without assuming hunting, monster-specific drops or probabilities', async () => {
+    const { instance } = service(
+      [],
+      [
+        {
+          id: 'urn::grindspot:3',
+          name: 'Floresta Mansha',
+          data: {
+            mainCategory: { name: 'República de Calpheon' },
+            node: { urn: 'manager', name: 'Floresta Mansha' },
+            loot: { urns: ['urn::item:16001'] },
+            ecology: [{ name: 'Guerreiro Mansha' }, { name: 'Guerreiro Mansha' }, { name: 'Ogro' }],
+            sheetAP: 50,
+            sheetDP: 100,
+          },
+        },
+      ],
+    );
+    const result = await instance.itemSources(16001, { region: 'sa' });
+    expect(result.nodes).toEqual([]);
+    expect(result.spots?.[0]).toMatchObject({
+      activity: 'grinding',
+      name: 'Floresta Mansha',
+      territoryName: 'Balenos',
+      products: ['urn::item:16001'],
+      monsters: ['Guerreiro Mansha', 'Ogro'],
+      sheetAP: 50,
+      sheetDP: 100,
+      position: null,
+    });
+    expect(result.spots?.[0]).not.toHaveProperty('dropRate');
+  });
   it('resolves node and territory names only in the selected dataset and validates coordinates', async () => {
     const { instance } = service([
       {
@@ -59,7 +117,7 @@ describe('Item acquisition sources', () => {
       products: ['urn::item:4001'],
       links: ['manager'],
     });
-    expect(result.dataset.region).toBe('sa');
+    expect(result.dataset?.region).toBe('sa');
   });
   it('limits source lists and refuses malformed geographical coordinates', async () => {
     const { instance } = service(
