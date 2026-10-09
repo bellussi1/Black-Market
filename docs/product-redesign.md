@@ -44,7 +44,22 @@ O design usa painéis escuros, acentos dourados, títulos serifados, controles c
 - Cenários de crafting preservados em memória da sessão, separados por região, versão, item e método; até vinte cenários. Carregamentos interrompidos não ficam presos no estado restaurado.
 - Lista consolidada gerada pela árvore, salva no WorkspaceStore. Estoque é alocado uma vez entre planos e reservas são descontadas; locais excluídos são respeitados. A lista possui paginação de 48 materiais e remoção reversível.
 
-## Fonte de verdade
+## Refinamento da interface desktop
+
+Segunda etapa visual, realizada em 9 de outubro de 2026:
+
+- Campos de quantidade, seletores, upload e botões passam a usar controles comuns. Foram removidas regras concorrentes que transformavam todas as ações de páginas guiadas em botões primários. Ações principais, secundárias, destrutivas e desabilitadas mantêm hierarquia própria.
+- O mercado separa consulta, cálculo de venda e cotações salvas. Trocar de área preserva a busca, a resposta e os valores do cálculo. Guardar uma cotação abre o cálculo correspondente. A busca é recolhida quando a resposta chega, mantendo preço, estoque, taxas e origem em destaque.
+- A oficina combina método e parâmetros em duas colunas. Busca, ingredientes, estimativas e procedência podem ser expandidos quando necessários; a árvore ganha espaço. A opção exibida no seletor acompanha o método realmente calculado, inclusive após a projeção do componente.
+- Personagens usam duas colunas para identidade e complementos, com uma orientação específica para o primeiro cadastro. Estoque tem seletor grade/lista consistente, ações de edição separadas e histórico recolhido. Planejamento organiza materiais e planos lado a lado.
+- Catálogo adota a paleta comum de carvão e dourado, título direto e cabeçalho compacto. Estilos de navegação antigos sem elementos correspondentes foram removidos. Detalhes separam descrição e atributos; nome e descrição deixam de aparecer novamente na lista de atributos.
+- Importação e backup herdam o mesmo padrão de controles, foco e estados. A correção manual de equipamento fica em uma seção opcional, preservando a ficha como conteúdo principal.
+
+Validação: 33 testes em nove arquivos dos fluxos afetados, lint dos templates e TypeScript alterados, build de produção e inspeção no navegador local. A revisão visual cobriu oficina, consulta e cálculo de mercado, cadastro vazio, armazém vazio, importação, catálogo e detalhes de item. Os testes usam dados em memória; não foram importadas capturas nem alterados personagens ou inventários reais nesta etapa.
+
+Esta etapa não resolve o benchmark de reconhecimento com oito capturas reais, as regras ausentes de maestria e bônus nem a virtualização de todas as listas. Permanecem os avisos anteriores de tamanho do bundle inicial, fallback de locale e dependências CommonJS do reconhecimento.
+
+## Fonte de verdade dos dados
 
 Itens e receitas usam IDs e versão do catálogo. Preços usam item, variante, região e horário da fonte. Estoque, personagens, família e planos pessoais usam o WorkspaceStore e seu backup versionado. Não há cadastro paralelo de itens para os novos fluxos.
 
