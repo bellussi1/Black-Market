@@ -20,7 +20,12 @@ import {
 } from './models';
 
 const regions = REGION_CODES;
-import { characterSchema, personalPlanSchema, reservationIssues } from './personal';
+import {
+  characterSchema,
+  familyProfileSchema,
+  personalPlanSchema,
+  reservationIssues,
+} from './personal';
 import { workerEmpireSchema } from './worker-empire';
 
 const id = z.string().min(1).max(64);
@@ -78,6 +83,7 @@ export const workspaceSchema = z
     schemaVersion: z.literal(1),
     activeCharacterId: id.nullable().default(null),
     familySilver: moneySchema.default('0'),
+    families: z.partialRecord(region, familyProfileSchema).optional(),
     familySilverRegion: region.default('sa'),
     taxOptions: z.object(taxShape).default(() => ({ ...defaultTax })),
     demonstration: z

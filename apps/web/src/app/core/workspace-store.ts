@@ -1,6 +1,6 @@
 import type { OnDestroy } from '@angular/core';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { CalculatorKey } from '@bdo/calculators';
+import type { CalculatorKey, CharacterProfile } from '@bdo/calculators';
 
 import { validationMessage } from '../shared/calculation-feedback';
 import { download } from '../shared/download';
@@ -16,7 +16,7 @@ export class WorkspaceStore implements OnDestroy {
   private readonly demonstration = signal<Workspace | null>(null);
   readonly demoActive = computed(() => this.demonstration() !== null);
   readonly data = computed(() => this.demonstration() ?? this.internal());
-  readonly activeCharacter = computed(() => {
+  readonly activeCharacter = computed<CharacterProfile | null>(() => {
     const state = this.data(),
       characters = state.characters.filter((c) => c.region === state.region);
     return characters.find((c) => c.id === state.activeCharacterId) ?? characters[0] ?? null;

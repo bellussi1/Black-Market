@@ -52,6 +52,43 @@ export const characterSchema = z
       .array(z.object({ itemId: z.number().int().positive(), name: z.string().max(140) }))
       .max(20)
       .default([]),
+    artifacts: z
+      .array(z.object({ itemId: z.number().int().positive(), name: z.string().min(1).max(140) }))
+      .max(2)
+      .optional(),
+    lightstones: z
+      .array(z.object({ itemId: z.number().int().positive(), name: z.string().min(1).max(140) }))
+      .max(4)
+      .optional(),
+    pearlOutfits: z
+      .array(z.object({ itemId: z.number().int().positive(), name: z.string().min(1).max(140) }))
+      .max(20)
+      .optional(),
+    activityPresets: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(64),
+          name: z.string().min(1).max(80),
+          gear: z
+            .array(
+              z.object({
+                slot: z.enum(gearSlots),
+                itemId: z.number().int().positive(),
+                name: z.string().min(1).max(140),
+                level: z.number().int().min(0).max(30),
+                caphras: z.number().int().min(0).max(20),
+              }),
+            )
+            .max(15),
+          crystals: z
+            .array(
+              z.object({ itemId: z.number().int().positive(), name: z.string().min(1).max(140) }),
+            )
+            .max(20),
+        }),
+      )
+      .max(20)
+      .optional(),
     silver: moneySchema.default('0'),
     energy: z.number().int().min(0).max(2000).default(0),
     mainAp: z.number().int().min(0).max(5000).default(0),
@@ -92,12 +129,62 @@ export const characterSchema = z
       });
   });
 export type CharacterProfile = z.infer<typeof characterSchema>;
+export const familyProfileSchema = z.object({
+  name: z.string().trim().max(80).default(''),
+  contribution: z.number().int().min(0).max(2000).nullable().default(null),
+  energyMax: z.number().int().min(0).max(2000).nullable().default(null),
+  lifeSkills: z
+    .partialRecord(
+      z.enum(lifeSkills),
+      z.object({
+        tier: z.enum([
+          'Iniciante',
+          'Aprendiz',
+          'Hábil',
+          'Profissional',
+          'Artesão',
+          'Mestre',
+          'Guru',
+        ]),
+        level: z.number().int().min(1).max(100),
+        xpPercent: z.number().min(0).max(100),
+      }),
+    )
+    .nullable()
+    .default(null),
+  pets: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(64),
+        name: z.string().min(1).max(80),
+        tier: z.number().int().min(1).max(5),
+        level: z.number().int().min(1).max(10),
+        skills: z.string().max(500).default(''),
+      }),
+    )
+    .max(50)
+    .default([]),
+  mounts: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(64),
+        name: z.string().min(1).max(80),
+        kind: z.string().min(1).max(80),
+        level: z.number().int().min(1).max(100),
+        notes: z.string().max(500).default(''),
+      }),
+    )
+    .max(100)
+    .default([]),
+});
 export const personalPlanSchema = z.object({
   id: z.string().min(1).max(64),
   name: z.string().min(1).max(140),
   region: z.string().regex(/^[a-z0-9-]{2,12}$/),
   status: z.enum(['draft', 'reserved', 'completed', 'cancelled']).default('draft'),
   createdAt: z.string().datetime(),
+  sourceItemId: z.number().int().positive().optional(),
+  excludedStockLocations: z.array(z.string().max(400)).max(4000).optional(),
   estimatedProfit: z
     .string()
     .regex(/^-?\d{1,30}$/)
