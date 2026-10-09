@@ -1,5 +1,5 @@
 import type { OnDestroy } from '@angular/core';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import type { CalculatorKey } from '@bdo/calculators';
 
 import { validationMessage } from '../shared/calculation-feedback';
@@ -13,7 +13,14 @@ const STORAGE_KEY = 'black-market.workspace.v1';
 export class WorkspaceStore implements OnDestroy {
   private readonly preferences = inject(RegionPreferences);
   private readonly internal = signal<Workspace>(emptyWorkspace());
-  readonly data = this.internal.asReadonly();
+  private readonly demonstration = signal<Workspace | null>(null);
+  readonly demoActive = computed(() => this.demonstration() !== null);
+  readonly data = computed(() => this.demonstration() ?? this.internal());
+  readonly activeCharacter = computed(() => {
+    const state = this.data(),
+      characters = state.characters.filter((c) => c.region === state.region);
+    return characters.find((c) => c.id === state.activeCharacterId) ?? characters[0] ?? null;
+  });
   readonly message: RegionPreferences['message'];
   readonly blocked: RegionPreferences['blocked'];
   private readonly unsubscribe: () => void;
@@ -45,6 +52,7 @@ export class WorkspaceStore implements OnDestroy {
     });
   }
   update(change: (state: Workspace) => Workspace): boolean {
+    if (this.demoActive()) return this.replace(change(this.data()));
     if (this.blocked()) {
       this.message.set(
         'O backup local precisa ser recuperado em Dados e backup antes de salvar alterações.',
@@ -56,6 +64,14 @@ export class WorkspaceStore implements OnDestroy {
   replace(raw: unknown): boolean {
     try {
       const value = workspaceSchema.parse(raw);
+      if (this.demoActive() || value.demonstration) {
+        this.demonstration.set({
+          ...value,
+          demonstration: value.demonstration ?? { version: 'brazil-v1', label: 'Demonstração' },
+        });
+        this.preferences.setSummary(this.data());
+        return true;
+      }
       this.internal.set(value);
       this.blocked.set(false);
       this.preferences.setSummary(value);
@@ -77,6 +93,21 @@ export class WorkspaceStore implements OnDestroy {
   }
   setRegion(value: string): void {
     this.preferences.setRegion(value);
+  }
+  startDemo(raw: unknown): boolean {
+    const parsed = workspaceSchema.safeParse(raw);
+    if (!parsed.success || !parsed.data.demonstration) {
+      this.message.set('Confira os dados da demonstração antes de continuar.');
+      return false;
+    }
+    this.demonstration.set(parsed.data);
+    this.preferences.setSummary(parsed.data);
+    return true;
+  }
+  exitDemo(): void {
+    this.demonstration.set(null);
+    this.preferences.setSummary(this.internal());
+    this.preferences.setRegion(this.internal().region);
   }
   ngOnDestroy(): void {
     this.unsubscribe();
@@ -101,8 +132,10 @@ export class WorkspaceStore implements OnDestroy {
   }
   exportBackup(): void {
     download(
-      'black-market-backup.json',
-      this.blocked() ? this.recovery : JSON.stringify({ ...this.data() }, null, 2),
+      this.demoActive() ? 'black-market-demonstracao.json' : 'black-market-backup.json',
+      this.blocked() && !this.demoActive()
+        ? this.recovery
+        : JSON.stringify({ ...this.data() }, null, 2),
       'application/json',
     );
   }

@@ -5,6 +5,7 @@ import {
   activitySchema,
   boxSchema,
   craftingSchema,
+  defaultTax,
   enhancementSchema,
   failstackSchema,
   gearSchema,
@@ -14,6 +15,7 @@ import {
   marketSchema,
   moneySchema,
   recipeSchema,
+  taxShape,
   trainingSchema,
 } from './models';
 
@@ -74,12 +76,85 @@ export const presetSchema = z.discriminatedUnion('tool', [
 export const workspaceSchema = z
   .object({
     schemaVersion: z.literal(1),
+    activeCharacterId: id.nullable().default(null),
+    familySilver: moneySchema.default('0'),
+    familySilverRegion: region.default('sa'),
+    taxOptions: z.object(taxShape).default(() => ({ ...defaultTax })),
+    demonstration: z
+      .object({ version: z.literal('brazil-v1'), label: z.string().max(80) })
+      .nullable()
+      .default(null),
+    familyLifeSkills: z
+      .record(
+        z.enum([
+          'gathering',
+          'cooking',
+          'alchemy',
+          'processing',
+          'fishing',
+          'hunting',
+          'training',
+          'trading',
+          'farming',
+          'sailing',
+          'barter',
+        ]),
+        z.object({
+          tier: z.enum([
+            'Iniciante',
+            'Aprendiz',
+            'Hábil',
+            'Profissional',
+            'Artesão',
+            'Mestre',
+            'Guru',
+          ]),
+          level: z.number().int().min(1).max(100),
+          xpPercent: z.number().min(0).max(100),
+        }),
+      )
+      .nullable()
+      .default(null),
     characters: z.array(characterSchema).max(30).default([]),
     personalPlans: z.array(personalPlanSchema).max(200).default([]),
     workerEmpires: z.array(workerEmpireSchema).max(30).default([]),
     region,
     quotes: z.array(quoteSchema).max(300),
-    inventory: z.array(inventorySchema.extend({ region: region.default('sa') })).max(1000),
+    inventory: z
+      .array(
+        inventorySchema.extend({
+          region: region.default('sa'),
+          kind: z.enum(['storage', 'inventory']).optional(),
+          characterId: id.optional(),
+          updatedAt: timestamp.optional(),
+          sources: z
+            .array(
+              z.object({
+                hash: z.string().regex(/^[a-f0-9]{64}$/),
+                slot: z.number().int().min(0).max(399),
+                position: z.string().max(100).optional(),
+                capture: z.number().int().min(1).max(8),
+              }),
+            )
+            .max(32)
+            .optional(),
+        }),
+      )
+      .max(4000),
+    screenshotImports: z
+      .array(
+        z.object({
+          id,
+          region,
+          createdAt: timestamp,
+          mode: z.enum(['reviewed', 'merge', 'replace', 'gear']),
+          itemCount: z.number().int().min(1).max(3200),
+          locations: z.array(labelSchema).max(8),
+          sourceHashes: z.array(z.string().regex(/^[a-f0-9]{64}$/)).max(8),
+        }),
+      )
+      .max(60)
+      .default([]),
     recipes: z.array(recipeSchema).max(100),
     gear: z.array(z.object({ id, name: labelSchema, region, input: gearSchema })).max(100),
     sessions: z
@@ -163,12 +238,19 @@ export type Buff = z.infer<typeof buffSchema>;
 export type ToolPreset = z.infer<typeof presetSchema>;
 export const emptyWorkspace = (): Workspace => ({
   schemaVersion: 1,
+  activeCharacterId: null,
+  familySilver: '0',
+  familySilverRegion: 'sa',
+  taxOptions: { ...defaultTax },
+  demonstration: null,
+  familyLifeSkills: null,
   characters: [],
   personalPlans: [],
   workerEmpires: [],
   region: DEFAULT_REGION,
   quotes: [],
   inventory: [],
+  screenshotImports: [],
   recipes: [],
   gear: [],
   sessions: [],

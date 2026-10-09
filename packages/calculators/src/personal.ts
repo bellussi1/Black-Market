@@ -37,6 +37,21 @@ export const characterSchema = z
     id: z.string().min(1).max(64),
     name: z.string().trim().min(1).max(80),
     region: z.string().regex(/^[a-z0-9-]{2,12}$/),
+    familyName: z.string().trim().max(80).default(''),
+    className: z.string().trim().max(40).default(''),
+    specialization: z.enum(['succession', 'awakening']).default('succession'),
+    level: z.number().int().min(1).max(100).default(1),
+    server: z.string().max(40).default(''),
+    contribution: z.number().int().min(0).max(2000).default(0),
+    energyMax: z.number().int().min(0).max(2000).default(0),
+    inventoryCapacity: z.number().int().min(0).max(300).default(0),
+    inventoryUsed: z.number().int().min(0).max(300).default(0),
+    weightLimit: z.number().min(0).max(10000).default(0),
+    carriedWeight: z.number().min(0).max(10000).default(0),
+    crystals: z
+      .array(z.object({ itemId: z.number().int().positive(), name: z.string().max(140) }))
+      .max(20)
+      .default([]),
     silver: moneySchema.default('0'),
     energy: z.number().int().min(0).max(2000).default(0),
     mainAp: z.number().int().min(0).max(5000).default(0),
@@ -61,6 +76,8 @@ export const characterSchema = z
           name: z.string().min(1).max(140),
           level: z.number().int().min(0).max(30).default(0),
           caphras: z.number().int().min(0).max(20).default(0),
+          levelConfirmed: z.boolean().optional(),
+          caphrasConfirmed: z.boolean().optional(),
         }),
       )
       .max(15)
