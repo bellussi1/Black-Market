@@ -79,6 +79,8 @@ export interface CatalogRecipesResponse {
   total: number;
   direction: 'produces' | 'uses';
   dataset: ActiveDatasetSummary | null;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface RecipeListResponse {

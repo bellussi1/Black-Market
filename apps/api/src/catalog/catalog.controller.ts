@@ -128,6 +128,8 @@ export class CatalogController {
   @Get('items/:id/recipes')
   @ApiOperation({ summary: 'Lista receitas que produzem ou usam um item' })
   @ApiQuery({ name: 'direction', required: false, enum: ['produces', 'uses'] })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, example: 100 })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
   @ApiQuery({
     name: 'locale',

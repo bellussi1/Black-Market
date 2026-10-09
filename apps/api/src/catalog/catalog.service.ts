@@ -300,7 +300,7 @@ export class CatalogService {
     rawQuery: Record<string, unknown>,
     rawDirection: unknown,
   ): Promise<CatalogRecipesResponse> {
-    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    const query = parseCatalogQuery({ ...rawQuery, pageSize: rawQuery['pageSize'] ?? 50 });
     const direction = rawDirection === undefined ? 'produces' : rawDirection;
     if (direction !== 'produces' && direction !== 'uses') {
       throw new BadRequestException({
@@ -314,7 +314,15 @@ export class CatalogService {
       throw new NotFoundException('Item não encontrado.');
     }
     const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
-    if (!dataset) return { recipes: [], total: 0, direction, dataset: null };
+    if (!dataset)
+      return {
+        recipes: [],
+        total: 0,
+        direction,
+        dataset: null,
+        page: query.page,
+        pageSize: query.pageSize,
+      };
 
     const [itemVersion] = await this.database.db
       .select({ itemId: itemVersions.itemId })
@@ -333,18 +341,21 @@ export class CatalogService {
       .from(relation)
       .where(relationFilter);
     const related = await this.database.db
-      .select({ key: relation.recipeKey })
+      .selectDistinct({ key: relation.recipeKey })
       .from(relation)
       .where(relationFilter)
       .orderBy(asc(relation.recipeKey))
-      .limit(50);
+      .limit(query.pageSize)
+      .offset((query.page - 1) * query.pageSize);
     const keys = [...new Set(related.map((row) => row.key))];
     if (!keys.length) {
       return {
         recipes: [],
-        total: 0,
+        total: Number(relatedCount?.total ?? 0),
         direction,
         dataset: this.toSummary(dataset),
+        page: query.page,
+        pageSize: query.pageSize,
       };
     }
 
@@ -449,6 +460,8 @@ export class CatalogService {
       total: Number(relatedCount?.total ?? 0),
       direction,
       dataset: this.toSummary(dataset),
+      page: query.page,
+      pageSize: query.pageSize,
     };
   }
 

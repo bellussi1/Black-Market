@@ -11,6 +11,7 @@ import type {
   CatalogRecipesResponse,
   RecipeListResponse,
 } from '@bdo/shared';
+import { EMPTY, expand, map, reduce } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { preferredDataLocale } from './locale';
@@ -79,7 +80,37 @@ export class CatalogApiService {
       .set('direction', direction)
       .set('region', this.preferences.region())
       .set('preferredLocale', preferredDataLocale());
-    return this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/items/${id}/recipes`, { params });
+    const request = (page: number) =>
+      this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/items/${id}/recipes`, {
+        params: params.set('page', page).set('pageSize', 100),
+      });
+    return request(1).pipe(
+      expand((response) => {
+        const loaded = (response.page ?? 1) * (response.pageSize ?? 100);
+        if (loaded >= response.total) return EMPTY;
+        if (!response.page || !response.pageSize || !response.recipes.length)
+          throw new Error('Consulta de receitas incompleta. Atualize a API antes de continuar.');
+        return request(response.page + 1);
+      }, 1),
+      reduce((previous: CatalogRecipesResponse | null, response) => {
+        if (!previous) return response;
+        if (
+          previous.dataset?.version !== response.dataset?.version ||
+          previous.total !== response.total
+        )
+          throw new Error('O catálogo mudou durante a consulta de receitas. Tente novamente.');
+        return { ...previous, recipes: [...previous.recipes, ...response.recipes] };
+      }, null),
+      map((response) => {
+        if (!response) throw new Error('Consulta de receitas indisponível.');
+        const unique = [
+          ...new Map(response.recipes.map((recipe) => [recipe.key, recipe])).values(),
+        ];
+        if (unique.length !== response.total)
+          throw new Error('Consulta de receitas incompleta. Tente novamente.');
+        return { ...response, recipes: unique };
+      }),
+    );
   }
 
   getRecipes(q: string, page: number) {
