@@ -70,8 +70,34 @@ describe('MarketPage', () => {
     expect(quote.itemId).toBe(676);
     expect(quote.history[0].source).toBe('arsha');
     expect(page.form().price).toBe('340000');
+    expect(page.workspaceView()).toBe('calculator');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Example');
+    page.workspaceView.set('quote');
+    fixture.detectChanges();
+    expect(page.live()?.items[0].price).toBe('340000');
+    expect(page.form().price).toBe('340000');
     http.verify();
+  });
+
+  it('keeps the calculation and search when switching tools through the navigation', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+    page.patch({ price: '10000', quantity: 3 });
+    page.lookupId.set('676');
+    const tabs = element.querySelectorAll<HTMLButtonElement>('.workspace-tabs button');
+    tabs[1].click();
+    fixture.detectChanges();
+    expect(element.textContent).toContain('Calculadora de imposto');
+    expect(element.textContent).not.toContain('Buscar item e consultar mercado');
+    tabs[2].click();
+    fixture.detectChanges();
+    expect(element.textContent).toContain('Minhas cotações');
+    tabs[0].click();
+    fixture.detectChanges();
+    expect(page.lookupId()).toBe('676');
+    expect(page.form().price).toBe('10000');
+    expect(page.form().quantity).toBe(3);
   });
 
   it('charts only stored market observations and does not infer daily sale volume', async () => {

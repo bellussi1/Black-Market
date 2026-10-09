@@ -88,6 +88,7 @@ export class MarketPage implements OnDestroy {
   private liveRequest?: Subscription;
   private itemRequest?: Subscription;
   readonly lookupId = signal('');
+  readonly workspaceView = signal<'quote' | 'calculator' | 'saved'>('quote');
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');
@@ -354,6 +355,7 @@ export class MarketPage implements OnDestroy {
   use(q: Quote): void {
     this.patch({ price: q.price });
     this.selectedId.set(q.id);
+    this.workspaceView.set('calculator');
   }
   points(q: Quote): string {
     const values = q.history.map((r) => BigInt(r.price));
@@ -458,6 +460,7 @@ export class MarketPage implements OnDestroy {
     }));
     this.patch({ price: item.price });
     this.selectedId.set(parsed.data.id);
+    this.workspaceView.set('calculator');
   }
   ngOnDestroy(): void {
     this.itemRequest?.unsubscribe();

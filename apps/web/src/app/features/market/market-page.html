@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page market-page">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>02 / MERCADO CENTRAL</ng-container></p>
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
@@ -9,537 +9,615 @@
       </ng-container>
     </p>
   </header>
-  <section class="panel">
-    <div class="panel-heading">
-      <h2><ng-container i18n>Buscar item e consultar mercado</ng-container></h2>
-      <span class="badge"><ng-container i18n>PREÇOS DO MERCADO</ng-container></span>
-    </div>
-    <app-catalog-item-picker
-      [selectionName]="catalogItem()?.name || ''"
-      (selected)="selectItem($event)"
-    />
-    @if (catalogItem(); as selected) {
-      <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
-        >Explorar receitas e origens</a
-      >
-    }
-    <details>
-      <summary i18n>Buscar pelo código do item</summary>
-      <div class="form-grid">
-        <label class="field"
-          ><ng-container i18n>ID do item</ng-container
-          ><input
-            inputmode="numeric"
-            placeholder="ID numérico do jogo"
-            i18n-placeholder
-            [ngModel]="lookupId()"
-            (ngModelChange)="lookupId.set($event)"
-        /></label>
-      </div>
-    </details>
-    <div class="action-row">
-      <button class="btn" type="button" (click)="lookup()" [disabled]="lookupLoading()">
-        {{ lookupLoading() ? 'Consultando…' : 'Consultar mercado' }}</button
-      ><span class="help"
-        ><ng-container i18n
-          >Mercado selecionado: {{ store.data().region.toUpperCase() }}.</ng-container
-        ></span
-      >
-    </div>
-    <p class="help">
-      <ng-container i18n
-        >Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um item
-        para consultar sua cotação.
-      </ng-container>
-    </p>
-    @if (lookupError()) {
-      <p class="error-box" role="alert">{{ lookupError() }}</p>
-    }
-    @if (live(); as response) {
-      <div class="market-view-toolbar">
-        <div class="segmented-control" role="group" aria-label="Exibição de preços" i18n-aria-label>
-          <button
-            type="button"
-            [attr.aria-pressed]="priceView() === 'gross'"
-            (click)="priceView.set('gross')"
-            i18n
-          >
-            Preço bruto
-          </button>
-          <button
-            type="button"
-            [attr.aria-pressed]="priceView() === 'net'"
-            (click)="priceView.set('net')"
-            i18n
-          >
-            Recebimento líquido
-          </button>
+  <nav class="workspace-tabs" aria-label="Ferramentas do mercado" i18n-aria-label>
+    <button
+      type="button"
+      [attr.aria-pressed]="workspaceView() === 'quote'"
+      (click)="workspaceView.set('quote')"
+      i18n
+    >
+      Consultar preços
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="workspaceView() === 'calculator'"
+      (click)="workspaceView.set('calculator')"
+      i18n
+    >
+      Calcular venda
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="workspaceView() === 'saved'"
+      (click)="workspaceView.set('saved')"
+      i18n
+    >
+      Minhas cotações
+    </button>
+  </nav>
+  @if (workspaceView() === 'quote') {
+    <section class="panel">
+      <details class="market-search" [open]="!live()">
+        <summary>
+          <span i18n>Buscar item</span
+          ><strong>{{
+            catalogItem()?.name ||
+              (lookupId() ? 'Item #' + lookupId() : 'Escolha uma compra ou venda')
+          }}</strong>
+        </summary>
+        <div class="panel-heading">
+          <h2><ng-container i18n>Buscar item e consultar mercado</ng-container></h2>
+          <span class="badge"><ng-container i18n>PREÇOS DO MERCADO</ng-container></span>
         </div>
-        <label
-          ><input
-            type="checkbox"
-            [ngModel]="form().valuePack"
-            (ngModelChange)="setValuePack($event)"
-          />
-          Value Pack</label
-        >
-      </div>
-      <p class="help">
-        <ng-container i18n
-          >Fonte: Arsha · {{ response.region.toUpperCase() }} · idioma solicitado:
-          {{ response.locale || 'não informado' }} · consulta em {{ date(response.fetchedAt) }} ·
-          {{
-            response.cacheStatus === 'stale'
-              ? 'Últimos preços disponíveis; não foi possível atualizar agora'
-              : response.cacheStatus === 'cached'
-                ? 'Últimos preços consultados'
-                : 'Preços consultados agora'
-          }}. Atualização da fonte a cada {{ response.upstreamCacheMinutes }} minutos.
-        </ng-container>
-      </p>
-      <div class="max-w-full overflow-x-auto">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th><ng-container i18n>Item / variante</ng-container></th>
-              <th>{{ priceView() === 'gross' ? 'Preço bruto / unidade' : 'Líquido / unidade' }}</th>
-              <th><ng-container i18n>Estoque</ng-container></th>
-              <th><ng-container i18n>Transações (contador)</ng-container></th>
-              <th><ng-container i18n>Última venda</ng-container></th>
-              <th><ng-container i18n>Ação</ng-container></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of response.items; track item.subId) {
-              <tr>
-                <td>
-                  <span class="market-item-name"
-                    ><app-item-icon
-                      [url]="quoteIcon()"
-                      [name]="item.name"
-                      [grade]="catalogItem()?.grade ?? null"
-                    />{{ item.name }} · {{ item.subId }}</span
-                  >
-                </td>
-                <td>{{ silver(priceView() === 'gross' ? item.price : netPrice(item.price)) }}</td>
-                <td>{{ number(item.stock, 0) }}</td>
-                <td>{{ silver(item.totalTrades) }}</td>
-                <td>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Sem horário informado' }}</td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn subtle"
-                    [disabled]="item.price === null || response.cacheStatus === 'stale'"
-                    (click)="saveLive(item)"
-                  >
-                    <ng-container i18n>Guardar e calcular </ng-container>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </section>
-  <div class="notice">
-    <details>
-      <summary i18n>Histórico observado do mercado</summary>
-      <label class="field"
-        ><span i18n>Variante do item selecionado</span
-        ><input type="number" min="0" max="100" [(ngModel)]="historySubId" /></label
-      ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
-      <p role="status">{{ historyMessage() }}</p>
-      <div class="mt-6 grid gap-4">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h3 class="font-semibold" i18n>Evolução das observações</h3>
-            <p class="help" i18n>Veja o que foi registrado pelo Black Market neste item.</p>
+        <app-catalog-item-picker
+          [selectionName]="catalogItem()?.name || ''"
+          (selected)="selectItem($event)"
+        />
+        @if (catalogItem(); as selected) {
+          <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
+            >Explorar receitas e origens</a
+          >
+        }
+        <details>
+          <summary i18n>Buscar pelo código do item</summary>
+          <div class="form-grid">
+            <label class="field"
+              ><ng-container i18n>ID do item</ng-container
+              ><input
+                inputmode="numeric"
+                placeholder="ID numérico do jogo"
+                i18n-placeholder
+                [ngModel]="lookupId()"
+                (ngModelChange)="lookupId.set($event)"
+            /></label>
           </div>
+        </details>
+        <div class="action-row">
+          <button class="btn" type="button" (click)="lookup()" [disabled]="lookupLoading()">
+            {{ lookupLoading() ? 'Consultando…' : 'Consultar mercado' }}</button
+          ><span class="help"
+            ><ng-container i18n
+              >Mercado selecionado: {{ store.data().region.toUpperCase() }}.</ng-container
+            ></span
+          >
+        </div>
+        <p class="help">
+          <ng-container i18n
+            >Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um
+            item para consultar sua cotação.
+          </ng-container>
+        </p>
+        @if (lookupError()) {
+          <p class="error-box" role="alert">{{ lookupError() }}</p>
+        }
+        @if (lookupLoading()) {
+          <p class="loading-state" role="status" i18n>Consultando preço e estoque do item…</p>
+        } @else if (!live() && !lookupError()) {
+          <div class="empty-workspace">
+            <h3 i18n>Encontre sua próxima compra ou venda</h3>
+            <p class="help" i18n>
+              Selecione um item acima. A cotação aparece automaticamente, sem precisar cadastrar um
+              personagem.
+            </p>
+          </div>
+        }
+      </details>
+      @if (live(); as response) {
+        <div class="market-view-toolbar">
           <div
-            class="flex flex-wrap gap-2"
+            class="segmented-control"
             role="group"
-            aria-label="Período do histórico"
+            aria-label="Exibição de preços"
             i18n-aria-label
           >
             <button
               type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyRange() === 'day'"
-              (click)="historyRange.set('day')"
+              [attr.aria-pressed]="priceView() === 'gross'"
+              (click)="priceView.set('gross')"
               i18n
             >
-              24 horas
+              Preço bruto
             </button>
             <button
               type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyRange() === 'week'"
-              (click)="historyRange.set('week')"
+              [attr.aria-pressed]="priceView() === 'net'"
+              (click)="priceView.set('net')"
               i18n
             >
-              7 dias
-            </button>
-            <button
-              type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyRange() === 'month'"
-              (click)="historyRange.set('month')"
-              i18n
-            >
-              30 dias
+              Recebimento líquido
             </button>
           </div>
+          <label
+            ><input
+              type="checkbox"
+              [ngModel]="form().valuePack"
+              (ngModelChange)="setValuePack($event)"
+            />
+            Value Pack</label
+          >
         </div>
-        <div
-          class="flex flex-wrap gap-2"
-          role="group"
-          aria-label="Indicador do gráfico"
-          i18n-aria-label
-        >
-          <button
-            type="button"
-            class="btn subtle"
-            [attr.aria-pressed]="historyMetric() === 'price'"
-            (click)="historyMetric.set('price')"
-            i18n
-          >
-            Preço
-          </button>
-          <button
-            type="button"
-            class="btn subtle"
-            [attr.aria-pressed]="historyMetric() === 'stock'"
-            (click)="historyMetric.set('stock')"
-            i18n
-          >
-            Estoque
-          </button>
-          <button
-            type="button"
-            class="btn subtle"
-            [attr.aria-pressed]="historyMetric() === 'totalTrades'"
-            (click)="historyMetric.set('totalTrades')"
-            i18n
-          >
-            Transações
-          </button>
-        </div>
-        @if (historyChart().samples >= 2) {
-          <div class="min-w-0" aria-live="polite">
-            <svg
-              class="h-auto w-full overflow-visible text-[var(--accent)]"
-              viewBox="0 0 720 220"
-              role="img"
-              [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
-            >
-              <title>{{ historyMetricLabel() }}</title>
-              <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
-              <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
-              <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
-              <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
-              <polyline
-                [attr.points]="historyChart().points"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                vector-effect="non-scaling-stroke"
-              />
-            </svg>
-            <div class="flex justify-between text-xs text-[var(--text-muted)]">
-              <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
-              <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
-            </div>
-            <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
-              <span>{{ date(historyChart().startAt) }}</span>
-              <span>{{ date(historyChart().endAt) }}</span>
-            </div>
-            <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
-          </div>
-        } @else {
-          <p class="notice" role="status" i18n>
-            Ainda não há duas observações válidas neste período para desenhar o gráfico. As
-            consultas começam a formar histórico depois que são registradas.
-          </p>
-        }
-      </div>
-      <p class="help mt-4" i18n>
-        O histórico representa apenas observações guardadas pelo Black Market. A fonte atual não
-        fornece uma série confiável de volume ou média de vendas por dia/mês; o contador de
-        transações é exibido como recebido, sem estimar vendas entre consultas.
-      </p>
-      @if (history().length) {
-        <div class="overflow-x-auto">
+        <p class="help">
+          <ng-container i18n
+            >Fonte: Arsha · {{ response.region.toUpperCase() }} · idioma solicitado:
+            {{ response.locale || 'não informado' }} · consulta em {{ date(response.fetchedAt) }} ·
+            {{
+              response.cacheStatus === 'stale'
+                ? 'Últimos preços disponíveis; não foi possível atualizar agora'
+                : response.cacheStatus === 'cached'
+                  ? 'Últimos preços consultados'
+                  : 'Preços consultados agora'
+            }}. Atualização da fonte a cada {{ response.upstreamCacheMinutes }} minutos.
+          </ng-container>
+        </p>
+        <div class="max-w-full overflow-x-auto">
           <table class="data-table">
             <thead>
               <tr>
-                <th i18n>Consulta</th>
-                <th i18n>Preço</th>
-                <th i18n>Estoque</th>
-                <th i18n>Transações (contador)</th>
+                <th><ng-container i18n>Item / variante</ng-container></th>
+                <th>
+                  {{ priceView() === 'gross' ? 'Preço bruto / unidade' : 'Líquido / unidade' }}
+                </th>
+                <th><ng-container i18n>Estoque</ng-container></th>
+                <th><ng-container i18n>Transações (contador)</ng-container></th>
+                <th><ng-container i18n>Última venda</ng-container></th>
+                <th><ng-container i18n>Ação</ng-container></th>
               </tr>
             </thead>
             <tbody>
-              @for (point of historySeries(); track point.fetchedAt) {
+              @for (item of response.items; track item.subId) {
                 <tr>
-                  <td>{{ date(point.fetchedAt) }}</td>
-                  <td>{{ silver(point.price) }}</td>
-                  <td>{{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}</td>
-                  <td>{{ silver(point.totalTrades) }}</td>
+                  <td>
+                    <span class="market-item-name"
+                      ><app-item-icon
+                        [url]="quoteIcon()"
+                        [name]="item.name"
+                        [grade]="catalogItem()?.grade ?? null"
+                      />{{ item.name }} · {{ item.subId }}</span
+                    >
+                  </td>
+                  <td>{{ silver(priceView() === 'gross' ? item.price : netPrice(item.price)) }}</td>
+                  <td>{{ number(item.stock, 0) }}</td>
+                  <td>{{ silver(item.totalTrades) }}</td>
+                  <td>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Sem horário informado' }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn subtle"
+                      [disabled]="item.price === null || response.cacheStatus === 'stale'"
+                      (click)="saveLive(item)"
+                    >
+                      <ng-container i18n>Guardar e calcular </ng-container>
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
       }
-    </details>
-    <ng-container i18n
-      >Seus registros reúnem registros manuais e consultas que você guardou do Arsha. Preço base
-      zero no provedor é exibido como indisponível; registros antigos continuam com seu horário
-      original.
-    </ng-container>
-  </div>
-  <div
-    class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
-  >
-    <section class="panel">
-      <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
-      <div class="form-grid">
-        <label class="field"
-          ><ng-container i18n>Preço por unidade</ng-container
-          ><input
-            inputmode="numeric"
-            [ngModel]="form().price"
-            (ngModelChange)="patch({ price: $event })" /></label
-        ><label class="field"
-          ><ng-container i18n>Quantidade</ng-container
-          ><input
-            type="number"
-            min="1"
-            [ngModel]="form().quantity"
-            (ngModelChange)="patch({ quantity: $event })" /></label
-        ><label class="field"
-          ><ng-container i18n>Custo total de aquisição</ng-container
-          ><input
-            inputmode="numeric"
-            [ngModel]="form().cost"
-            (ngModelChange)="patch({ cost: $event })"
-        /></label>
-      </div>
-      <app-tax-options [value]="form()" (changed)="setTaxes($event)" />
-      <app-preset-bar tool="market" [value]="form()" (loaded)="load($event)" />
-      <p class="help">
-        <ng-container i18n
-          >Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. </ng-container
-        ><a
-          href="https://www.sa.playblackdesert.com/pt-BR/Wiki?wikiNo=47"
-          target="_blank"
-          rel="noreferrer"
-          ><ng-container i18n>Guia oficial</ng-container></a
-        ><ng-container i18n>. Ajuste imposto e isenção para o tipo de venda. </ng-container>
-      </p>
-      <app-calculation-proof tool="market" [value]="form()" />
     </section>
-    <section>
-      @if (result().value; as r) {
-        <div class="metric-grid">
-          <div class="metric hero-metric">
-            <span><ng-container i18n>Prata líquida</ng-container></span
-            ><strong>{{ silver(r.net) }}</strong
-            ><small
-              ><ng-container i18n
-                >{{ number(r.retentionPercent, 3) }}% do valor bruto</ng-container
-              ></small
+    <div class="notice">
+      <details>
+        <summary i18n>Histórico observado do mercado</summary>
+        <label class="field"
+          ><span i18n>Variante do item selecionado</span
+          ><input type="number" min="0" max="100" [(ngModel)]="historySubId" /></label
+        ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
+        <p role="status">{{ historyMessage() }}</p>
+        <div class="mt-6 grid gap-4">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h3 class="font-semibold" i18n>Evolução das observações</h3>
+              <p class="help" i18n>Veja o que foi registrado pelo Black Market neste item.</p>
+            </div>
+            <div
+              class="flex flex-wrap gap-2"
+              role="group"
+              aria-label="Período do histórico"
+              i18n-aria-label
             >
+              <button
+                type="button"
+                class="btn subtle"
+                [attr.aria-pressed]="historyRange() === 'day'"
+                (click)="historyRange.set('day')"
+                i18n
+              >
+                24 horas
+              </button>
+              <button
+                type="button"
+                class="btn subtle"
+                [attr.aria-pressed]="historyRange() === 'week'"
+                (click)="historyRange.set('week')"
+                i18n
+              >
+                7 dias
+              </button>
+              <button
+                type="button"
+                class="btn subtle"
+                [attr.aria-pressed]="historyRange() === 'month'"
+                (click)="historyRange.set('month')"
+                i18n
+              >
+                30 dias
+              </button>
+            </div>
           </div>
-          <div class="metric">
-            <span><ng-container i18n>Imposto efetivo</ng-container></span
-            ><strong>{{ silver(r.tax) }}</strong>
+          <div
+            class="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Indicador do gráfico"
+            i18n-aria-label
+          >
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyMetric() === 'price'"
+              (click)="historyMetric.set('price')"
+              i18n
+            >
+              Preço
+            </button>
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyMetric() === 'stock'"
+              (click)="historyMetric.set('stock')"
+              i18n
+            >
+              Estoque
+            </button>
+            <button
+              type="button"
+              class="btn subtle"
+              [attr.aria-pressed]="historyMetric() === 'totalTrades'"
+              (click)="historyMetric.set('totalTrades')"
+              i18n
+            >
+              Transações
+            </button>
           </div>
-          <div class="metric">
-            <span><ng-container i18n>Lucro após aquisição</ng-container></span
-            ><strong [class.negative]="r.profit.startsWith('-')">{{ silver(r.profit) }}</strong>
-          </div>
-          <div class="metric">
-            <span><ng-container i18n>Sem Value Pack</ng-container></span
-            ><strong>{{ silver(r.withoutValuePack) }}</strong>
-          </div>
-          <div class="metric">
-            <span><ng-container i18n>Com Value Pack</ng-container></span
-            ><strong>{{ silver(r.withValuePack) }}</strong>
-          </div>
-          <div class="metric">
-            <span><ng-container i18n>Venda bruta</ng-container></span
-            ><strong>{{ silver(r.gross) }}</strong>
-          </div>
-          <div class="metric">
-            <span><ng-container i18n>Preço mínimo para empatar</ng-container></span
-            ><strong>{{ silver(r.breakEvenPrice) }}</strong
-            ><small><ng-container i18n>Por unidade</ng-container></small>
-          </div>
-        </div>
-      } @else {
-        <div class="error-box" role="alert">{{ result().error }}</div>
-      }
-    </section>
-  </div>
-  <section class="panel">
-    <div class="panel-heading">
-      <h2>
-        <ng-container i18n>Minhas cotações · {{ store.data().region.toUpperCase() }}</ng-container>
-      </h2>
-      <span class="badge"><ng-container i18n>MEUS DADOS</ng-container></span>
-    </div>
-    <div class="row-editor">
-      <div class="form-grid">
-        <label class="field"
-          ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
-        ><label class="field"
-          ><ng-container i18n>Categoria</ng-container
-          ><input [value]="draft.category" readonly /></label
-        ><label class="field"
-          ><ng-container i18n>Preço unitário</ng-container
-          ><input inputmode="numeric" [(ngModel)]="draft.price" /></label
-        ><label class="field"
-          ><ng-container i18n>Estoque observado</ng-container
-          ><input type="number" min="0" [(ngModel)]="draft.stock"
-        /></label>
-      </div>
-      <div class="action-row">
-        <button class="btn" type="button" (click)="saveQuote()">
-          <ng-container i18n>Registrar cotação</ng-container></button
-        ><span class="help"
-          ><ng-container i18n
-            >Registrar o mesmo item adiciona um ponto ao histórico.</ng-container
-          ></span
-        >
-      </div>
-    </div>
-    @if (error()) {
-      <p class="error-box" role="alert">{{ error() }}</p>
-    }
-    <div class="form-grid" style="margin: 24px 0">
-      <label class="field"
-        ><ng-container i18n>Buscar</ng-container
-        ><input [(ngModel)]="search" placeholder="Nome do item" i18n-placeholder /></label
-      ><label class="field"
-        ><ng-container i18n>Categoria</ng-container
-        ><select [(ngModel)]="category">
-          <option value=""><ng-container i18n>Todas</ng-container></option>
-          @for (c of categories; track c) {
-            <option [value]="c">{{ c }}</option>
+          @if (historyChart().samples >= 2) {
+            <div class="min-w-0" aria-live="polite">
+              <svg
+                class="h-auto w-full overflow-visible text-[var(--accent)]"
+                viewBox="0 0 720 220"
+                role="img"
+                [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
+              >
+                <title>{{ historyMetricLabel() }}</title>
+                <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
+                <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
+                <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
+                <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
+                <polyline
+                  [attr.points]="historyChart().points"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
+              <div class="flex justify-between text-xs text-[var(--text-muted)]">
+                <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
+                <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
+              </div>
+              <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
+                <span>{{ date(historyChart().startAt) }}</span>
+                <span>{{ date(historyChart().endAt) }}</span>
+              </div>
+              <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
+            </div>
+          } @else {
+            <p class="notice" role="status" i18n>
+              Ainda não há duas observações válidas neste período para desenhar o gráfico. As
+              consultas começam a formar histórico depois que são registradas.
+            </p>
           }
-        </select></label
-      ><label class="field"
-        ><ng-container i18n>Ordenar</ng-container
-        ><select [(ngModel)]="sort">
-          <option value="name"><ng-container i18n>Nome</ng-container></option>
-          <option value="price"><ng-container i18n>Menor preço</ng-container></option>
-        </select></label
-      ><label class="check-row"
-        ><input type="checkbox" [(ngModel)]="favoritesOnly" />
-        <ng-container i18n>Somente favoritos</ng-container></label
-      >
+        </div>
+        <p class="help mt-4" i18n>
+          O histórico representa apenas observações guardadas pelo Black Market. A fonte atual não
+          fornece uma série confiável de volume ou média de vendas por dia/mês; o contador de
+          transações é exibido como recebido, sem estimar vendas entre consultas.
+        </p>
+        @if (history().length) {
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th i18n>Consulta</th>
+                  <th i18n>Preço</th>
+                  <th i18n>Estoque</th>
+                  <th i18n>Transações (contador)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (point of historySeries(); track point.fetchedAt) {
+                  <tr>
+                    <td>{{ date(point.fetchedAt) }}</td>
+                    <td>{{ silver(point.price) }}</td>
+                    <td>{{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}</td>
+                    <td>{{ silver(point.totalTrades) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </details>
+      <ng-container i18n
+        >Seus registros reúnem registros manuais e consultas que você guardou do Arsha. Preço base
+        zero no provedor é exibido como indisponível; registros antigos continuam com seu horário
+        original.
+      </ng-container>
     </div>
-    @if (quotes.length) {
-      <div class="max-w-full overflow-x-auto">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th><ng-container i18n>Item</ng-container></th>
-              <th><ng-container i18n>Categoria</ng-container></th>
-              <th><ng-container i18n>Preço</ng-container></th>
-              <th><ng-container i18n>Estoque</ng-container></th>
-              <th><ng-container i18n>Registrado / consultado</ng-container></th>
-              <th><ng-container i18n>Ações</ng-container></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (q of quotes; track q.id) {
-              <tr>
-                <td>
-                  {{ q.name }}
-                  @if (q.favorite) {
-                    <span aria-label="Favorito" i18n-aria-label>★</span>
-                  }
-                </td>
-                <td>{{ q.category }} · {{ q.source === 'arsha' ? 'Arsha' : 'Manual' }}</td>
-                <td class="numeric">{{ silver(q.price) }}</td>
-                <td class="numeric">{{ number(q.stock, 0) }}</td>
-                <td>{{ date(q.observedAt) }}</td>
-                <td>
-                  <div class="action-row" style="margin: 0">
-                    <button class="btn subtle" type="button" (click)="use(q)">
-                      <ng-container i18n>Calcular</ng-container></button
-                    ><button class="btn subtle" type="button" (click)="toggle(q)">
-                      {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}</button
-                    ><button class="btn danger" type="button" (click)="remove(q.id)">
-                      <ng-container i18n>Excluir </ng-container>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    } @else {
-      <div class="empty">
-        <strong><ng-container i18n>Sua lista de cotações ainda está vazia.</ng-container></strong
-        ><ng-container i18n>Registre um preço acima ou ajuste os filtros. </ng-container>
+  }
+  @if (workspaceView() === 'calculator') {
+    @if (selected(); as quote) {
+      <div class="workspace-summary">
+        <div>
+          <small i18n>COTAÇÃO EM USO</small><strong>{{ quote.name }}</strong
+          ><small
+            >{{ silver(quote.price) }} / unidade · {{ quote.region.toUpperCase() }} ·
+            {{ date(quote.observedAt) }}</small
+          >
+        </div>
+        <button class="btn subtle" type="button" (click)="workspaceView.set('quote')" i18n>
+          Consultar outro item
+        </button>
       </div>
     }
-  </section>
-  @if (selected(); as q) {
+    <div
+      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+    >
+      <section class="panel">
+        <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
+        <div class="form-grid">
+          <label class="field"
+            ><ng-container i18n>Preço por unidade</ng-container
+            ><input
+              inputmode="numeric"
+              [ngModel]="form().price"
+              (ngModelChange)="patch({ price: $event })" /></label
+          ><label class="field"
+            ><ng-container i18n>Quantidade</ng-container
+            ><input
+              type="number"
+              min="1"
+              [ngModel]="form().quantity"
+              (ngModelChange)="patch({ quantity: $event })" /></label
+          ><label class="field"
+            ><ng-container i18n>Custo total de aquisição</ng-container
+            ><input
+              inputmode="numeric"
+              [ngModel]="form().cost"
+              (ngModelChange)="patch({ cost: $event })"
+          /></label>
+        </div>
+        <details>
+          <summary i18n>Taxas, benefícios e configurações salvas</summary>
+          <app-tax-options [value]="form()" (changed)="setTaxes($event)" />
+          <app-preset-bar tool="market" [value]="form()" (loaded)="load($event)" />
+        </details>
+        <p class="help">
+          <ng-container i18n
+            >Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. </ng-container
+          ><a
+            href="https://www.sa.playblackdesert.com/pt-BR/Wiki?wikiNo=47"
+            target="_blank"
+            rel="noreferrer"
+            ><ng-container i18n>Guia oficial</ng-container></a
+          ><ng-container i18n>. Ajuste imposto e isenção para o tipo de venda. </ng-container>
+        </p>
+        <app-calculation-proof tool="market" [value]="form()" />
+      </section>
+      <section>
+        @if (result().value; as r) {
+          <div class="metric-grid">
+            <div class="metric hero-metric">
+              <span><ng-container i18n>Prata líquida</ng-container></span
+              ><strong>{{ silver(r.net) }}</strong
+              ><small
+                ><ng-container i18n
+                  >{{ number(r.retentionPercent, 3) }}% do valor bruto</ng-container
+                ></small
+              >
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Imposto efetivo</ng-container></span
+              ><strong>{{ silver(r.tax) }}</strong>
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Lucro após aquisição</ng-container></span
+              ><strong [class.negative]="r.profit.startsWith('-')">{{ silver(r.profit) }}</strong>
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Sem Value Pack</ng-container></span
+              ><strong>{{ silver(r.withoutValuePack) }}</strong>
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Com Value Pack</ng-container></span
+              ><strong>{{ silver(r.withValuePack) }}</strong>
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Venda bruta</ng-container></span
+              ><strong>{{ silver(r.gross) }}</strong>
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Preço mínimo para empatar</ng-container></span
+              ><strong>{{ silver(r.breakEvenPrice) }}</strong
+              ><small><ng-container i18n>Por unidade</ng-container></small>
+            </div>
+          </div>
+        } @else {
+          <div class="error-box" role="alert">{{ result().error }}</div>
+        }
+      </section>
+    </div>
+  }
+  @if (workspaceView() === 'saved') {
     <section class="panel">
       <div class="panel-heading">
         <h2>
-          <ng-container i18n>Histórico pessoal · {{ q.name }}</ng-container>
+          <ng-container i18n
+            >Minhas cotações · {{ store.data().region.toUpperCase() }}</ng-container
+          >
         </h2>
-        <span class="badge">{{ q.region.toUpperCase() }}</span>
+        <span class="badge"><ng-container i18n>MEUS DADOS</ng-container></span>
       </div>
-      <svg
-        class="chart"
-        viewBox="0 0 1000 160"
-        preserveAspectRatio="none"
-        role="img"
-        [attr.aria-label]="'Evolução do preço registrado de ' + q.name"
-      >
-        <polyline
-          [attr.points]="points(q)"
-          fill="none"
-          stroke="#d6a577"
-          stroke-width="3"
-          vector-effect="non-scaling-stroke"
-        />
-      </svg>
-      <p class="help">
-        <ng-container i18n
-          >Pontos igualmente espaçados por registro. A tabela preserva os horários reais.
-        </ng-container>
-      </p>
-      <div class="max-w-full overflow-x-auto">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th><ng-container i18n>Data</ng-container></th>
-              <th><ng-container i18n>Preço</ng-container></th>
-              <th><ng-container i18n>Estoque</ng-container></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (h of q.history.slice(-10); track $index) {
-              <tr>
-                <td>{{ date(h.observedAt) }}</td>
-                <td>{{ silver(h.price) }}</td>
-                <td>{{ number(h.stock, 0) }}</td>
-              </tr>
+      <div class="row-editor">
+        <div class="form-grid">
+          <label class="field"
+            ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
+          ><label class="field"
+            ><ng-container i18n>Categoria</ng-container
+            ><input [value]="draft.category" readonly /></label
+          ><label class="field"
+            ><ng-container i18n>Preço unitário</ng-container
+            ><input inputmode="numeric" [(ngModel)]="draft.price" /></label
+          ><label class="field"
+            ><ng-container i18n>Estoque observado</ng-container
+            ><input type="number" min="0" [(ngModel)]="draft.stock"
+          /></label>
+        </div>
+        <div class="action-row">
+          <button class="btn" type="button" (click)="saveQuote()">
+            <ng-container i18n>Registrar cotação</ng-container></button
+          ><span class="help"
+            ><ng-container i18n
+              >Registrar o mesmo item adiciona um ponto ao histórico.</ng-container
+            ></span
+          >
+        </div>
+      </div>
+      @if (error()) {
+        <p class="error-box" role="alert">{{ error() }}</p>
+      }
+      <div class="form-grid" style="margin: 24px 0">
+        <label class="field"
+          ><ng-container i18n>Buscar</ng-container
+          ><input [(ngModel)]="search" placeholder="Nome do item" i18n-placeholder /></label
+        ><label class="field"
+          ><ng-container i18n>Categoria</ng-container
+          ><select [(ngModel)]="category">
+            <option value=""><ng-container i18n>Todas</ng-container></option>
+            @for (c of categories; track c) {
+              <option [value]="c">{{ c }}</option>
             }
-          </tbody>
-        </table>
+          </select></label
+        ><label class="field"
+          ><ng-container i18n>Ordenar</ng-container
+          ><select [(ngModel)]="sort">
+            <option value="name"><ng-container i18n>Nome</ng-container></option>
+            <option value="price"><ng-container i18n>Menor preço</ng-container></option>
+          </select></label
+        ><label class="check-row"
+          ><input type="checkbox" [(ngModel)]="favoritesOnly" />
+          <ng-container i18n>Somente favoritos</ng-container></label
+        >
       </div>
+      @if (quotes.length) {
+        <div class="max-w-full overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><ng-container i18n>Item</ng-container></th>
+                <th><ng-container i18n>Categoria</ng-container></th>
+                <th><ng-container i18n>Preço</ng-container></th>
+                <th><ng-container i18n>Estoque</ng-container></th>
+                <th><ng-container i18n>Registrado / consultado</ng-container></th>
+                <th><ng-container i18n>Ações</ng-container></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (q of quotes; track q.id) {
+                <tr>
+                  <td>
+                    {{ q.name }}
+                    @if (q.favorite) {
+                      <span aria-label="Favorito" i18n-aria-label>★</span>
+                    }
+                  </td>
+                  <td>{{ q.category }} · {{ q.source === 'arsha' ? 'Arsha' : 'Manual' }}</td>
+                  <td class="numeric">{{ silver(q.price) }}</td>
+                  <td class="numeric">{{ number(q.stock, 0) }}</td>
+                  <td>{{ date(q.observedAt) }}</td>
+                  <td>
+                    <div class="action-row" style="margin: 0">
+                      <button class="btn subtle" type="button" (click)="use(q)">
+                        <ng-container i18n>Calcular</ng-container></button
+                      ><button class="btn subtle" type="button" (click)="toggle(q)">
+                        {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}</button
+                      ><button class="btn danger" type="button" (click)="remove(q.id)">
+                        <ng-container i18n>Excluir </ng-container>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">
+          <strong><ng-container i18n>Sua lista de cotações ainda está vazia.</ng-container></strong
+          ><ng-container i18n>Registre um preço acima ou ajuste os filtros. </ng-container>
+        </div>
+      }
     </section>
+    @if (selected(); as q) {
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>
+            <ng-container i18n>Histórico pessoal · {{ q.name }}</ng-container>
+          </h2>
+          <span class="badge">{{ q.region.toUpperCase() }}</span>
+        </div>
+        <svg
+          class="chart"
+          viewBox="0 0 1000 160"
+          preserveAspectRatio="none"
+          role="img"
+          [attr.aria-label]="'Evolução do preço registrado de ' + q.name"
+        >
+          <polyline
+            [attr.points]="points(q)"
+            fill="none"
+            stroke="#d6a577"
+            stroke-width="3"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+        <p class="help">
+          <ng-container i18n
+            >Pontos igualmente espaçados por registro. A tabela preserva os horários reais.
+          </ng-container>
+        </p>
+        <div class="max-w-full overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><ng-container i18n>Data</ng-container></th>
+                <th><ng-container i18n>Preço</ng-container></th>
+                <th><ng-container i18n>Estoque</ng-container></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of q.history.slice(-10); track $index) {
+                <tr>
+                  <td>{{ date(h.observedAt) }}</td>
+                  <td>{{ silver(h.price) }}</td>
+                  <td>{{ number(h.stock, 0) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
   }
 </div>
