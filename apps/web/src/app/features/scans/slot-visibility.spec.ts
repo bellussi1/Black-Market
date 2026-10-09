@@ -28,9 +28,10 @@ describe('Slot visibility and equipment frames', () => {
       data = pixels(width, height, [35, 35, 35]);
     const paint = (x: number, y: number) => {
       const i = (y * width + x) * 4;
-      data[i] = 220;
-      data[i + 1] = 150;
-      data[i + 2] = 40;
+      // Muted rarity borders in WebP can be nearly gray.
+      data[i] = 110;
+      data[i + 1] = 90;
+      data[i + 2] = 100;
     };
     for (const [x, y] of [
       [10, 10],

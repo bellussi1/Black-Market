@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { gearSlots } from '@bdo/calculators';
+import { characterSchema, gearSlots } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { firstValueFrom } from 'rxjs';
 
@@ -22,7 +22,15 @@ import { SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
-import { detectEquipmentFrames } from './equipment-slots';
+import {
+  confirmedEquipmentStatistics,
+  emptyEquipmentStatistics,
+  enhancementLevel,
+  type EnhancementReading,
+  equipmentStatFields,
+  type EquipmentStatistics,
+} from './equipment-reading';
+import { detectEquipmentFrames, suggestEquipmentLayout } from './equipment-slots';
 import { groupItemOptions } from './item-option-groups';
 import {
   type Crop,
@@ -46,6 +54,7 @@ import { detectStorageGrids, type GridDetection } from './storage-grid';
 import { parseVisibleQuantity } from './visible-quantity';
 
 export interface CellDraft {
+  enhancementSuggestion?: EnhancementReading | null;
   score?: number;
   sourceRect?: Crop;
   levelConfirmed?: boolean;
@@ -59,6 +68,7 @@ export interface CellDraft {
   quantityText: string;
   quantityEstimate: string | null;
   quantityUncertain: boolean;
+  quantityConfidence?: number;
   include: boolean;
   reviewed: boolean;
   slot: string;
@@ -67,6 +77,9 @@ export interface CellDraft {
 }
 type ScanMode = 'storage' | 'inventory' | 'gear' | 'number';
 interface ScanJob {
+  autoArea?: boolean;
+  equipmentStatistics?: EquipmentStatistics;
+  statisticsConfirmed?: boolean;
   id: string;
   file: File;
   url: string;
@@ -148,10 +161,24 @@ export class ScansPage implements OnDestroy {
   readonly picking = signal(false);
   private cropStart?: { x: number; y: number };
   readonly cells = signal<CellDraft[]>([]);
+  equipmentStatistics = emptyEquipmentStatistics();
+  statisticsConfirmed = false;
+  readonly equipmentStatFields = equipmentStatFields;
+  readonly equipmentStatLabels = { mainAp: 'PA principal', awakeAp: 'PA de despertar', dp: 'PD' };
   readonly reviewPage = signal(0);
   readonly reviewPageSize = 12;
+  readonly reviewFilter = signal<'pending' | 'all'>('pending');
+  readonly autoRead = signal(true);
+  readonly reviewCells = computed(() =>
+    this.reviewFilter() === 'pending'
+      ? this.cells().filter((cell) => !cell.reviewed && !cell.ignored)
+      : this.cells(),
+  );
+  readonly reliableCount = computed(
+    () => this.cells().filter((cell) => this.reliable(cell)).length,
+  );
   readonly visibleCells = computed(() =>
-    this.cells().slice(
+    this.reviewCells().slice(
       this.reviewPage() * this.reviewPageSize,
       (this.reviewPage() + 1) * this.reviewPageSize,
     ),
@@ -200,6 +227,35 @@ export class ScansPage implements OnDestroy {
     clothes: 'Traje de profissão',
   };
   profileId = '';
+  captureCharacterName = '';
+  createCaptureCharacter() {
+    const parsed = characterSchema.safeParse({
+      id: crypto.randomUUID(),
+      name: this.captureCharacterName,
+      region: this.store.data().region,
+    });
+    if (!parsed.success) {
+      this.message.set('Informe um nome de 1 a 80 caracteres para o personagem.');
+      return;
+    }
+    if (
+      !this.store.update((state) => ({
+        ...state,
+        characters: [...state.characters, parsed.data],
+        activeCharacterId: parsed.data.id,
+      }))
+    )
+      return;
+    this.profileId = parsed.data.id;
+    this.jobs.update((jobs) =>
+      jobs.map((job) =>
+        job.mode !== 'storage' && !job.profileId ? { ...job, profileId: parsed.data.id } : job,
+      ),
+    );
+    this.destinationChanged();
+    this.captureCharacterName = '';
+    this.message.set('Personagem criado. As capturas e resultados do lote foram mantidos.');
+  }
   field = 'silver';
   numberDraft = '';
   confirmNumber = false;
@@ -219,10 +275,17 @@ export class ScansPage implements OnDestroy {
     { id: 'hunting', name: 'Maestria de caça' },
   ];
   constructor() {
+    this.profileId = this.store.activeCharacter()?.id ?? '';
+    this.location =
+      this.store
+        .data()
+        .inventory.find((row) => row.region === this.region && row.kind !== 'inventory')
+        ?.location ?? 'Velia';
     effect(() => {
       const region = this.store.data().region;
       untracked(() => {
         if (region !== this.region) {
+          this.resetEquipmentStatistics();
           this.cancel();
           this.clearJobs();
           this.cells.set([]);
@@ -241,7 +304,40 @@ export class ScansPage implements OnDestroy {
   profiles() {
     return this.store.data().characters.filter((row) => row.region === this.store.data().region);
   }
+  reliable(cell: CellDraft) {
+    return (
+      this.mode !== 'gear' &&
+      !cell.reviewed &&
+      !cell.ignored &&
+      !!cell.item &&
+      cell.score !== undefined &&
+      cell.score <= 8 &&
+      !cell.quantityUncertain &&
+      (cell.quantityConfidence ?? 0) >= 85 &&
+      cell.quantityEstimate === null &&
+      this.integer(cell.quantity) !== null
+    );
+  }
+  confirmReliable() {
+    for (const cell of this.cells())
+      if (this.reliable(cell)) {
+        cell.include = true;
+        cell.reviewed = true;
+      }
+    this.cells.set([...this.cells()]);
+    this.reviewPage.set(0);
+    this.saveActiveJob();
+    this.batchConfirmed.set(false);
+    this.message.set(
+      'Sugestões nítidas confirmadas. Revise as pendências e o destino antes de sincronizar.',
+    );
+  }
+  setReviewFilter(filter: 'pending' | 'all') {
+    this.reviewFilter.set(filter);
+    this.reviewPage.set(0);
+  }
   changeMode() {
+    this.resetEquipmentStatistics();
     this.cells.set([]);
     this.numberDraft = '';
     this.confirmNumber = false;
@@ -349,7 +445,22 @@ export class ScansPage implements OnDestroy {
               /* manual crop remains available */
             }
           const first = areas[0];
+          let autoArea = areas.length === 1;
+          if (this.mode === 'gear') {
+            try {
+              autoArea =
+                detectEquipmentFrames(image, {
+                  left: 0,
+                  top: 0,
+                  width: image.width,
+                  height: image.height,
+                }).length >= 8;
+            } catch {
+              autoArea = false;
+            }
+          }
           const job: ScanJob = {
+            autoArea,
             id: crypto.randomUUID(),
             file,
             url: URL.createObjectURL(file),
@@ -389,6 +500,9 @@ export class ScansPage implements OnDestroy {
         await this.activateJob(this.jobs()[0].id, true);
     } finally {
       this.preparing.set(false);
+      const queued = this.jobs().filter((job) => job.status === 'queued');
+      if (this.autoRead() && queued.length && queued.every((job) => job.autoArea))
+        await this.readBatch();
     }
   }
   private saveActiveJob() {
@@ -404,6 +518,8 @@ export class ScansPage implements OnDestroy {
       cells: this.cells(),
       areas: this.gridAreas(),
       emptySlots: this.emptySlots(),
+      equipmentStatistics: { ...this.equipmentStatistics },
+      statisticsConfirmed: this.statisticsConfirmed,
     });
     this.jobs.set([...this.jobs()]);
   }
@@ -442,6 +558,8 @@ export class ScansPage implements OnDestroy {
     this.columns = job.columns;
     this.rows = job.rows;
     this.cells.set(job.cells);
+    this.equipmentStatistics = { ...(job.equipmentStatistics ?? emptyEquipmentStatistics()) };
+    this.statisticsConfirmed = job.statisticsConfirmed ?? false;
     this.emptySlots.set(job.emptySlots);
     this.gridAreas.set(job.areas);
     this.gridSuggested.set(
@@ -502,6 +620,8 @@ export class ScansPage implements OnDestroy {
     this.batchConfirmed.set(false);
   }
   jobChanged(job: ScanJob) {
+    job.equipmentStatistics = emptyEquipmentStatistics();
+    job.statisticsConfirmed = false;
     job.cells = [];
     job.status = job.warning.startsWith('Arquivo idêntico') ? 'duplicate' : 'queued';
     this.jobs.set([...this.jobs()]);
@@ -512,6 +632,7 @@ export class ScansPage implements OnDestroy {
       this.location = job.location;
       this.profileId = job.profileId;
       this.cells.set([]);
+      this.resetEquipmentStatistics();
       if (this.mode === 'gear') {
         this.bounds = { left: 0, top: 0, width: this.width, height: this.height };
         this.columns = 1;
@@ -520,9 +641,11 @@ export class ScansPage implements OnDestroy {
     }
   }
   jobDestinationChanged(job: ScanJob) {
+    job.statisticsConfirmed = false;
     if (job.id === this.activeJobId()) {
       this.location = job.location;
       this.profileId = job.profileId;
+      this.statisticsConfirmed = false;
     }
     this.jobs.set([...this.jobs()]);
     this.batchConfirmed.set(false);
@@ -530,6 +653,7 @@ export class ScansPage implements OnDestroy {
     this.duplicateChoices.set({});
   }
   destinationChanged() {
+    this.statisticsConfirmed = false;
     this.saveActiveJob();
     this.batchConfirmed.set(false);
     this.fullLocationConfirmed.set(false);
@@ -602,6 +726,7 @@ export class ScansPage implements OnDestroy {
     this.gridSuggested.set(true);
   }
   invalidateCrop() {
+    this.resetEquipmentStatistics();
     this.gridSuggested.set(false);
     this.cells.set([]);
     this.reviewPage.set(0);
@@ -665,6 +790,7 @@ export class ScansPage implements OnDestroy {
     this.confirmNumber = false;
     this.confirmStock = false;
     this.reviewPage.set(0);
+    this.resetEquipmentStatistics();
     try {
       if (mode === 'number') {
         this.progress.set('Lendo o número…');
@@ -689,6 +815,7 @@ export class ScansPage implements OnDestroy {
         this.cachedIndex = { region: this.readingRegion, index };
         const positions: { cell: Crop; matches: ReturnType<typeof rankCandidates> }[] = [];
         const gearFrames = mode === 'gear' ? detectEquipmentFrames(image, bounds) : [];
+        const equipmentLayout = suggestEquipmentLayout(gearFrames, bounds);
         if (mode === 'gear' && !gearFrames.length && (bounds.width > 160 || bounds.height > 160)) {
           throw new Error('Recorte um ícone de equipamento para leitura manual.');
         }
@@ -814,7 +941,8 @@ export class ScansPage implements OnDestroy {
             quantityUncertain: false,
             include: false,
             reviewed: false,
-            slot: '',
+            slot:
+              mode === 'gear' ? (equipmentLayout.slots.get(gearFrames.indexOf(cell)) ?? '') : '',
             level: 0,
             caphras: 0,
             levelConfirmed: false,
@@ -822,6 +950,35 @@ export class ScansPage implements OnDestroy {
           };
         });
         this.cells.set(drafts);
+        if (mode === 'gear') {
+          this.progress.set('Lendo os símbolos de aprimoramento…');
+          const enhancements = await this.reader.readEnhancements(
+            image,
+            positions.map(({ cell }) => cell),
+          );
+          if (generation !== this.generation) return;
+          this.cells.set(
+            drafts.map((draft, i) => ({ ...draft, enhancementSuggestion: enhancements[i] })),
+          );
+          if (equipmentLayout.statistics.length) {
+            this.progress.set('Lendo PA e PD da ficha…');
+            const values = await this.reader.readQuantities(
+              image,
+              equipmentLayout.statistics.map(({ crop }) => crop),
+            );
+            if (generation !== this.generation) return;
+            for (const [i, { field }] of equipmentLayout.statistics.entries()) {
+              const value = values[i];
+              if (
+                value?.value &&
+                !value.approximate &&
+                value.confidence >= 50 &&
+                Number(value.value) <= 5000
+              )
+                this.equipmentStatistics[field] = value.value;
+            }
+          }
+        }
         if (mode === 'storage' || mode === 'inventory') {
           this.progress.set(`Lendo quantidades de ${drafts.length} espaços…`);
           const crops = positions.map(({ cell }) => ({
@@ -857,13 +1014,16 @@ export class ScansPage implements OnDestroy {
                 quantityText: reading?.text ?? '',
                 quantityEstimate: reading?.approximate ? reading.value : null,
                 quantityUncertain: !reading?.value || reading.confidence < 50,
+                quantityConfidence: reading?.confidence,
               };
             }),
           );
         }
         if (generation !== this.generation) return;
         this.message.set(
-          `${drafts.length} espaços preparados para revisão. Confirme somente os itens e as quantidades que conferiu no jogo. Valores abreviados precisam da quantidade exata.`,
+          mode === 'gear'
+            ? `${drafts.length} ícones preparados. Confira item, posição e aprimoramento. Trajes e artefatos podem aparecer sem posição; ignore o que não faz parte do conjunto de combate. Caphras não é visível nesta ficha.`
+            : `${drafts.length} espaços preparados para revisão. Confirme somente os itens e as quantidades que conferiu no jogo. Valores abreviados precisam da quantidade exata.`,
         );
       }
       if (job) {
@@ -956,6 +1116,10 @@ export class ScansPage implements OnDestroy {
       cell.options = [item, ...cell.options];
     }
     cell.item = item;
+    if (this.mode === 'gear') {
+      cell.levelConfirmed = false;
+      cell.caphrasConfirmed = false;
+    }
     cell.reviewed = false;
     cell.include = false;
     this.confirmStock = false;
@@ -980,10 +1144,41 @@ export class ScansPage implements OnDestroy {
     this.batchConfirmed.set(false);
     this.duplicateChoices.set({});
   }
+  private resetEquipmentStatistics() {
+    this.equipmentStatistics = emptyEquipmentStatistics();
+    this.statisticsConfirmed = false;
+  }
+  statisticsEdited() {
+    this.statisticsConfirmed = false;
+    this.saveActiveJob();
+    this.batchConfirmed.set(false);
+  }
+  confirmStatistics(checked: boolean) {
+    this.statisticsConfirmed = checked;
+    this.saveActiveJob();
+    this.batchConfirmed.set(false);
+  }
+  suggestedLevel(cell: CellDraft) {
+    return cell.enhancementSuggestion
+      ? enhancementLevel(cell.enhancementSuggestion, cell.slot)
+      : null;
+  }
+  acceptEnhancement(cell: CellDraft) {
+    const level = this.suggestedLevel(cell);
+    if (level === null) return;
+    cell.level = level;
+    cell.levelConfirmed = true;
+    this.edited(cell);
+  }
+  slotEdited(cell: CellDraft) {
+    cell.levelConfirmed = false;
+    this.edited(cell);
+  }
   review(cell: CellDraft, checked: boolean) {
     if (
       checked &&
       (!cell.item ||
+        (this.mode === 'gear' && !this.slots.includes(cell.slot as (typeof gearSlots)[number])) ||
         (['storage', 'inventory'].includes(this.mode) && this.integer(cell.quantity) === null))
     )
       return;
@@ -1235,6 +1430,17 @@ export class ScansPage implements OnDestroy {
     try {
       const stock = consolidateOccurrences(this.reviewedOccurrences(), this.duplicateChoices());
       const gear = selected.filter(({ job }) => job.mode === 'gear');
+      const statisticJobs = this.jobs().filter(
+        (job) => job.mode === 'gear' && job.status === 'ready' && job.statisticsConfirmed,
+      );
+      if (new Set(statisticJobs.map((job) => job.profileId)).size !== statisticJobs.length)
+        throw new Error('Confirme PA e PD em apenas uma captura por personagem neste lote.');
+      const statistics = new Map(
+        statisticJobs.map((job) => [
+          job.profileId,
+          confirmedEquipmentStatistics(job.equipmentStatistics ?? emptyEquipmentStatistics()),
+        ]),
+      );
       const gearKeys = gear.map(({ job, cell }) => JSON.stringify([job.profileId, cell.slot]));
       if (new Set(gearKeys).size !== gearKeys.length)
         throw new Error(
@@ -1328,6 +1534,7 @@ export class ScansPage implements OnDestroy {
           if (!equipment.length) return profile;
           return {
             ...profile,
+            ...statistics.get(profile.id),
             gear: [
               ...profile.gear.filter(
                 (part) => !equipment.some(({ cell }) => cell.slot === part.slot),

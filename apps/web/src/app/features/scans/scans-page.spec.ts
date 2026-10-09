@@ -12,6 +12,53 @@ import { ScansPage } from './scans-page';
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('creates a character inline while preserving the open capture and applying its destination', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    page.mode = 'inventory';
+    await page.file({
+      target: { files: [new File(['capture'], 'inventory.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const hash = page.jobs()[0].hash;
+    page.captureCharacterName = 'Novo aventureiro';
+    page.createCaptureCharacter();
+    expect(page.jobs()).toHaveLength(1);
+    expect(page.jobs()[0].hash).toBe(hash);
+    expect(page.jobs()[0].profileId).toBe(page.store.activeCharacter()?.id);
+    expect(page.profileId).toBe(page.store.activeCharacter()?.id);
+  });
+  it('confirms only clear item and exact quantity suggestions and keeps ambiguity in the pending queue', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const item = { id: 1, name: 'Material', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      score: 1,
+      quantity: '10',
+      quantityText: '10',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 95,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([
+      cell,
+      { ...cell, id: 1, item: null },
+      { ...cell, id: 2, quantityUncertain: true },
+    ]);
+    page.confirmReliable();
+    expect(page.cells().map((row) => row.reviewed)).toEqual([true, false, false]);
+    expect(page.cells().map((row) => row.include)).toEqual([true, false, false]);
+    expect(page.reviewCells()).toHaveLength(2);
+  });
   it('preserves historical gear values only for the same item without confirming an unread level', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
@@ -62,6 +109,7 @@ describe('Screenshot entry', () => {
     };
     page.jobs()[0].status = 'ready';
     page.cells.set([cell]);
+    page.equipmentStatistics = { mainAp: '417', awakeAp: '417', dp: '505' };
     Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
     page.batchConfirmed.set(true);
     await page.saveBatch();
@@ -72,6 +120,7 @@ describe('Screenshot entry', () => {
       levelConfirmed: false,
       caphrasConfirmed: false,
     });
+    expect(page.store.data().characters[0].mainAp).toBe(0);
     cell.item = { ...item, id: 10011 };
     page.cells.set([cell]);
     page.batchConfirmed.set(true);
@@ -83,6 +132,18 @@ describe('Screenshot entry', () => {
       levelConfirmed: false,
       caphrasConfirmed: false,
     });
+    page.confirmStatistics(true);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().characters[0]).toMatchObject({ mainAp: 417, awakeAp: 417, dp: 505 });
+    page.equipmentStatistics.dp = '9000';
+    page.statisticsEdited();
+    expect(page.statisticsConfirmed).toBe(false);
+    page.confirmStatistics(true);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().characters[0].dp).toBe(505);
+    expect(page.message()).toContain('Confira');
   });
   function images() {
     vi.spyOn(IconRefiner.prototype, 'refine').mockImplementation(

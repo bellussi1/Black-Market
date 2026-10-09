@@ -1,22 +1,44 @@
 <div class="tool-page guided-page">
   <header class="page-heading">
     <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
-    <h1 i18n>Importar por print</h1>
+    <h1 i18n>Importar capturas</h1>
     <p i18n>
       Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para sua
       conta. Confira cada resultado antes de salvar.
     </p>
   </header>
+  <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
+    <li [class.current]="!jobs().length"><b>01</b><span i18n>Enviar capturas</span></li>
+    <li [class.current]="jobs().length && !cells().length">
+      <b>02</b><span i18n>Reconhecer itens</span>
+    </li>
+    <li [class.current]="cells().length"><b>03</b><span i18n>Revisar e sincronizar</span></li>
+  </ol>
+  @if (mode === 'gear' || mode === 'inventory') {
+    <details class="panel" [open]="!profiles().length">
+      <summary i18n>Adicionar personagem sem sair da importação</summary>
+      <div class="action-row">
+        <label i18n
+          >Nome do personagem<input [(ngModel)]="captureCharacterName" maxlength="80" /></label
+        ><button type="button" (click)="createCaptureCharacter()" i18n>
+          Criar e usar neste lote
+        </button>
+      </div>
+    </details>
+  }
   <section class="panel">
     <h2 i18n>1. Escolha a captura</h2>
-    <ol>
-      <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
-      <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
-      <li i18n>
-        Você pode usar a janela inteira: tentaremos localizar a grade de itens. Revise cada captura;
-        imagens sobrepostas não são somadas automaticamente.
-      </li>
-    </ol>
+    <details>
+      <summary i18n>Como preparar uma boa captura</summary>
+      <ol>
+        <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
+        <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
+        <li i18n>
+          Você pode usar a janela inteira: tentaremos localizar a grade de itens. Revise cada
+          captura; imagens sobrepostas não são somadas automaticamente.
+        </li>
+      </ol>
+    </details>
     <div
       class="capture-drop"
       tabindex="0"
@@ -49,6 +71,15 @@
       A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A
       leitura pode confundir itens e números.
     </p>
+    <label
+      ><input
+        type="checkbox"
+        [ngModel]="autoRead()"
+        (ngModelChange)="autoRead.set($event)"
+      /><ng-container i18n
+        >Analisar automaticamente quando a área de leitura estiver clara</ng-container
+      ></label
+    >
   </section>
   @if (jobs().length) {
     <section class="panel batch-panel" aria-labelledby="batch-title">
@@ -116,7 +147,9 @@
                           <option [value]="profile.id">{{ profile.name }}</option>
                         }
                       </select></label
-                    ><a routerLink="/gear" i18n>Cadastrar personagem</a>
+                    ><span class="help" i18n
+                      >Você pode criar um personagem no início desta página sem perder o lote.</span
+                    >
                   }
                   <div class="action-row">
                     <button type="button" (click)="removeJob(job.id)" i18n>Remover</button
@@ -290,29 +323,31 @@
             @if (mode === 'gear') {
               <p i18n>
                 Tentaremos detectar molduras de equipamentos na área selecionada. Se não funcionar,
-                recorte um ícone e use uma linha e uma coluna. A posição, o aprimoramento e Caphras
-                precisam ser conferidos manualmente.
+                recorte um ícone e use uma linha e uma coluna. Posições e símbolos de aprimoramento
+                são sugestões para revisar. Caphras precisa ser informado no jogo.
               </p>
             }
-            <label i18n
-              >Colunas da grade<input
-                type="number"
-                [(ngModel)]="columns"
-                (ngModelChange)="invalidateCrop()"
-                min="1"
-                max="100" /></label
-            ><label i18n
-              >Linhas da grade<input
-                type="number"
-                [(ngModel)]="rows"
-                (ngModelChange)="invalidateCrop()"
-                min="1"
-                max="100"
-            /></label>
-            <p i18n>
-              O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo
-              de 400 espaços por leitura.
-            </p>
+            @if (mode !== 'gear') {
+              <label i18n
+                >Colunas da grade<input
+                  type="number"
+                  [(ngModel)]="columns"
+                  (ngModelChange)="invalidateCrop()"
+                  min="1"
+                  max="100" /></label
+              ><label i18n
+                >Linhas da grade<input
+                  type="number"
+                  [(ngModel)]="rows"
+                  (ngModelChange)="invalidateCrop()"
+                  min="1"
+                  max="100"
+              /></label>
+              <p i18n>
+                O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais.
+                Máximo de 400 espaços por leitura.
+              </p>
+            }
           } @else {
             <p i18n>
               Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como
@@ -413,7 +448,66 @@
             }
           </select>
         }
+        @if (mode === 'gear') {
+          <fieldset class="equipment-stat-review">
+            <legend i18n>PA e PD da ficha</legend>
+            <p i18n>
+              Confira os números no jogo. Campos vazios preservam os valores anteriores; os
+              atributos não são calculados pelos ícones.
+            </p>
+            <div class="form-grid">
+              @for (field of equipmentStatFields; track field) {
+                <label [for]="'scan-stat-' + field">{{ equipmentStatLabels[field] }}</label>
+                <input
+                  [id]="'scan-stat-' + field"
+                  [(ngModel)]="equipmentStatistics[field]"
+                  (ngModelChange)="statisticsEdited()"
+                  inputmode="numeric"
+                  maxlength="4"
+                />
+              }
+            </div>
+            <label
+              ><input
+                type="checkbox"
+                [ngModel]="statisticsConfirmed"
+                (ngModelChange)="confirmStatistics($event)"
+              /><ng-container i18n
+                >Conferi PA e PD. Atualizar os campos preenchidos junto com os
+                equipamentos.</ng-container
+              ></label
+            >
+          </fieldset>
+        }
         <nav class="review-pagination" aria-label="Páginas da revisão da captura" i18n-aria-label>
+          <div
+            class="segmented-control"
+            role="group"
+            aria-label="Filtro da revisão"
+            i18n-aria-label
+          >
+            <button
+              type="button"
+              [attr.aria-pressed]="reviewFilter() === 'pending'"
+              (click)="setReviewFilter('pending')"
+              i18n
+            >
+              Pendências
+            </button>
+            <button
+              type="button"
+              [attr.aria-pressed]="reviewFilter() === 'all'"
+              (click)="setReviewFilter('all')"
+              i18n
+            >
+              Todos os itens
+            </button>
+          </div>
+          @if (reliableCount()) {
+            <button type="button" (click)="confirmReliable()" i18n>
+              Conferi as {{ reliableCount() }} sugestões nítidas
+            </button>
+          }
           <button
             type="button"
             (click)="reviewPage.set(reviewPage() - 1)"
@@ -425,12 +519,12 @@
           <span aria-live="polite" i18n
             >Espaços {{ reviewPage() * reviewPageSize + 1 }} a
             {{ reviewPage() * reviewPageSize + visibleCells().length }} de
-            {{ cells().length }}</span
+            {{ reviewCells().length }}</span
           >
           <button
             type="button"
             (click)="reviewPage.set(reviewPage() + 1)"
-            [disabled]="(reviewPage() + 1) * reviewPageSize >= cells().length"
+            [disabled]="(reviewPage() + 1) * reviewPageSize >= reviewCells().length"
             i18n
           >
             Próximos espaços
@@ -532,13 +626,26 @@
                 ><select
                   [id]="'gear-slot-' + cell.id"
                   [(ngModel)]="cell.slot"
-                  (ngModelChange)="edited(cell)"
+                  (ngModelChange)="slotEdited(cell)"
                 >
                   <option value="" i18n>Escolha a posição</option>
                   @for (slot of slots; track slot) {
                     <option [value]="slot">{{ slotLabels[slot] }}</option>
-                  }</select
-                ><label i18n
+                  }
+                </select>
+                @if (cell.enhancementSuggestion; as suggestion) {
+                  <p i18n>Símbolo sugerido: {{ suggestion.text }}. Confira na captura.</p>
+                  @if (suggestedLevel(cell) !== null) {
+                    <button type="button" (click)="acceptEnhancement(cell)" i18n>
+                      Conferi o símbolo. Usar nível {{ suggestedLevel(cell) }}
+                    </button>
+                  }
+                }
+                <p class="help" i18n>
+                  Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um
+                  número ausente não confirma nível base.
+                </p>
+                <label i18n
                   >Nível de aprimoramento (0 a 30)<input
                     type="number"
                     [ngModel]="cell.levelConfirmed ? cell.level : null"
@@ -567,6 +674,7 @@
                   (ngModelChange)="review(cell, $event)"
                   [disabled]="
                     !cell.item ||
+                    (mode === 'gear' && !cell.slot) ||
                     ((mode === 'storage' || mode === 'inventory') &&
                       integer(cell.quantity) === null)
                   "

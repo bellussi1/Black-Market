@@ -173,8 +173,8 @@ export class EquipmentSheet {
   enhancement(slot: string, level: number) {
     const accessory = /^(ring|earring|necklace|belt)/.test(slot);
     const n = accessory ? level : level > 15 ? level - 15 : 0;
-    return n > 0 && n <= 5
-      ? ['', 'PRI (I)', 'DUO (II)', 'TRI (III)', 'TET (IV)', 'PEN (V)'][n]
+    return n > 0 && n <= 10
+      ? ['', 'PRI (I)', 'DUO (II)', 'TRI (III)', 'TET (IV)', 'PEN (V)', 'VI', 'VII', 'VIII', 'IX', 'X'][n]
       : level
         ? `+${level}`
         : 'Base';

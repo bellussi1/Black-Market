@@ -1,5 +1,6 @@
 import type { Line, Worker } from 'tesseract.js';
 
+import { type EnhancementReading, parseEnhancement } from './equipment-reading';
 import { readQuantityPixels } from './quantity-pixels';
 import { parseVisibleQuantity } from './visible-quantity';
 
@@ -408,7 +409,8 @@ export class NumberReader {
   async read(image: CanvasImageSource, crop: Crop): Promise<string> {
     const worker = await this.getWorker();
     const { PSM } = await import('tesseract.js');
-    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE,
+      tessedit_char_whitelist: '0123456789.,kKmM' });
     const result = await this.cancellable(
       worker.recognize(cropCanvas(image, crop), {}, { text: true }),
     );
@@ -498,7 +500,8 @@ export class NumberReader {
     try {
       const worker = await this.getWorker();
       const { PSM } = await import('tesseract.js');
-      await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+        tessedit_char_whitelist: '0123456789.,kKmM' });
       const result = await this.cancellable(
         worker.recognize(canvas, {}, { text: true, blocks: true }),
       );
@@ -516,6 +519,53 @@ export class NumberReader {
       );
     } finally {
       this.reportProgress = undefined;
+    }
+  }
+  async readEnhancements(image: CanvasImageSource, crops: readonly Crop[]): Promise<(EnhancementReading | null)[]> {
+    if (!crops.length) return [];
+    if (crops.length > 32) throw new Error('Leia até 32 equipamentos por captura.');
+    const epoch = this.epoch;
+    const stride = 100, padding = 16;
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = stride * crops.length;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return crops.map(() => null);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    crops.forEach((crop, i) => ctx.drawImage(image, crop.left + crop.width * 0.2,
+      crop.top + crop.height * 0.25, crop.width * 0.65, crop.height * 0.6,
+      padding, i * stride + padding, 130, 60));
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      const [r, g, b] = [pixels.data[i], pixels.data[i + 1], pixels.data[i + 2]];
+      const ink = Math.max(r, g, b) > 155 && Math.max(r, g, b) - Math.min(r, g, b) < 95;
+      pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = ink ? 0 : 255;
+    }
+    // Preserve the white contact-sheet gutters (white background is not glyph ink).
+    for (let row = 0; row < crops.length; row++)
+      for (let y = row * stride; y < (row + 1) * stride; y++)
+        for (let x = 0; x < canvas.width; x++)
+          if (x < padding || x >= padding + 130 || y < row * stride + padding || y >= row * stride + padding + 60) {
+            const i = (y * canvas.width + x) * 4;
+            pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = 255;
+          }
+    ctx.putImageData(pixels, 0, 0);
+    try {
+      const worker = await this.getWorker();
+      const { PSM } = await import('tesseract.js');
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT, tessedit_char_whitelist: 'IVX+0123456789' });
+      const result = await this.cancellable(worker.recognize(canvas, {}, { text: true, blocks: true }));
+      const lines = result.data.blocks?.flatMap((block) => block.paragraphs.flatMap((p) => p.lines)) ?? [];
+      return crops.map((_, i) => {
+        const row = lines.filter((line) => line.bbox.y0 >= i * stride + padding && line.bbox.y1 <= i * stride + padding + 60);
+        return row.length === 1 && row[0].confidence >= 55 ? parseEnhancement(row[0].text) : null;
+      });
+    } catch {
+      if (epoch !== this.epoch) throw new Error('Leitura cancelada.');
+      await this.close();
+      return crops.map(() => null);
     }
   }
   async close() {
