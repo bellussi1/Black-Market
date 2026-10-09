@@ -4,7 +4,7 @@ Atualizado em 9 de outubro de 2026. Este documento descreve o código implementa
 
 ## Escopo e arquitetura
 
-O foco atual é Home, Mercado, importação, Armazéns, Inventário e Equipamentos. Catálogo, cadastro mínimo de personagem, backup, suporte e documentos legais apoiam essas jornadas. O código dos outros módulos foi preservado, incluindo os protótipos anteriores de demonstração e árvore de receitas; eles não fazem parte da entrega funcional deste MVP.
+O foco atual inclui Home, Mercado, importação, Armazéns, Inventário, Equipamentos e o [Recipe Explorer](recipe-explorer.md), habilitado pela solicitação seguinte para aproveitar os itens importados no planejamento de receitas. Catálogo, cadastro mínimo de personagem, backup, suporte e documentos legais apoiam essas jornadas. O código dos demais módulos e da demonstração foi preservado e permanece suspenso.
 
 `SCREENSHOT_MVP`, em `packages/shared/src/mvp-scope.ts`, controla navegação, proteção das rotas e sitemap. Alterar para `false` e recompilar restaura o escopo anterior. O servidor de produção redireciona os módulos suspensos para a Home; o guard também bloqueia navegação direta no cliente. URLs desconhecidas continuam com página 404. Inventário, importação, equipamentos e backup são privados para indexação, mesmo quando usados sem conta.
 

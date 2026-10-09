@@ -4,7 +4,9 @@
 
 Importação de até **8 capturas** de armazém, inventário e equipamentos, com comparação visual dos ícones, leitura numérica separada, revisão obrigatória e consolidação sem soma automática de repetidos. Mercado, catálogo e backup apoiam esse fluxo.
 
-Os demais módulos estão suspensos por uma configuração reversível, preservando o código. Consulte o [guia do MVP de capturas](docs/screenshot-mvp.md) para uso, arquitetura, testes, resultados medidos e limitações. O reconhecimento ainda exige confirmação manual de ícones compartilhados e contadores ilegíveis; não há uma métrica validada de precisão global dos IDs.
+O [Recipe Explorer](docs/recipe-explorer.md) complementa esse fluxo: pesquise qualquer item, explore receitas e sub-receitas em uma árvore interativa, consulte fontes conhecidas e compare materiais faltantes com seu estoque e preços disponíveis. Rendimentos ausentes exigem um cenário informado; locais e coeficientes desconhecidos não são inventados.
+
+Os outros módulos estão suspensos por uma configuração reversível, preservando o código. Consulte o [guia do MVP de capturas](docs/screenshot-mvp.md) para uso, arquitetura, testes, resultados medidos e limitações. O reconhecimento ainda exige confirmação manual de ícones compartilhados e contadores ilegíveis; não há uma métrica validada de precisão global dos IDs.
 
 Plataforma independente de Black Desert Online voltada à comunidade brasileira, com SA e português brasileiro como padrões. O objetivo é oferecer consultas gratuitas de itens, receitas, mercado e estimativas de renda, com uma interface simples e planejamento personalizado a partir de materiais, prata, maestria e equipamentos. Veja a [visão do produto e etapas de entrega](docs/product-vision.md).
 
