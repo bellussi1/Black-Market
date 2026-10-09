@@ -700,7 +700,13 @@ export class ScansPage implements OnDestroy {
               width: bounds.width / columns,
               height: bounds.height / rows,
             }));
-        for (const cell of slotCrops) {
+        for (const [slotIndex, cell] of slotCrops.entries()) {
+          if (generation !== this.generation) return;
+          this.progress.set(
+            `Comparando formas e cores… espaço ${slotIndex + 1} de ${slotCrops.length}`,
+          );
+          // Allow painting, keyboard input and cancellation between every slot.
+          await new Promise<void>((resolve) => setTimeout(resolve, 0));
           if (generation !== this.generation) return;
           const test = document.createElement('canvas');
           test.width = 32;
@@ -713,8 +719,6 @@ export class ScansPage implements OnDestroy {
             continue;
           }
           positions.push({ cell, matches: rankCandidates(image, cell, index) });
-          if (positions.length % 10 === 0)
-            await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }
         this.refiner?.close();
         const refiner = new IconRefiner();
