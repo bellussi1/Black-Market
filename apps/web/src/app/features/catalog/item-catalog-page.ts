@@ -10,7 +10,6 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import type {
   CatalogCategory,
   CatalogItem,
@@ -32,7 +31,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-item-catalog-page',
   standalone: true,
-  imports: [RouterLink, ItemIcon],
+  imports: [ItemIcon],
   templateUrl: './item-catalog-page.html',
   styleUrl: './item-catalog-page.scss',
 })

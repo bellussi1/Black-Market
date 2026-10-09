@@ -1,49 +1,65 @@
-<div class="tool-page guided-page">
+<div class="tool-page guided-page item-detail-page">
   <a routerLink="/database/items" i18n>← Catálogo de itens</a>
   @if (loading()) {
-    <p role="status" i18n>Carregando item…</p>
+    <p class="loading-state" role="status" i18n>Carregando item…</p>
   }
   @if (message()) {
-    <p role="alert">{{ message() }}</p>
+    <p class="error-box" role="alert">{{ message() }}</p>
   }
   @if (item(); as selected) {
-    <header class="page-heading">
+    <header class="page-heading item-identity">
       <app-item-icon
         [url]="api.resolveIconUrl(selected)"
         [name]="selected.name"
         [grade]="selected.grade"
       />
-      <p class="eyebrow">#{{ selected.id }}</p>
-      <h1>{{ selected.name }}</h1>
-      <p style="white-space: pre-line">{{ plain(selected.description) }}</p>
+      <div>
+        <p class="eyebrow">CATÁLOGO · #{{ selected.id }}</p>
+        <h1>{{ selected.name }}</h1>
+      </div>
     </header>
-    <section class="panel">
-      <h2 i18n>Informações do item</h2>
-      <dl>
-        @for (category of selected.categories; track category.id) {
-          <dt i18n>Categoria</dt>
-          <dd>{{ category.name }}</dd>
-        }
-        @if (selected.weight) {
-          <dt i18n>Peso</dt>
-          <dd>{{ selected.weight }}</dd>
-        }
-        @for (field of fields(); track $index) {
-          <dt>{{ field.label }}</dt>
-          <dd>
-            @if (field.link && isEnabled(field.link.join('/'))) {
-              <a [routerLink]="field.link">{{ field.value }}</a>
-            } @else {
-              {{ field.value }}
-            }
-          </dd>
-        }
-      </dl>
-      <a routerLink="/market" [queryParams]="{ item: selected.id }" i18n>Consultar mercado →</a>
-      <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
+    <div class="action-row">
+      <a class="btn" [routerLink]="['/recipes/items', selected.id]" i18n
         >Explorar produção e obtenção</a
       >
-    </section>
+      <a class="btn subtle" routerLink="/market" [queryParams]="{ item: selected.id }" i18n
+        >Consultar mercado</a
+      >
+    </div>
+    <div class="item-detail-layout">
+      <section class="panel item-description-panel">
+        <div class="panel-heading">
+          <h2 i18n>Descrição do jogo</h2>
+          <span class="badge" i18n>CATÁLOGO</span>
+        </div>
+        <p>
+          {{ plain(selected.description) || 'Este item não tem descrição no catálogo disponível.' }}
+        </p>
+      </section>
+      <section class="panel">
+        <h2 i18n>Informações do item</h2>
+        <dl class="item-facts">
+          @for (category of selected.categories; track category.id) {
+            <dt i18n>Categoria</dt>
+            <dd>{{ category.name }}</dd>
+          }
+          @if (selected.weight) {
+            <dt i18n>Peso</dt>
+            <dd>{{ selected.weight }}</dd>
+          }
+          @for (field of fields(); track $index) {
+            <dt>{{ field.label }}</dt>
+            <dd>
+              @if (field.link && isEnabled(field.link.join('/'))) {
+                <a [routerLink]="field.link">{{ field.value }}</a>
+              } @else {
+                {{ field.value }}
+              }
+            </dd>
+          }
+        </dl>
+      </section>
+    </div>
     @if (!screenshotMvp) {
       @for (
         group of [

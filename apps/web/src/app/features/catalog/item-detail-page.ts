@@ -80,7 +80,15 @@ export class ItemDetailPage {
           );
           this.produces.set(response.produces);
           this.uses.set(response.uses);
-          this.fields.set(referenceFields(response.item.item.sourceData));
+          this.fields.set(
+            referenceFields(
+              Object.fromEntries(
+                Object.entries(response.item.item.sourceData).filter(
+                  ([key]) => key !== 'name' && key !== 'description',
+                ),
+              ),
+            ),
+          );
         }
       });
     effect(() => {
