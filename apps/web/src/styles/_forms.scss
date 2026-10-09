@@ -31,7 +31,7 @@
     color: var(--bm-text);
     font: inherit;
     font-size: 14px;
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 12px;
     border-radius: 2px;
   }
@@ -115,12 +115,13 @@
     background: var(--bm-accent-hover);
   }
   .btn.subtle {
-    background: transparent;
-    color: var(--bm-accent);
+    background: var(--bm-surface-raised);
+    color: var(--bm-text);
     border-color: var(--bm-control-border);
   }
   .btn.subtle:hover {
     background: var(--bm-accent-soft);
+    border-color: var(--bm-accent);
   }
   .btn.danger {
     color: var(--bm-danger);
@@ -137,5 +138,62 @@
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 20px;
+  }
+  :where(.tool-page) button:where(:not([class])) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 14px;
+    border: 1px solid var(--bm-control-border);
+    border-radius: 2px;
+    background: var(--bm-input);
+    color: var(--bm-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition:
+      background-color 160ms,
+      border-color 160ms;
+  }
+  :where(.tool-page) button:where(:not([class])):hover:not(:disabled) {
+    border-color: var(--bm-accent);
+    background: var(--bm-accent-soft);
+  }
+  .tool-page button:disabled,
+  .tool-page input:disabled,
+  .tool-page select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .tool-page label:has(> input[type='checkbox']) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .tool-page input[type='file'] {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+    border: 1px solid var(--bm-border);
+    background: var(--bm-input);
+    color: var(--bm-muted);
+    font: inherit;
+    font-size: 13px;
+  }
+  .tool-page label[for]:has(+ input[type='file']) {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .tool-page input[type='file']::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--bm-control-border);
+    background: var(--bm-surface-raised);
+    color: var(--bm-text);
+    cursor: pointer;
   }
 }

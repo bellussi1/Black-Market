@@ -1,25 +1,28 @@
 import type { ElementRef } from '@angular/core';
 import {
+  afterEveryRender,
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
+  inject,
   input,
   output,
   signal,
   viewChild,
 } from '@angular/core';
-import { inject } from '@angular/core';
 import type { calculateProduction } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import type { BranchAction } from './recipe-branch';
-import { isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
+import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
 import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
+
 @Component({
   selector: 'app-recipe-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,17 +31,10 @@ import type { RecipeNode } from './recipe-tree-model';
   styleUrl: './recipe-graph.scss',
 })
 export class RecipeGraph {
-  constructor() {
-    afterNextRender(() => this.center());
-    effect(() => {
-      const focus = this.focus();
-      if (focus && !layoutRecipeGraph(this.root()).nodes.some((entry) => entry.node.path === focus))
-        this.focus.set('');
-    });
-  }
   readonly root = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly selected = input('root');
+  readonly advanced = input(false);
   readonly action = output<BranchAction>();
   readonly origins = input<ReadonlyMap<number, ItemSources['nodes']>>(new Map());
   readonly locationSelected = output<{ path: string; source: ItemSources['nodes'][number] }>();
@@ -46,84 +42,306 @@ export class RecipeGraph {
   readonly zoom = signal(1);
   readonly pan = signal({ x: 24, y: 24 });
   readonly focus = signal('');
-  readonly layout = computed(() => layoutRecipeGraph(this.root(), this.focus(), this.origins()));
-  readonly transform = computed(
-    () => `translate(${this.pan().x}px, ${this.pan().y}px) scale(${this.zoom()})`,
-  );
+  readonly dragging = signal(false);
   readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
   readonly ancestor = isGraphAncestor;
   readonly typeLabel = recipeTypeLabel;
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly sizes = signal<GraphLayoutState['sizes']>(new Map());
+  private readonly positions: GraphLayoutState['positions'] = new Map();
+  private rootIdentity = '';
+  private initialFitPending = true;
+  readonly layout = computed(() => {
+    const root = this.root();
+    const identity = root.part.itemId + ':' + (root.recipe?.key ?? '');
+    if (identity !== this.rootIdentity) {
+      this.positions.clear();
+      this.rootIdentity = identity;
+      this.initialFitPending = true;
+    }
+    return layoutRecipeGraph(root, this.focus(), this.origins(), {
+      positions: this.positions,
+      sizes: this.sizes(),
+    });
+  });
+  readonly transform = computed(
+    () => `translate(${this.pan().x}px, ${this.pan().y}px) scale(${this.zoom()})`,
+  );
+  private readonly allocationIndex = computed(
+    () => new Map(this.allocations().map((row) => [row.path, row])),
+  );
   private keyboardNavigation = false;
+  private observer?: ResizeObserver;
+  private observed = new Set<Element>();
+  private measureFrame = 0;
+  private wheelFrame = 0;
+  private pendingWheel = { delta: 0, x: 0, y: 0 };
+  private suppressClick = false;
+  private pointers = new Map<number, { x: number; y: number }>();
+  private pinch: { distance: number; zoom: number; worldX: number; worldY: number } | null = null;
+  private drag: {
+    x: number;
+    y: number;
+    px: number;
+    py: number;
+    pointer: number;
+    target: HTMLElement;
+  } | null = null;
+
+  constructor() {
+    afterNextRender(() => {
+      const viewport = this.viewport()?.nativeElement;
+      if (!viewport) return;
+      viewport.addEventListener('wheel', this.wheel, { passive: false });
+      viewport.addEventListener('click', this.clickCapture, true);
+      if (typeof ResizeObserver !== 'undefined') {
+        this.observer = new ResizeObserver(() => this.scheduleMeasure());
+        this.observer.observe(viewport);
+      }
+      this.refreshObservedNodes();
+      this.fit();
+      this.destroyRef.onDestroy(() => {
+        viewport.removeEventListener('wheel', this.wheel);
+        viewport.removeEventListener('click', this.clickCapture, true);
+        this.observer?.disconnect();
+        cancelAnimationFrame(this.measureFrame);
+        cancelAnimationFrame(this.wheelFrame);
+        this.end();
+      });
+    });
+    afterEveryRender(() => this.refreshObservedNodes());
+    effect(() => {
+      const focus = this.focus();
+      if (focus && !this.layout().nodes.some((entry) => entry.node.path === focus))
+        this.focus.set('');
+    });
+  }
+  private refreshObservedNodes() {
+    const viewport = this.viewport()?.nativeElement;
+    if (!viewport) return;
+    const nodes = new Set(viewport.querySelectorAll<HTMLElement>('[data-node-path]'));
+    for (const node of this.observed)
+      if (!nodes.has(node as HTMLElement)) {
+        this.observer?.unobserve(node);
+        this.observed.delete(node);
+      }
+    for (const node of nodes)
+      if (!this.observed.has(node)) {
+        this.observer?.observe(node);
+        this.observed.add(node);
+      }
+    this.scheduleMeasure();
+  }
+  private scheduleMeasure() {
+    if (this.measureFrame) return;
+    this.measureFrame = requestAnimationFrame(() => {
+      this.measureFrame = 0;
+      const sizes = new Map(this.sizes());
+      let changed = false;
+      for (const el of this.observed) {
+        const node = el as HTMLElement;
+        const path = node.dataset['nodePath'];
+        if (!path || !node.offsetWidth || !node.offsetHeight) continue;
+        const previous = sizes.get(path);
+        if (previous?.width !== node.offsetWidth || previous?.height !== node.offsetHeight) {
+          sizes.set(path, { width: node.offsetWidth, height: node.offsetHeight });
+          changed = true;
+        }
+      }
+      if (changed) this.sizes.set(sizes);
+      if (this.initialFitPending && this.viewport()?.nativeElement.clientWidth) {
+        this.initialFitPending = false;
+        this.fit();
+      }
+    });
+  }
+  allocation(path: string) {
+    return this.allocationIndex().get(path);
+  }
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);
-  }
-  private drag: { x: number; y: number; px: number; py: number; pointer: number } | null = null;
-  allocation(path: string) {
-    return this.allocations().find((row) => row.path === path);
   }
   emit(path: string, action: BranchAction['action']) {
     this.action.emit({ path, action });
   }
+  activate(node: RecipeNode) {
+    this.emit(node.path, 'source');
+    if (!node.loading) this.emit(node.path, node.expanded ? 'collapse' : 'expand');
+  }
+  private zoomAt(next: number, x: number, y: number) {
+    const zoom = Math.max(0.005, Math.min(1.75, next));
+    const previous = this.zoom();
+    const pan = this.pan();
+    this.pan.set({
+      x: x - ((x - pan.x) / previous) * zoom,
+      y: y - ((y - pan.y) / previous) * zoom,
+    });
+    this.zoom.set(zoom);
+  }
   scale(delta: number) {
-    this.zoom.update((value) =>
-      Math.max(0.35, Math.min(1.75, Math.round((value + delta) * 100) / 100)),
+    this.initialFitPending = false;
+    const viewport = this.viewport()?.nativeElement;
+    this.zoomAt(
+      this.zoom() * Math.pow(1.2, delta / 0.15),
+      (viewport?.clientWidth ?? 800) / 2,
+      (viewport?.clientHeight ?? 600) / 2,
     );
   }
+  private wheel = (event: WheelEvent) => {
+    if ((event.target as HTMLElement).closest('input,select,textarea,[data-scrollable]')) return;
+    event.preventDefault();
+    this.initialFitPending = false;
+    const viewport = this.viewport()?.nativeElement;
+    if (!viewport) return;
+    const rect = viewport.getBoundingClientRect();
+    const multiplier =
+      event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1;
+    this.pendingWheel.delta += event.deltaY * multiplier;
+    this.pendingWheel.x = event.clientX - rect.left;
+    this.pendingWheel.y = event.clientY - rect.top;
+    if (this.wheelFrame) return;
+    this.wheelFrame = requestAnimationFrame(() => {
+      this.wheelFrame = 0;
+      const { delta, x, y } = this.pendingWheel;
+      this.pendingWheel.delta = 0;
+      this.zoomAt(this.zoom() * Math.exp(-Math.max(-400, Math.min(400, delta)) * 0.0018), x, y);
+    });
+  };
   center(path = 'root') {
     const node = this.layout().nodes.find((row) => row.node.path === path);
-    const el = this.viewport()?.nativeElement;
-    if (node && el)
+    const viewport = this.viewport()?.nativeElement;
+    if (node && viewport?.clientWidth && viewport.clientHeight)
       this.pan.set({
-        x: el.clientWidth / 2 - (node.x + 110) * this.zoom(),
-        y: 50 - node.y * this.zoom(),
+        x: viewport.clientWidth / 2 - (node.x + node.width / 2) * this.zoom(),
+        y: viewport.clientHeight / 2 - (node.y + node.height / 2) * this.zoom(),
       });
   }
   fit() {
-    this.zoom.set(
-      Math.min(
-        1,
-        Math.max(0.35, (this.viewport()?.nativeElement.clientWidth ?? 800) / this.layout().width),
-      ),
+    const viewport = this.viewport()?.nativeElement;
+    if (!viewport?.clientWidth || !viewport.clientHeight) return;
+    const box = this.layout().bounds;
+    const zoom = Math.min(
+      1,
+      (viewport.clientWidth - 48) / box.width,
+      (viewport.clientHeight - 48) / box.height,
     );
+    // The same floor is used by wheel, buttons, pinch and fit, including wide trees.
+    this.zoom.set(Math.max(0.005, zoom));
+    this.pan.set({
+      x: (viewport.clientWidth - box.width * this.zoom()) / 2 - box.x * this.zoom(),
+      y: (viewport.clientHeight - box.height * this.zoom()) / 2 - box.y * this.zoom(),
+    });
+  }
+  reset() {
+    this.zoom.set(1);
+    this.focus.set('');
     this.center();
   }
   focusBranch() {
     this.focus.set(this.focus() ? '' : this.selected());
-    this.center(this.selected());
   }
   start(event: PointerEvent) {
     this.keyboardNavigation = false;
-    if (event.button !== 0 || (event.target as HTMLElement).closest('button,a,input,select'))
+    this.initialFitPending = false;
+    const target = event.target as HTMLElement;
+    if (event.button !== 0 || target.closest('a,input,select,textarea,.node-details')) return;
+    this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.pointers.size === 2) {
+      const [a, b] = [...this.pointers.values()];
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      this.pinch = {
+        distance: Math.hypot(a.x - b.x, a.y - b.y),
+        zoom: this.zoom(),
+        worldX: ((a.x + b.x) / 2 - rect.left - this.pan().x) / this.zoom(),
+        worldY: ((a.y + b.y) / 2 - rect.top - this.pan().y) / this.zoom(),
+      };
+      this.drag = null;
+      this.suppressClick = true;
+      (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
       return;
+    }
+    this.suppressClick = false;
     this.drag = {
       x: event.clientX,
       y: event.clientY,
       px: this.pan().x,
       py: this.pan().y,
       pointer: event.pointerId,
+      target: event.currentTarget as HTMLElement,
     };
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    // Capture touch immediately so both pinch pointers keep arriving; mouse after threshold.
+    if (event.pointerType === 'touch') this.drag.target.setPointerCapture?.(event.pointerId);
   }
   move(event: PointerEvent) {
+    if (this.pointers.has(event.pointerId))
+      this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.pinch && this.pointers.size === 2) {
+      const [a, b] = [...this.pointers.values()];
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const zoom = Math.max(
+        0.005,
+        Math.min(
+          1.75,
+          (this.pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / Math.max(1, this.pinch.distance),
+        ),
+      );
+      this.zoom.set(zoom);
+      this.pan.set({
+        x: (a.x + b.x) / 2 - rect.left - this.pinch.worldX * zoom,
+        y: (a.y + b.y) / 2 - rect.top - this.pinch.worldY * zoom,
+      });
+      this.dragging.set(true);
+      return;
+    }
     if (this.drag?.pointer !== event.pointerId) return;
-    this.pan.set({
-      x: this.drag.px + event.clientX - this.drag.x,
-      y: this.drag.py + event.clientY - this.drag.y,
-    });
+    const dx = event.clientX - this.drag.x,
+      dy = event.clientY - this.drag.y;
+    if (!this.dragging() && Math.hypot(dx, dy) < 5) return;
+    if (!this.dragging()) this.drag.target.setPointerCapture?.(event.pointerId);
+    this.dragging.set(true);
+    this.suppressClick = true;
+    event.preventDefault();
+    this.pan.set({ x: this.drag.px + dx, y: this.drag.py + dy });
   }
-  end() {
+  end(event?: PointerEvent) {
+    if (event) {
+      this.pointers.delete(event.pointerId);
+      const viewport = event.currentTarget as HTMLElement;
+      if (viewport?.hasPointerCapture?.(event.pointerId))
+        viewport.releasePointerCapture(event.pointerId);
+    } else this.pointers.clear();
+    this.pinch = null;
     this.drag = null;
+    this.dragging.set(false);
+  }
+  private clickCapture = (event: Event) => this.captureClick(event);
+  captureClick(event: Event) {
+    if (!this.suppressClick) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    this.suppressClick = false;
   }
   key(event: KeyboardEvent) {
     if (event.key === 'Tab') this.keyboardNavigation = true;
+    if (event.target !== event.currentTarget) return;
     const delta = {
       ArrowLeft: [40, 0],
       ArrowRight: [-40, 0],
       ArrowUp: [0, 40],
       ArrowDown: [0, -40],
     }[event.key];
-    if (event.target !== event.currentTarget || !delta) return;
-    event.preventDefault();
-    this.pan.update((p) => ({ x: p.x + delta[0], y: p.y + delta[1] }));
+    if (delta) {
+      event.preventDefault();
+      this.pan.update((p) => ({ x: p.x + delta[0], y: p.y + delta[1] }));
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      this.scale(0.15);
+    } else if (event.key === '-') {
+      event.preventDefault();
+      this.scale(-0.15);
+    } else if (event.key === '0') {
+      event.preventDefault();
+      this.fit();
+    }
   }
 }

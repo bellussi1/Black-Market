@@ -1,20 +1,28 @@
 $palette: (
-  background: #111318,
-  surface: #1a1d24,
-  input: #12151b,
+  background: #17181c,
+  surface: #25262b,
+  input: #1b1c21,
   accent: #d8b978,
-  text: #e9e6df,
-  muted: #a9afba,
-  border: #363b46,
-  control-border: #727b8a,
-  focus: #f0cf87,
-  surface-raised: #252a33,
+  text: #ebe5d8,
+  muted: #b9b1a0,
+  border: #49484a,
+  control-border: #827c72,
+  focus: #f2d59c,
+  surface-raised: #303137,
+  titlebar: #715b37,
   accent-hover: #ecd39c,
   accent-soft: #d8b97814,
   warning: #e1c28a,
   info: #a4c4e8,
   danger: #edafa0,
   success: #b8d5a6,
+  grade-white: #b7b8bc,
+  grade-green: #91be71,
+  grade-blue: #82b5e6,
+  grade-yellow: #d8b978,
+  grade-orange: #e6a078,
+  grade-red: #e58f86,
+  grade-purple: #c5a2e1,
 );
 
 @layer base {
@@ -22,7 +30,7 @@ $palette: (
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }
-    --bm-font-body: 'Avenir Next', 'Segoe UI', sans-serif;
-    --bm-font-display: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --bm-font-body: 'Segoe UI', sans-serif;
+    --bm-font-display: 'Segoe UI', sans-serif;
   }
 }

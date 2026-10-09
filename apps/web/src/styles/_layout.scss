@@ -15,15 +15,15 @@
     text-transform: uppercase;
   }
   .tool-heading h1 {
-    font: 400 clamp(30px, 3vw, 40px)/1.18 var(--bm-font-display);
-    letter-spacing: -0.035em;
+    font: 500 clamp(26px, 3vw, 30px)/1.25 var(--bm-font-display);
+    letter-spacing: -0.015em;
     margin: 0 0 15px;
   }
   .tool-heading p:last-child {
     max-width: 68ch;
     color: var(--bm-muted);
-    font-size: 16px;
-    line-height: 1.7;
+    font-size: 14px;
+    line-height: 1.6;
   }
   .panel {
     padding: 20px;
@@ -31,10 +31,11 @@
     background: var(--bm-surface);
     min-width: 0;
     margin-bottom: 16px;
+    border-radius: 2px;
   }
   .panel h2 {
     margin: 0 0 16px;
-    font: 400 23px/1.25 var(--bm-font-display);
+    font: 500 19px/1.35 var(--bm-font-display);
   }
   .panel h3 {
     font-size: 16px;
@@ -53,5 +54,53 @@
     margin: 0;
     min-width: 0;
     flex: 1 1 15rem;
+  }
+  .panel > h2:first-child,
+  .panel > .panel-heading {
+    margin: -20px -20px 20px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--bm-border);
+    background: var(--bm-titlebar);
+    color: var(--bm-text);
+  }
+  .panel > .panel-heading h2 {
+    margin: 0;
+  }
+  .panel > .panel-heading .tool-kicker {
+    color: var(--bm-text);
+  }
+  .panel > .panel-heading :is(.help, .muted, small) {
+    color: var(--bm-text);
+  }
+  .panel > .panel-heading .badge {
+    background: var(--bm-input);
+  }
+  .tool-page .page-heading .eyebrow {
+    color: var(--bm-accent);
+  }
+  .tool-heading,
+  .page-heading {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--bm-border);
+  }
+  .page-heading > p:last-of-type {
+    margin-bottom: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 78ch;
+    color: var(--bm-muted);
+  }
+  .page-heading {
+    margin-bottom: 24px;
+  }
+  .page-heading h1 {
+    margin: 0 0 12px;
+    font: 500 clamp(26px, 3vw, 30px)/1.25 var(--bm-font-display);
+    letter-spacing: -0.015em;
+  }
+  .eyebrow {
+    color: var(--bm-accent);
+    font-size: 12px;
+    letter-spacing: 0.15em;
   }
 }

@@ -5,39 +5,58 @@
 .graph-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 6px;
   align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--bm-border);
+  border-bottom: 0;
+  background: var(--bm-surface);
 }
 .graph-controls button {
   min-height: 44px;
-  font-size: 0.8rem;
+  padding: 6px 12px;
+  font-size: 13px;
   border: 1px solid var(--bm-control-border);
-  background: var(--bm-surface);
   color: var(--bm-text);
-  padding: 0.35rem 0.6rem;
+  background: var(--bm-surface-raised);
+  cursor: pointer;
+}
+.graph-controls button[aria-pressed='true'] {
+  border-color: var(--bm-accent);
+  color: var(--bm-accent);
 }
 .graph-controls span {
-  min-width: 3rem;
+  min-width: 3.5rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  color: var(--bm-accent);
+}
+.help {
+  margin: 0;
+  padding: 8px 12px;
+  border-inline: 1px solid var(--bm-border);
+  font-size: 12px;
+  background: var(--bm-surface);
 }
 .graph-viewport {
   position: relative;
-  height: 620px;
+  height: clamp(460px, 65vh, 760px);
   overflow: hidden;
   border: 1px solid var(--bm-border);
-  background:
-    radial-gradient(var(--bm-border) 1px, transparent 1px) 0 0/24px 24px,
-    var(--bm-input);
+  background: var(--bm-input);
   touch-action: none;
   cursor: grab;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.graph-viewport:active {
+.graph-viewport.dragging {
   cursor: grabbing;
 }
 .graph-canvas {
   position: absolute;
   transform-origin: 0 0;
+  will-change: transform;
 }
 .graph-links {
   position: absolute;
@@ -47,94 +66,189 @@
 }
 .graph-links path {
   fill: none;
-  stroke: var(--bm-border);
-  stroke-width: 2;
+  stroke: var(--bm-control-border);
+  stroke-width: 1.5;
+  transition: stroke 160ms ease;
 }
 .graph-links path.highlight {
   stroke: var(--bm-accent);
+  stroke-width: 2;
 }
 .graph-node {
   position: absolute;
-  width: 220px;
-  height: 168px;
+  width: 248px;
+  min-height: 200px;
+  height: auto;
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
-  box-shadow: 0 6px 16px #0003;
+  box-shadow: 0 2px 6px #0003;
   display: flex;
   flex-direction: column;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+  animation: node-reveal 160ms ease-out;
 }
 .graph-node.selected {
-  border: 2px solid var(--bm-accent);
+  border-color: var(--bm-accent);
+  box-shadow:
+    inset 0 0 0 1px var(--bm-accent),
+    0 2px 6px #0003;
+}
+.graph-node.on-path:not(.selected) {
+  border-color: var(--bm-control-border);
+}
+.graph-node:hover {
+  border-color: var(--bm-accent);
 }
 .source-node {
   border-style: dashed;
+  min-height: 176px;
 }
 .source-symbol {
   flex: 0 0 32px;
-  font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
   color: var(--bm-accent);
 }
-.node-message {
-  position: absolute;
-  top: 100%;
-  z-index: 1;
-  padding: 0.3rem;
-  background: var(--bm-surface);
-  font-size: 0.7rem;
-}
-.node-category {
-  margin: 0.15rem 0.6rem;
-  font-size: 0.65rem;
-  color: var(--bm-muted);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+svg.source-symbol {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
 }
 .node-select {
   width: 100%;
   background: transparent;
   color: var(--bm-text);
   display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.6rem;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
   border: 0;
   text-align: left;
-  min-height: 68px;
+  min-height: 78px;
+  cursor: pointer;
 }
 .node-select span {
   min-width: 0;
 }
 .node-select small {
-  font-size: 0.65rem;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  line-height: 1.4;
   color: var(--bm-accent);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.025em;
 }
 .node-select strong {
-  font-size: 0.85rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 .graph-node p {
-  margin: 0.15rem 0.6rem;
-  font-size: 0.75rem;
+  margin: 0 12px 8px;
+  font-size: 13px;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
 .graph-node p span {
   color: var(--bm-muted);
 }
+.node-category {
+  margin: 0 12px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--bm-muted);
+  overflow-wrap: anywhere;
+}
+.node-message {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bm-warning);
+  border-top: 1px solid var(--bm-border);
+  overflow-wrap: anywhere;
+}
+.node-details {
+  margin: auto 12px 6px;
+  text-align: left;
+  min-height: 32px;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--bm-muted);
+  border: 0;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .expand-node {
-  margin-top: auto;
-  min-height: 38px;
-  padding: 0.3rem;
-  font-size: 0.75rem;
+  min-height: 40px;
+  padding: 6px 12px;
+  font-size: 13px;
   background: var(--bm-surface-raised);
   color: var(--bm-text);
   border: 0;
   border-top: 1px solid var(--bm-border);
+  cursor: pointer;
+}
+.expand-node[aria-expanded='true'] {
+  color: var(--bm-accent);
 }
 button:hover {
   background: var(--bm-surface-raised);
+  color: var(--bm-accent);
+}
+button:active {
+  background: var(--bm-input);
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+button:focus-visible {
+  outline: 2px solid var(--bm-focus);
+  outline-offset: -3px;
+}
+@keyframes node-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.node-leave {
+  animation: node-hide 140ms ease-in forwards;
+  pointer-events: none;
+}
+@keyframes node-hide {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .graph-node {
+    animation: none;
+    transition: none;
+  }
+  .graph-links path {
+    transition: none;
+  }
+}
+@media (pointer: coarse) {
+  .expand-node,
+  .node-details {
+    min-height: 44px;
+  }
 }

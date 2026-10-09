@@ -110,6 +110,8 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 
 ## Documentação
 
+- [Links úteis por funcionalidade e fontes de consulta](docs/research/useful-links.md)
+
 - [Arquitetura](docs/architecture.md)
 - [Padrões Angular, Tailwind, SCSS e Vitest](docs/angular-architecture.md)
 - [Lint, formatação e organização](docs/code-quality.md)

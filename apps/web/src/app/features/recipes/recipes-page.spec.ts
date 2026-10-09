@@ -61,6 +61,14 @@ describe('Universal recipe explorer', () => {
     expect(fixture.nativeElement.querySelector('app-recipe-tree').textContent).toContain(
       'Erva Daninha',
     );
+    expect(fixture.nativeElement.querySelector('.dataset-provenance')).toBeNull();
+    const mode = fixture.nativeElement.querySelector('.mode-toggle') as HTMLButtonElement;
+    mode.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.dataset-provenance')).not.toBeNull();
+    mode.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.dataset-provenance')).toBeNull();
     http.verify();
   });
   it('rejects invalid catalog IDs without making requests', async () => {

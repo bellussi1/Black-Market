@@ -1,6 +1,6 @@
 # Redesign de receitas · Black Market
 
-Estado: diagnóstico e desenho técnico para revisão. Código de produto ainda não alterado.
+Estado: implementado após aprovação. Sistema visual aplicado ao projeto, árvore de crafting reconstruída e revisão independente concluída. Evidências e limites em [validação](../../bdo-ui-validation.md).
 
 ## Objetivo e escopo
 

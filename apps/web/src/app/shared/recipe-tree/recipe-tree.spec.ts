@@ -52,6 +52,103 @@ function providers() {
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('shows known material cost directly in simple mode and marks absent quotations', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.setRootYield(1);
+    tree.target.set(10);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.production-overview .cost-value')?.textContent,
+    ).toContain('Sem cotações');
+    tree.livePrices.set(new Map([[9001, '5']]));
+    fixture.detectChanges();
+    expect(tree.advanced()).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.production-overview .cost-value')?.textContent,
+    ).toContain('100');
+    expect(
+      fixture.nativeElement.querySelector('.production-overview').closest('details'),
+    ).toBeNull();
+  });
+  it('keeps required yield accessible and preserves the graph and planning choices across modes', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.context-panel')).toBeNull();
+    expect(element.querySelector('.stock-settings')).toBeNull();
+    expect(element.querySelector('.root-yield input')).not.toBeNull();
+    const toggle = element.querySelector('.mode-toggle') as HTMLButtonElement;
+    expect(toggle).not.toBeNull();
+    tree.setRootYield(2);
+    tree.target.set(10);
+    tree.excludedLocations.set(['storage:test']);
+    tree.selectedPath.set('root/0');
+    const root = tree.root();
+    const graph = tree.graph()!;
+    graph.pan.set({ x: -120, y: 35 });
+    graph.zoom.set(0.7);
+    graph.focus.set('root/0');
+    toggle.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.stock-settings')).not.toBeNull();
+    toggle.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.stock-settings')).toBeNull();
+    expect(tree.graph()).toBe(graph);
+    expect(graph.pan()).toEqual({ x: -120, y: 35 });
+    expect(graph.zoom()).toBe(0.7);
+    expect(graph.focus()).toBe('root/0');
+    expect(tree.root()).toBe(root);
+    expect(tree.selectedPath()).toBe('root/0');
+    expect(tree.excludedLocations()).toEqual(['storage:test']);
+    expect(tree.plan()?.value?.rows.find((row) => row.itemId === 9001)?.required).toBe(10);
+  });
+  it('closes requested item details without clearing selection or discarding cached context', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.showContext(tree.root()!.children[0]);
+    fixture.detectChanges();
+    const context = tree.context();
+    const close = fixture.nativeElement.querySelector('.context-close') as HTMLButtonElement;
+    expect(close).not.toBeNull();
+    close.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.context-panel')).toBeNull();
+    expect(tree.selectedPath()).toBe('root/0');
+    expect(tree.context()).toBe(context);
+    tree.showContext(tree.root()!.children[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.context-panel')).not.toBeNull();
+  });
+  it('dismisses invalidated descendant details when its parent changes to external acquisition', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.showContext(tree.root()!.children[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.context-panel')).not.toBeNull();
+    tree.action({ path: 'root', action: 'buy' });
+    fixture.detectChanges();
+    expect(tree.selectedPath()).toBe('root');
+    expect(tree.context()).toBeNull();
+    expect(fixture.nativeElement.querySelector('.context-panel')).toBeNull();
+  });
   it('saves external material requirements only after the yield is known and updates the same draft', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(

@@ -3,8 +3,8 @@
   min-width: 0;
 }
 .platform-footer {
-  margin-top: 60px;
-  padding-block: 32px 24px;
+  margin-top: 40px;
+  padding-block: 24px 20px;
   border-top: 1px solid var(--bm-border);
   color: var(--bm-muted);
   font-size: 14px;
@@ -58,7 +58,8 @@ button {
   margin-top: 8px;
   padding: 8px 12px;
   border: 1px solid var(--bm-control-border);
-  background: transparent;
+  border-radius: 2px;
+  background: var(--bm-input);
   font: inherit;
   text-align: left;
   cursor: pointer;

@@ -1,11 +1,29 @@
 @if (root(); as product) {
   <section class="production-settings panel">
-    <div class="panel-heading">
-      <div>
-        <p class="eyebrow" i18n>DA IDEIA AOS MATERIAIS</p>
-        <h2>{{ product.part.name }}</h2>
+    <div class="panel-heading production-heading">
+      <div class="product-identity">
+        <app-item-icon
+          [url]="catalog.resolveIconUrl(selectedItem() ?? product.part)"
+          [name]="product.part.name"
+        />
+        <div>
+          <p class="eyebrow" i18n>PRODUTO</p>
+          <h2>{{ product.part.name }}</h2>
+        </div>
       </div>
-      <span class="badge">{{ recipe() ? typeLabel(recipe()!.type) : 'Explorar obtenção' }}</span>
+      <div class="mode-controls">
+        <span class="badge">{{
+          product.recipe ? typeLabel(product.recipe.type) : 'Explorar obtenção'
+        }}</span>
+        <button
+          type="button"
+          class="mode-toggle"
+          [attr.aria-pressed]="advanced()"
+          (click)="toggleAdvanced()"
+        >
+          {{ advanced() ? 'Voltar ao modo simples' : 'Modo avançado' }}
+        </button>
+      </div>
     </div>
     <div class="production-configuration">
       <div class="production-method"><ng-content select="[recipe-method]" /></div>
@@ -20,7 +38,7 @@
               (ngModelChange)="target.set($event)"
           /></label>
           @if (product.recipe) {
-            <label i18n
+            <label class="root-yield" [class.needs-confirmation]="product.yield === null" i18n
               >Rendimento por operação · cenário<input
                 type="number"
                 min=".001"
@@ -31,34 +49,42 @@
             /></label>
           }
         </div>
-        <p class="help" i18n>
-          Rendimentos médios são cenários, não produção garantida. Maestria não altera este
-          rendimento automaticamente. Campos ausentes precisam ser confirmados no jogo.
-        </p>
-        <details>
-          <summary i18n>Quais estoques entram no cálculo?</summary>
-          <div class="stock-selection">
-            @for (location of locations(); track location.key) {
-              <label
-                ><input
-                  type="checkbox"
-                  [ngModel]="!excludedLocations().includes(location.key)"
-                  (ngModelChange)="toggleLocation(location.key, $event)"
-                />{{ location.name }} · {{ location.count }} registros
-                @if (location.old) {
-                  <small>· {{ location.old }} sem atualização recente</small>
-                }
-              </label>
-            } @empty {
-              <p i18n>Nenhum estoque importado. <a routerLink="/scans">Importar capturas</a></p>
-            }
-          </div>
-          <p class="help" i18n>
-            Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas
-            parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao
-            simular.
+        <p class="help" i18n>Rendimento é um cenário. Confirme no jogo os campos ausentes.</p>
+        @if (product.recipe && product.yield === null) {
+          <p class="yield-warning" role="status" i18n>
+            Confirme o rendimento para calcular os materiais.
           </p>
-        </details>
+        }
+        @if (advanced()) {
+          <p class="help" i18n>
+            Rendimentos médios não garantem produção. Maestria não altera este rendimento
+            automaticamente.
+          </p>
+          <details class="stock-settings">
+            <summary i18n>Quais estoques entram no cálculo?</summary>
+            <div class="stock-selection">
+              @for (location of locations(); track location.key) {
+                <label
+                  ><input
+                    type="checkbox"
+                    [ngModel]="!excludedLocations().includes(location.key)"
+                    (ngModelChange)="toggleLocation(location.key, $event)"
+                  />{{ location.name }} · {{ location.count }} registros
+                  @if (location.old) {
+                    <small>· {{ location.old }} sem atualização recente</small>
+                  }
+                </label>
+              } @empty {
+                <p i18n>Nenhum estoque importado. <a routerLink="/scans">Importar capturas</a></p>
+              }
+            </div>
+            <p class="help" i18n>
+              Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas
+              parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao
+              simular.
+            </p>
+          </details>
+        }
       </div>
     </div>
   </section>
@@ -72,6 +98,14 @@
     <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')" i18n>
       Materiais consolidados
     </button>
+    <button
+      type="button"
+      class="product-details"
+      (click)="action({ path: selectedPath(), action: 'source' })"
+      i18n
+    >
+      Detalhes do item
+    </button>
   </div>
   @if (contextMessage()) {
     <p role="status" class="notice">{{ contextMessage() }}</p>
@@ -81,6 +115,22 @@
       <p class="notice" role="status">{{ warning }}</p>
     }
     @if (result.value; as calculated) {
+      <section class="production-overview" aria-label="Resumo da produção" i18n-aria-label>
+        <div>
+          <span i18n>Custo estimado dos materiais</span>
+          <strong class="cost-value">{{
+            result.knownCostOnly && calculated.cost === '0'
+              ? 'Sem cotações'
+              : silver(calculated.cost)
+          }}</strong>
+          <small>{{
+            result.knownCostOnly ? 'Parcial · faltam cotações' : 'Referência de mercado'
+          }}</small>
+        </div>
+        <div>
+          <span i18n>Etapas planejadas</span><strong>{{ calculated.tasks.length }}</strong>
+        </div>
+      </section>
       <div class="action-row">
         <button type="button" class="btn" (click)="saveShoppingList()" i18n>
           Salvar lista de materiais</button
@@ -115,18 +165,20 @@
             ><span i18n>Métodos escolhidos da cadeia</span>
           </div>
         </div>
-        <p class="help" i18n>
-          Materiais próprios reduzem o desembolso, mas têm valor econômico. Custos de coleta,
-          energia, ferramentas e tempo não estão incluídos. Valores salvos podem estar antigos;
-          preço não garante uma compra. Valores de trabalhadores são referências de compra, não
-          custos reais de produção da base.
-        </p>
+        @if (advanced()) {
+          <p class="help" i18n>
+            Materiais próprios reduzem o desembolso, mas têm valor econômico. Custos de coleta,
+            energia, ferramentas e tempo não estão incluídos. Valores salvos podem estar antigos;
+            preço não garante uma compra. Valores de trabalhadores são referências de compra, não
+            custos reais de produção da base.
+          </p>
+        }
         @if (result.unknownPrices.length) {
           <p class="help">Sem preço: {{ result.unknownPrices.join(', ') }}.</p>
         }
       </details>
     }
-    <div class="exploration-layout">
+    <div class="exploration-layout" [class.has-details]="detailsOpen()">
       <div class="exploration-main">
         @if (view() === 'list' && result.value) {
           <section class="panel">
@@ -182,6 +234,7 @@
         <div class="desktop-graph" [hidden]="view() !== 'graph'">
           <app-recipe-graph
             [root]="product"
+            [advanced]="advanced()"
             [allocations]="result.value?.allocations ?? []"
             [selected]="selectedPath()"
             [origins]="origins()"
@@ -199,335 +252,360 @@
           </div>
         }
       </div>
-      <aside class="context-panel panel" aria-label="Detalhes do item selecionado" i18n-aria-label>
-        @if (contextLoading()) {
-          <p role="status" i18n>Consultando o item e suas fontes…</p>
-        }
-        @if (context(); as info) {
-          <div class="context-heading">
-            <app-item-icon
-              [url]="catalog.resolveIconUrl(info.item ?? info.node.part)"
-              [name]="info.node.part.name"
-            />
-            <div>
-              <small
-                >#{{ info.node.part.itemId }} ·
-                {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
-              >
-              <h3>{{ info.node.part.name }}</h3>
+      @if (detailsOpen()) {
+        <aside
+          class="context-panel panel"
+          aria-label="Detalhes do item selecionado"
+          i18n-aria-label
+        >
+          <div class="context-titlebar">
+            <strong i18n>Informações do item</strong>
+            <button type="button" class="context-close" (click)="detailsOpen.set(false)" i18n>
+              Fechar
+            </button>
+          </div>
+          @if (contextLoading()) {
+            <p role="status" i18n>Consultando o item e suas fontes…</p>
+          }
+          @if (context(); as info) {
+            <div class="context-heading">
+              <app-item-icon
+                [url]="catalog.resolveIconUrl(info.item ?? info.node.part)"
+                [name]="info.node.part.name"
+              />
+              <div>
+                <small
+                  >#{{ info.node.part.itemId }} ·
+                  {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
+                >
+                <h3>{{ info.node.part.name }}</h3>
+              </div>
             </div>
-          </div>
-          @if (info.incomplete) {
-            <p role="status" i18n>
-              Parte das informações não pôde ser carregada.
-              <button type="button" (click)="showContext(info.node)">Tentar novamente</button>
-            </p>
-          }
-          <div class="action-row">
-            <button type="button" (click)="graph()?.center(info.node.path)" i18n>Centralizar</button
-            ><a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
-              >Explorar como produto</a
-            >
-          </div>
-          <h4 i18n>Materiais conhecidos no seu estoque</h4>
-          @if (selectedAllocation(); as allocation) {
-            <p>
-              Necessário {{ allocation.required }} · estoque usado {{ allocation.fromStock }} ·
-              sobras usadas {{ allocation.fromSurplus }} · faltam {{ allocation.missing }}.
-            </p>
-          }
-          <ul>
-            @for (row of holdings(info.node.part.itemId); track row.id) {
-              <li>{{ row.quantity }} · {{ row.location }} · {{ date(row.updatedAt) }}</li>
-            } @empty {
-              <li i18n>Sem quantidade conhecida nos locais selecionados.</li>
+            @if (info.incomplete) {
+              <p role="status" i18n>
+                Parte das informações não pôde ser carregada.
+                <button type="button" (click)="showContext(info.node)">Tentar novamente</button>
+              </p>
             }
-          </ul>
-          <h4 i18n>Como obter</h4>
-          @if (selectedNode(); as current) {
-            @if (current.path !== 'root') {
-              <label i18n
-                >Unidades por operação da receita acima<input
-                  type="number"
-                  min="1"
-                  max="1000000"
-                  [ngModel]="current.part.quantity"
-                  (ngModelChange)="
-                    action({ path: current.path, action: 'quantity', value: $event })
-                  "
-              /></label>
-            }
-            <label i18n
-              >Método de produção<select
-                [ngModel]="current.recipe?.key ?? ''"
-                (ngModelChange)="action({ path: current.path, action: 'choose', value: $event })"
+            <div class="action-row">
+              <button type="button" (click)="graph()?.center(info.node.path)" i18n>
+                Centralizar</button
+              ><a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
+                >Explorar como produto</a
               >
-                <option value="">Escolha uma receita</option>
-                @for (method of info.recipes; track method.key) {
-                  <option [value]="method.key">
-                    {{ typeLabel(method.type) }} · {{ method.inputs.map(partName).join(', ') }}
-                  </option>
-                }
-              </select></label
-            >
-            @if (current.recipe) {
-              @if (current.recipe.byproductOfItemId) {
-                <p class="notice" i18n>
-                  Esta receita é um resultado secundário vinculado ao item #{{
-                    current.recipe.byproductOfItemId
-                  }}. Confirme seu rendimento esperado; não presumimos uma produção garantida.
+            </div>
+            @if (advanced()) {
+              <h4 i18n>Materiais conhecidos no seu estoque</h4>
+              @if (selectedAllocation(); as allocation) {
+                <p>
+                  Necessário {{ allocation.required }} · estoque usado {{ allocation.fromStock }} ·
+                  sobras usadas {{ allocation.fromSurplus }} · faltam {{ allocation.missing }}.
                 </p>
               }
+              <ul>
+                @for (row of holdings(info.node.part.itemId); track row.id) {
+                  <li>{{ row.quantity }} · {{ row.location }} · {{ date(row.updatedAt) }}</li>
+                } @empty {
+                  <li i18n>Sem quantidade conhecida nos locais selecionados.</li>
+                }
+              </ul>
+            }
+            <h4 i18n>Como obter</h4>
+            @if (selectedNode(); as current) {
+              @if (current.path !== 'root' && (advanced() || current.part.quantity === null)) {
+                <label i18n
+                  >Unidades por operação da receita acima<input
+                    type="number"
+                    min="1"
+                    max="1000000"
+                    [ngModel]="current.part.quantity"
+                    (ngModelChange)="
+                      action({ path: current.path, action: 'quantity', value: $event })
+                    "
+                /></label>
+              }
               <label i18n
-                >Rendimento por operação · cenário<input
-                  type="number"
-                  min=".001"
-                  max="1000000"
-                  step=".001"
-                  [ngModel]="current.yield"
-                  (ngModelChange)="action({ path: current.path, action: 'yield', value: $event })"
-              /></label>
-              <button type="button" (click)="action({ path: current.path, action: 'buy' })" i18n>
-                Obter pronto em vez de produzir
-              </button>
-              @if (current.recipe.outputs.length > 1) {
-                <h4 i18n>Outros resultados desta receita</h4>
-                <ul>
-                  @for (out of current.recipe.outputs; track $index) {
-                    @if (out.itemId !== current.part.itemId) {
-                      <li>{{ out.name }} · {{ out.quantity ?? 'rendimento desconhecido' }}</li>
+                >Método de produção<select
+                  [ngModel]="current.recipe?.key ?? ''"
+                  (ngModelChange)="action({ path: current.path, action: 'choose', value: $event })"
+                >
+                  <option value="">Escolha uma receita</option>
+                  @for (method of info.recipes; track method.key; let index = $index) {
+                    <option [value]="method.key">
+                      {{ methodLabel(method, index) }}
+                    </option>
+                  }
+                </select></label
+              >
+              @if (current.recipe; as method) {
+                <details class="context-ingredients">
+                  <summary i18n>{{ method.inputs.length }} materiais por operação</summary>
+                  <ul>
+                    @for (part of method.inputs; track $index) {
+                      <li>{{ part.name }} · {{ part.quantity ?? 'quantidade a confirmar' }}</li>
                     }
+                  </ul>
+                </details>
+              }
+              @if (current.recipe) {
+                @if (current.recipe.byproductOfItemId) {
+                  <p class="notice" i18n>
+                    Esta receita é um resultado secundário vinculado ao item #{{
+                      current.recipe.byproductOfItemId
+                    }}. Confirme seu rendimento esperado; não presumimos uma produção garantida.
+                  </p>
+                }
+                <label i18n
+                  >Rendimento por operação · cenário<input
+                    type="number"
+                    min=".001"
+                    max="1000000"
+                    step=".001"
+                    [ngModel]="current.yield"
+                    (ngModelChange)="
+                      action({ path: current.path, action: 'yield', value: $event })
+                    "
+                /></label>
+                <button type="button" (click)="action({ path: current.path, action: 'buy' })" i18n>
+                  Obter pronto em vez de produzir
+                </button>
+                @if (current.recipe.outputs.length > 1) {
+                  <h4 i18n>Outros resultados desta receita</h4>
+                  <ul>
+                    @for (out of current.recipe.outputs; track $index) {
+                      @if (out.itemId !== current.part.itemId) {
+                        <li>{{ out.name }} · {{ out.quantity ?? 'rendimento desconhecido' }}</li>
+                      }
+                    }
+                  </ul>
+                  <p class="help" i18n>
+                    Não abatemos custos nem garantimos subprodutos sem probabilidades validadas.
+                  </p>
+                }
+              }
+            }
+            @if (!info.recipes.length) {
+              <p i18n>
+                Sem receita de produção vinculada. Isso não significa que o item só possa ser
+                comprado.
+              </p>
+            }
+            <details open>
+              <summary i18n>Descrição e obtenção informadas pelo jogo</summary>
+              <p class="item-description">
+                {{ plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
+              </p>
+              <p class="help" i18n>
+                Confira requisitos e materiais descritos. Relações divergentes não são corrigidas
+                automaticamente.
+              </p>
+            </details>
+            <h4 i18n>Trabalhadores · bases conhecidas</h4>
+            @for (source of info.origins.nodes; track source.id) {
+              <button type="button" class="source-option" (click)="selectedLocation.set(source)">
+                <strong>{{ source.managerNodeName ?? source.name }}</strong
+                ><small
+                  >{{ source.name }} · {{ source.territoryName ?? 'Território não identificado' }} ·
+                  {{ source.contribution ?? '—' }} CP</small
+                >
+              </button>
+            } @empty {
+              <p i18n>Não há produção de trabalhadores vinculada neste catálogo.</p>
+            }
+            @if (info.origins.truncated) {
+              <p i18n>
+                Exibindo até 50 locais por método; a lista possui mais relações no catálogo.
+              </p>
+            }
+            <h4 i18n>Combate convencional · spots de grind</h4>
+            @for (source of info.origins.spots ?? []; track source.id) {
+              <button type="button" class="source-option" (click)="selectedLocation.set(source)">
+                <strong>{{ source.name }}</strong
+                ><small
+                  >{{ source.territoryName ?? 'Território não identificado' }} · drops
+                  registrados</small
+                >
+              </button>
+            } @empty {
+              <p i18n>Nenhum spot com drop deste item vinculado no catálogo.</p>
+            }
+            @if (points().length) {
+              <h4 i18n>Localizações conhecidas</h4>
+              <svg
+                class="source-map"
+                viewBox="0 0 360 200"
+                role="img"
+                aria-label="Esquema das coordenadas de locais de obtenção"
+                i18n-aria-label
+              >
+                @for (point of points(); track point.node.id) {
+                  <circle [attr.cx]="point.x" [attr.cy]="point.y" r="5">
+                    <title>{{ point.node.managerNodeName ?? point.node.name }}</title>
+                  </circle>
+                  <text [attr.x]="point.x + 8" [attr.y]="point.y + 4">{{ point.index + 1 }}</text>
+                }
+              </svg>
+              <p class="help" i18n>
+                Esquema relativo das coordenadas do jogo. Não é um mapa topográfico. Selecione uma
+                localização acima para ver os detalhes.
+              </p>
+            }
+            @if (selectedLocation(); as location) {
+              <section class="location-detail">
+                <h4>
+                  {{
+                    location.activity === 'grinding'
+                      ? location.name
+                      : (location.managerNodeName ?? location.name)
+                  }}
+                </h4>
+                <p>
+                  {{ location.territoryName ?? 'Território não identificado' }} ·
+                  {{ location.name }}
+                </p>
+                @if (location.activity === 'grinding') {
+                  <p i18n>
+                    Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas.
+                  </p>
+                  <p>
+                    AP de equipamento: {{ location.sheetAP ?? 'não informado' }} · DP de
+                    equipamento:
+                    {{ location.sheetDP ?? 'não informado' }}
+                  </p>
+                  <p>
+                    Monstros registrados no spot:
+                    {{ location.monsters?.join(', ') || 'não informados' }}
+                  </p>
+                  <p class="help" i18n>
+                    O item está vinculado ao loot do spot; isso não confirma qual criatura o
+                    fornece. Probabilidades e rendimento não foram informados.
+                  </p>
+                } @else {
+                  <p>CP da produção: {{ location.contribution ?? 'não informado' }}</p>
+                }
+                <p>Material vinculado: {{ info.node.part.name }}.</p>
+                <p>
+                  {{
+                    location.activity === 'grinding'
+                      ? 'Coordenadas da base vinculada'
+                      : 'Coordenadas da produção'
+                  }}: {{ location.position?.join(', ') ?? 'não disponíveis' }}
+                </p>
+                @if (selectedNode()?.recipe) {
+                  <p class="help" i18n>
+                    Selecione obter pronto em vez de produzir para escolher este local como origem.
+                  </p>
+                } @else {
+                  <button type="button" (click)="chooseSource(location)" i18n>
+                    Usar este local como origem
+                  </button>
+                }
+                <p>
+                  {{ location.links?.length ?? 0 }} conexões registradas ·
+                  {{ location.products?.length ?? 0 }} produtos vinculados.
+                </p>
+                @if (location.activity !== 'grinding') {
+                  <p class="help" i18n>
+                    Conexões, alojamento e trabalho podem exigir CP adicional. O custo acima não é o
+                    investimento total do império.
+                  </p>
+                }
+              </section>
+            }
+            <p class="help" i18n>
+              Locais de coleta, caça, pesca, monstros e vendedores só são exibidos quando vinculados
+              por dados verificáveis. A descrição pode informar uma atividade sem fornecer
+              localização estruturada.
+            </p>
+            @if (advanced()) {
+              @if (info.origins.dataset; as data) {
+                <p class="provenance">
+                  Fonte: extração do jogo · {{ data.region.toUpperCase() }} / {{ data.locale
+                  }}<br />{{ data.version }} · {{ date(info.origins.updatedAt) }}
+                </p>
+              }
+            }
+            <h4 i18n>Mercado do item</h4>
+            @if (quote(info.node.part.itemId); as saved) {
+              <p>
+                Preço salvo: {{ silver(saved.price) }} · {{ date(saved.observedAt) }} ·
+                {{ saved.source }}
+              </p>
+            }
+            <button type="button" (click)="consultMarket()" [disabled]="marketLoading()">
+              {{ marketLoading() ? 'Consultando…' : 'Consultar cotação atual' }}
+            </button>
+            @if (marketMessage()) {
+              <p role="status">{{ marketMessage() }}</p>
+            }
+            @if (marketResult(); as market) {
+              <p class="help">
+                Arsha · {{ market.region.toUpperCase() }} · {{ date(market.fetchedAt) }} ·
+                {{
+                  market.cacheStatus === 'stale'
+                    ? 'Cotação antiga: não usada no cálculo'
+                    : 'Cotação de referência'
+                }}
+              </p>
+              @for (quote of market.items; track quote.subId) {
+                @if (quote.subId === 0) {
+                  <p>
+                    Preço {{ silver(quote.price) }} · estoque {{ quote.stock }} · última venda
+                    {{ silver(quote.lastSoldPrice) }}
+                  </p>
+                }
+              }
+            }
+            @if (advanced()) {
+              <details>
+                <summary i18n>Histórico observado</summary>
+                <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
+                <p role="status">{{ historyMessage() }}</p>
+                <ul>
+                  @for (point of history().slice(-20); track $index) {
+                    <li>
+                      {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
+                      {{ point.stock ?? '—' }}
+                    </li>
                   }
                 </ul>
-                <p class="help" i18n>
-                  Não abatemos custos nem garantimos subprodutos sem probabilidades validadas.
-                </p>
-              }
+              </details>
             }
-          }
-          @if (!info.recipes.length) {
-            <p i18n>
-              Sem receita de produção vinculada. Isso não significa que o item só possa ser
-              comprado.
-            </p>
-          }
-          <details open>
-            <summary i18n>Descrição e obtenção informadas pelo jogo</summary>
-            <p class="item-description">
-              {{ plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
-            </p>
-            <p class="help" i18n>
-              Confira requisitos e materiais descritos. Relações divergentes não são corrigidas
-              automaticamente.
-            </p>
-          </details>
-          <h4 i18n>Trabalhadores · bases conhecidas</h4>
-          @for (source of info.origins.nodes; track source.id) {
-            <button type="button" class="source-option" (click)="selectedLocation.set(source)">
-              <strong>{{ source.managerNodeName ?? source.name }}</strong
-              ><small
-                >{{ source.name }} · {{ source.territoryName ?? 'Território não identificado' }} ·
-                {{ source.contribution ?? '—' }} CP</small
-              >
-            </button>
-          } @empty {
-            <p i18n>Não há produção de trabalhadores vinculada neste catálogo.</p>
-          }
-          @if (info.origins.truncated) {
-            <p i18n>Exibindo até 50 locais por método; a lista possui mais relações no catálogo.</p>
-          }
-          <h4 i18n>Combate convencional · spots de grind</h4>
-          @for (source of info.origins.spots ?? []; track source.id) {
-            <button type="button" class="source-option" (click)="selectedLocation.set(source)">
-              <strong>{{ source.name }}</strong
-              ><small
-                >{{ source.territoryName ?? 'Território não identificado' }} · drops
-                registrados</small
-              >
-            </button>
-          } @empty {
-            <p i18n>Nenhum spot com drop deste item vinculado no catálogo.</p>
-          }
-          @if (points().length) {
-            <h4 i18n>Localizações conhecidas</h4>
-            <svg
-              class="source-map"
-              viewBox="0 0 360 200"
-              role="img"
-              aria-label="Esquema das coordenadas de locais de obtenção"
-              i18n-aria-label
+            <a routerLink="/market" [queryParams]="{ item: info.node.part.itemId }" i18n
+              >Abrir mercado completo</a
             >
-              @for (point of points(); track point.node.id) {
-                <circle [attr.cx]="point.x" [attr.cy]="point.y" r="5">
-                  <title>{{ point.node.managerNodeName ?? point.node.name }}</title>
-                </circle>
-                <text [attr.x]="point.x + 8" [attr.y]="point.y + 4">{{ point.index + 1 }}</text>
-              }
-            </svg>
-            <p class="help" i18n>
-              Esquema relativo das coordenadas do jogo. Não é um mapa topográfico. Selecione uma
-              localização acima para ver os detalhes.
-            </p>
+            <details>
+              <summary i18n>Receitas que usam este material</summary>
+              <ul>
+                @for (use of info.uses; track use.key) {
+                  <li>
+                    <a [routerLink]="['/recipes', use.key]">{{
+                      use.outputs[0]?.name ?? typeLabel(use.type)
+                    }}</a>
+                  </li>
+                } @empty {
+                  <li i18n>Nenhum uso vinculado na extração.</li>
+                }
+              </ul>
+            </details>
           }
-          @if (selectedLocation(); as location) {
-            <section class="location-detail">
-              <h4>
-                {{
-                  location.activity === 'grinding'
-                    ? location.name
-                    : (location.managerNodeName ?? location.name)
-                }}
-              </h4>
-              <p>
-                {{ location.territoryName ?? 'Território não identificado' }} · {{ location.name }}
-              </p>
-              @if (location.activity === 'grinding') {
-                <p i18n>
-                  Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas.
-                </p>
-                <p>
-                  AP de equipamento: {{ location.sheetAP ?? 'não informado' }} · DP de equipamento:
-                  {{ location.sheetDP ?? 'não informado' }}
-                </p>
-                <p>
-                  Monstros registrados no spot:
-                  {{ location.monsters?.join(', ') || 'não informados' }}
-                </p>
-                <p class="help" i18n>
-                  O item está vinculado ao loot do spot; isso não confirma qual criatura o fornece.
-                  Probabilidades e rendimento não foram informados.
-                </p>
-              } @else {
-                <p>CP da produção: {{ location.contribution ?? 'não informado' }}</p>
-              }
-              <p>Material vinculado: {{ info.node.part.name }}.</p>
-              <p>
-                {{
-                  location.activity === 'grinding'
-                    ? 'Coordenadas da base vinculada'
-                    : 'Coordenadas da produção'
-                }}: {{ location.position?.join(', ') ?? 'não disponíveis' }}
-              </p>
-              @if (selectedNode()?.recipe) {
-                <p class="help" i18n>
-                  Selecione obter pronto em vez de produzir para escolher este local como origem.
-                </p>
-              } @else {
-                <button type="button" (click)="chooseSource(location)" i18n>
-                  Usar este local como origem
-                </button>
-              }
-              <p>
-                {{ location.links?.length ?? 0 }} conexões registradas ·
-                {{ location.products?.length ?? 0 }} produtos vinculados.
-              </p>
-              @if (location.activity !== 'grinding') {
-                <p class="help" i18n>
-                  Conexões, alojamento e trabalho podem exigir CP adicional. O custo acima não é o
-                  investimento total do império.
-                </p>
-              }
-            </section>
-          }
-          <p class="help" i18n>
-            Locais de coleta, caça, pesca, monstros e vendedores só são exibidos quando vinculados
-            por dados verificáveis. A descrição pode informar uma atividade sem fornecer localização
-            estruturada.
-          </p>
-          @if (info.origins.dataset; as data) {
-            <p class="provenance">
-              Fonte: extração do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }}<br />{{
-                data.version
-              }}
-              · {{ date(info.origins.updatedAt) }}
-            </p>
-          }
-          <h4 i18n>Mercado do item</h4>
-          @if (quote(info.node.part.itemId); as saved) {
-            <p>
-              Preço salvo: {{ silver(saved.price) }} · {{ date(saved.observedAt) }} ·
-              {{ saved.source }}
-            </p>
-          }
-          <button type="button" (click)="consultMarket()" [disabled]="marketLoading()">
-            {{ marketLoading() ? 'Consultando…' : 'Consultar cotação atual' }}
-          </button>
-          @if (marketMessage()) {
-            <p role="status">{{ marketMessage() }}</p>
-          }
-          @if (marketResult(); as market) {
-            <p class="help">
-              Arsha · {{ market.region.toUpperCase() }} · {{ date(market.fetchedAt) }} ·
-              {{
-                market.cacheStatus === 'stale'
-                  ? 'Cotação antiga: não usada no cálculo'
-                  : 'Cotação de referência'
-              }}
-            </p>
-            @for (quote of market.items; track quote.subId) {
-              @if (quote.subId === 0) {
-                <p>
-                  Preço {{ silver(quote.price) }} · estoque {{ quote.stock }} · última venda
-                  {{ silver(quote.lastSoldPrice) }}
-                </p>
-              }
-            }
-          }
-          <details>
-            <summary i18n>Histórico observado</summary>
-            <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
-            <p role="status">{{ historyMessage() }}</p>
-            <ul>
-              @for (point of history().slice(-20); track $index) {
-                <li>
-                  {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
-                  {{ point.stock ?? '—' }}
-                </li>
-              }
-            </ul>
-          </details>
-          <a routerLink="/market" [queryParams]="{ item: info.node.part.itemId }" i18n
-            >Abrir mercado completo</a
-          >
-          <details>
-            <summary i18n>Receitas que usam este material</summary>
-            <ul>
-              @for (use of info.uses; track use.key) {
-                <li>
-                  <a [routerLink]="['/recipes', use.key]">{{
-                    use.outputs[0]?.name ?? typeLabel(use.type)
-                  }}</a>
-                </li>
-              } @empty {
-                <li i18n>Nenhum uso vinculado na extração.</li>
-              }
-            </ul>
-          </details>
-        } @else if (!contextLoading()) {
-          <p class="eyebrow" i18n>EXPLORE UMA ETAPA</p>
-          <h3 i18n>De onde vem cada material?</h3>
-          <p i18n>
-            Selecione um item da árvore ou toque em Onde obter para consultar receitas alternativas,
-            estoque, fontes e mercado.
-          </p>
-          <button type="button" (click)="action({ path: 'root', action: 'source' })" i18n>
-            Ver detalhes do produto
-          </button>
-        }
-      </aside>
-    </div>
-    <details class="panel">
-      <summary i18n>Venda e imposto · cenário</summary>
-      <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
-      @if (sale(); as estimate) {
-        <p>Receita líquida de venda do alvo: {{ silver(estimate.net) }}.</p>
-      } @else {
-        <p i18n>Consulte o preço do produto e confirme o plano para estimar a venda.</p>
+        </aside>
       }
-      <p class="help" i18n>
-        Esta estimativa não é lucro líquido: estoque próprio, tempo, energia e ferramentas têm
-        custos não contabilizados.
-      </p>
-    </details>
+    </div>
+    @if (advanced()) {
+      <details class="panel">
+        <summary i18n>Venda e imposto · cenário</summary>
+        <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
+        @if (sale(); as estimate) {
+          <p>Receita líquida de venda do alvo: {{ silver(estimate.net) }}.</p>
+        } @else {
+          <p i18n>Consulte o preço do produto e confirme o plano para estimar a venda.</p>
+        }
+        <p class="help" i18n>
+          Esta estimativa não é lucro líquido: estoque próprio, tempo, energia e ferramentas têm
+          custos não contabilizados.
+        </p>
+      </details>
+    }
   }
 }

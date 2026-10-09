@@ -2,52 +2,65 @@
   display: block;
   min-width: 0;
 }
+
 .picker {
   position: relative;
 }
+
 .search-fields {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
   gap: 12px;
 }
+
 .selection {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  color: #d4c2a4;
-  font-size: 12px;
+  color: var(--bm-muted);
+  font-size: 13px;
 }
+
 .compact .search-fields {
   grid-template-columns: minmax(0, 1fr);
 }
+
 .selection button {
   padding: 3px 12px;
   font-size: 20px;
+  min-width: 44px;
+  min-height: 44px;
 }
+
 .results {
   margin-top: 10px;
-  border: 1px solid #d0b38b30;
+  border: 1px solid var(--bm-border);
   background: var(--bm-input);
   max-height: 320px;
   overflow: auto;
 }
+
 .results p {
   padding: 14px;
-  color: #b4bbaa;
-  font-size: 12px;
+  color: var(--bm-muted);
+  font-size: 13px;
 }
+
 button {
   cursor: pointer;
   color: inherit;
   background: transparent;
   border: 0;
+  min-height: 44px;
 }
+
 button:focus-visible {
-  outline: 2px solid #d5b48d;
+  outline: 2px solid var(--bm-focus);
   outline-offset: -2px;
 }
+
 .result-item {
   display: flex;
   align-items: center;
@@ -55,34 +68,43 @@ button:focus-visible {
   gap: 12px;
   padding: 10px 14px;
   text-align: left;
-  border-bottom: 1px solid #d0b38b15;
+  border-bottom: 1px solid var(--bm-border);
 }
+
 .result-item:hover,
 .result-item:focus-visible {
-  background: #26342a;
+  background: var(--bm-surface-raised);
 }
+
 .icon {
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-  background: #202c23;
-  color: #d5b48d;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  background: var(--bm-input);
+  color: var(--bm-accent);
 }
+
 .copy {
   flex: 1;
   min-width: 0;
 }
+
 .copy strong {
   display: block;
-  font-size: 13px;
-  color: #ede7dc;
+  font-size: 14px;
+  color: var(--bm-text);
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 }
+
 .copy small {
   display: block;
   margin-top: 4px;
-  font-size: 10px;
-  color: #a4ad9c;
+  font-size: 12px;
+  color: var(--bm-muted);
+  overflow-wrap: anywhere;
 }
+
 @media (max-width: 540px) {
   .search-fields {
     grid-template-columns: 1fr;

@@ -51,13 +51,17 @@ export class RecipesPage {
   readonly dataset = signal<ActiveDatasetSummary | null>(null);
   readonly loading = signal(true);
   readonly message = signal('');
+  readonly advanced = signal(false);
   readonly typeLabel = recipeTypeLabel;
   methodLabel(method: CatalogRecipe) {
     return (
       (method.byproductOfItemId ? 'Subproduto · ' : '') +
       this.typeLabel(method.type) +
+      ' · variante ' +
+      (this.alternatives().findIndex((row) => row.key === method.key) + 1) +
       ' · ' +
-      method.inputs.map((part) => (part.quantity ?? '?') + ' ' + part.name).join(' + ')
+      method.inputs.length +
+      ' materiais'
     );
   }
   page = 1;

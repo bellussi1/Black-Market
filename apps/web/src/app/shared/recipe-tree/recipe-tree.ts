@@ -103,6 +103,9 @@ export class RecipeTree {
   readonly selectedItem = input<CatalogItemDetail | null>(null);
   readonly datasetVersion = input('');
   readonly rootMethod = output<CatalogRecipe | null>();
+  readonly advancedChanged = output<boolean>();
+  readonly advanced = signal(false);
+  readonly detailsOpen = signal(false);
   readonly store = inject(WorkspaceStore);
   readonly catalog = inject(CatalogApiService);
   private readonly knowledge = inject(RecipeKnowledge);
@@ -137,7 +140,6 @@ export class RecipeTree {
   readonly origins = signal(new Map<number, ItemSources['nodes']>());
   readonly typeLabel = recipeTypeLabel;
   readonly silver = silver;
-  readonly partName = (part: CatalogRecipePart) => part.name;
   readonly date = (value: string | null | undefined) =>
     value && Number.isFinite(Date.parse(value)) ? date(value) : 'Não informada';
   private revision = 0;
@@ -242,6 +244,7 @@ export class RecipeTree {
       this.contextRevision++;
       this.marketRevision++;
       this.context.set(null);
+      this.detailsOpen.set(false);
       this.contextMessage.set('');
       this.contextLoading.set(false);
       this.marketResult.set(null);
@@ -288,6 +291,21 @@ export class RecipeTree {
   toggleLocation(key: string, included: boolean) {
     this.excludedLocations.update((rows) =>
       included ? rows.filter((row) => row !== key) : [...new Set([...rows, key])],
+    );
+  }
+  toggleAdvanced() {
+    this.advanced.update((value) => !value);
+    this.advancedChanged.emit(this.advanced());
+  }
+  methodLabel(method: CatalogRecipe, index: number) {
+    return (
+      (method.byproductOfItemId ? 'Subproduto · ' : '') +
+      this.typeLabel(method.type) +
+      ' · variante ' +
+      (index + 1) +
+      ' · ' +
+      method.inputs.length +
+      ' materiais'
     );
   }
   setRootYield(value: number | null) {
@@ -453,6 +471,7 @@ export class RecipeTree {
       this.contextRevision++;
       this.marketRevision++;
       this.context.set(null);
+      this.detailsOpen.set(false);
       this.contextLoading.set(false);
       this.marketResult.set(null);
       this.marketLoading.set(false);
@@ -489,6 +508,7 @@ export class RecipeTree {
     return node ? 1 + node.children.reduce((n, c) => n + this.count(c), 0) : 0;
   }
   showContext(node: RecipeNode, locationId?: string) {
+    this.detailsOpen.set(true);
     this.selectedPath.set(node.path);
     const revision = ++this.contextRevision,
       region = this.region();
@@ -551,6 +571,7 @@ export class RecipeTree {
   openLocation(event: { path: string; source: ItemSources['nodes'][number] }) {
     const node = this.find(event.path);
     if (!node) return;
+    this.detailsOpen.set(true);
     if (this.context()?.node.path === node.path) {
       this.selectedPath.set(node.path);
       this.selectedLocation.set(

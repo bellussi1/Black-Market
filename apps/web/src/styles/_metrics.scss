@@ -37,8 +37,8 @@
     padding: 30px 22px;
   }
   .metric.hero-metric strong {
-    font: 400 clamp(26px, 3vw, 40px)/1.25 var(--bm-font-display);
+    font: 500 clamp(26px, 3vw, 32px)/1.25 var(--bm-font-display);
     font-variant-numeric: tabular-nums;
-    color: #ecd2b5;
+    color: var(--bm-accent);
   }
 }

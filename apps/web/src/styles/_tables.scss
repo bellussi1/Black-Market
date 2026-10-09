@@ -45,9 +45,12 @@
   }
   .empty strong {
     display: block;
-    color: #e2dccb;
+    color: var(--bm-text);
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: 500;
+  }
+  .data-table tbody tr:hover {
+    background: var(--bm-surface-raised);
   }
 }

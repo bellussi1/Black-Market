@@ -3,7 +3,7 @@
     color-scheme: dark;
     font-family: var(--bm-font-body);
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.5;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -24,8 +24,15 @@
     scroll-padding-top: 6rem;
   }
   button,
+  input,
+  select,
+  textarea,
   a {
     font: inherit;
+  }
+  a {
+    color: var(--bm-accent);
+    text-underline-offset: 0.2em;
   }
   button:focus-visible,
   a:focus-visible,
@@ -38,7 +45,7 @@
   a,
   summary {
     touch-action: manipulation;
-    -webkit-tap-highlight-color: #d6a57740;
+    -webkit-tap-highlight-color: var(--bm-accent-soft);
   }
   h1,
   h2,

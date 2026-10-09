@@ -6,11 +6,11 @@
   max-width: 1600px;
 }
 .recipe-explorer .tool-heading {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
 }
 .recipe-explorer .tool-heading h1 {
-  font-size: 32px;
+  font-size: 23px;
   margin-bottom: 0;
 }
 .recipe-explorer .tool-heading p[hidden] {
@@ -22,15 +22,15 @@
   padding-bottom: 0;
 }
 .search-panel {
-  border-top: 2px solid var(--bm-accent);
-  padding: 0 20px;
+  border: 1px solid var(--bm-border);
+  padding: 0 16px;
 }
 .search-panel > summary {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 54px;
-  font-size: 13px;
+  min-height: 44px;
+  font-size: 14px;
   list-style: none;
 }
 .search-panel > summary::after {
@@ -48,6 +48,7 @@
 .search-panel > summary strong {
   color: var(--bm-text);
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 .search-panel[open] > summary {
   margin-bottom: 12px;
@@ -68,6 +69,7 @@
 .recipe-methods select {
   max-width: 100%;
   width: 100%;
+  min-height: 44px;
 }
 .method-ingredients {
   display: flex;
@@ -117,6 +119,7 @@
   display: block;
   color: var(--bm-text);
   margin-top: 0.3rem;
+  overflow-wrap: anywhere;
 }
 .dataset-provenance {
   color: var(--bm-muted);
@@ -126,7 +129,16 @@
 }
 @media (max-width: 600px) {
   .recipe-methods {
-    padding: 1rem;
+    padding: 0;
+  }
+  .search-panel > summary {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 10px;
+  }
+  .search-panel > summary strong {
+    flex: 1;
+    min-width: 0;
   }
   .method-ingredients {
     display: grid;

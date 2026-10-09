@@ -145,10 +145,10 @@ try {
 
   for (const [path, title] of [
     ['/', 'BLACK MARKET'],
-    ['/market', 'O valor de cada venda'],
-    ['/recipes', 'Descubra de onde vem'],
+    ['/market', 'Mercado Central'],
+    ['/recipes', 'Oficina de produção'],
     ['/recipes/items/5301', 'Reagente Líquido Limpo'],
-    ['/database/items', 'O mundo, item'],
+    ['/database/items', 'Catálogo de itens'],
     ['/contato', 'Contato'],
     ['/termos', 'Termos de Uso'],
     ['/privacidade', 'Política de Privacidade'],
