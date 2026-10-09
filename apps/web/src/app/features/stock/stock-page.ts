@@ -97,7 +97,9 @@ export class StockPage {
       name: '',
       kind: this.kind,
       characterId:
-        this.kind === 'inventory' ? this.destination() || this.profiles()[0]?.id : undefined,
+        this.kind === 'inventory'
+          ? this.destination() || this.store.activeCharacter()?.id
+          : undefined,
       location: this.kind === 'storage' ? this.destination() || 'Velia' : '',
       quantity: 0,
       target: 0,

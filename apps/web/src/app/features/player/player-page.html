@@ -1,0 +1,285 @@
+<div class="tool-page guided-page player-page">
+  <header class="page-heading">
+    <p class="eyebrow">MEU ESPAÇO · {{ store.data().region.toUpperCase() }}</p>
+    <h1>Personagens e família</h1>
+    <p>Comece pelo nome. Complete somente os dados necessários para sua próxima atividade.</p>
+  </header>
+  <div class="segmented-control">
+    <button
+      type="button"
+      [attr.aria-pressed]="tab() === 'character'"
+      (click)="tab.set('character')"
+    >
+      Personagens</button
+    ><button type="button" [attr.aria-pressed]="tab() === 'family'" (click)="tab.set('family')">
+      Família e benefícios
+    </button>
+  </div>
+  <p class="save-feedback" role="status">{{ message() || store.message() }}</p>
+  @if (tab() === 'character') {
+    <section class="panel">
+      <div class="player-selector">
+        <label
+          >Personagem ativo<select [ngModel]="current()?.id ?? ''" (ngModelChange)="select($event)">
+            <option value="">Escolha um personagem</option>
+            @for (profile of profiles(); track profile.id) {
+              <option [value]="profile.id">{{ profile.name }}</option>
+            }
+          </select></label
+        ><a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }"
+          >Importar equipamentos</a
+        ><a routerLink="/gear">Abrir ficha de equipamentos →</a>
+      </div>
+      <details [open]="!profiles().length">
+        <summary>Adicionar personagem · somente o nome</summary>
+        <div class="action-row">
+          <label>Nome<input [(ngModel)]="name" maxlength="80" (keydown.enter)="create()" /></label
+          ><button type="button" (click)="create()">Criar personagem</button>
+        </div>
+      </details>
+    </section>
+    @if (current(); as profile) {
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>{{ profile.name }}</h2>
+          <span class="badge"
+            >{{ profile.className || 'Classe opcional' }} · Nv. {{ profile.level }}</span
+          >
+        </div>
+        <div class="form-grid">
+          <label
+            >Nome<input
+              [ngModel]="profile.name"
+              (blur)="saveCharacter({ name: $any($event.target).value })"
+              maxlength="80" /></label
+          ><label
+            >Classe<input
+              [ngModel]="profile.className"
+              (blur)="saveCharacter({ className: $any($event.target).value })"
+              maxlength="40"
+              placeholder="Opcional" /></label
+          ><label
+            >Especialização<select
+              [ngModel]="profile.specialization"
+              (ngModelChange)="saveCharacter({ specialization: $event })"
+            >
+              <option value="succession">Sucessão</option>
+              <option value="awakening">Despertar</option>
+            </select></label
+          >
+        </div>
+        <p class="help">Edições válidas são salvas ao sair do campo.</p>
+        <details>
+          <summary>Atributos, peso e inventário</summary>
+          <div class="form-grid">
+            @for (field of numericFields; track field.key) {
+              <label
+                >{{ field.label
+                }}<input
+                  type="number"
+                  [min]="field.key === 'level' ? 1 : 0"
+                  [max]="field.max"
+                  [ngModel]="profile[field.key]"
+                  (blur)="saveNumber(field.key, $any($event.target).value)"
+              /></label>
+            }
+          </div>
+          <p class="help">
+            PA e PD são valores da ficha confirmados no jogo. Eles não são deduzidos dos ícones.
+          </p>
+        </details>
+        <details>
+          <summary>Maestria por atividade</summary>
+          <p class="help">
+            Registre a maestria mostrada na ficha com o conjunto atual. O nível da profissão
+            pertence à família.
+          </p>
+          <div class="form-grid">
+            @for (skill of skills; track skill) {
+              <label
+                >{{ skillLabels[skill]
+                }}<input
+                  type="number"
+                  min="0"
+                  max="5000"
+                  [ngModel]="profile.mastery[skill]"
+                  (blur)="saveMastery(skill, $any($event.target).value)"
+              /></label>
+            }
+          </div>
+        </details>
+      </section>
+      <section class="panel">
+        <h2>Conjuntos e complementos</h2>
+        @for (
+          group of [
+            { key: 'artifacts', label: 'Artefatos', limit: 2 },
+            { key: 'lightstones', label: 'Pedras de luz', limit: 4 },
+            { key: 'crystals', label: 'Cristais', limit: 20 },
+            { key: 'pearlOutfits', label: 'Trajes de pérola', limit: 20 },
+          ];
+          track group.key
+        ) {
+          <details>
+            <summary>
+              {{ group.label }} · {{ $any(profile)[group.key]?.length ?? 0 }} / {{ group.limit }}
+            </summary>
+            <app-catalog-item-picker
+              [label]="group.label"
+              (selected)="accessory($any(group.key), $event)"
+            />
+            @for (item of $any(profile)[group.key] ?? []; track $index) {
+              <div class="action-row">
+                <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+                ><button type="button" (click)="removeAccessory($any(group.key), $index)">
+                  Remover
+                </button>
+              </div>
+            }
+            <p class="help">
+              Registro pessoal. Os efeitos e combinações não são calculados sem dados verificados.
+            </p>
+          </details>
+        }
+        <details>
+          <summary>Presets de equipamentos e cristais</summary>
+          <label
+            >Nome do conjunto<input
+              [(ngModel)]="presetName"
+              maxlength="80"
+              placeholder="Coleta, combate, culinária…" /></label
+          ><button type="button" (click)="savePreset()">Salvar conjunto atual</button
+          ><label
+            >Conjunto salvo<select [(ngModel)]="presetId">
+              <option value="">Escolha</option>
+              @for (preset of profile.activityPresets ?? []; track preset.id) {
+                <option [value]="preset.id">{{ preset.name }}</option>
+              }
+            </select></label
+          ><button type="button" (click)="applyPreset()" [disabled]="!presetId">
+            Aplicar ao personagem</button
+          ><button type="button" (click)="undoPreset()">Desfazer aplicação</button>
+        </details>
+      </section>
+    }
+  } @else {
+    <section class="panel">
+      <h2>Dados compartilhados</h2>
+      <p class="help">
+        Esta família pertence à região {{ store.data().region.toUpperCase() }}. Energia atual, peso
+        e maestria permanecem no personagem.
+      </p>
+      <div class="form-grid">
+        <label
+          >Nome da família<input
+            [ngModel]="family().name"
+            (blur)="saveFamily({ name: $any($event.target).value })"
+            maxlength="80" /></label
+        ><label
+          >Contribuição<input
+            type="number"
+            min="0"
+            max="2000"
+            [ngModel]="family().contribution"
+            (blur)="
+              saveFamily({
+                contribution: $any($event.target).value === '' ? null : +$any($event.target).value,
+              })
+            " /></label
+        ><label
+          >Energia máxima<input
+            type="number"
+            min="0"
+            max="2000"
+            [ngModel]="family().energyMax"
+            (blur)="
+              saveFamily({
+                energyMax: $any($event.target).value === '' ? null : +$any($event.target).value,
+              })
+            "
+        /></label>
+      </div>
+      <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
+    </section>
+    <section class="panel">
+      <h2>Profissões da família</h2>
+      @if (!family().lifeSkills && store.data().familyLifeSkills) {
+        <p class="help">
+          Há níveis salvos no modelo anterior. Confirme a região antes de reutilizar.
+        </p>
+        <button type="button" (click)="importLegacySkills()">
+          Usar níveis anteriores nesta família
+        </button>
+      }
+      <div class="form-grid">
+        <label
+          >Atividade<select [(ngModel)]="skill" (ngModelChange)="chooseSkill()">
+            @for (key of skills; track key) {
+              <option [value]="key">{{ skillLabels[key] }}</option>
+            }
+          </select></label
+        ><label
+          >Graduação<select [(ngModel)]="tier">
+            @for (value of tiers; track value) {
+              <option>{{ value }}</option>
+            }
+          </select></label
+        ><label>Nível<input type="number" min="1" max="100" [(ngModel)]="skillLevel" /></label
+        ><label
+          >Experiência (%)<input type="number" min="0" max="100" [(ngModel)]="skillXp"
+        /></label>
+      </div>
+      <button type="button" (click)="saveSkill()">Salvar profissão</button>
+      @if (family().lifeSkills; as levels) {
+        <div class="family-skills">
+          @for (key of skills; track key) {
+            @if (levels[key]; as level) {
+              <span
+                >{{ skillLabels[key] }} <strong>{{ level.tier }} {{ level.level }}</strong></span
+              >
+            }
+          }
+        </div>
+      }
+    </section>
+    <section class="panel">
+      <details>
+        <summary>Pets · {{ family().pets.length }}</summary>
+        <div class="form-grid">
+          <label>Nome<input [(ngModel)]="pet.name" maxlength="80" /></label
+          ><label>Tier<input type="number" min="1" max="5" [(ngModel)]="pet.tier" /></label
+          ><label>Nível<input type="number" min="1" max="10" [(ngModel)]="pet.level" /></label
+          ><label>Habilidades<input [(ngModel)]="pet.skills" maxlength="500" /></label>
+        </div>
+        <button type="button" (click)="addPet()">
+          {{ petId ? 'Salvar pet' : 'Adicionar pet' }}</button
+        ><button type="button" (click)="petId = ''">Novo pet</button>
+        @for (item of family().pets; track item.id) {
+          <p>{{ item.name }} · T{{ item.tier }} · Nv. {{ item.level }} · {{ item.skills }}</p>
+          <button type="button" (click)="editPet(item.id)">Editar pet</button>
+          <button type="button" (click)="removeFamilyItem('pets', item.id)">Remover pet</button>
+        }
+      </details>
+      <details>
+        <summary>Montarias · {{ family().mounts.length }}</summary>
+        <div class="form-grid">
+          <label>Nome<input [(ngModel)]="mount.name" maxlength="80" /></label
+          ><label>Tipo<input [(ngModel)]="mount.kind" maxlength="80" /></label
+          ><label>Nível<input type="number" min="1" max="100" [(ngModel)]="mount.level" /></label
+          ><label>Notas e habilidades<input [(ngModel)]="mount.notes" maxlength="500" /></label>
+        </div>
+        <button type="button" (click)="addMount()">
+          {{ mountId ? 'Salvar montaria' : 'Adicionar montaria' }}</button
+        ><button type="button" (click)="mountId = ''">Nova montaria</button>
+        @for (item of family().mounts; track item.id) {
+          <p>{{ item.name }} · {{ item.kind }} · Nv. {{ item.level }} · {{ item.notes }}</p>
+          <button type="button" (click)="editMount(item.id)">Editar montaria</button>
+          <button type="button" (click)="removeFamilyItem('mounts', item.id)">
+            Remover montaria
+          </button>
+        }
+      </details>
+      <button type="button" (click)="undoFamily()">Desfazer última alteração da família</button>
+    </section>
+  }
+</div>

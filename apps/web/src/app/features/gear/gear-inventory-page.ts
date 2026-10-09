@@ -39,7 +39,7 @@ export class GearInventoryPage {
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
   );
   readonly profile = computed<CharacterProfile | null>(
-    () => this.profiles().find((row) => row.id === this.selected()) ?? this.profiles()[0] ?? null,
+    () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter() ?? this.profiles()[0] ?? null,
   );
   name = '';
   slot: (typeof gearSlots)[number] = 'mainhand';

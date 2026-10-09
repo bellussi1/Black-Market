@@ -129,7 +129,7 @@ export const routes: Routes = [
 
         loadComponent: () =>
           SCREENSHOT_MVP
-            ? import('./features/gear/gear-inventory-page').then((m) => m.GearInventoryPage)
+            ? import('./features/player/player-page').then((m) => m.PlayerPage)
             : import('./features/profile/profile-page').then((module) => module.ProfilePage),
       },
 
