@@ -200,7 +200,7 @@ export const productionSchema = z.object({
   recipeId: z.string().min(1).max(64),
   quantity: positiveCount.max(1_000_000),
   recipes: z.array(recipeSchema).min(1).max(100),
-  inventory: z.array(inventorySchema).max(1000),
+  inventory: z.array(inventorySchema).max(4000),
 });
 export type MarketInput = z.infer<typeof marketSchema>;
 export type CraftingInput = z.infer<typeof craftingSchema>;

@@ -1,7 +1,9 @@
 import { availableInventory, calculateProduction, type ManualRecipe } from '@bdo/calculators';
 import type { CatalogRecipe, CatalogRecipePart } from '@bdo/shared';
+import { z } from 'zod';
 
 import type { Workspace } from '../../core/workspace-models';
+import { validationMessage } from '../calculation-feedback';
 export interface RecipeNode {
   path: string;
   part: CatalogRecipePart;
@@ -12,6 +14,7 @@ export interface RecipeNode {
   options: CatalogRecipe[];
   loading: boolean;
   message: string;
+  acquisition?: { kind: 'external' | 'workers'; label: string; sourceId?: string };
 }
 export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
   return {
@@ -24,6 +27,7 @@ export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
     options: [],
     loading: false,
     message: '',
+    acquisition: { kind: 'external', label: 'Obter pronto' },
   };
 }
 export function withRecipe(
@@ -35,6 +39,7 @@ export function withRecipe(
   return {
     ...node,
     recipe,
+    acquisition: undefined,
     yield:
       yieldOverride ?? (out?.quantity && Number(out.quantity) > 0 ? Number(out.quantity) : null),
     expanded: true,
@@ -50,7 +55,20 @@ export function patchNode(
   if (root.path === path) return change(root);
   return { ...root, children: root.children.map((n) => patchNode(n, path, change)) };
 }
-export function planRecipeTree(root: RecipeNode, target: number, state: Workspace) {
+export function stockLocationKey(row: Workspace['inventory'][number]) {
+  return JSON.stringify([
+    row.kind ?? 'storage',
+    row.kind === 'inventory'
+      ? (row.characterId ?? row.location)
+      : row.location.trim().toLocaleLowerCase('pt-BR'),
+  ]);
+}
+export function planRecipeTree(
+  root: RecipeNode,
+  target: number,
+  state: Workspace,
+  options: { excludedLocations?: string[]; prices?: ReadonlyMap<number, string> } = {},
+) {
   const recipes: ManualRecipe[] = [],
     warnings: string[] = [];
   let visited = 0;
@@ -62,6 +80,8 @@ export function planRecipeTree(root: RecipeNode, target: number, state: Workspac
   for (const row of state.inventory.filter((r) => r.region === state.region))
     if (row.itemId && !prices.has(row.itemId) && row.price !== '0')
       prices.set(row.itemId, row.price);
+  for (const [id, price] of options.prices ?? [])
+    if (/^\d{1,24}$/.test(price)) prices.set(id, price);
   const visit = (node: RecipeNode, ancestors: number[]) => {
     if (++visited > 500 || ancestors.length > 12)
       throw new Error('A árvore está muito extensa. Simplifique o plano.');
@@ -78,7 +98,7 @@ export function planRecipeTree(root: RecipeNode, target: number, state: Workspac
       return {
         itemId: child.part.itemId,
         name: child.part.name,
-        quantity: quantity || 1,
+        quantity: quantity,
         price: prices.get(child.part.itemId) ?? '0',
         recipeId: child.recipe ? child.path : null,
       };
@@ -92,11 +112,69 @@ export function planRecipeTree(root: RecipeNode, target: number, state: Workspac
     });
   };
   try {
+    if (!Number.isSafeInteger(target) || target < 1 || target > 1_000_000)
+      throw new Error('Escolha entre 1 e 1.000.000 unidades inteiras.');
+    const selected = state.inventory.filter(
+      (r) =>
+        r.region === state.region &&
+        r.itemId &&
+        !options.excludedLocations?.includes(stockLocationKey(r)),
+    );
+    const duplicateKeys = selected.map((r) => stockLocationKey(r) + ':' + r.itemId);
+    if (new Set(duplicateKeys).size !== duplicateKeys.length)
+      throw new Error(
+        'Há registros duplicados no mesmo local. Corrija o estoque ou desmarque esse local antes de calcular.',
+      );
+    const inventory = availableInventory(state.personalPlans, selected);
+    // No recipe is an acquisition leaf, not a fabricated one-unit crafting recipe.
+    if (!root.recipe) {
+      const fromStock = Math.min(
+        target,
+        inventory
+          .filter((r) => r.itemId === root.part.itemId)
+          .reduce((sum, r) => sum + r.quantity, 0),
+      );
+      const missing = target - fromStock;
+      const cost = String(BigInt(prices.get(root.part.itemId) ?? '0') * BigInt(missing));
+      const unknownPrices = missing && !prices.has(root.part.itemId) ? [root.part.name] : [];
+      return {
+        value: {
+          target: root.part.name,
+          quantity: target,
+          cost,
+          rows: [
+            {
+              itemId: root.part.itemId,
+              name: root.part.name,
+              required: target,
+              fromStock,
+              fromSurplus: 0,
+              purchased: missing,
+              produced: 0,
+              cost,
+            },
+          ],
+          tasks: [],
+          allocations: [
+            {
+              path: root.path,
+              itemId: root.part.itemId,
+              required: target,
+              fromStock,
+              fromSurplus: 0,
+              missing,
+              crafts: 0,
+              produced: 0,
+            },
+          ],
+        },
+        warnings,
+        unknownPrices,
+        knownCostOnly: unknownPrices.length > 0,
+      };
+    }
     visit(root, []);
     if (warnings.length) return { value: null, warnings, unknownPrices: [], knownCostOnly: false };
-    const inventory = availableInventory(state.personalPlans, state.inventory).filter(
-      (r) => r.region === state.region && r.itemId !== root.part.itemId,
-    );
     const value = calculateProduction({
       recipeId: root.path,
       quantity: target,
@@ -110,7 +188,13 @@ export function planRecipeTree(root: RecipeNode, target: number, state: Workspac
   } catch (error) {
     return {
       value: null,
-      warnings: [error instanceof Error ? error.message : 'Confira os dados da produção.'],
+      warnings: [
+        error instanceof z.ZodError
+          ? validationMessage(error)
+          : error instanceof Error
+            ? error.message
+            : 'Confira os dados da produção.',
+      ],
       unknownPrices: [],
       knownCostOnly: false,
     };
