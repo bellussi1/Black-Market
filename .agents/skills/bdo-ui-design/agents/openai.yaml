@@ -1,0 +1,4 @@
+interface:
+  display_name: "Black Market · BDO UI"
+  short_description: "Design de interfaces BDO para o Black Market"
+  default_prompt: "Use $bdo-ui-design para implementar uma interface do Black Market coerente com as referências de BDO."
