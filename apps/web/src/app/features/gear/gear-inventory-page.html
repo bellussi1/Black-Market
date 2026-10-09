@@ -1,0 +1,68 @@
+<div class="tool-page">
+  <header class="page-heading">
+    <p class="eyebrow" i18n>SEU PERSONAGEM</p>
+    <h1 i18n>Meus equipamentos</h1>
+    <p i18n>
+      Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
+      precisam ser conferidos no jogo.
+    </p>
+    <div class="action-row">
+      <a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }" i18n
+        >Importar equipamentos por captura</a
+      ><a routerLink="/inventory" i18n>Ver inventário</a>
+    </div>
+  </header>
+  <section class="panel">
+    <label
+      ><span i18n>Personagem</span
+      ><select [ngModel]="profile()?.id ?? ''" (ngModelChange)="selected.set($event)">
+        <option value="" i18n>Escolha</option>
+        @for (row of profiles(); track row.id) {
+          <option [value]="row.id">{{ row.name }}</option>
+        }
+      </select></label
+    >
+    <details [open]="!profiles().length">
+      <summary i18n>Cadastrar personagem</summary>
+      <label i18n>Nome do personagem<input [(ngModel)]="name" maxlength="120" /></label
+      ><button type="button" (click)="create()" i18n>Cadastrar</button>
+    </details>
+  </section>
+  @if (profile(); as current) {
+    <app-equipment-sheet [profile]="current" [showStatistics]="false" />
+    <section class="panel">
+      <h2 i18n>Adicionar ou corrigir equipamento</h2>
+      <app-catalog-item-picker
+        label="Equipamento"
+        [selectionName]="item?.name ?? ''"
+        (selected)="item = $event"
+      />
+      <div class="form-grid">
+        <label
+          ><span i18n>Posição</span
+          ><select [(ngModel)]="slot">
+            @for (position of slots; track position) {
+              <option [value]="position">{{ labels[position] }}</option>
+            }
+          </select></label
+        ><label i18n
+          >Aprimoramento confirmado no jogo<input
+            type="number"
+            min="0"
+            max="30"
+            [(ngModel)]="level" /></label
+        ><label i18n
+          >Caphras confirmado no jogo<input type="number" min="0" max="20" [(ngModel)]="caphras"
+        /></label>
+      </div>
+      <p class="help" i18n>
+        0 representa nível base, 16 a 20 representam PRI a PEN em armas e armaduras. Acessórios usam
+        1 a 5. Confira o item e o nível antes de substituir esta posição.
+      </p>
+      <button type="button" (click)="save()" i18n>Confirmar equipamento nesta posição</button>
+    </section>
+  }
+  @if (message()) {
+    <p role="status">{{ message() }}</p>
+  }
+</div>
