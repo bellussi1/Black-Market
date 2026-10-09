@@ -6761,34 +6761,40 @@
     </unit>
     <unit id="5637148238605625286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:542,548</note>
+        <note category="location">src/app/features/scans/scans-page.html:542,550</note>
       </notes>
       <segment>
         <source>Nível de aprimoramento (0 a 30)<ph id="0" equiv="TAG_INPUT" disp="&lt;input
                     type=&quot;number&quot;
-                    [(ngModel)]=&quot;cell.level&quot;
+                    [ngModel]=&quot;cell.levelConfirmed ? cell.level : null&quot;
                     min=&quot;0&quot;
                     max=&quot;30&quot;
-                    (ngModelChange)=&quot;cell.levelConfirmed = true; edited(cell)&quot; /&gt;"/></source>
+                    (ngModelChange)=&quot;
+                      cell.levelConfirmed = $event !== null; cell.level = $event ?? 0; edited(cell)
+                    &quot; /&gt;"/></source>
       </segment>
     </unit>
     <unit id="6084004136727606379">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:549,556</note>
+        <note category="location">src/app/features/scans/scans-page.html:551,562</note>
       </notes>
       <segment>
         <source>Nível de Caphras<ph id="0" equiv="TAG_INPUT" disp="&lt;input
                     type=&quot;number&quot;
-                    [(ngModel)]=&quot;cell.caphras&quot;
+                    [ngModel]=&quot;cell.caphrasConfirmed ? cell.caphras : null&quot;
                     min=&quot;0&quot;
                     max=&quot;20&quot;
-                    (ngModelChange)=&quot;cell.caphrasConfirmed = true; edited(cell)&quot;
+                    (ngModelChange)=&quot;
+                      cell.caphrasConfirmed = $event !== null;
+                      cell.caphras = $event ?? 0;
+                      edited(cell)
+                    &quot;
                 /&gt;"/></source>
       </segment>
     </unit>
     <unit id="7655693762592081504">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:568</note>
+        <note category="location">src/app/features/scans/scans-page.html:574</note>
       </notes>
       <segment>
         <source>Conferi no jogo. Incluir este item e seus valores.</source>
@@ -6796,7 +6802,7 @@
     </unit>
     <unit id="3551321110817968486">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:578,579</note>
+        <note category="location">src/app/features/scans/scans-page.html:584,585</note>
       </notes>
       <segment>
         <source>Quero substituir as quantidades dos itens incluídos neste local. Os demais itens serão mantidos.</source>
@@ -6804,7 +6810,7 @@
     </unit>
     <unit id="8792261646630262396">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:587,588</note>
+        <note category="location">src/app/features/scans/scans-page.html:593,594</note>
       </notes>
       <segment>
         <source> Salvar <ph id="0" equiv="INTERPOLATION" disp="{{ includedCount() }}"/> itens no armazém </source>
@@ -6812,7 +6818,7 @@
     </unit>
     <unit id="3991687278263194140">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:592,593</note>
+        <note category="location">src/app/features/scans/scans-page.html:598,599</note>
       </notes>
       <segment>
         <source>Conferi o personagem, as posições e os níveis. Quero atualizar somente os equipamentos incluídos.</source>
@@ -6820,7 +6826,7 @@
     </unit>
     <unit id="807382760292122914">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:596</note>
+        <note category="location">src/app/features/scans/scans-page.html:602</note>
       </notes>
       <segment>
         <source> Atualizar equipamentos </source>
@@ -6828,7 +6834,7 @@
     </unit>
     <unit id="6007723282262160843">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:603,604</note>
+        <note category="location">src/app/features/scans/scans-page.html:609,610</note>
       </notes>
       <segment>
         <source>Ver meu armazém →</source>
@@ -6836,7 +6842,7 @@
     </unit>
     <unit id="623925603685269868">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:608,609</note>
+        <note category="location">src/app/features/scans/scans-page.html:614,615</note>
       </notes>
       <segment>
         <source>4. Consolidar e salvar</source>
@@ -6844,7 +6850,7 @@
     </unit>
     <unit id="8611255642133634635">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:610,613</note>
+        <note category="location">src/app/features/scans/scans-page.html:616,619</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ allReviewed().length }}"/> itens conferidos nas capturas. Abra cada miniatura para revisar seus resultados. Nenhum item é salvo automaticamente. </source>
@@ -6852,7 +6858,7 @@
     </unit>
     <unit id="5940771814023226123">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:619,620</note>
+        <note category="location">src/app/features/scans/scans-page.html:625,626</note>
       </notes>
       <segment>
         <source> Podem ser capturas sobrepostas ou pilhas separadas. Não somaremos sem sua escolha. </source>
@@ -6860,7 +6866,7 @@
     </unit>
     <unit id="2234968505338763855">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:624,627</note>
+        <note category="location">src/app/features/scans/scans-page.html:630,633</note>
       </notes>
       <segment>
         <source> Captura <ph id="0" equiv="INTERPOLATION" disp="{{ row.source.capture }}"/> · espaço <ph id="1" equiv="INTERPOLATION_1" disp="{{ row.source.slot + 1 }}"/> · <ph id="2" equiv="INTERPOLATION_2" disp="{{ row.quantity }}"/> unidades </source>
@@ -6868,7 +6874,7 @@
     </unit>
     <unit id="6064585001723220242">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:630,631</note>
+        <note category="location">src/app/features/scans/scans-page.html:636,637</note>
       </notes>
       <segment>
         <source>Tratamento do item repetido</source>
@@ -6876,7 +6882,7 @@
     </unit>
     <unit id="3132748291123459351">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:635,636</note>
+        <note category="location">src/app/features/scans/scans-page.html:641,642</note>
       </notes>
       <segment>
         <source>Escolha após conferir</source>
@@ -6884,7 +6890,7 @@
     </unit>
     <unit id="4665255088832510077">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:636,637</note>
+        <note category="location">src/app/features/scans/scans-page.html:642,643</note>
       </notes>
       <segment>
         <source>Usar o valor da última captura no lote</source>
@@ -6892,7 +6898,7 @@
     </unit>
     <unit id="7904431082616813114">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:637,638</note>
+        <note category="location">src/app/features/scans/scans-page.html:643,644</note>
       </notes>
       <segment>
         <source>Manter a maior quantidade observada</source>
@@ -6900,7 +6906,7 @@
     </unit>
     <unit id="2453571937318279830">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:639</note>
+        <note category="location">src/app/features/scans/scans-page.html:645</note>
       </notes>
       <segment>
         <source> São pilhas distintas: somar uma vez cada espaço </source>
@@ -6908,7 +6914,7 @@
     </unit>
     <unit id="4358536548732494165">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:646,647</note>
+        <note category="location">src/app/features/scans/scans-page.html:652,653</note>
       </notes>
       <segment>
         <source>Como atualizar o estoque?</source>
@@ -6916,7 +6922,7 @@
     </unit>
     <unit id="3354472811812703112">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:653,654</note>
+        <note category="location">src/app/features/scans/scans-page.html:659,660</note>
       </notes>
       <segment>
         <source>Atualizar apenas os itens revisados</source>
@@ -6924,7 +6930,7 @@
     </unit>
     <unit id="2495622148760869748">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:654,655</note>
+        <note category="location">src/app/features/scans/scans-page.html:660,661</note>
       </notes>
       <segment>
         <source>Acrescentar itens novos, manter quantidades existentes</source>
@@ -6932,7 +6938,7 @@
     </unit>
     <unit id="3733116623919275416">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:655,656</note>
+        <note category="location">src/app/features/scans/scans-page.html:661,662</note>
       </notes>
       <segment>
         <source>Substituir os locais completos enviados</source>
@@ -6940,7 +6946,7 @@
     </unit>
     <unit id="3492423000283156767">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:660,661</note>
+        <note category="location">src/app/features/scans/scans-page.html:666,667</note>
       </notes>
       <segment>
         <source> Itens ausentes serão removidos somente dos locais importados. Não use com capturas parciais. Planos que reservam esses itens podem impedir a substituição. </source>
@@ -6948,7 +6954,7 @@
     </unit>
     <unit id="472634769385094770">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:669,670</note>
+        <note category="location">src/app/features/scans/scans-page.html:675,676</note>
       </notes>
       <segment>
         <source>Enviei todos os itens desses locais, incluindo os que exigiram mais de uma captura.</source>
@@ -6956,7 +6962,7 @@
     </unit>
     <unit id="7437378986617066342">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:674,675</note>
+        <note category="location">src/app/features/scans/scans-page.html:680,681</note>
       </notes>
       <segment>
         <source> Itens que não aparecem nas capturas serão mantidos. Equipamentos atualizam apenas as posições conferidas. </source>
@@ -6964,7 +6970,7 @@
     </unit>
     <unit id="7257872874383689154">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:685,686</note>
+        <note category="location">src/app/features/scans/scans-page.html:691,692</note>
       </notes>
       <segment>
         <source>Conferi os itens, quantidades, destinos e o tratamento dos repetidos.</source>
@@ -6972,7 +6978,7 @@
     </unit>
     <unit id="5122410236972123573">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:695,696</note>
+        <note category="location">src/app/features/scans/scans-page.html:701,702</note>
       </notes>
       <segment>
         <source> Salvar importação revisada </source>
@@ -6980,7 +6986,7 @@
     </unit>
     <unit id="8458646117611245188">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:697</note>
+        <note category="location">src/app/features/scans/scans-page.html:703</note>
       </notes>
       <segment>
         <source>Consultar itens salvos</source>
@@ -6988,7 +6994,7 @@
     </unit>
     <unit id="1054264543647929689">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:698,699</note>
+        <note category="location">src/app/features/scans/scans-page.html:704,705</note>
       </notes>
       <segment>
         <source>Ver armazéns</source>
@@ -6996,7 +7002,7 @@
     </unit>
     <unit id="6987302899702860676">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:699,700</note>
+        <note category="location">src/app/features/scans/scans-page.html:705,706</note>
       </notes>
       <segment>
         <source>Ver inventários</source>
@@ -7004,7 +7010,7 @@
     </unit>
     <unit id="9079282225734244927">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:700,701</note>
+        <note category="location">src/app/features/scans/scans-page.html:706,707</note>
       </notes>
       <segment>
         <source>Ver equipamentos</source>
