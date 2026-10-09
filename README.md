@@ -54,7 +54,9 @@ Use um rótulo novo em `--version` quando o conteúdo mudar. O importador calcul
 
 Para subir também o Angular com o Node fixado no Docker, use `docker compose --profile web up --build -d`. Abra `http://localhost:4200`. O volume existente do PostgreSQL é preservado; o nome físico do banco continua `bdo_companion` por compatibilidade.
 
-## Ferramentas disponíveis sem o jogo
+## Escopo ampliado preservado no código
+
+A tabela abaixo descreve os módulos anteriores. No MVP atual, `/gear` e `/storage` mostram equipamentos e estoque revisados; `/inventory` organiza itens por personagem e `/scans` recebe os lotes. Calculadoras, receitas, mundo e demonstração permanecem suspensos. Os protótipos de demonstração usam dados explicitamente simulados e não alimentam o mercado ou o estoque pessoal deste MVP.
 
 | Rota         | Recurso                                                                           |
 | ------------ | --------------------------------------------------------------------------------- |
