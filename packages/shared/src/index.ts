@@ -125,4 +125,4 @@ export interface MarketLookupResponse {
   items: MarketItemQuote[];
 }
 
-export { isMvpPathEnabled, isMvpPathSuspended,SCREENSHOT_MVP } from './mvp-scope';
+export { isMvpPathEnabled, isMvpPathSuspended, SCREENSHOT_MVP } from './mvp-scope';
