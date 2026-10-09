@@ -104,15 +104,7 @@ try {
   for (const [path, title] of [
     ['/', 'BLACK MARKET'],
     ['/market', 'O valor de cada venda'],
-    ['/crafting', 'Produzir, comprar, planejar'],
-    ['/enhancement', 'Entenda o risco antes de tentar'],
-    ['/lifeskills', 'Meça seu rendimento'],
-    ['/rng', 'Quanto vale abrir'],
-    ['/buffs', 'Sua combinação, pronta'],
     ['/database/items', 'O mundo, item'],
-    ['/recipes', 'Receitas'],
-    ['/reference/npcs', 'NPCs'],
-    ['/world', 'Conecte sua produção'],
     ['/contato', 'Contato'],
     ['/termos', 'Termos de Uso'],
     ['/privacidade', 'Política de Privacidade'],
@@ -160,6 +152,16 @@ try {
     }
   }
 
+  for (const path of ['/recipes', '/reference/npcs', '/world', '/crafting', '/demo', '/account']) {
+    const response = await request(path, { redirect: 'manual' });
+    assert.ok(
+      [301, 302, 303, 307, 308].includes(response.status),
+      `Suspended route ${path} must redirect`,
+    );
+    assert.equal(response.headers.get('location'), '/');
+  }
+  const inventory = await request('/inventory');
+  assert.equal(inventory.headers.get('x-robots-tag'), 'noindex,nofollow');
   const personal = await request('/profile');
   assert.equal(personal.status, 200);
   assert.equal(personal.headers.get('x-robots-tag'), 'noindex,nofollow');

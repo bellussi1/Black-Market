@@ -27,7 +27,7 @@
         @for (field of fields(); track $index) {
           <dt>{{ field.label }}</dt>
           <dd>
-            @if (field.link) {
+            @if (field.link && isEnabled(field.link.join('/'))) {
               <a [routerLink]="field.link">{{ field.value }}</a>
             } @else {
               {{ field.value }}
@@ -37,25 +37,27 @@
       </dl>
       <a routerLink="/market" [queryParams]="{ item: selected.id }" i18n>Consultar mercado →</a>
     </section>
-    @for (
-      group of [
-        { name: 'Como produzir', data: produces() },
-        { name: 'Receitas que usam este item', data: uses() },
-      ];
-      track group.name
-    ) {
-      <section class="panel">
-        <h2>{{ group.name }}</h2>
-        @for (recipe of group.data?.recipes; track recipe.key) {
-          <p>
-            <a [routerLink]="['/recipes', recipe.key]"
-              >{{ typeLabel(recipe.type) }} · {{ recipe.outputs[0]?.name }}</a
-            >
-          </p>
-        } @empty {
-          <p i18n>Nenhuma receita publicada nesta referência.</p>
-        }
-      </section>
+    @if (!screenshotMvp) {
+      @for (
+        group of [
+          { name: 'Como produzir', data: produces() },
+          { name: 'Receitas que usam este item', data: uses() },
+        ];
+        track group.name
+      ) {
+        <section class="panel">
+          <h2>{{ group.name }}</h2>
+          @for (recipe of group.data?.recipes; track recipe.key) {
+            <p>
+              <a [routerLink]="['/recipes', recipe.key]"
+                >{{ typeLabel(recipe.type) }} · {{ recipe.outputs[0]?.name }}</a
+              >
+            </p>
+          } @empty {
+            <p i18n>Nenhuma receita publicada nesta referência.</p>
+          }
+        </section>
+      }
     }
   }
 </div>

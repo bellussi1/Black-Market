@@ -30,6 +30,7 @@ const privateRoutes = [
   'profile',
   'plans',
   'storage',
+  'inventory',
   'gear',
   'settings',
 ] as const;

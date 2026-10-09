@@ -1,3 +1,4 @@
+import { isMvpPathEnabled } from './mvp-scope';
 export const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
   '/termos': 'Condições de uso das ferramentas gratuitas do Black Market para Black Desert Online.',
   '/privacidade':
@@ -31,16 +32,19 @@ export const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
 
 export const PRIVATE_DESCRIPTIONS: Readonly<Record<string, string>> = {
   '/settings': 'Gerencie suas preferências e o backup dos seus dados no Black Market.',
+  '/inventory': 'Organize os itens dos seus personagens com revisão das capturas.',
+  '/scans': 'Importe até oito capturas e revise seus itens e quantidades.',
   '/storage': 'Gerencie seu armazém pessoal no Black Market.',
   '/gear': 'Planeje seus equipamentos pessoais no Black Market.',
 };
 
 export function isPublicSeoPath(path: string): boolean {
   return (
-    Object.hasOwn(PUBLIC_DESCRIPTIONS, path) ||
-    /^\/database\/items\/[1-9]\d*$/.test(path) ||
-    /^\/recipes\/[^/]+$/.test(path) ||
-    /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(path)
+    isMvpPathEnabled(path) &&
+    (Object.hasOwn(PUBLIC_DESCRIPTIONS, path) ||
+      /^\/database\/items\/[1-9]\d*$/.test(path) ||
+      /^\/recipes\/[^/]+$/.test(path) ||
+      /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(path))
   );
 }
 

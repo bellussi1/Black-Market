@@ -6,71 +6,208 @@ import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
 import { visibleMarkets } from '../core/market-configuration';
+import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
 import { RegionPreferences } from '../core/region-preferences';
+import { WorkspaceStore } from '../core/workspace-store';
 import { AdSlot } from '../shared/ad-slot/ad-slot';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+
   selector: 'app-workspace-layout',
+
   imports: [
     RouterLink,
+
     RouterLinkActive,
+
     RouterOutlet,
+
     FormsModule,
+
     AdSlot,
+
     PrivacyControls,
+
     PlatformFooter,
   ],
+
   templateUrl: './workspace-layout.html',
+
   styleUrl: './workspace-layout.scss',
 })
 export class WorkspaceLayout {
+  readonly screenshotMvp = SCREENSHOT_MVP;
+
+  readonly store = inject(WorkspaceStore);
+
   private readonly router = inject(Router);
+
   private readonly path = signal(this.router.url);
+
   readonly showAds = computed(
     () =>
       ADVERTISING.previewSlots &&
       ![
         '/settings',
+
         '/storage',
+
         '/gear',
+
         '/profile',
+
         '/plans',
+
         '/account',
+
         '/scans',
+
         '/recommendations',
       ].some((route) => this.path().startsWith(route)),
   );
+
   constructor() {
     this.router.events
+
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+
         takeUntilDestroyed(),
       )
-      .subscribe((event) => this.path.set(event.urlAfterRedirects));
+
+      .subscribe((event) => {
+        this.path.set(event.urlAfterRedirects);
+
+        this.mobileNavOpen.set(false);
+      });
   }
+
   readonly preferences = inject(RegionPreferences);
+
   readonly markets = computed(() => visibleMarkets(this.preferences.region()));
-  readonly links = [
-    { path: '/recommendations', label: $localize`Ganhar prata`, code: '★' },
-    { path: '/', label: $localize`Visão geral`, code: '00' },
-    { path: '/database/items', label: $localize`Catálogo de itens`, code: '01' },
-    { path: '/recipes', label: $localize`Receitas`, code: '◈' },
-    { path: '/market', label: $localize`Mercado e imposto`, code: '02' },
-    { path: '/crafting', label: $localize`Oficina de produção`, code: '03' },
-    { path: '/enhancement', label: $localize`Aprimoramento e acúmulos (FS)`, code: '04' },
-    { path: '/gear', label: $localize`Progressão de equipamentos`, code: '05' },
-    { path: '/lifeskills', label: $localize`Profissões e treino`, code: '06' },
-    { path: '/storage', label: $localize`Armazém e projetos`, code: '07' },
-    { path: '/scans', label: $localize`Importar por print`, code: '▧' },
-    { path: '/rng', label: $localize`Caixas e vendedor noturno`, code: '08' },
-    { path: '/buffs', label: $localize`Buffs e combinações`, code: '09' },
-    { path: '/settings', label: $localize`Dados e backup`, code: '10' },
-    { path: '/reference', label: $localize`Guia do mundo`, code: '11' },
-    { path: '/world', label: $localize`Bases e trabalhadores`, code: '↗' },
-    { path: '/profile', label: $localize`Meu personagem`, code: '12' },
-    { path: '/plans', label: $localize`Meus planos`, code: '13' },
-    { path: '/account', label: $localize`Minha conta`, code: '14' },
+
+  readonly mobileNavOpen = signal(false);
+
+  readonly primaryLinks = SCREENSHOT_MVP
+    ? [
+        { path: '/', label: 'Início' },
+        { path: '/scans', label: 'Importar capturas' },
+        { path: '/market', label: 'Mercado' },
+        { path: '/storage', label: 'Armazéns' },
+        { path: '/inventory', label: 'Inventário' },
+        { path: '/gear', label: 'Equipamentos' },
+      ]
+    : [
+        { path: '/', label: $localize`Início` },
+
+        { path: '/recommendations', label: $localize`Ganhar prata` },
+      ].filter((link) => isMvpPathEnabled(link.path));
+
+  readonly navGroups = [
+    { title: 'Seus itens', links: [{ path: '/inventory', label: 'Inventário' }] },
+
+    {
+      title: $localize`Mercado e produção`,
+
+      links: [
+        { path: '/database/items', label: $localize`Buscar itens` },
+
+        { path: '/recipes', label: $localize`Receitas` },
+
+        { path: '/market', label: $localize`Consultar mercado` },
+
+        { path: '/crafting', label: $localize`Calcular produção` },
+      ],
+    },
+
+    {
+      title: $localize`Personagem e evolução`,
+
+      links: [
+        { path: '/profile', label: $localize`Meu personagem` },
+
+        { path: '/gear', label: $localize`Equipamentos` },
+
+        { path: '/enhancement', label: $localize`Aprimoramento e acúmulos` },
+
+        { path: '/lifeskills', label: $localize`Profissões e rendimento` },
+
+        { path: '/buffs', label: $localize`Buffs e combinações` },
+      ],
+    },
+
+    {
+      title: $localize`Materiais e planejamento`,
+
+      links: [
+        { path: '/storage', label: $localize`Armazém` },
+
+        { path: '/scans', label: $localize`Importar por captura` },
+
+        { path: '/world', label: $localize`Bases e trabalhadores` },
+
+        { path: '/plans', label: $localize`Meus planos` },
+
+        { path: '/rng', label: $localize`Caixas e vendedor noturno` },
+      ],
+    },
+
+    {
+      title: $localize`Guias e conta`,
+
+      links: [
+        { path: '/reference', label: $localize`Guia do mundo` },
+
+        { path: '/settings', label: $localize`Dados e backup` },
+
+        { path: '/account', label: $localize`Minha conta` },
+      ],
+    },
+  ]
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => isMvpPathEnabled(link.path)),
+    }))
+    .filter((group) => !SCREENSHOT_MVP && group.links.length);
+
+  readonly utilityLinks = [
+    { path: '/termos', label: $localize`Termos de Uso` },
+
+    { path: '/privacidade', label: $localize`Política de Privacidade` },
+
+    { path: '/cookies', label: $localize`Cookies e armazenamento` },
+
+    { path: '/contato', label: $localize`Contato e suporte` },
   ];
+
+  readonly allLinks = [
+    ...this.primaryLinks,
+
+    ...this.navGroups.flatMap((group) => group.links),
+
+    ...this.utilityLinks,
+  ];
+
+  readonly currentPage = computed(() => {
+    const currentPath = this.path().split(/[?#]/, 1)[0];
+
+    const link = this.allLinks.find(
+      (candidate) =>
+        currentPath === candidate.path ||
+        (candidate.path !== '/' && currentPath.startsWith(`${candidate.path}/`)),
+    );
+
+    return link?.label ?? $localize`Black Market`;
+  });
+
+  groupIsActive(group: (typeof this.navGroups)[number]): boolean {
+    const currentPath = this.path().split(/[?#]/, 1)[0];
+
+    return group.links.some(
+      (link) => currentPath === link.path || currentPath.startsWith(`${link.path}/`),
+    );
+  }
 }

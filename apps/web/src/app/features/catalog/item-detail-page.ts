@@ -7,6 +7,7 @@ import type { CatalogItemDetail, CatalogRecipesResponse } from '@bdo/shared';
 import { catchError, combineLatest, forkJoin, of, Subject, switchMap } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
@@ -20,6 +21,8 @@ import { referenceFields } from '../reference/reference-fields';
   templateUrl: './item-detail-page.html',
 })
 export class ItemDetailPage {
+  readonly isEnabled = isMvpPathEnabled;
+  readonly screenshotMvp = SCREENSHOT_MVP;
   private readonly seo = inject(SeoService);
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   readonly api = inject(CatalogApiService);
@@ -49,8 +52,8 @@ export class ItemDetailPage {
           }
           return forkJoin({
             item: this.api.getItem(id),
-            produces: this.api.getItemRecipes(id, 'produces'),
-            uses: this.api.getItemRecipes(id, 'uses'),
+            produces: SCREENSHOT_MVP ? of(null) : this.api.getItemRecipes(id, 'produces'),
+            uses: SCREENSHOT_MVP ? of(null) : this.api.getItemRecipes(id, 'uses'),
           }).pipe(
             catchError((error: unknown) => {
               this.seo.unavailable();

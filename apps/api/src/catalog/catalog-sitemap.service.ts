@@ -1,4 +1,5 @@
 import { itemVersions, recipes, referenceRecords } from '@bdo/database/schema';
+import { isMvpPathEnabled, SCREENSHOT_MVP } from '@bdo/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { asc, count, eq } from 'drizzle-orm';
@@ -48,6 +49,7 @@ export class CatalogSitemapService {
       types.push({ type: 'reference', total: Number(referenceCount?.total ?? 0) });
     }
     const maps = types
+      .filter((row) => !SCREENSHOT_MVP || ['public', 'items'].includes(row.type))
       .filter((row) => row.total > 0)
       .flatMap((row) =>
         Array.from(
@@ -70,6 +72,8 @@ export class CatalogSitemapService {
       page > 100
     )
       throw new BadRequestException('Página não encontrada.');
+    if (SCREENSHOT_MVP && ['recipes', 'reference'].includes(type))
+      throw new NotFoundException('Página temporariamente indisponível.');
     const origin = this.origin();
     const dataset = await this.catalog.getActiveDataset('sa', undefined, 'pt');
     let paths: string[] = [];
@@ -97,7 +101,7 @@ export class CatalogSitemapService {
         '/privacidade',
         '/cookies',
         '/contato',
-      ];
+      ].filter(isMvpPathEnabled);
     } else if (dataset) {
       if (type === 'items') {
         const rows = await this.database.db

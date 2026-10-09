@@ -1,80 +1,152 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
+import { WorkspaceStore } from '../../core/workspace-store';
+import { PlayerOverview } from '../../shared/player-overview/player-overview';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PlayerOverview],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
+  readonly screenshotMvp = SCREENSHOT_MVP;
+  readonly isEnabled = isMvpPathEnabled;
+  readonly store = inject(WorkspaceStore);
   readonly preferences = inject(RegionPreferences);
   readonly counts = this.preferences.counts;
+  readonly hasWorkspaceData = computed(() =>
+    this.counts().some((stat) => stat.value > 0 && isMvpPathEnabled(stat.path)),
+  );
+  readonly journeys = SCREENSHOT_MVP
+    ? [
+        {
+          number: '01',
+          icon: 'storage',
+          title: 'Importar minhas capturas',
+          description: 'Selecione até oito imagens. Confira itens e quantidades antes de salvar.',
+          path: '/scans',
+          tag: 'IMPORTAÇÃO',
+          steps: 'Enviar · conferir · salvar',
+        },
+        {
+          number: '02',
+          icon: 'storage',
+          title: 'Consultar meu armazém',
+          description: 'Encontre seus itens por cidade e ajuste as quantidades.',
+          path: '/storage',
+          tag: 'ARMAZÉM',
+          steps: 'Escolher cidade · pesquisar · editar',
+        },
+        {
+          number: '03',
+          icon: 'storage',
+          title: 'Organizar meu inventário',
+          description: 'Separe os itens de cada personagem e atualize por novas capturas.',
+          path: '/inventory',
+          tag: 'INVENTÁRIO',
+          steps: 'Escolher personagem · revisar itens',
+        },
+        {
+          number: '04',
+          icon: 'craft',
+          title: 'Ver meus equipamentos',
+          description: 'Confira os equipamentos do personagem e corrija seus slots.',
+          path: '/gear',
+          tag: 'EQUIPAMENTOS',
+          steps: 'Escolher personagem · revisar posições',
+        },
+      ]
+    : [
+        {
+          number: '01',
+          icon: 'market',
+          title: $localize`Consultar um preço`,
+          description: $localize`Veja preço e estoque da região e descubra quanto recebe depois do imposto.`,
+          path: '/market',
+          tag: $localize`MERCADO`,
+          steps: $localize`Buscar item · conferir cotação · guardar`,
+        },
+        {
+          number: '02',
+          icon: 'craft',
+          title: $localize`Produzir ou comprar`,
+          description: $localize`Confira os materiais e compare o custo da receita com o valor de venda.`,
+          path: '/crafting',
+          tag: $localize`PRODUÇÃO`,
+          steps: $localize`Escolher produto · revisar materiais · comparar`,
+        },
+        {
+          number: '03',
+          icon: 'silver',
+          title: $localize`Encontrar uma atividade lucrativa`,
+          description: $localize`Compare suas opções com o tempo, a energia e os recursos do personagem.`,
+          path: '/recommendations',
+          tag: $localize`PRATA POR HORA`,
+          steps: $localize`Informar personagem · comparar · salvar plano`,
+        },
+        {
+          number: '04',
+          icon: 'storage',
+          title: $localize`Organizar meus materiais`,
+          description: $localize`Importe uma captura ou cadastre itens para usar nas receitas e nos planos.`,
+          path: '/storage',
+          tag: $localize`ARMAZÉM`,
+          steps: $localize`Adicionar itens · revisar estoque · planejar uso`,
+        },
+      ];
   readonly tools = [
     {
-      code: '01',
-      title: $localize`Catálogo do jogo`,
-      description: $localize`Itens, imagens, categorias e receitas do jogo, em português.`,
+      title: $localize`Buscar itens e receitas`,
+      description: $localize`Encontre itens do jogo, categorias e receitas relacionadas.`,
       path: '/database/items',
-      tag: $localize`REFERÊNCIA`,
+      tag: $localize`CATÁLOGO`,
     },
     {
-      code: '02',
-      title: $localize`Mercado e imposto`,
-      description: $localize`Cotações pessoais, favoritos, histórico e prata líquida.`,
-      path: '/market',
-      tag: $localize`PRATA`,
-    },
-    {
-      code: '03',
-      title: $localize`Oficina de produção`,
-      description: $localize`Lucro de receitas, comprar ou produzir e cadeia de materiais.`,
-      path: '/crafting',
-      tag: $localize`PRODUÇÃO`,
-    },
-    {
-      code: '04',
-      title: $localize`Aprimoramento e acúmulos (FS)`,
-      description: $localize`Probabilidades, custos, garantia e caminhos de acúmulos.`,
+      title: $localize`Aprimoramento e acúmulos`,
+      description: $localize`Compare chances e custos para formar acúmulos de falha.`,
       path: '/enhancement',
-      tag: $localize`RISCO`,
+      tag: $localize`APRIMORAMENTO`,
     },
     {
-      code: '05',
-      title: $localize`Progressão de equipamentos`,
-      description: $localize`Conjuntos e melhorias comparados por custo de atributos.`,
+      title: $localize`Equipamentos`,
+      description: $localize`Organize sua progressão e compare melhorias possíveis.`,
       path: '/gear',
-      tag: $localize`PROGRESSÃO`,
+      tag: $localize`PERSONAGEM`,
     },
     {
-      code: '06',
       title: $localize`Profissões e treino`,
-      description: $localize`Sessões, prata por hora, retorno de maestria e estimador de experiência.`,
+      description: $localize`Registre atividades, maestria e experiência observada.`,
       path: '/lifeskills',
       tag: $localize`RENDIMENTO`,
     },
     {
-      code: '07',
-      title: $localize`Armazém e projetos`,
-      description: $localize`Estoque por local e acompanhamento de materiais faltantes.`,
-      path: '/storage',
-      tag: $localize`PLANEJAMENTO`,
+      title: $localize`Bases e trabalhadores`,
+      description: $localize`Planeje conexões e acompanhe sua rede de trabalhadores.`,
+      path: '/world',
+      tag: $localize`MUNDO`,
     },
     {
-      code: '08',
       title: $localize`Caixas e vendedor noturno`,
-      description: $localize`Valor esperado de recompensas e ofertas com probabilidades próprias.`,
+      description: $localize`Calcule o valor esperado de caixas e ofertas.`,
       path: '/rng',
-      tag: $localize`VALOR ESPERADO`,
+      tag: $localize`PROBABILIDADE`,
     },
     {
-      code: '09',
       title: $localize`Buffs e combinações`,
-      description: $localize`Biblioteca pessoal, grupos exclusivos, combinações e temporizadores.`,
+      description: $localize`Monte combinações pessoais e acompanhe seus temporizadores.`,
       path: '/buffs',
       tag: $localize`PREPARAÇÃO`,
     },
-  ];
+    {
+      title: $localize`Guia do mundo`,
+      description: $localize`Consulte informações e referências do jogo.`,
+      path: '/reference',
+      tag: $localize`REFERÊNCIA`,
+    },
+  ].filter((tool) => isMvpPathEnabled(tool.path));
 }

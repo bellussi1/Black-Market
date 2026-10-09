@@ -8,6 +8,7 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import { isMvpPathSuspended } from '@bdo/shared';
 import express from 'express';
 
 import { isPublicSeoPath, publicDescription } from './app/core/seo-content';
@@ -166,6 +167,14 @@ const angularApp = new AngularNodeAppEngine({
   ],
 });
 
+app.use((req, res, next) => {
+  if (isMvpPathSuspended(req.path)) {
+    res.set({ 'X-Robots-Tag': 'noindex,nofollow', 'Cache-Control': 'private,no-store' });
+    res.redirect(302, '/');
+    return;
+  }
+  next();
+});
 app.get('/robots.txt', (_req, res) => {
   const origin = process.env['PUBLIC_SITE_URL'];
   res
