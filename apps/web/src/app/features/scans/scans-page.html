@@ -541,17 +541,23 @@
                 ><label i18n
                   >Nível de aprimoramento (0 a 30)<input
                     type="number"
-                    [(ngModel)]="cell.level"
+                    [ngModel]="cell.levelConfirmed ? cell.level : null"
                     min="0"
                     max="30"
-                    (ngModelChange)="cell.levelConfirmed = true; edited(cell)" /></label
+                    (ngModelChange)="
+                      cell.levelConfirmed = $event !== null; cell.level = $event ?? 0; edited(cell)
+                    " /></label
                 ><label i18n
                   >Nível de Caphras<input
                     type="number"
-                    [(ngModel)]="cell.caphras"
+                    [ngModel]="cell.caphrasConfirmed ? cell.caphras : null"
                     min="0"
                     max="20"
-                    (ngModelChange)="cell.caphrasConfirmed = true; edited(cell)"
+                    (ngModelChange)="
+                      cell.caphrasConfirmed = $event !== null;
+                      cell.caphras = $event ?? 0;
+                      edited(cell)
+                    "
                 /></label>
               }
               <label

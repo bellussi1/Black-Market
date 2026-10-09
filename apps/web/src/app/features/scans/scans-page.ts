@@ -790,7 +790,17 @@ export class ScansPage implements OnDestroy {
           canvas.height = Math.max(1, Math.round(cell.height * previewScale));
           canvas
             .getContext('2d')
-            ?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, canvas.width, canvas.height);
+            ?.drawImage(
+              image,
+              cell.left,
+              cell.top,
+              cell.width,
+              cell.height,
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+            );
           return {
             id,
             score: best?.distance,
@@ -1322,15 +1332,20 @@ export class ScansPage implements OnDestroy {
               ...profile.gear.filter(
                 (part) => !equipment.some(({ cell }) => cell.slot === part.slot),
               ),
-              ...equipment.map(({ cell }) => ({
-                slot: cell.slot as (typeof gearSlots)[number],
-                itemId: cell.item!.id,
-                name: cell.item!.name,
-                level: cell.level,
-                caphras: cell.caphras,
-                levelConfirmed: cell.levelConfirmed ?? false,
-                caphrasConfirmed: cell.caphrasConfirmed ?? false,
-              })),
+              ...equipment.map(({ cell }) => {
+                const previous = profile.gear.find(
+                  (part) => part.slot === cell.slot && part.itemId === cell.item!.id,
+                );
+                return {
+                  slot: cell.slot as (typeof gearSlots)[number],
+                  itemId: cell.item!.id,
+                  name: cell.item!.name,
+                  level: cell.levelConfirmed ? cell.level : (previous?.level ?? 0),
+                  caphras: cell.caphrasConfirmed ? cell.caphras : (previous?.caphras ?? 0),
+                  levelConfirmed: cell.levelConfirmed ?? false,
+                  caphrasConfirmed: cell.caphrasConfirmed ?? false,
+                };
+              }),
             ],
           };
         });

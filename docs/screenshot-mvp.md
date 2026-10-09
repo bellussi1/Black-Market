@@ -58,7 +58,7 @@ Não existe exportação de armazém em CSV oferecida por este fluxo do jogo. O 
 - A distância visual exibida é um escore de semelhança, não uma probabilidade calibrada.
 - IDs que compartilham um ícone permanecem ambíguos. Corda, poções, carnes e sangues podem exigir escolha manual. Um nome sugerido não significa item confirmado.
 - Quantidades passam por um leitor local de silhuetas de dígitos; recortes não resolvidos podem usar o Tesseract já existente. Falha desse apoio preserva leituras locais e deixa os demais valores em branco. Cancelamento interrompe a espera do leitor; operações numéricas têm espera limitada.
-- Abreviações como `264,8k` não são gravadas como quantidade exata. Ausência de contador não preenche uma unidade. Aprimoramento e Caphras não são inferidos pelo ícone: importações sem edição desses campos ficam marcadas como não confirmadas.
+- Abreviações como `264,8k` não são gravadas como quantidade exata. Ausência de contador não preenche uma unidade. Aprimoramento e Caphras não são inferidos pelo ícone: importações sem edição desses campos ficam marcadas como não confirmadas. Ao reimportar o mesmo item na mesma posição, valores anteriores são preservados como referência histórica, sem confirmar o nível atual pela imagem. Um item diferente não herda esses valores.
 - Slots seguramente vazios são descartados. Texturas, sombras, imagens muito escuras e casos duvidosos podem permanecer para revisão, para reduzir descarte incorreto de itens.
 - Ícones apresentados usam o componente padronizado com limite de 48 × 48, proporção preservada e `object-fit: contain`. O processamento interno mantém recortes com resolução maior.
 

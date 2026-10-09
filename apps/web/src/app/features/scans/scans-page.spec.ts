@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { characterSchema } from '@bdo/calculators';
 import type { CatalogItem, CatalogPage } from '@bdo/shared';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,6 +12,78 @@ import { ScansPage } from './scans-page';
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('preserves historical gear values only for the same item without confirming an unread level', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'owner',
+          name: 'Aventureiro',
+          region: 'sa',
+          gear: [
+            {
+              slot: 'mainhand',
+              itemId: 10010,
+              name: 'Espada',
+              level: 19,
+              caphras: 3,
+              levelConfirmed: true,
+              caphrasConfirmed: true,
+            },
+          ],
+        }),
+      ],
+    }));
+    page.mode = 'gear';
+    page.profileId = 'owner';
+    await page.file({
+      target: { files: [new File(['gear'], 'gear.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const item = { id: 10010, name: 'Espada', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      include: true,
+      reviewed: true,
+      slot: 'mainhand',
+      level: 0,
+      caphras: 0,
+      levelConfirmed: false,
+      caphrasConfirmed: false,
+    };
+    page.jobs()[0].status = 'ready';
+    page.cells.set([cell]);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().characters[0].gear[0]).toMatchObject({
+      itemId: 10010,
+      level: 19,
+      caphras: 3,
+      levelConfirmed: false,
+      caphrasConfirmed: false,
+    });
+    cell.item = { ...item, id: 10011 };
+    page.cells.set([cell]);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().characters[0].gear[0]).toMatchObject({
+      itemId: 10011,
+      level: 0,
+      caphras: 0,
+      levelConfirmed: false,
+      caphrasConfirmed: false,
+    });
+  });
   function images() {
     vi.spyOn(IconRefiner.prototype, 'refine').mockImplementation(
       async (_image, _crop, matches) => matches,
