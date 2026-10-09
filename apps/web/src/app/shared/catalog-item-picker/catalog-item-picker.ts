@@ -34,6 +34,7 @@ export class CatalogItemPicker implements OnDestroy {
   readonly searchId = `catalog-${crypto.randomUUID()}`;
   readonly selectionName = input('');
   readonly label = input($localize`Buscar item do jogo`);
+  readonly compact = input(false);
   readonly selected = output<CatalogItem | null>();
   readonly query = signal('');
   readonly category = signal('');

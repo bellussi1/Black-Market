@@ -50,6 +50,7 @@
           <app-item-icon
             [url]="catalog.resolveIconUrl(items().get(row.itemId ?? 0) ?? {})"
             [name]="row.name"
+            [grade]="items().get(row.itemId ?? 0)?.grade ?? null"
           />
           <div>
             <ng-container>

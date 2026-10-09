@@ -23,7 +23,7 @@
     </div>
     <p class="sidebar-label">
       @if (screenshotMvp) {
-        <ng-container i18n>SEUS ITENS DE BDO</ng-container>
+        <ng-container i18n>ESPAÇO DO AVENTUREIRO</ng-container>
       } @else {
         <ng-container i18n>SEU PLANEJADOR DE BDO</ng-container>
       }
@@ -42,6 +42,23 @@
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: link.path === '/' }"
             ariaCurrentWhenActive="page"
+            ><span class="nav-mark" aria-hidden="true">{{
+              link.path === '/'
+                ? '◇'
+                : link.path === '/scans'
+                  ? '↥'
+                  : link.path === '/market'
+                    ? '◈'
+                    : link.path === '/recipes'
+                      ? '⌘'
+                      : link.path === '/gear'
+                        ? '⚔'
+                        : link.path === '/profile'
+                          ? '♙'
+                          : link.path === '/settings'
+                            ? '⚙'
+                            : '▦'
+            }}</span
             >{{ link.label }}</a
           >
         }
@@ -78,19 +95,49 @@
           <li aria-current="page">{{ currentPage() }}</li>
         </ol>
       </nav>
-      <label for="market-region"
-        ><ng-container i18n>Região do mercado</ng-container
-        ><select
-          id="market-region"
-          [ngModel]="preferences.region()"
-          (ngModelChange)="preferences.setRegion($event)"
+      <div class="topbar-tools">
+        <button
+          class="global-search-toggle"
+          type="button"
+          [attr.aria-expanded]="quickSearchOpen()"
+          aria-controls="global-item-search"
+          (click)="quickSearchOpen.update((open) => !open)"
+          i18n
         >
-          @for (market of markets(); track market.code) {
-            <option [value]="market.code">{{ market.label }}</option>
-          }
-        </select></label
-      >
+          Buscar item <span aria-hidden="true">⌕</span>
+        </button>
+        <a class="topbar-character" routerLink="/profile">{{
+          store.activeCharacter()?.name ?? 'Meu espaço'
+        }}</a>
+        <label for="market-region"
+          ><ng-container i18n>Região do mercado</ng-container
+          ><select
+            id="market-region"
+            [ngModel]="preferences.region()"
+            (ngModelChange)="preferences.setRegion($event)"
+          >
+            @for (market of markets(); track market.code) {
+              <option [value]="market.code">{{ market.label }}</option>
+            }
+          </select></label
+        >
+      </div>
     </header>
+    @if (quickSearchOpen()) {
+      <section
+        id="global-item-search"
+        class="global-item-search"
+        aria-label="Busca global"
+        i18n-aria-label
+      >
+        <app-catalog-item-picker
+          label="Buscar por nome ou ID"
+          [compact]="true"
+          (selected)="openItem($event)"
+        />
+        <button type="button" (click)="quickSearchOpen.set(false)" i18n>Fechar busca</button>
+      </section>
+    }
     @if (preferences.message()) {
       <div class="storage-warning" role="status">
         {{ preferences.message() }}

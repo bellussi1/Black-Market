@@ -1,19 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import type { CatalogItem } from '@bdo/shared';
 
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { PlayerOverview } from '../../shared/player-overview/player-overview';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-page',
-  imports: [RouterLink, PlayerOverview],
+  imports: [RouterLink, PlayerOverview, CatalogItemPicker],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
+  readonly selectedItem = signal<CatalogItem | null>(null);
   readonly screenshotMvp = SCREENSHOT_MVP;
   readonly isEnabled = isMvpPathEnabled;
   readonly store = inject(WorkspaceStore);
@@ -24,6 +27,15 @@ export class DashboardPage {
   );
   readonly journeys = SCREENSHOT_MVP
     ? [
+        {
+          number: '00',
+          icon: 'market',
+          title: 'Comparar valores',
+          description: 'Consulte preço e estoque. Alterne entre valor bruto e recebimento líquido.',
+          path: '/market',
+          tag: 'MERCADO CENTRAL',
+          steps: 'Selecionar item · conferir cotação',
+        },
         {
           number: '01',
           icon: 'craft',

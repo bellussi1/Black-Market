@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 @Component({
   selector: 'app-item-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[attr.data-grade]': 'grade()', '[attr.title]': 'tooltip()' },
   template: `
     @if (url(); as source) {
       @if (failedUrl() !== source) {
@@ -25,6 +26,24 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
   styleUrl: './item-icon.scss',
 })
 export class ItemIcon {
+  readonly grade = input<string | null>(null);
+  readonly tooltip = computed(
+    () =>
+      this.name() +
+      (this.grade()
+        ? ' · Qualidade: ' +
+          ((
+            {
+              white: 'branca',
+              green: 'verde',
+              blue: 'azul',
+              yellow: 'dourada',
+              orange: 'laranja',
+              red: 'vermelha',
+            } as Record<string, string>
+          )[this.grade()!] ?? this.grade())
+        : ''),
+  );
   readonly url = input<string | null>(null);
   readonly name = input.required<string>();
   readonly failedUrl = signal<string | null>(null);

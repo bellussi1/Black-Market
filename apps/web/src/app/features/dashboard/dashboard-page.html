@@ -7,10 +7,10 @@
       @if (store.activeCharacter(); as profile) {
         <h1 id="home-title" i18n>O próximo passo de {{ profile.name }}.</h1>
       } @else {
-        <h1 id="home-title" i18n>Seu próximo passo no BDO, sem complicação.</h1>
+        <h1 id="home-title" i18n>Menos preparação.<br />Mais possibilidades.</h1>
       }
       <p class="hero-copy" i18n>
-        Importe capturas do jogo, confira os resultados e organize seus itens num só lugar.
+        Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só lugar.
       </p>
       <div class="action-row hero-actions">
         <a class="btn" routerLink="/market" i18n>Consultar preço</a>
@@ -59,6 +59,33 @@
     </aside>
   </section>
 
+  <section class="panel home-search">
+    <div class="panel-heading">
+      <div>
+        <p class="tool-kicker">COMECE POR UM ITEM</p>
+        <h2>O que você está procurando?</h2>
+      </div>
+      <span class="badge">SEM CADASTRO</span>
+    </div>
+    <app-catalog-item-picker
+      label="Nome, ID ou categoria"
+      [selectionName]="selectedItem()?.name ?? ''"
+      (selected)="selectedItem.set($event)"
+    />
+    @if (selectedItem(); as item) {
+      <div class="action-row">
+        <a class="btn" [routerLink]="['/recipes/items', item.id]">Explorar produção e origens</a
+        ><a class="btn subtle" routerLink="/market" [queryParams]="{ item: item.id }"
+          >Consultar preço</a
+        ><a [routerLink]="['/database/items', item.id]">Detalhes do item →</a>
+      </div>
+    } @else {
+      <p class="help">
+        Selecione um resultado para abrir receitas, preços ou informações do catálogo.
+      </p>
+    }
+  </section>
+
   <section class="journey-section" aria-labelledby="journey-title">
     @if (!screenshotMvp) {
       <app-player-overview />
@@ -68,7 +95,8 @@
         <p class="tool-kicker" i18n>COMECE PELO SEU OBJETIVO</p>
         <h2 id="journey-title" i18n>O que você quer fazer agora?</h2>
         <p class="section-copy" i18n>
-          Escolha uma tarefa. A próxima tela mostra o que preencher e como continuar.
+          As ferramentas reutilizam seu estoque e preferências. Seu perfil pode ser preenchido aos
+          poucos.
         </p>
       </div>
     </div>

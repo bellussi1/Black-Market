@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import type { CatalogItem } from '@bdo/shared';
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
@@ -10,6 +11,7 @@ import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
 import { RegionPreferences } from '../core/region-preferences';
 import { WorkspaceStore } from '../core/workspace-store';
 import { AdSlot } from '../shared/ad-slot/ad-slot';
+import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-picker';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
 
@@ -32,6 +34,7 @@ import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
     PrivacyControls,
 
     PlatformFooter,
+    CatalogItemPicker,
   ],
 
   templateUrl: './workspace-layout.html',
@@ -39,6 +42,12 @@ import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
   styleUrl: './workspace-layout.scss',
 })
 export class WorkspaceLayout {
+  readonly quickSearchOpen = signal(false);
+  openItem(item: CatalogItem | null) {
+    if (!item) return;
+    this.quickSearchOpen.set(false);
+    void this.router.navigate(['/database/items', item.id]);
+  }
   readonly screenshotMvp = SCREENSHOT_MVP;
 
   readonly store = inject(WorkspaceStore);
@@ -82,6 +91,7 @@ export class WorkspaceLayout {
         this.path.set(event.urlAfterRedirects);
 
         this.mobileNavOpen.set(false);
+        this.quickSearchOpen.set(false);
       });
   }
 
@@ -100,6 +110,10 @@ export class WorkspaceLayout {
         { path: '/storage', label: 'Armazéns' },
         { path: '/inventory', label: 'Inventário' },
         { path: '/gear', label: 'Equipamentos' },
+        { path: '/profile', label: 'Personagens e família' },
+        { path: '/shopping', label: 'Lista de materiais' },
+        { path: '/database/items', label: 'Catálogo de itens' },
+        { path: '/settings', label: 'Dados e backup' },
       ]
     : [
         { path: '/', label: $localize`Início` },

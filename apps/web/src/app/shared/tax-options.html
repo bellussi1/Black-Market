@@ -1,44 +1,45 @@
 <fieldset class="tax-options">
   <legend><ng-container i18n>Coleta da venda</ng-container></legend>
-  <div class="form-grid">
-    <label class="field"
-      ><ng-container i18n>Imposto base (%)</ng-container
-      ><input
-        type="number"
-        min="0"
-        max="100"
-        step="0.01"
-        [ngModel]="value().taxPercent"
-        (ngModelChange)="patch({ taxPercent: $event })"
-    /></label>
-    <label class="field"
-      ><ng-container i18n>Fama / anel / outros bônus (%)</ng-container
-      ><input
-        type="number"
-        min="0"
-        max="50"
-        step="0.01"
-        [ngModel]="value().collectionBonus"
-        (ngModelChange)="patch({ collectionBonus: $event })"
-      /><small><ng-container i18n>Bônus sobre a coleta após imposto.</ng-container></small></label
-    >
-  </div>
   <div class="check-row">
     <label
       ><input
         type="checkbox"
         [ngModel]="value().valuePack"
         (ngModelChange)="patch({ valuePack: $event })"
-      />
-      <ng-container i18n>Value Pack (+30% na coleta)</ng-container></label
+      /><ng-container i18n>Value Pack (+30% sobre a coleta)</ng-container></label
     >
     <label
       ><input
         type="checkbox"
         [ngModel]="value().exempt"
         (ngModelChange)="patch({ exempt: $event })"
-      />
-      <ng-container i18n>Venda isenta</ng-container></label
+      /><ng-container i18n>Venda isenta</ng-container></label
     >
   </div>
+  <details>
+    <summary i18n>Regras e bônus avançados</summary>
+    <div class="form-grid">
+      <label class="field"
+        ><ng-container i18n>Imposto base (%)</ng-container
+        ><input
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          [ngModel]="value().taxPercent"
+          (ngModelChange)="patch({ taxPercent: $event })"
+      /></label>
+      <label class="field"
+        ><ng-container i18n>Fama / anel / outros bônus (%)</ng-container
+        ><input
+          type="number"
+          min="0"
+          max="50"
+          step="0.01"
+          [ngModel]="value().collectionBonus"
+          (ngModelChange)="patch({ collectionBonus: $event })"
+        /><small><ng-container i18n>Bônus sobre a coleta após imposto.</ng-container></small></label
+      >
+    </div>
+  </details>
 </fieldset>

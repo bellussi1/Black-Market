@@ -1,4 +1,4 @@
-<div class="picker">
+<div class="picker" [class.compact]="compact()">
   <div class="search-fields">
     <label class="field" [for]="searchId"
       >{{ label() }}
@@ -14,20 +14,22 @@
         (keydown.escape)="open.set(false)"
       />
     </label>
-    <label class="field" [for]="searchId + '-category'">
-      <ng-container i18n>Categoria</ng-container>
-      <select
-        [id]="searchId + '-category'"
-        [value]="category()"
-        (focus)="loadCategories()"
-        (change)="filter($event)"
-      >
-        <option value="" i18n>Todas</option>
-        @for (option of categories(); track option.id) {
-          <option [value]="option.id">{{ option.parentId ? '↳ ' : '' }}{{ option.name }}</option>
-        }
-      </select>
-    </label>
+    @if (!compact()) {
+      <label class="field" [for]="searchId + '-category'">
+        <ng-container i18n>Categoria</ng-container>
+        <select
+          [id]="searchId + '-category'"
+          [value]="category()"
+          (focus)="loadCategories()"
+          (change)="filter($event)"
+        >
+          <option value="" i18n>Todas</option>
+          @for (option of categories(); track option.id) {
+            <option [value]="option.id">{{ option.parentId ? '↳ ' : '' }}{{ option.name }}</option>
+          }
+        </select>
+      </label>
+    }
   </div>
   @if (selectionName()) {
     <div class="selection">
@@ -61,7 +63,7 @@
           @for (item of data.items; track item.id) {
             <button class="result-item" type="button" (click)="choose(item)">
               <span class="icon" aria-hidden="true"
-                ><app-item-icon [url]="iconUrl(item)" [name]="item.name"
+                ><app-item-icon [url]="iconUrl(item)" [name]="item.name" [grade]="item.grade"
               /></span>
               <span class="copy"
                 ><strong>{{ item.name }}</strong

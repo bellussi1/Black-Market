@@ -16,3 +16,24 @@ img {
   max-width: 48px;
   max-height: 48px;
 }
+
+:host([data-grade]) {
+  border: 1px solid #9a9ea8;
+  background: #101216;
+  padding: 2px;
+}
+:host([data-grade='green']) {
+  border-color: #77b783;
+}
+:host([data-grade='blue']) {
+  border-color: #72a7e9;
+}
+:host([data-grade='yellow']) {
+  border-color: #d8b978;
+}
+:host([data-grade='orange']) {
+  border-color: #e99a60;
+}
+:host([data-grade='red']) {
+  border-color: #e67575;
+}
