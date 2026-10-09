@@ -1,6 +1,6 @@
 import { referenceCollections, referenceRecords } from '@bdo/database/schema';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, eq, sql } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { CatalogService } from '../catalog/catalog.service';
@@ -70,16 +70,62 @@ export class ReferenceService {
           sql`${referenceRecords.data} @> ${JSON.stringify({ products: { urns: [`urn::item:${itemId}`] } })}::jsonb`,
         ),
       )
-      .limit(50);
+      .limit(51);
+    const relatedIds = [
+      ...new Set(
+        rows
+          .flatMap((r) => [r.data['territory'], r.data['managerNode']])
+          .filter((id): id is string => typeof id === 'string'),
+      ),
+    ];
+    const related = relatedIds.length
+      ? await this.database.db
+          .select({ id: referenceRecords.id, name: referenceRecords.name })
+          .from(referenceRecords)
+          .where(
+            and(
+              eq(referenceRecords.datasetVersionId, dataset.id),
+              inArray(referenceRecords.id, relatedIds),
+            ),
+          )
+      : [];
+    const names = new Map(related.map((r) => [r.id, r.name.replace(/<[^>]*>/g, '')]));
     return {
-      nodes: rows.map((r) => ({
+      nodes: rows.slice(0, 50).map((r) => ({
         id: r.id,
         name: r.name.replace(/<[^>]*>/g, ''),
         territory: typeof r.data['territory'] === 'string' ? r.data['territory'] : null,
         managerNode: typeof r.data['managerNode'] === 'string' ? r.data['managerNode'] : null,
+        territoryName:
+          typeof r.data['territory'] === 'string' ? (names.get(r.data['territory']) ?? null) : null,
+        managerNodeName:
+          typeof r.data['managerNode'] === 'string'
+            ? (names.get(r.data['managerNode']) ?? null)
+            : null,
         contribution: typeof r.data['contribution'] === 'number' ? r.data['contribution'] : null,
-        position: Array.isArray(r.data['position']) ? r.data['position'] : null,
+        position:
+          Array.isArray(r.data['position']) &&
+          r.data['position'].length === 3 &&
+          r.data['position'].every((v) => typeof v === 'number' && Number.isFinite(v))
+            ? r.data['position']
+            : null,
+        links:
+          typeof r.data['links'] === 'object' &&
+          r.data['links'] !== null &&
+          'urns' in r.data['links'] &&
+          Array.isArray(r.data['links'].urns)
+            ? r.data['links'].urns.filter((id): id is string => typeof id === 'string')
+            : [],
+        products:
+          typeof r.data['products'] === 'object' &&
+          r.data['products'] !== null &&
+          'urns' in r.data['products'] &&
+          Array.isArray(r.data['products'].urns)
+            ? r.data['products'].urns.filter((id): id is string => typeof id === 'string')
+            : [],
       })),
+      truncated: rows.length > 50,
+      dataset: { version: dataset.version, region: dataset.region, locale: dataset.locale },
       updatedAt: dataset.finishedAt,
     };
   }

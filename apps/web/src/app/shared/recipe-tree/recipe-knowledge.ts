@@ -14,8 +14,14 @@ export interface ItemSources {
     managerNode: string | null;
     contribution: number | null;
     position: number[] | null;
+    territoryName?: string | null;
+    managerNodeName?: string | null;
+    links?: string[];
+    products?: string[];
   }[];
   updatedAt: string | null;
+  truncated?: boolean;
+  dataset?: { version: string; region: string; locale: string };
 }
 @Injectable({ providedIn: 'root' })
 export class RecipeKnowledge {
@@ -25,8 +31,12 @@ export class RecipeKnowledge {
   private readonly items = new Map<string, ReturnType<CatalogApiService['getItem']>>();
   private readonly recipes = new Map<string, ReturnType<CatalogApiService['getItemRecipes']>>();
   private readonly origins = new Map<string, ReturnType<RecipeKnowledge['requestSources']>>();
+  private version = '';
+  useVersion(version: string) {
+    this.version = version;
+  }
   private key(id: number) {
-    return `${this.store.data().region}/${preferredDataLocale()}/${id}`;
+    return `${this.version}/${this.store.data().region}/${preferredDataLocale()}/${id}`;
   }
   item(id: number) {
     const k = this.key(id);
@@ -51,6 +61,9 @@ export class RecipeKnowledge {
       );
     }
     return this.recipes.get(k)!;
+  }
+  uses(id: number) {
+    return this.catalog.getItemRecipes(id, 'uses');
   }
   private requestSources(id: number) {
     return this.http.get<ItemSources>(environment.apiBaseUrl + '/api/v1/world/item-sources/' + id, {
