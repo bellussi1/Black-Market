@@ -1,5 +1,11 @@
 # Black Market
 
+## Foco atual do MVP
+
+Importação de até **8 capturas** de armazém, inventário e equipamentos, com comparação visual dos ícones, leitura numérica separada, revisão obrigatória e consolidação sem soma automática de repetidos. Mercado, catálogo e backup apoiam esse fluxo.
+
+Os demais módulos estão suspensos por uma configuração reversível, preservando o código. Consulte o [guia do MVP de capturas](docs/screenshot-mvp.md) para uso, arquitetura, testes, resultados medidos e limitações. O reconhecimento ainda exige confirmação manual de ícones compartilhados e contadores ilegíveis; não há uma métrica validada de precisão global dos IDs.
+
 Plataforma independente de Black Desert Online voltada à comunidade brasileira, com SA e português brasileiro como padrões. O objetivo é oferecer consultas gratuitas de itens, receitas, mercado e estimativas de renda, com uma interface simples e planejamento personalizado a partir de materiais, prata, maestria e equipamentos. Veja a [visão do produto e etapas de entrega](docs/product-vision.md).
 
 A base usa Angular 22, NestJS 12, PostgreSQL/Drizzle e Docker. Inclui catálogo central, receitas compartilháveis, referências do mundo, ferramentas de produção, aprimoramento/Caphras, equipamentos, profissões, mercado, planos, reservas e recomendações explicáveis. Prints geram rascunhos revisáveis de estoque, números e equipamentos no navegador. Login e sincronização com controle de versão usam Supabase Auth quando configurado. A aplicação local tem dados importados; a publicação web e a ativação do login ainda dependem do ambiente de produção.
