@@ -7,7 +7,9 @@ param(
   [ValidatePattern('^[a-zA-Z0-9_]+$')][string]$DatabaseUser = 'bdo',
   [ValidatePattern('^[a-zA-Z0-9_]+$')][string]$DatabaseName = 'bdo_companion',
   [switch]$CheckOnly,
-  [switch]$SkipBuild
+  [switch]$SkipBuild,
+  [string]$ExtractorPath = '',
+  [switch]$RecipeCatalogOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,7 +17,11 @@ $taskWorkspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $taskGame = (Resolve-Path -LiteralPath $GamePath).Path
 $taskMeta = (Get-FileHash -LiteralPath (Join-Path $taskGame 'Paz/pad00000.meta') -Algorithm SHA256).Hash.ToLowerInvariant()
 $taskLanguage = (Get-FileHash -LiteralPath (Join-Path $taskGame "ads/languagedata_$Locale.loc") -Algorithm SHA256).Hash.ToLowerInvariant()
-$taskVersion = "$Region-$Locale-meta-$($taskMeta.Substring(0,12))-loc-$($taskLanguage.Substring(0,12))-ext-$($ExtractorCommit.Substring(0,8))"
+if (-not $ExtractorPath) { $ExtractorPath = Join-Path $taskWorkspace 'data/tools/bdo-data-extractor.exe' }
+$taskExtractor = (Resolve-Path -LiteralPath $ExtractorPath).Path
+$taskExtractorHash = (Get-FileHash -LiteralPath $taskExtractor -Algorithm SHA256).Hash.ToLowerInvariant()
+$taskScope = if ($RecipeCatalogOnly) { 'catalog' } else { 'full' }
+$taskVersion = "$Region-$Locale-meta-$($taskMeta.Substring(0,12))-loc-$($taskLanguage.Substring(0,12))-ext-$($ExtractorCommit.Substring(0,8))-bin-$($taskExtractorHash.Substring(0,8))-$taskScope"
 $taskImportVersion = "$taskVersion-$ImportRevision"
 $taskExtraction = Join-Path $taskWorkspace "data/extracted/$taskVersion"
 
@@ -44,10 +50,10 @@ try {
   }
 
   if (-not (Test-Path -LiteralPath $taskExtraction)) {
-    & (Join-Path $PSScriptRoot 'extract-game-data.ps1') -GamePath $taskGame -Locale $Locale -Region $Region -ExtractorCommit $ExtractorCommit
+    & (Join-Path $PSScriptRoot 'extract-game-data.ps1') -GamePath $taskGame -Locale $Locale -Region $Region -ExtractorCommit $ExtractorCommit -ExtractorPath $taskExtractor -RecipeCatalogOnly:$RecipeCatalogOnly
   }
   $taskProvenance = Get-Content -LiteralPath (Join-Path $taskExtraction 'provenance.json') -Raw | ConvertFrom-Json
-  if ($taskProvenance.status -ne 'extracted' -or $taskProvenance.metaSha256 -ne $taskMeta -or $taskProvenance.localizationSha256 -ne $taskLanguage) {
+  if ($taskProvenance.status -ne 'extracted' -or $taskProvenance.metaSha256 -ne $taskMeta -or $taskProvenance.localizationSha256 -ne $taskLanguage -or $taskProvenance.extractorSha256 -ne $taskExtractorHash) {
     throw 'A extração não está completa ou não corresponde ao cliente instalado. Preserve os arquivos e investigue antes de publicar.'
   }
   if (-not $SkipBuild) {

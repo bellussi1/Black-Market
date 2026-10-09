@@ -4,7 +4,8 @@ param(
   [ValidatePattern('^[a-f0-9]{40}$')]
   [string]$ExtractorCommit = '5bf11bd7bc60dcbb6126be34bf3d76633abdd8b2',
   [ValidatePattern('^[a-z]{2,8}$')][string]$Locale = 'pt',
-  [ValidatePattern('^[a-z0-9-]{2,12}$')][string]$Region = 'sa'
+  [ValidatePattern('^[a-z0-9-]{2,12}$')][string]$Region = 'sa',
+  [switch]$RecipeCatalogOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,7 +20,9 @@ function Get-TaskHash([string]$Path) {
 }
 $taskMetaHash = Get-TaskHash $taskMetaPath
 $taskLocaleHash = Get-TaskHash $taskLocalePath
-$taskVersion = "$Region-$Locale-meta-$($taskMetaHash.Substring(0,12))-loc-$($taskLocaleHash.Substring(0,12))-ext-$($ExtractorCommit.Substring(0,8))"
+$taskExtractorHash = Get-TaskHash $taskExtractor
+$taskScope = if ($RecipeCatalogOnly) { 'catalog' } else { 'full' }
+$taskVersion = "$Region-$Locale-meta-$($taskMetaHash.Substring(0,12))-loc-$($taskLocaleHash.Substring(0,12))-ext-$($ExtractorCommit.Substring(0,8))-bin-$($taskExtractorHash.Substring(0,8))-$taskScope"
 $taskOutput = [IO.Path]::GetFullPath((Join-Path $taskWorkspace "data/extracted/$taskVersion"))
 if (-not $taskOutput.StartsWith($taskWorkspace + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
     $taskOutput.StartsWith($taskGame + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
@@ -34,14 +37,18 @@ $taskProvenance = [ordered]@{
   region = $Region
   locale = $Locale
   extractorCommit = $ExtractorCommit
-  extractorSha256 = Get-TaskHash $taskExtractor
+  extractorSha256 = $taskExtractorHash
+  omittedArtifacts = if ($RecipeCatalogOnly) { @('quests.json', 'character_progression.json', 'adventure_journals.json', 'mastery.json', 'caphras.json', 'item_sets.json', 'lightstone_combinations.json', 'class_skills.json', 'crystal_rules.json', 'item_improvements.json') } else { @() }
+  omittedItemMetadata = if ($RecipeCatalogOnly) { @('effects', 'enhancementCurves') } else { @() }
   metaSha256 = $taskMetaHash
   localizationSha256 = $taskLocaleHash
   startedAt = [DateTime]::UtcNow.ToString('o')
   status = 'extracting'
 }
 try {
-  & $taskExtractor build --game $taskGame --out $taskOutput --lang $Locale --region $Region 2>&1 |
+  $taskBuildArgs = @('build', '--game', $taskGame, '--out', $taskOutput, '--lang', $Locale, '--region', $Region)
+  if ($RecipeCatalogOnly) { $taskBuildArgs += '--recipe-catalog-only' }
+  & $taskExtractor @taskBuildArgs 2>&1 |
     Tee-Object -FilePath (Join-Path $taskOutput 'build.log')
   if ($LASTEXITCODE -ne 0) { throw "Falha no build do extractor: $LASTEXITCODE" }
   & $taskExtractor icons --game $taskGame --out $taskOutput --lang $Locale --region $Region 2>&1 |

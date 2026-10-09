@@ -15,6 +15,9 @@ import { normalizeName, referenceKinds } from './reference-kinds';
 async function run() {
   const [directory, version] = process.argv.slice(2);
   if (!directory || !version) throw new Error('Informe diretório de extração e UUID do dataset.');
+  const provenance = JSON.parse(
+    await readFile(join(resolve(directory), 'provenance.json'), 'utf8'),
+  ) as { omittedArtifacts?: string[] };
   const app = await NestFactory.createApplicationContext(AppModule, { logger: false });
   try {
     const database = app.get(DatabaseService);
@@ -26,6 +29,12 @@ async function run() {
     if (!dataset || dataset.status !== 'active')
       throw new Error('O catálogo selecionado não está ativo.');
     for (const [kind, [filename, section, label]] of Object.entries(referenceKinds)) {
+      if (provenance.omittedArtifacts?.includes(filename)) {
+        process.stdout.write(
+          kind + ': omitido explicitamente na extração (não utilizado por receitas)\n',
+        );
+        continue;
+      }
       const bytes = await readFile(join(resolve(directory), filename));
       const checksum = createHash('sha256').update(bytes).digest('hex');
       const [held] = await database.db

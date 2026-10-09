@@ -1,0 +1,67 @@
+diff --git a/internal/build/build.go b/internal/build/build.go
+index 1a6314f..f2587f1 100644
+--- a/internal/build/build.go
++++ b/internal/build/build.go
+@@ -134,6 +134,10 @@ func Run() error {
+ 		{name: "manufacture", fn: b.buildManufacture},
+ 		{name: "caphras", fn: b.buildCaphras},
+ 	} {
++		if config.GlobalConfig.RecipeCatalogOnly != nil && *config.GlobalConfig.RecipeCatalogOnly && (stage.name == "character progression" || stage.name == "adventure journals" || stage.name == "mastery" || stage.name == "caphras") {
++			b.logf(stage.name + ": explicitly omitted (recipe catalog profile)")
++			continue
++		}
+ 		if err := runStage(stage.name, stage.fn); err != nil {
+ 			return err
+ 		}
+diff --git a/internal/build/items.go b/internal/build/items.go
+index dbde894..e5a6aa7 100644
+--- a/internal/build/items.go
++++ b/internal/build/items.go
+@@ -54,6 +54,10 @@ func (b *Builder) buildItems() error {
+ 	b.logStep(stage, "finalize", time.Since(t0))
+ 
+ 	t0 = time.Now()
++	if config.GlobalConfig.RecipeCatalogOnly != nil && *config.GlobalConfig.RecipeCatalogOnly {
++		b.logf("item effects, skill rules and enhancement curves: explicitly omitted (recipe catalog profile)")
++		return b.addItemOutputs()
++	}
+ 	if err := b.buildItemSets(); err != nil {
+ 		return err
+ 	}
+@@ -113,6 +117,10 @@ func (b *Builder) loadItemTables() (itemTables, error) {
+ 	}
+ 	b.logf(fmt.Sprintf("itemmaxlevel: %d rows", len(maxLevels)))
+ 
++	if config.GlobalConfig.RecipeCatalogOnly != nil && *config.GlobalConfig.RecipeCatalogOnly {
++		return itemTables{stats: stats, maxLevels: maxLevels}, nil
++	}
++
+ 	// consumable effect chain: item->skill->buff (typed effects + cooldown)
+ 	pair, err = b.readFiles("buffoffset.dbss", "buff.dbss", "skilloffset.dbss", "skill.dbss")
+ 	if err != nil {
+diff --git a/internal/config/config.go b/internal/config/config.go
+index 3dedb9b..6d2b765 100644
+--- a/internal/config/config.go
++++ b/internal/config/config.go
+@@ -16,9 +16,10 @@ type Config struct {
+ 	Out     *string
+ 	Lang    *string
+ 	// Region selects the game service region, such as na.
+-	Region      *string
+-	Pretty      *bool
+-	DumpItemIds []uint32 // optional list of item IDs to dump (for debugging)
++	Region            *string
++	RecipeCatalogOnly *bool
++	Pretty            *bool
++	DumpItemIds       []uint32 // optional list of item IDs to dump (for debugging)
+ 
+ 	// CPUProfile, when non-empty, writes a pprof CPU profile for the whole process.
+ 	CPUProfile *string
+@@ -66,6 +67,7 @@ func InitConfig() (*Config, string, []string) {
+ 	GlobalConfig.Out = fs.String("out", "data", "output directory for build")
+ 	GlobalConfig.Lang = fs.String("lang", "en", "localization language (en/de/fr/sp)")
+ 	GlobalConfig.Region = fs.String("region", "", "game service region, e.g. na")
++	GlobalConfig.RecipeCatalogOnly = fs.Bool("recipe-catalog-only", false, "extract recipe catalog and geographic references without unrelated character, buff or enhancement tables")
+ 	GlobalConfig.Pretty = fs.Bool("pretty", false, "indent JSON output (build command)")
+ 	GlobalConfig.CPUProfile = fs.String("cpuprofile", "", "write pprof CPU profile to this file")
+ 
