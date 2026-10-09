@@ -52,7 +52,12 @@
             [name]="row.name"
           />
           <div>
-            <a [routerLink]="['/database/items', row.itemId]">{{ row.name }}</a
+            <ng-container>
+              @if (row.itemId) {
+                <a [routerLink]="['/database/items', row.itemId]">{{ row.name }}</a>
+              } @else {
+                <span>{{ row.name }}</span>
+              }</ng-container
             ><strong>{{ row.quantity.toLocaleString('pt-BR') }}</strong
             ><small>{{ row.location }} · #{{ row.itemId ?? 'não vinculado' }}</small
             ><small i18n>Atualização: {{ date(row.updatedAt) }}</small>

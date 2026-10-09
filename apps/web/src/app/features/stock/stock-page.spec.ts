@@ -4,6 +4,26 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('renders old manual records without constructing a URL with an undefined ID', async () => {
+    const fixture = await renderComponent(StockPage),
+      page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'manual',
+          name: 'Material antigo',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 3,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    expect(() => fixture.detectChanges()).not.toThrow();
+    expect(fixture.nativeElement.textContent).toContain('Material antigo');
+  });
   it('keeps legacy storage records and validates manual quantities and identities', async () => {
     const fixture = await renderComponent(StockPage),
       page = fixture.componentInstance;
