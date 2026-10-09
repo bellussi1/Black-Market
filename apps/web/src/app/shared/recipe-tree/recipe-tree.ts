@@ -6,88 +6,215 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import type { CatalogItemDetail, CatalogRecipe } from '@bdo/shared';
-import { forkJoin } from 'rxjs';
+import { availableInventory, calculateMarket, type TaxOptions } from '@bdo/calculators';
+import type {
+  CatalogItemDetail,
+  CatalogRecipe,
+  CatalogRecipePart,
+  MarketLookupResponse,
+} from '@bdo/shared';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
-import { silver } from '../formatters';
+import { MarketApi, type MarketHistoryPoint } from '../../features/market/market-api';
+import { date, silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { TaxOptionsComponent } from '../tax-options';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
+import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import {
   nodeFor,
   patchNode,
   planRecipeTree,
   type RecipeNode,
+  stockLocationKey,
   withRecipe,
 } from './recipe-tree-model';
 @Component({
   selector: 'app-recipe-tree',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, RecipeBranch, ItemIcon],
+  imports: [FormsModule, RouterLink, RecipeBranch, RecipeGraph, ItemIcon, TaxOptionsComponent],
   templateUrl: './recipe-tree.html',
+  styleUrl: './recipe-tree.scss',
 })
 export class RecipeTree {
-  readonly typeLabel = recipeTypeLabel;
-  setRootYield(value: number | null) {
-    this.patch('root', (node) => ({ ...node, yield: Number(value) || null }));
-  }
-  readonly recipe = input.required<CatalogRecipe>();
+  readonly recipe = input<CatalogRecipe | null>(null);
+  readonly selectedItem = input<CatalogItemDetail | null>(null);
+  readonly datasetVersion = input('');
+  readonly rootMethod = output<CatalogRecipe | null>();
   readonly store = inject(WorkspaceStore);
   readonly catalog = inject(CatalogApiService);
   private readonly knowledge = inject(RecipeKnowledge);
+  private readonly market = inject(MarketApi);
   private readonly destroyRef = inject(DestroyRef);
+  readonly region = computed(() => this.store.data().region);
   readonly root = signal<RecipeNode | null>(null);
   readonly target = signal(100);
-  readonly view = signal<'tree' | 'list'>('tree');
+  readonly view = signal<'graph' | 'tree' | 'list'>('graph');
+  readonly selectedPath = signal('root');
+  readonly graph = viewChild(RecipeGraph);
+  readonly excludedLocations = signal<string[]>([]);
+  readonly livePrices = signal(new Map<number, string>());
+  readonly marketResult = signal<MarketLookupResponse | null>(null);
+  readonly marketLoading = signal(false);
+  readonly marketMessage = signal('');
+  readonly history = signal<MarketHistoryPoint[]>([]);
+  readonly historyMessage = signal('');
   readonly context = signal<{
     node: RecipeNode;
-    item: CatalogItemDetail;
+    item: CatalogItemDetail | null;
     origins: ItemSources;
     recipes: CatalogRecipe[];
+    uses: CatalogRecipe[];
+    incomplete: boolean;
   } | null>(null);
   readonly contextLoading = signal(false);
   readonly contextMessage = signal('');
+  readonly selectedLocation = signal<ItemSources['nodes'][number] | null>(null);
+  readonly typeLabel = recipeTypeLabel;
   readonly silver = silver;
+  readonly partName = (part: CatalogRecipePart) => part.name;
+  readonly date = (value: string | null | undefined) =>
+    value && Number.isFinite(Date.parse(value)) ? date(value) : 'Não informada';
   private revision = 0;
-  readonly plan = computed(() => {
-    const root = this.root();
-    return root ? planRecipeTree(root, this.target(), this.store.data()) : null;
+  private contextRevision = 0;
+  private marketRevision = 0;
+  private selectionIdentity = '';
+  readonly locations = computed(() => {
+    const groups = new Map<string, { key: string; name: string; count: number; old: number }>();
+    for (const row of this.store.data().inventory.filter((r) => r.region === this.region())) {
+      const key = stockLocationKey(row),
+        owner = this.store.data().characters.find((c) => c.id === row.characterId);
+      const group = groups.get(key) ?? {
+        key,
+        name:
+          row.kind === 'inventory'
+            ? 'Inventário · ' + (owner?.name ?? row.location)
+            : 'Armazém · ' + row.location,
+        count: 0,
+        old: 0,
+      };
+      group.count++;
+      if (!row.updatedAt || Date.now() - Date.parse(row.updatedAt) > 30 * 86400000) group.old++;
+      groups.set(key, group);
+    }
+    return [...groups.values()];
   });
-  readonly profile = this.store.activeCharacter;
-  readonly mastery = computed(() => {
-    const type = this.recipe().type;
-    const skill = type === 'COOK' ? 'cooking' : type === 'ALCHEMY' ? 'alchemy' : 'processing';
-    return {
-      skill,
-      label: skill === 'cooking' ? 'Culinária' : skill === 'alchemy' ? 'Alquimia' : 'Processamento',
-      value: this.profile()?.mastery[skill] ?? null,
+  readonly plan = computed(() =>
+    this.root()
+      ? planRecipeTree(this.root()!, this.target(), this.store.data(), {
+          excludedLocations: this.excludedLocations(),
+          prices: this.livePrices(),
+        })
+      : null,
+  );
+  readonly parts = computed(() => {
+    const parts = new Map<number, CatalogRecipePart>();
+    const visit = (node: RecipeNode) => {
+      parts.set(node.part.itemId, node.part);
+      node.children.forEach(visit);
     };
+    if (this.root()) visit(this.root()!);
+    return parts;
+  });
+  readonly points = computed(() => {
+    const nodes = this.context()?.origins.nodes.filter((n) => n.position?.length === 3) ?? [];
+    if (!nodes.length) return [];
+    const xs = nodes.map((n) => n.position![0]),
+      zs = nodes.map((n) => n.position![2]),
+      minX = Math.min(...xs),
+      minZ = Math.min(...zs);
+    const spanX = Math.max(...xs) - minX,
+      spanZ = Math.max(...zs) - minZ;
+    const scale = Math.min(310 / Math.max(spanX, 1), 150 / Math.max(spanZ, 1));
+    return nodes.map((node, index) => ({
+      node,
+      index,
+      x: (360 - spanX * scale) / 2 + (node.position![0] - minX) * scale,
+      y: (200 - spanZ * scale) / 2 + (node.position![2] - minZ) * scale,
+    }));
+  });
+  readonly buyCost = computed(() => {
+    const root = this.root(),
+      plan = this.plan()?.value;
+    if (!root || !plan) return null;
+    const price = this.price(root.part.itemId),
+      missing = plan.allocations[0]?.missing ?? this.target();
+    return price === null ? null : String(BigInt(price) * BigInt(missing));
+  });
+  readonly sale = computed(() => {
+    const root = this.root(),
+      plan = this.plan(),
+      price = root ? this.price(root.part.itemId) : null;
+    if (!plan?.value || price === null) return null;
+    try {
+      return calculateMarket({
+        ...this.store.data().taxOptions,
+        price,
+        quantity: this.target(),
+        cost: plan.value.cost,
+      });
+    } catch {
+      return null;
+    }
   });
   constructor() {
     effect(() => {
-      const recipe = this.recipe();
+      const recipe = this.recipe(),
+        item = this.selectedItem();
+      this.knowledge.useVersion(this.datasetVersion());
+      const identity = this.region() + '/' + (item?.id ?? recipe?.outputs[0]?.itemId ?? '');
       this.revision++;
-      const output = recipe.outputs[0];
+      this.contextRevision++;
+      this.marketRevision++;
       this.context.set(null);
       this.contextMessage.set('');
+      this.contextLoading.set(false);
+      this.marketResult.set(null);
+      this.marketLoading.set(false);
+      this.history.set([]);
+      this.historyMessage.set('');
+      if (identity !== this.selectionIdentity) {
+        this.livePrices.set(new Map());
+        this.selectionIdentity = identity;
+      }
+      this.selectedPath.set('root');
+      this.selectedLocation.set(null);
+      const output = item
+        ? { itemId: item.id, name: item.name, quantity: null, iconUrl: item.iconUrl }
+        : recipe?.outputs[0];
       this.root.set(
         output
-          ? withRecipe(
-              nodeFor(output, 'root'),
-              recipe,
-              this.store.demoActive() && !output.quantity ? 2.5 : undefined,
-            )
+          ? recipe
+            ? withRecipe(nodeFor(output, 'root'), recipe)
+            : nodeFor(output, 'root')
           : null,
       );
     });
+  }
+  toggleLocation(key: string, included: boolean) {
+    this.excludedLocations.update((rows) =>
+      included ? rows.filter((row) => row !== key) : [...new Set([...rows, key])],
+    );
+  }
+  setRootYield(value: number | null) {
+    this.patch('root', (node) => ({ ...node, yield: value }));
+  }
+  setTax(value: TaxOptions) {
+    this.store.update((state) => ({ ...state, taxOptions: value }));
+  }
+  allocationPath(id: number | undefined) {
+    return this.plan()?.value?.allocations.find((row) => row.itemId === id)?.path ?? 'root';
   }
   patch(path: string, change: (node: RecipeNode) => RecipeNode) {
     this.root.update((root) => (root ? patchNode(root, path, change) : null));
@@ -105,6 +232,7 @@ export class RecipeTree {
     const node = this.find(event.path);
     if (!node) return;
     if (event.action === 'source') {
+      this.selectedPath.set(node.path);
       this.showContext(node);
       return;
     }
@@ -113,49 +241,62 @@ export class RecipeTree {
       return;
     }
     if (event.action === 'buy') {
+      if (node.path === 'root') this.rootMethod.emit(null);
       this.patch(node.path, (n) => ({
         ...n,
         recipe: null,
         children: [],
         expanded: false,
         yield: null,
+        acquisition: { kind: 'external', label: 'Obter pronto' },
       }));
       return;
     }
     if (event.action === 'yield') {
-      this.patch(node.path, (n) => ({ ...n, yield: Number(event.value) || null }));
+      this.patch(node.path, (n) => ({
+        ...n,
+        yield: event.value === null ? null : Number(event.value),
+      }));
       return;
     }
     if (event.action === 'quantity') {
-      this.patch(node.path, (n) => ({ ...n, part: { ...n.part, quantity: String(event.value) } }));
+      this.patch(node.path, (n) => ({
+        ...n,
+        part: { ...n.part, quantity: event.value === null ? null : String(event.value) },
+      }));
       return;
     }
     if (event.action === 'choose') {
-      const recipe = node.options.find((r) => r.key === event.value);
-      if (recipe)
-        this.patch(node.path, (n) =>
-          withRecipe(n, recipe, this.store.demoActive() ? 2.5 : undefined),
-        );
+      const recipe = [
+        ...node.options,
+        ...(this.context()?.node.path === node.path ? this.context()!.recipes : []),
+      ].find((r) => r.key === event.value);
+      if (recipe) {
+        if (this.ancestors(node.path).includes(node.part.itemId)) {
+          this.patch(node.path, (n) => ({
+            ...n,
+            message: 'Ciclo detectado. Escolha outra origem.',
+          }));
+          return;
+        }
+        this.patch(node.path, (n) => withRecipe(n, recipe));
+        if (node.path === 'root') this.rootMethod.emit(recipe);
+      }
       return;
     }
     if (node.recipe) {
       this.patch(node.path, (n) => ({ ...n, expanded: true }));
       return;
     }
-    const ancestry = node.path.split('/');
-    let parent = this.root();
-    const ids: number[] = [];
-    for (let i = 1; i < ancestry.length; i++) {
-      if (parent) {
-        ids.push(parent.part.itemId);
-        parent = parent.children[Number(ancestry[i])];
-      }
-    }
-    if (ids.includes(node.part.itemId) || ancestry.length > 12) {
+    if (
+      this.ancestors(node.path).includes(node.part.itemId) ||
+      node.path.split('/').length > 12 ||
+      this.count() >= 470
+    ) {
       this.patch(node.path, (n) => ({
         ...n,
         message:
-          'Esta origem repetiria um item da cadeia. Escolha outro método ou compre o ingrediente.',
+          'Esta expansão repetiria um item ou excederia o limite da árvore. Explore outra ramificação.',
       }));
       return;
     }
@@ -174,70 +315,227 @@ export class RecipeTree {
               loading: false,
               message: response.recipes.length
                 ? ''
-                : 'Não há produção conhecida para este item. Consulte as outras origens.',
+                : 'Sem receita vinculada. Consulte as fontes conhecidas em Onde obter.',
             };
-            return response.recipes.length === 1
-              ? withRecipe(ready, response.recipes[0], this.store.demoActive() ? 2.5 : undefined)
-              : ready;
+            return response.recipes.length === 1 ? withRecipe(ready, response.recipes[0]) : ready;
           });
+          this.selectedPath.set(node.path);
+          this.showContext(this.find(node.path)!);
         },
         error: () => {
           if (revision === this.revision)
             this.patch(node.path, (n) => ({
               ...n,
               loading: false,
-              message: 'Não foi possível carregar as receitas deste ingrediente. Tente novamente.',
+              message: 'Não foi possível carregar as receitas. Tente novamente.',
             }));
         },
       });
   }
+  private ancestors(path: string) {
+    const parts = path.split('/'),
+      ids: number[] = [];
+    let node = this.root();
+    for (let i = 1; i < parts.length; i++)
+      if (node) {
+        ids.push(node.part.itemId);
+        node = node.children[Number(parts[i])];
+      }
+    return ids;
+  }
+  private count(node = this.root()): number {
+    return node ? 1 + node.children.reduce((n, c) => n + this.count(c), 0) : 0;
+  }
   showContext(node: RecipeNode) {
-    const revision = this.revision;
+    const revision = ++this.contextRevision,
+      region = this.region();
     this.contextLoading.set(true);
     this.contextMessage.set('');
     this.context.set(null);
+    this.selectedLocation.set(null);
+    this.marketResult.set(null);
+    this.marketLoading.set(false);
+    this.marketMessage.set('');
+    this.history.set([]);
+    this.historyMessage.set('');
+    this.marketRevision++;
     forkJoin({
-      item: this.knowledge.item(node.part.itemId),
-      origins: this.knowledge.sources(node.part.itemId),
-      recipes: this.knowledge.produces(node.part.itemId),
+      item: this.knowledge.item(node.part.itemId).pipe(catchError(() => of(null))),
+      origins: this.knowledge.sources(node.part.itemId).pipe(catchError(() => of(null))),
+      recipes: this.knowledge.produces(node.part.itemId).pipe(catchError(() => of(null))),
+      uses: this.knowledge.uses(node.part.itemId).pipe(catchError(() => of(null))),
     })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (revision !== this.contextRevision || region !== this.region()) return;
+        const versions = [
+          result.item?.dataset?.version,
+          result.origins?.dataset?.version,
+          result.recipes?.dataset?.version,
+          result.uses?.dataset?.version,
+        ].filter(Boolean);
+        if (
+          this.datasetVersion() &&
+          versions.some((version) => version !== this.datasetVersion())
+        ) {
+          this.contextLoading.set(false);
+          this.contextMessage.set(
+            'O catálogo foi atualizado. Reabra este item para consultar receitas e origens da mesma versão.',
+          );
+          return;
+        }
+        this.context.set({
+          node,
+          item: result.item?.item ?? null,
+          origins: result.origins ?? { nodes: [], updatedAt: null },
+          recipes: result.recipes?.recipes ?? [],
+          uses: result.uses?.recipes ?? [],
+          incomplete: Object.values(result).some((v) => v === null),
+        });
+        this.contextLoading.set(false);
+      });
+  }
+  consultMarket() {
+    const node = this.context()?.node;
+    if (!node || this.marketLoading()) return;
+    const revision = ++this.marketRevision,
+      region = this.region(),
+      contextRevision = this.contextRevision;
+    this.marketLoading.set(true);
+    this.marketMessage.set('');
+    this.market
+      .getItem(String(node.part.itemId), region)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          if (revision !== this.revision) return;
-          this.context.set({
-            node,
-            item: result.item.item,
-            origins: result.origins,
-            recipes: result.recipes.recipes,
-          });
-          this.contextLoading.set(false);
+          if (
+            revision !== this.marketRevision ||
+            region !== this.region() ||
+            contextRevision !== this.contextRevision
+          )
+            return;
+          this.marketResult.set(result);
+          this.marketLoading.set(false);
+          const base = result.items.find((item) => item.subId === 0);
+          if (
+            base?.price !== null &&
+            base?.price !== undefined &&
+            result.cacheStatus !== 'stale' &&
+            result.region === region
+          )
+            this.livePrices.update((prices) => new Map(prices).set(node.part.itemId, base.price!));
+          if (!base) this.marketMessage.set('Não há cotação da variante base para este item.');
         },
         error: () => {
-          if (revision === this.revision) {
-            this.contextLoading.set(false);
-            this.contextMessage.set(
-              'Não foi possível consultar as origens agora. A receita continua disponível.',
-            );
+          if (revision === this.marketRevision) {
+            this.marketLoading.set(false);
+            this.marketMessage.set('Não foi possível consultar o mercado. Tente novamente.');
           }
         },
       });
+  }
+  consultHistory() {
+    const node = this.context()?.node;
+    if (!node) return;
+    const revision = this.contextRevision,
+      region = this.region();
+    this.historyMessage.set('Consultando histórico…');
+    this.market
+      .history(node.part.itemId, region)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          if (revision === this.contextRevision && region === this.region()) {
+            this.history.set(result.points);
+            this.historyMessage.set(
+              result.points.length
+                ? 'Observações registradas pelo Black Market.'
+                : 'Ainda não há histórico observado deste item.',
+            );
+          }
+        },
+        error: () => {
+          if (revision === this.contextRevision)
+            this.historyMessage.set('Não foi possível consultar o histórico.');
+        },
+      });
+  }
+  price(id: number) {
+    return (
+      this.livePrices().get(id) ??
+      this.quote(id)?.price ??
+      this.store
+        .data()
+        .inventory.find(
+          (row) => row.region === this.region() && row.itemId === id && row.price !== '0',
+        )?.price ??
+      null
+    );
   }
   quote(id: number) {
     return (
       this.store
         .data()
-        .quotes.filter((q) => q.region === this.store.data().region && q.itemId === id && !q.subId)
+        .quotes.filter((q) => q.region === this.region() && q.itemId === id && !q.subId)
         .sort((a, b) => b.observedAt.localeCompare(a.observedAt))[0] ?? null
     );
   }
-  owned(id: number) {
-    return this.store
-      .data()
-      .inventory.filter((r) => r.region === this.store.data().region && r.itemId === id)
-      .reduce((n, r) => n + r.quantity, 0);
+  holdings(id: number) {
+    return availableInventory(
+      this.store.data().personalPlans,
+      this.store
+        .data()
+        .inventory.filter(
+          (r) =>
+            r.region === this.region() &&
+            r.itemId === id &&
+            !this.excludedLocations().includes(stockLocationKey(r)),
+        ),
+    );
   }
   plain(text: string | null) {
-    return text?.replace(/<[^>]*>/g, '') ?? '';
+    return (
+      text
+        ?.replace(/<[^>]*>/g, '')
+        .replace(/\{TextBind:USING_CLICK_RMB\}/g, 'Use o botão direito')
+        .replace(/\{KeyBind:Manufacture\}/g, 'menu de Processamento')
+        .replace(/\{(?:TextBind|KeyBind):[^}]+\}/g, '') ?? ''
+    );
+  }
+  selectedNode() {
+    return this.find(this.selectedPath());
+  }
+  chooseWorker(source: ItemSources['nodes'][number]) {
+    const node = this.selectedNode();
+    if (
+      !node ||
+      node.recipe ||
+      !this.context()?.origins.nodes.some((candidate) => candidate.id === source.id)
+    )
+      return;
+    this.patch(node.path, (n) => ({
+      ...n,
+      acquisition: {
+        kind: 'workers',
+        label: source.managerNodeName ?? source.name,
+        sourceId: source.id,
+      },
+    }));
+  }
+  methods(id: number | undefined) {
+    const labels = new Set<string>();
+    const visit = (node: RecipeNode) => {
+      if (node.part.itemId === id)
+        labels.add(
+          node.recipe
+            ? this.typeLabel(node.recipe.type)
+            : node.acquisition?.kind === 'workers'
+              ? 'Trabalhadores · ' + node.acquisition.label
+              : 'Obter fora / consultar fontes',
+        );
+      for (const child of node.children) visit(child);
+    };
+    if (this.root()) visit(this.root()!);
+    return [...labels].join(' / ');
   }
 }

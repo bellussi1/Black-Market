@@ -1,0 +1,113 @@
+<div class="graph-controls" role="group" aria-label="Controles da árvore" i18n-aria-label>
+  <button type="button" (click)="scale(0.15)" aria-label="Aumentar zoom" i18n-aria-label>+</button>
+  <span>{{ (zoom() * 100).toFixed(0) }}%</span>
+  <button type="button" (click)="scale(-0.15)" aria-label="Diminuir zoom" i18n-aria-label>−</button>
+  <button type="button" (click)="fit()" i18n>Ajustar árvore</button>
+  <button type="button" (click)="center(selected())" i18n>Centralizar seleção</button>
+  <button type="button" (click)="focus.set(''); center()" i18n>Voltar ao produto</button>
+  <button type="button" [attr.aria-pressed]="!!focus()" (click)="focusBranch()">
+    {{ focus() ? 'Todas as ramificações' : 'Só esta ramificação' }}
+  </button>
+</div>
+<p class="help" i18n>
+  Arraste o fundo para navegar. Use os controles de zoom ou as setas do teclado com a área
+  selecionada.
+</p>
+@if (layout().truncated) {
+  <p role="status" i18n>
+    Exibindo até 200 nós. Selecione uma ramificação para explorar o restante.
+  </p>
+}
+<div
+  #viewport
+  class="graph-viewport"
+  tabindex="0"
+  role="region"
+  aria-label="Árvore de produção interativa"
+  i18n-aria-label
+  (pointerdown)="start($event)"
+  (pointermove)="move($event)"
+  (pointerup)="end()"
+  (pointercancel)="end()"
+  (keydown)="key($event)"
+>
+  <div
+    class="graph-canvas"
+    [style.width.px]="layout().width"
+    [style.height.px]="layout().height"
+    [style.transform]="transform()"
+  >
+    <svg
+      class="graph-links"
+      [attr.width]="layout().width"
+      [attr.height]="layout().height"
+      aria-hidden="true"
+    >
+      @for (edge of layout().edges; track edge.to) {
+        <path [attr.d]="edge.d" [class.highlight]="ancestor(edge.to, selected())" />
+      }
+    </svg>
+    @for (entry of layout().nodes; track entry.node.path) {
+      <article
+        class="graph-node"
+        [class.selected]="selected() === entry.node.path"
+        [class.on-path]="ancestor(entry.node.path, selected())"
+        [style.left.px]="entry.x"
+        [style.top.px]="entry.y"
+      >
+        <button
+          type="button"
+          class="node-select"
+          [attr.aria-pressed]="selected() === entry.node.path"
+          (focus)="focusNode(entry.node.path)"
+          [attr.aria-label]="'Detalhes de ' + entry.node.part.name"
+          (click)="emit(entry.node.path, 'source')"
+        >
+          <app-item-icon
+            [url]="catalog.resolveIconUrl(entry.node.part)"
+            [name]="entry.node.part.name"
+          />
+          <span
+            ><small>{{
+              entry.depth === 0
+                ? 'PRODUTO FINAL'
+                : entry.node.recipe
+                  ? 'PRODUZIR'
+                  : 'OBTER / EXPLORAR'
+            }}</small
+            ><strong>{{ entry.node.part.name }}</strong></span
+          >
+        </button>
+        @if (allocation(entry.node.path); as row) {
+          <p>
+            Precisa {{ row.required }} · estoque {{ row.fromStock }}<br /><span>{{
+              row.missing === 0 ? 'Disponível' : 'Faltam ' + row.missing
+            }}</span>
+          </p>
+        } @else {
+          <p>
+            Por operação: {{ entry.node.part.quantity ?? 'a confirmar' }}<br /><span i18n
+              >Quantidade total a calcular</span
+            >
+          </p>
+        }
+        <button
+          type="button"
+          class="expand-node"
+          (focus)="focusNode(entry.node.path)"
+          [disabled]="entry.node.loading"
+          [attr.aria-expanded]="entry.node.expanded"
+          (click)="emit(entry.node.path, entry.node.expanded ? 'collapse' : 'expand')"
+        >
+          {{
+            entry.node.loading
+              ? 'Carregando…'
+              : entry.node.expanded
+                ? '− Recolher'
+                : '+ Explorar produção'
+          }}
+        </button>
+      </article>
+    }
+  </div>
+</div>

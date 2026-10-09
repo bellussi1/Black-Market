@@ -1,0 +1,116 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.graph-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+.graph-controls button {
+  min-height: 44px;
+  font-size: 0.8rem;
+  border: 1px solid var(--bm-control-border);
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  padding: 0.35rem 0.6rem;
+}
+.graph-controls span {
+  min-width: 3rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.graph-viewport {
+  position: relative;
+  height: 620px;
+  overflow: hidden;
+  border: 1px solid var(--bm-border);
+  background:
+    radial-gradient(var(--bm-border) 1px, transparent 1px) 0 0/24px 24px,
+    var(--bm-input);
+  touch-action: none;
+  cursor: grab;
+}
+.graph-viewport:active {
+  cursor: grabbing;
+}
+.graph-canvas {
+  position: absolute;
+  transform-origin: 0 0;
+}
+.graph-links {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.graph-links path {
+  fill: none;
+  stroke: var(--bm-border);
+  stroke-width: 2;
+}
+.graph-links path.highlight {
+  stroke: var(--bm-accent);
+}
+.graph-node {
+  position: absolute;
+  width: 220px;
+  height: 156px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+  box-shadow: 0 6px 16px #0003;
+  display: flex;
+  flex-direction: column;
+}
+.graph-node.selected {
+  border: 2px solid var(--bm-accent);
+}
+.node-select {
+  width: 100%;
+  background: transparent;
+  color: var(--bm-text);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem;
+  border: 0;
+  text-align: left;
+  min-height: 68px;
+}
+.node-select span {
+  min-width: 0;
+}
+.node-select small {
+  font-size: 0.65rem;
+  color: var(--bm-accent);
+  letter-spacing: 0.06em;
+}
+.node-select strong {
+  font-size: 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.graph-node p {
+  margin: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.graph-node p span {
+  color: var(--bm-muted);
+}
+.expand-node {
+  margin-top: auto;
+  min-height: 38px;
+  padding: 0.3rem;
+  font-size: 0.75rem;
+  background: var(--bm-surface-raised);
+  color: var(--bm-text);
+  border: 0;
+  border-top: 1px solid var(--bm-border);
+}
+button:hover {
+  background: var(--bm-surface-raised);
+}

@@ -1,88 +1,109 @@
-<div class="tool-page guided-page">
-  <header class="page-heading">
-    <p class="eyebrow" i18n>DO MATERIAL AO RESULTADO</p>
-    <h1 i18n>Receitas</h1>
+<div class="tool-page recipe-explorer">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
+    <h1 i18n>Descubra de onde vem.</h1>
     <p i18n>
-      Consulte materiais e resultados conhecidos. Quantidades ausentes precisam ser conferidas antes
-      de calcular.
+      Do produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e
+      aproveite o que já está no seu armazém.
     </p>
   </header>
+  <section class="panel search-panel">
+    <app-catalog-item-picker
+      label="Qual item você quer explorar?"
+      i18n-label
+      [selectionName]="item()?.name ?? ''"
+      (selected)="select($event)"
+    />
+    <p class="help" i18n>
+      Todos os itens do catálogo podem ser pesquisados, mesmo sem receita. A categoria filtra os
+      resultados pelo cadastro do jogo.
+    </p>
+  </section>
   @if (loading()) {
-    <p role="status" i18n>Carregando receitas…</p>
+    <p role="status" i18n>Carregando item e receitas…</p>
   }
   @if (message()) {
-    <p role="alert">{{ message() }}</p>
+    <p role="alert">
+      {{ message() }} <button type="button" (click)="retry()" i18n>Tentar novamente</button>
+    </p>
   }
-  @if (recipe(); as selected) {
-    <app-recipe-tree [recipe]="selected" />
-    <section class="panel">
-      <a routerLink="/recipes" i18n>← Todas as receitas</a>
-      <h2>{{ selected.outputs[0]?.name || typeLabel(selected.type) }}</h2>
-      <p>{{ typeLabel(selected.type) }}</p>
-      <h3 i18n>Materiais</h3>
-      <ul>
-        @for (part of selected.inputs; track $index) {
-          <li>
-            <app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" /><a
-              [routerLink]="['/database/items', part.itemId]"
-              >{{ part.name }}</a
-            >
-            · {{ part.quantity ?? 'Quantidade não informada' }}
-          </li>
-        }
-      </ul>
-      <h3 i18n>Resultados</h3>
-      <ul>
-        @for (part of selected.outputs; track $index) {
-          <li>
-            <app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" /><a
-              [routerLink]="['/database/items', part.itemId]"
-              >{{ part.name }}</a
-            >
-            · {{ part.quantity ?? 'Rendimento não informado' }}
-          </li>
-        }
-      </ul>
-      @if (selected.outputs[0]; as output) {
-        <a routerLink="/crafting" [queryParams]="{ item: output.itemId, recipe: selected.key }" i18n
-          >Calcular produção →</a
-        >
-      }
-    </section>
-  } @else {
-    <form class="panel" (ngSubmit)="search()">
-      <label for="recipe-search" i18n>O que você quer produzir?</label
-      ><input
-        id="recipe-search"
-        name="q"
-        [(ngModel)]="q"
-        maxlength="80"
-        placeholder="Ex.: cerveja"
-        i18n-placeholder
-      /><button type="submit" i18n>Buscar</button>
-    </form>
-    @if (result(); as list) {
-      <p>{{ list.total }} <ng-container i18n>receitas disponíveis nesta região</ng-container></p>
-      <section class="cards">
-        @for (row of list.recipes; track row.key) {
-          <article class="panel">
-            <app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" />
-            <h2>
-              <a [routerLink]="['/recipes', row.key]">{{ row.name }}</a>
-            </h2>
-            <p>{{ typeLabel(row.type) }}</p>
-          </article>
-        } @empty {
-          <p i18n>Nenhuma receita encontrada. Tente outra palavra.</p>
+  @if (item(); as selected) {
+    <div class="item-toolbar">
+      <a routerLink="/recipes" i18n>← Explorar outro item</a
+      ><a [routerLink]="['/database/items', selected.id]" i18n>Informações do catálogo</a>
+    </div>
+    @if (alternatives().length) {
+      <section class="recipe-methods panel">
+        <label for="root-recipe" i18n>Como você quer obter este item?</label
+        ><select id="root-recipe" [value]="recipe()?.key ?? ''" (change)="choose($event)">
+          <option value="" i18n>Obter pronto / consultar fontes</option>
+          @for (method of alternatives(); track method.key) {
+            <option [value]="method.key">
+              {{ methodLabel(method) }}
+            </option>
+          }
+        </select>
+        <p class="help" i18n>
+          {{ alternatives().length }} variantes disponíveis. Uma única receita entra no plano;
+          trocá-la substitui suas ramificações.
+        </p>
+        @if (recipe(); as method) {
+          <div class="method-ingredients">
+            @for (part of method.inputs; track $index) {
+              <span
+                ><app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" />{{
+                  part.name
+                }}
+                × {{ part.quantity ?? 'a confirmar' }}</span
+              >
+            }
+          </div>
         }
       </section>
-      <nav aria-label="Páginas de receitas" i18n-aria-label>
+    } @else {
+      <p class="notice" i18n>
+        Não há receita vinculada a este item na extração disponível. Explore a descrição e as fontes
+        conhecidas; não presumimos que a compra seja a única origem.
+      </p>
+    }
+    <app-recipe-tree
+      [recipe]="recipe()"
+      [selectedItem]="selected"
+      [datasetVersion]="dataset()?.version ?? ''"
+      (rootMethod)="recipe.set($event)"
+    />
+  } @else if (result(); as list) {
+    <section>
+      <div class="panel-heading">
+        <h2 i18n>Comece por uma receita</h2>
+        <span class="help">{{ list.total }} receitas no catálogo da região</span>
+      </div>
+      <div class="recipe-cards">
+        @for (row of list.recipes; track row.key) {
+          <a class="recipe-card" [routerLink]="['/recipes', row.key]"
+            ><app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" /><span
+              ><small>{{ typeLabel(row.type) }}</small
+              ><strong>{{ row.name }}</strong></span
+            ><span aria-hidden="true">→</span></a
+          >
+        } @empty {
+          <p i18n>Nenhuma receita publicada. Use a pesquisa para consultar um item do catálogo.</p>
+        }
+      </div>
+      <nav class="action-row" aria-label="Páginas de receitas" i18n-aria-label>
         <button (click)="move(-1)" [disabled]="page === 1" i18n>Anterior</button
-        ><span> {{ page }} </span
+        ><span>{{ page }}</span
         ><button (click)="move(1)" [disabled]="page * list.pageSize >= list.total" i18n>
           Próxima
         </button>
       </nav>
-    }
+    </section>
+  }
+  @if (dataset(); as data) {
+    <p class="dataset-provenance">
+      Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
+      {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
+      rendimentos podem ter lacunas ou divergências.
+    </p>
   }
 </div>

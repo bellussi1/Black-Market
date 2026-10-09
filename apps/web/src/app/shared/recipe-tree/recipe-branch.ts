@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import type { calculateProduction } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -16,7 +15,7 @@ export interface BranchAction {
 @Component({
   selector: 'app-recipe-branch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, ItemIcon],
+  imports: [FormsModule, ItemIcon],
   templateUrl: './recipe-branch.html',
   styleUrl: './recipe-branch.scss',
 })

@@ -3,6 +3,9 @@
     <app-item-icon [url]="catalog.resolveIconUrl(node().part)" [name]="node().part.name" />
     <div>
       <strong>{{ node().part.name }}</strong>
+      @if (node().acquisition?.kind === 'workers') {
+        <p>Origem escolhida: {{ node().acquisition?.label }} · trabalhadores</p>
+      }
       @if (allocation(); as row) {
         <p i18n>
           Necessário {{ row.required }} · Do estoque {{ row.fromStock }} · De sobras
