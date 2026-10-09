@@ -56,8 +56,8 @@
     max-width: 100%;
   }
   ::selection {
-    background: #be8357;
-    color: #111814;
+    background: var(--bm-accent);
+    color: var(--bm-background);
   }
   @media (prefers-reduced-motion: reduce) {
     html {

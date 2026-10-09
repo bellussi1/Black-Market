@@ -25,8 +25,8 @@
     border-color: var(--bm-accent);
   }
   .tabs button.active {
-    background: #242e20;
-    color: #e3bf9b;
+    background: var(--bm-accent-soft);
+    color: var(--bm-accent);
     border-color: var(--bm-accent);
   }
   .preset-bar {

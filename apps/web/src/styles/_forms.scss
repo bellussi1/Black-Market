@@ -4,7 +4,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
-  .field {
+  .field,
+  .tool-page label:has(input:not([type='checkbox']):not([type='radio'])),
+  .tool-page label:has(select),
+  .tool-page label:has(textarea) {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -15,6 +18,10 @@
   .field input,
   .field select,
   .field textarea,
+  .tool-page
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  .tool-page select,
+  .tool-page textarea,
   .data-table input,
   .data-table select {
     min-width: 0;
@@ -23,9 +30,9 @@
     background: var(--bm-input);
     color: var(--bm-text);
     font: inherit;
-    font-size: 16px;
-    min-height: 44px;
-    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 40px;
+    padding: 8px 12px;
     border-radius: 2px;
   }
   .field small {
@@ -104,8 +111,8 @@
     overflow-wrap: anywhere;
     text-align: center;
   }
-  .btn:hover {
-    background: #edbd8c;
+  .btn:hover:not(:disabled) {
+    background: var(--bm-accent-hover);
   }
   .btn.subtle {
     background: transparent;
@@ -113,7 +120,7 @@
     border-color: var(--bm-control-border);
   }
   .btn.subtle:hover {
-    background: #263021;
+    background: var(--bm-accent-soft);
   }
   .btn.danger {
     color: var(--bm-danger);
