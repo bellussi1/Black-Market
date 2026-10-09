@@ -44,6 +44,7 @@ export function isPublicSeoPath(path: string): boolean {
     (Object.hasOwn(PUBLIC_DESCRIPTIONS, path) ||
       /^\/database\/items\/[1-9]\d*$/.test(path) ||
       /^\/recipes\/[^/]+$/.test(path) ||
+      /^\/recipes\/items\/[1-9]\d*$/.test(path) ||
       /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(path))
   );
 }

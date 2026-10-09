@@ -3,7 +3,7 @@ import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { calculateMarket, defaultTax, type MarketInput, marketSchema } from '@bdo/calculators';
 import type { CatalogItem, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
@@ -27,7 +27,14 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
+  imports: [
+    FormsModule,
+    RouterLink,
+    TaxOptionsComponent,
+    PresetBar,
+    CalculationProof,
+    CatalogItemPicker,
+  ],
   templateUrl: './market-page.html',
 })
 export class MarketPage implements OnDestroy {

@@ -7,6 +7,7 @@ const publicRoutes = [
   'database/items/:id',
   'recipes',
   'recipes/:key',
+  'recipes/items/:id',
   'reference',
   'reference/:kind',
   'reference/:kind/:id',

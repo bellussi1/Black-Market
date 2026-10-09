@@ -37,6 +37,48 @@ const api = createServer((request, response) => {
     response.end(JSON.stringify({ recipes: [], total: 0, page: 1, pageSize: 24, dataset: null }));
     return;
   }
+  if (path === '/api/v1/items/5301' || path === '/api/v1/items/5301/recipes') {
+    const dataset = {
+      version: 'ssr-recipe-fixture',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      itemCount: 1,
+      recipeCount: 1,
+      importedAt: '2026-10-09T12:00:00Z',
+    };
+    const item = {
+      id: 5301,
+      name: 'Reagente Líquido Limpo',
+      description: 'Produção por Alquimia.',
+      icon: null,
+      iconUrl: null,
+      categories: [],
+      category: 'Material',
+      sourceData: {},
+    };
+    response.end(
+      JSON.stringify(
+        path.endsWith('/recipes')
+          ? {
+              recipes: [
+                {
+                  key: 'a'.repeat(64),
+                  type: 'ALCHEMY',
+                  station: null,
+                  inputs: [{ itemId: 9001, name: 'Sal', quantity: '2' }],
+                  outputs: [{ itemId: 5301, name: item.name, quantity: null }],
+                },
+              ],
+              total: 1,
+              direction: 'produces',
+              dataset,
+            }
+          : { item, dataset },
+      ),
+    );
+    return;
+  }
   if (path === '/api/v1/reference') {
     response.end(
       JSON.stringify({ kinds: [{ kind: 'npcs', label: 'NPCs', total: 0 }], updatedAt: null }),
@@ -104,6 +146,8 @@ try {
   for (const [path, title] of [
     ['/', 'BLACK MARKET'],
     ['/market', 'O valor de cada venda'],
+    ['/recipes', 'Descubra de onde vem'],
+    ['/recipes/items/5301', 'Reagente Líquido Limpo'],
     ['/database/items', 'O mundo, item'],
     ['/contato', 'Contato'],
     ['/termos', 'Termos de Uso'],
@@ -152,7 +196,7 @@ try {
     }
   }
 
-  for (const path of ['/recipes', '/reference/npcs', '/world', '/crafting', '/demo', '/account']) {
+  for (const path of ['/reference/npcs', '/world', '/crafting', '/demo', '/account']) {
     const response = await request(path, { redirect: 'manual' });
     assert.ok(
       [301, 302, 303, 307, 308].includes(response.status),

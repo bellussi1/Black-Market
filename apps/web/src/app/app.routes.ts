@@ -55,6 +55,12 @@ export const routes: Routes = [
       },
 
       {
+        path: 'recipes/items/:id',
+        title: $localize`Black Market · Explorar produção e obtenção`,
+        loadComponent: () =>
+          import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
+      },
+      {
         path: 'recipes/:key',
 
         title: $localize`Black Market · Receita`,

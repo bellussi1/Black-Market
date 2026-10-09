@@ -96,6 +96,7 @@ export class WorkspaceLayout {
         { path: '/', label: 'Início' },
         { path: '/scans', label: 'Importar capturas' },
         { path: '/market', label: 'Mercado' },
+        { path: '/recipes', label: 'Explorar receitas' },
         { path: '/storage', label: 'Armazéns' },
         { path: '/inventory', label: 'Inventário' },
         { path: '/gear', label: 'Equipamentos' },

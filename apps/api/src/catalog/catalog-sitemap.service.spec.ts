@@ -14,9 +14,9 @@ describe('Screenshot MVP public sitemap', () => {
   it('lists public core routes without advertising suspended tools or personal data', async () => {
     const xml = await service().page('public', 1);
     expect(xml).toContain('/market');
+    expect(xml).toContain('/recipes');
     expect(xml).toContain('/privacidade');
     for (const path of [
-      '/recipes',
       '/reference',
       '/world',
       '/crafting',
@@ -27,8 +27,7 @@ describe('Screenshot MVP public sitemap', () => {
     ])
       expect(xml).not.toContain(`<loc>https://example.com${path}`);
   });
-  it('does not serve a sitemap for disabled recipes or reference modules', async () => {
-    await expect(service().page('recipes', 1)).rejects.toThrow('temporariamente');
+  it('does not serve a sitemap for disabled reference modules', async () => {
     await expect(service().page('reference', 1)).rejects.toThrow('temporariamente');
   });
 });

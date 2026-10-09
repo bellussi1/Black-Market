@@ -63,6 +63,9 @@
             ><small i18n>Atualização: {{ date(row.updatedAt) }}</small>
           </div>
           <div class="stock-actions">
+            @if (row.itemId) {
+              <a [routerLink]="['/recipes/items', row.itemId]" i18n>Receitas e origens</a>
+            }
             <button type="button" (click)="edit(row)" [attr.aria-label]="'Editar ' + row.name" i18n>
               Editar
             </button>

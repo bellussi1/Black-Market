@@ -26,6 +26,15 @@ export class DashboardPage {
     ? [
         {
           number: '01',
+          icon: 'craft',
+          title: 'Explorar uma receita',
+          description: 'Abra os ingredientes, confira o estoque e descubra fontes conhecidas.',
+          path: '/recipes',
+          tag: 'PRODUÇÃO',
+          steps: 'Buscar item · escolher método · explorar',
+        },
+        {
+          number: '02',
           icon: 'storage',
           title: 'Importar minhas capturas',
           description: 'Selecione até oito imagens. Confira itens e quantidades antes de salvar.',
@@ -34,7 +43,7 @@ export class DashboardPage {
           steps: 'Enviar · conferir · salvar',
         },
         {
-          number: '02',
+          number: '03',
           icon: 'storage',
           title: 'Consultar meu armazém',
           description: 'Encontre seus itens por cidade e ajuste as quantidades.',
@@ -43,7 +52,7 @@ export class DashboardPage {
           steps: 'Escolher cidade · pesquisar · editar',
         },
         {
-          number: '03',
+          number: '04',
           icon: 'storage',
           title: 'Organizar meu inventário',
           description: 'Separe os itens de cada personagem e atualize por novas capturas.',
@@ -52,7 +61,7 @@ export class DashboardPage {
           steps: 'Escolher personagem · revisar itens',
         },
         {
-          number: '04',
+          number: '05',
           icon: 'craft',
           title: 'Ver meus equipamentos',
           description: 'Confira os equipamentos do personagem e corrija seus slots.',

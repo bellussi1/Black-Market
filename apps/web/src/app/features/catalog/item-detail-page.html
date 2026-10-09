@@ -36,6 +36,9 @@
         }
       </dl>
       <a routerLink="/market" [queryParams]="{ item: selected.id }" i18n>Consultar mercado →</a>
+      <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
+        >Explorar produção e obtenção</a
+      >
     </section>
     @if (!screenshotMvp) {
       @for (

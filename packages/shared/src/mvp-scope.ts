@@ -1,7 +1,6 @@
 /** Reversible product scope shared by navigation, route guards and public sitemaps. */
 export const SCREENSHOT_MVP = true;
 export const SUSPENDED_MVP_ROOTS = [
-  'recipes',
   'world',
   'recommendations',
   'account',
@@ -27,6 +26,7 @@ const enabledRoots = new Set([
   'inventory',
   'gear',
   'scans',
+  'recipes',
   'database',
   'profile',
   'settings',

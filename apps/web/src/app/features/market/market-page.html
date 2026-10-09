@@ -18,6 +18,11 @@
       [selectionName]="catalogItem()?.name || ''"
       (selected)="selectItem($event)"
     />
+    @if (catalogItem(); as selected) {
+      <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
+        >Explorar receitas e origens</a
+      >
+    }
     <details>
       <summary i18n>Buscar pelo código do item</summary>
       <div class="form-grid">
