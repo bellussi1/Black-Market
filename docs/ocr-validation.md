@@ -190,3 +190,16 @@ A limpeza verifica o marcador do coletor e só remove arquivos cujo hash não te
 ### Privacidade e proporção do corpus
 
 Imagens, URLs de origem, evidências de consentimento, manifestos e relatórios permanecem locais em `tmp/ocr-dataset/real/` e `tmp/ocr-dataset/`; não são enviados ao serviço de OCR nem incluídos no Git. O manifesto registra a meta de 80% sintético/20% real, além das capturas disponíveis, mas os percentuais reais só podem ser medidos depois de coleta autorizada. Não aumente a amostra para alcançar 20% sem novos registros de permissão.
+
+### Medir o leitor
+
+O benchmark usa o detector de grades, o leitor Tesseract em português com modo esparso, a escala do `ScreenTextReader` e os parsers de quantidade e aprimoramento existentes no frontend. Ele valida hash e dimensões antes de OCR, pontua a grade por associação um a um e IoU mínimo de 0,5, e associa texto aos limites rotulados no manifesto. A divisão `evaluation` é padrão; `calibration` exige seleção explícita. O JSON agregado não inclui texto OCR, rótulos esperados, caminhos ou URLs.
+
+```powershell
+node scripts/benchmark-ocr.mjs --manifest tmp/ocr-dataset/synthetic-evaluation/ground-truth.json --output tmp/ocr-dataset/benchmark.json
+node scripts/benchmark-ocr.mjs --manifest tmp/ocr-dataset/synthetic/ground-truth.json --split calibration --output tmp/ocr-dataset/benchmark-calibration.json
+```
+
+`--real-manifest` acrescenta contagens de capturas reais únicas, rótulos revisados e permissões de treino. Capturas reais não rotuladas não entram nas métricas de leitura. O relatório separa precisão, recall e F1 da grade; acurácia, incorretos e não lidos para números comuns, abreviados e tiers romanos; e resultados por variante. A acurácia exige igualdade exata do valor normalizado.
+
+Na avaliação local de 18 telas sintéticas em 10/10/2026, a grade atingiu F1 1,0 (837 slots encontrados, sem falsos positivos ou negativos). O leitor identificou exatamente 47 de 576 quantidades (8,16%; 31/273 comuns e 16/303 abreviadas) e 3 de 45 tiers romanos (6,67%). A baixa leitura dos rótulos revela um problema do OCR atual em texto pequeno sobre ícones; esses valores são um diagnóstico do lote sintético, não uma estimativa de acurácia em capturas reais. Não houve coleta real: a execução depende de credenciais OAuth e permissões registradas.

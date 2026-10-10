@@ -44,7 +44,13 @@ function row(overrides = {}) {
   };
 }
 
-async function makeManifest({ split = 'evaluation', imageSize = [640, 480], expectedSize = imageSize, pathName = 'images/sample-1.jpg', hash } = {}) {
+async function makeManifest({
+  split = 'evaluation',
+  imageSize = [640, 480],
+  expectedSize = imageSize,
+  pathName = 'images/sample-1.jpg',
+  hash,
+} = {}) {
   const parent = await mkdtemp(path.join(os.tmpdir(), 'bdo-ocr-benchmark-'));
   temporaryDirectories.push(parent);
   const datasetRoot = path.join(parent, 'tmp', 'ocr-dataset', 'synthetic');
@@ -53,7 +59,9 @@ async function makeManifest({ split = 'evaluation', imageSize = [640, 480], expe
   const imagePath = path.resolve(datasetRoot, pathName);
   const image = await sharp({
     create: { width: imageSize[0], height: imageSize[1], channels: 3, background: '#161616' },
-  }).jpeg().toBuffer();
+  })
+    .jpeg()
+    .toBuffer();
   if (imagePath.startsWith(`${datasetRoot}${path.sep}`)) await writeFile(imagePath, image);
   const grid = { left: 20, top: 20, columns: 8, rows: 6, slotWidth: 24, slotHeight: 24 };
   const slots = Array.from({ length: grid.columns * grid.rows }, (_, index) => {
@@ -62,7 +70,12 @@ async function makeManifest({ split = 'evaluation', imageSize = [640, 480], expe
     return {
       row,
       column,
-      bounds: box(grid.left + column * grid.slotWidth, grid.top + row * grid.slotHeight, grid.slotWidth, grid.slotHeight),
+      bounds: box(
+        grid.left + column * grid.slotWidth,
+        grid.top + row * grid.slotHeight,
+        grid.slotWidth,
+        grid.slotHeight,
+      ),
     };
   });
   const sample = {
@@ -81,7 +94,10 @@ async function makeManifest({ split = 'evaluation', imageSize = [640, 480], expe
     slots,
   };
   const manifestPath = path.join(datasetRoot, 'ground-truth.json');
-  await writeFile(manifestPath, JSON.stringify({ schemaVersion: 1, generator: 'bdo-ocr-synthetic', split, samples: [sample] }));
+  await writeFile(
+    manifestPath,
+    JSON.stringify({ schemaVersion: 1, generator: 'bdo-ocr-synthetic', split, samples: [sample] }),
+  );
   return manifestPath;
 }
 
@@ -92,13 +108,20 @@ async function makeBenchmarkOutput() {
   return path.join(directory, 'benchmark.json');
 }
 
-async function makeRecognitionFixture({ labelKind = 'quantity', displayedText = '319.9k', normalizedValue = 319900, approximate = true } = {}) {
+async function makeRecognitionFixture({
+  labelKind = 'quantity',
+  displayedText = '319.9k',
+  normalizedValue = 319900,
+  approximate = true,
+} = {}) {
   const parent = await mkdtemp(path.join(os.tmpdir(), 'bdo-ocr-recognition-'));
   temporaryDirectories.push(parent);
   const imagePath = path.join(parent, 'sample.jpg');
   await sharp({
     create: { width: 640, height: 480, channels: 3, background: '#161616' },
-  }).jpeg().toFile(imagePath);
+  })
+    .jpeg()
+    .toFile(imagePath);
   const bounds = box(100, 100, 80, 60);
   const sample = {
     id: 'sample-00001',
@@ -108,30 +131,60 @@ async function makeRecognitionFixture({ labelKind = 'quantity', displayedText = 
     uiScale: 1,
     panelType: 'inventory',
     grid: { left: 100, top: 100, columns: 1, rows: 1, slotWidth: 80, slotHeight: 60 },
-    slots: [{
-      row: 0,
-      column: 0,
-      bounds,
-      labelBounds: box(140, 145, 36, 12),
-      itemId: '100',
-      labelKind,
-      displayedText,
-      normalizedValue,
-      approximate,
-    }],
+    slots: [
+      {
+        row: 0,
+        column: 0,
+        bounds,
+        labelBounds: box(140, 145, 36, 12),
+        itemId: '100',
+        labelKind,
+        displayedText,
+        normalizedValue,
+        approximate,
+      },
+    ],
   };
   const worker = {
-    recognize: async () => ({ data: { blocks: [{ paragraphs: [{ lines: [{
-      text: displayedText,
-      confidence: 95,
-      bbox: { x0: 140, y0: 145, x1: 176, y1: 157 },
-    }] }] }] } }),
+    recognize: async (input) => {
+      const imageInfo = await sharp(input).metadata();
+      const scaleX = imageInfo.width / 640;
+      const scaleY = imageInfo.height / 480;
+      return {
+        data: {
+          blocks: [
+            {
+              paragraphs: [
+                {
+                  lines: [
+                    {
+                      text: displayedText,
+                      confidence: 95,
+                      bbox: {
+                        x0: 140 * scaleX,
+                        y0: 145 * scaleY,
+                        x1: 176 * scaleX,
+                        y1: 157 * scaleY,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+    },
   };
   return { imagePath, sample, worker };
 }
 
 afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
+  await Promise.all(
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
+  );
 });
 
 test('matchesSlotsOnlyAtOrAboveHalfIou', () => {
@@ -156,12 +209,29 @@ test('assignsEachDetectedSlotAtMostOnce', () => {
 
 test('countsEmptySlotsAndGridFalsePositives', () => {
   const summary = summarizeOcrRows([
-    { rowType: 'grid', sampleId: 's1', split: 'evaluation', width: 1920, height: 1080, uiScale: 1, columns: 8, panelType: 'storage', grid: { truePositive: 5, falsePositive: 2, falseNegative: 3 } },
+    {
+      rowType: 'grid',
+      sampleId: 's1',
+      split: 'evaluation',
+      width: 1920,
+      height: 1080,
+      uiScale: 1,
+      columns: 8,
+      panelType: 'storage',
+      grid: { truePositive: 5, falsePositive: 2, falseNegative: 3 },
+    },
     row({ sampleId: 's1' }),
     row({ sampleId: 's1', labelKind: null, status: 'empty' }),
   ]);
 
-  assert.deepEqual(summary.grid, { truePositive: 5, falsePositive: 2, falseNegative: 3, precision: 0.7143, recall: 0.625, f1: 0.6667 });
+  assert.deepEqual(summary.grid, {
+    truePositive: 5,
+    falsePositive: 2,
+    falseNegative: 3,
+    precision: 0.7143,
+    recall: 0.625,
+    f1: 0.6667,
+  });
   assert.equal(summary.quantities.total, 1);
   assert.equal(summary.quantities.exact, 1);
 });
@@ -178,6 +248,20 @@ test('countsUnreadQuantityAndRomanAsErrors', () => {
   assert.equal(summary.roman.total, 1);
   assert.equal(summary.roman.exact, 0);
   assert.equal(summary.roman.accuracy, 0);
+  assert.equal(summary.quantities.unread, 1);
+  assert.equal(summary.roman.unread, 1);
+});
+
+test('reportsIncorrectAndUnreadLabelsSeparately', () => {
+  const summary = summarizeOcrRows([
+    row({ status: 'incorrect', approximate: false }),
+    row({ status: 'unread', approximate: true }),
+    row({ status: 'incorrect', labelKind: 'enhancement' }),
+  ]);
+
+  assert.equal(summary.quantities.common.incorrect, 1);
+  assert.equal(summary.quantities.abbreviated.unread, 1);
+  assert.equal(summary.roman.incorrect, 1);
 });
 
 test('countsSpuriousLabelsOnEmptySlots', () => {
@@ -193,9 +277,29 @@ test('countsSpuriousLabelsOnEmptySlots', () => {
 
 test('parsesAbbreviatedValuesWithApproximation', () => {
   const summary = summarizeOcrRows([
-    row({ labelKind: 'quantity', approximate: true, status: 'exact', expectedValue: 139100, actualValue: 139100 }),
-    row({ sampleId: 's2', labelKind: 'quantity', approximate: true, status: 'exact', expectedValue: 319900, actualValue: 319900 }),
-    row({ sampleId: 's3', labelKind: 'quantity', approximate: true, status: 'exact', expectedValue: 1300000, actualValue: 1300000 }),
+    row({
+      labelKind: 'quantity',
+      approximate: true,
+      status: 'exact',
+      expectedValue: 139100,
+      actualValue: 139100,
+    }),
+    row({
+      sampleId: 's2',
+      labelKind: 'quantity',
+      approximate: true,
+      status: 'exact',
+      expectedValue: 319900,
+      actualValue: 319900,
+    }),
+    row({
+      sampleId: 's3',
+      labelKind: 'quantity',
+      approximate: true,
+      status: 'exact',
+      expectedValue: 1300000,
+      actualValue: 1300000,
+    }),
   ]);
 
   assert.equal(summary.quantities.abbreviated.total, 3);
@@ -214,13 +318,20 @@ test('separatesCalibrationFromEvaluation', async () => {
 
 test('reportsAvailableRealSyntheticCompositionByUniqueHash', () => {
   const report = buildBenchmarkReport({
-    manifest: { schemaVersion: 1, split: 'evaluation', samples: [{ sha256: 'synthetic-a' }, { sha256: 'synthetic-a' }, { sha256: 'synthetic-b' }] },
+    manifest: {
+      schemaVersion: 1,
+      split: 'evaluation',
+      samples: [{ sha256: 'synthetic-a' }, { sha256: 'synthetic-a' }, { sha256: 'synthetic-b' }],
+    },
     rows: [],
-    realManifest: { schemaVersion: 1, captures: [
-      { sha256: 'real-a', use: 'validation', labelStatus: 'unlabeled' },
-      { sha256: 'real-a', use: 'training', labelStatus: 'reviewed' },
-      { sha256: 'real-b', use: 'training', labelStatus: 'unlabeled' },
-    ] },
+    realManifest: {
+      schemaVersion: 1,
+      captures: [
+        { sha256: 'real-a', use: 'validation', labelStatus: 'unlabeled' },
+        { sha256: 'real-a', use: 'training', labelStatus: 'reviewed' },
+        { sha256: 'real-b', use: 'training', labelStatus: 'unlabeled' },
+      ],
+    },
   });
 
   assert.deepEqual(report.availableCorpus, {
@@ -260,11 +371,28 @@ test('decodesRgbForCurrentGridDetector', async () => {
 });
 
 test('mapsOcrBoxesBackToOriginalCoordinates', () => {
-  const lines = mapOcrLines({
-    blocks: [{ paragraphs: [{ lines: [{ text: 'I.3k', confidence: 88, bbox: { x0: 20, y0: 40, x1: 60, y1: 64 } }] }] }],
-  }, 2, 2);
+  const lines = mapOcrLines(
+    {
+      blocks: [
+        {
+          paragraphs: [
+            { lines: [{ text: 'I.3k', confidence: 88, bbox: { x0: 20, y0: 40, x1: 60, y1: 64 } }] },
+          ],
+        },
+      ],
+    },
+    2,
+    2,
+  );
 
   assert.deepEqual(lines[0].bounds, box(10, 20, 20, 12));
+});
+
+test('usesTheFrontendScreenOcrScale', async () => {
+  const readers = await loadOcrReaders();
+
+  assert.equal(readers.screenOcrScale(1920, 1080), 1.25);
+  assert.equal(readers.screenOcrScale(3840, 2160), 1);
 });
 
 test('assignsQuantityTextToTheCorrectSlot', async () => {
@@ -282,7 +410,12 @@ test('assignsQuantityTextToTheCorrectSlot', async () => {
 });
 
 test('assignsRomanTextToTheCorrectSlot', async () => {
-  const fixture = await makeRecognitionFixture({ labelKind: 'enhancement', displayedText: 'VIII', normalizedValue: 8, approximate: false });
+  const fixture = await makeRecognitionFixture({
+    labelKind: 'enhancement',
+    displayedText: 'VIII',
+    normalizedValue: 8,
+    approximate: false,
+  });
   const readers = await loadOcrReaders();
   readers.detectGridAreas = () => [{ bounds: box(100, 100, 80, 60), columns: 1, rows: 1 }];
 
@@ -308,25 +441,34 @@ test('rejectsCalibrationManifestByDefaultBeforeStartingOcr', async () => {
   const manifestPath = await makeManifest({ split: 'calibration' });
   let workerStarted = false;
 
-  await assert.rejects(runBenchmark({
-    manifestPath,
-    outputPath: await makeBenchmarkOutput(),
-    workerFactory: async () => {
-      workerStarted = true;
-      throw new Error('Worker must not start.');
-    },
-  }), /evaluation|calibration/i);
+  await assert.rejects(
+    runBenchmark({
+      manifestPath,
+      outputPath: await makeBenchmarkOutput(),
+      workerFactory: async () => {
+        workerStarted = true;
+        throw new Error('Worker must not start.');
+      },
+    }),
+    /evaluation|calibration/i,
+  );
   assert.equal(workerStarted, false);
 });
 
 test('parsesBenchmarkManifestAndOutputOptions', () => {
   const options = parseBenchmarkArgs([
-    '--manifest', 'tmp/ocr-dataset/synthetic-evaluation/ground-truth.json',
-    '--output', 'tmp/ocr-dataset/benchmark.json',
-    '--real-manifest', 'tmp/ocr-dataset/real/manifest.json',
+    '--manifest',
+    'tmp/ocr-dataset/synthetic-evaluation/ground-truth.json',
+    '--output',
+    'tmp/ocr-dataset/benchmark.json',
+    '--real-manifest',
+    'tmp/ocr-dataset/real/manifest.json',
   ]);
 
-  assert.equal(options.manifestPath, path.resolve('tmp/ocr-dataset/synthetic-evaluation/ground-truth.json'));
+  assert.equal(
+    options.manifestPath,
+    path.resolve('tmp/ocr-dataset/synthetic-evaluation/ground-truth.json'),
+  );
   assert.equal(options.outputPath, path.resolve('tmp/ocr-dataset/benchmark.json'));
   assert.equal(options.split, 'evaluation');
   assert.equal(options.realManifestPath, path.resolve('tmp/ocr-dataset/real/manifest.json'));
@@ -334,24 +476,34 @@ test('parsesBenchmarkManifestAndOutputOptions', () => {
 
 test('acceptsCalibrationOnlyWhenExplicit', () => {
   const options = parseBenchmarkArgs([
-    '--manifest', 'tmp/ocr-dataset/synthetic/ground-truth.json',
-    '--output', 'tmp/ocr-dataset/calibration-report.json',
-    '--split', 'calibration',
+    '--manifest',
+    'tmp/ocr-dataset/synthetic/ground-truth.json',
+    '--output',
+    'tmp/ocr-dataset/calibration-report.json',
+    '--split',
+    'calibration',
   ]);
 
   assert.equal(options.split, 'calibration');
-  assert.throws(() => parseBenchmarkArgs([
-    '--manifest', 'tmp/ocr-dataset/synthetic/ground-truth.json',
-    '--output', 'tmp/ocr-dataset/report.json',
-    '--split', 'training',
-  ]), /split/i);
+  assert.throws(
+    () =>
+      parseBenchmarkArgs([
+        '--manifest',
+        'tmp/ocr-dataset/synthetic/ground-truth.json',
+        '--output',
+        'tmp/ocr-dataset/report.json',
+        '--split',
+        'training',
+      ]),
+    /split/i,
+  );
 });
 
 test('rejectsOutputOutsideIgnoredDatasetRoot', () => {
-  assert.throws(() => parseBenchmarkArgs([
-    '--manifest', 'ground-truth.json',
-    '--output', 'tmp/benchmark.json',
-  ]), /tmp\/ocr-dataset/i);
+  assert.throws(
+    () => parseBenchmarkArgs(['--manifest', 'ground-truth.json', '--output', 'tmp/benchmark.json']),
+    /tmp\/ocr-dataset/i,
+  );
 });
 
 test('showsHelpWithoutLoadingOcr', async () => {
@@ -368,4 +520,29 @@ test('showsHelpWithoutLoadingOcr', async () => {
   assert.equal(result.help, true);
   assert.match(output, /--manifest|--output/);
   assert.equal(workerStarted, false);
+});
+
+test('runsOfflineBenchmarkAndWritesAggregateReport', async () => {
+  const manifestPath = await makeManifest();
+  const outputPath = await makeBenchmarkOutput();
+  let terminated = false;
+
+  const result = await runBenchmark({
+    manifestPath,
+    outputPath,
+    workerFactory: async () => ({
+      recognize: async () => ({ data: { blocks: [] } }),
+      terminate: async () => {
+        terminated = true;
+      },
+    }),
+    evaluatedAt: new Date('2026-10-10T12:00:00.000Z'),
+  });
+  const output = JSON.parse(await readFile(outputPath, 'utf8'));
+
+  assert.equal(terminated, true);
+  assert.equal(result.report.metrics.grid.falseNegative, 48);
+  assert.equal(output.split, 'evaluation');
+  assert.equal(JSON.stringify(output).includes(manifestPath), false);
+  assert.equal(JSON.stringify(output).includes('sample-00001'), false);
 });

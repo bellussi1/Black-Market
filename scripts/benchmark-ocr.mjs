@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, readFile, realpath, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -31,7 +31,10 @@ function metrics(counts) {
     falseNegative: counts.falseNegative,
     precision,
     recall,
-    f1: precision + recall > 0 ? Number(((2 * precision * recall) / (precision + recall)).toFixed(4)) : 0,
+    f1:
+      precision + recall > 0
+        ? Number(((2 * precision * recall) / (precision + recall)).toFixed(4))
+        : 0,
   };
 }
 
@@ -39,18 +42,34 @@ function quantityMetrics(counts) {
   return {
     total: counts.total,
     exact: counts.exact,
+    incorrect: counts.incorrect,
+    unread: counts.unread,
     accuracy: ratio(counts.exact, counts.total),
-    common: { total: counts.common.total, exact: counts.common.exact, accuracy: ratio(counts.common.exact, counts.common.total) },
+    common: {
+      total: counts.common.total,
+      exact: counts.common.exact,
+      incorrect: counts.common.incorrect,
+      unread: counts.common.unread,
+      accuracy: ratio(counts.common.exact, counts.common.total),
+    },
     abbreviated: {
       total: counts.abbreviated.total,
       exact: counts.abbreviated.exact,
+      incorrect: counts.abbreviated.incorrect,
+      unread: counts.abbreviated.unread,
       accuracy: ratio(counts.abbreviated.exact, counts.abbreviated.total),
     },
   };
 }
 
 function romanMetrics(counts) {
-  return { total: counts.total, exact: counts.exact, accuracy: ratio(counts.exact, counts.total) };
+  return {
+    total: counts.total,
+    exact: counts.exact,
+    incorrect: counts.incorrect,
+    unread: counts.unread,
+    accuracy: ratio(counts.exact, counts.total),
+  };
 }
 
 function emptyVariant(row) {
@@ -62,8 +81,15 @@ function emptyVariant(row) {
     columns: row.columns,
     panelType: row.panelType,
     grid: { truePositive: 0, falsePositive: 0, falseNegative: 0 },
-    quantities: { total: 0, exact: 0, common: { total: 0, exact: 0 }, abbreviated: { total: 0, exact: 0 } },
-    roman: { total: 0, exact: 0 },
+    quantities: {
+      total: 0,
+      exact: 0,
+      incorrect: 0,
+      unread: 0,
+      common: { total: 0, exact: 0, incorrect: 0, unread: 0 },
+      abbreviated: { total: 0, exact: 0, incorrect: 0, unread: 0 },
+    },
+    roman: { total: 0, exact: 0, incorrect: 0, unread: 0 },
     spuriousLabels: 0,
   };
 }
@@ -136,13 +162,16 @@ function maximumAssignment(cost) {
     } while (column0 !== 0);
   }
   const assignment = Array(size).fill(-1);
-  for (let column = 1; column <= size; column++) if (p[column] > 0) assignment[p[column] - 1] = column - 1;
+  for (let column = 1; column <= size; column++)
+    if (p[column] > 0) assignment[p[column] - 1] = column - 1;
   return assignment;
 }
 
 export function matchGridSlots(expectedSlots, detectedSlots, threshold = gridIouThreshold) {
-  if (!Array.isArray(expectedSlots) || !Array.isArray(detectedSlots)) throw new Error('Grid slots must be arrays.');
-  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error('IoU threshold must be between 0 and 1.');
+  if (!Array.isArray(expectedSlots) || !Array.isArray(detectedSlots))
+    throw new Error('Grid slots must be arrays.');
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1)
+    throw new Error('IoU threshold must be between 0 and 1.');
   for (const slot of [...expectedSlots, ...detectedSlots]) {
     if (
       !slot ||
@@ -157,7 +186,9 @@ export function matchGridSlots(expectedSlots, detectedSlots, threshold = gridIou
   }
   const size = Math.max(expectedSlots.length, detectedSlots.length);
   if (size === 0) return { truePositive: 0, falsePositive: 0, falseNegative: 0, matches: [] };
-  const ious = expectedSlots.map((expected) => detectedSlots.map((detected) => intersectionOverUnion(expected, detected)));
+  const ious = expectedSlots.map((expected) =>
+    detectedSlots.map((detected) => intersectionOverUnion(expected, detected)),
+  );
   const cost = Array.from({ length: size }, (_, expectedIndex) =>
     Array.from({ length: size }, (_, detectedIndex) => {
       const iou = ious[expectedIndex]?.[detectedIndex] ?? 0;
@@ -170,7 +201,8 @@ export function matchGridSlots(expectedSlots, detectedSlots, threshold = gridIou
     const detectedIndex = assignment[expectedIndex];
     if (detectedIndex < 0 || detectedIndex >= detectedSlots.length) continue;
     const iou = ious[expectedIndex][detectedIndex];
-    if (iou >= threshold) matches.push({ expectedIndex, detectedIndex, iou: Number(iou.toFixed(6)) });
+    if (iou >= threshold)
+      matches.push({ expectedIndex, detectedIndex, iou: Number(iou.toFixed(6)) });
   }
   const truePositive = matches.length;
   return {
@@ -186,14 +218,20 @@ function variantKey(row) {
 }
 
 function uniqueMetricCounts(manifest, realManifest) {
-  const syntheticHashes = new Set((manifest.samples ?? []).map((sample) => sample.sha256).filter(Boolean));
+  const syntheticHashes = new Set(
+    (manifest.samples ?? []).map((sample) => sample.sha256).filter(Boolean),
+  );
   const realCaptures = realManifest?.captures ?? [];
   const realHashes = new Set(realCaptures.map((capture) => capture.sha256).filter(Boolean));
   const reviewedHashes = new Set(
-    realCaptures.filter((capture) => ['reviewed', 'verified'].includes(capture.labelStatus)).map((capture) => capture.sha256),
+    realCaptures
+      .filter((capture) => ['reviewed', 'verified'].includes(capture.labelStatus))
+      .map((capture) => capture.sha256),
   );
   const trainingHashes = new Set(
-    realCaptures.filter((capture) => capture.trainingPermissionGranted || capture.use === 'training').map((capture) => capture.sha256),
+    realCaptures
+      .filter((capture) => capture.trainingPermissionGranted || capture.use === 'training')
+      .map((capture) => capture.sha256),
   );
   return {
     targetComposition: { synthetic: 0.8, real: 0.2 },
@@ -207,8 +245,15 @@ function uniqueMetricCounts(manifest, realManifest) {
 export function summarizeOcrRows(rows) {
   if (!Array.isArray(rows)) throw new Error('OCR benchmark rows must be an array.');
   const gridCounts = { truePositive: 0, falsePositive: 0, falseNegative: 0 };
-  const quantities = { total: 0, exact: 0, common: { total: 0, exact: 0 }, abbreviated: { total: 0, exact: 0 } };
-  const roman = { total: 0, exact: 0 };
+  const quantities = {
+    total: 0,
+    exact: 0,
+    incorrect: 0,
+    unread: 0,
+    common: { total: 0, exact: 0, incorrect: 0, unread: 0 },
+    abbreviated: { total: 0, exact: 0, incorrect: 0, unread: 0 },
+  };
+  const roman = { total: 0, exact: 0, incorrect: 0, unread: 0 };
   let spuriousLabels = 0;
   const groups = new Map();
   for (const row of rows) {
@@ -245,6 +290,12 @@ export function summarizeOcrRows(rows) {
         group.quantities.exact++;
         quantities[bucket].exact++;
         group.quantities[bucket].exact++;
+      } else {
+        const outcome = row.status === 'unread' ? 'unread' : 'incorrect';
+        quantities[outcome]++;
+        group.quantities[outcome]++;
+        quantities[bucket][outcome]++;
+        group.quantities[bucket][outcome]++;
       }
     } else if (row.labelKind === 'enhancement') {
       roman.total++;
@@ -252,6 +303,10 @@ export function summarizeOcrRows(rows) {
       if (row.status === 'exact') {
         roman.exact++;
         group.roman.exact++;
+      } else {
+        const outcome = row.status === 'unread' ? 'unread' : 'incorrect';
+        roman[outcome]++;
+        group.roman[outcome]++;
       }
     }
   }
@@ -260,13 +315,18 @@ export function summarizeOcrRows(rows) {
     quantities: quantityMetrics(quantities),
     roman: romanMetrics(roman),
     spuriousLabels,
-    byVariant: [...groups.values()].map(finishVariant).sort((left, right) => variantKey(left).localeCompare(variantKey(right))),
+    byVariant: [...groups.values()]
+      .map(finishVariant)
+      .sort((left, right) => variantKey(left).localeCompare(variantKey(right))),
   };
 }
 
 function withinDirectory(parent, candidate) {
   const relative = path.relative(parent, candidate);
-  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+  return (
+    relative === '' ||
+    (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative))
+  );
 }
 
 function validateRect(value, width, height, label) {
@@ -286,8 +346,12 @@ function validateRect(value, width, height, label) {
     throw new Error(`Synthetic manifest contains invalid ${label} bounds.`);
 }
 
-export async function validateSyntheticManifest(manifestPath, { split = 'evaluation', sharp = defaultSharp } = {}) {
-  if (!['evaluation', 'calibration'].includes(split)) throw new Error('Split must be evaluation or calibration.');
+export async function validateSyntheticManifest(
+  manifestPath,
+  { split = 'evaluation', sharp = defaultSharp } = {},
+) {
+  if (!['evaluation', 'calibration'].includes(split))
+    throw new Error('Split must be evaluation or calibration.');
   const absoluteManifest = path.resolve(manifestPath);
   let manifest;
   try {
@@ -295,34 +359,61 @@ export async function validateSyntheticManifest(manifestPath, { split = 'evaluat
   } catch {
     throw new Error('Could not read the synthetic ground-truth manifest.');
   }
-  if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.samples) || manifest.samples.length === 0)
+  if (
+    manifest.schemaVersion !== 1 ||
+    !Array.isArray(manifest.samples) ||
+    manifest.samples.length === 0
+  )
     throw new Error('Synthetic manifest must use schemaVersion 1 and contain samples.');
-  if (manifest.split && manifest.split !== split) throw new Error(`Manifest split is ${manifest.split}; requested ${split}.`);
+  if (manifest.split && manifest.split !== split)
+    throw new Error(`Manifest split is ${manifest.split}; requested ${split}.`);
   const root = path.dirname(absoluteManifest);
   const samples = [];
   for (const sample of manifest.samples) {
-    if (!sample || sample.split !== split) throw new Error(`Synthetic sample split must be ${split}.`);
-    if (typeof sample.path !== 'string' || path.isAbsolute(sample.path) || path.win32.isAbsolute(sample.path))
+    if (!sample || sample.split !== split)
+      throw new Error(`Synthetic sample split must be ${split}.`);
+    if (
+      typeof sample.path !== 'string' ||
+      path.isAbsolute(sample.path) ||
+      path.win32.isAbsolute(sample.path)
+    )
       throw new Error('Synthetic manifest image path must be relative.');
     const imagePath = path.resolve(root, sample.path);
-    if (!withinDirectory(root, imagePath)) throw new Error('Synthetic manifest image path escapes the manifest directory.');
-    if (!/^[a-f0-9]{64}$/.test(sample.sha256)) throw new Error('Synthetic image SHA-256 must be a lowercase 64-character hash.');
+    if (!withinDirectory(root, imagePath))
+      throw new Error('Synthetic manifest image path escapes the manifest directory.');
+    if (!/^[a-f0-9]{64}$/.test(sample.sha256))
+      throw new Error('Synthetic image SHA-256 must be a lowercase 64-character hash.');
     const image = await readFile(imagePath).catch(() => {
       throw new Error('Synthetic manifest image is missing.');
     });
     const actualHash = createHash('sha256').update(image).digest('hex');
-    if (actualHash !== sample.sha256) throw new Error('Synthetic image SHA-256 does not match its manifest.');
+    if (actualHash !== sample.sha256)
+      throw new Error('Synthetic image SHA-256 does not match its manifest.');
     let metadata;
     try {
       metadata = await sharp(image, { failOn: 'error' }).metadata();
     } catch {
       throw new Error('Synthetic image could not be decoded.');
     }
-    if (metadata.format !== 'jpeg' || metadata.width !== sample.width || metadata.height !== sample.height)
+    if (
+      metadata.format !== 'jpeg' ||
+      metadata.width !== sample.width ||
+      metadata.height !== sample.height
+    )
       throw new Error('Synthetic image format or dimensions do not match its manifest metadata.');
-    if (!Number.isSafeInteger(sample.width) || !Number.isSafeInteger(sample.height) || sample.width <= 0 || sample.height <= 0)
+    if (
+      !Number.isSafeInteger(sample.width) ||
+      !Number.isSafeInteger(sample.height) ||
+      sample.width <= 0 ||
+      sample.height <= 0
+    )
       throw new Error('Synthetic image dimensions are invalid.');
-    if (!Array.isArray(sample.slots) || !sample.grid || !Number.isSafeInteger(sample.grid.columns) || !Number.isSafeInteger(sample.grid.rows))
+    if (
+      !Array.isArray(sample.slots) ||
+      !sample.grid ||
+      !Number.isSafeInteger(sample.grid.columns) ||
+      !Number.isSafeInteger(sample.grid.rows)
+    )
       throw new Error('Synthetic sample has no valid grid and slot metadata.');
     for (const slot of sample.slots) {
       validateRect(slot.bounds, sample.width, sample.height, 'slot');
@@ -337,12 +428,14 @@ export function buildBenchmarkReport({ manifest, rows, realManifest, evaluatedAt
   const summary = summarizeOcrRows(rows);
   return {
     schemaVersion: 1,
-    evaluatedAt: evaluatedAt instanceof Date ? evaluatedAt.toISOString() : new Date(evaluatedAt).toISOString(),
+    evaluatedAt:
+      evaluatedAt instanceof Date ? evaluatedAt.toISOString() : new Date(evaluatedAt).toISOString(),
     split: manifest.split ?? manifest.samples?.[0]?.split ?? 'unknown',
     parserVersions: {
       grid: 'storage-grid.ts',
       quantity: 'visible-quantity.ts',
       enhancement: 'equipment-reading.ts',
+      imageScale: 'screen-recognition.ts',
     },
     configuration: { gridIouThreshold, textMinimumConfidence: 0 },
     metrics: summary,
@@ -364,40 +457,62 @@ async function importTypeScriptModule(relativePath) {
 }
 
 export async function loadOcrReaders() {
-  const [grid, quantity, enhancement] = await Promise.all([
+  const [grid, quantity, enhancement, screen] = await Promise.all([
     importTypeScriptModule('../apps/web/src/app/features/scans/storage-grid.ts'),
     importTypeScriptModule('../apps/web/src/app/features/scans/visible-quantity.ts'),
     importTypeScriptModule('../apps/web/src/app/features/scans/equipment-reading.ts'),
+    importTypeScriptModule('../apps/web/src/app/features/scans/screen-recognition.ts'),
   ]);
   return {
     detectGridAreas: grid.detectGridAreas,
     parseVisibleQuantity: quantity.parseVisibleQuantity,
     parseEnhancement: enhancement.parseEnhancement,
+    screenOcrScale: screen.screenOcrScale,
   };
 }
 
 export function mapOcrLines(data, scaleX = 1, scaleY = 1) {
   return (
-    data?.blocks?.flatMap((block) =>
-      block.paragraphs?.flatMap((paragraph) =>
-        paragraph.lines?.flatMap((line) => {
-          const text = typeof line.text === 'string' ? line.text.trim() : '';
-          const { x0, y0, x1, y1 } = line.bbox ?? {};
-          if (!text || ![x0, y0, x1, y1].every(Number.isFinite) || x1 <= x0 || y1 <= y0) return [];
-          return [{
-            text,
-            confidence: Number.isFinite(line.confidence) ? Math.max(0, Math.min(100, line.confidence)) : 0,
-            bounds: { left: x0 / scaleX, top: y0 / scaleY, width: (x1 - x0) / scaleX, height: (y1 - y0) / scaleY },
-          }];
-        }) ?? [],
-      ) ?? [],
+    data?.blocks?.flatMap(
+      (block) =>
+        block.paragraphs?.flatMap(
+          (paragraph) =>
+            paragraph.lines?.flatMap((line) => {
+              const text = typeof line.text === 'string' ? line.text.trim() : '';
+              const { x0, y0, x1, y1 } = line.bbox ?? {};
+              if (!text || ![x0, y0, x1, y1].every(Number.isFinite) || x1 <= x0 || y1 <= y0)
+                return [];
+              return [
+                {
+                  text,
+                  confidence: Number.isFinite(line.confidence)
+                    ? Math.max(0, Math.min(100, line.confidence))
+                    : 0,
+                  bounds: {
+                    left: x0 / scaleX,
+                    top: y0 / scaleY,
+                    width: (x1 - x0) / scaleX,
+                    height: (y1 - y0) / scaleY,
+                  },
+                },
+              ];
+            }) ?? [],
+        ) ?? [],
     ) ?? []
   );
 }
 
 function rectangleIntersectionOverMinimum(first, second) {
-  const intersectionWidth = Math.max(0, Math.min(first.left + first.width, second.left + second.width) - Math.max(first.left, second.left));
-  const intersectionHeight = Math.max(0, Math.min(first.top + first.height, second.top + second.height) - Math.max(first.top, second.top));
+  const intersectionWidth = Math.max(
+    0,
+    Math.min(first.left + first.width, second.left + second.width) -
+      Math.max(first.left, second.left),
+  );
+  const intersectionHeight = Math.max(
+    0,
+    Math.min(first.top + first.height, second.top + second.height) -
+      Math.max(first.top, second.top),
+  );
   const intersection = intersectionWidth * intersectionHeight;
   const minimum = Math.min(first.width * first.height, second.width * second.height);
   return minimum > 0 ? intersection / minimum : 0;
@@ -406,14 +521,20 @@ function rectangleIntersectionOverMinimum(first, second) {
 function centerIn(bounds, outer) {
   const centerX = bounds.left + bounds.width / 2;
   const centerY = bounds.top + bounds.height / 2;
-  return centerX >= outer.left && centerX <= outer.left + outer.width && centerY >= outer.top && centerY <= outer.top + outer.height;
+  return (
+    centerX >= outer.left &&
+    centerX <= outer.left + outer.width &&
+    centerY >= outer.top &&
+    centerY <= outer.top + outer.height
+  );
 }
 
 function detectedSlotBounds(detections, scaleX, scaleY) {
   const output = [];
   for (const detection of detections) {
     const { bounds, columns, rows } = detection;
-    if (!Number.isSafeInteger(columns) || !Number.isSafeInteger(rows) || columns < 1 || rows < 1) continue;
+    if (!Number.isSafeInteger(columns) || !Number.isSafeInteger(rows) || columns < 1 || rows < 1)
+      continue;
     const slotWidth = bounds.width / columns;
     const slotHeight = bounds.height / rows;
     for (let row = 0; row < rows; row++) {
@@ -435,14 +556,23 @@ function classifyLabel(slot, text, readers) {
     const parsed = readers.parseVisibleQuantity(text);
     if (!parsed) return { status: 'incorrect' };
     const actualValue = Number(parsed.value);
-    const exact = actualValue === Number(slot.normalizedValue) && parsed.approximate === Boolean(slot.approximate);
-    return { status: exact ? 'exact' : 'incorrect', actualValue, actualApproximate: parsed.approximate };
+    const exact =
+      actualValue === Number(slot.normalizedValue) &&
+      parsed.approximate === Boolean(slot.approximate);
+    return {
+      status: exact ? 'exact' : 'incorrect',
+      actualValue,
+      actualApproximate: parsed.approximate,
+    };
   }
   if (slot.labelKind === 'enhancement') {
     const parsed = readers.parseEnhancement(text);
     if (!parsed || parsed.rank === null) return { status: 'incorrect' };
     const actualValue = parsed.rank;
-    return { status: actualValue === Number(slot.normalizedValue) ? 'exact' : 'incorrect', actualValue };
+    return {
+      status: actualValue === Number(slot.normalizedValue) ? 'exact' : 'incorrect',
+      actualValue,
+    };
   }
   return { status: 'incorrect' };
 }
@@ -459,40 +589,79 @@ function baseSampleRow(sample) {
   };
 }
 
-export async function recognizeSample({ imagePath, sample, readers, worker, sharp = defaultSharp }) {
+export async function recognizeSample({
+  imagePath,
+  sample,
+  readers,
+  worker,
+  sharp = defaultSharp,
+}) {
   const image = await readFile(imagePath);
   const detectorMaxDimension = 1600;
   const detectorScale = Math.min(1, detectorMaxDimension / Math.max(sample.width, sample.height));
   const detectorWidth = Math.max(1, Math.round(sample.width * detectorScale));
   const detectorHeight = Math.max(1, Math.round(sample.height * detectorScale));
-  const detectorPipeline = sharp(image).resize(detectorWidth, detectorHeight, { fit: 'fill' }).toColourspace('srgb').removeAlpha().raw();
+  const detectorPipeline = sharp(image)
+    .resize(detectorWidth, detectorHeight, { fit: 'fill' })
+    .toColourspace('srgb')
+    .removeAlpha()
+    .raw();
   const { data: pixels, info } = await detectorPipeline.toBuffer({ resolveWithObject: true });
-  const gridDetections = readers.detectGridAreas({ data: pixels, width: info.width, height: info.height, channels: info.channels });
+  const gridDetections = readers.detectGridAreas({
+    data: pixels,
+    width: info.width,
+    height: info.height,
+    channels: info.channels,
+  });
   const expectedBounds = sample.slots.map((slot) => slot.bounds);
-  const detectedBounds = detectedSlotBounds(gridDetections, sample.width / info.width, sample.height / info.height);
+  const detectedBounds = detectedSlotBounds(
+    gridDetections,
+    sample.width / info.width,
+    sample.height / info.height,
+  );
   const gridMatches = matchGridSlots(expectedBounds, detectedBounds, gridIouThreshold);
   const base = baseSampleRow(sample);
   const rows = [{ rowType: 'grid', ...base, grid: gridMatches }];
 
-  const ocrMaxDimension = 2400;
-  const ocrScale = Math.min(1, ocrMaxDimension / Math.max(sample.width, sample.height));
-  const ocrImage = ocrScale < 1
-    ? await sharp(image).resize(Math.round(sample.width * ocrScale), Math.round(sample.height * ocrScale), { fit: 'fill' }).png().toBuffer()
-    : image;
+  const ocrScale = readers.screenOcrScale(sample.width, sample.height);
+  const ocrWidth = Math.max(1, Math.round(sample.width * ocrScale));
+  const ocrHeight = Math.max(1, Math.round(sample.height * ocrScale));
+  const ocrImage =
+    ocrScale !== 1
+      ? await sharp(image).resize(ocrWidth, ocrHeight, { fit: 'fill' }).png().toBuffer()
+      : image;
   const { data: ocrData } = await worker.recognize(ocrImage, {}, { text: true, blocks: true });
-  const lines = mapOcrLines(ocrData, sample.width / (ocrScale < 1 ? Math.round(sample.width * ocrScale) : sample.width), sample.height / (ocrScale < 1 ? Math.round(sample.height * ocrScale) : sample.height));
+  const lines = mapOcrLines(ocrData, ocrWidth / sample.width, ocrHeight / sample.height);
   const usedLines = new Set();
-  const labeledSlots = sample.slots.filter((slot) => slot.labelKind === 'quantity' || slot.labelKind === 'enhancement');
+  const labeledSlots = sample.slots.filter(
+    (slot) => slot.labelKind === 'quantity' || slot.labelKind === 'enhancement',
+  );
 
   for (const slot of labeledSlots) {
     const bounds = slot.labelBounds ?? slot.bounds;
     const candidates = lines
-      .map((line, index) => ({ line, index, overlap: rectangleIntersectionOverMinimum(line.bounds, bounds) }))
-      .filter(({ line, overlap }) => !usedLines.has(line) && (overlap >= 0.08 || centerIn(line.bounds, bounds)))
-      .sort((left, right) => right.overlap - left.overlap || right.line.confidence - left.line.confidence);
+      .map((line, index) => ({
+        line,
+        index,
+        overlap: rectangleIntersectionOverMinimum(line.bounds, bounds),
+      }))
+      .filter(
+        ({ line, overlap }) =>
+          !usedLines.has(line) && (overlap >= 0.08 || centerIn(line.bounds, bounds)),
+      )
+      .sort(
+        (left, right) =>
+          right.overlap - left.overlap || right.line.confidence - left.line.confidence,
+      );
     const candidate = candidates[0];
     if (!candidate) {
-      rows.push({ rowType: 'label', ...base, labelKind: slot.labelKind, status: 'unread', approximate: Boolean(slot.approximate) });
+      rows.push({
+        rowType: 'label',
+        ...base,
+        labelKind: slot.labelKind,
+        status: 'unread',
+        approximate: Boolean(slot.approximate),
+      });
       continue;
     }
     usedLines.add(candidate.line);
@@ -510,7 +679,9 @@ export async function recognizeSample({ imagePath, sample, readers, worker, shar
     });
   }
 
-  const emptySlots = sample.slots.filter((slot) => slot.labelKind !== 'quantity' && slot.labelKind !== 'enhancement');
+  const emptySlots = sample.slots.filter(
+    (slot) => slot.labelKind !== 'quantity' && slot.labelKind !== 'enhancement',
+  );
   for (const line of lines) {
     if (usedLines.has(line)) continue;
     const slot = emptySlots.find((candidate) => centerIn(line.bounds, candidate.bounds));
@@ -519,7 +690,13 @@ export async function recognizeSample({ imagePath, sample, readers, worker, shar
     const enhancement = readers.parseEnhancement(line.text);
     if (!quantity && !enhancement) continue;
     usedLines.add(line);
-    rows.push({ rowType: 'label', ...base, labelKind: 'spurious', status: 'spurious', approximate: Boolean(quantity?.approximate) });
+    rows.push({
+      rowType: 'label',
+      ...base,
+      labelKind: 'spurious',
+      status: 'spurious',
+      approximate: Boolean(quantity?.approximate),
+    });
   }
   return rows;
 }
@@ -527,7 +704,10 @@ export async function recognizeSample({ imagePath, sample, readers, worker, shar
 function validBenchmarkOutputPath(outputPath) {
   const absolute = path.resolve(outputPath);
   const parent = path.dirname(absolute);
-  return path.basename(parent).toLowerCase() === 'ocr-dataset' && path.basename(path.dirname(parent)).toLowerCase() === 'tmp';
+  return (
+    path.basename(parent).toLowerCase() === 'ocr-dataset' &&
+    path.basename(path.dirname(parent)).toLowerCase() === 'tmp'
+  );
 }
 
 async function readRealCompositionManifest(manifestPath) {
@@ -545,8 +725,13 @@ async function readRealCompositionManifest(manifestPath) {
 
 async function createLocalOcrWorker() {
   const { createWorker, PSM } = requireWeb('tesseract.js');
-  const worker = await createWorker('por', 1);
-  await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT, preserve_interword_spaces: '1' });
+  const cachePath = path.join(defaultDatasetRoot, 'tesseract-cache');
+  await mkdir(cachePath, { recursive: true });
+  const worker = await createWorker('por', 1, { cachePath, logger: () => {} });
+  await worker.setParameters({
+    tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+    preserve_interword_spaces: '1',
+  });
   return worker;
 }
 
@@ -559,7 +744,8 @@ export async function runBenchmark({
   sharp = defaultSharp,
   evaluatedAt = new Date(),
 }) {
-  if (!outputPath || !validBenchmarkOutputPath(outputPath)) throw new Error('Benchmark report output must be inside tmp/ocr-dataset/.');
+  if (!outputPath || !validBenchmarkOutputPath(outputPath))
+    throw new Error('Benchmark report output must be inside tmp/ocr-dataset/.');
   const validated = await validateSyntheticManifest(manifestPath, { split, sharp });
   const realManifest = await readRealCompositionManifest(realManifestPath);
   const readers = await loadOcrReaders();
@@ -567,27 +753,100 @@ export async function runBenchmark({
   try {
     worker = await workerFactory();
   } catch {
-    throw new Error('Local Portuguese OCR worker could not be initialized. Confirm Tesseract.js and its language data are available.');
+    throw new Error(
+      'Local Portuguese OCR worker could not be initialized. Confirm Tesseract.js and its language data are available.',
+    );
   }
   const rows = [];
   try {
     for (const { sample, imagePath } of validated.samples) {
-      rows.push(...await recognizeSample({ imagePath, sample, readers, worker, sharp }));
+      rows.push(...(await recognizeSample({ imagePath, sample, readers, worker, sharp })));
     }
   } finally {
     await worker?.terminate?.();
   }
-  const report = buildBenchmarkReport({ manifest: validated.manifest, rows, realManifest, evaluatedAt });
+  const report = buildBenchmarkReport({
+    manifest: validated.manifest,
+    rows,
+    realManifest,
+    evaluatedAt,
+  });
   const absoluteOutput = path.resolve(outputPath);
   await mkdir(path.dirname(absoluteOutput), { recursive: true });
-  const temporaryPath = `${absoluteOutput}.${process.pid}.tmp`;
+  const outputParent = path.dirname(absoluteOutput);
+  if ((await realpath(outputParent)) !== outputParent)
+    throw new Error('Benchmark output cannot use a symlinked directory.');
+  const temporaryPath = `${absoluteOutput}.${randomUUID()}.tmp`;
   await writeFile(temporaryPath, `${JSON.stringify(report, null, 2)}\n`);
   await rename(temporaryPath, absoluteOutput);
   return { report, outputPath: absoluteOutput };
 }
 
+function benchmarkUsage() {
+  return [
+    'Usage: node scripts/benchmark-ocr.mjs --manifest <ground-truth.json> --output <report.json> [options]',
+    '',
+    'Options:',
+    '  --split <name>          evaluation (default) or calibration',
+    '  --real-manifest <path>  Count authorized real images in corpus composition only',
+    '  --help                  Show this help without loading OCR',
+    '',
+    'Evaluation rejects calibration data unless --split calibration is explicit.',
+    'Reports are written only inside tmp/ocr-dataset/.',
+  ].join('\n');
+}
+
+export function parseBenchmarkArgs(argv) {
+  const options = {
+    manifestPath: undefined,
+    outputPath: undefined,
+    split: 'evaluation',
+    realManifestPath: undefined,
+  };
+  const values = new Map([
+    ['--manifest', 'manifestPath'],
+    ['--output', 'outputPath'],
+    ['--split', 'split'],
+    ['--real-manifest', 'realManifestPath'],
+  ]);
+  for (let index = 0; index < argv.length; index++) {
+    const flag = argv[index];
+    if (flag === '--help' || flag === '-h') return { help: benchmarkUsage() };
+    const key = values.get(flag);
+    if (!key) throw new Error(`Unknown option: ${flag}`);
+    const value = argv[++index];
+    if (!value || value.startsWith('--')) throw new Error(`Missing value for ${flag}`);
+    if (key === 'split') options.split = value;
+    else options[key] = path.resolve(value);
+  }
+  if (!options.manifestPath) throw new Error('--manifest is required.');
+  if (!options.outputPath) throw new Error('--output is required.');
+  if (!['evaluation', 'calibration'].includes(options.split))
+    throw new Error('--split must be evaluation or calibration.');
+  if (!validBenchmarkOutputPath(options.outputPath))
+    throw new Error('--output must point inside tmp/ocr-dataset/.');
+  return options;
+}
+
+export async function runBenchmarkCli(
+  argv,
+  { writeOutput = (value) => process.stdout.write(value), ...dependencies } = {},
+) {
+  const options = parseBenchmarkArgs(argv);
+  if (options.help) {
+    writeOutput(`${options.help}\n`);
+    return { help: true };
+  }
+  const result = await runBenchmark({ ...options, ...dependencies });
+  const { grid, quantities, roman } = result.report.metrics;
+  writeOutput(
+    `OCR benchmark complete. Grid F1: ${grid.f1}; quantity accuracy: ${quantities.accuracy}; Roman accuracy: ${roman.accuracy}.\n`,
+  );
+  return result;
+}
+
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
-  runCli().catch((error) => {
+  runBenchmarkCli(process.argv.slice(2)).catch((error) => {
     process.stderr.write(`OCR benchmark failed: ${error.message}\n`);
     process.exitCode = 1;
   });
