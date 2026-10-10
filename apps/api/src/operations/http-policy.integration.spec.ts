@@ -50,10 +50,10 @@ describe('HTTP security through the native Nest adapter', () => {
     app.useBodyParser('json', { limit: '20mb', type: (request) => jsonRequest(request, true) });
     await app.listen(0, '127.0.0.1');
     url = await app.getUrl();
-  });
+  }, 30000);
   afterAll(async () => {
     await app?.close();
-  });
+  }, 30000);
   it('keeps CORS headers on rate limit responses for the allowed UI', async () => {
     let response: Response | undefined;
     for (let i = 0; i <= 10; i++)

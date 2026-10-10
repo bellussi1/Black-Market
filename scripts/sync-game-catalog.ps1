@@ -26,7 +26,11 @@ $taskVersion = "$Region-$Locale-meta-$($taskMeta.Substring(0,12))-loc-$($taskLan
 $taskImportVersion = "$taskVersion-$ImportRevision"
 if ($RecipeSupplementPath) {
   $taskSupplement = (Resolve-Path -LiteralPath (Join-Path $taskWorkspace $RecipeSupplementPath)).Path
-  $taskSupplementRelative = [IO.Path]::GetRelativePath($taskWorkspace, $taskSupplement).Replace('\', '/')
+  $taskSupplementRelative = if ($taskSupplement.StartsWith($taskWorkspace, [StringComparison]::OrdinalIgnoreCase)) {
+    $taskSupplement.Substring($taskWorkspace.Length).TrimStart('\', '/').Replace('\', '/')
+  } else {
+    $taskSupplement.Replace('\', '/')
+  }
   if ($taskSupplementRelative.StartsWith('../') -or [IO.Path]::IsPathRooted($taskSupplementRelative)) { throw 'O suplemento precisa estar dentro do workspace.' }
   $taskSupplementHash = (Get-FileHash -LiteralPath $taskSupplement -Algorithm SHA256).Hash.ToLowerInvariant()
   $taskImportVersion += "-supp-$($taskSupplementHash.Substring(0,8))"
