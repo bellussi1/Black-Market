@@ -1,0 +1,185 @@
+name: black-market-staging
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+services:
+  assets:
+    image: ${APP_IMAGE:-black-market:staging}
+    network_mode: none
+    environment:
+      ASSET_CHECKSUMS: ${ASSET_CHECKSUMS:?Inicialize pelo script de staging}
+    volumes:
+      - ./data/assets:/source:ro
+      - staging_assets:/assets
+    command:
+      - sh
+      - -ec
+      - |
+        for checksum in $$ASSET_CHECKSUMS; do
+          test "$${#checksum}" -eq 64
+          test -d "/source/$$checksum"
+          mkdir -p "/assets/$$checksum"
+          cp -au "/source/$$checksum/." "/assets/$$checksum/"
+          chmod -R a+rX "/assets/$$checksum"
+        done
+  postgres:
+    networks: [database]
+    logging: *logging
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-black_market}
+      POSTGRES_USER: ${POSTGRES_USER:-black_market}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina uma senha para produção}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-black_market} -d ${POSTGRES_DB:-black_market}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  migrate:
+    networks: [database]
+    logging: *logging
+    image: ${APP_IMAGE:-black-market:staging}
+    build: .
+    command: ['pnpm', 'db:migrate']
+    environment:
+      DATABASE_URL: ${CONTAINER_DATABASE_URL:?Configure o endereço interno do banco}
+    depends_on:
+      postgres:
+        condition: service_healthy
+  permissions:
+    image: postgres:17-alpine
+    networks: [database]
+    logging: *logging
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:-black_market}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-black_market}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Defina uma senha exclusiva da aplicação}
+    volumes:
+      - ./deploy/runtime-role.sql:/runtime-role.sql:ro
+    command:
+      [
+        'sh',
+        '-c',
+        'test "$${#POSTGRES_APP_PASSWORD}" -ge 32 && test "$$POSTGRES_APP_PASSWORD" != "$$PGPASSWORD" && psql -X -q -f /runtime-role.sql',
+      ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  api:
+    networks: [database, edge]
+    logging: *logging
+    image: ${APP_IMAGE:-black-market:staging}
+    user: node
+    read_only: true
+    tmpfs: ['/tmp']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      TRUST_PROXY: 'true'
+      ANALYTICS_ENABLED: ${ANALYTICS_ENABLED:-false}
+      POSTHOG_PUBLIC_KEY: ${POSTHOG_PUBLIC_KEY:-}
+      POSTHOG_HOST: ${POSTHOG_HOST:-https://us.i.posthog.com}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      DATA_CONTROLLER_NAME: ${DATA_CONTROLLER_NAME:-}
+      PORT: 3000
+      DATABASE_URL: ${RUNTIME_DATABASE_URL:?Configure a conta restrita black_market_app}
+      WEB_ORIGIN: ${PUBLIC_SITE_URL:?Configure o endereço público}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_PUBLIC_KEY: ${SUPABASE_PUBLIC_KEY:-}
+      CATALOG_ASSETS_DIR: /workspace/data/assets
+      CATALOG_ASSETS_PUBLIC_URL: ${CATALOG_ASSETS_PUBLIC_URL:-}
+      MARKET_PROVIDER_ENABLED: ${MARKET_PROVIDER_ENABLED:-true}
+      MARKET_COLLECTOR_ENABLED: 'false'
+      MARKET_BOARD_COLLECTOR_ENABLED: 'false'
+      MARKET_TRACKED_ITEMS: ${MARKET_TRACKED_ITEMS:-}
+    volumes:
+      - staging_assets:/workspace/data/assets:ro
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      permissions:
+        condition: service_completed_successfully
+  web:
+    networks: [edge]
+    logging: *logging
+    image: ${APP_IMAGE:-black-market:staging}
+    user: node
+    read_only: true
+    tmpfs: ['/tmp']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    restart: unless-stopped
+    command: ['node', 'apps/web/dist/web/server/server.mjs']
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      API_BASE_URL: http://api:3000
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      CATALOG_ASSETS_PUBLIC_URL: ${CATALOG_ASSETS_PUBLIC_URL:-}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+  gateway:
+    networks: [edge]
+    logging: *logging
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    ports: ['127.0.0.1:8081:80']
+    volumes:
+      - ./deploy/nginx.staging.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  database:
+    internal: true
+  edge:
+volumes:
+  staging_assets:
+    name: black-market-staging-assets
+  database:
+    name: black-market-staging-data
