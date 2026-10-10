@@ -266,10 +266,10 @@
               <tr>
                 <th><ng-container i18n>Item</ng-container></th>
                 <th><ng-container i18n>Local</ng-container></th>
-                <th><ng-container i18n>Tenho</ng-container></th>
-                <th><ng-container i18n>Meta</ng-container></th>
-                <th><ng-container i18n>Falta</ng-container></th>
-                <th><ng-container i18n>Preço</ng-container></th>
+                <th class="numeric"><ng-container i18n>Tenho</ng-container></th>
+                <th class="numeric"><ng-container i18n>Meta</ng-container></th>
+                <th class="numeric"><ng-container i18n>Falta</ng-container></th>
+                <th class="numeric"><ng-container i18n>Preço</ng-container></th>
                 <th><ng-container i18n>Ações</ng-container></th>
               </tr>
             </thead>
@@ -278,12 +278,12 @@
                 <tr>
                   <td>{{ row.name }}</td>
                   <td>{{ row.location }}</td>
-                  <td>{{ number(row.quantity, 0) }}</td>
-                  <td>{{ number(row.target, 0) }}</td>
-                  <td>
+                  <td class="numeric">{{ number(row.quantity, 0) }}</td>
+                  <td class="numeric">{{ number(row.target, 0) }}</td>
+                  <td class="numeric">
                     {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
                   </td>
-                  <td>{{ silver(row.price) }}</td>
+                  <td class="numeric">{{ silver(row.price) }}</td>
                   <td>
                     <button type="button" class="btn subtle" (click)="edit(row)">
                       <ng-container i18n>Editar</ng-container>
