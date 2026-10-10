@@ -6,7 +6,10 @@ export interface VisibleQuantity {
 
 /** Keep abbreviated game values distinct from exact inventory quantities. */
 export function parseVisibleQuantity(raw: string): VisibleQuantity | null {
-  const text = raw.trim().replace(/\s+/g, '');
+  const text = raw
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/([kKmM])[.,:;_\-]+$/, '$1');
   if (!text || text.length > 30) return null;
   const compact = /^(\d+)(?:[.,](\d{1,3}))?([kKmM])$/.exec(text);
   let value: number;

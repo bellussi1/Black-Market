@@ -79,6 +79,17 @@ describe('Storage grid detection', () => {
     const data = new Uint8ClampedArray(320 * 240 * 4).fill(60);
     expect(detectGridPixels({ data, width: 320, height: 240, channels: 4 })).toBeNull();
   });
+  it('supports full HD 1080p frame resolution without aborting', () => {
+    const width = 1920,
+      height = 1080;
+    const s = sample(50, false, 9, 8);
+    const data = new Uint8ClampedArray(width * height * 4).fill(52);
+    for (let y = 0; y < s.height; y++)
+      data.set(s.data.slice(y * s.width * 4, (y + 1) * s.width * 4), (y * width + 200) * 4);
+    const grid = detectGridPixels({ data, width, height, channels: 4 });
+    expect(grid).not.toBeNull();
+    expect(grid).toMatchObject({ columns: 9, rows: 8 });
+  });
   it('refuses incomplete or oversized pixel buffers before allocating', () => {
     expect(detectGridPixels({ data: [], width: 920, height: 731, channels: 4 })).toBeNull();
     expect(detectGridPixels({ data: [], width: 10000, height: 10000, channels: 4 })).toBeNull();

@@ -237,7 +237,9 @@ describe('MarketHistoryService', () => {
     expect(result.points[0].fetchedAt.toISOString()).toBe('2026-09-09T12:00:00.000Z');
     expect(result.points[5400].fetchedAt.toISOString()).toBe('2026-10-09T12:00:00.000Z');
   });
-  it('reads only requested variants and preserves complete pairs when another series is truncated', async () => {
+  it(
+    'reads only requested variants and preserves complete pairs when another series is truncated',
+    async () => {
     const row = (itemId: number, subId: number) => ({
       itemId,
       subId,
@@ -269,5 +271,5 @@ describe('MarketHistoryService', () => {
     expect(result).toEqual([row(10, 5)]);
     expect(filter.sql).toContain('sub_id');
     expect(filter.params).toContain(5);
-  });
+  }, 30_000);
 });

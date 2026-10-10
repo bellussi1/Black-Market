@@ -37,9 +37,9 @@ function gridRuns(profile: number[], expectedStep?: number): Run[] {
   for (let a = 0; a < valleys.length; a++) {
     for (let b = a + 1; b < valleys.length; b++) {
       const step = valleys[b].position - valleys[a].position;
-      if (step > (expectedStep ? expectedStep * 1.035 : 80)) break;
-      if (step < (expectedStep ? expectedStep * 0.965 : 16)) continue;
-      const tolerance = Math.max(2.5, step * 0.055);
+      if (step > (expectedStep ? expectedStep * 1.035 : 160)) break;
+      if (step < (expectedStep ? expectedStep * 0.965 : 14)) continue;
+      const tolerance = Math.max(2.8, step * 0.06);
       const points = [valleys[a], valleys[b]];
       for (let n = 2; n < 21; n++) {
         const expected = valleys[a].position + step * n;
@@ -68,7 +68,7 @@ function gridRuns(profile: number[], expectedStep?: number): Run[] {
 /** Detect regular dark gutters. A suggestion is never an authorization to import. */
 export function detectGridAreas(frame: PixelFrame): GridDetection[] {
   const { width, height, channels, data } = frame;
-  if (width < 64 || height < 64 || width * height > 2_000_000) return [];
+  if (width < 64 || height < 64 || width * height > 12_000_000) return [];
   if (data.length < width * height * channels) return [];
   const gray = new Float32Array(width * height);
   const xProfile = Array<number>(width).fill(0);
