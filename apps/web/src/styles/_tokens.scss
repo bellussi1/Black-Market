@@ -30,7 +30,7 @@ $palette: (
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }
-    --bm-font-body: 'Segoe UI', sans-serif;
-    --bm-font-display: 'Segoe UI', sans-serif;
+    --bm-font-body: 'Barlow Semi Condensed', 'Segoe UI', sans-serif;
+    --bm-font-display: 'Barlow Semi Condensed', 'Segoe UI', sans-serif;
   }
 }

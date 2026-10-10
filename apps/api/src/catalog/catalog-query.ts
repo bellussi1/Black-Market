@@ -1,4 +1,9 @@
-import { dataLocaleForUi, DEFAULT_DATA_LOCALE, DEFAULT_REGION } from '@bdo/shared';
+import {
+  dataLocaleForUi,
+  DEFAULT_DATA_LOCALE,
+  DEFAULT_REGION,
+  type LifeSkillRecipeGroup,
+} from '@bdo/shared';
 import { BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 
@@ -13,6 +18,8 @@ const querySchema = z.object({
   q: z.string().trim().max(80).optional(),
   categoryId: z.string().trim().min(1).max(120).optional(),
   grade: z.string().trim().min(1).max(24).optional(),
+  scope: z.enum(['life-skill']).optional(),
+  recipeGroup: z.enum(['cooking', 'alchemy', 'processing', 'imperial']).optional(),
   region: z
     .string()
     .trim()
@@ -37,6 +44,8 @@ export interface CatalogQuery {
   search: string | undefined;
   categoryId: string | undefined;
   grade: string | undefined;
+  scope?: 'life-skill';
+  recipeGroup?: LifeSkillRecipeGroup;
   region: string;
   locale: string | undefined;
   preferredLocale: string;
@@ -62,6 +71,8 @@ export function parseCatalogQuery(
     search: parsed.data.q || undefined,
     categoryId: parsed.data.categoryId,
     grade: parsed.data.grade,
+    scope: parsed.data.scope,
+    recipeGroup: parsed.data.recipeGroup,
     region: parsed.data.region.toLocaleLowerCase('en-US'),
     locale: parsed.data.locale ? dataLocaleForUi(parsed.data.locale) : undefined,
     preferredLocale: dataLocaleForUi(parsed.data.preferredLocale),

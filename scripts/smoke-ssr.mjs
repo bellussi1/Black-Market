@@ -37,6 +37,24 @@ const api = createServer((request, response) => {
     response.end(JSON.stringify({ recipes: [], total: 0, page: 1, pageSize: 24, dataset: null }));
     return;
   }
+  if (path === '/api/v1/market/board') {
+    response.end(
+      JSON.stringify({
+        source: 'arsha',
+        region: 'sa',
+        locale: 'pt',
+        fetchedAt: '2026-10-09T12:00:00Z',
+        cacheStatus: 'cached',
+        upstreamCacheMinutes: 30,
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        categories: [],
+      }),
+    );
+    return;
+  }
   if (path === '/api/v1/items/5301' || path === '/api/v1/items/5301/recipes') {
     const dataset = {
       version: 'ssr-recipe-fixture',

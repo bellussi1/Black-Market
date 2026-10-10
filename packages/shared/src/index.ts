@@ -4,6 +4,8 @@ export interface DataProvenance {
   fetchedAt: string | null;
 }
 
+export * from './life-skills';
+export * from './market-board';
 export * from './markets';
 export * from './platform';
 

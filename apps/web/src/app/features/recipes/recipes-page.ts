@@ -8,6 +8,7 @@ import type {
   CatalogItemDetail,
   CatalogRecipe,
   CatalogRecipesResponse,
+  LifeSkillRecipeGroup,
   RecipeListResponse,
 } from '@bdo/shared';
 import {
@@ -53,6 +54,7 @@ export class RecipesPage {
   readonly message = signal('');
   readonly advanced = signal(false);
   readonly typeLabel = recipeTypeLabel;
+  readonly recipeGroup = signal<LifeSkillRecipeGroup | ''>('');
   methodLabel(method: CatalogRecipe) {
     return (
       (method.byproductOfItemId ? 'Subproduto · ' : '') +
@@ -119,7 +121,7 @@ export class RecipesPage {
             : id
               ? itemRequest(id, query.get('recipe'))
               : this.api
-                  .getRecipes('', this.page)
+                  .getRecipes('', this.page, this.recipeGroup() || undefined)
                   .pipe(map((list) => ({ kind: 'list' as const, list })));
           return request.pipe(
             catchError((error: unknown) => {
@@ -184,6 +186,13 @@ export class RecipesPage {
   }
   move(delta: number) {
     this.page += delta;
+    this.refresh.next();
+  }
+  filterGroup(event: Event) {
+    const group = (event.target as HTMLSelectElement).value;
+    if (!['', 'cooking', 'alchemy', 'processing', 'imperial'].includes(group)) return;
+    this.recipeGroup.set(group as LifeSkillRecipeGroup | '');
+    this.page = 1;
     this.refresh.next();
   }
   retry() {

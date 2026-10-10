@@ -1,9 +1,11 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { RecipesPage } from './recipes-page';
 const dataset = {
@@ -75,5 +77,35 @@ describe('Universal recipe explorer', () => {
     const fixture = await renderComponent(RecipesPage, {}, [route('-1')]);
     expect(fixture.componentInstance.message()).toContain('não encontrado');
     TestBed.inject(HttpTestingController).expectNone(() => true);
+  });
+  it('scopes the workshop picker and resets recipe pagination when switching life skill groups', async () => {
+    const fixture = await renderComponent(RecipesPage, {}, [route('')]);
+    const http = TestBed.inject(HttpTestingController);
+    const flushList = (page: number, group: string | null) => {
+      const request = http.expectOne((r) => r.url.endsWith('/recipes'));
+      expect(request.request.params.get('page')).toBe(String(page));
+      expect(request.request.params.get('recipeGroup')).toBe(group);
+      request.flush({ recipes: [], total: 100, page, pageSize: 24, dataset });
+    };
+    flushList(1, null);
+    fixture.detectChanges();
+    const picker = fixture.debugElement.query(By.directive(CatalogItemPicker))
+      .componentInstance as CatalogItemPicker;
+    picker.query.set('carne');
+    picker.find();
+    const items = http.expectOne((r) => r.url.endsWith('/items'));
+    expect(items.request.params.get('scope')).toBe('life-skill');
+    items.flush({ items: [], total: 0, page: 1, pageSize: 12, dataset });
+    fixture.componentInstance.move(1);
+    flushList(2, null);
+    fixture.detectChanges();
+    const select = fixture.nativeElement.querySelector('#recipe-group') as HTMLSelectElement;
+    expect(select).not.toBeNull();
+    select.value = 'alchemy';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    flushList(1, 'alchemy');
+    expect(fixture.componentInstance.page).toBe(1);
+    http.verify();
   });
 });

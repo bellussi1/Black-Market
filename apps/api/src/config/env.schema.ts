@@ -91,6 +91,10 @@ export const envSchema = z
       .enum(['true', 'false'])
       .default('true')
       .transform((value) => value === 'true'),
+    MARKET_BOARD_COLLECTOR_ENABLED: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
     MARKET_COLLECTOR_ENABLED: z
       .enum(['true', 'false'])
       .default('false')

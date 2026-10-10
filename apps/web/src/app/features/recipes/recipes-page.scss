@@ -92,6 +92,14 @@
   gap: 1rem;
   margin-bottom: 1.2rem;
 }
+.recipe-group-filter {
+  max-width: 360px;
+  margin: 0 0 16px;
+}
+.recipe-group-filter select {
+  width: 100%;
+  min-height: 44px;
+}
 .recipe-card {
   display: flex;
   align-items: center;

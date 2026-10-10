@@ -48,7 +48,12 @@ export class CatalogController {
   }
 
   @Get('recipes')
-  @ApiOperation({ summary: 'Pesquisa receitas pelo nome do produto' })
+  @ApiOperation({ summary: 'Pesquisa receitas de profissões pelo nome do produto' })
+  @ApiQuery({
+    name: 'recipeGroup',
+    required: false,
+    enum: ['cooking', 'alchemy', 'processing', 'imperial'],
+  })
   listRecipes(@Query() query: Record<string, unknown>) {
     return this.catalog.listRecipes(query);
   }
@@ -86,6 +91,12 @@ export class CatalogController {
     description: 'Palavras do nome sem distinção de acentos ou ID numérico',
   })
   @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: ['life-skill'],
+    description: 'Limita a busca a produtos e ingredientes de receitas de profissões',
+  })
   @ApiQuery({ name: 'grade', required: false })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })
   @ApiQuery({

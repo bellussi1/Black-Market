@@ -4,11 +4,45 @@ import type { CatalogItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
 import { WorkspaceStore } from '../../core/workspace-store';
-import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
+import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { MarketPage } from './market-page';
+
+async function render(component: typeof MarketPage) {
+  const fixture = await renderComponent(component);
+  TestBed.inject(HttpTestingController)
+    .expectOne((request) => request.url.endsWith('/market/board'))
+    .flush({
+      source: 'arsha',
+      region: 'sa',
+      locale: 'pt',
+      fetchedAt: new Date().toISOString(),
+      cacheStatus: 'cached',
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      categories: [],
+    });
+  fixture.detectChanges();
+  return fixture;
+}
 
 describe('MarketPage', () => {
   useMemoryStorage();
+  it('opens the central market with hot items and selectable page sizes', async () => {
+    const fixture = await render(MarketPage);
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Itens em alta');
+    expect(element.querySelector<HTMLSelectElement>('[aria-label="Itens por página"]')?.value).toBe(
+      '20',
+    );
+    expect(
+      Array.from(element.querySelectorAll('[aria-label="Itens por página"] option'), (option) =>
+        option.textContent?.trim(),
+      ),
+    ).toEqual(['20', '50', '100']);
+    expect(element.textContent).not.toContain('Encontre sua próxima compra ou venda');
+  });
   it('consults selected items automatically and shares tax preferences without losing the search', async () => {
     const fixture = await render(MarketPage),
       page = fixture.componentInstance;
@@ -86,14 +120,14 @@ describe('MarketPage', () => {
     page.patch({ price: '10000', quantity: 3 });
     page.lookupId.set('676');
     const tabs = element.querySelectorAll<HTMLButtonElement>('.workspace-tabs button');
-    tabs[1].click();
+    tabs[2].click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Calculadora de imposto');
     expect(element.textContent).not.toContain('Buscar item e consultar mercado');
-    tabs[2].click();
+    tabs[3].click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Minhas cotações');
-    tabs[0].click();
+    tabs[1].click();
     fixture.detectChanges();
     expect(page.lookupId()).toBe('676');
     expect(page.form().price).toBe('10000');
@@ -104,6 +138,7 @@ describe('MarketPage', () => {
     const fixture = await render(MarketPage);
     const page = fixture.componentInstance;
     const now = Date.now();
+    page.workspaceView.set('quote');
     page.history.set([
       {
         fetchedAt: new Date(now - 25 * 60 * 60 * 1000).toISOString(),
@@ -125,7 +160,7 @@ describe('MarketPage', () => {
     expect(page.historyChart().samples).toBe(2);
     expect(page.historyChart().points.split(' ')).toHaveLength(2);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'não fornece uma série confiável de volume ou média de vendas por dia/mês',
+      'calculadas apenas quando há cobertura suficiente do período',
     );
 
     page.historyRange.set('day');

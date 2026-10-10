@@ -21,7 +21,12 @@ import type {
   CatalogRecipe,
   CatalogRecipesResponse,
 } from '@bdo/shared';
-import { CATALOG_FALLBACK_LOCALE, DEFAULT_DATA_LOCALE } from '@bdo/shared';
+import {
+  CATALOG_FALLBACK_LOCALE,
+  DEFAULT_DATA_LOCALE,
+  LIFE_SKILL_RECIPE_GROUPS,
+  LIFE_SKILL_RECIPE_TYPES,
+} from '@bdo/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 
@@ -41,7 +46,14 @@ export class CatalogService {
     const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset)
       return { recipes: [], total: 0, page: query.page, pageSize: query.pageSize, dataset: null };
-    const filters = [eq(recipes.datasetVersionId, dataset.id), eq(recipeOutputs.position, 0)];
+    const types = query.recipeGroup
+      ? LIFE_SKILL_RECIPE_GROUPS[query.recipeGroup]
+      : LIFE_SKILL_RECIPE_TYPES;
+    const filters = [
+      eq(recipes.datasetVersionId, dataset.id),
+      eq(recipeOutputs.position, 0),
+      inArray(recipes.recipeType, [...types]),
+    ];
     if (query.search)
       for (const word of this.normalizedSearch(query.search).split(/\s+/))
         filters.push(
@@ -75,7 +87,11 @@ export class CatalogService {
       .innerJoin(recipeOutputs, relation)
       .innerJoin(itemTranslations, translated)
       .where(and(...filters))
-      .orderBy(asc(itemTranslations.name), asc(recipes.recipeKey))
+      .orderBy(
+        sql`case when ${inArray(recipes.recipeType, [...LIFE_SKILL_RECIPE_GROUPS.cooking])} then 0 when ${inArray(recipes.recipeType, [...LIFE_SKILL_RECIPE_GROUPS.alchemy])} then 1 when ${inArray(recipes.recipeType, [...LIFE_SKILL_RECIPE_GROUPS.processing])} then 2 else 3 end`,
+        asc(itemTranslations.name),
+        asc(recipes.recipeKey),
+      )
       .limit(query.pageSize)
       .offset((query.page - 1) * query.pageSize);
     return {
@@ -222,6 +238,19 @@ export class CatalogService {
     const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
     if (!dataset) return { categories: [], dataset: null };
 
+    const filters: SQL[] = [eq(categories.datasetVersionId, dataset.id)];
+    if (query.scope === 'life-skill')
+      filters.push(
+        inArray(
+          categories.id,
+          sql`(
+      select ${itemCategories.categoryId} from ${itemCategories}
+      where ${itemCategories.datasetVersionId} = ${dataset.id}
+        and ${inArray(itemCategories.itemId, this.lifeSkillItemIds(dataset.id))}
+    )`,
+        ),
+      );
+
     const rows = await this.database.db
       .select({
         id: categories.id,
@@ -238,7 +267,7 @@ export class CatalogService {
           eq(categoryTranslations.language, dataset.locale),
         ),
       )
-      .where(eq(categories.datasetVersionId, dataset.id))
+      .where(and(...filters))
       .orderBy(asc(categories.sortOrder), asc(categoryTranslations.name));
 
     return {
@@ -472,6 +501,11 @@ export class CatalogService {
     ];
     if (query.ids) filters.push(inArray(items.id, query.ids));
     if (query.grade) filters.push(eq(itemVersions.grade, query.grade));
+    if (query.scope === 'life-skill') {
+      // Build the complete membership set before counting or paginating. Materials
+      // without their own recipe remain searchable through their ingredient link.
+      filters.push(inArray(items.id, this.lifeSkillItemIds(datasetVersionId)));
+    }
     if (query.search) {
       if (/^[1-9]\d*$/.test(query.search) && Number(query.search) <= 2147483647) {
         filters.push(eq(items.id, Number(query.search)));
@@ -483,6 +517,21 @@ export class CatalogService {
       }
     }
     return filters;
+  }
+
+  private lifeSkillItemIds(datasetVersionId: string): SQL {
+    const allowed = inArray(recipes.recipeType, LIFE_SKILL_RECIPE_TYPES);
+    return sql`(
+        select ${recipeIngredients.itemId} from ${recipeIngredients}
+        inner join ${recipes} on ${recipes.datasetVersionId} = ${recipeIngredients.datasetVersionId}
+          and ${recipes.recipeKey} = ${recipeIngredients.recipeKey}
+        where ${recipes.datasetVersionId} = ${datasetVersionId} and ${allowed}
+        union
+        select ${recipeOutputs.itemId} from ${recipeOutputs}
+        inner join ${recipes} on ${recipes.datasetVersionId} = ${recipeOutputs.datasetVersionId}
+          and ${recipes.recipeKey} = ${recipeOutputs.recipeKey}
+        where ${recipes.datasetVersionId} = ${datasetVersionId} and ${allowed}
+      )`;
   }
 
   private normalizedSearch(value: string): string {

@@ -1,0 +1,249 @@
+<section class="market-window" aria-labelledby="market-board-title">
+  <header class="market-titlebar">
+    <h2 id="market-board-title">Itens em alta</h2>
+    <span>Mercado Central · {{ preferences.region().toUpperCase() }}</span>
+  </header>
+  <div class="market-directory">
+    <aside class="market-categories" aria-label="Categorias do mercado">
+      <label class="mobile-category"
+        >Categoria
+        <select
+          aria-label="Categoria do mercado"
+          [ngModel]="category()"
+          (ngModelChange)="filterCategory($event)"
+        >
+          <option value="">Todos os itens em alta</option>
+          @for (entry of categoryRoots(); track entry.id) {
+            <optgroup [label]="entry.name">
+              <option [value]="entry.id">{{ entry.name }} · Todos</option>
+              @for (child of childrenOf(entry.id); track child.id) {
+                <option [value]="child.id">{{ child.name }}</option>
+              }
+            </optgroup>
+          }
+        </select>
+      </label>
+      <h3>Categorias</h3>
+      <button type="button" [attr.aria-pressed]="!category()" (click)="filterCategory('')">
+        Todos os itens em alta
+      </button>
+      <div class="category-list">
+        @for (entry of categoryRoots(); track entry.id) {
+          <button
+            type="button"
+            [class.subcategory]="!!entry.parentId"
+            [attr.aria-pressed]="category() === entry.id"
+            (click)="filterCategory(entry.id)"
+          >
+            {{ entry.name }}
+          </button>
+          @if (selectedCategoryParent() === entry.id) {
+            @for (child of childrenOf(entry.id); track child.id) {
+              <button
+                type="button"
+                class="subcategory"
+                [attr.aria-pressed]="category() === child.id"
+                (click)="filterCategory(child.id)"
+              >
+                {{ child.name }}
+              </button>
+            }
+          }
+        }
+      </div>
+      <p class="category-note">Itens em destaque no mercado da região selecionada.</p>
+    </aside>
+    <div class="market-list">
+      <div class="board-toolbar">
+        <label class="board-search"
+          ><span>Buscar no mercado</span
+          ><input
+            type="search"
+            placeholder="Nome do item"
+            maxlength="80"
+            [ngModel]="search()"
+            (ngModelChange)="find($event)"
+        /></label>
+        <label
+          ><span>Ordenar por</span
+          ><select [ngModel]="sort()" (ngModelChange)="setSort($event)">
+            <option value="hot">Em alta</option>
+            <option value="price">Menor preço</option>
+            <option value="stock">Maior estoque</option>
+            <option value="name">Nome do item</option>
+          </select></label
+        >
+        <button
+          type="button"
+          (click)="load()"
+          [disabled]="loading()"
+          aria-label="Atualizar mercado"
+        >
+          Atualizar
+        </button>
+      </div>
+      <div class="board-summary" aria-live="polite">
+        <span>{{
+          loading() ? 'Carregando mercado…' : number(result()?.total, 0) + ' itens em alta'
+        }}</span>
+        @if (result(); as response) {
+          <span
+            >{{ response.cacheStatus === 'stale' ? 'Última consulta disponível' : 'Consulta' }} ·
+            {{ date(response.fetchedAt) }}</span
+          >
+        }
+      </div>
+      @if (error()) {
+        <p role="alert" class="error-box">
+          {{ error() }} <button type="button" (click)="load()">Tentar novamente</button>
+        </p>
+      }
+      <div
+        class="board-table-scroll"
+        role="region"
+        aria-label="Preços e volumes dos itens em alta"
+        tabindex="0"
+        [attr.aria-busy]="loading()"
+      >
+        <table class="market-board-table">
+          <caption class="visually-hidden">
+            Itens em alta: preços em prata por unidade e volumes em unidades negociadas.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col" class="numeric">
+                Preço atual<br />
+                <abbr
+                  title="Média aritmética das cotações observadas nos últimos 30 dias; não é a média das vendas"
+                  >Média 30d</abbr
+                >
+              </th>
+              <th scope="col" class="numeric">
+                <abbr title="Preço máximo permitido pelo mercado">Topo</abbr><br />
+                <abbr title="Preço mínimo permitido pelo mercado">Bottom</abbr>
+              </th>
+              <th scope="col" class="numeric">Estoque</th>
+              <th scope="col" class="numeric">Volume 24h</th>
+              <th scope="col" class="numeric">Volume 15d</th>
+              <th scope="col" class="numeric">Volume 30d</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of result()?.items ?? []; track item.itemId + ':' + item.subId) {
+              <tr>
+                <th scope="row">
+                  <button
+                    type="button"
+                    class="board-item"
+                    (click)="selected.emit(item)"
+                    [attr.aria-label]="
+                      'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
+                    "
+                  >
+                    <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" /><span
+                      ><strong>{{ item.name }}</strong
+                      ><small
+                        >{{ item.categories[0]?.name ?? 'Mercado Central' }}
+                        @if (item.subId) {
+                          · Variante {{ item.subId }}
+                        }
+                      </small></span
+                    >
+                  </button>
+                </th>
+                <td class="numeric">
+                  <span class="current-price">{{ silver(item.price) }}</span>
+                  <small
+                    class="secondary-price"
+                    [attr.title]="
+                      item.meanPrice === null
+                        ? 'Histórico insuficiente para a média'
+                        : item.observationCount + ' observações de preço'
+                    "
+                    >Média {{ silver(item.meanPrice) }}</small
+                  >
+                </td>
+                <td class="numeric price-limits">
+                  <span><small>Topo</small> {{ silver(item.maxPrice) }}</span
+                  ><span><small>Bottom</small> {{ silver(item.minPrice) }}</span>
+                </td>
+                <td class="numeric">{{ number(item.stock, 0) }}</td>
+                <td
+                  class="numeric"
+                  [attr.title]="
+                    item.volume24h === null
+                      ? 'Histórico insuficiente para 24 horas'
+                      : 'Unidades negociadas em 24 horas'
+                  "
+                >
+                  {{ silver(item.volume24h) }}
+                </td>
+                <td
+                  class="numeric"
+                  [attr.title]="
+                    item.volume15d === null
+                      ? 'Histórico insuficiente para 15 dias'
+                      : 'Unidades negociadas em 15 dias'
+                  "
+                >
+                  {{ silver(item.volume15d) }}
+                </td>
+                <td
+                  class="numeric"
+                  [attr.title]="
+                    item.volume30d === null
+                      ? 'Histórico insuficiente para 30 dias'
+                      : 'Unidades negociadas em 30 dias'
+                  "
+                >
+                  {{ silver(item.volume30d) }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="board-empty">
+                  {{
+                    loading()
+                      ? 'Consultando itens em alta…'
+                      : error()
+                        ? 'O mercado está temporariamente indisponível.'
+                        : 'Nenhum item em alta corresponde a esta pesquisa.'
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <nav class="board-pagination" aria-label="Páginas do mercado">
+        <span>{{ firstItem() }}–{{ lastItem() }} de {{ number(result()?.total ?? 0, 0) }}</span>
+        <label
+          >Itens por página
+          <select
+            aria-label="Itens por página"
+            [ngModel]="pageSize()"
+            (ngModelChange)="setPageSize($event)"
+          >
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select></label
+        >
+        <div>
+          <button type="button" (click)="move(-1)" [disabled]="loading() || page() === 1">
+            Anterior</button
+          ><span>{{ page() }} / {{ pageCount() }}</span
+          ><button type="button" (click)="move(1)" [disabled]="loading() || page() >= pageCount()">
+            Próxima
+          </button>
+        </div>
+      </nav>
+      <p class="board-note">
+        Preços em prata por unidade. Topo e bottom são os limites permitidos pelo mercado. Média de
+        cotações observadas em 30 dias; volumes exigem histórico completo do período.
+        <strong>—</strong> indica dado ainda indisponível.
+      </p>
+    </div>
+  </div>
+</section>

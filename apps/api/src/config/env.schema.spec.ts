@@ -3,6 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { envSchema, validateEnvironment } from './env.schema';
 const local = { DATABASE_URL: 'postgresql://local:example@localhost/database' };
 describe('environment boundaries', () => {
+  it('enables board observations by default and accepts an explicit opt out', () => {
+    expect(envSchema.parse(local).MARKET_BOARD_COLLECTOR_ENABLED).toBe(true);
+    expect(
+      envSchema.parse({ ...local, MARKET_BOARD_COLLECTOR_ENABLED: 'false' })
+        .MARKET_BOARD_COLLECTOR_ENABLED,
+    ).toBe(false);
+  });
   it('normalizes a development web origin', () => {
     expect(envSchema.parse({ ...local, WEB_ORIGIN: 'http://localhost:4200/path' }).WEB_ORIGIN).toBe(
       'http://localhost:4200',

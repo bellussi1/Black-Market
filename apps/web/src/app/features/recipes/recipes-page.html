@@ -16,11 +16,11 @@
       label="Qual item você quer explorar?"
       i18n-label
       [selectionName]="item()?.name ?? ''"
+      scope="life-skill"
       (selected)="select($event)"
     />
     <p class="help" i18n>
-      Todos os itens do catálogo podem ser pesquisados, mesmo sem receita. A categoria filtra os
-      resultados pelo cadastro do jogo.
+      Busque produtos e materiais de culinária, alquimia, processamento e entrega imperial.
     </p>
   </details>
   @if (loading()) {
@@ -85,8 +85,18 @@
     <section>
       <div class="panel-heading">
         <h2 i18n>Comece por uma receita</h2>
-        <span class="help">{{ list.total }} receitas no catálogo da região</span>
+        <span class="help">{{ list.total }} receitas de profissões</span>
       </div>
+      <label class="field recipe-group-filter" for="recipe-group">
+        <ng-container i18n>Atividade</ng-container>
+        <select id="recipe-group" [value]="recipeGroup()" (change)="filterGroup($event)">
+          <option value="" i18n>Todas as profissões</option>
+          <option value="cooking" i18n>Culinária</option>
+          <option value="alchemy" i18n>Alquimia</option>
+          <option value="processing" i18n>Processamento</option>
+          <option value="imperial" i18n>Entrega imperial</option>
+        </select>
+      </label>
       <div class="recipe-cards">
         @for (row of list.recipes; track row.key) {
           <a class="recipe-card" [routerLink]="['/recipes', row.key]"
@@ -96,7 +106,9 @@
             ><span aria-hidden="true">→</span></a
           >
         } @empty {
-          <p i18n>Nenhuma receita publicada. Use a pesquisa para consultar um item do catálogo.</p>
+          <p i18n>
+            Nenhuma receita nesta atividade. Ajuste o filtro ou busque um produto ou material.
+          </p>
         }
       </div>
       <nav class="action-row pagination-bar" aria-label="Páginas de receitas" i18n-aria-label>

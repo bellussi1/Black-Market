@@ -29,4 +29,15 @@ describe('MarketApi', () => {
     request.flush({ source: 'arsha', region: 'eu', items: [] });
     expect(result).toEqual({ source: 'arsha', region: 'eu', items: [] });
   });
+  it('omits the empty category so the default market query passes API validation', () => {
+    TestBed.inject(MarketApi)
+      .board({ region: 'sa', q: '', categoryId: '', sort: 'hot', page: 1, pageSize: 20 })
+      .subscribe();
+    const request = TestBed.inject(HttpTestingController).expectOne((entry) =>
+      entry.url.endsWith('/market/board'),
+    );
+    expect(request.request.params.has('categoryId')).toBe(false);
+    expect(request.request.params.get('pageSize')).toBe('20');
+    request.flush({ items: [], total: 0 });
+  });
 });

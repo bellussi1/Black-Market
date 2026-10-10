@@ -10,6 +10,7 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { MarketService } from './market.service';
+import { MarketBoardService } from './market-board.service';
 import { MarketHistoryService } from './market-history.service';
 const querySchema = z.object({
   region: z.enum(MARKET_PROVIDER_REGIONS).default(DEFAULT_REGION),
@@ -25,7 +26,15 @@ export class MarketController {
   constructor(
     private readonly market: MarketService,
     private readonly history: MarketHistoryService,
+    private readonly boardService: MarketBoardService,
   ) {}
+  @Get('board')
+  @ApiOperation({
+    summary: 'Quadro de itens populares do Arsha, com filtros e cache de 30 minutos',
+  })
+  board(@Query() query: Record<string, unknown>) {
+    return this.boardService.board(query);
+  }
   @Get('items/:id/history')
   historyFor(@Param('id') itemId: string, @Query() query: Record<string, unknown>) {
     const input = querySchema

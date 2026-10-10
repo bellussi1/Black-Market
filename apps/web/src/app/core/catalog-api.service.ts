@@ -9,6 +9,7 @@ import type {
   CatalogPage,
   CatalogRecipe,
   CatalogRecipesResponse,
+  LifeSkillRecipeGroup,
   RecipeListResponse,
 } from '@bdo/shared';
 import { EMPTY, expand, map, reduce } from 'rxjs';
@@ -22,6 +23,7 @@ export interface CatalogSearchParams {
   q?: string;
   categoryId?: string;
   grade?: string;
+  scope?: 'life-skill';
   page: number;
   pageSize: number;
 }
@@ -60,12 +62,17 @@ export class CatalogApiService {
     if (params.ids?.length) httpParams = httpParams.set('ids', params.ids.join(','));
     if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
     if (params.grade) httpParams = httpParams.set('grade', params.grade);
+    if (params.scope) httpParams = httpParams.set('scope', params.scope);
     return this.http.get<CatalogPage>(`${this.baseUrl}/items`, { params: httpParams });
   }
 
-  getCategories() {
+  getCategories(scope?: 'life-skill') {
     return this.http.get<CatalogCategoriesResponse>(`${this.baseUrl}/categories`, {
-      params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
+      params: {
+        region: this.preferences.region(),
+        preferredLocale: preferredDataLocale(),
+        ...(scope ? { scope } : {}),
+      },
     });
   }
 
@@ -113,7 +120,7 @@ export class CatalogApiService {
     );
   }
 
-  getRecipes(q: string, page: number) {
+  getRecipes(q: string, page: number, recipeGroup?: LifeSkillRecipeGroup) {
     return this.http.get<RecipeListResponse>(`${this.baseUrl}/recipes`, {
       params: {
         q,
@@ -121,6 +128,7 @@ export class CatalogApiService {
         pageSize: 24,
         region: this.preferences.region(),
         preferredLocale: preferredDataLocale(),
+        ...(recipeGroup ? { recipeGroup } : {}),
       },
     });
   }

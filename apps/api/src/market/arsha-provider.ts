@@ -25,7 +25,28 @@ export function normalizeArsha(payload: unknown, expectedId: number) {
     .parse(Array.isArray(payload) ? payload : [payload]);
   if (entries.some((entry) => entry.id !== expectedId))
     throw new RangeError('O provedor retornou outro ID de item.');
-  return entries.map((entry) => ({
+  return entries.map(toQuote);
+}
+
+/** The hot endpoint is an ordered board, with many distinct item IDs. */
+export function normalizeArshaHot(payload: unknown) {
+  const entries = z
+    .array(
+      rawItemSchema.extend({
+        id: z.number().int().positive().max(2_000_000_000),
+        sid: z.number().int().nonnegative().max(100),
+      }),
+    )
+    .min(1)
+    .max(2000)
+    .parse(payload);
+  const keys = new Set(entries.map((item) => `${item.id}:${item.sid}`));
+  if (keys.size !== entries.length) throw new RangeError('Duplicate hot quote.');
+  return entries.map(toQuote);
+}
+
+function toQuote(entry: z.infer<typeof rawItemSchema>) {
+  return {
     itemId: entry.id,
     subId: entry.sid,
     name: entry.name,
@@ -40,7 +61,7 @@ export function normalizeArsha(payload: unknown, expectedId: number) {
       entry.lastSoldTime && entry.lastSoldTime < 32_503_680_000
         ? new Date(entry.lastSoldTime * 1000).toISOString()
         : null,
-  }));
+  };
 }
 export type ProviderItem = ReturnType<typeof normalizeArsha>[number];
 export interface MarketLookup {

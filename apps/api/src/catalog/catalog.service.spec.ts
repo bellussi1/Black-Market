@@ -1,8 +1,11 @@
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { DatabaseService } from '../database/database.service';
 import { CatalogService } from './catalog.service';
 import type { CatalogAssetsService } from './catalog-assets.service';
+import { parseCatalogQuery } from './catalog-query';
 
 function query(rows: unknown[]) {
   const chain = {
@@ -78,5 +81,94 @@ describe('Paginated item recipes', () => {
     db.select.mockClear();
     await expect(instance.getItemRecipes(5301, { pageSize: 101 }, 'uses')).rejects.toThrow();
     expect(db.select).not.toHaveBeenCalled();
+  });
+});
+
+describe('Life skill discovery', () => {
+  function discovery(items = false) {
+    const countQuery = query([{ total: 0 }]);
+    const rowsQuery = query([]);
+    const select = vi.fn();
+    if (items) select.mockReturnValueOnce(query([]));
+    select.mockReturnValueOnce(countQuery).mockReturnValueOnce(rowsQuery);
+    const instance = new CatalogService(
+      { db: { select } } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      finishedAt: new Date(),
+    } as never);
+    return { instance, countQuery, rowsQuery };
+  }
+  const sqlQuery = (value: unknown) => new PgDialect().sqlToQuery(value as SQL);
+
+  it('filters recipe counts and pages to life skill types before applying pagination', async () => {
+    const { instance, countQuery, rowsQuery } = discovery();
+    await instance.listRecipes({ page: 2, pageSize: 24 });
+    for (const statement of [countQuery, rowsQuery]) {
+      const compiled = sqlQuery(statement.where.mock.calls[0][0]);
+      expect(compiled.sql).toContain('"recipes"."recipe_type" in');
+      expect(compiled.params).toContain('COOK');
+      expect(compiled.params).toContain('ALCHEMY');
+      expect(compiled.params).toContain('HEAT');
+      expect(compiled.params).not.toContain('SKILL');
+      expect(compiled.params).not.toContain('HOUSE');
+    }
+    expect(rowsQuery.offset).toHaveBeenCalledWith(24);
+    expect(sqlQuery(rowsQuery.orderBy.mock.calls[0][0]).params.slice(0, 2)).toEqual([
+      'COOK',
+      'SIMPLE_COOK',
+    ]);
+  });
+
+  it('restricts a method group on both the count and result query', async () => {
+    const { instance, countQuery, rowsQuery } = discovery();
+    await instance.listRecipes({ recipeGroup: 'cooking', q: 'cerveja' });
+    for (const statement of [countQuery, rowsQuery]) {
+      const compiled = sqlQuery(statement.where.mock.calls[0][0]);
+      expect(compiled.params).toContain('COOK');
+      expect(compiled.params).toContain('SIMPLE_COOK');
+      expect(compiled.params).not.toContain('ALCHEMY');
+      expect(compiled.params).toContain('%cerveja%');
+    }
+  });
+
+  it('limits only opted-in item discovery to ingredients and products of life skill recipes', async () => {
+    const scoped = discovery(true);
+    await scoped.instance.listItems({ scope: 'life-skill', q: 'carne' });
+    for (const statement of [scoped.countQuery, scoped.rowsQuery]) {
+      const compiled = sqlQuery(statement.where.mock.calls[0][0]);
+      expect(compiled.sql).toContain('"recipe_ingredients"');
+      expect(compiled.sql).toMatch(/"items"\."id" in\s*\(\s*select/);
+      expect(compiled.sql).toContain('"recipe_outputs"');
+      expect(compiled.params).toContain('COOK');
+      expect(compiled.params).not.toContain('SKILL');
+    }
+    const general = discovery(true);
+    await general.instance.listItems({ q: 'carne' });
+    expect(sqlQuery(general.rowsQuery.where.mock.calls[0][0]).sql).not.toContain('"recipes"');
+  });
+
+  it('rejects unknown discovery scopes and groups before querying', () => {
+    expect(() => parseCatalogQuery({ scope: 'skills' })).toThrow();
+    expect(() => parseCatalogQuery({ recipeGroup: 'SKILL' })).toThrow();
+  });
+  it('restricts opted-in categories to the same ingredient and product membership as item discovery', async () => {
+    const scoped = discovery();
+    await scoped.instance.listCategories({ scope: 'life-skill' });
+    const compiled = sqlQuery(scoped.countQuery.where.mock.calls[0][0]);
+    expect(compiled.sql).toContain('"item_categories"."category_id"');
+    expect(compiled.sql).toContain('"recipe_ingredients"');
+    expect(compiled.sql).toContain('"recipe_outputs"');
+    expect(compiled.params).toContain('COOK');
+    expect(compiled.params).not.toContain('SKILL');
+    const general = discovery();
+    await general.instance.listCategories({});
+    expect(sqlQuery(general.countQuery.where.mock.calls[0][0]).sql).not.toContain('"recipes"');
   });
 });

@@ -4,19 +4,27 @@
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
     <p>
       <ng-container i18n
-        >Selecione um item para consultar preço e estoque. Compare o valor bruto com a prata
-        recebida depois das taxas.
+        >Acompanhe itens em alta, preços e volumes. Selecione um item para consultar suas variantes
+        ou calcular o valor recebido depois das taxas.
       </ng-container>
     </p>
   </header>
   <nav class="workspace-tabs" aria-label="Ferramentas do mercado" i18n-aria-label>
     <button
       type="button"
+      [attr.aria-pressed]="workspaceView() === 'board'"
+      (click)="workspaceView.set('board')"
+      i18n
+    >
+      Mercado
+    </button>
+    <button
+      type="button"
       [attr.aria-pressed]="workspaceView() === 'quote'"
       (click)="workspaceView.set('quote')"
       i18n
     >
-      Consultar preços
+      Cotação do item
     </button>
     <button
       type="button"
@@ -35,6 +43,7 @@
       Minhas cotações
     </button>
   </nav>
+  <app-market-board [hidden]="workspaceView() !== 'board'" (selected)="selectBoardItem($event)" />
   @if (workspaceView() === 'quote') {
     <section class="panel">
       <details class="market-search" [open]="!live()">
@@ -320,9 +329,9 @@
           }
         </div>
         <p class="help mt-4" i18n>
-          O histórico representa apenas observações guardadas pelo Black Market. A fonte atual não
-          fornece uma série confiável de volume ou média de vendas por dia/mês; o contador de
-          transações é exibido como recebido, sem estimar vendas entre consultas.
+          O gráfico mostra cotações observadas e o contador acumulado de transações. Os volumes do
+          quadro de mercado são diferenças desse contador, calculadas apenas quando há cobertura
+          suficiente do período. A média de cotações não representa uma média ponderada das vendas.
         </p>
         @if (history().length) {
           <div class="overflow-x-auto">

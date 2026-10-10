@@ -31,10 +31,12 @@ export class CatalogItemPicker implements OnDestroy {
   private categoryRequest?: Subscription;
   private timer?: ReturnType<typeof setTimeout>;
   private categoriesLoaded = false;
+  private previousScope: 'life-skill' | undefined;
   readonly searchId = `catalog-${crypto.randomUUID()}`;
   readonly selectionName = input('');
   readonly label = input($localize`Buscar item do jogo`);
   readonly compact = input(false);
+  readonly scope = input<'life-skill' | undefined>(undefined);
   readonly selected = output<CatalogItem | null>();
   readonly query = signal('');
   readonly category = signal('');
@@ -45,6 +47,24 @@ export class CatalogItemPicker implements OnDestroy {
   readonly open = signal(false);
 
   constructor() {
+    effect(() => {
+      const scope = this.scope();
+      untracked(() => {
+        if (scope === this.previousScope) return;
+        this.previousScope = scope;
+        this.request?.unsubscribe();
+        this.categoryRequest?.unsubscribe();
+        this.categoryRequest = undefined;
+        this.categoriesLoaded = false;
+        this.categories.set([]);
+        this.category.set('');
+        if (this.timer) clearTimeout(this.timer);
+        this.result.set(null);
+        this.loading.set(false);
+        this.error.set('');
+        this.open.set(false);
+      });
+    });
     effect(() => {
       const region = this.preferences.region();
       untracked(() => {
@@ -68,7 +88,7 @@ export class CatalogItemPicker implements OnDestroy {
 
   loadCategories(): void {
     if (this.categoriesLoaded || this.categoryRequest) return;
-    this.categoryRequest = this.api.getCategories().subscribe({
+    this.categoryRequest = this.api.getCategories(this.scope()).subscribe({
       next: (response) => {
         this.categories.set(response.categories);
         this.categoriesLoaded = true;
@@ -112,6 +132,7 @@ export class CatalogItemPicker implements OnDestroy {
       .getItems({
         q: this.query().trim() || undefined,
         categoryId: this.category() || undefined,
+        scope: this.scope(),
         page: 1,
         pageSize: 12,
       })

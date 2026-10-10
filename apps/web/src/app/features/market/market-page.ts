@@ -19,7 +19,12 @@ import {
   marketSchema,
   type TaxOptions,
 } from '@bdo/calculators';
-import type { CatalogItem, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
+import type {
+  CatalogItem,
+  MarketBoardItem,
+  MarketItemQuote,
+  MarketLookupResponse,
+} from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
@@ -35,6 +40,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
+import { MarketBoard } from './market-board';
 
 type MarketHistoryMetric = 'price' | 'stock' | 'totalTrades';
 type MarketHistoryRange = 'day' | 'week' | 'month';
@@ -50,6 +56,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     CalculationProof,
     CatalogItemPicker,
     ItemIcon,
+    MarketBoard,
   ],
   templateUrl: './market-page.html',
 })
@@ -88,7 +95,7 @@ export class MarketPage implements OnDestroy {
   private liveRequest?: Subscription;
   private itemRequest?: Subscription;
   readonly lookupId = signal('');
-  readonly workspaceView = signal<'quote' | 'calculator' | 'saved'>('quote');
+  readonly workspaceView = signal<'board' | 'quote' | 'calculator' | 'saved'>('board');
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');
@@ -224,6 +231,7 @@ export class MarketPage implements OnDestroy {
   }
 
   selectItem(item: CatalogItem | null): void {
+    if (item) this.workspaceView.set('quote');
     this.liveRequest?.unsubscribe();
     this.live.set(null);
     this.lookupLoading.set(false);
@@ -240,6 +248,20 @@ export class MarketPage implements OnDestroy {
       itemId: item?.id ?? null,
     };
     if (item) this.lookup();
+  }
+  selectBoardItem(item: MarketBoardItem): void {
+    this.selectItem({
+      id: item.itemId,
+      name: item.name,
+      iconUrl: item.iconUrl,
+      icon: null,
+      categories: item.categories,
+      category: item.categories[0]?.name ?? null,
+      grade: null,
+      weight: null,
+      description: null,
+    });
+    this.historySubId = item.subId;
   }
   netPrice(price: string | null): string | null {
     if (price === null) return null;
