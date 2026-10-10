@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { edaniaSelectedGraphFixture } from './fixtures/edania-selected-graph';
 import {
   compareProductionPlans,
   planProduction,
   type ProductionPlannerInput,
 } from './production-planner';
-import { edaniaSelectedGraphFixture } from './fixtures/edania-selected-graph';
 
 const now = '2026-10-09T12:00:00.000Z';
 it('merges batches by exact rates even when displayed hourly silver ties', () => {
@@ -360,7 +360,14 @@ describe('production planner', () => {
     const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
 
     expect(optimized).toBeDefined();
-    expect(optimized?.issues).toEqual([]);
+    expect(optimized).toMatchObject({
+      profit: '64600',
+      seconds: 1,
+      sourceChoices: Object.fromEntries(
+        topology.rootIngredientItemIds.map((itemId) => [itemId, 'buy']),
+      ),
+      issues: [],
+    });
     expect(optimized?.profitPerHour).not.toBeNull();
     expect(optimized?.assumptions.join(' ')).toMatch(
       /\d+ estados podados pelo limite superior seguro/,
