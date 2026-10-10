@@ -5,6 +5,7 @@ import type {
   MarketItemQuote,
 } from '@bdo/shared';
 import { signal } from '@angular/core';
+import { characterSchema } from '@bdo/calculators';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +14,7 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService, type CachedQuoteEntry } from '../../core/market-cache.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
+import type { RecipeProductionGraph } from './recipe-production-graph';
 import { RecipeTree } from './recipe-tree';
 const item = {
   id: 5301,
@@ -79,6 +81,43 @@ function providers() {
     ],
   };
 }
+
+function configureProduction(tree: RecipeTree, prices: Record<number, string>) {
+  const rootRecipe = tree.root()!.recipe!;
+  const itemIds = [
+    ...new Set([
+      ...rootRecipe.outputs.map((part) => part.itemId),
+      ...rootRecipe.inputs.map((part) => part.itemId),
+    ]),
+  ].sort((left, right) => left - right);
+  const observedAt = new Date().toISOString();
+  tree.recipeGraph.set({
+    rootRecipe,
+    producerRecipes: [],
+    itemIds,
+    issues: [],
+    datasetVersion: 'dataset-v1',
+  });
+  const quotes = new Map<number, MarketItemQuote>();
+  for (const [id, price] of Object.entries(prices))
+    quotes.set(Number(id), {
+      itemId: Number(id),
+      subId: 0,
+      name: Number(id) === 5301 ? item.name : 'Sal',
+      price,
+      stock: 1_000_000,
+      totalTrades: '10000',
+      minPrice: price,
+      maxPrice: price,
+      lastSoldPrice: price,
+      lastSoldAt: observedAt,
+    });
+  tree.marketQuotes.set(quotes);
+  tree.quoteObservedAt.set(new Map(itemIds.map((id) => [id, observedAt])));
+  tree.livePrices.set(new Map(Object.entries(prices).map(([id, price]) => [Number(id), price])));
+  tree.store.update((workspace) => ({ ...workspace, familySilver: '1000000000000' }));
+}
+
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
   it('loads quotes for every item reachable from the active recipe', async () => {
@@ -258,6 +297,226 @@ describe('Interactive recipe tree', () => {
     expect(buttons).not.toContain('Consultar cotação atual');
     fixture.destroy();
   });
+  it('debounces a local mastery override by exactly 250 milliseconds', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    vi.useFakeTimers();
+
+    tree.setMasteryOverride(1234);
+    expect(tree.masteryOverride()).toBeNull();
+    await vi.advanceTimersByTimeAsync(249);
+    expect(tree.masteryOverride()).toBeNull();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(tree.masteryOverride()).toBe(1234);
+
+    fixture.destroy();
+    vi.useRealTimers();
+  });
+
+  it('does not mutate the active character mastery when a local override changes', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.store.update((workspace) => ({
+      ...workspace,
+      activeCharacterId: 'one',
+      characters: [
+        characterSchema.parse({
+          id: 'one',
+          name: 'Aventureiro',
+          region: 'sa',
+          mastery: {
+            gathering: 0,
+            cooking: 0,
+            alchemy: 800,
+            processing: 0,
+            fishing: 0,
+            hunting: 0,
+            training: 0,
+            trading: 0,
+            farming: 0,
+            sailing: 0,
+            barter: 0,
+          },
+        }),
+      ],
+    }));
+    vi.useFakeTimers();
+
+    tree.setMasteryOverride(1500);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(tree.userMasteryForCurrentRecipe()).toBe(800);
+    expect(tree.store.data().characters[0].mastery.alchemy).toBe(800);
+    expect(tree.masteryOverride()).toBe(1500);
+    fixture.destroy();
+    vi.useRealTimers();
+  });
+
+  it('applies a complete optimized source map and keeps later checkbox edits', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    const observedAt = new Date().toISOString();
+    tree.store.update((workspace) => ({ ...workspace, familySilver: '1000000000' }));
+    const saltRecipe: CatalogRecipe = {
+      key: 'salt-production',
+      type: 'PROCESSING',
+      station: null,
+      inputs: [{ itemId: 8001, name: 'Matéria-prima', quantity: '1' }],
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+    };
+    tree.recipeGraph.set({
+      rootRecipe: recipe,
+      producerRecipes: [saltRecipe],
+      itemIds: [5301, 8001, 9001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    } satisfies RecipeProductionGraph);
+    tree.marketQuotes.set(
+      new Map([
+        [
+          5301,
+          {
+            itemId: 5301,
+            subId: 0,
+            name: item.name,
+            price: '1000',
+            stock: 1000,
+            totalTrades: '1',
+            minPrice: '900',
+            maxPrice: '1100',
+            lastSoldPrice: '1000',
+            lastSoldAt: observedAt,
+          },
+        ],
+        [
+          9001,
+          {
+            itemId: 9001,
+            subId: 0,
+            name: 'Sal',
+            price: '500',
+            stock: 1000,
+            totalTrades: '1',
+            minPrice: '490',
+            maxPrice: '510',
+            lastSoldPrice: '500',
+            lastSoldAt: observedAt,
+          },
+        ],
+        [
+          8001,
+          {
+            itemId: 8001,
+            subId: 0,
+            name: 'Matéria-prima',
+            price: '10',
+            stock: 1000,
+            totalTrades: '1',
+            minPrice: '9',
+            maxPrice: '11',
+            lastSoldPrice: '10',
+            lastSoldAt: observedAt,
+          },
+        ],
+      ]),
+    );
+    tree.quoteObservedAt.set(
+      new Map([
+        [5301, observedAt],
+        [9001, observedAt],
+        [8001, observedAt],
+      ]),
+    );
+    tree.setMethodTime('ALCHEMY', 10);
+    tree.setMethodTime('PROCESSING', 0.5);
+
+    tree.optimizeAcquisition();
+
+    expect(tree.currentProductionPlan()?.scenario).toBe('optimized');
+    expect(tree.currentProductionPlan()?.sourceChoices).toEqual({ 8001: 'buy', 9001: 'produce' });
+    expect(tree.materialSource(9001)).toBe('produce');
+    tree.toggleMaterialSource(9001);
+    expect(tree.materialSource(9001)).toBe('buy');
+    expect(tree.acquisitionStrategy()).toBe('custom');
+    fixture.destroy();
+  });
+
+  it('removes the global Personalizado button and zero-stock production message', async () => {
+    const mocks = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    const observedAt = new Date().toISOString();
+    configureProduction(tree, { 5301: '1000', 9001: '50' });
+    tree.setRootYield(1);
+    tree.setCraftCount(1);
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.marketQuotes.set(
+      new Map([
+        [
+          5301,
+          {
+            itemId: 5301,
+            subId: 0,
+            name: item.name,
+            price: '1000',
+            stock: 0,
+            totalTrades: '0',
+            minPrice: '900',
+            maxPrice: '1100',
+            lastSoldPrice: '1000',
+            lastSoldAt: null,
+          },
+        ],
+      ]),
+    );
+    tree.quoteObservedAt.set(new Map([[5301, observedAt]]));
+    fixture.detectChanges();
+
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')]
+      .map((button: HTMLButtonElement) => button.textContent ?? '')
+      .join(' ');
+    const text = fixture.nativeElement.textContent ?? '';
+
+    expect(buttons).not.toContain('Personalizado');
+    expect(text).not.toContain('ESTOQUE ZERADO NO MERCADO');
+    expect(tree.rootInsight()?.advice).not.toContain('única forma de obtenção');
+    tree.view.set('list');
+    fixture.detectChanges();
+    const sourceCheckbox = fixture.nativeElement.querySelector(
+      '.material-source-checkbox input[type="checkbox"]',
+    ) as HTMLInputElement;
+    expect(sourceCheckbox).not.toBeNull();
+    expect(sourceCheckbox.checked).toBe(false);
+    sourceCheckbox.click();
+    fixture.detectChanges();
+    expect(tree.materialSource(9001)).toBe('gather');
+    fixture.destroy();
+  });
+
+  it('does not show a complete hourly profit without required time or quote data', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    expect(tree.totalCraftTimeSeconds()).toBeNull();
+    expect(tree.profitPerHour()).toBeNull();
+    fixture.destroy();
+  });
+
   it('opens known production ingredients inline in steps without opening the details panel', async () => {
     const mocks = providers();
     mocks.knowledge.produces.mockReturnValue(
@@ -409,12 +668,13 @@ describe('Interactive recipe tree', () => {
     );
     const tree = fixture.componentInstance;
     tree.setRootYield(1);
-    tree.target.set(10);
+    tree.setCraftCount(10);
     fixture.detectChanges();
     expect(
       fixture.nativeElement.querySelector('.production-overview .cost-value')?.textContent,
-    ).toContain('Sem cotações');
-    tree.livePrices.set(new Map([[9001, '5']]));
+    ).toContain('Sem dados completos');
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    tree.setMethodTime('ALCHEMY', 1);
     fixture.detectChanges();
     expect(tree.advanced()).toBe(false);
     expect(
@@ -506,17 +766,20 @@ describe('Interactive recipe tree', () => {
       dependencies.list,
     );
     const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.setCraftCount(40);
     tree.saveShoppingList();
     expect(tree.store.data().personalPlans[0]?.materials[0]?.quantity).toBe(80);
     tree.setRootYield(1);
-    tree.target.set(500);
+    tree.setCraftCount(500);
     tree.saveShoppingList();
     expect(tree.store.data().personalPlans[0]).toMatchObject({
       sourceItemId: 5301,
       status: 'draft',
       materials: [{ itemId: 9001, quantity: 1000 }],
     });
-    tree.target.set(100);
+    tree.setCraftCount(100);
     tree.saveShoppingList();
     expect(tree.store.data().personalPlans).toHaveLength(1);
     expect(tree.store.data().personalPlans[0].materials[0].quantity).toBe(200);
@@ -627,6 +890,13 @@ describe('Interactive recipe tree', () => {
     expect(tree.root()?.yield).toBeNull();
     expect(tree.effectiveYield()).toBe(2.5);
     expect(tree.plan()?.value).not.toBeNull();
+    tree.recipeGraph.set({
+      rootRecipe: recipe,
+      producerRecipes: [],
+      itemIds: [5301, 9001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
     tree.setRootYield(2.5);
     tree.target.set(10);
     fixture.detectChanges();
@@ -693,19 +963,16 @@ describe('Interactive recipe tree', () => {
         dependencies.list,
       ),
       tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '100' });
     tree.setRootYield(2);
-    tree.target.set(100);
-    tree.setCraftTime(1.5);
+    tree.setCraftCount(50);
+    tree.setMethodTime('ALCHEMY', 1.5);
     fixture.detectChanges();
 
     expect(tree.operationsCount()).toBe(50);
     expect(tree.producedQuantity()).toBe(100);
     expect(tree.totalCraftTimeSeconds()).toBe(75);
     expect(tree.formattedCraftTime()).toBe('1m 15s');
-
-    // Simulate known prices: product = 1000, material (Sal, 2 per op * 50 ops = 100) = 100
-    tree.livePrices.update((p) => new Map(p).set(5301, '1000').set(9001, '100'));
-    fixture.detectChanges();
 
     expect(tree.productPrice()).toBe('1000');
     expect(tree.grossRevenue()).toBe('100000');
@@ -760,7 +1027,7 @@ describe('Interactive recipe tree', () => {
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
   });
 
-  it('supports acquisition strategies: buy_all, gather_all (100% profit), and custom toggles', async () => {
+  it('supports bulk material sources and per-item checkbox edits without free gathering assumptions', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -768,32 +1035,33 @@ describe('Interactive recipe tree', () => {
         dependencies.list,
       ),
       tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '500', 9001: '100' });
     tree.setRootYield(1);
-    tree.target.set(100);
-    tree.livePrices.update((p) => new Map(p).set(5301, '500').set(9001, '100'));
+    tree.setCraftCount(100);
+    tree.setMethodTime('ALCHEMY', 1);
     fixture.detectChanges();
 
     // Default: buy_all
     expect(tree.acquisitionStrategy()).toBe('buy_all');
     const baseCost = tree.effectiveMaterialCost();
-    expect(BigInt(baseCost)).toBeGreaterThan(0n);
+    expect(baseCost).not.toBeNull();
+    expect(BigInt(baseCost ?? '0')).toBeGreaterThan(0n);
     const buyProfit = tree.profit();
     expect(buyProfit).not.toBeNull();
 
-    // Gather all: cost = 0, 100% profit
+    // A gather choice needs an explicit yield and time before it can be ranked.
     tree.setAcquisitionStrategy('gather_all');
+    fixture.detectChanges();
+    expect(tree.materialSource(9001)).toBe('gather');
+    expect(tree.effectiveMaterialCost()).toBeNull();
+    expect(tree.profit()).toBeNull();
+    tree.setGatherEstimate(9001, 200, 10);
     fixture.detectChanges();
     expect(tree.effectiveMaterialCost()).toBe('0');
     expect(tree.profit()).toBe(tree.netRevenue());
-    expect(tree.profitMargin()).toBe(100.0);
+    expect(tree.profitMargin()).toBeNull();
 
-    // Custom toggle: toggling material
-    tree.setAcquisitionStrategy('custom');
-    expect(tree.materialSource(9001)).toBe('buy');
-    tree.toggleMaterialSource(9001);
-    expect(tree.materialSource(9001)).toBe('gather');
-    expect(tree.effectiveMaterialCost()).toBe('0');
-
+    // The per-item checkbox reverses the bulk selection.
     tree.toggleMaterialSource(9001);
     expect(tree.materialSource(9001)).toBe('buy');
     expect(tree.effectiveMaterialCost()).toBe(baseCost);
@@ -807,57 +1075,30 @@ describe('Interactive recipe tree', () => {
         dependencies.list,
       ),
       tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '200' });
     tree.setRootYield(1);
-    tree.target.set(10);
-
-    // Product price = 1000, material (Sal, 2 per craft) = 200 per unit -> craft cost is 400
-    // Craft cost (400) < Market price (1000) => recommendation 'craft'
-    tree.livePrices.update((p) => new Map(p).set(5301, '1000').set(9001, '200'));
-    tree.marketQuotes.update((q) =>
-      new Map(q).set(5301, {
-        itemId: 5301,
-        subId: 0,
-        name: 'Reagente',
-        price: '1000',
-        stock: 50,
-        totalTrades: '10000',
-        minPrice: '900',
-        maxPrice: '1100',
-        lastSoldPrice: '1000',
-        lastSoldAt: null,
-      }),
-    );
+    tree.setCraftCount(10);
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.marketQuotes.update((q) => new Map(q).set(5301, { ...q.get(5301)!, stock: 50 }));
     fixture.detectChanges();
 
     const craftInsight = tree.rootInsight();
     expect(craftInsight).not.toBeNull();
     expect(craftInsight?.recommendation).toBe('craft');
     expect(craftInsight?.advice).toContain('Margem estimada');
-    expect(craftInsight?.marketStock).toBe(50);
+    expect(craftInsight?.marketStock).toBeNull();
     expect(craftInsight?.totalTrades).toBe('10000');
 
     // When material price is very high: Sal = 800 -> craft cost 1600 > market price 1000
     tree.livePrices.update((p) => new Map(p).set(9001, '800'));
+    tree.marketQuotes.update((q) => new Map(q).set(9001, { ...q.get(9001)!, price: '800' }));
     fixture.detectChanges();
     const buyInsight = tree.rootInsight();
     expect(buyInsight?.recommendation).toBe('unprofitable');
     expect(buyInsight?.advice).toContain('preço de venda estimado');
 
     // Zero stock does not turn a sale analysis into a recommendation about obtaining the item.
-    tree.marketQuotes.update((q) =>
-      new Map(q).set(5301, {
-        itemId: 5301,
-        subId: 0,
-        name: 'Reagente',
-        price: '1000',
-        stock: 0,
-        totalTrades: '10000',
-        minPrice: '900',
-        maxPrice: '1100',
-        lastSoldPrice: '1000',
-        lastSoldAt: null,
-      }),
-    );
+    tree.marketQuotes.update((q) => new Map(q).set(5301, { ...q.get(5301)!, stock: 0 }));
     fixture.detectChanges();
     const unavailableInsight = tree.rootInsight();
     expect(unavailableInsight?.recommendation).not.toBe('scarce');

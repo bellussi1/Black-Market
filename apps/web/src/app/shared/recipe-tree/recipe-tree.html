@@ -50,7 +50,7 @@
             </span>
           </div>
 
-          @if (product.recipe) {
+          @if (canAdjustRootYield()) {
             <label class="root-yield" [class.hidden-simple]="!advanced()" i18n>
               Produção por operação (ajuste fino)<input
                 type="number"
@@ -71,6 +71,70 @@
             Rendimentos médios são estimativas, não uma garantia de produção. A estimativa considera
             a maestria da profissão.
           </p>
+          <div class="production-calibration">
+            <label class="calibration-control">
+              <span i18n>Maestria da profissão</span>
+              <input
+                type="number"
+                min="0"
+                max="5000"
+                step="1"
+                [ngModel]="displayedMastery()"
+                (ngModelChange)="setMasteryOverride($event)"
+              />
+            </label>
+            <small i18n
+              >O valor do perfil é usado como padrão. A alteração vale só nesta receita.</small
+            >
+          </div>
+          <details class="production-calibration">
+            <summary i18n>Calibrar tempo por método</summary>
+            @for (row of methodCalibrationRows(); track row.method) {
+              <label class="calibration-control">
+                <span>{{ row.label }}</span>
+                <input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  [ngModel]="row.seconds"
+                  (ngModelChange)="setMethodTime(row.method, $event)"
+                  [attr.aria-label]="'Segundos por operação: ' + row.label"
+                />
+                <span class="time-suffix">seg/operação</span>
+              </label>
+            }
+            <p class="help" i18n>Sem um tempo calibrado, o lucro por hora fica indisponível.</p>
+          </details>
+          <details class="production-calibration">
+            <summary i18n>Calibrar rendimento e tempo de coleta</summary>
+            @for (row of gatheringCalibrationRows(); track row.itemId) {
+              <div class="gather-calibration-row">
+                <span>{{ row.name }}</span>
+                <label>
+                  <span i18n>Unidades por coleta</span>
+                  <input
+                    type="number"
+                    min="0.001"
+                    step="0.001"
+                    [ngModel]="row.expectedYield"
+                    (ngModelChange)="setGatherEstimateInput(row.itemId, 'expectedYield', $event)"
+                  />
+                </label>
+                <label>
+                  <span i18n>Segundos por coleta</span>
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    [ngModel]="row.craftSeconds"
+                    (ngModelChange)="setGatherEstimateInput(row.itemId, 'craftSeconds', $event)"
+                  />
+                </label>
+              </div>
+            } @empty {
+              <p class="help" i18n>Não há materiais sem receita selecionada para calibrar.</p>
+            }
+          </details>
           <details class="stock-settings">
             <summary i18n>Quais estoques entram no cálculo?</summary>
             <div class="stock-selection">
@@ -204,17 +268,18 @@
         }
 
         <div class="strategy-selector-bar">
-          <span class="strategy-label" i18n>Estratégia de insumos:</span>
+          <span class="strategy-label" i18n>Escolha das fontes:</span>
           <div
             class="strategy-btn-group"
-            role="radiogroup"
-            aria-label="Estratégia de aquisição de insumos"
+            role="group"
+            aria-label="Ações de aquisição dos materiais"
           >
             <button
               type="button"
               class="btn-strategy"
               [class.active]="acquisitionStrategy() === 'buy_all'"
               (click)="setAcquisitionStrategy('buy_all')"
+              [disabled]="!recipeGraph()"
               i18n
             >
               Comprar todos
@@ -224,21 +289,26 @@
               class="btn-strategy"
               [class.active]="acquisitionStrategy() === 'gather_all'"
               (click)="setAcquisitionStrategy('gather_all')"
+              [disabled]="!recipeGraph()"
               i18n
             >
-              Coletar / Fazer tudo (100% Lucro)
+              Marcar tudo para fazer / coletar
             </button>
             <button
               type="button"
               class="btn-strategy"
-              [class.active]="acquisitionStrategy() === 'custom'"
-              (click)="setAcquisitionStrategy('custom')"
+              [class.active]="acquisitionStrategy() === 'optimized'"
+              (click)="optimizeAcquisition()"
+              [disabled]="treeMarketLoading() || !recipeGraph()"
               i18n
             >
-              Personalizado
+              Melhor combinação por lucro/hora
             </button>
           </div>
         </div>
+        @if (optimizationMessage()) {
+          <p class="notice economic-notice" role="status">{{ optimizationMessage() }}</p>
+        }
 
         @if (rootInsight(); as insight) {
           <div
@@ -302,24 +372,20 @@
           <div class="metric-card">
             <span class="metric-label" i18n>Custo dos materiais</span>
             <strong class="metric-value">{{
-              result.knownCostOnly &&
-              effectiveMaterialCost() === '0' &&
-              acquisitionStrategy() !== 'gather_all'
-                ? 'Sem cotações'
-                : silver(effectiveMaterialCost())
+              effectiveMaterialCost() !== null ? silver(effectiveMaterialCost()) : 'Sem dados'
             }}</strong>
             <small class="metric-sub">
               @if (acquisitionStrategy() === 'gather_all') {
-                <span class="strategy-subtag" i18n>100% Coletado (Custo zero)</span>
+                <span class="strategy-subtag" i18n>Fontes para fazer/coletar marcadas</span>
               } @else if (acquisitionStrategy() === 'custom') {
-                <span class="strategy-subtag" i18n>Personalizado (Misto)</span>
+                <span class="strategy-subtag" i18n>Fontes definidas pelos itens</span>
+              } @else if (acquisitionStrategy() === 'optimized') {
+                <span class="strategy-subtag" i18n>Combinação otimizada aplicada</span>
               } @else {
                 <span>{{
-                  result.warnings.length
+                  currentProductionPlan()?.issues?.length
                     ? 'Parcial · faltam dados'
-                    : result.knownCostOnly
-                      ? 'Parcial · faltam cotações'
-                      : 'Materiais comprados'
+                    : 'Materiais comprados'
                 }}</span>
               }
             </small>
@@ -339,6 +405,8 @@
                 <span class="margin-badge">
                   {{ profitMargin()! >= 0 ? '+' : '' }}{{ profitMargin()!.toFixed(1) }}% margem
                 </span>
+              } @else if (effectiveMaterialCost() === '0') {
+                <small i18n>Sem custo monetário nesta seleção</small>
               } @else {
                 <small i18n>Aguardando cotações e custo</small>
               }
@@ -362,25 +430,6 @@
             </strong>
             <small class="metric-sub" i18n>Receita líquida rateada</small>
           </div>
-
-          <div class="metric-card time-config-card">
-            <label class="time-config-label">
-              <span class="metric-label" i18n>Tempo / operação</span>
-              <div class="time-input-group">
-                <input
-                  type="number"
-                  min="0.1"
-                  max="60"
-                  step="0.1"
-                  class="time-input"
-                  [ngModel]="craftTimeSeconds()"
-                  (ngModelChange)="setCraftTime($event)"
-                />
-                <span class="time-suffix">seg</span>
-              </div>
-            </label>
-            <small class="metric-sub">Total: {{ formattedCraftTime() }}</small>
-          </div>
         </div>
 
         @if (advanced()) {
@@ -393,22 +442,17 @@
 
       <section class="production-overview" aria-label="Resumo da produção" i18n-aria-label>
         <div>
-          <span i18n>Custo estimado dos materiais</span>
+          <span i18n>Custo econômico dos materiais</span>
           <strong class="cost-value">{{
-            result.knownCostOnly && calculated.cost === '0'
-              ? 'Sem cotações'
-              : silver(calculated.cost)
+            effectiveMaterialCost() === null
+              ? 'Sem dados completos'
+              : silver(effectiveMaterialCost())
           }}</strong>
-          <small>{{
-            result.warnings.length
-              ? 'Parcial · faltam rendimentos'
-              : result.knownCostOnly
-                ? 'Parcial · faltam cotações'
-                : 'Referência de mercado'
-          }}</small>
+          <small i18n>Considera compra, estoque utilizado e fontes escolhidas</small>
         </div>
         <div>
-          <span i18n>Etapas planejadas</span><strong>{{ calculated.tasks.length }}</strong>
+          <span i18n>Etapas planejadas</span
+          ><strong>{{ currentProductionPlan()?.steps?.length ?? 0 }}</strong>
         </div>
         <div class="action-buttons-inline">
           <button type="button" class="btn" (click)="saveShoppingList()" i18n>
@@ -421,29 +465,25 @@
         <p role="status" class="plan-feedback">{{ planMessage() }}</p>
       }
       <details class="production-estimates">
-        <summary i18n>Custos e premissas · {{ calculated.tasks.length }} etapas planejadas</summary>
+        <summary i18n>
+          Custos e premissas · {{ currentProductionPlan()?.steps?.length ?? 0 }} etapas planejadas
+        </summary>
         <div class="production-totals" aria-label="Estimativas da produção" i18n-aria-label>
           <div>
-            <small i18n>Materiais faltantes · preço conhecido</small
+            <small i18n>Custo econômico</small
             ><strong>{{
-              result.knownCostOnly && calculated.cost === '0'
-                ? 'Sem cotações'
-                : silver(calculated.cost)
+              effectiveMaterialCost() === null ? 'Incompleto' : silver(effectiveMaterialCost())
             }}</strong
-            ><span>{{
-              result.knownCostOnly
-                ? 'Total parcial: faltam cotações'
-                : 'Referência para compra dos materiais'
-            }}</span>
+            ><span i18n>Mercado e estoque próprio valorizado</span>
           </div>
           <div>
-            <small i18n>Comprar o produto faltante pronto</small
-            ><strong>{{ buyCost() === null ? 'Sem cotação' : silver(buyCost()) }}</strong
-            ><span i18n>Preço de referência, sujeito a estoque</span>
+            <small i18n>Preço de venda por unidade</small
+            ><strong>{{ productPrice() === null ? 'Sem cotação' : silver(productPrice()) }}</strong
+            ><span i18n>Referência do Mercado Central</span>
           </div>
           <div>
-            <small i18n>Etapas planejadas</small><strong>{{ calculated.tasks.length }}</strong
-            ><span i18n>Métodos escolhidos da cadeia</span>
+            <small i18n>Tempo da cadeia</small><strong>{{ formattedCraftTime() }}</strong
+            ><span i18n>Requer calibração dos métodos utilizados</span>
           </div>
         </div>
         @if (advanced()) {
@@ -454,32 +494,41 @@
             custos reais de produção da base.
           </p>
         }
-        @if (result.unknownPrices.length) {
-          <p class="help">Sem preço: {{ result.unknownPrices.join(', ') }}.</p>
+        @if (currentProductionPlan(); as activePlan) {
+          @if (activePlan.issues.length) {
+            <p class="help" role="status">
+              Cálculo incompleto: {{ activePlan.issues.length }} dados ou limites precisam de
+              atenção.
+            </p>
+            <ul class="production-issues">
+              @for (issue of activePlan.issues; track $index) {
+                <li>{{ issue.message }}</li>
+              }
+            </ul>
+          }
         }
       </details>
     }
     <div class="exploration-layout" [class.has-details]="detailsOpen()">
       <div class="exploration-main">
-        @if (view() === 'list' && result.value) {
+        @if (view() === 'list' && recipeGraph()) {
           <section class="panel">
-            <h3 i18n>Um material, um total</h3>
+            <h3 i18n>Materiais e origem escolhida</h3>
             <div class="table-scroll">
               <table>
                 <thead>
                   <tr>
                     <th i18n>Material</th>
-                    <th i18n>Origem escolhida</th>
-                    <th i18n>Estratégia</th>
+                    <th i18n>Fazer / coletar</th>
                     <th i18n>Necessário</th>
                     <th i18n>Estoque usado</th>
-                    <th i18n>Produzir</th>
-                    <th i18n>Obter fora</th>
-                    <th i18n>Custo conhecido</th>
+                    <th i18n>Comprar</th>
+                    <th i18n>Produzir / coletar</th>
+                    <th i18n>Valor comprado</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (row of result.value.rows; track row.itemId ?? row.name) {
+                  @for (row of plannerMaterials(); track row.itemId) {
                     <tr>
                       <td>
                         <button
@@ -488,63 +537,46 @@
                           (click)="action({ path: allocationPath(row.itemId), action: 'source' })"
                         >
                           <app-item-icon
-                            [url]="catalog.resolveIconUrl(parts().get(row.itemId ?? 0) ?? {})"
-                            [name]="row.name"
+                            [url]="
+                              catalog.resolveIconUrl(parts().get(row.itemId) ?? { iconUrl: null })
+                            "
+                            [name]="productionMaterialName(row.itemId)"
                           />
-                          {{ row.name }}
+                          {{ productionMaterialName(row.itemId) }}
                         </button>
                       </td>
-                      <td>{{ methods(row.itemId) }}</td>
                       <td>
-                        <div class="material-strategy-cell">
-                          <button
-                            type="button"
-                            class="btn-toggle-source"
-                            [class.is-gather]="materialSource(row.itemId ?? 0) === 'gather'"
-                            (click)="toggleMaterialSource(row.itemId ?? 0)"
-                            [title]="
-                              materialSource(row.itemId ?? 0) === 'gather'
-                                ? 'Clique para marcar como comprado no mercado'
-                                : 'Clique para marcar como coletado / próprio (custo zero)'
+                        <label class="material-source-checkbox">
+                          <input
+                            type="checkbox"
+                            [checked]="materialSource(row.itemId) !== 'buy'"
+                            (change)="toggleMaterialSource(row.itemId)"
+                            [attr.aria-label]="
+                              (materialSource(row.itemId) === 'buy'
+                                ? 'Marcar fazer ou coletar: '
+                                : 'Marcar comprar: ') + productionMaterialName(row.itemId)
                             "
-                          >
-                            {{
-                              materialSource(row.itemId ?? 0) === 'gather'
-                                ? 'Coletar / Próprio'
-                                : 'Comprar mercado'
-                            }}
-                          </button>
-                          @if (findIntermediateInsight(row.itemId ?? 0); as subInsight) {
-                            <span
-                              class="sub-insight-chip"
-                              [class.chip-craft]="subInsight.recommendation === 'craft'"
-                              [class.chip-buy]="subInsight.recommendation === 'buy'"
-                              [title]="subInsight.advice"
-                            >
-                              {{
-                                subInsight.recommendation === 'craft'
-                                  ? 'Craft vantajoso'
-                                  : subInsight.recommendation === 'buy'
-                                    ? 'Melhor comprar'
-                                    : 'Análise indisponível'
-                              }}
-                            </span>
-                          }
-                        </div>
+                          />
+                          <span>{{ materialSourceLabel(row.itemId) }}</span>
+                        </label>
                       </td>
-                      <td>{{ row.required }}</td>
-                      <td>{{ row.fromStock }}</td>
-                      <td>{{ row.produced }}</td>
-                      <td>{{ row.purchased }}</td>
-                      <td>{{ silver(row.cost) }}</td>
+                      <td>{{ row.required.toLocaleString('pt-BR') }}</td>
+                      <td>{{ row.owned.toLocaleString('pt-BR') }}</td>
+                      <td>{{ row.bought.toLocaleString('pt-BR') }}</td>
+                      <td>{{ row.produced.toLocaleString('pt-BR') }}</td>
+                      <td>{{ materialPurchaseValue(row.itemId, row.bought) }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" i18n>Nenhum material disponível no cenário atual.</td>
                     </tr>
                   }
                 </tbody>
               </table>
             </div>
             <p class="help" i18n>
-              Receitas alternativas não são somadas. Sobras de produção são reutilizadas, sem contar
-              o mesmo estoque duas vezes.
+              A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque próprio
+              é descontado e valorizado conforme as opções do cálculo.
             </p>
           </section>
         } @else if (view() === 'list') {
@@ -675,7 +707,7 @@
                   <p class="notice" i18n>
                     Esta receita é um resultado secundário vinculado ao item #{{
                       current.recipe.byproductOfItemId
-                    }}. Confirme seu rendimento esperado; não presumimos uma produção garantida.
+                    }}. O rendimento não entra nas contas sem uma quantidade validada.
                   </p>
                 }
                 <label i18n
@@ -689,9 +721,15 @@
                       action({ path: current.path, action: 'yield', value: $event })
                     "
                 /></label>
-                <button type="button" (click)="action({ path: current.path, action: 'buy' })" i18n>
-                  Obter pronto em vez de produzir
-                </button>
+                @if (current.path !== 'root') {
+                  <button
+                    type="button"
+                    (click)="action({ path: current.path, action: 'buy' })"
+                    i18n
+                  >
+                    Comprar este material em vez de produzir
+                  </button>
+                }
                 @if (current.recipe.outputs.length > 1) {
                   <h4 i18n>Outros resultados desta receita</h4>
                   <ul>
@@ -905,20 +943,5 @@
         </aside>
       }
     </div>
-    @if (advanced()) {
-      <details class="panel">
-        <summary i18n>Venda e imposto · cenário</summary>
-        <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
-        @if (sale(); as estimate) {
-          <p>Receita líquida de venda do alvo: {{ silver(estimate.net) }}.</p>
-        } @else {
-          <p i18n>Consulte o preço do produto e confirme o plano para estimar a venda.</p>
-        }
-        <p class="help" i18n>
-          Esta estimativa não é lucro líquido: estoque próprio, tempo, energia e ferramentas têm
-          custos não contabilizados.
-        </p>
-      </details>
-    }
   }
 }

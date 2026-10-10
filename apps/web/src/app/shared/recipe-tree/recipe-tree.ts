@@ -16,8 +16,11 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   availableInventory,
-  calculateMarket,
+  planProduction,
   type lifeSkills,
+  type ProductionChoice,
+  type ProductionEstimate,
+  type ProductionPlan,
   personalPlanSchema,
   type TaxOptions,
 } from '@bdo/calculators';
@@ -63,13 +66,15 @@ import {
   stockLocationKey,
   withRecipe,
 } from './recipe-tree-model';
+import { fixedRecipeYield } from './recipe-fixed-yields';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 import {
   resolveRecipeProductionGraph,
   type RecipeProductionGraph,
 } from './recipe-production-graph';
+import { buildRecipeProductionInput } from './recipe-production-adapter';
 
-export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom';
+export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
 
 export interface MakeVsBuyTradeInsight {
   itemId: number;
@@ -95,7 +100,7 @@ export interface MakeVsBuyTradeInsight {
 export class RecipeTree {
   readonly planMessage = signal('');
   saveShoppingList() {
-    const result = this.plan()?.value,
+    const result = this.currentProductionPlan(),
       root = this.root();
     if (!result || !root) return;
     const state = this.store.data();
@@ -112,12 +117,12 @@ export class RecipeTree {
       createdAt: new Date().toISOString(),
       sourceItemId: root.part.itemId,
       excludedStockLocations: this.excludedLocations(),
-      materials: result.rows
-        .filter((row) => row.purchased + row.fromStock > 0)
+      materials: result.materials
+        .filter((row) => row.bought > 0)
         .map((row) => ({
           itemId: row.itemId,
-          name: row.name,
-          quantity: row.purchased + row.fromStock,
+          name: this.productionMaterialName(row.itemId),
+          quantity: Math.ceil(row.bought),
         })),
     });
     if (!parsed.success) {
@@ -162,15 +167,27 @@ export class RecipeTree {
   readonly target = signal(100);
   readonly craftCount = signal(100);
   readonly acquisitionStrategy = signal<AcquisitionStrategy>('buy_all');
-  readonly customMaterialSource = signal(new Map<number, 'buy' | 'gather'>());
+  readonly optimizationMessage = signal('');
+  readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
+  readonly quoteObservedAt = signal(new Map<number, string>());
+  readonly methodTimes = signal(new Map<string, number>());
+  readonly gatherEstimates = signal(new Map<number, ProductionEstimate>());
+  readonly gatherEstimateDrafts = signal(
+    new Map<number, { expectedYield: number | null; craftSeconds: number | null }>(),
+  );
+  readonly masteryOverride = signal<number | null>(null);
+  readonly masteryInput = signal<number | null>(null);
+  private readonly masteryChanges$ = new Subject<number | null>();
+  readonly displayedMastery = computed(
+    () => this.masteryInput() ?? this.userMasteryForCurrentRecipe(),
+  );
   private readonly autoMarket$ = new Subject<void>();
-  readonly craftTimeSeconds = signal(1.0);
   readonly treeMarketLoading = signal(false);
   readonly treeMarketMessage = signal('');
   private quoteSubscription?: Subscription;
   private quoteRefreshTimer?: ReturnType<typeof setInterval>;
-  private recipeGraph: RecipeProductionGraph | null = null;
+  readonly recipeGraph = signal<RecipeProductionGraph | null>(null);
   private recipeGraphIdentity = '';
   private quoteRevision = 0;
 
@@ -179,26 +196,56 @@ export class RecipeTree {
     if (!root?.recipe) return 0;
     const skill = lifeSkillForRecipe(root.recipe.type);
     if (!skill) return 0;
-    const characters = this.store.data().characters;
-    if (!characters.length) return 0;
-    const activeChar = characters[0];
+    const activeChar = this.store.activeCharacter();
+    if (!activeChar) return 0;
     const val = activeChar?.mastery?.[skill as (typeof lifeSkills)[number]];
     return typeof val === 'number' && Number.isFinite(val) ? val : 0;
+  });
+
+  readonly canAdjustRootYield = computed(() => {
+    const root = this.root();
+    if (!root?.recipe) return false;
+    return (
+      fixedRecipeYield(root.recipe, root.part.itemId) === null &&
+      !(
+        Number(root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity) >
+        0
+      )
+    );
   });
 
   readonly effectiveYield = computed(() => {
     const root = this.root();
     if (!root) return 1;
+    const fixed = root.recipe
+      ? (fixedRecipeYield(root.recipe, root.part.itemId) ??
+        (Number(
+          root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
+        ) ||
+          null))
+      : null;
+    if (fixed !== null) return fixed;
     if (root.yield !== null && root.yield > 0) return root.yield;
     if (!root.recipe) return 1;
-    return resolveDefaultYield(root.recipe, root.part.itemId, this.userMasteryForCurrentRecipe());
+    return resolveDefaultYield(
+      root.recipe,
+      root.part.itemId,
+      this.masteryOverride() ?? this.userMasteryForCurrentRecipe(),
+    );
   });
 
   readonly yieldDescription = computed(() => {
     const root = this.root();
     if (!root?.recipe) return 'Item sem receita direta';
-    if (root.yield !== null && root.yield > 0) return `Personalizado: ${root.yield} un / receita`;
-    const mastery = this.userMasteryForCurrentRecipe();
+    const fixed =
+      fixedRecipeYield(root.recipe, root.part.itemId) ??
+      (Number(root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity) ||
+        null);
+    if (fixed !== null) return `Rendimento fixo: ${fixed} un / receita`;
+    if (root.yield !== null && root.yield > 0) {
+      return `Rendimento ajustado: ${root.yield} un / receita`;
+    }
+    const mastery = this.masteryOverride() ?? this.userMasteryForCurrentRecipe();
     const skill = lifeSkillForRecipe(root.recipe.type);
     if (mastery > 0 && skill) {
       return `Média estimada: ${this.effectiveYield().toFixed(2)} un / receita (${skill} maestria: ${mastery})`;
@@ -214,25 +261,181 @@ export class RecipeTree {
   }
 
   setAcquisitionStrategy(strategy: AcquisitionStrategy) {
+    if (strategy === 'optimized') {
+      this.optimizeAcquisition();
+      return;
+    }
+    const sources = new Map<number, ProductionChoice>();
+    const ids = this.materialItemIds();
+    for (const itemId of ids)
+      sources.set(itemId, strategy === 'buy_all' ? 'buy' : this.makeChoice(itemId));
+    this.customMaterialSource.set(sources);
     this.acquisitionStrategy.set(strategy);
+    this.optimizationMessage.set('');
   }
 
   toggleMaterialSource(itemId: number) {
-    const current = this.customMaterialSource().get(itemId);
-    const effectiveCurrent =
-      current ?? (this.acquisitionStrategy() === 'gather_all' ? 'gather' : 'buy');
-    const nextChoice = effectiveCurrent === 'buy' ? 'gather' : 'buy';
+    const effectiveCurrent = this.materialSource(itemId);
+    const nextChoice = effectiveCurrent === 'buy' ? this.makeChoice(itemId) : 'buy';
     const updated = new Map(this.customMaterialSource());
     updated.set(itemId, nextChoice);
     this.customMaterialSource.set(updated);
     this.acquisitionStrategy.set('custom');
+    this.optimizationMessage.set('');
   }
 
-  materialSource(itemId: number): 'buy' | 'gather' {
-    const strategy = this.acquisitionStrategy();
-    if (strategy === 'gather_all') return 'gather';
-    if (strategy === 'buy_all') return 'buy';
+  materialSource(itemId: number): ProductionChoice {
     return this.customMaterialSource().get(itemId) ?? 'buy';
+  }
+
+  private materialItemIds(): number[] {
+    const graph = this.recipeGraph();
+    const rootItemId = this.root()?.part.itemId;
+    if (graph) return graph.itemIds.filter((itemId) => itemId !== rootItemId);
+    const ids = new Set<number>();
+    const visit = (node: RecipeNode) => {
+      node.children.forEach((child) => {
+        ids.add(child.part.itemId);
+        visit(child);
+      });
+    };
+    const root = this.root();
+    if (root) visit(root);
+    return [...ids].sort((left, right) => left - right);
+  }
+
+  private makeChoice(itemId: number): ProductionChoice {
+    const producer = this.recipeGraph()?.producerRecipes.some((recipe) =>
+      recipe.outputs.some((output) => output.itemId === itemId),
+    );
+    if (producer) return 'produce';
+    return 'gather';
+  }
+
+  productionMaterialName(itemId: number): string {
+    const existing = this.parts().get(itemId)?.name;
+    if (existing) return existing;
+    const graph = this.recipeGraph();
+    for (const recipe of [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])]) {
+      const part = recipe?.inputs.find((input) => input.itemId === itemId);
+      if (part) return part.name;
+    }
+    return `Item ${itemId}`;
+  }
+
+  materialSourceLabel(itemId: number): string {
+    const choice = this.materialSource(itemId);
+    return choice === 'buy' ? 'Comprar' : choice === 'gather' ? 'Coletar' : 'Fazer';
+  }
+
+  materialPurchaseValue(itemId: number, quantity: number): string {
+    if (quantity <= 0) return '—';
+    const price = this.price(itemId);
+    if (price === null || !/^\d{1,24}$/.test(price)) return 'Sem cotação';
+    const amount = BigInt(Math.ceil(quantity));
+    return this.silver(String(BigInt(price) * amount));
+  }
+
+  optimizeAcquisition(): void {
+    const result = this.productionResult();
+    const best = result?.ranked.find((plan) => plan.scenario === 'optimized');
+    if (!best || best.issues.length) {
+      const pending = result?.incomplete.find((plan) => plan.scenario === 'optimized');
+      const limitReached = pending?.issues.some((issue) => issue.code === 'optimization-limit');
+      this.optimizationMessage.set(
+        limitReached
+          ? 'A busca atingiu o limite de segurança. Nenhuma combinação parcial foi aplicada.'
+          : 'Complete as cotações e os tempos dos métodos para calcular uma combinação segura.',
+      );
+      return;
+    }
+    const sources = new Map<number, ProductionChoice>();
+    for (const itemId of this.materialItemIds())
+      sources.set(itemId, best.sourceChoices?.[itemId] ?? 'buy');
+    this.customMaterialSource.set(sources);
+    this.acquisitionStrategy.set('optimized');
+    this.optimizationMessage.set('Combinação completa aplicada às escolhas dos materiais.');
+  }
+
+  setMasteryOverride(value: number | string | null): void {
+    if (value === null || value === '') {
+      this.masteryInput.set(null);
+      this.masteryChanges$.next(null);
+      return;
+    }
+    const parsed = Number(value);
+    if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 5000) return;
+    this.masteryInput.set(parsed);
+    this.masteryChanges$.next(parsed);
+  }
+
+  setMethodTime(method: string, value: number | string | null): void {
+    const seconds = value === null || value === '' ? null : Number(value);
+    if (seconds !== null && (!Number.isFinite(seconds) || seconds <= 0 || seconds > 1_000_000))
+      return;
+    if (this.sessionKey) this.sessions.setMethodTime(this.sessionKey, method, seconds);
+    const times = new Map(this.methodTimes());
+    if (seconds === null) times.delete(method);
+    else times.set(method, seconds);
+    this.methodTimes.set(times);
+    this.optimizationMessage.set('');
+  }
+
+  setGatherEstimate(
+    itemId: number,
+    expectedYield: number | null,
+    craftSeconds: number | null,
+  ): void {
+    if (this.sessionKey)
+      this.sessions.setGatherEstimate(this.sessionKey, itemId, expectedYield, craftSeconds);
+    const estimates = new Map(this.gatherEstimates());
+    if (expectedYield === null && craftSeconds === null) estimates.delete(itemId);
+    else if (
+      expectedYield !== null &&
+      craftSeconds !== null &&
+      Number.isFinite(expectedYield) &&
+      expectedYield > 0 &&
+      Number.isFinite(craftSeconds) &&
+      craftSeconds > 0
+    )
+      estimates.set(itemId, { expectedYield, craftSeconds, source: 'calibrated' });
+    else return;
+    this.gatherEstimates.set(estimates);
+    this.gatherEstimateDrafts.update((drafts) => {
+      const next = new Map(drafts);
+      if (expectedYield === null && craftSeconds === null) next.delete(itemId);
+      else next.set(itemId, { expectedYield, craftSeconds });
+      return next;
+    });
+    this.optimizationMessage.set('');
+  }
+
+  setGatherEstimateInput(
+    itemId: number,
+    field: 'expectedYield' | 'craftSeconds',
+    value: number | string | null,
+  ): void {
+    const parsed = value === null || value === '' ? null : Number(value);
+    if (parsed !== null && (!Number.isFinite(parsed) || parsed <= 0)) return;
+    const current = this.gatherEstimateDrafts().get(itemId) ?? {
+      expectedYield: this.gatherEstimates().get(itemId)?.expectedYield ?? null,
+      craftSeconds: this.gatherEstimates().get(itemId)?.craftSeconds ?? null,
+    };
+    const next = { ...current, [field]: parsed };
+    this.gatherEstimateDrafts.update((drafts) => new Map(drafts).set(itemId, next));
+    if (next.expectedYield === null && next.craftSeconds === null)
+      this.setGatherEstimate(itemId, null, null);
+    else if (next.expectedYield !== null && next.craftSeconds !== null)
+      this.setGatherEstimate(itemId, next.expectedYield, next.craftSeconds);
+    else {
+      this.gatherEstimates.update((estimates) => {
+        const updated = new Map(estimates);
+        updated.delete(itemId);
+        return updated;
+      });
+      if (this.sessionKey) this.sessions.setGatherEstimate(this.sessionKey, itemId, null, null);
+      this.optimizationMessage.set('');
+    }
   }
 
   readonly ingredientPreview = computed(() => {
@@ -319,6 +522,88 @@ export class RecipeTree {
     if (this.root()) visit(this.root()!);
     return parts;
   });
+  readonly requestedOperations = computed(() =>
+    Math.max(1, Math.min(1_000_000, Math.floor(this.craftCount() || 1))),
+  );
+  readonly productionResult = computed(() => {
+    const graph = this.recipeGraph();
+    if (!graph) return null;
+    const root = this.root();
+    const yieldOverrides = new Map<number, number>();
+    if (root?.yield !== null && root?.yield !== undefined && root.yield > 0)
+      yieldOverrides.set(root.part.itemId, root.yield);
+    return planProduction(
+      buildRecipeProductionInput(
+        graph,
+        this.requestedOperations(),
+        this.store.data(),
+        this.marketQuotes(),
+        this.methodTimes(),
+        this.gatherEstimates(),
+        this.customMaterialSource(),
+        new Date(),
+        {
+          quoteObservedAt: this.quoteObservedAt(),
+          masteryOverride: this.masteryOverride(),
+          yieldOverrides,
+          excludedLocations: this.excludedLocations(),
+        },
+      ),
+    );
+  });
+  readonly currentProductionPlan = computed<ProductionPlan | null>(() => {
+    const result = this.productionResult();
+    if (!result) return null;
+    const scenario =
+      this.acquisitionStrategy() === 'buy_all'
+        ? 'buy-all'
+        : this.acquisitionStrategy() === 'optimized'
+          ? 'optimized'
+          : 'custom';
+    return (
+      result.ranked.find((plan) => plan.scenario === scenario) ??
+      result.incomplete.find((plan) => plan.scenario === scenario) ??
+      null
+    );
+  });
+  readonly methodCalibrationRows = computed(() => {
+    const graph = this.recipeGraph();
+    if (!graph) return [];
+    const recipes = [graph.rootRecipe, ...graph.producerRecipes];
+    const methods = [...new Set(recipes.map((recipe) => recipe.type))].sort();
+    return methods.map((method) => ({
+      method,
+      label: this.typeLabel(method),
+      seconds: this.methodTimes().get(method) ?? null,
+    }));
+  });
+  readonly gatheringCalibrationRows = computed(() => {
+    const graph = this.recipeGraph();
+    if (!graph) return [];
+    const rootId = graph.rootRecipe.outputs[0]?.itemId;
+    const producedIds = new Set(
+      [graph.rootRecipe, ...graph.producerRecipes].flatMap((recipe) =>
+        recipe.outputs.map((output) => output.itemId),
+      ),
+    );
+    const parts = new Map<number, CatalogRecipePart>();
+    for (const recipe of [graph.rootRecipe, ...graph.producerRecipes])
+      for (const part of recipe.inputs) parts.set(part.itemId, part);
+    return graph.itemIds
+      .filter((itemId) => itemId !== rootId && !producedIds.has(itemId))
+      .map((itemId) => {
+        const part = parts.get(itemId);
+        const estimate = this.gatherEstimates().get(itemId);
+        const draft = this.gatherEstimateDrafts().get(itemId);
+        return {
+          itemId,
+          name: part?.name ?? `Item ${itemId}`,
+          expectedYield: draft?.expectedYield ?? estimate?.expectedYield ?? null,
+          craftSeconds: draft?.craftSeconds ?? estimate?.craftSeconds ?? null,
+        };
+      });
+  });
+  readonly plannerMaterials = computed(() => this.currentProductionPlan()?.materials ?? []);
   readonly points = computed(() => {
     const nodes = this.contextSources().filter((n) => n.position?.length === 3);
     if (!nodes.length) return [];
@@ -336,37 +621,8 @@ export class RecipeTree {
       y: (200 - spanZ * scale) / 2 + (node.position![2] - minZ) * scale,
     }));
   });
-  readonly buyCost = computed(() => {
-    const root = this.root(),
-      plan = this.plan()?.value;
-    if (!root || !plan) return null;
-    const price = this.price(root.part.itemId),
-      missing = plan.allocations[0]?.missing ?? this.target();
-    return price === null ? null : String(BigInt(price) * BigInt(missing));
-  });
-  readonly sale = computed(() => {
-    const root = this.root(),
-      plan = this.plan(),
-      price = root ? this.price(root.part.itemId) : null;
-    if (!plan?.value || plan.warnings.length || price === null) return null;
-    try {
-      return calculateMarket({
-        ...this.store.data().taxOptions,
-        price,
-        quantity: this.target(),
-        cost: plan.value.cost,
-      });
-    } catch {
-      return null;
-    }
-  });
   readonly operationsCount = computed(() => {
-    const target = this.target();
-    const y = this.effectiveYield();
-    if (y <= 0 || !Number.isFinite(target) || target <= 0) {
-      return Math.max(1, this.craftCount() || 1);
-    }
-    return Math.max(1, Math.ceil(target / y));
+    return this.currentProductionPlan()?.crafts ?? this.requestedOperations();
   });
 
   readonly producedQuantity = computed(() => {
@@ -380,26 +636,7 @@ export class RecipeTree {
   });
 
   readonly effectiveMaterialCost = computed(() => {
-    const strategy = this.acquisitionStrategy();
-    if (strategy === 'gather_all') return '0';
-
-    const plan = this.plan()?.value;
-    if (!plan) return '0';
-
-    if (strategy === 'buy_all') return plan.cost;
-
-    // Custom strategy: only items designated as 'buy' cost silver
-    const custom = this.customMaterialSource();
-    let totalCost = 0n;
-    for (const row of plan.rows) {
-      if (!row.itemId || row.purchased <= 0) continue;
-      const choice = custom.get(row.itemId) ?? 'buy';
-      if (choice === 'buy') {
-        const price = this.price(row.itemId) ?? '0';
-        totalCost += BigInt(price) * BigInt(row.purchased);
-      }
-    }
-    return String(totalCost);
+    return this.currentProductionPlan()?.economicCost ?? null;
   });
 
   readonly productPrice = computed(() => {
@@ -408,58 +645,15 @@ export class RecipeTree {
   });
 
   readonly grossRevenue = computed(() => {
-    const price = this.productPrice();
-    const produced = this.producedQuantity();
-    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
-    try {
-      return String(BigInt(price) * BigInt(Math.floor(produced)));
-    } catch {
-      return null;
-    }
+    return this.currentProductionPlan()?.grossRevenue ?? null;
   });
 
   readonly netRevenue = computed(() => {
-    const price = this.productPrice();
-    const produced = this.producedQuantity();
-    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
-    try {
-      const market = calculateMarket({
-        ...this.store.data().taxOptions,
-        price,
-        quantity: Math.floor(produced),
-        cost: this.effectiveMaterialCost(),
-      });
-      return market.net;
-    } catch {
-      return null;
-    }
-  });
-
-  readonly marketSale = computed(() => {
-    const price = this.productPrice();
-    const produced = this.producedQuantity();
-    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
-    try {
-      return calculateMarket({
-        ...this.store.data().taxOptions,
-        price,
-        quantity: Math.floor(produced),
-        cost: this.effectiveMaterialCost(),
-      });
-    } catch {
-      return null;
-    }
+    return this.currentProductionPlan()?.netRevenue ?? null;
   });
 
   readonly profit = computed(() => {
-    const net = this.netRevenue();
-    if (net === null) return null;
-    const cost = this.effectiveMaterialCost();
-    try {
-      return String(BigInt(net) - BigInt(cost));
-    } catch {
-      return null;
-    }
+    return this.currentProductionPlan()?.profit ?? null;
   });
 
   readonly isPositiveProfit = computed(() => {
@@ -474,12 +668,10 @@ export class RecipeTree {
 
   readonly profitMargin = computed(() => {
     const p = this.profit();
-    if (p === null) return null;
-    if (this.acquisitionStrategy() === 'gather_all') return 100.0;
-    const cost = this.effectiveMaterialCost();
-    if (cost === '0') return 100.0;
+    const economicCost = this.effectiveMaterialCost();
+    if (p === null || economicCost === null || economicCost === '0') return null;
     try {
-      const costNum = Number(cost);
+      const costNum = Number(economicCost);
       const profitNum = Number(p);
       if (costNum <= 0 || !Number.isFinite(profitNum)) return 100.0;
       return (profitNum / costNum) * 100;
@@ -489,14 +681,12 @@ export class RecipeTree {
   });
 
   readonly totalCraftTimeSeconds = computed(() => {
-    const ops = this.operationsCount();
-    const time = Math.max(0.1, Number(this.craftTimeSeconds()) || 1.0);
-    return ops * time;
+    return this.currentProductionPlan()?.seconds ?? null;
   });
 
   readonly formattedCraftTime = computed(() => {
     const seconds = this.totalCraftTimeSeconds();
-    if (!Number.isFinite(seconds) || seconds <= 0) return '0s';
+    if (seconds === null || !Number.isFinite(seconds) || seconds <= 0) return '—';
     if (seconds < 60) return `${seconds.toFixed(1)}s`;
     const mins = Math.floor(seconds / 60);
     const remainingSecs = Math.round(seconds % 60);
@@ -509,22 +699,13 @@ export class RecipeTree {
   });
 
   readonly profitPerHour = computed(() => {
-    const p = this.profit();
-    const time = this.totalCraftTimeSeconds();
-    if (p === null || time <= 0) return null;
-    try {
-      const pBig = BigInt(p);
-      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
-      return String((pBig * 3_600_000n) / timeMs);
-    } catch {
-      return null;
-    }
+    return this.currentProductionPlan()?.profitPerHour ?? null;
   });
 
   readonly revenuePerHour = computed(() => {
     const net = this.netRevenue();
     const time = this.totalCraftTimeSeconds();
-    if (net === null || time <= 0) return null;
+    if (net === null || time === null || time <= 0) return null;
     try {
       const netBig = BigInt(net);
       const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
@@ -544,28 +725,41 @@ export class RecipeTree {
     const matCost = this.effectiveMaterialCost();
 
     if (!produced || produced <= 0) return null;
-
-    const craftCostUnitBig = BigInt(matCost) / BigInt(Math.max(1, Math.floor(produced)));
-    const craftCostUnit = String(craftCostUnitBig);
-
     if (marketPrice === null) {
       return {
         itemId,
         name: root.part.name,
         isRoot: true,
         marketPrice: null,
-        craftCostUnit,
+        craftCostUnit:
+          matCost === null ? null : String(BigInt(matCost) / BigInt(Math.floor(produced))),
         recommendation: 'unknown',
         savingsUnit: null,
         savingsPercent: null,
-        marketStock: quote?.stock ?? null,
+        marketStock: null,
         totalTrades: quote?.totalTrades ?? null,
         advice: 'Sem cotação de venda disponível para estimar o faturamento e a margem.',
       };
     }
+    if (matCost === null) {
+      return {
+        itemId,
+        name: root.part.name,
+        isRoot: true,
+        marketPrice,
+        craftCostUnit: null,
+        recommendation: 'unknown',
+        savingsUnit: null,
+        savingsPercent: null,
+        marketStock: null,
+        totalTrades: quote?.totalTrades ?? null,
+        advice: 'Informe os tempos dos métodos e os dados de venda para calcular a rentabilidade.',
+      };
+    }
+    const craftCostUnitBig = BigInt(matCost) / BigInt(Math.max(1, Math.floor(produced)));
+    const craftCostUnit = String(craftCostUnitBig);
 
     const marketPriceBig = BigInt(marketPrice);
-    const stock = quote?.stock ?? null;
     const totalTrades = quote?.totalTrades ?? null;
 
     if (craftCostUnitBig < marketPriceBig) {
@@ -580,7 +774,7 @@ export class RecipeTree {
         recommendation: 'craft',
         savingsUnit: String(diff),
         savingsPercent: pct,
-        marketStock: stock,
+        marketStock: null,
         totalTrades,
         advice: `Margem estimada de ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade para venda no Mercado Central.`,
       };
@@ -596,7 +790,7 @@ export class RecipeTree {
         recommendation: 'unprofitable',
         savingsUnit: String(diff),
         savingsPercent: pct,
-        marketStock: stock,
+        marketStock: null,
         totalTrades,
         advice: `Custo de produção acima do preço de venda estimado em ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade.`,
       };
@@ -681,11 +875,6 @@ export class RecipeTree {
     return this.intermediateInsights().find((i) => i.itemId === itemId) ?? null;
   }
 
-  setCraftTime(value: number | null) {
-    const num = Number(value);
-    this.craftTimeSeconds.set(Number.isFinite(num) && num > 0 ? num : 1.0);
-  }
-
   consultAllTreePrices() {
     if (this.treeMarketLoading() && this.quoteSubscription && !this.quoteSubscription.closed)
       return;
@@ -704,10 +893,11 @@ export class RecipeTree {
       root.recipe?.key ?? 'external',
       ...selectedMethodIdentity,
     ].join('/');
-    if (graphIdentity !== this.recipeGraphIdentity) this.recipeGraph = null;
+    if (graphIdentity !== this.recipeGraphIdentity) this.recipeGraph.set(null);
     this.recipeGraphIdentity = graphIdentity;
-    const graph$: Observable<RecipeProductionGraph | null> = this.recipeGraph
-      ? of(this.recipeGraph)
+    const cachedGraph = this.recipeGraph();
+    const graph$: Observable<RecipeProductionGraph | null> = cachedGraph
+      ? of(cachedGraph)
       : root.recipe
         ? resolveRecipeProductionGraph(
             root.recipe,
@@ -727,7 +917,15 @@ export class RecipeTree {
           if (graph) {
             if (graph.issues.some((issue) => issue.code === 'dataset-mismatch'))
               throw new Error('O catálogo mudou durante a consulta da receita.');
-            this.recipeGraph = graph;
+            this.recipeGraph.set(graph);
+            this.quoteObservedAt.update((current) => {
+              const next = new Map(current);
+              for (const itemId of graph.itemIds) {
+                const entry = this.marketCache.getCachedQuoteEntry(itemId, region);
+                if (entry) next.set(itemId, new Date(entry.fetchedAt).toISOString());
+              }
+              return next;
+            });
             return this.marketCache.resolveQuotesBatch(graph.itemIds, region);
           }
           const itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
@@ -742,14 +940,18 @@ export class RecipeTree {
           if (revision !== this.quoteRevision) return;
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
+          const observed = new Map(this.quoteObservedAt());
           for (const [id, quote] of quotesMap) {
             if (quote?.price !== null && quote?.price !== undefined) {
               newPrices.set(id, quote.price);
               newQuotes.set(id, quote);
+              const entry = this.marketCache.getCachedQuoteEntry(id, region);
+              if (entry) observed.set(id, new Date(entry.fetchedAt).toISOString());
             }
           }
           this.livePrices.set(newPrices);
           this.marketQuotes.set(newQuotes);
+          this.quoteObservedAt.set(observed);
         },
         error: () => {
           if (revision !== this.quoteRevision) return;
@@ -793,7 +995,7 @@ export class RecipeTree {
     this.quoteSubscription?.unsubscribe();
     this.quoteSubscription = undefined;
     this.quoteRevision++;
-    this.recipeGraph = null;
+    this.recipeGraph.set(null);
     this.recipeGraphIdentity = '';
     this.treeMarketLoading.set(false);
   }
@@ -806,6 +1008,9 @@ export class RecipeTree {
     this.autoMarket$.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.consultAllTreePrices();
     });
+    this.masteryChanges$
+      .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.masteryOverride.set(value));
 
     effect(() => {
       const recipe = this.recipe(),
@@ -835,12 +1040,19 @@ export class RecipeTree {
       if (identity !== this.selectionIdentity) {
         this.livePrices.set(new Map());
         this.marketQuotes.set(new Map());
+        this.quoteObservedAt.set(new Map());
         this.customMaterialSource.set(new Map());
         this.acquisitionStrategy.set('buy_all');
+        this.optimizationMessage.set('');
         this.origins.set(new Map());
         this.selectionIdentity = identity;
       }
-      this.sessionKey = identity + '/' + (recipe?.key ?? 'external');
+      const nextSessionKey = identity + '/' + (recipe?.key ?? 'external');
+      if (nextSessionKey !== this.sessionKey) {
+        this.masteryInput.set(null);
+        this.masteryOverride.set(null);
+      }
+      this.sessionKey = nextSessionKey;
       this.selectedPath.set('root');
       this.selectedLocation.set(null);
       const output = item
@@ -860,6 +1072,37 @@ export class RecipeTree {
         this.target.set(session.target);
         this.view.set(session.view);
         this.excludedLocations.set(session.excludedLocations);
+        this.methodTimes.set(new Map(Object.entries(session.methodTimes ?? {})));
+        const gatherEstimates = new Map(
+          Object.entries(session.gatherEstimates ?? {}).map(([id, estimate]) => [
+            Number(id),
+            estimate,
+          ]),
+        );
+        this.gatherEstimates.set(gatherEstimates);
+        this.gatherEstimateDrafts.set(
+          new Map(
+            [...gatherEstimates].map(([id, estimate]) => [
+              id,
+              {
+                expectedYield: estimate.expectedYield ?? null,
+                craftSeconds: estimate.craftSeconds ?? null,
+              },
+            ]),
+          ),
+        );
+        this.customMaterialSource.set(
+          new Map(
+            Object.entries(session.sourceOverrides ?? {}).map(([id, choice]) => [
+              Number(id),
+              choice,
+            ]),
+          ),
+        );
+        this.masteryInput.set(session.masteryOverride ?? null);
+        this.masteryOverride.set(session.masteryOverride ?? null);
+        if (session.sourceOverrides && Object.keys(session.sourceOverrides).length)
+          this.acquisitionStrategy.set('custom');
       }
       this.autoMarket$.next();
     });
@@ -867,9 +1110,22 @@ export class RecipeTree {
       const root = this.root(),
         target = this.target(),
         view = this.view(),
-        excludedLocations = this.excludedLocations();
+        excludedLocations = this.excludedLocations(),
+        methodTimes = this.methodTimes(),
+        gatherEstimates = this.gatherEstimates(),
+        sourceOverrides = this.customMaterialSource(),
+        masteryOverride = this.masteryOverride();
       if (root && this.sessionKey)
-        this.sessions.save(this.sessionKey, { root, target, view, excludedLocations });
+        this.sessions.save(this.sessionKey, {
+          root,
+          target,
+          view,
+          excludedLocations,
+          methodTimes: Object.fromEntries(methodTimes),
+          gatherEstimates: Object.fromEntries(gatherEstimates),
+          sourceOverrides: Object.fromEntries(sourceOverrides),
+          ...(masteryOverride === null ? {} : { masteryOverride }),
+        });
     });
   }
   toggleLocation(key: string, included: boolean) {
@@ -903,17 +1159,34 @@ export class RecipeTree {
     );
   }
   setRootYield(value: number | null) {
+    if (!this.canAdjustRootYield()) return;
     this.patch('root', (node) => ({ ...node, yield: value }));
   }
   private withEstimatedYields(node: RecipeNode): RecipeNode {
     const recipe = node.recipe;
     const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
-    const mastery = skill
-      ? (this.store.data().characters[0]?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 0)
+    const rootRecipe = this.root()?.recipe;
+    const rootSkill = rootRecipe ? lifeSkillForRecipe(rootRecipe.type) : null;
+    const variableYield =
+      recipe !== null &&
+      fixedRecipeYield(recipe, node.part.itemId) === null &&
+      !(Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) > 0);
+    const profileMastery = skill
+      ? (this.store.activeCharacter()?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 0)
       : 0;
+    const mastery =
+      skill && variableYield && skill === rootSkill
+        ? (this.masteryOverride() ?? profileMastery)
+        : profileMastery;
+    const fixed = recipe
+      ? (fixedRecipeYield(recipe, node.part.itemId) ??
+        (Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) ||
+          null))
+      : null;
     return {
       ...node,
       yield:
+        fixed ??
         node.yield ??
         (recipe ? resolveDefaultYield(recipe, node.part.itemId, mastery) : node.yield),
       children: node.children.map((child) => this.withEstimatedYields(child)),

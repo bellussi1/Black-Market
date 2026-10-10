@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import type { ProductionEstimate } from '@bdo/calculators';
+import type { ProductionChoice, ProductionEstimate } from '@bdo/calculators';
 
 import type { RecipeNode } from './recipe-tree-model';
 export interface RecipeSession {
@@ -10,6 +10,8 @@ export interface RecipeSession {
   excludedLocations: string[];
   methodTimes?: Record<string, number>;
   gatherEstimates?: Record<number, ProductionEstimate>;
+  sourceOverrides?: Record<number, ProductionChoice>;
+  masteryOverride?: number;
 }
 @Injectable({ providedIn: 'root' })
 export class RecipeSessions {
