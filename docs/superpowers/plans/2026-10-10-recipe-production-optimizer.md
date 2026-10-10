@@ -16,6 +16,8 @@
 - O limite de segurança excedido ou dados necessários ausentes resultam em estado incompleto, nunca em um ótimo parcial anunciado como definitivo.
 - Lucro em prata usa aritmética inteira; o desempate é determinístico e minimiza desembolso.
 - A maestria é override local, debounce exato de 250 ms; rendimento fixo permanece fixo e rendimento variável deve ser identificado como estimativa.
+- Rendimento estimado entra automaticamente no cálculo, sem ação/botão de confirmação. Ajuste manual é opcional e fica no modo avançado.
+- A análise do produto final é para venda: estoque zerado não sugere que produzir é a única forma de obter o item; disponibilidade permanece separada da receita de venda e do lucro.
 - Sem tempo útil para todos os métodos escolhidos, não exibir lucro/hora como completo.
 - Não alterar o perfil salvo, não adicionar dependências, sem emojis.
 - Executar após `2026-10-10-recipe-market-cache.md`, no mesmo branch `codex/recipe-market-autoresolver`.
@@ -167,6 +169,8 @@ git commit -m "feat(crafting): add explicit recipe time calibration"
 
 - Add `readonly masteryOverride = signal<number | null>(null)` and `setMasteryOverride(value: number | null): void`; profile mastery remains the initial displayed value and is never mutated.
 - Add `optimizeAcquisition(): void` to run the planner for `craftCount()` operations and apply the complete optimal item-source map.
+- Apply estimated default yield automatically when recipe yield metadata is absent; keep manual yield adjustment only in advanced mode and remove any yield confirmation action.
+- A zero-stock root quote must not render a recommendation to produce the final product as a way to obtain it. Keep availability separate from sale revenue and profit.
 - Keep `toggleMaterialSource(itemId: number)` as the manual override; checked maps to production/gathering, unchecked to market purchase.
 - Remove the global “Personalizado” strategy mode. Keep existing “Comprar todos” and “Coletar / Fazer tudo” as bulk checkbox actions if they still only set per-item choices.
 - Derive material cost, net revenue, total time and profit/hour from the active `ProductionPlan`; the optimization button uses `scenario: 'optimized'`, while checkbox edits use the manual choices result. A result with issues remains incomplete in the economic summary.
@@ -174,12 +178,12 @@ git commit -m "feat(crafting): add explicit recipe time calibration"
 
 - [ ] **Step 1: Add failing component tests**
 
-Test `debounces mastery override by exactly 250ms`, `does not mutate the saved character mastery`, `applies the optimizer's complete source map`, `keeps a manual checkbox edit after optimization`, `removes the global Personalizado control`, and `does not show complete profit per hour without required data`.
+Test `debounces mastery override by exactly 250ms`, `does not mutate the saved character mastery`, `applies the optimizer's complete source map`, `keeps a manual checkbox edit after optimization`, `removes the global Personalizado control`, `uses estimated default yield without a confirmation action`, `does not recommend producing a zero-stock final item as a way to obtain it`, and `does not show complete profit per hour without required data`.
 
 - [ ] **Step 2: Run the focused recipe tree tests and confirm the new assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-tree.spec.ts`
-Expected: the new mastery, optimizer, and checkbox assertions fail.
+Expected: the new mastery, optimizer, checkbox, yield-confirmation, and root-scarcity assertions fail.
 
 - [ ] **Step 3: Implement recommendation state and 250 ms mastery debounce**
 

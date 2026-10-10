@@ -19,6 +19,8 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 - A otimização avalia a fórmula atualmente selecionada. A escolha automática entre as 12 fórmulas diferentes do produto 1407 não faz parte desta entrega.
 - A busca usa os métodos produtores já selecionados na árvore; para intermediários ainda não expandidos, usa um produtor padrão em ordem estável. A otimização escolhe a origem comprar/fazer/coletar dentro desse grafo, sem comparar automaticamente métodos de receita alternativos.
 - Rendimentos fixos documentados do Edania continuam fixos. Fórmulas variáveis usam estimativa identificada como estimativa, sem sugerir que o resultado médio seja uma garantia de proc.
+- O rendimento estimado entra automaticamente no cálculo, sem ação ou botão de confirmação. Ajuste manual permanece opcional nos detalhes avançados. Sem base para estimar, o resultado fica incompleto e informa o dado ausente.
+- A análise do produto final considera produção para venda. Estoque zero não gera a mensagem de que produzir é a única forma de obter o item nem uma recomendação de uso/consumo. Faturamento e lucro usam a cotação disponível, com a disponibilidade apresentada separadamente.
 - Não calcular ou rotular lucro/hora como completo se faltarem preços ou tempos necessários. A página lista as pendências e mantém visíveis os valores parciais com essa indicação.
 - Não habilitar coletor ou persistência periódica de fonte de mercado. A consulta permanece sob demanda da página ativa e usa a fonte já configurada, respeitando a política de mercado vigente.
 - Os controles novos e alterados usam as primitivas compartilhadas e a direção visual BDO já existente, sem emojis, com estados de foco/erro/sucesso claros, transições curtas e suporte a movimento reduzido.
@@ -59,6 +61,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 - Alterações são aplicadas após 250 ms sem nova digitação. O rendimento esperado e os indicadores são recalculados sem nova consulta de mercado.
 - Receitas de rendimento fixo preservam o valor verificado. Para rendimentos variáveis, a UI identifica o modelo como estimativa e mostra a premissa.
 - Tempos conhecidos/calibrados por método são reaproveitados. O usuário pode ajustar tempos nas opções avançadas. Coleta sem estimativa de rendimento e tempo permanece incompleta. Se algum passo escolhido não tiver tempo útil, o motor não promete uma taxa horária completa.
+- Rendimento variável é um cenário automático identificado como estimativa, sem confirmação; ajuste manual é opcional no modo avançado. A recomendação econômica do produto final mede sua produção para venda, mantendo estoque separado dos cálculos de faturamento e lucro.
 - O modo simples mantém produto, quantidade, materiais, origem e resumo econômico. A calibração de tempo, imposto e outras opções continuam progressivamente disponíveis no modo avançado.
 - Na tela de Mercado, busca e controles atuais permanecem; a busca passa a compartilhar debounce de 250 ms. Ordenação por coluna, histórico, limites de preço e volumes não são removidos nem substituídos por dados simulados.
 
@@ -76,6 +79,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 - Testes do planejador incluem grafo Edania com dados sintéticos completos, alternativas comprar/fazer/coletar com estimativa explícita, fontes fixadas pelo usuário, estoque/reservas, impostos, tempo, rendimento fixo e variável, empate determinístico, ciclo, cotação ausente e estouro do limite de estados.
 - O teste Edania deve concluir e provar a melhor combinação para um fixture que cubra todo o grafo alcançável; não basta provar que a busca respeita o limite.
 - Testes da página cobrem preload automático ao abrir, revalidação no TTL, estado parcial sem falsa taxa horária, debounce exato de 250 ms, checkbox por item, aplicação da recomendação e atualização após edição manual.
+- Testes da página garantem que o rendimento estimado seja aplicado sem botão de confirmação e que estoque zero não mostre recomendação de produzir o produto final para obtê-lo.
 - Testes do mercado cobrem leitura cache-first por chave da consulta, revalidação e preservação da ordenação/filtros existentes.
 - Verificar `/recipes/items/1407` e `/market` no navegador, incluindo largura estreita, navegação por teclado, rótulos acessíveis e movimento reduzido.
 - Executar `pnpm test` e `pnpm check` antes de integrar.
