@@ -102,9 +102,32 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 5. **Integração na Árvore de Receitas (`RecipeTree`)**:
    - A árvore de receitas agora consome diretamente `MarketCacheService.resolveQuotesBatch()`, tornando os cálculos de rentabilidade instantâneos caso os insumos já estejam no cache.
 
-### 3.5. Qualidade e Testes (AGENTS.md)
+### 3.6. Incorporação do Acervo Oficial de UI In-Game (Interface In Game BDO)
 
-- `pnpm format`: Arquivos formatados via Prettier.
+1. **Mapeamento e Decomposição das 32+ Telas Oficiais**:
+   - Analisado o acervo do [Interface In Game - Black Desert Online](https://interfaceingame.com/games/black-desert-online/), cobrindo todas as categorias de telas in-game:
+     - **Mercado e Loja**: `Central Market`, `Purchase Longbow`, `Pearl Box`, `NPC Shop`.
+     - **Armazém e Inventário**: `Storage`, `Inventory`, `Equipment`, `Transfusion`.
+     - **Progressão e Maestria**: `My Information (P)`, `Enhance`, `Fish Guide`, `Ranking`, `Gained Knowledge`.
+     - **Diálogos, Missões e Modais**: `Quest Summary`, `Accept Quest`, `Quest Completed`, `Select Quest`, `Ongoing Quests`, `Recruit Guild Member`.
+     - **HUD e Janelas de Configuração**: `Game Window`, `Hotkey`, `Attendance Reward`, `Main Menu`, `Optimization`.
+2. **Criação do Guia Canônico de Componentes BDO (`bdo-interface-in-game-guide.md`)**:
+   - Criado [`.agents/skills/bdo-ui-design/references/bdo-interface-in-game-guide.md`](.agents/skills/bdo-ui-design/references/bdo-interface-in-game-guide.md) detalhando a anatomia oficial de janelas BDO, molduras de 2px, cabeçalhos bronze (`#715b37`), o marcador ornamental losango (`◇`), grades afundadas de slots com contadores no canto inferior direito, medidores visuais de limites e regras negativas rigorosas (ZERO emojis, zero botões estilo pílula arredondada, zero cores neon).
+3. **Atualização da Skill e Catálogo Visual**:
+   - Atualizado [`.agents/skills/bdo-ui-design/references/visual-references.md`](.agents/skills/bdo-ui-design/references/visual-references.md) correlacionando os 16 assets locais aos screenshots do Interface In Game e indexando o acervo estendido.
+   - Atualizado [`.agents/skills/bdo-ui-design/SKILL.md`](.agents/skills/bdo-ui-design/SKILL.md) com a nova referência canônica.
+4. **Primitivas Visuais no Design System do Black Market**:
+   - Criadas classes utilitárias em `apps/web/src/styles/_controls.scss`:
+     - `.bdo-diamond`: O losango característico `◇` dourado para títulos e itens de lista.
+     - `.bdo-window`: Moldura de janela com relevo escuro e linha de brilho dourado sutil no topo.
+     - `.bdo-slot`: Slot afundado de 44×44 px com sombra interna e contorno com transição em ouro no hover.
+     - `.bdo-slot-count`: Quantidade fixada no canto inferior direito com sombra preta legível.
+     - `.bdo-meter` e `.bdo-meter-fill`: Medidores lineares inspirados nas barras de capacidade e maestria do jogo.
+   - Aplicado alinhamento numérico tabular (`class="numeric"`) nas colunas do armazém em `apps/web/src/app/features/storage/storage-page.html`.
+
+### 3.7. Qualidade e Testes (AGENTS.md)
+
+- `pnpm format`: 100% formatado via Prettier.
 - `pnpm check`: **PASSOU** 100% (0 erros de ESLint, formatação verificada, bundles Angular gerados com sucesso).
 - `pnpm test`: **PASSOU** 100% em todos os pacotes:
   - 126 testes unitários e de integração na API (`@bdo/api`).
@@ -116,23 +139,18 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ## 4. Arquivos Modificados / Criados
 
-- `apps/web/src/app/core/market-cache.service.ts`: Serviço centralizado de cache do mercado, stale-while-revalidate, batch resolving, persistência em localStorage e background polling.
-- `apps/web/src/app/core/market-cache.service.spec.ts`: 5 testes unitários cobrindo cache hits, batch resolution, preload e storage hydration.
-- `apps/web/src/app/features/market/market-board.ts`: Ordenação interativa por colunas (nome, preço, média 30d, estoque, volumes, tendência), filtros rápidos de estoque, cálculo de tendência e price meter.
-- `apps/web/src/app/features/market/market-board.html`: Cabeçalhos clicáveis com setas BDO, barra de filtros rápidos, badges de tendência, medidor visual de preço e indicador de cache automático.
-- `apps/web/src/app/features/market/market-board.scss`: Estilização no padrão BDO UI com botões de cabeçalho, pílulas de filtro, badges de tendência (`trend-up`, `trend-down`), medidor de faixa e animações de linha.
-- `apps/web/src/app/features/market/market-board.spec.ts`: 7 testes unitários cobrindo ordenação interativa e filtros de disponibilidade.
-- `apps/web/src/app/features/market/market-page.ts`: Integração com `MarketCacheService`, auto-lookup debounced por ID e limpeza de timers.
-- `apps/web/src/app/features/market/market-page.html`: Remoção do botão manual de lookup em prol do badge de sincronização automática com atualização sutil.
-- `apps/web/src/app/features/market/market-page.scss`: Estilização para o badge de auto-sync e botão sutil de refresh de cotação.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`: Integração com `MarketCacheService.resolveQuotesBatch()` para resolução instantânea de ingredientes em cache.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.html`: Substituição do botão proeminente manual por badge de sincronização automática e botão sutil de atualização.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.scss`: Estilização para o indicador de sincronização e botão sutil de refresh na árvore econômica.
+- `.agents/skills/bdo-ui-design/references/bdo-interface-in-game-guide.md`: Guia canônico completo baseado no repositório Interface In Game.
+- `.agents/skills/bdo-ui-design/references/visual-references.md`: Mapeamento das 32+ telas catalogadas e correspondência de assets.
+- `.agents/skills/bdo-ui-design/SKILL.md`: Atualização das referências da skill de UI do BDO.
+- `apps/web/src/styles/_controls.scss`: Primitivas visuais BDO (`.bdo-diamond`, `.bdo-window`, `.bdo-slot`, `.bdo-slot-count`, `.bdo-meter`).
+- `apps/web/src/app/features/storage/storage-page.html`: Alinhamento tabular numérico e formatação de dados de armazém.
+- `docs/ACTIVE_CONTEXT.md`: Atualização do contexto de handoff e registro das implementações.
 
 ---
 
 ## 5. Próximos Passos (Instruções para Codex ou Antigravity)
 
-1. Validar no navegador (`http://localhost:4200/market`) a ordenação das colunas e os filtros de estoque em tempo real.
-2. Validar no navegador (`http://localhost:4200/recipes/items/1408`) o cálculo econômico instantâneo via cache.
+1. Validar no navegador (`http://localhost:4200/market`) a ordenação das colunas, filtros de estoque e medidores visuais.
+2. Validar no navegador (`http://localhost:4200/storage`) a grade de itens e tabelas densas no padrão BDO.
 3. Se solicitado pelo usuário, proceder com o merge da branch `codex/bdo-ui-redesign` para a branch principal (`main`).
+

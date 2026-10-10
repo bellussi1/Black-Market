@@ -20,6 +20,7 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 
 ## Referências por tarefa
 
+- [Guia Interface In Game](references/bdo-interface-in-game-guide.md): catálogo completo de componentes e padrões visuais oficiais (Interface In Game).
 - [Princípios](references/design-principles.md): escopo e arquitetura visual.
 - [Paleta](references/color-palette.md): tokens semânticos e cores propostas.
 - [Tipografia](references/typography.md): escolha de fonte e hierarquia.
@@ -27,7 +28,7 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - [Interações](references/interaction-patterns.md): divulgação progressiva e estados.
 - [Crafting tree](references/crafting-tree.md): zoom, pan, medição e estabilidade.
 - [Acessibilidade](references/accessibility.md): foco, teclado, contraste e movimento.
-- [Imagens](references/visual-references.md): identificação das 16 referências.
+- [Imagens](references/visual-references.md): acervo e correspondência de telas.
 
 ## Antes de entregar
 
