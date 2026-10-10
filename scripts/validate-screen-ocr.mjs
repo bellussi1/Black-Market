@@ -21,6 +21,7 @@ const allowedScreens = new Set([
   'market',
   'other',
 ]);
+const allowedSplits = new Set(['calibration', 'evaluation']);
 const fieldScreens = [
   [/^storage\./, 'storage'],
   [/^inventory\./, 'inventory'],
@@ -82,6 +83,13 @@ export function summarizeScreenOcrRows(rows) {
   for (const group of byScreenAndField)
     for (const name of outcomeNames) totals[name] += group[name];
   return { evaluatedLabels: rows.length, totals, byScreenAndField };
+}
+
+export function selectCapturesForSplit(captures, split = 'calibration') {
+  if (!allowedSplits.has(split)) throw new Error('Split de avaliação OCR inválido.');
+  const selected = captures.filter((capture) => capture.split === split);
+  if (!selected.length) throw new Error('Nenhuma captura encontrada no split solicitado.');
+  return selected;
 }
 
 async function loadScreenParser() {
@@ -243,10 +251,11 @@ function evaluateLabel(label, candidates, parser) {
   return sameValue(candidate.value, label.expectedValue) ? 'exact' : 'incorrect';
 }
 
-async function run(manifestPath) {
-  const { captures } = await validateOcrCorpus(manifestPath);
+async function run(manifestPath, split = 'calibration') {
+  await validateOcrCorpus(manifestPath);
   const absoluteManifest = path.resolve(manifestPath);
   const manifest = JSON.parse(await readFile(absoluteManifest, 'utf8'));
+  const selectedCaptures = selectCapturesForSplit(manifest.captures, split);
   const parser = await loadScreenParser();
   const worker = await createWorker('por', 1);
   const rows = [];
@@ -256,7 +265,7 @@ async function run(manifestPath) {
       tessedit_pageseg_mode: PSM.SPARSE_TEXT,
       preserve_interword_spaces: '1',
     });
-    for (const capture of manifest.captures) {
+    for (const capture of selectedCaptures) {
       const imagePath = path.resolve(path.dirname(absoluteManifest), capture.path);
       const originalImage = await readFile(imagePath);
       const coordinateScale = parser.screenOcrScale(capture.width, capture.height);
@@ -314,20 +323,33 @@ async function run(manifestPath) {
   } finally {
     await worker.terminate();
   }
-  return { captures, paneSources, ...summarizeScreenOcrRows(rows) };
+  return { captures: selectedCaptures.length, split, paneSources, ...summarizeScreenOcrRows(rows) };
 }
 
 const manifestPath = process.argv[2];
-if (!manifestPath || process.argv.includes('--help')) {
-  process.stdout.write('Uso: node scripts/validate-screen-ocr.mjs <caminho-do-manifesto>\n');
-  process.exitCode = manifestPath ? 0 : 2;
-} else {
-  try {
-    process.stdout.write(`${JSON.stringify(await run(manifestPath), null, 2)}\n`);
-  } catch {
-    process.stderr.write(
-      'A avaliação OCR local falhou. Confira o manifesto, as dependências e os dados locais de idioma do Tesseract.\n',
+const splitOption = process.argv.indexOf('--split');
+const requestedSplit = splitOption >= 0 ? process.argv[splitOption + 1] : 'calibration';
+const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
+if (entryPath && entryPath === fileURLToPath(import.meta.url)) {
+  if (!manifestPath || process.argv.includes('--help')) {
+    process.stdout.write(
+      'Uso: node scripts/validate-screen-ocr.mjs <caminho-do-manifesto> [--split calibration|evaluation]\n',
     );
-    process.exitCode = 1;
+    process.exitCode = manifestPath ? 0 : 2;
+  } else if (splitOption >= 0 && !allowedSplits.has(requestedSplit)) {
+    process.stderr.write('O split deve ser calibration ou evaluation.\n');
+    process.exitCode = 2;
+  } else {
+    try {
+      process.stdout.write(`${JSON.stringify(await run(manifestPath, requestedSplit), null, 2)}\n`);
+    } catch (error) {
+      process.stderr.write(
+        error instanceof Error &&
+          error.message === 'Nenhuma captura encontrada no split solicitado.'
+          ? `${error.message}\n`
+          : 'A avaliação OCR local falhou. Confira o manifesto, as dependências e os dados locais de idioma do Tesseract.\n',
+      );
+      process.exitCode = 1;
+    }
   }
 }
