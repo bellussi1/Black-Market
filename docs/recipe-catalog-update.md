@@ -1,5 +1,7 @@
 # Atualização do catálogo de receitas — 9/10/2026
 
+> Revisão de 10/10/2026: foi identificada uma falha na seleção da pasta regional dos XMLs. As contagens abaixo descrevem a extração publicada naquele momento, mas não demonstram cobertura de todos os XMLs portugueses SA nem correção de suas quantidades. Consulte a [revisão completa](recipe-review-2026-10-10.md), que prevalece para a qualidade das receitas.
+
 Região SA, localização portuguesa do cliente instalado. O cliente foi atualizado pelo usuário antes da extração, após o [patch oficial de 8/10/2026](https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694).
 
 ## Cobertura verificada

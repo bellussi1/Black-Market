@@ -1,5 +1,7 @@
 # Fármaco da Harmonia — Edania: correção de cobertura
 
+> A [revisão geral de 10/10/2026](recipe-review-2026-10-10.md) encontrou uma falha de seleção dos XMLs regionais no extractor. A correção específica de Edania descrita aqui não valida as quantidades nem a cobertura das demais receitas do catálogo; uma nova extração exige rever o suplemento antes de atualizar seu checksum.
+
 O cliente atualizado em 9/10/2026 já continha os itens #1407–#1410 e suas descrições. A extração de `recipes.json`, porém, não continha nenhuma receita cujo resultado fosse um desses itens. O extractor monta receitas somente com os XMLs por item; `manufacture.json` contém grupos de ingredientes sem resultados. Importar o cliente novamente não preencheria essa relação ausente. O filtro de profissões já incluía `SIMPLE_ALCHEMY`.
 
 A correção usa [um suplemento revisado](recipe-supplements/sa-pt-edania-recipes.json), aplicado pelo mesmo adaptador e publicador do catálogo. Ele exige o checksum exato da extração revisada, região/idioma e correspondência de ID/nome de cada referência. Não altera receitas presentes no cliente. A procedência de cada receita adicionada fica em `sourceData.verifiedRecipeSupplements` do item produzido; os bytes do suplemento também participam do checksum publicado. Uma extração diferente exige nova revisão do suplemento ou desativação explícita com `-RecipeSupplementPath ''`.
