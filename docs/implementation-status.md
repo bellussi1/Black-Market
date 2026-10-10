@@ -14,10 +14,17 @@ Em 08/10/2026, o código implementa os seguintes escopos MVP:
 
 ## Evidência e dependências
 
-Catálogo ativo SA/pt: 74.216 itens, 212 categorias, 4.406 receitas distintas; 26 coleções de referência e 87.165 registros. Índice visual: 18.116 assinaturas. O banco preserva versões anteriores; não confundir contagem total de item_versions com catálogo ativo.
+Catálogo ativo SA/pt: 74.216 itens, 212 categorias e 10.685 receitas distintas; 26 coleções de referência e 87.165 registros. Índice visual: 18.116 assinaturas. O endpoint de Life Skills retorna 7.016 linhas, das quais 203 são relações de subproduto; Recomendações recebe 6.813 fórmulas elegíveis. O banco preserva versões anteriores; não confundir contagem total de `item_versions` com catálogo ativo. Definições e extração anterior em [contagens de receitas](recipe-counts.md).
 
 730 itens não têm nome localizado; localização inglesa e atlas/imagens de NPC não estão disponíveis. Fármaco da Harmonia (1399) aparece na busca e ficha, mas não tem receita importada. Dados ausentes não são inventados.
 
-Contas exigem Supabase externo. Mercado ao vivo não foi validado devido ao bloqueio da fonte; coleta permanece OFF. Prints usam heurística, sem precisão medida em amostras reais. Recomendações não inventam curva de coleta por maestria. O império de trabalhadores calcula resultados informados e CP compartilhado; ainda não modela automaticamente workload, distância, habilidades, drops ou a melhor alocação global. Não há paridade integral com Workerman.
+Contas exigem Supabase externo. Arsha não foi aprovado como fonte automática; coletores periódicos ficam OFF por padrão e a consulta sob demanda continua identificada como comunitária. Prints usam heurística; não há avaliação independente de captura real. Recomendações não inventam curva de coleta por maestria. O império de trabalhadores calcula resultados informados e CP compartilhado; ainda não modela automaticamente workload, distância, habilidades, drops ou a melhor alocação global. Não há paridade integral com Workerman.
 
 Consultar [auditoria final](production-audit.md) para separar PASSOU de NÃO VERIFICADO. Implementação MVP não significa reprodução integral dos concorrentes, validade jurídica ou operação pública ativada. Publicidade continua OFF até resolução da licença dos dados.
+
+## Atualização de pesquisa em 10/10/2026
+
+- O comparador de recomendações inclui uma combinação automática comprar/produzir para a receita selecionada, com limite padrão de 256 combinações; ver [matriz de lacunas](research/implementation-gap-matrix.md).
+- O código deriva volumes de mercado 24h/15d/30d quando a cobertura observada é contínua. Coletor/provedor e histórico confiável continuam dependentes de configuração e disponibilidade externa.
+- As contagens foram conciliadas: 10.685 no dataset ativo, 7.016 de Life Skills no endpoint e 6.813 após filtro de relações de subproduto na tela; 4.406 pertence à extração antiga. Ver [detalhamento](recipe-counts.md).
+- A página de referências já inclui conhecimento e temas. Os campos brutos adicionais não interpretados continuam fora de regras de cálculo.
