@@ -22,7 +22,7 @@ import type {
 import type { Subscription } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { MarketCacheService } from '../../core/market-cache.service';
+import { type CachedBoardEntry, MarketCacheService } from '../../core/market-cache.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
@@ -60,6 +60,7 @@ export class MarketBoard implements OnDestroy {
   readonly active = input(true);
   readonly fullCatalog = computed(() => !!this.search().trim() || !!this.category());
   readonly result = signal<MarketBoardResponse | null>(null);
+  readonly cacheEntry = signal<CachedBoardEntry | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
   readonly category = signal('');
@@ -106,6 +107,15 @@ export class MarketBoard implements OnDestroy {
   readonly lastItem = computed(() =>
     Math.min(this.page() * this.pageSize(), this.result()?.total ?? 0),
   );
+
+  readonly cacheTimestamp = computed(() => {
+    const entry = this.cacheEntry();
+    return entry ? date(new Date(entry.fetchedAt).toISOString()) : '';
+  });
+  readonly cachedEntryStale = computed(() => {
+    const entry = this.cacheEntry();
+    return entry !== null && entry.expiresAt <= Date.now();
+  });
 
   /**
    * Filtered and client-sorted items for the current page view.
@@ -181,8 +191,11 @@ export class MarketBoard implements OnDestroy {
 
   private request?: Subscription;
   private timer?: ReturnType<typeof setTimeout>;
+  private resultKey = '';
   private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
-    ? new MarketRefresh(inject(DOCUMENT), () => this.load(true))
+    ? new MarketRefresh(inject(DOCUMENT), () =>
+        this.load({ forceRefresh: true, preservePrevious: true }),
+      )
     : null;
 
   constructor() {
@@ -197,20 +210,54 @@ export class MarketBoard implements OnDestroy {
         this.page.set(1);
         this.category.set('');
         this.result.set(null);
+        this.cacheEntry.set(null);
+        this.resultKey = '';
         this.load();
       });
     });
   }
 
-  load(preserve = false): void {
-    this.refresh?.markRefreshed();
-    if (this.timer) clearTimeout(this.timer);
-    this.request?.unsubscribe();
-    this.loading.set(true);
-    this.error.set('');
+  private boardCacheKey(region: string): string {
+    return [
+      'board',
+      region,
+      this.search().trim(),
+      this.category(),
+      this.sort(),
+      this.sortColumn(),
+      this.sortDirection(),
+      this.page(),
+      this.pageSize(),
+    ].join(':');
+  }
 
+  load(options: { forceRefresh?: boolean; preservePrevious?: boolean } = {}): void {
+    if (this.timer) clearTimeout(this.timer);
     const region = this.preferences.region();
-    const queryKey = `board:${region}:${this.search().trim()}:${this.category()}:${this.sort()}:${this.page()}:${this.pageSize()}`;
+    const queryKey = this.boardCacheKey(region);
+    const cached = this.cache.getCachedBoardResponse(queryKey, region);
+    const isFresh = cached !== null && cached.expiresAt > Date.now();
+
+    this.request?.unsubscribe();
+    this.error.set('');
+    if (cached) {
+      this.result.set(cached.response);
+      this.cacheEntry.set(cached);
+      this.resultKey = queryKey;
+    } else if (!options.preservePrevious || this.resultKey !== queryKey) {
+      this.result.set(null);
+      this.cacheEntry.set(null);
+      this.resultKey = '';
+    }
+
+    if (isFresh && !options.forceRefresh) {
+      this.loading.set(false);
+      this.refresh?.markRefreshed();
+      return;
+    }
+
+    this.loading.set(true);
+    this.refresh?.markRefreshed();
 
     this.request = this.api
       .board({
@@ -223,10 +270,14 @@ export class MarketBoard implements OnDestroy {
       })
       .subscribe({
         next: (response) => {
+          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
           this.refresh?.markRefreshed();
-          this.result.set(response);
-          this.cache.cacheBoardResponse(queryKey, response, region);
           if (response.sort) this.sort.set(response.sort);
+          const responseKey = this.boardCacheKey(region);
+          this.result.set(response);
+          this.cache.cacheBoardResponse(responseKey, response, region);
+          this.cacheEntry.set(this.cache.getCachedBoardResponse(responseKey, region));
+          this.resultKey = responseKey;
           this.loading.set(false);
           if (this.page() > this.pageCount()) {
             this.page.set(this.pageCount());
@@ -234,7 +285,11 @@ export class MarketBoard implements OnDestroy {
           }
         },
         error: () => {
-          if (!preserve) this.result.set(null);
+          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
+          if (!cached && this.resultKey !== queryKey) {
+            this.result.set(null);
+            this.cacheEntry.set(null);
+          }
           this.loading.set(false);
           this.error.set('Não foi possível carregar o mercado. Tente novamente.');
         },
@@ -243,13 +298,34 @@ export class MarketBoard implements OnDestroy {
 
   find(value: string): void {
     this.search.set(value.slice(0, 80));
-    if (this.fullCatalog()) this.sort.set('name');
-    else this.sort.set('hot');
+    if (this.fullCatalog()) {
+      this.sort.set('name');
+      this.sortColumn.set('name');
+      this.sortDirection.set('asc');
+    } else {
+      this.sort.set('hot');
+      this.sortColumn.set('hot');
+      this.sortDirection.set('desc');
+    }
     this.page.set(1);
     this.request?.unsubscribe();
-    this.loading.set(true);
+    const region = this.preferences.region();
+    const key = this.boardCacheKey(region);
+    const cached = this.cache.getCachedBoardResponse(key, region);
+    if (cached) {
+      this.result.set(cached.response);
+      this.cacheEntry.set(cached);
+      this.resultKey = key;
+      this.loading.set(cached.expiresAt <= Date.now());
+    } else {
+      this.result.set(null);
+      this.cacheEntry.set(null);
+      this.resultKey = '';
+      this.loading.set(true);
+    }
+    this.error.set('');
     if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.load(), 300);
+    this.timer = setTimeout(() => this.load(), 250);
   }
 
   clearSearch(): void {
@@ -258,7 +334,10 @@ export class MarketBoard implements OnDestroy {
 
   filterCategory(value: string): void {
     this.category.set(value);
-    this.sort.set(this.fullCatalog() ? 'name' : 'hot');
+    const nextSort = this.fullCatalog() ? 'name' : 'hot';
+    this.sort.set(nextSort);
+    this.sortColumn.set(nextSort);
+    this.sortDirection.set(nextSort === 'name' ? 'asc' : 'desc');
     this.page.set(1);
     this.load();
   }
@@ -292,10 +371,22 @@ export class MarketBoard implements OnDestroy {
       this.sortDirection.set(column === 'name' ? 'asc' : 'desc');
     }
 
-    // Sync with backend if it's a backend-supported sort
-    if (['hot', 'price', 'stock', 'name'].includes(column)) {
-      this.sort.set(column as MarketBoardSort);
+    // Column headers sort the current page locally. The select controls the server-side sort.
+    const current = this.result();
+    if (current) {
+      const region = this.preferences.region();
+      const queryKey = this.boardCacheKey(region);
+      const source = this.cache.getCachedBoardResponse(this.resultKey, region);
+      if (source) {
+        this.cache.cacheBoardAlias(queryKey, source);
+        this.cacheEntry.set(this.cache.getCachedBoardResponse(queryKey, region));
+        this.resultKey = queryKey;
+      }
     }
+  }
+
+  refreshBoard(): void {
+    this.load({ forceRefresh: true, preservePrevious: true });
   }
 
   calculateTrendPercent(item: MarketBoardItem): number | null {
