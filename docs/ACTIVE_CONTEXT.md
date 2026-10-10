@@ -7,8 +7,10 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 ## 1. Sessão Atual: 10/10/2026
 
 - **Agente Atual**: Antigravity
-- **Branch Ativa**: `codex/bdo-ui-redesign` (11 commits à frente de `origin/codex/bdo-ui-redesign`)
+- **Branch Ativa**: `codex/bdo-ui-redesign` (13 commits à frente de `origin/codex/bdo-ui-redesign`)
 - **Últimos Commits**:
+  - `9b73cb1` `feat(market): add centralized market cache service, auto-sync, interactive column sorting, and stock filters`
+  - `4612e1f` `docs: update context handoff with crafting calculator redesign and make-vs-buy insights`
   - `df545ba` `feat(recipes): single craft count field, acquisition strategies, debounced market lookup, and make-vs-buy insights`
   - `3d71d13` `feat(recipes): add recipe yield resolver with mastery scaling and life skill mapping`
   - `c7ef564` `feat(scans): standardize bdo ui buttons, action confirmation animations, and unified batch consolidation`
@@ -79,39 +81,58 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
    - Detalhamento de volume de mercado (`totalTrades`), estoque atual (`stock`) e economia calculada em prata e porcentagem.
    - ZERO emojis, 100% aderente às regras de design do BDO (bordas de 2px, superfícies de carvão e acentos nobres em dourado/bronze).
 
-### 3.4. Qualidade e Testes (AGENTS.md)
+### 3.4. Cache Centralizado do Mercado, Auto-Sync & Melhorias na Tela de Mercado
+
+1. **Serviço de Cache Centralizado (`MarketCacheService`)**:
+   - `quotesMap`: cache reativo indexado por `${region}:${itemId}:${subId}`.
+   - Hidratação e persistência em `localStorage` (`bm_market_cache_${region}`) com suporte seguro a SSR e gerenciamento de cotas.
+   - `resolveQuote()` e `resolveQuotesBatch()`: retornam imediatamente cotações em cache e resolvem cotações ausentes/expiradas em background.
+   - Polling automático e sincronização em background a cada 6 minutos (com detecção de foco e aba visível via `visibilitychange`).
+   - Eliminação de botões manuais desnecessários ("Consultar mercado"), substituídos por badges de sincronização automática e atualização sutil.
+2. **Ordenação Interativa de Colunas no Mercado Central (`MarketBoard`)**:
+   - Cabeçalhos de coluna clicáveis com alternância de direção (`asc`/`desc`): Item (A-Z), Preço atual, Média 30d, Estoque, Volume 24h, Volume 15d, Volume 30d.
+   - Indicadores visuais nobres BDO com setas de ordenação e `aria-sort`.
+3. **Filtros Rápidos de Disponibilidade de Estoque**:
+   - Pílulas de filtro rápido: `Todos`, `Com estoque` (itens com disponibilidade imediata), `Estoque zerado` (oportunidades de produção/venda), `Com volume 24h`.
+   - Limpeza de busca com 1 clique (`✕`).
+4. **Detalhes de Preço, Tendências & Medidor Visual de Mercado**:
+   - Badge de tendência (`trend-badge`): calcula variação % entre o preço atual e a média de 30 dias (`+X.X%`, `-X.X%`, `Estável`).
+   - Medidor visual de limites de mercado (`price-meter`): barra percentual indicando se a cotação está próxima do Bottom ou do Topo.
+   - Tags de estoque: destaque com tag nobre para itens com estoque zerado no mercado.
+5. **Integração na Árvore de Receitas (`RecipeTree`)**:
+   - A árvore de receitas agora consome diretamente `MarketCacheService.resolveQuotesBatch()`, tornando os cálculos de rentabilidade instantâneos caso os insumos já estejam no cache.
+
+### 3.5. Qualidade e Testes (AGENTS.md)
 
 - `pnpm format`: Arquivos formatados via Prettier.
 - `pnpm check`: **PASSOU** 100% (0 erros de ESLint, formatação verificada, bundles Angular gerados com sucesso).
 - `pnpm test`: **PASSOU** 100% em todos os pacotes:
   - 126 testes unitários e de integração na API (`@bdo/api`).
-  - 294 testes unitários na Web (`@bdo/web`).
+  - 301 testes unitários na Web (`@bdo/web`).
   - 40 testes unitários em `@bdo/calculators`.
-  - Total: **460 testes passando** no monorepo.
+  - Total: **467 testes passando** no monorepo.
 
 ---
 
 ## 4. Arquivos Modificados / Criados
 
-- `apps/web/src/app/shared/recipe-tree/recipe-yield.ts`: Resolução de rendimentos médios por maestria de profissão (Cooking, Alchemy, Processing) e rendimentos canônicos fixos (Harmonia = 10, Edania = 1, etc.).
-- `apps/web/src/app/shared/recipe-tree/recipe-yield.spec.ts`: Testes unitários do resolvedor de rendimento.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`: Campo único `craftCount`, sincronização com `target`, debounce reativo de mercado (350ms), estratégias de aquisição (`buy_all`, `gather_all`, `custom`), cotações completas (`stock`, `totalTrades`) e computed `rootInsight` / `intermediateInsights`.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.html`: Card de quantidade única, seletor de estratégias de aquisição, card Make vs Buy nobre, coluna interativa de aquisição na tabela de materiais e modo avançado para ajustes finos.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.scss`: Estilização no padrão BDO UI com badges de decisão, switches de aquisição e cards de insight.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts`: 26 testes cobrindo todo o novo fluxo de craft count, estratégias e insights econômicos.
-- `apps/web/src/app/features/scans/scans-page.scss`: Remoção do botão verde, adoção de tokens BDO, badges padronizados e animação `bm-confirm-glow`.
-- `apps/web/src/app/features/scans/scans-page.html`: Ações unificadas, botão mestre dinâmico `saveBatchLabel()`, notas limpas de quantidade e sem emojis.
-- `apps/web/src/app/features/scans/scans-page.ts`: Adicionado computed `saveBatchLabel`, refinamento de `reliable` e resolução de estimativas.
-- `apps/web/src/app/features/scans/scans-page.spec.ts`: Teste para `saveBatchLabel` e validação do fluxo de salvamento direto.
-- `apps/web/src/app/features/scans/storage-grid.ts`: Suporte a imagens 1080p, 1440p e 4K (até 12MP) e passos de pitch ampliados.
-- `apps/web/src/app/features/scans/storage-grid.spec.ts`: Teste com frame Full HD 1080p.
-- `apps/web/src/app/features/scans/visible-quantity.ts`: Higienização de pontuação pós-sufixo em quantidades k/M.
-- `apps/api/src/market/market-history.service.spec.ts`: Timeout de 30s para teste de estresse de 600k linhas.
+- `apps/web/src/app/core/market-cache.service.ts`: Serviço centralizado de cache do mercado, stale-while-revalidate, batch resolving, persistência em localStorage e background polling.
+- `apps/web/src/app/core/market-cache.service.spec.ts`: 5 testes unitários cobrindo cache hits, batch resolution, preload e storage hydration.
+- `apps/web/src/app/features/market/market-board.ts`: Ordenação interativa por colunas (nome, preço, média 30d, estoque, volumes, tendência), filtros rápidos de estoque, cálculo de tendência e price meter.
+- `apps/web/src/app/features/market/market-board.html`: Cabeçalhos clicáveis com setas BDO, barra de filtros rápidos, badges de tendência, medidor visual de preço e indicador de cache automático.
+- `apps/web/src/app/features/market/market-board.scss`: Estilização no padrão BDO UI com botões de cabeçalho, pílulas de filtro, badges de tendência (`trend-up`, `trend-down`), medidor de faixa e animações de linha.
+- `apps/web/src/app/features/market/market-board.spec.ts`: 7 testes unitários cobrindo ordenação interativa e filtros de disponibilidade.
+- `apps/web/src/app/features/market/market-page.ts`: Integração com `MarketCacheService`, auto-lookup debounced por ID e limpeza de timers.
+- `apps/web/src/app/features/market/market-page.html`: Remoção do botão manual de lookup em prol do badge de sincronização automática com atualização sutil.
+- `apps/web/src/app/features/market/market-page.scss`: Estilização para o badge de auto-sync e botão sutil de refresh de cotação.
+- `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`: Integração com `MarketCacheService.resolveQuotesBatch()` para resolução instantânea de ingredientes em cache.
+- `apps/web/src/app/shared/recipe-tree/recipe-tree.html`: Substituição do botão proeminente manual por badge de sincronização automática e botão sutil de atualização.
+- `apps/web/src/app/shared/recipe-tree/recipe-tree.scss`: Estilização para o indicador de sincronização e botão sutil de refresh na árvore econômica.
 
 ---
 
 ## 5. Próximos Passos (Instruções para Codex ou Antigravity)
 
-1. Validar no navegador (`http://localhost:4200/recipes/items/1408`) o comportamento da receita Fármaco da Harmonia com o novo campo de quantia de receitas e insights Make vs Buy.
-2. Validar no navegador (`http://localhost:4200/scans`) o upload das imagens de armazém enviadas pelo usuário em lote.
+1. Validar no navegador (`http://localhost:4200/market`) a ordenação das colunas e os filtros de estoque em tempo real.
+2. Validar no navegador (`http://localhost:4200/recipes/items/1408`) o cálculo econômico instantâneo via cache.
 3. Se solicitado pelo usuário, proceder com o merge da branch `codex/bdo-ui-redesign` para a branch principal (`main`).
