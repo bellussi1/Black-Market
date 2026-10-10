@@ -150,6 +150,36 @@ describe('production planner', () => {
     );
   });
 
+  it('prunes only when the best complete rate beats a safe profit and time upper bound', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.quotes[3].unitPrice = '1000';
+    input.estimates.middle.craftSeconds = 600;
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.profit).toBe('590');
+    expect(optimized?.seconds).toBe(60);
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '1 estados podados pelo limite superior seguro',
+    );
+  });
+
+  it('does not apply the revenue bound when sellable byproducts can increase revenue', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.recipes[0].byproducts = [{ itemId: 4, quantity: null }];
+    input.byproductValues = {
+      final: [{ itemId: 4, expectedQuantity: 1, unitPrice: '100000', sell: true }],
+    };
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '0 estados podados pelo limite superior seguro',
+    );
+  });
+
   it('keeps the exact best result when profit is negative', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
@@ -163,6 +193,9 @@ describe('production planner', () => {
 
     expect(optimized?.profit).toBe('-4');
     expect(optimized?.materials.find((material) => material.itemId === 2)?.produced).toBe(2);
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '0 estados podados pelo limite superior seguro',
+    );
   });
 
   it('matches an exhaustive oracle for a small buy-produce graph', () => {

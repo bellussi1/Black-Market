@@ -639,6 +639,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
 
   const ranked: ProductionPlan[] = [];
   const incomplete: ProductionPlan[] = [];
+  const hasSellableByproducts = Object.values(input.byproductValues ?? {}).some((entries) =>
+    entries.some((entry) => entry.sell),
+  );
   const boundIssues = new Set<ProductionIssue['code']>([
     'budget',
     'time',
@@ -696,20 +699,55 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         let best: ProductionPlan | null = null;
         let bestPending: ProductionPlan | null = null;
         let visitedStates = 0;
-        let prunedStates = 0;
+        let boundPrunedStates = 0;
+        let duplicateStates = 0;
         let complete = true;
         const initialChoices = new Map<number, ProductionChoice>();
         const pending: Map<number, ProductionChoice>[] = [initialChoices];
         const visited = new Set<string>();
-        while (pending.length && visitedStates < stateLimit) {
+        while (pending.length) {
           const choices = pending.pop()!;
           const stateKey = [...choices]
             .sort(([left], [right]) => left - right)
             .map(([itemId, choice]) => `${itemId}:${choice}`)
             .join('|');
           if (visited.has(stateKey)) {
-            prunedStates++;
+            duplicateStates++;
             continue;
+          }
+
+          const choiceRecord = Object.fromEntries(choices) as Record<number, ProductionChoice>;
+          if (best && !hasSellableByproducts) {
+            const optimistic = evaluate(
+              candidate.recipeId,
+              candidate.optimizeCrafts,
+              'optimized',
+              choiceRecord,
+            );
+            const lowerDuration = optimistic.durationMilliseconds;
+            if (
+              optimistic.netRevenue !== null &&
+              lowerDuration !== null &&
+              BigInt(lowerDuration) > 0n &&
+              best.durationMilliseconds !== null &&
+              BigInt(best.durationMilliseconds) > 0n
+            ) {
+              // Any completion can only add nonnegative costs and time. Without
+              // sale-valued byproducts, root net revenue is a safe profit ceiling.
+              const profitCeiling = BigInt(optimistic.netRevenue);
+              const upperProfit = profitCeiling > 0n ? profitCeiling : 0n;
+              if (
+                BigInt(best.profit!) * BigInt(lowerDuration) >
+                upperProfit * BigInt(best.durationMilliseconds)
+              ) {
+                boundPrunedStates++;
+                continue;
+              }
+            }
+          }
+          if (visitedStates >= stateLimit) {
+            complete = false;
+            break;
           }
           visited.add(stateKey);
           visitedStates++;
@@ -725,7 +763,6 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             }
             continue;
           }
-          const choiceRecord = Object.fromEntries(choices) as Record<number, ProductionChoice>;
           const result = evaluate(
             candidate.recipeId,
             candidate.optimizeCrafts,
@@ -750,7 +787,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           bestPending ??
           evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
         result.assumptions.push(
-          `Busca exata por estados alcançáveis: ${visitedStates} visitados e ${prunedStates} duplicados eliminados, limite de ${stateLimit}.`,
+          `Busca exata por estados alcançáveis: ${visitedStates} visitados, ${boundPrunedStates} estados podados pelo limite superior seguro e ${duplicateStates} duplicados eliminados, limite de ${stateLimit}.`,
         );
         if (!complete) {
           result.issues.push({
