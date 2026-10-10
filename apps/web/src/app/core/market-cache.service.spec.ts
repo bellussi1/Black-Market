@@ -154,6 +154,82 @@ describe('MarketCacheService', () => {
     expect(resultMap.get(9999).price).toBe('5000');
   });
 
+  it('emits stale quote immediately and refreshed quote after revalidation', () => {
+    service.cacheLookupResponse(mockLookupResponse, 'sa');
+    const key = service.quoteKey(1408, 'sa');
+    service.quotesMap.update((entries) => {
+      const updated = new Map(entries);
+      const entry = updated.get(key)!;
+      updated.set(key, { ...entry, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveQuotesBatch([1408], 'sa').subscribe((result) => emissions.push(result));
+
+    expect(emissions).toHaveLength(1);
+    expect(emissions[0].get(1408)?.price).toBe('276000000');
+
+    const req = httpTesting.expectOne((r) => r.url.includes('/market/items/1408'));
+    req.flush({
+      ...mockLookupResponse,
+      items: [{ ...mockLookupResponse.items[0], price: '280000000' }],
+    });
+
+    expect(emissions).toHaveLength(2);
+    expect(emissions[1].get(1408)?.price).toBe('280000000');
+  });
+
+  it('falls back to stale quotes when refresh fails', () => {
+    service.cacheLookupResponse(mockLookupResponse, 'sa');
+    const key = service.quoteKey(1408, 'sa');
+    service.quotesMap.update((entries) => {
+      const updated = new Map(entries);
+      const entry = updated.get(key)!;
+      updated.set(key, { ...entry, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveQuotesBatch([1408], 'sa').subscribe((result) => emissions.push(result));
+    expect(emissions).toHaveLength(1);
+    expect(emissions[0].get(1408)?.price).toBe('276000000');
+
+    httpTesting
+      .expectOne((r) => r.url.includes('/market/items/1408'))
+      .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+
+    expect(emissions.at(-1)?.get(1408)?.price).toBe('276000000');
+  });
+
+  it('does not request fresh cached quotes', () => {
+    service.cacheLookupResponse(mockLookupResponse, 'sa');
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+
+    service.resolveQuotesBatch([1408], 'sa').subscribe((result) => emissions.push(result));
+
+    httpTesting.expectNone((r) => r.url.includes('/market/items/1408'));
+    expect(emissions).toHaveLength(1);
+    expect(emissions[0].get(1408)?.price).toBe('276000000');
+  });
+
+  it('limits batch requests to six in flight', () => {
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service
+      .resolveQuotesBatch([1, 2, 3, 4, 5, 6, 7], 'sa')
+      .subscribe((result) => emissions.push(result));
+
+    const firstWave = httpTesting.match((r) => r.url.includes('/market/items/'));
+    expect(firstWave).toHaveLength(6);
+    for (const request of firstWave) request.flush(mockLookupResponse);
+
+    const secondWave = httpTesting.match((r) => r.url.includes('/market/items/'));
+    expect(secondWave).toHaveLength(1);
+    secondWave[0].flush(mockLookupResponse);
+    expect(emissions).toHaveLength(1);
+    expect(emissions[0].size).toBe(7);
+  });
+
   it('preloads hot items and registers individual quotes into the cache', () => {
     service.preloadHotItems('sa').subscribe();
 
@@ -164,6 +240,39 @@ describe('MarketCacheService', () => {
     expect(service.getCachedQuote(676, 'sa')).not.toBeNull();
     expect(service.getCachedQuote(676, 'sa')?.price).toBe('1200');
     expect(service.getCachedQuote(676, 'sa')?.stock).toBe(120);
+  });
+
+  it('reads fresh and stale board responses by exact key and region', () => {
+    service.cacheBoardResponse('board:sa:beer', mockBoardResponse, 'sa');
+
+    const entry = service.getCachedBoardResponse('board:sa:beer', 'sa');
+    expect(entry?.response).toEqual(mockBoardResponse);
+    expect(entry?.expiresAt).toBeGreaterThan(Date.now());
+    expect(service.getCachedBoardResponse('board:eu:beer', 'eu')).toBeNull();
+
+    service.boardMap.update((boards) => {
+      const updated = new Map(boards);
+      const cached = updated.get('board:sa:beer')!;
+      updated.set('board:sa:beer', { ...cached, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    const stale = service.getCachedBoardResponse('board:sa:beer', 'sa');
+    expect(stale?.response).toEqual(mockBoardResponse);
+    expect(stale!.expiresAt).toBeLessThan(Date.now());
+  });
+
+  it('aliases locally sorted board views without renewing their freshness', () => {
+    service.cacheBoardResponse('board:sa:default', mockBoardResponse, 'sa');
+    const source = service.getCachedBoardResponse('board:sa:default', 'sa')!;
+
+    service.cacheBoardAlias('board:sa:sorted', source);
+
+    const alias = service.getCachedBoardResponse('board:sa:sorted', 'sa')!;
+    expect(alias.response).toEqual(source.response);
+    expect(alias.fetchedAt).toBe(source.fetchedAt);
+    expect(alias.expiresAt).toBe(source.expiresAt);
+    expect(alias.key).toBe('board:sa:sorted');
   });
 
   it('hydrates quotes from localStorage on construction', () => {

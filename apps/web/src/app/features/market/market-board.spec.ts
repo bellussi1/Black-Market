@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import type { MarketBoardResponse } from '@bdo/shared';
 import { describe, expect, it, vi } from 'vitest';
 
+import { MarketCacheService } from '../../core/market-cache.service';
+import { RegionPreferences } from '../../core/region-preferences';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { MarketBoard } from './market-board';
 
@@ -206,6 +208,19 @@ describe('MarketBoard', () => {
     board.toggleColumnSort('price');
     expect(board.sortDirection()).toBe('asc');
     expect(board.displayItems()[0].itemId).toBe(1); // 1000 first
+
+    board.load();
+    expect(board.loading()).toBe(false);
+    expect(board.displayItems()[0].itemId).toBe(1);
+    expect(
+      [...TestBed.inject(MarketCacheService).boardMap().keys()].some((key) =>
+        key.endsWith(':hot:price:asc:1:20'),
+      ),
+    ).toBe(true);
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+    TestBed.inject(HttpTestingController).verify();
   });
 
   it('filters items by stock availability using quick filter pills', async () => {
@@ -232,5 +247,130 @@ describe('MarketBoard', () => {
 
     board.setStockFilter('all');
     expect(board.displayItems().length).toBe(3);
+  });
+
+  it('uses a fresh same-query cache entry without requesting the board again', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    takeRequest().flush(data);
+
+    const board = fixture.componentInstance;
+    board.load();
+
+    expect(board.result()).toEqual(data);
+    expect(board.loading()).toBe(false);
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('forces manual refresh while keeping the current table visible', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const first = response();
+    takeRequest().flush(first);
+
+    fixture.componentInstance.refreshBoard();
+    expect(fixture.componentInstance.result()).toEqual(first);
+    expect(fixture.componentInstance.loading()).toBe(true);
+
+    const updated = response();
+    updated.items[0].price = '1350';
+    takeRequest().flush(updated);
+    expect(fixture.componentInstance.result()?.items[0].price).toBe('1350');
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('returns to an earlier query from its matching cache entry', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const original = response();
+    takeRequest().flush(original);
+    const board = fixture.componentInstance;
+
+    board.find('Edania');
+    board.load();
+    const otherQuery = takeRequest();
+    expect(otherQuery.request.params.get('q')).toBe('Edania');
+    otherQuery.flush(response());
+
+    board.find('');
+    expect(board.result()).toEqual(original);
+    expect(board.loading()).toBe(false);
+    board.load();
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('cancels a pending response when the selected region changes', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const pending = takeRequest();
+
+    TestBed.inject(RegionPreferences).setRegion('eu');
+    fixture.detectChanges();
+
+    expect(pending.cancelled).toBe(true);
+    const euRequest = takeRequest();
+    expect(euRequest.request.params.get('region')).toBe('eu');
+    euRequest.flush({ ...response(), region: 'eu' });
+    expect(fixture.componentInstance.result()?.region).toBe('eu');
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('keeps stale cached results visible when background refresh fails', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    takeRequest().flush(data);
+
+    const board = fixture.componentInstance;
+    const cache = TestBed.inject(MarketCacheService);
+    const [key, entry] = [...cache.boardMap().entries()][0];
+    cache.boardMap.update((entries) => {
+      const updated = new Map(entries);
+      updated.set(key, { ...entry, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    board.load();
+    expect(board.result()).toEqual(data);
+    expect(board.loading()).toBe(true);
+    takeRequest().flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+
+    expect(board.result()).toEqual(data);
+    expect(board.loading()).toBe(false);
+    expect(board.error()).toContain('Não foi possível carregar');
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('does not display the previous search results while the next search is debounced', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    takeRequest().flush(response());
+
+    fixture.componentInstance.find('Edania');
+
+    expect(fixture.componentInstance.result()).toBeNull();
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+  });
+
+  it('debounces search requests by 250 milliseconds', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    takeRequest().flush(response());
+    const board = fixture.componentInstance;
+
+    vi.useFakeTimers();
+    try {
+      board.find('Ed');
+      vi.advanceTimersByTime(249);
+      TestBed.inject(HttpTestingController).expectNone((request) =>
+        request.url.endsWith('/market/board'),
+      );
+      vi.advanceTimersByTime(1);
+      expect(takeRequest().request.params.get('q')).toBe('Ed');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

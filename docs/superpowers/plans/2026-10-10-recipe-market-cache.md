@@ -42,25 +42,25 @@
 - Add `getCachedQuoteEntry(itemId: number | string, region?: Region, subId?: number): CachedQuoteEntry | null` to expose freshness timestamps without changing the quote contract.
 - A batch with cached expired entries emits those entries immediately, then emits the refreshed result; a cache-fresh batch makes no HTTP request. Failed refresh retains the last value.
 
-- [ ] **Step 1: Add failing cache behavior tests**
+- [x] **Step 1: Add failing cache behavior tests**
 
 Add tests named `emits stale quote immediately and refreshed quote after revalidation`, `falls back to stale quotes when refresh fails`, `does not request fresh cached quotes`, and `limits batch requests to six in flight`.
 
-- [ ] **Step 2: Run the focused tests and confirm the new assertions fail**
+- [x] **Step 2: Run the focused tests and confirm the new assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts`
 Expected: the new freshness/concurrency assertions fail; existing cache tests still compile.
 
-- [ ] **Step 3: Implement quote entry access and bounded stale-while-revalidate batches**
+- [x] **Step 3: Implement quote entry access and bounded stale-while-revalidate batches**
 
 Implement the interfaces above using the existing TTL and cache map. Emit stale entries before refresh and cap active per-item requests at six. Preserve fresh-cache short-circuit and API error fallback.
 
-- [ ] **Step 4: Run the focused tests**
+- [x] **Step 4: Run the focused tests**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts`
 Expected: all `MarketCacheService` tests pass.
 
-- [ ] **Step 5: Commit the cache behavior**
+- [x] **Step 5: Commit the cache behavior**
 
 ```bash
 git add apps/web/src/app/core/market-cache.service.ts apps/web/src/app/core/market-cache.service.spec.ts
@@ -85,25 +85,25 @@ git commit -m "feat(market): serve stale quotes while revalidating"
 - Add a private quote subscription/revision guard so changing recipe, item, dataset, or region cancels or ignores the old request.
 - The quote query set is `RecipeProductionGraph.itemIds`, not just currently expanded `parts()`; the 1407 Edania case should resolve its full reachable graph before quote loading.
 
-- [ ] **Step 1: Add failing graph and quote lifecycle tests**
+- [x] **Step 1: Add failing graph and quote lifecycle tests**
 
 In `recipe-production-graph.spec.ts`, test `resolves all reachable unique item IDs`, `reuses the visible selected nested method`, `chooses a stable recipe for an unselected intermediate`, `reports missing producer or cycle`, and `rejects a dataset version mismatch`. With fake timers in `recipe-tree.spec.ts`, verify selection loads the graph then quotes its IDs, a second quote refresh occurs at 5 minutes, a changed identity ignores the earlier response, and destroying the fixture prevents another refresh.
 
-- [ ] **Step 2: Run the focused tree tests and confirm the new assertions fail**
+- [x] **Step 2: Run the focused tree tests and confirm the new assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-production-graph.spec.ts --include=app/shared/recipe-tree/recipe-tree.spec.ts`
 Expected: the new lifecycle assertions fail before implementation.
 
-- [ ] **Step 3: Implement the scoped refresh lifecycle**
+- [x] **Step 3: Implement the scoped refresh lifecycle**
 
 Resolve the current graph from the selected root method, then quote its complete unique item set through the cache batch API. Update quote maps from each emitted snapshot, clear subscription/timer on identity change or component destroy, and refresh quotes every five minutes. Keep graph and quote requests independent of mastery edits.
 
-- [ ] **Step 4: Run the focused tree tests**
+- [x] **Step 4: Run the focused tree tests**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-production-graph.spec.ts --include=app/shared/recipe-tree/recipe-tree.spec.ts`
 Expected: all graph loading and automatic quote refresh tests pass.
 
-- [ ] **Step 5: Commit the recipe refresh lifecycle**
+- [x] **Step 5: Commit the recipe refresh lifecycle**
 
 ```bash
 git add apps/web/src/app/shared/recipe-tree/recipe-tree.ts apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts apps/web/src/app/shared/recipe-tree/recipe-production-graph.ts apps/web/src/app/shared/recipe-tree/recipe-production-graph.spec.ts
@@ -120,25 +120,25 @@ git commit -m "feat(crafting): refresh active recipe quotes automatically"
 - Modify if needed: `apps/web/src/app/shared/recipe-tree/recipe-branch.html`
 - Test: `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts`
 
-- [ ] **Step 1: Add failing view tests for fresh, stale, and missing quote states**
+- [x] **Step 1: Add failing view tests for fresh, stale, and missing quote states**
 
 Assert that stale entries include their cached age, missing entries remain pending, and no recipe action says “Consultar mercado” or “Consultar cotação atual”.
 
-- [ ] **Step 2: Run the focused tree tests and confirm the view assertions fail**
+- [x] **Step 2: Run the focused tree tests and confirm the view assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-tree.spec.ts`
 Expected: stale/missing status and removed-action assertions fail.
 
-- [ ] **Step 3: Implement freshness labels and remove manual consultation affordances**
+- [x] **Step 3: Implement freshness labels and remove manual consultation affordances**
 
 Use `CachedQuoteEntry.fetchedAt` for the status label. Preserve a retry/error state only for the automatic resolver; never replace absent quotes with zero. Keep labels and focus states accessible.
 
-- [ ] **Step 4: Run the focused tree tests**
+- [x] **Step 4: Run the focused tree tests**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-tree.spec.ts`
 Expected: all quote state and recipe action assertions pass.
 
-- [ ] **Step 5: Commit the recipe quote UI**
+- [x] **Step 5: Commit the recipe quote UI**
 
 ```bash
 git add apps/web/src/app/shared/recipe-tree/recipe-tree.ts apps/web/src/app/shared/recipe-tree/recipe-tree.html apps/web/src/app/shared/recipe-tree/recipe-tree.scss apps/web/src/app/shared/recipe-tree/recipe-branch.html apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts
@@ -147,16 +147,16 @@ git commit -m "feat(crafting): show automatic quote freshness"
 
 ### Task 4: Verify recipe quote resolver end to end
 
-- [ ] **Step 1: Run all web tests**
+- [x] **Step 1: Run all web tests**
 
 Run: `pnpm --filter @bdo/web test`
 Expected: all web tests pass.
 
-- [ ] **Step 2: Verify `/recipes/items/1407` in the browser**
+- [x] **Step 2: Verify `/recipes/items/1407` in the browser**
 
 Expected: cached values render immediately when available, only active graph items refresh, and stale/missing states are visible without a manual quote button.
 
-- [ ] **Step 3: Record implementation evidence in `docs/ACTIVE_CONTEXT.md`**
+- [x] **Step 3: Record implementation evidence in `docs/ACTIVE_CONTEXT.md`**
 
 Record the new quote lifecycle, focused tests, and any limits.
 

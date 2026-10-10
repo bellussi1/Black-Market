@@ -252,6 +252,9 @@
 .summary-timestamp {
   color: var(--bm-muted);
 }
+.cache-stale-label {
+  color: var(--bm-accent);
+}
 .board-table-scroll {
   overflow-x: auto;
   max-height: 680px;

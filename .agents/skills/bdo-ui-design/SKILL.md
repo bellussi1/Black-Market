@@ -17,6 +17,8 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - Dados não conhecidos continuam identificados como ausentes. Não presumir rendimentos, preços, origens ou qualidade de itens por estética.
 - Unificar fórmulas do mesmo produto que diferem apenas por ingredientes substituíveis. Elixires com adjetivos de qualidade e carnes/sangues de um mesmo grupo são escolhas de ingrediente, não receitas independentes. Preservar IDs, estoques e proporções de substituição (como 3 comuns para 1 superior). Confirmar equivalências pelas fórmulas do catálogo; não considerar toda carne ou todo sangue intercambiável. Ver [Equivalências](references/recipe-equivalences.md).
 - Posições, seleção, expansão e viewport são estados separados. Expandir não significa recentralizar.
+- Mercado: ler primeiro a resposta da mesma chave de consulta; exibir cache vencido com idade enquanto revalida e mantê-lo em caso de erro. Não apresentar cache de outro filtro como resultado atual. Busca textual usa debounce de 250 ms.
+- Crafting orientado à venda: separar estoque do produto da receita de venda. Rendimento estimado é aplicado sem confirmação; ajustes permanecem opcionais. Uma combinação incompleta nunca recebe lucro/hora definitivo.
 
 ## Referências por tarefa
 

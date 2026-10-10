@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { edaniaSelectedGraphFixture } from './fixtures/edania-selected-graph';
 import {
   compareProductionPlans,
   planProduction,
@@ -122,6 +123,7 @@ describe('production planner', () => {
       { itemId: 4, required: 1, bought: 0, owned: 0, produced: 1 },
       { itemId: 5, required: 1, bought: 1, owned: 0, produced: 0 },
     ]);
+    expect(optimized?.sourceChoices).toEqual({ 2: 'buy', 4: 'produce', 5: 'buy' });
   });
 
   it('uses only unreserved stock in the automatic strategy', () => {
@@ -136,10 +138,10 @@ describe('production planner', () => {
     expect(input.inventory[0].quantity).toBe(2);
   });
 
-  it('returns an explicit pending result when the route search exceeds its branch limit', () => {
+  it('returns an explicit pending result when the route search exceeds its state limit', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
-    input.maxOptimizationBranches = 1;
+    input.maxOptimizationStates = 1;
 
     const result = planProduction(input);
 
@@ -147,6 +149,241 @@ describe('production planner', () => {
     expect(result.incomplete.find((plan) => plan.scenario === 'optimized')?.issues).toContainEqual(
       expect.objectContaining({ code: 'optimization-limit' }),
     );
+  });
+
+  it('prunes only when the best complete rate beats a safe profit and time upper bound', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.quotes[3].unitPrice = '1000';
+    input.estimates.middle.craftSeconds = 600;
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.profit).toBe('590');
+    expect(optimized?.seconds).toBe(60);
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '1 estados podados pelo limite superior seguro',
+    );
+  });
+
+  it('does not apply the revenue bound when sellable byproducts can increase revenue', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.recipes[0].byproducts = [{ itemId: 4, quantity: null }];
+    input.byproductValues = {
+      final: [{ itemId: 4, expectedQuantity: 1, unitPrice: '100000', sell: true }],
+    };
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '0 estados podados pelo limite superior seguro',
+    );
+  });
+
+  it('keeps the exact best result when profit is negative', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.quotes[3].unitPrice = '1';
+    input.quotes[2].unitPrice = '1000';
+    input.quotes[1].unitPrice = '1';
+    input.estimates.middle.craftSeconds = 600;
+
+    const result = planProduction(input);
+    const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.profit).toBe('-4');
+    expect(optimized?.materials.find((material) => material.itemId === 2)?.produced).toBe(2);
+    expect(optimized?.assumptions.join(' ')).toContain(
+      '0 estados podados pelo limite superior seguro',
+    );
+  });
+
+  it('matches an exhaustive oracle for a small buy-produce graph', () => {
+    const input = fixture();
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'alchemy',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [
+          { itemId: 2, quantity: 1 },
+          { itemId: 4, quantity: 1 },
+        ],
+      },
+      {
+        id: 'middle-a',
+        name: 'Meio A',
+        method: 'processing',
+        output: { itemId: 2, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 2 }],
+      },
+      {
+        id: 'middle-b',
+        name: 'Meio B',
+        method: 'processing',
+        output: { itemId: 4, quantity: 1 },
+        ingredients: [{ itemId: 5, quantity: 1 }],
+      },
+    ];
+    input.quotes = Object.fromEntries(
+      [1, 2, 3, 4, 5].map((itemId) => [
+        itemId,
+        {
+          unitPrice: String(itemId === 3 ? 1000 : itemId * 10),
+          available: 100,
+          observedAt: now,
+          source: 'market',
+        },
+      ]),
+    );
+    input.estimates = {
+      final: { craftSeconds: 5, source: 'fixed' },
+      'middle-a': { craftSeconds: 12, source: 'fixed' },
+      'middle-b': { craftSeconds: 2, source: 'fixed' },
+    };
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    const automatic = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized')!;
+    const oracleInput = { ...input, candidates: [{ recipeId: 'final', crafts: 1 }] };
+    const oracle = [
+      { 2: 'buy', 4: 'buy' },
+      { 2: 'buy', 4: 'produce' },
+      { 2: 'produce', 4: 'buy' },
+      { 2: 'produce', 4: 'produce' },
+    ]
+      .map(
+        (customChoices) =>
+          planProduction({ ...oracleInput, customChoices }).ranked.find(
+            (plan) => plan.scenario === 'custom',
+          )!,
+      )
+      .sort(compareProductionPlans)[0];
+
+    expect(automatic.profit).toBe(oracle.profit);
+    expect(automatic.profitPerHour).toBe(oracle.profitPerHour);
+    expect(automatic.materials).toEqual(oracle.materials);
+  });
+
+  it('optimizes a 38-producer Edania chain without enumerating irrelevant descendants', () => {
+    const input = fixture();
+    const recipes = [
+      {
+        id: 'edania-root',
+        name: 'Edania',
+        method: 'alchemy',
+        output: { itemId: 1407, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+      },
+    ];
+    for (let index = 1; index <= 38; index++) {
+      recipes.push({
+        id: `edania-component-${index}`,
+        name: `Componente ${index}`,
+        method: 'alchemy',
+        output: { itemId: index, quantity: 1 },
+        ingredients: [{ itemId: index === 38 ? 999 : index + 1, quantity: 1 }],
+      });
+    }
+    input.recipes = recipes;
+    input.quotes = Object.fromEntries(
+      [1407, 999, ...Array.from({ length: 38 }, (_, index) => index + 1)].map((itemId) => [
+        itemId,
+        {
+          unitPrice: itemId === 1407 ? '100000' : '100',
+          available: 100,
+          observedAt: now,
+          source: 'market',
+        },
+      ]),
+    );
+    input.estimates = Object.fromEntries(
+      recipes.map((recipe) => [recipe.id, { craftSeconds: 1, source: 'fixed' }]),
+    );
+    input.candidates = [{ recipeId: 'edania-root', optimizeCrafts: 1 }];
+
+    const result = planProduction(input);
+
+    expect(result.ranked.find((plan) => plan.scenario === 'optimized')).toMatchObject({
+      recipeId: 'edania-root',
+      profit: '64900',
+      seconds: 1,
+    });
+  });
+
+  it('completes an exact search for the selected Edania catalog topology snapshot', () => {
+    const topology = edaniaSelectedGraphFixture;
+    const root = {
+      id: topology.rootRecipeKey,
+      name: 'Edania',
+      method: 'alchemy',
+      output: { itemId: topology.outputItemId, quantity: 1 },
+      ingredients: topology.rootIngredientItemIds.map((itemId) => ({ itemId, quantity: 1 })),
+    };
+    const producers = topology.producers.map((producer) => ({
+      id: producer.recipeKey,
+      name: `Item ${producer.outputItemId}`,
+      method: 'alchemy',
+      output: { itemId: producer.outputItemId, quantity: 1 },
+      ingredients: producer.ingredientItemIds.map((itemId) => ({ itemId, quantity: 1 })),
+    }));
+    const recipes = [root, ...producers];
+    const itemIds = new Set([
+      topology.outputItemId,
+      ...topology.rootIngredientItemIds,
+      ...topology.producers.flatMap((producer) => [
+        producer.outputItemId,
+        ...producer.ingredientItemIds,
+      ]),
+    ]);
+    const input = fixture();
+    input.recipes = recipes;
+    input.quotes = Object.fromEntries(
+      [...itemIds].map((itemId) => [
+        itemId,
+        {
+          unitPrice: String(itemId === topology.outputItemId ? 100_000 : 100),
+          available: 1_000_000,
+          observedAt: now,
+          source: 'market' as const,
+        },
+      ]),
+    );
+    input.estimates = Object.fromEntries(
+      recipes.map((recipe) => [recipe.id, { expectedYield: 1, craftSeconds: 1, source: 'fixed' }]),
+    );
+    input.candidates = [{ recipeId: topology.rootRecipeKey, optimizeCrafts: 1 }];
+    input.maxOptimizationStates = 250_000;
+    input.profile.activeMinutes = 100_000;
+
+    const result = planProduction(input);
+    const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized).toBeDefined();
+    expect(optimized).toMatchObject({
+      profit: '64600',
+      seconds: 1,
+      sourceChoices: Object.fromEntries(
+        topology.rootIngredientItemIds.map((itemId) => [itemId, 'buy']),
+      ),
+      issues: [],
+    });
+    expect(optimized?.profitPerHour).not.toBeNull();
+    expect(optimized?.assumptions.join(' ')).toMatch(
+      /\d+ estados podados pelo limite superior seguro/,
+    );
+    expect(result.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(false);
+  });
+
+  it('requires explicit gathering yield and time when gathering is selected', () => {
+    const input = fixture();
+    input.customChoices = { 2: 'gather' };
+
+    const result = row(input, 'custom');
+
+    expect(result.profit).toBeNull();
+    expect(result.issues.map((issue) => issue.code)).toContain('missing-yield');
+    expect(result.issues.map((issue) => issue.code)).toContain('missing-time');
   });
 
   it('does not add an automatic scenario when the candidate has no optimization request', () => {
@@ -244,6 +481,25 @@ describe('production planner', () => {
     input.customChoices = { 2: 'produce' };
     input.quotes[1] = { unitPrice: '7', available: null, observedAt: now, source: 'npc' };
     expect(row(input, 'custom').cashCost).toBe('28');
+  });
+
+  it('uses available owned materials when a custom checkbox selects production', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', crafts: 1 }];
+    input.customChoices = { 2: 'produce' };
+    input.useOwnedInProduction = true;
+    input.inventory = [{ itemId: 2, quantity: 2 }];
+
+    const plan = row(input, 'custom');
+
+    expect(plan.materials.find((material) => material.itemId === 2)).toMatchObject({
+      required: 2,
+      owned: 2,
+      produced: 0,
+      bought: 0,
+    });
+    expect(plan.cashCost).toBe('0');
+    expect(plan.economicCost).toBe('60');
   });
 
   it('counts only explicitly valued byproducts and applies tax to their sale', () => {

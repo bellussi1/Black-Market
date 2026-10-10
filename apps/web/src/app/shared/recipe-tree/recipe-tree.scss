@@ -41,14 +41,6 @@
   border-color: var(--bm-accent);
   box-shadow: inset 0 -2px var(--bm-accent);
 }
-.yield-warning {
-  margin: 8px 0 0;
-  color: var(--bm-accent);
-  font-size: 13px;
-}
-.needs-confirmation input {
-  border-color: var(--bm-accent);
-}
 .production-configuration {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
@@ -158,61 +150,21 @@
   }
 }
 
-.market-subtle-refresh-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--bm-muted);
-  background: transparent;
-  border: 1px solid var(--bm-border);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover:not(:disabled) {
-    color: var(--bm-accent);
-    border-color: var(--bm-accent);
-    background: var(--bm-surface-raised, #242730);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-icon {
-    flex-shrink: 0;
-    transition: transform 300ms ease;
-  }
-
-  &:hover:not(:disabled) .btn-icon {
-    transform: rotate(45deg);
-  }
-}
-
-.btn-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--bm-border);
-  border-top-color: var(--bm-accent);
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .economic-notice {
   margin: 12px 16px 0;
   animation: fade-in 180ms ease-out;
+}
+
+.quote-freshness {
+  display: block;
+  margin: 4px 0;
+  color: var(--bm-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.quote-freshness.is-stale {
+  color: var(--bm-warning, #d49a84);
 }
 
 @keyframes fade-in {
@@ -910,9 +862,9 @@
   background: linear-gradient(90deg, rgba(114, 164, 212, 0.08) 0%, var(--bm-surface) 100%);
 }
 
-.insight-decision-card.insight-scarce {
-  border-left-color: #d9822b;
-  background: linear-gradient(90deg, rgba(217, 130, 43, 0.08) 0%, var(--bm-surface) 100%);
+.insight-decision-card.insight-unprofitable {
+  border-left-color: #b87963;
+  background: linear-gradient(90deg, rgba(184, 121, 99, 0.08) 0%, var(--bm-surface) 100%);
 }
 
 .insight-badge-row {
@@ -945,10 +897,10 @@
   color: #9ac2ea;
 }
 
-.badge-scarce {
-  background: rgba(217, 130, 43, 0.15);
-  border: 1px solid #d9822b;
-  color: #f0a256;
+.badge-unprofitable {
+  background: rgba(184, 121, 99, 0.15);
+  border: 1px solid #b87963;
+  color: #d49a84;
 }
 
 .badge-unknown {
@@ -1031,33 +983,75 @@
   color: #9ac2ea;
 }
 
-.chip-scarce {
-  background: rgba(217, 130, 43, 0.12);
-  border: 1px solid rgba(217, 130, 43, 0.4);
-  color: #f0a256;
+.production-calibration {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
 }
 
-.yield-warning-box {
+.calibration-control,
+.gather-calibration-row label {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.btn-apply-default-yield {
-  align-self: flex-start;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid var(--bm-accent);
-  color: var(--bm-accent);
-  padding: 6px 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--bm-text);
   font-size: 12px;
-  font-weight: 600;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 120ms ease-out;
 }
 
-.btn-apply-default-yield:hover {
-  background: var(--bm-accent);
-  color: var(--bm-background);
+.calibration-control input,
+.gather-calibration-row input {
+  width: 110px;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-background);
+  color: var(--bm-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gather-calibration-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) repeat(2, minmax(160px, auto));
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--bm-border);
+}
+
+.material-source-checkbox {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  color: var(--bm-text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.material-source-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bm-accent);
+}
+
+.material-source-checkbox:has(input:checked) span {
+  color: var(--bm-accent);
+}
+
+.production-issues {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--bm-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .gather-calibration-row {
+    grid-template-columns: 1fr;
+  }
 }
