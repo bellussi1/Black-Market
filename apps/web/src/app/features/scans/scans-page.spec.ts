@@ -99,6 +99,284 @@ describe('Screenshot entry', () => {
     expect(page.cells().map((row) => row.include)).toEqual([true, false, false]);
     expect(page.reviewCells()).toHaveLength(2);
   });
+  it('saves confident results across captures after one approval and leaves ambiguous items out', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: {
+        files: [
+          new File(['a'], 'a.png', { type: 'image/png' }),
+          new File(['b'], 'b.png', { type: 'image/png' }),
+        ],
+      },
+    } as unknown as Event);
+    const draft = (id: number, uncertain = false) => ({
+      id,
+      preview: '',
+      options: [],
+      item: { id, name: `Material ${id}`, icon: null } as CatalogItem,
+      itemUncertain: uncertain,
+      score: 1,
+      quantity: '12',
+      quantityText: '12',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 95,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    });
+    const jobs = page.jobs();
+    jobs[0].cells = [draft(100), draft(101, true)];
+    jobs[1].cells = [draft(102)];
+    jobs.forEach((job) => (job.status = 'ready'));
+    page.jobs.set([...jobs]);
+    page.cells.set(jobs[0].cells);
+    expect(page.importableCount()).toBe(2);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(0);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(
+      page.store
+        .data()
+        .inventory.map((row) => row.itemId)
+        .sort(),
+    ).toEqual([100, 102]);
+    expect(page.jobs()[0].cells[1].reviewed).toBe(false);
+    expect(page.batchConfirmed()).toBe(false);
+    page.review(page.cells()[0], false);
+    expect(page.reliable(page.cells()[0])).toBe(false);
+    page.confirmReliableBatch();
+    expect(page.cells()[0].include).toBe(false);
+    expect(page.importableCount()).toBe(1);
+  });
+  it('shows duplicate reliable recognitions before accepting or saving them', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: {
+        files: [
+          new File(['a'], 'a.png', { type: 'image/png' }),
+          new File(['b'], 'b.png', { type: 'image/png' }),
+        ],
+      },
+    } as unknown as Event);
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: { id: 212, name: 'Corda', icon: null } as CatalogItem,
+      score: 1,
+      quantity: '48',
+      quantityText: '48',
+      quantityConfidence: 95,
+      quantityEstimate: null,
+      quantityUncertain: false,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.jobs.update((jobs) =>
+      jobs.map((job) => ({ ...job, status: 'ready', cells: [{ ...cell }] })),
+    );
+    page.cells.set(page.jobs()[0].cells);
+    expect(page.duplicateGroups()).toHaveLength(1);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().inventory).toHaveLength(0);
+    expect(page.message()).toContain('repetido');
+    page.chooseDuplicate(page.duplicateGroups()[0][0], 'maximum');
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().inventory[0].quantity).toBe(48);
+  });
+  it('clears quantity OCR warnings after an exact manual correction', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: null,
+      quantity: '1200',
+      quantityText: '1.2k',
+      quantityConfidence: 40,
+      quantityEstimate: '1200',
+      quantityUncertain: true,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+    page.edited(cell);
+    expect(cell).toMatchObject({
+      quantityUncertain: false,
+      quantityEstimate: null,
+      quantityConfidence: 100,
+    });
+    cell.quantity = 'abc';
+    page.edited(cell);
+    expect(cell.quantityUncertain).toBe(true);
+  });
+  it('allows quick estimate auto-fill, default quantity, and toggle ignore/restore', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const item = { id: 10, name: 'Item Teste', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      quantity: '',
+      quantityText: '1.2k',
+      quantityEstimate: '1200',
+      quantityUncertain: true,
+      quantityConfidence: 40,
+      include: false,
+      reviewed: false,
+      ignored: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+    page.useEstimate(cell);
+    expect(cell.quantity).toBe('1200');
+    expect(cell.reviewed).toBe(true);
+    expect(cell.include).toBe(true);
+
+    cell.quantity = '';
+    page.useDefaultQuantity(cell, '1');
+    expect(cell.quantity).toBe('1');
+    expect(cell.reviewed).toBe(true);
+    expect(cell.include).toBe(true);
+
+    page.toggleIgnore(cell);
+    expect(cell.ignored).toBe(true);
+    expect(cell.include).toBe(false);
+    expect(cell.reviewed).toBe(false);
+
+    page.toggleIgnore(cell);
+    expect(cell.ignored).toBe(false);
+  });
+  it('directly confirms and saves all identified items in 1 click without individual reviews', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: {
+        files: [
+          new File(['c1'], 'c1.png', { type: 'image/png' }),
+          new File(['c2'], 'c2.png', { type: 'image/png' }),
+        ],
+      },
+    } as unknown as Event);
+    const item1 = { id: 501, name: 'Pedra Negra (Arma)', icon: null } as CatalogItem;
+    const item2 = { id: 502, name: 'Pedra Negra (Armadura)', icon: null } as CatalogItem;
+    const jobs = page.jobs();
+    jobs[0].cells = [
+      {
+        id: 0,
+        preview: '',
+        options: [item1],
+        item: item1,
+        quantity: '50',
+        quantityText: '50',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        quantityConfidence: 95,
+        include: false,
+        reviewed: false,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ];
+    jobs[1].cells = [
+      {
+        id: 0,
+        preview: '',
+        options: [item2],
+        item: item2,
+        quantity: '',
+        quantityText: '',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        quantityConfidence: 85,
+        include: false,
+        reviewed: false,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ];
+    for (const job of jobs) job.status = 'ready';
+    page.jobs.set([...jobs]);
+    page.cells.set(jobs[0].cells);
+    expect(page.totalIdentifiedCount()).toBe(2);
+    expect(page.canSaveDirectly()).toBe(true);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+
+    await page.confirmAndSaveAll();
+
+    expect(page.store.data().inventory).toHaveLength(2);
+    expect(
+      page.store
+        .data()
+        .inventory.map((row) => row.itemId)
+        .sort(),
+    ).toEqual([501, 502]);
+    expect(page.store.data().inventory.find((r) => r.itemId === 502)?.quantity).toBe(1);
+  });
+  it('keeps the card visible while typing a multi-digit correction until explicitly included', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: { id: 100, name: 'Material', icon: null } as CatalogItem,
+      score: 1,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      quantityConfidence: 0,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.preview.set('data:image/png;base64,test');
+    page.cells.set([cell]);
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('#scan-qty-0') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    for (const value of ['1', '12', '123']) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('#scan-qty-0')).toBe(input);
+      expect(page.reviewCells()).toHaveLength(1);
+    }
+    expect(cell.quantity).toBe('123');
+    expect(page.reliable(cell)).toBe(false);
+    page.review(cell, true);
+    expect(page.reviewCells()).toHaveLength(0);
+  });
   it('preserves historical gear values only for the same item without confirming an unread level', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
@@ -288,13 +566,14 @@ describe('Screenshot entry', () => {
     expect(page.cells()).toHaveLength(2);
     expect(page.cells()[0].options.map((item) => item.id)).toEqual([6201, 6202]);
     expect(page.cells()[0]).toMatchObject({
-      item: null,
+      item: items[1],
+      itemUncertain: true,
       quantity: '',
       quantityEstimate: '264800',
       reviewed: false,
       include: false,
     });
-    expect(page.cells()[1]).toMatchObject({ item: null, quantity: '123' });
+    expect(page.cells()[1]).toMatchObject({ item: null, itemUncertain: true, quantity: '123' });
     expect(fixture.nativeElement.querySelectorAll('.scan-cell')).toHaveLength(2);
     page.confirmStock = true;
     page.applyStock();

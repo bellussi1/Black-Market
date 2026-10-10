@@ -12,13 +12,7 @@ describe('platform footer', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('footer').length).toBe(1);
     expect(element.querySelector('footer')?.getAttribute('aria-label')).toBeTruthy();
-    for (const path of [
-      '/termos',
-      '/privacidade',
-      '/cookies',
-      '/contato',
-      '/sobre/',
-    ]) {
+    for (const path of ['/termos', '/privacidade', '/cookies', '/contato', '/sobre/']) {
       expect(element.querySelector(`a[href="${path}"]`)).not.toBeNull();
     }
     expect(element.querySelectorAll('nav[aria-label]').length).toBe(2);

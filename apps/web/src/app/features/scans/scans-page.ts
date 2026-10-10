@@ -60,6 +60,8 @@ export interface CellDraft {
   levelConfirmed?: boolean;
   caphrasConfirmed?: boolean;
   ignored?: boolean;
+  itemUncertain?: boolean;
+  autoExcluded?: boolean;
   id: number;
   preview: string;
   options: CatalogItem[];
@@ -136,6 +138,35 @@ export class ScansPage implements OnDestroy {
   readonly duplicateGroups = computed(() =>
     [...occurrenceGroups(this.reviewedOccurrences())].filter(([, rows]) => rows.length > 1),
   );
+  readonly reliableBatchCount = computed(() =>
+    this.jobs().reduce(
+      (count, job) => count + job.cells.filter((cell) => this.reliable(cell, job.mode)).length,
+      0,
+    ),
+  );
+  readonly importableCount = computed(() => this.allReviewed().length + this.reliableBatchCount());
+  readonly pendingBatchCount = computed(() =>
+    this.jobs().reduce(
+      (count, job) =>
+        count +
+        job.cells.filter(
+          (cell) => !cell.reviewed && !cell.ignored && !this.reliable(cell, job.mode),
+        ).length,
+      0,
+    ),
+  );
+  readonly totalIdentifiedCount = computed(() =>
+    this.jobs().reduce(
+      (count, job) =>
+        count +
+        job.cells.filter(
+          (cell) =>
+            !cell.ignored && !!cell.item && (job.mode === 'gear' ? Boolean(cell.slot) : true),
+        ).length,
+      0,
+    ),
+  );
+  readonly canSaveDirectly = computed(() => this.totalIdentifiedCount() > 0);
   readonly batchConfirmed = signal(false);
   private batchCancelled = false;
   private loadGeneration = 0;
@@ -172,7 +203,7 @@ export class ScansPage implements OnDestroy {
   readonly skipLockedSlots = signal(true);
   readonly reviewCells = computed(() =>
     this.reviewFilter() === 'pending'
-      ? this.cells().filter((cell) => !cell.reviewed && !cell.ignored)
+      ? this.cells().filter((cell) => !cell.reviewed && !cell.ignored && !this.reliable(cell))
       : this.cells(),
   );
   readonly reliableCount = computed(
@@ -338,12 +369,15 @@ export class ScansPage implements OnDestroy {
   profiles() {
     return this.store.data().characters.filter((row) => row.region === this.store.data().region);
   }
-  reliable(cell: CellDraft) {
+  reliable(cell: CellDraft, mode: ScanMode = this.mode) {
     return (
-      this.mode !== 'gear' &&
+      mode !== 'gear' &&
+      mode !== 'number' &&
       !cell.reviewed &&
       !cell.ignored &&
+      !cell.autoExcluded &&
       !!cell.item &&
+      !cell.itemUncertain &&
       cell.score !== undefined &&
       cell.score <= 8 &&
       !cell.quantityUncertain &&
@@ -365,6 +399,83 @@ export class ScansPage implements OnDestroy {
     this.message.set(
       'Sugestões nítidas confirmadas. Revise as pendências e o destino antes de sincronizar.',
     );
+  }
+  confirmReliableBatch() {
+    this.saveActiveJob();
+    const count = this.reliableBatchCount();
+    this.jobs.update((jobs) =>
+      jobs.map((job) => ({
+        ...job,
+        cells: job.cells.map((cell) =>
+          this.reliable(cell, job.mode) ? { ...cell, include: true, reviewed: true } : cell,
+        ),
+      })),
+    );
+    const active = this.activeJob();
+    if (active) this.cells.set(active.cells);
+    this.reviewPage.set(0);
+    this.batchConfirmed.set(false);
+    this.message.set(
+      `${count} itens identificados incluídos no lote. Corrija somente as pendências que deseja importar.`,
+    );
+  }
+  useEstimate(cell: CellDraft) {
+    if (!cell.quantityEstimate) return;
+    cell.quantity = cell.quantityEstimate;
+    this.edited(cell);
+    this.review(cell, true);
+  }
+  useDefaultQuantity(cell: CellDraft, qty = '1') {
+    cell.quantity = qty;
+    this.edited(cell);
+    this.review(cell, true);
+  }
+  toggleIgnore(cell: CellDraft) {
+    cell.ignored = !cell.ignored;
+    if (cell.ignored) {
+      cell.include = false;
+      cell.reviewed = false;
+      this.message.set(`Espaço ${cell.id + 1} ignorado. Não será importado.`);
+    } else {
+      this.message.set(`Espaço ${cell.id + 1} restaurado.`);
+    }
+    this.cells.set([...this.cells()]);
+    this.saveActiveJob();
+    this.batchConfirmed.set(false);
+  }
+  async confirmAndSaveAll() {
+    if (this.locked()) return;
+    this.saveActiveJob();
+    this.jobs.update((jobs) =>
+      jobs.map((job) => ({
+        ...job,
+        cells: job.cells.map((cell) => {
+          if (cell.ignored || !cell.item) return cell;
+          if (job.mode === 'storage' || job.mode === 'inventory') {
+            const qty = this.integer(cell.quantity);
+            const resolvedQty =
+              qty !== null && qty > 0 ? cell.quantity : (cell.quantityEstimate ?? '1');
+            return {
+              ...cell,
+              quantity: resolvedQty,
+              quantityUncertain: false,
+              include: true,
+              reviewed: true,
+              autoExcluded: false,
+            };
+          } else if (job.mode === 'gear') {
+            if (cell.slot) {
+              return { ...cell, include: true, reviewed: true, autoExcluded: false };
+            }
+          }
+          return cell;
+        }),
+      })),
+    );
+    const active = this.activeJob();
+    if (active) this.cells.set(active.cells);
+    this.batchConfirmed.set(true);
+    await this.saveBatch();
   }
   setReviewFilter(filter: 'pending' | 'all') {
     this.reviewFilter.set(filter);
@@ -724,7 +835,7 @@ export class ScansPage implements OnDestroy {
       this.message.set(
         this.batchCancelled
           ? 'Lote cancelado. Resultados anteriores continuam disponíveis.'
-          : 'Lote analisado. Abra cada captura, revise e confirme a importação consolidada.',
+          : 'Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.',
       );
     }
   }
@@ -972,7 +1083,8 @@ export class ScansPage implements OnDestroy {
             sourceRect: { ...cell },
             preview: canvas.toDataURL(),
             options,
-            item: uniqueSuggestion ? (items.get(best.id) ?? null) : null,
+            item: uniqueSuggestion ? (items.get(best.id) ?? null) : (options[0] ?? null),
+            itemUncertain: !uniqueSuggestion,
             quantity: '',
             quantityText: '',
             quantityEstimate: null,
@@ -1043,16 +1155,36 @@ export class ScansPage implements OnDestroy {
           this.cells.set(
             drafts.map((draft, i) => {
               const reading = quantities[i];
+              const hasExactReading = Boolean(
+                reading?.value && !reading.approximate && reading.confidence >= 50,
+              );
+              const isApproximate = Boolean(reading?.approximate);
+              const hasNoText = !reading?.text || reading.text.trim() === '';
+
+              let qty = '';
+              let uncertain = true;
+              let confidence = reading?.confidence ?? 0;
+
+              if (hasExactReading && reading?.value) {
+                qty = reading.value;
+                uncertain = false;
+              } else if (isApproximate) {
+                qty = '';
+                uncertain = true;
+              } else if (draft.item && hasNoText) {
+                // In BDO, inventory/storage slots with an item and no number text overlay represent 1 unit.
+                qty = '1';
+                uncertain = false;
+                confidence = 85;
+              }
+
               return {
                 ...draft,
-                quantity:
-                  reading?.value && !reading.approximate && reading.confidence >= 50
-                    ? reading.value
-                    : '',
+                quantity: qty,
                 quantityText: reading?.text ?? '',
                 quantityEstimate: reading?.approximate ? reading.value : null,
-                quantityUncertain: !reading?.value || reading.confidence < 50,
-                quantityConfidence: reading?.confidence,
+                quantityUncertain: uncertain,
+                quantityConfidence: confidence,
               };
             }),
           );
@@ -1061,7 +1193,7 @@ export class ScansPage implements OnDestroy {
         this.message.set(
           mode === 'gear'
             ? `${drafts.length} ícones preparados. Confira item, posição e aprimoramento. Trajes e artefatos podem aparecer sem posição; ignore o que não faz parte do conjunto de combate. Caphras não é visível nesta ficha.`
-            : `${drafts.length} espaços preparados para revisão. Confirme somente os itens e as quantidades que conferiu no jogo. Valores abreviados precisam da quantidade exata.`,
+            : `${drafts.length} espaços analisados. Resultados confiáveis estão prontos para importar; corrija somente os casos duvidosos que deseja incluir.`,
         );
       }
       if (job) {
@@ -1154,6 +1286,8 @@ export class ScansPage implements OnDestroy {
       cell.options = [item, ...cell.options];
     }
     cell.item = item;
+    cell.itemUncertain = false;
+    cell.autoExcluded = true;
     if (this.mode === 'gear') {
       cell.levelConfirmed = false;
       cell.caphrasConfirmed = false;
@@ -1174,6 +1308,13 @@ export class ScansPage implements OnDestroy {
     return parsed && !parsed.approximate ? Number(parsed.value) : null;
   }
   edited(cell: CellDraft) {
+    // Keep a correction in the editor until explicit inclusion, even between keystrokes.
+    cell.autoExcluded = true;
+    if (this.mode === 'storage' || this.mode === 'inventory') {
+      cell.quantityUncertain = this.integer(cell.quantity) === null;
+      cell.quantityEstimate = null;
+      cell.quantityConfidence = cell.quantityUncertain ? 0 : 100;
+    }
     cell.reviewed = false;
     cell.include = false;
     this.confirmStock = false;
@@ -1223,6 +1364,10 @@ export class ScansPage implements OnDestroy {
     cell.ignored = false;
     cell.reviewed = checked;
     cell.include = checked;
+    cell.autoExcluded = !checked;
+    this.message.set(
+      checked ? `${cell.item?.name} incluído no lote.` : `${cell.item?.name} retirado do lote.`,
+    );
     this.confirmStock = false;
     this.cells.set([...this.cells()]);
     this.saveActiveJob();
@@ -1406,7 +1551,12 @@ export class ScansPage implements OnDestroy {
     }
   }
   reviewedOccurrences(): ReviewedOccurrence[] {
-    return this.allReviewed()
+    return this.jobs()
+      .flatMap((job) =>
+        job.cells
+          .filter((cell) => (cell.include && cell.reviewed) || this.reliable(cell, job.mode))
+          .map((cell) => ({ job, cell })),
+      )
       .filter(({ job }) => job.mode === 'storage' || job.mode === 'inventory')
       .filter(({ cell }) => cell.item && this.integer(cell.quantity) !== null)
       .map(({ job, cell }) => ({
@@ -1439,6 +1589,7 @@ export class ScansPage implements OnDestroy {
     cell.include = false;
     cell.reviewed = false;
     cell.ignored = true;
+    this.message.set(`Espaço ${cell.id + 1} ignorado. Não será importado.`);
     this.cells.set([...this.cells()]);
     this.saveActiveJob();
     this.batchConfirmed.set(false);
@@ -1447,6 +1598,7 @@ export class ScansPage implements OnDestroy {
     if (this.locked() || !this.batchConfirmed() || this.readingRegion !== this.store.data().region)
       return;
     this.saveActiveJob();
+    this.confirmReliableBatch();
     const selected = this.allReviewed();
     if (!selected.length) {
       this.message.set('Confira e inclua pelo menos um item.');

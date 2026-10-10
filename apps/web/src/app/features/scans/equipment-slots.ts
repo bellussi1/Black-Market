@@ -44,19 +44,35 @@ export function findEquipmentFrames(frame: PixelFrame): Crop[] {
     }
   const sizes = boxes.map((box) => box.width).sort((a, b) => a - b);
   const median = sizes[Math.floor(sizes.length / 2)] ?? 0;
-  return boxes.filter((box) =>
-    (boxes.length < 8 || (box.width >= median * 0.8 && box.width <= median * 1.2)) &&
-    !boxes.some((outer) => outer !== box && outer.width > box.width &&
-      Math.abs(outer.left + outer.width / 2 - box.left - box.width / 2) < outer.width * 0.4 &&
-      Math.abs(outer.top + outer.height / 2 - box.top - box.height / 2) < outer.height * 0.4),
-  ).slice(0, 32);
+  return boxes
+    .filter(
+      (box) =>
+        (boxes.length < 8 || (box.width >= median * 0.8 && box.width <= median * 1.2)) &&
+        !boxes.some(
+          (outer) =>
+            outer !== box &&
+            outer.width > box.width &&
+            Math.abs(outer.left + outer.width / 2 - box.left - box.width / 2) < outer.width * 0.4 &&
+            Math.abs(outer.top + outer.height / 2 - box.top - box.height / 2) < outer.height * 0.4,
+        ),
+    )
+    .slice(0, 32);
 }
 
 const combatLayout = [
-  ['helmet', 0, 0], ['armor', 3, 0], ['gloves', -1.2, 1.1], ['shoes', 4.2, 1.1],
-  ['earring1', -2, 2.45], ['earring2', 5, 2.45], ['ring1', -2.25, 3.75],
-  ['ring2', 5.25, 3.75], ['necklace', -1.2, 6.3], ['belt', 4.2, 6.3],
-  ['mainhand', 0, 7.3], ['awakening', 1.5, 7.6], ['offhand', 3, 7.3],
+  ['helmet', 0, 0],
+  ['armor', 3, 0],
+  ['gloves', -1.2, 1.1],
+  ['shoes', 4.2, 1.1],
+  ['earring1', -2, 2.45],
+  ['earring2', 5, 2.45],
+  ['ring1', -2.25, 3.75],
+  ['ring2', 5.25, 3.75],
+  ['necklace', -1.2, 6.3],
+  ['belt', 4.2, 6.3],
+  ['mainhand', 0, 7.3],
+  ['awakening', 1.5, 7.6],
+  ['offhand', 3, 7.3],
 ] as const;
 export interface EquipmentLayout {
   slots: ReadonlyMap<number, string>;
@@ -65,34 +81,56 @@ export interface EquipmentLayout {
 /** Suggests positions only when a full combat constellation matches; costumes stay unassigned. */
 export function suggestEquipmentLayout(frames: readonly Crop[], bounds: Crop): EquipmentLayout {
   let best: EquipmentLayout = { slots: new Map(), statistics: [] };
-  for (const helmet of frames) for (const armor of frames) {
-    const size = (helmet.width + armor.width) / 2;
-    if (Math.abs(helmet.top - armor.top) > size * 0.25 ||
-      (armor.left - helmet.left) / size < 2.7 || (armor.left - helmet.left) / size > 3.3) continue;
-    const unit = (armor.left - helmet.left) / 3;
-    const sizes = frames.map((frame) => frame.width).sort((a, b) => a - b);
-    const verticalUnit = sizes[Math.floor(sizes.length / 2)] ?? size;
-    const x = helmet.left + helmet.width / 2;
-    const y = (helmet.top + armor.top) / 2 + size / 2;
-    const slots = new Map<number, string>();
-    for (const [slot, dx, dy] of combatLayout) {
-      const index = frames.findIndex((box, i) => !slots.has(i) &&
-        Math.hypot((box.left + box.width / 2 - x) / unit - dx,
-          (box.top + box.height / 2 - y) / verticalUnit - dy) < 0.4);
-      if (index !== -1) slots.set(index, slot);
+  for (const helmet of frames)
+    for (const armor of frames) {
+      const size = (helmet.width + armor.width) / 2;
+      if (
+        Math.abs(helmet.top - armor.top) > size * 0.25 ||
+        (armor.left - helmet.left) / size < 2.7 ||
+        (armor.left - helmet.left) / size > 3.3
+      )
+        continue;
+      const unit = (armor.left - helmet.left) / 3;
+      const sizes = frames.map((frame) => frame.width).sort((a, b) => a - b);
+      const verticalUnit = sizes[Math.floor(sizes.length / 2)] ?? size;
+      const x = helmet.left + helmet.width / 2;
+      const y = (helmet.top + armor.top) / 2 + size / 2;
+      const slots = new Map<number, string>();
+      for (const [slot, dx, dy] of combatLayout) {
+        const index = frames.findIndex(
+          (box, i) =>
+            !slots.has(i) &&
+            Math.hypot(
+              (box.left + box.width / 2 - x) / unit - dx,
+              (box.top + box.height / 2 - y) / verticalUnit - dy,
+            ) < 0.4,
+        );
+        if (index !== -1) slots.set(index, slot);
+      }
+      if (
+        slots.size < 10 ||
+        !['mainhand', 'awakening', 'offhand'].every((slot) => [...slots.values()].includes(slot)) ||
+        slots.size <= best.slots.size
+      )
+        continue;
+      const statistics: EquipmentLayout['statistics'] = [];
+      for (const [i, field] of (['mainAp', 'awakeAp', 'dp'] as const).entries()) {
+        const crop = {
+          left: x + unit * 4.5,
+          top: y + verticalUnit * (10.25 + i * 0.67),
+          width: unit * 1.05,
+          height: verticalUnit * 0.55,
+        };
+        if (
+          crop.left >= bounds.left &&
+          crop.top >= bounds.top &&
+          crop.left + crop.width <= bounds.left + bounds.width &&
+          crop.top + crop.height <= bounds.top + bounds.height
+        )
+          statistics.push({ field, crop });
+      }
+      best = { slots, statistics };
     }
-    if (slots.size < 10 || !['mainhand', 'awakening', 'offhand'].every((slot) =>
-      [...slots.values()].includes(slot)) || slots.size <= best.slots.size) continue;
-    const statistics: EquipmentLayout['statistics'] = [];
-    for (const [i, field] of (['mainAp', 'awakeAp', 'dp'] as const).entries()) {
-      const crop = { left: x + unit * 4.5, top: y + verticalUnit * (10.25 + i * 0.67),
-        width: unit * 1.05, height: verticalUnit * 0.55 };
-      if (crop.left >= bounds.left && crop.top >= bounds.top &&
-        crop.left + crop.width <= bounds.left + bounds.width &&
-        crop.top + crop.height <= bounds.top + bounds.height) statistics.push({ field, crop });
-    }
-    best = { slots, statistics };
-  }
   return best;
 }
 export function detectEquipmentFrames(image: ImageBitmap, bounds: Crop): Crop[] {

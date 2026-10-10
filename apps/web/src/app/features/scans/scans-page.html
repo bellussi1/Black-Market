@@ -4,7 +4,8 @@
     <h1 i18n>Importar capturas</h1>
     <p i18n>
       Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para sua
-      conta. Confira cada resultado antes de salvar.
+      conta. Item e quantidade vêm preenchidos quando reconhecidos. Corrija as dúvidas e confirme o
+      lote para salvar.
     </p>
   </header>
   <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
@@ -427,7 +428,7 @@
     </section>
   }
   @if (message()) {
-    <p role="status">{{ message() }}</p>
+    <p class="scan-feedback" role="status" animate.enter="scan-feedback-enter">{{ message() }}</p>
   }
   @if (preview() && !busy()) {
     @if (mode === 'number') {
@@ -462,7 +463,7 @@
       </section>
     } @else if (cells().length) {
       <section class="panel">
-        <h2 id="scan-review-title" i18n>3. Revise antes de salvar</h2>
+        <h2 id="scan-review-title" i18n>3. Corrigir resultados</h2>
         <p i18n>
           As sugestões são comparações visuais. Itens com a mesma imagem podem ter nomes e
           aprimoramentos diferentes. Escolha o item correto ou busque pelo nome.
@@ -482,6 +483,37 @@
               ><strong>{{ abbreviatedCount() }}</strong> quantidades abreviadas</span
             >
           }
+        </div>
+        <div class="batch-master-bar">
+          <div class="master-bar-info">
+            <h3 i18n>Importação Direta ao Armazém</h3>
+            <p i18n>
+              <strong>{{ totalIdentifiedCount() }}</strong> itens identificados no lote. Você pode
+              salvar todos imediatamente ou corrigir os espaços abaixo.
+            </p>
+          </div>
+          <div class="master-bar-actions">
+            <button
+              type="button"
+              class="btn btn-save-master"
+              (click)="confirmAndSaveAll()"
+              [disabled]="locked() || !canSaveDirectly()"
+              i18n
+            >
+              Confirmar e salvar no armazém ({{ totalIdentifiedCount() }} itens)
+            </button>
+            @if (reliableBatchCount()) {
+              <button
+                type="button"
+                class="btn-batch-reliable"
+                (click)="confirmReliableBatch()"
+                [disabled]="locked()"
+                i18n
+              >
+                Incluir {{ reliableBatchCount() }} confiáveis
+              </button>
+            }
+          </div>
         </div>
         @if (mode === 'storage') {
           <label for="scan-location" i18n>Local deste estoque</label
@@ -544,7 +576,7 @@
               (click)="setReviewFilter('pending')"
               i18n
             >
-              Pendências
+              A corrigir
             </button>
             <button
               type="button"
@@ -557,7 +589,7 @@
           </div>
           @if (reliableCount()) {
             <button type="button" (click)="confirmReliable()" i18n>
-              Conferi as {{ reliableCount() }} sugestões nítidas
+              Incluir {{ reliableCount() }} itens identificados desta captura
             </button>
           }
           <button
@@ -582,67 +614,117 @@
             Próximos espaços
           </button>
         </nav>
+        @if (!reviewCells().length) {
+          <p class="scan-feedback" role="status" animate.enter="scan-feedback-enter" i18n>
+            Nenhuma correção pendente nesta captura. Confira o resumo do lote abaixo ou abra “Todos
+            os itens”.
+          </p>
+        }
         <div class="scan-cells">
           @for (cell of visibleCells(); track cell.id) {
-            <article class="scan-cell" [class.reviewed]="cell.reviewed">
+            <article
+              class="scan-cell"
+              [class.reviewed]="cell.reviewed"
+              [class.ignored]="cell.ignored"
+              animate.enter="scan-card-enter"
+              animate.leave="scan-card-leave"
+            >
               <div class="scan-cell-head">
                 <h3 i18n>Espaço {{ cell.id + 1 }}</h3>
-                <span class="scan-status">{{
-                  cell.ignored
-                    ? 'Ignorado'
-                    : cell.reviewed
-                      ? 'Conferido'
-                      : cell.item
-                        ? 'Sugerido — revisar'
-                        : cell.options.length
-                          ? 'Ambíguo'
-                          : 'Não identificado'
-                }}</span>
+                <span
+                  class="scan-status"
+                  [class.badge-success]="cell.reviewed"
+                  [class.badge-ready]="!cell.reviewed && reliable(cell)"
+                  [class.badge-warning]="!cell.reviewed && !reliable(cell) && !cell.ignored"
+                  [class.badge-ignored]="cell.ignored"
+                  >{{
+                    cell.ignored
+                      ? 'Ignorado'
+                      : cell.reviewed
+                        ? 'Incluído'
+                        : reliable(cell)
+                          ? 'Pronto para importar'
+                          : cell.itemUncertain && cell.item
+                            ? 'Item incerto'
+                            : cell.quantityUncertain || cell.quantityEstimate !== null
+                              ? 'Corrigir quant.'
+                              : cell.item
+                                ? 'Confirmar'
+                                : cell.options.length
+                                  ? 'Ambíguo'
+                                  : 'Não identificado'
+                  }}</span
+                >
               </div>
+
               <div class="scan-icon-comparison">
-                <div>
-                  <span i18n>Na captura</span>
-                  <img
-                    [src]="cell.preview"
-                    width="48"
-                    height="48"
-                    alt="Espaço recortado do print"
-                    i18n-alt
-                  />
-                </div>
-                @if (cell.item ?? cell.options[0]; as item) {
-                  <div>
-                    <span i18n>No catálogo</span
-                    ><app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
-                    <span>{{ item.name }}</span>
+                <div class="slot-column">
+                  <span class="slot-label" i18n>Na captura</span>
+                  <div class="slot-wrapper">
+                    <img
+                      [src]="cell.preview"
+                      width="48"
+                      height="48"
+                      alt="Espaço recortado do print"
+                      i18n-alt
+                    />
                   </div>
-                }
-              </div>
-              @if (cell.score !== undefined) {
-                <p class="help" i18n>
-                  Distância visual {{ cell.score.toFixed(1) }} · menor é mais semelhante. Não é uma
-                  probabilidade.
-                </p>
-              }
-              <p class="help" i18n>
-                Origem: captura {{ activeCaptureNumber() }} · espaço {{ cell.id + 1 }}
-              </p>
-              <button type="button" (click)="ignore(cell)" i18n>Ignorar este espaço</button>
-              <label [for]="'scan-item-' + cell.id" i18n>Qual é o item?</label
-              ><select
-                [id]="'scan-item-' + cell.id"
-                [ngModel]="cell.item?.id ?? ''"
-                (ngModelChange)="choose(cell, $event)"
-              >
-                <option value="" i18n>Escolha o item correto</option>
-                @for (group of groupItemOptions(cell.options); track group.label) {
-                  <optgroup [label]="group.label">
-                    @for (option of group.items; track option.id) {
-                      <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
+                </div>
+                <div class="slot-column">
+                  <span class="slot-label" i18n>No catálogo</span>
+                  <div class="slot-wrapper">
+                    @if (cell.item ?? cell.options[0]; as item) {
+                      <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                    } @else {
+                      <div class="slot-placeholder">?</div>
                     }
-                  </optgroup>
+                  </div>
+                </div>
+                <div class="slot-meta">
+                  <strong
+                    class="item-name"
+                    [title]="cell.item?.name || cell.options[0]?.name || 'Não identificado'"
+                  >
+                    {{ cell.item?.name || cell.options[0]?.name || 'Não identificado' }}
+                  </strong>
+                  @if (cell.item || cell.options[0]; as itm) {
+                    <span class="item-id">#{{ itm.id }}</span>
+                  }
+                </div>
+              </div>
+
+              <details class="scan-evidence">
+                <summary i18n>Ver leitura original</summary>
+                @if (cell.score !== undefined) {
+                  <p class="help" i18n>
+                    Distância visual {{ cell.score.toFixed(1) }} · menor é mais semelhante. Não é
+                    uma probabilidade.
+                  </p>
                 }
-              </select>
+                <p class="help" i18n>
+                  Origem: captura {{ activeCaptureNumber() }} · espaço {{ cell.id + 1 }}
+                </p>
+                <p class="help">Quantidade lida: {{ cell.quantityText || 'Não identificada' }}</p>
+              </details>
+
+              <div class="cell-form-row">
+                <label [for]="'scan-item-' + cell.id" i18n>Item</label>
+                <select
+                  [id]="'scan-item-' + cell.id"
+                  [ngModel]="cell.item?.id ?? ''"
+                  (ngModelChange)="choose(cell, $event)"
+                >
+                  <option value="" i18n>Escolha o item correto</option>
+                  @for (group of groupItemOptions(cell.options); track group.label) {
+                    <optgroup [label]="group.label">
+                      @for (option of group.items; track option.id) {
+                        <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
+                      }
+                    </optgroup>
+                  }
+                </select>
+              </div>
+
               <details class="manual-item" [open]="!cell.options.length">
                 <summary i18n>Buscar outro item pelo nome</summary>
                 <app-catalog-item-picker
@@ -652,39 +734,66 @@
                   (selected)="select(cell, $event)"
                 />
               </details>
+
               @if (mode === 'storage' || mode === 'inventory') {
-                @if (cell.quantityEstimate !== null) {
+                <div class="cell-form-row">
+                  <label [for]="'scan-qty-' + cell.id" i18n>Quantidade exata</label>
+                  <div class="qty-field-group">
+                    <input
+                      [id]="'scan-qty-' + cell.id"
+                      [(ngModel)]="cell.quantity"
+                      (ngModelChange)="edited(cell)"
+                      inputmode="numeric"
+                      maxlength="15"
+                      placeholder="1"
+                    />
+                    @if (cell.quantityEstimate !== null) {
+                      <button
+                        type="button"
+                        class="btn-quick-fill"
+                        (click)="useEstimate(cell)"
+                        title="Usar valor estimado da captura"
+                        i18n-title
+                      >
+                        Usar {{ cell.quantityEstimate }}
+                      </button>
+                    } @else if (!cell.quantity) {
+                      <button
+                        type="button"
+                        class="btn-quick-fill"
+                        (click)="useDefaultQuantity(cell, '1')"
+                        title="Definir 1 unidade"
+                        i18n-title
+                      >
+                        Definir 1 un.
+                      </button>
+                    }
+                  </div>
+                </div>
+                @if (cell.quantityEstimate !== null && cell.quantity !== cell.quantityEstimate) {
                   <p class="quantity-caution" i18n>
-                    Possível leitura: {{ cell.quantityText }} (aproximadamente
-                    {{ cell.quantityEstimate }}). A leitura pode estar errada. Confira a quantidade
-                    exata no jogo e preencha abaixo.
+                    Leitura abreviada: {{ cell.quantityText }}. Digite a quantidade exata ou clique
+                    acima.
                   </p>
-                } @else if (cell.quantityUncertain) {
+                } @else if (cell.quantityUncertain && !cell.quantity) {
                   <p class="quantity-caution" i18n>
-                    Não foi possível ler a quantidade com segurança. Confira no jogo; ausência de
-                    número não significa uma unidade.
+                    Quantidade não identificada com segurança. Digite o valor exato.
                   </p>
                 }
-                <label [for]="'scan-qty-' + cell.id" i18n>Quantidade exata</label
-                ><input
-                  [id]="'scan-qty-' + cell.id"
-                  [(ngModel)]="cell.quantity"
-                  (ngModelChange)="edited(cell)"
-                  inputmode="numeric"
-                  maxlength="15"
-                />
               } @else {
-                <label [for]="'gear-slot-' + cell.id" i18n>Posição</label
-                ><select
-                  [id]="'gear-slot-' + cell.id"
-                  [(ngModel)]="cell.slot"
-                  (ngModelChange)="slotEdited(cell)"
-                >
-                  <option value="" i18n>Escolha a posição</option>
-                  @for (slot of slots; track slot) {
-                    <option [value]="slot">{{ slotLabels[slot] }}</option>
-                  }
-                </select>
+                <div class="cell-form-row">
+                  <label [for]="'gear-slot-' + cell.id" i18n>Posição</label>
+                  <select
+                    [id]="'gear-slot-' + cell.id"
+                    [(ngModel)]="cell.slot"
+                    (ngModelChange)="slotEdited(cell)"
+                  >
+                    <option value="" i18n>Escolha a posição</option>
+                    @for (slot of slots; track slot) {
+                      <option [value]="slot">{{ slotLabels[slot] }}</option>
+                    }
+                  </select>
+                </div>
                 @if (cell.enhancementSuggestion; as suggestion) {
                   <p i18n>Símbolo sugerido: {{ suggestion.text }}. Confira na captura.</p>
                   @if (suggestedLevel(cell) !== null) {
@@ -697,43 +806,60 @@
                   Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um
                   número ausente não confirma nível base.
                 </p>
-                <label i18n
-                  >Nível de aprimoramento (0 a 30)<input
-                    type="number"
-                    [ngModel]="cell.levelConfirmed ? cell.level : null"
-                    min="0"
-                    max="30"
-                    (ngModelChange)="
-                      cell.levelConfirmed = $event !== null; cell.level = $event ?? 0; edited(cell)
-                    " /></label
-                ><label i18n
-                  >Nível de Caphras<input
-                    type="number"
-                    [ngModel]="cell.caphrasConfirmed ? cell.caphras : null"
-                    min="0"
-                    max="20"
-                    (ngModelChange)="
-                      cell.caphrasConfirmed = $event !== null;
-                      cell.caphras = $event ?? 0;
-                      edited(cell)
-                    "
-                /></label>
+                <div class="cell-form-row">
+                  <label i18n
+                    >Nível de aprimoramento (0 a 30)<input
+                      type="number"
+                      [ngModel]="cell.levelConfirmed ? cell.level : null"
+                      min="0"
+                      max="30"
+                      (ngModelChange)="
+                        cell.levelConfirmed = $event !== null;
+                        cell.level = $event ?? 0;
+                        edited(cell)
+                      "
+                  /></label>
+                </div>
+                <div class="cell-form-row">
+                  <label i18n
+                    >Nível de Caphras<input
+                      type="number"
+                      [ngModel]="cell.caphrasConfirmed ? cell.caphras : null"
+                      min="0"
+                      max="20"
+                      (ngModelChange)="
+                        cell.caphrasConfirmed = $event !== null;
+                        cell.caphras = $event ?? 0;
+                        edited(cell)
+                      "
+                  /></label>
+                </div>
               }
-              <label
-                ><input
-                  type="checkbox"
-                  [ngModel]="cell.reviewed"
-                  (ngModelChange)="review(cell, $event)"
+              <div class="scan-cell-actions">
+                <button
+                  type="button"
+                  class="btn-cell-confirm"
+                  [class.active]="cell.reviewed"
+                  [attr.aria-pressed]="cell.reviewed"
+                  (click)="review(cell, !cell.reviewed)"
                   [disabled]="
                     !cell.item ||
                     (mode === 'gear' && !cell.slot) ||
                     ((mode === 'storage' || mode === 'inventory') &&
                       integer(cell.quantity) === null)
                   "
-                /><ng-container i18n
-                  >Conferi no jogo. Incluir este item e seus valores.</ng-container
-                ></label
-              >
+                >
+                  {{ cell.reviewed ? 'Incluído · desfazer' : 'Incluir item' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn-cell-ignore"
+                  [class.is-ignored]="cell.ignored"
+                  (click)="toggleIgnore(cell)"
+                >
+                  {{ cell.ignored ? 'Restaurar' : 'Ignorar' }}
+                </button>
+              </div>
             </article>
           }
         </div>
@@ -771,11 +897,23 @@
 
 @if (jobs().some(hasResults)) {
   <section class="panel" aria-labelledby="consolidation-title">
-    <h2 id="consolidation-title" i18n>4. Consolidar e salvar</h2>
+    <h2 id="consolidation-title" i18n>Confirmar importação</h2>
     <p i18n>
-      {{ allReviewed().length }} itens conferidos nas capturas. Abra cada miniatura para revisar
-      seus resultados. Nenhum item é salvo automaticamente.
+      {{ importableCount() }} itens prontos para salvar em {{ jobs().length }} capturas. Os
+      reconhecimentos confiáveis serão incluídos na confirmação. Resultados duvidosos ficam fora até
+      você corrigir e incluir.
     </p>
+    @if (pendingBatchCount()) {
+      <p class="quantity-caution" i18n>
+        {{ pendingBatchCount() }} resultados pendentes ficarão fora desta importação. Você pode
+        corrigir e incluir os que desejar antes de confirmar.
+      </p>
+    }
+    @if (reliableBatchCount()) {
+      <button type="button" (click)="confirmReliableBatch()" [disabled]="locked()" i18n>
+        Incluir {{ reliableBatchCount() }} itens identificados de todo o lote
+      </button>
+    }
     @for (group of duplicateGroups(); track group[0]) {
       <fieldset>
         <legend>
@@ -816,7 +954,7 @@
           updateMode.set($event); batchConfirmed.set(false); fullLocationConfirmed.set(false)
         "
       >
-        <option value="reviewed" i18n>Atualizar apenas os itens revisados</option>
+        <option value="reviewed" i18n>Atualizar apenas os itens incluídos</option>
         <option value="merge" i18n>Acrescentar itens novos, manter quantidades existentes</option>
         <option value="replace" i18n>Substituir os locais completos enviados</option>
       </select></label
@@ -848,18 +986,30 @@
         (ngModelChange)="batchConfirmed.set($event)"
         [disabled]="locked()"
       /><span i18n
-        >Conferi os itens, quantidades, destinos e o tratamento dos repetidos.</span
+        >Quero salvar os itens prontos nos destinos indicados, incluindo os reconhecimentos
+        confiáveis.</span
       ></label
     >
-    <button
-      type="button"
-      class="btn"
-      (click)="saveBatch()"
-      [disabled]="locked() || !batchConfirmed() || !allReviewed().length"
-      i18n
-    >
-      Salvar importação revisada
-    </button>
+    <div class="consolidation-actions">
+      <button
+        type="button"
+        class="btn btn-save-master"
+        (click)="confirmAndSaveAll()"
+        [disabled]="locked() || !canSaveDirectly()"
+        i18n
+      >
+        Confirmar e salvar no armazém ({{ totalIdentifiedCount() }} itens)
+      </button>
+      <button
+        type="button"
+        class="btn"
+        (click)="saveBatch()"
+        [disabled]="locked() || !batchConfirmed() || !importableCount()"
+        i18n
+      >
+        Confirmar e salvar {{ importableCount() }} itens
+      </button>
+    </div>
     <nav class="action-row" aria-label="Consultar itens salvos" i18n-aria-label>
       <a routerLink="/storage" i18n>Ver armazéns</a
       ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventários</a
