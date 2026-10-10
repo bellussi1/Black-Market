@@ -167,6 +167,17 @@ export class ScansPage implements OnDestroy {
     ),
   );
   readonly canSaveDirectly = computed(() => this.totalIdentifiedCount() > 0);
+  readonly saveBatchLabel = computed(() => {
+    const count = this.totalIdentifiedCount();
+    const modes = new Set(this.jobs().map((j) => j.mode));
+    if (modes.size === 1) {
+      const mode = [...modes][0];
+      if (mode === 'storage') return `Confirmar e salvar no armazém (${count} itens)`;
+      if (mode === 'inventory') return `Confirmar e salvar no inventário (${count} itens)`;
+      if (mode === 'gear') return `Confirmar e salvar equipamentos (${count} itens)`;
+    }
+    return `Confirmar e salvar lote (${count} itens)`;
+  });
   readonly batchConfirmed = signal(false);
   private batchCancelled = false;
   private loadGeneration = 0;
@@ -370,19 +381,18 @@ export class ScansPage implements OnDestroy {
     return this.store.data().characters.filter((row) => row.region === this.store.data().region);
   }
   reliable(cell: CellDraft, mode: ScanMode = this.mode) {
+    if (cell.reviewed || cell.ignored || cell.autoExcluded || !cell.item) return false;
+    if (mode === 'number') return false;
+    if (mode === 'gear') {
+      return Boolean(cell.slot) && (cell.score === undefined || cell.score <= 18);
+    }
     return (
-      mode !== 'gear' &&
-      mode !== 'number' &&
-      !cell.reviewed &&
-      !cell.ignored &&
-      !cell.autoExcluded &&
-      !!cell.item &&
       !cell.itemUncertain &&
       cell.score !== undefined &&
-      cell.score <= 8 &&
+      cell.score <= 18 &&
       !cell.quantityUncertain &&
-      (cell.quantityConfidence ?? 0) >= 85 &&
       cell.quantityEstimate === null &&
+      (cell.quantityConfidence ?? 0) >= 70 &&
       this.integer(cell.quantity) !== null
     );
   }

@@ -326,6 +326,7 @@ describe('Screenshot entry', () => {
     page.cells.set(jobs[0].cells);
     expect(page.totalIdentifiedCount()).toBe(2);
     expect(page.canSaveDirectly()).toBe(true);
+    expect(page.saveBatchLabel()).toBe('Confirmar e salvar no armazém (2 itens)');
     Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
 
     await page.confirmAndSaveAll();

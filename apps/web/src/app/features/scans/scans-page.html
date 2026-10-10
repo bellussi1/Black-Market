@@ -500,12 +500,12 @@
               [disabled]="locked() || !canSaveDirectly()"
               i18n
             >
-              Confirmar e salvar no armazém ({{ totalIdentifiedCount() }} itens)
+              {{ saveBatchLabel() }}
             </button>
             @if (reliableBatchCount()) {
               <button
                 type="button"
-                class="btn-batch-reliable"
+                class="btn subtle btn-batch-reliable"
                 (click)="confirmReliableBatch()"
                 [disabled]="locked()"
                 i18n
@@ -737,7 +737,7 @@
 
               @if (mode === 'storage' || mode === 'inventory') {
                 <div class="cell-form-row">
-                  <label [for]="'scan-qty-' + cell.id" i18n>Quantidade exata</label>
+                  <label [for]="'scan-qty-' + cell.id" i18n>Quantidade</label>
                   <div class="qty-field-group">
                     <input
                       [id]="'scan-qty-' + cell.id"
@@ -747,15 +747,23 @@
                       maxlength="15"
                       placeholder="1"
                     />
-                    @if (cell.quantityEstimate !== null) {
+                    @if (
+                      cell.quantityEstimate !== null && cell.quantity !== cell.quantityEstimate
+                    ) {
                       <button
                         type="button"
                         class="btn-quick-fill"
                         (click)="useEstimate(cell)"
-                        title="Usar valor estimado da captura"
+                        [title]="
+                          cell.quantity ? 'Restaurar valor lido' : 'Usar valor estimado da captura'
+                        "
                         i18n-title
                       >
-                        Usar {{ cell.quantityEstimate }}
+                        {{
+                          cell.quantity
+                            ? 'Restaurar ' + cell.quantityEstimate
+                            : 'Usar ' + cell.quantityEstimate
+                        }}
                       </button>
                     } @else if (!cell.quantity) {
                       <button
@@ -770,10 +778,10 @@
                     }
                   </div>
                 </div>
-                @if (cell.quantityEstimate !== null && cell.quantity !== cell.quantityEstimate) {
-                  <p class="quantity-caution" i18n>
-                    Leitura abreviada: {{ cell.quantityText }}. Digite a quantidade exata ou clique
-                    acima.
+                @if (cell.quantityEstimate !== null) {
+                  <p class="quantity-note" i18n>
+                    Lido na captura: <code>{{ cell.quantityText }}</code> (convertido para
+                    {{ cell.quantityEstimate }}).
                   </p>
                 } @else if (cell.quantityUncertain && !cell.quantity) {
                   <p class="quantity-caution" i18n>
@@ -998,16 +1006,16 @@
         [disabled]="locked() || !canSaveDirectly()"
         i18n
       >
-        Confirmar e salvar no armazém ({{ totalIdentifiedCount() }} itens)
+        {{ saveBatchLabel() }}
       </button>
       <button
         type="button"
-        class="btn"
+        class="btn subtle"
         (click)="saveBatch()"
         [disabled]="locked() || !batchConfirmed() || !importableCount()"
         i18n
       >
-        Confirmar e salvar {{ importableCount() }} itens
+        Salvar apenas {{ importableCount() }} revisados
       </button>
     </div>
     <nav class="action-row" aria-label="Consultar itens salvos" i18n-aria-label>
