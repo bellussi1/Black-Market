@@ -242,6 +242,39 @@ describe('MarketCacheService', () => {
     expect(service.getCachedQuote(676, 'sa')?.stock).toBe(120);
   });
 
+  it('reads fresh and stale board responses by exact key and region', () => {
+    service.cacheBoardResponse('board:sa:beer', mockBoardResponse, 'sa');
+
+    const entry = service.getCachedBoardResponse('board:sa:beer', 'sa');
+    expect(entry?.response).toEqual(mockBoardResponse);
+    expect(entry?.expiresAt).toBeGreaterThan(Date.now());
+    expect(service.getCachedBoardResponse('board:eu:beer', 'eu')).toBeNull();
+
+    service.boardMap.update((boards) => {
+      const updated = new Map(boards);
+      const cached = updated.get('board:sa:beer')!;
+      updated.set('board:sa:beer', { ...cached, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    const stale = service.getCachedBoardResponse('board:sa:beer', 'sa');
+    expect(stale?.response).toEqual(mockBoardResponse);
+    expect(stale!.expiresAt).toBeLessThan(Date.now());
+  });
+
+  it('aliases locally sorted board views without renewing their freshness', () => {
+    service.cacheBoardResponse('board:sa:default', mockBoardResponse, 'sa');
+    const source = service.getCachedBoardResponse('board:sa:default', 'sa')!;
+
+    service.cacheBoardAlias('board:sa:sorted', source);
+
+    const alias = service.getCachedBoardResponse('board:sa:sorted', 'sa')!;
+    expect(alias.response).toEqual(source.response);
+    expect(alias.fetchedAt).toBe(source.fetchedAt);
+    expect(alias.expiresAt).toBe(source.expiresAt);
+    expect(alias.key).toBe('board:sa:sorted');
+  });
+
   it('hydrates quotes from localStorage on construction', () => {
     const stored = [
       {

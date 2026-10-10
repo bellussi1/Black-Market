@@ -307,6 +307,19 @@ export class MarketCacheService implements OnDestroy {
     this.scheduleStorageSave(region);
   }
 
+  /** Reads a board response by exact query key, including expired entries for stale display. */
+  getCachedBoardResponse(key: string, region: Region): CachedBoardEntry | null {
+    const entry = this.boardMap().get(key);
+    return entry?.key === key && entry.region === region ? entry : null;
+  }
+
+  /** Aliases a cached board view for a local sort without extending its freshness or quote TTL. */
+  cacheBoardAlias(key: string, source: CachedBoardEntry): void {
+    const boards = new Map(this.boardMap());
+    boards.set(key, { ...source, key });
+    this.boardMap.set(boards);
+  }
+
   /**
    * Hydrates cached quotes from localStorage on startup or region change.
    */
