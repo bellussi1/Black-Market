@@ -612,7 +612,20 @@
                   <td>
                     {{ q.name }}
                     @if (q.favorite) {
-                      <span aria-label="Favorito" i18n-aria-label>★</span>
+                      <svg
+                        class="icon-star"
+                        viewBox="0 0 16 16"
+                        width="12"
+                        height="12"
+                        fill="var(--bm-accent)"
+                        aria-label="Favorito"
+                        i18n-aria-label
+                        role="img"
+                      >
+                        <path
+                          d="M8 1.5l1.8 4.5 4.8.4-3.6 3.2 1.1 4.7L8 11.8 3.9 14.3l1.1-4.7-3.6-3.2 4.8-.4z"
+                        />
+                      </svg>
                     }
                   </td>
                   <td>{{ q.category }} · {{ q.source === 'arsha' ? 'Arsha' : 'Manual' }}</td>

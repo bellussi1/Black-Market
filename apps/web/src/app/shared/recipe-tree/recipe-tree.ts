@@ -122,6 +122,9 @@ export class RecipeTree {
   private bulkStop: Subject<void> | null = null;
   private bulkLoadingPath: string | null = null;
   readonly target = signal(100);
+  readonly craftTimeSeconds = signal(1.0);
+  readonly treeMarketLoading = signal(false);
+  readonly treeMarketMessage = signal('');
   readonly ingredientPreview = computed(() => {
     const root = this.root();
     const target = this.target();
@@ -257,6 +260,203 @@ export class RecipeTree {
       return null;
     }
   });
+  readonly operationsCount = computed(() => {
+    const root = this.root();
+    const target = this.target();
+    if (!root?.yield || root.yield <= 0 || !Number.isFinite(target) || target <= 0) {
+      return Math.max(1, target || 1);
+    }
+    return Math.ceil(target / root.yield);
+  });
+
+  readonly producedQuantity = computed(() => {
+    const root = this.root();
+    const ops = this.operationsCount();
+    const y = root?.yield ?? 1;
+    return ops * y;
+  });
+
+  readonly productPrice = computed(() => {
+    const root = this.root();
+    return root ? this.price(root.part.itemId) : null;
+  });
+
+  readonly grossRevenue = computed(() => {
+    const price = this.productPrice();
+    const produced = this.producedQuantity();
+    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
+    try {
+      return String(BigInt(price) * BigInt(Math.floor(produced)));
+    } catch {
+      return null;
+    }
+  });
+
+  readonly netRevenue = computed(() => {
+    const price = this.productPrice();
+    const produced = this.producedQuantity();
+    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
+    try {
+      const market = calculateMarket({
+        ...this.store.data().taxOptions,
+        price,
+        quantity: Math.floor(produced),
+        cost: this.plan()?.value?.cost ?? '0',
+      });
+      return market.net;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly marketSale = computed(() => {
+    const price = this.productPrice();
+    const produced = this.producedQuantity();
+    if (price === null || !Number.isFinite(produced) || produced <= 0) return null;
+    try {
+      return calculateMarket({
+        ...this.store.data().taxOptions,
+        price,
+        quantity: Math.floor(produced),
+        cost: this.plan()?.value?.cost ?? '0',
+      });
+    } catch {
+      return null;
+    }
+  });
+
+  readonly profit = computed(() => {
+    const net = this.netRevenue();
+    const plan = this.plan()?.value;
+    if (net === null || !plan) return null;
+    try {
+      return String(BigInt(net) - BigInt(plan.cost));
+    } catch {
+      return null;
+    }
+  });
+
+  readonly isPositiveProfit = computed(() => {
+    const p = this.profit();
+    return p !== null && !p.startsWith('-') && p !== '0';
+  });
+
+  readonly isNegativeProfit = computed(() => {
+    const p = this.profit();
+    return p !== null && p.startsWith('-');
+  });
+
+  readonly profitMargin = computed(() => {
+    const p = this.profit();
+    const plan = this.plan()?.value;
+    if (p === null || !plan || plan.cost === '0') return null;
+    try {
+      const costNum = Number(plan.cost);
+      const profitNum = Number(p);
+      if (costNum <= 0 || !Number.isFinite(profitNum)) return null;
+      return (profitNum / costNum) * 100;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly totalCraftTimeSeconds = computed(() => {
+    const ops = this.operationsCount();
+    const time = Math.max(0.1, Number(this.craftTimeSeconds()) || 1.0);
+    return ops * time;
+  });
+
+  readonly formattedCraftTime = computed(() => {
+    const seconds = this.totalCraftTimeSeconds();
+    if (!Number.isFinite(seconds) || seconds <= 0) return '0s';
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const mins = Math.floor(seconds / 60);
+    const remainingSecs = Math.round(seconds % 60);
+    if (seconds < 3600) {
+      return remainingSecs > 0 ? `${mins}m ${remainingSecs}s` : `${mins}m`;
+    }
+    const hours = Math.floor(seconds / 3600);
+    const remainingMins = Math.floor((seconds % 3600) / 60);
+    return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
+  });
+
+  readonly profitPerHour = computed(() => {
+    const p = this.profit();
+    const time = this.totalCraftTimeSeconds();
+    if (p === null || time <= 0) return null;
+    try {
+      const pBig = BigInt(p);
+      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
+      return String((pBig * 3_600_000n) / timeMs);
+    } catch {
+      return null;
+    }
+  });
+
+  readonly revenuePerHour = computed(() => {
+    const net = this.netRevenue();
+    const time = this.totalCraftTimeSeconds();
+    if (net === null || time <= 0) return null;
+    try {
+      const netBig = BigInt(net);
+      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
+      return String((netBig * 3_600_000n) / timeMs);
+    } catch {
+      return null;
+    }
+  });
+
+  setCraftTime(value: number | null) {
+    const num = Number(value);
+    this.craftTimeSeconds.set(Number.isFinite(num) && num > 0 ? num : 1.0);
+  }
+
+  consultAllTreePrices() {
+    if (this.treeMarketLoading()) return;
+    const region = this.region();
+    const itemIds = new Set<number>();
+    const root = this.root();
+    if (root) itemIds.add(root.part.itemId);
+    for (const id of this.parts().keys()) {
+      itemIds.add(id);
+    }
+    if (itemIds.size === 0) return;
+
+    this.treeMarketLoading.set(true);
+    this.treeMarketMessage.set('');
+
+    const requests = Array.from(itemIds).map((id) =>
+      this.market.getItem(String(id), region).pipe(catchError(() => of(null))),
+    );
+
+    forkJoin(requests)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (results) => {
+          let updated = 0;
+          const newPrices = new Map(this.livePrices());
+          for (const res of results) {
+            if (!res || res.cacheStatus === 'stale') continue;
+            const base = res.items?.find((item) => item.subId === 0);
+            if (base && base.price !== null && base.price !== undefined && base.itemId) {
+              newPrices.set(base.itemId, base.price);
+              updated++;
+            }
+          }
+          this.livePrices.set(newPrices);
+          this.treeMarketLoading.set(false);
+          this.treeMarketMessage.set(
+            updated > 0
+              ? `${updated} ${updated === 1 ? 'cotação atualizada' : 'cotações atualizadas'} no mercado central.`
+              : 'Nenhuma cotação recente encontrada no mercado central.',
+          );
+        },
+        error: () => {
+          this.treeMarketLoading.set(false);
+          this.treeMarketMessage.set('Não foi possível consultar as cotações do mercado.');
+        },
+      });
+  }
   constructor() {
     this.destroyRef.onDestroy(() => this.stopExpansion());
     effect(() => {

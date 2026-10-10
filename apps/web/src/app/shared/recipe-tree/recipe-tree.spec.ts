@@ -30,7 +30,7 @@ function providers() {
     sources: vi.fn(() => of<ItemSources>({ nodes: [], updatedAt: null })),
   };
   const market = {
-    getItem: vi.fn(() =>
+    getItem: vi.fn((_itemId?: string, _region?: string) =>
       of({
         source: 'arsha',
         region: 'sa',
@@ -488,5 +488,69 @@ describe('Interactive recipe tree', () => {
     tree.view.set('list');
     tree.view.set('graph');
     expect(tree.root()?.expanded).toBe(false);
+  });
+  it('consults market quotes for all items in the tree and updates live prices', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+    tree.setRootYield(1);
+    tree.target.set(10);
+    fixture.detectChanges();
+
+    dependencies.market.getItem.mockImplementation((id = '') =>
+      of({
+        source: 'arsha',
+        region: 'sa',
+        fetchedAt: '2026-10-09T12:00:00Z',
+        cacheStatus: 'cached',
+        items: [{ itemId: Number(id), subId: 0, price: id === '5301' ? '500' : '50', stock: 10 }],
+      }),
+    );
+
+    tree.consultAllTreePrices();
+    fixture.detectChanges();
+
+    expect(tree.livePrices().get(5301)).toBe('500');
+    expect(tree.livePrices().get(9001)).toBe('50');
+    expect(tree.treeMarketMessage()).toContain('cotações atualizadas');
+  });
+  it('calculates gross revenue, net revenue, profit, profitPerHour and formattedCraftTime', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+    tree.setRootYield(2);
+    tree.target.set(100);
+    tree.setCraftTime(1.5);
+    fixture.detectChanges();
+
+    expect(tree.operationsCount()).toBe(50);
+    expect(tree.producedQuantity()).toBe(100);
+    expect(tree.totalCraftTimeSeconds()).toBe(75);
+    expect(tree.formattedCraftTime()).toBe('1m 15s');
+
+    // Simulate known prices: product = 1000, material (Sal, 2 per op * 50 ops = 100) = 100
+    tree.livePrices.update((p) => new Map(p).set(5301, '1000').set(9001, '100'));
+    fixture.detectChanges();
+
+    expect(tree.productPrice()).toBe('1000');
+    expect(tree.grossRevenue()).toBe('100000');
+    expect(tree.netRevenue()).not.toBeNull();
+    expect(tree.profit()).not.toBeNull();
+    expect(tree.profitPerHour()).not.toBeNull();
+    expect(tree.revenuePerHour()).not.toBeNull();
+    expect(tree.isPositiveProfit()).toBe(true);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.economic-dashboard')).toBeTruthy();
+    expect(el.querySelector('.economic-metrics-grid')).toBeTruthy();
+    expect(el.textContent).toContain('MERCADO CENTRAL & RENTABILIDADE');
   });
 });

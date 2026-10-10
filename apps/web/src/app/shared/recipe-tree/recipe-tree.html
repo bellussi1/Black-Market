@@ -166,6 +166,149 @@
       </details>
     }
     @if (result.value; as calculated) {
+      <section
+        class="economic-dashboard panel"
+        aria-label="Rentabilidade e mercado central"
+        i18n-aria-label
+      >
+        <div class="panel-heading economic-heading">
+          <div>
+            <p class="eyebrow" i18n>MERCADO CENTRAL & RENTABILIDADE</p>
+            <h3 i18n>Rentabilidade e tempo de produção</h3>
+          </div>
+          <div class="economic-toolbar">
+            <button
+              type="button"
+              class="market-refresh-btn"
+              [disabled]="treeMarketLoading()"
+              (click)="consultAllTreePrices()"
+            >
+              @if (treeMarketLoading()) {
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span i18n>Consultando mercado…</span>
+              } @else {
+                <svg
+                  class="btn-icon"
+                  viewBox="0 0 16 16"
+                  width="14"
+                  height="14"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.418A6 6 0 1 1 8 2v1z" />
+                  <path
+                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
+                  />
+                </svg>
+                <span i18n>Consultar cotações da receita</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        @if (treeMarketMessage()) {
+          <p class="notice economic-notice" role="status">{{ treeMarketMessage() }}</p>
+        }
+
+        <div class="economic-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label" i18n>Faturamento líquido</span>
+            <strong class="metric-value">{{
+              netRevenue() !== null ? silver(netRevenue()) : 'Sem cotação'
+            }}</strong>
+            <small class="metric-sub">
+              @if (productPrice() !== null) {
+                <ng-container i18n>Preço un: </ng-container>{{ silver(productPrice()) }}
+              } @else {
+                <ng-container i18n>Consulte o preço do produto</ng-container>
+              }
+            </small>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label" i18n>Custo dos materiais</span>
+            <strong class="metric-value">{{
+              result.knownCostOnly && calculated.cost === '0'
+                ? 'Sem cotações'
+                : silver(calculated.cost)
+            }}</strong>
+            <small class="metric-sub">
+              {{
+                result.warnings.length
+                  ? 'Parcial · faltam dados'
+                  : result.knownCostOnly
+                    ? 'Parcial · faltam cotações'
+                    : 'Materiais comprados'
+              }}
+            </small>
+          </div>
+
+          <div
+            class="metric-card profit-card"
+            [class.profit-positive]="isPositiveProfit()"
+            [class.profit-negative]="isNegativeProfit()"
+          >
+            <span class="metric-label" i18n>Lucro líquido total</span>
+            <strong class="metric-value">
+              {{ profit() !== null ? silver(profit()) : '—' }}
+            </strong>
+            <div class="metric-sub">
+              @if (profitMargin() !== null) {
+                <span class="margin-badge">
+                  {{ profitMargin()! >= 0 ? '+' : '' }}{{ profitMargin()!.toFixed(1) }}% margem
+                </span>
+              } @else {
+                <small i18n>Aguardando cotações e custo</small>
+              }
+            </div>
+          </div>
+
+          <div class="metric-card highlight-metric">
+            <span class="metric-label" i18n>Lucro por hora</span>
+            <strong class="metric-value">
+              {{ profitPerHour() !== null ? silver(profitPerHour()) : '—' }}
+            </strong>
+            <small class="metric-sub">
+              {{ operationsCount() }} op. em {{ formattedCraftTime() }}
+            </small>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label" i18n>Faturamento / hora</span>
+            <strong class="metric-value">
+              {{ revenuePerHour() !== null ? silver(revenuePerHour()) : '—' }}
+            </strong>
+            <small class="metric-sub" i18n>Receita líquida rateada</small>
+          </div>
+
+          <div class="metric-card time-config-card">
+            <label class="time-config-label">
+              <span class="metric-label" i18n>Tempo / operação</span>
+              <div class="time-input-group">
+                <input
+                  type="number"
+                  min="0.1"
+                  max="60"
+                  step="0.1"
+                  class="time-input"
+                  [ngModel]="craftTimeSeconds()"
+                  (ngModelChange)="setCraftTime($event)"
+                />
+                <span class="time-suffix">seg</span>
+              </div>
+            </label>
+            <small class="metric-sub">Total: {{ formattedCraftTime() }}</small>
+          </div>
+        </div>
+
+        @if (advanced()) {
+          <details class="tax-config-panel">
+            <summary i18n>Opções de impostos e buffs do mercado</summary>
+            <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
+          </details>
+        }
+      </section>
+
       <section class="production-overview" aria-label="Resumo da produção" i18n-aria-label>
         <div>
           <span i18n>Custo estimado dos materiais</span>
@@ -185,14 +328,15 @@
         <div>
           <span i18n>Etapas planejadas</span><strong>{{ calculated.tasks.length }}</strong>
         </div>
+        <div class="action-buttons-inline">
+          <button type="button" class="btn" (click)="saveShoppingList()" i18n>
+            Salvar lista de materiais
+          </button>
+          <a routerLink="/shopping" class="btn-secondary" i18n>Abrir planejamento →</a>
+        </div>
       </section>
-      <div class="action-row">
-        <button type="button" class="btn" (click)="saveShoppingList()" i18n>
-          Salvar lista de materiais</button
-        ><a routerLink="/shopping" i18n>Abrir planejamento →</a>
-      </div>
       @if (planMessage()) {
-        <p role="status">{{ planMessage() }}</p>
+        <p role="status" class="plan-feedback">{{ planMessage() }}</p>
       }
       <details class="production-estimates">
         <summary i18n>Custos e premissas · {{ calculated.tasks.length }} etapas planejadas</summary>
