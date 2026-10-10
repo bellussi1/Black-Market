@@ -8,6 +8,7 @@ import type { Workspace } from '@bdo/calculators/workspace';
 import type { CatalogRecipe, CatalogRecipePart, MarketItemQuote } from '@bdo/shared';
 
 import type { RecipeProductionGraph } from './recipe-production-graph';
+import { stockLocationKey } from './recipe-tree-model';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 
@@ -114,8 +115,8 @@ export function buildRecipeProductionInput(
     const fixedOrCatalogYield = outputQuantity(recipe, itemId);
     const overrideYield = options.yieldOverrides?.get(itemId);
     const expectedYield =
-      overrideYield ??
       fixedOrCatalogYield ??
+      overrideYield ??
       resolveDefaultYield(recipe, itemId, masteryFor(recipe));
     const time = methodTimes.get(recipe.type);
     const estimateSource: ProductionEstimate['source'] =
@@ -161,7 +162,7 @@ export function buildRecipeProductionInput(
   const freeInventory = availableInventory(
     workspace.personalPlans,
     workspace.inventory.filter(
-      (entry) => entry.region === workspace.region && !excluded.has(entry.location),
+      (entry) => entry.region === workspace.region && !excluded.has(stockLocationKey(entry)),
     ),
   );
   const inventory = new Map<number, number>();
@@ -180,7 +181,9 @@ export function buildRecipeProductionInput(
     quotes: mappedQuotes,
     inventory: [...inventory].map(([itemId, quantity]) => ({ itemId, quantity, reserved: 0 })),
     estimates,
-    candidates: [{ recipeId: graph.rootRecipe.key, optimizeCrafts: operations }],
+    candidates: [
+      { recipeId: graph.rootRecipe.key, crafts: operations, optimizeCrafts: operations },
+    ],
     profile: {
       budget: character?.silver ?? workspace.familySilver,
       activeMinutes: character?.activeMinutes ?? 60,

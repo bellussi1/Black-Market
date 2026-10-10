@@ -80,7 +80,7 @@ describe('recipe production planner adapter', () => {
     );
 
     expect(result.recipes.map((entry) => entry.id)).toEqual(['root', 'producer']);
-    expect(result.candidates).toEqual([{ recipeId: 'root', optimizeCrafts: 4 }]);
+    expect(result.candidates).toEqual([{ recipeId: 'root', crafts: 4, optimizeCrafts: 4 }]);
     expect(result.estimates).toMatchObject({
       root: { expectedYield: 2.5, craftSeconds: 12, source: 'calibrated' },
       producer: { expectedYield: 1, craftSeconds: 8, source: 'calibrated' },
@@ -170,6 +170,34 @@ describe('recipe production planner adapter', () => {
     expect(result.recipes[0].output.quantity).toBe(1);
   });
 
+  it('does not let a manual yield override replace a fixed Edania yield', () => {
+    const edania = recipe(
+      'edania',
+      1407,
+      [
+        { itemId: 702, quantity: '3' },
+        { itemId: 1399, quantity: '1' },
+        { itemId: 1409, quantity: '3' },
+        { itemId: 820936, quantity: '1' },
+      ],
+      null,
+      'SIMPLE_ALCHEMY',
+    );
+    const result = buildRecipeProductionInput(
+      graph(edania),
+      1,
+      emptyWorkspace(),
+      new Map(),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      { yieldOverrides: new Map([[1407, 12]]) },
+    );
+
+    expect(result.estimates['edania']).toMatchObject({ expectedYield: 1, source: 'fixed' });
+  });
+
   it('marks variable catalog yields as estimates', () => {
     const result = buildRecipeProductionInput(
       graph(recipe('root', 100, [{ itemId: 2, quantity: '1' }], null, 'COOKING')),
@@ -235,5 +263,36 @@ describe('recipe production planner adapter', () => {
     expect(result.quotes[2]).toMatchObject({ unitPrice: '100', source: 'market' });
     expect(result.quotes[100]).toMatchObject({ unitPrice: '500', source: 'manual' });
     expect(result.estimates['root']?.craftSeconds).toBeUndefined();
+  });
+
+  it('excludes stock by the same location key used by the stock controls', () => {
+    const workspace = emptyWorkspace() as Workspace;
+    workspace.inventory.push({
+      id: 'inventory-2',
+      itemId: 2,
+      name: 'Item 2',
+      location: 'Aventureiro',
+      quantity: 5,
+      target: 5,
+      price: '100',
+      region: 'sa',
+      kind: 'inventory',
+      characterId: 'character-1',
+    });
+    const locationKey = JSON.stringify(['inventory', 'character-1']);
+
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 2, quantity: '1' }])),
+      1,
+      workspace,
+      new Map(),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      { excludedLocations: [locationKey] },
+    );
+
+    expect(result.inventory).toEqual([]);
   });
 });
