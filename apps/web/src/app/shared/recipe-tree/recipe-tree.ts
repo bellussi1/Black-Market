@@ -70,7 +70,7 @@ export interface MakeVsBuyTradeInsight {
   isRoot: boolean;
   marketPrice: string | null;
   craftCostUnit: string | null;
-  recommendation: 'craft' | 'buy' | 'scarce' | 'unknown';
+  recommendation: 'craft' | 'buy' | 'unprofitable' | 'unknown';
   savingsUnit: string | null;
   savingsPercent: number | null;
   marketStock: number | null;
@@ -293,14 +293,15 @@ export class RecipeTree {
     }
     return [...groups.values()];
   });
-  readonly plan = computed(() =>
-    this.root()
-      ? planRecipeTree(this.root()!, this.target(), this.store.data(), {
+  readonly plan = computed(() => {
+    const root = this.root();
+    return root
+      ? planRecipeTree(this.withEstimatedYields(root), this.target(), this.store.data(), {
           excludedLocations: this.excludedLocations(),
           prices: this.livePrices(),
         })
-      : null,
-  );
+      : null;
+  });
   readonly parts = computed(() => {
     const parts = new Map<number, CatalogRecipePart>();
     const visit = (node: RecipeNode) => {
@@ -551,30 +552,13 @@ export class RecipeTree {
         savingsPercent: null,
         marketStock: quote?.stock ?? null,
         totalTrades: quote?.totalTrades ?? null,
-        advice:
-          'Consulte as cotações do Mercado Central para comparar a produção com a compra direta.',
+        advice: 'Sem cotação de venda disponível para estimar o faturamento e a margem.',
       };
     }
 
     const marketPriceBig = BigInt(marketPrice);
     const stock = quote?.stock ?? null;
     const totalTrades = quote?.totalTrades ?? null;
-
-    if (stock === 0) {
-      return {
-        itemId,
-        name: root.part.name,
-        isRoot: true,
-        marketPrice,
-        craftCostUnit,
-        recommendation: 'scarce',
-        savingsUnit: null,
-        savingsPercent: null,
-        marketStock: 0,
-        totalTrades,
-        advice: 'Estoque zerado no Mercado Central. Produzir é a única forma de obtenção imediata.',
-      };
-    }
 
     if (craftCostUnitBig < marketPriceBig) {
       const diff = marketPriceBig - craftCostUnitBig;
@@ -590,7 +574,7 @@ export class RecipeTree {
         savingsPercent: pct,
         marketStock: stock,
         totalTrades,
-        advice: `Vale a pena craftar! Economia de ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade em relação à compra no Mercado Central.`,
+        advice: `Margem estimada de ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade para venda no Mercado Central.`,
       };
     } else {
       const diff = craftCostUnitBig - marketPriceBig;
@@ -601,12 +585,12 @@ export class RecipeTree {
         isRoot: true,
         marketPrice,
         craftCostUnit,
-        recommendation: 'buy',
+        recommendation: 'unprofitable',
         savingsUnit: String(diff),
         savingsPercent: pct,
         marketStock: stock,
         totalTrades,
-        advice: `Mais barato comprar pronto! Comprar no mercado economiza ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade em relação aos materiais.`,
+        advice: `Custo de produção acima do preço de venda estimado em ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade.`,
       };
     }
   });
@@ -642,21 +626,7 @@ export class RecipeTree {
           const stock = quote?.stock ?? null;
           const totalTrades = quote?.totalTrades ?? null;
 
-          if (stock === 0) {
-            insights.push({
-              itemId,
-              name: node.part.name,
-              isRoot: false,
-              marketPrice,
-              craftCostUnit: String(subCraftCostPerUnit),
-              recommendation: 'scarce',
-              savingsUnit: null,
-              savingsPercent: null,
-              marketStock: 0,
-              totalTrades,
-              advice: 'Estoque zerado no mercado. Recomenda-se produzir.',
-            });
-          } else if (subCraftCostPerUnit < marketPriceBig) {
+          if (subCraftCostPerUnit < marketPriceBig) {
             const diff = marketPriceBig - subCraftCostPerUnit;
             const pct = marketPriceBig > 0n ? Number((diff * 10000n) / marketPriceBig) / 100 : 0;
             insights.push({
@@ -856,15 +826,19 @@ export class RecipeTree {
   setRootYield(value: number | null) {
     this.patch('root', (node) => ({ ...node, yield: value }));
   }
-  applyDefaultYield() {
-    const root = this.root();
-    if (!root?.recipe) return;
-    const def = resolveDefaultYield(
-      root.recipe,
-      root.part.itemId,
-      this.userMasteryForCurrentRecipe(),
-    );
-    this.setRootYield(def);
+  private withEstimatedYields(node: RecipeNode): RecipeNode {
+    const recipe = node.recipe;
+    const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
+    const mastery = skill
+      ? (this.store.data().characters[0]?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 0)
+      : 0;
+    return {
+      ...node,
+      yield:
+        node.yield ??
+        (recipe ? resolveDefaultYield(recipe, node.part.itemId, mastery) : node.yield),
+      children: node.children.map((child) => this.withEstimatedYields(child)),
+    };
   }
   setTax(value: TaxOptions) {
     this.store.update((state) => ({ ...state, taxOptions: value }));

@@ -51,45 +51,25 @@
           </div>
 
           @if (product.recipe) {
-            <label
-              class="root-yield"
-              [class.hidden-simple]="!advanced()"
-              [class.needs-confirmation]="product.yield === null"
-              i18n
-            >
+            <label class="root-yield" [class.hidden-simple]="!advanced()" i18n>
               Produção por operação (ajuste fino)<input
                 type="number"
                 min=".001"
                 max="1000000"
                 step=".001"
-                [ngModel]="product.yield"
+                [ngModel]="effectiveYield()"
                 (ngModelChange)="setRootYield($event)"
             /></label>
           }
         </div>
         <p class="help" i18n>
-          O rendimento médio padrão ajusta-se à sua maestria. Você pode personalizá-lo nos detalhes
-          avançados.
+          O rendimento estimado entra no cálculo automaticamente. Você pode ajustar a estimativa nos
+          detalhes avançados.
         </p>
-        @if (product.recipe && product.yield === null) {
-          <div class="yield-warning-box">
-            <p class="yield-warning" role="status" i18n>
-              Confirme o rendimento para calcular os materiais.
-            </p>
-            <button
-              type="button"
-              class="btn-apply-default-yield"
-              (click)="applyDefaultYield()"
-              i18n
-            >
-              Usar rendimento padrão ({{ effectiveYield().toFixed(2) }} un / receita)
-            </button>
-          </div>
-        }
         @if (advanced()) {
           <p class="help" i18n>
-            Rendimentos médios não garantem produção. Maestria não altera este rendimento
-            automaticamente.
+            Rendimentos médios são estimativas, não uma garantia de produção. A estimativa considera
+            a maestria da profissão.
           </p>
           <details class="stock-settings">
             <summary i18n>Quais estoques entram no cálculo?</summary>
@@ -289,15 +269,17 @@
             class="insight-decision-card"
             [class.insight-craft]="insight.recommendation === 'craft'"
             [class.insight-buy]="insight.recommendation === 'buy'"
-            [class.insight-scarce]="insight.recommendation === 'scarce'"
+            [class.insight-unprofitable]="insight.recommendation === 'unprofitable'"
           >
             <div class="insight-badge-row">
               @if (insight.recommendation === 'craft') {
                 <span class="badge-decision badge-craft" i18n>VALE A PENA CRAFTAR</span>
               } @else if (insight.recommendation === 'buy') {
                 <span class="badge-decision badge-buy" i18n>MAIS BARATO COMPRAR DIRETO</span>
-              } @else if (insight.recommendation === 'scarce') {
-                <span class="badge-decision badge-scarce" i18n>ESTOQUE ZERADO NO MERCADO</span>
+              } @else if (insight.recommendation === 'unprofitable') {
+                <span class="badge-decision badge-unprofitable" i18n
+                  >CUSTO ACIMA DO PREÇO DE VENDA</span
+                >
               } @else {
                 <span class="badge-decision badge-unknown" i18n>ANÁLISE DE MERCADO</span>
               }
@@ -331,7 +313,7 @@
               @if (productPrice() !== null) {
                 <ng-container i18n>Preço un: </ng-container>{{ silver(productPrice()) }}
               } @else {
-                <ng-container i18n>Consulte o preço do produto</ng-container>
+                <ng-container i18n>Sem cotação de venda</ng-container>
               }
             </small>
           </div>
@@ -556,7 +538,6 @@
                               class="sub-insight-chip"
                               [class.chip-craft]="subInsight.recommendation === 'craft'"
                               [class.chip-buy]="subInsight.recommendation === 'buy'"
-                              [class.chip-scarce]="subInsight.recommendation === 'scarce'"
                               [title]="subInsight.advice"
                             >
                               {{
@@ -564,7 +545,7 @@
                                   ? 'Craft vantajoso'
                                   : subInsight.recommendation === 'buy'
                                     ? 'Melhor comprar'
-                                    : 'Sem estoque'
+                                    : 'Análise indisponível'
                               }}
                             </span>
                           }
@@ -586,7 +567,7 @@
             </p>
           </section>
         } @else if (view() === 'list') {
-          <p i18n>Confirme rendimentos e quantidades para gerar a lista consolidada.</p>
+          <p i18n>Confira as estimativas e quantidades antes de gerar a lista consolidada.</p>
         }
         <div class="desktop-graph" [hidden]="view() !== 'graph'">
           <app-recipe-graph

@@ -306,7 +306,7 @@ describe('Interactive recipe tree', () => {
     expect(tree.context()).toBeNull();
     expect(fixture.nativeElement.querySelector('.context-panel')).toBeNull();
   });
-  it('saves external material requirements only after the yield is known and updates the same draft', async () => {
+  it('saves external material requirements with the estimated yield and updates the same draft', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(
       RecipeTree,
@@ -315,7 +315,7 @@ describe('Interactive recipe tree', () => {
     );
     const tree = fixture.componentInstance;
     tree.saveShoppingList();
-    expect(tree.store.data().personalPlans).toHaveLength(0);
+    expect(tree.store.data().personalPlans[0]?.materials[0]?.quantity).toBe(80);
     tree.setRootYield(1);
     tree.target.set(500);
     tree.saveShoppingList();
@@ -424,7 +424,7 @@ describe('Interactive recipe tree', () => {
     expect(tree.plan()?.value?.tasks).toEqual([]);
     expect(fixture.nativeElement.textContent).toContain('Não é Hunting');
   });
-  it('renders the real catalog recipe with unknown yield, then recalculates an explicit scenario', async () => {
+  it('automatically uses an estimated yield for a recipe without yield metadata', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -432,11 +432,15 @@ describe('Interactive recipe tree', () => {
         dependencies.list,
       ),
       tree = fixture.componentInstance;
-    expect(tree.plan()?.value).toBeNull();
+    expect(tree.root()?.yield).toBeNull();
+    expect(tree.effectiveYield()).toBe(2.5);
+    expect(tree.plan()?.value).not.toBeNull();
     tree.setRootYield(2.5);
     tree.target.set(10);
     fixture.detectChanges();
     expect(tree.plan()?.value?.rows.find((r) => r.itemId === 9001)?.required).toBe(8);
+    expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Confirme o rendimento para calcular');
     tree.view.set('list');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('table').textContent).toContain('Sal');
@@ -578,7 +582,7 @@ describe('Interactive recipe tree', () => {
     expect(el.textContent).toContain('Quantia de receitas');
   });
 
-  it('applies default yield based on life skill type and character mastery on click', async () => {
+  it('automatically estimates yield from life skill and character mastery', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -588,13 +592,9 @@ describe('Interactive recipe tree', () => {
       tree = fixture.componentInstance;
 
     expect(tree.root()?.yield).toBeNull();
-    expect(tree.plan()?.value).toBeNull();
-
-    tree.applyDefaultYield();
-    fixture.detectChanges();
-
-    expect(tree.root()?.yield).toBe(2.5);
+    expect(tree.effectiveYield()).toBe(2.5);
     expect(tree.plan()?.value).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
   });
 
   it('supports acquisition strategies: buy_all, gather_all (100% profit), and custom toggles', async () => {
@@ -669,7 +669,7 @@ describe('Interactive recipe tree', () => {
     const craftInsight = tree.rootInsight();
     expect(craftInsight).not.toBeNull();
     expect(craftInsight?.recommendation).toBe('craft');
-    expect(craftInsight?.advice).toContain('Vale a pena');
+    expect(craftInsight?.advice).toContain('Margem estimada');
     expect(craftInsight?.marketStock).toBe(50);
     expect(craftInsight?.totalTrades).toBe('10000');
 
@@ -677,10 +677,10 @@ describe('Interactive recipe tree', () => {
     tree.livePrices.update((p) => new Map(p).set(9001, '800'));
     fixture.detectChanges();
     const buyInsight = tree.rootInsight();
-    expect(buyInsight?.recommendation).toBe('buy');
-    expect(buyInsight?.advice).toContain('Mais barato comprar pronto');
+    expect(buyInsight?.recommendation).toBe('unprofitable');
+    expect(buyInsight?.advice).toContain('preço de venda estimado');
 
-    // When market stock is 0: recommendation 'scarce'
+    // Zero stock does not turn a sale analysis into a recommendation about obtaining the item.
     tree.marketQuotes.update((q) =>
       new Map(q).set(5301, {
         itemId: 5301,
@@ -696,11 +696,14 @@ describe('Interactive recipe tree', () => {
       }),
     );
     fixture.detectChanges();
-    const scarceInsight = tree.rootInsight();
-    expect(scarceInsight?.recommendation).toBe('scarce');
-    expect(scarceInsight?.advice).toContain('Estoque zerado');
+    const unavailableInsight = tree.rootInsight();
+    expect(unavailableInsight?.recommendation).not.toBe('scarce');
+    expect(unavailableInsight?.advice).not.toContain('Estoque zerado');
+    expect(tree.netRevenue()).not.toBeNull();
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.insight-decision-card')).toBeTruthy();
+    expect(el.textContent).not.toContain('ESTOQUE ZERADO NO MERCADO');
+    expect(el.textContent).not.toContain('Produzir é a única forma de obtenção imediata');
   });
 });
