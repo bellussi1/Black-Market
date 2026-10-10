@@ -1,0 +1,415 @@
+{
+  "region": "sa",
+  "locale": "pt",
+  "extractorChecksum": "a40ef27779f719e11001356a81fddea75573bdb2b05e9d2a35e49083228b30c0",
+  "reviewedAt": "2026-10-09",
+  "sourceUrls": [
+    "https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639",
+    "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694"
+  ],
+  "clientEvidence": {
+    "extractionVersion": "sa-pt-meta-2e188c2680c1-loc-7e729a315ce6-ext-5bf11bd7-bin-80ebbce2-catalog",
+    "itemIds": [
+      1407,
+      1408,
+      1409,
+      1410,
+      820936,
+      821372
+    ],
+    "manufactureGroups": [
+      16581,
+      16582
+    ],
+    "note": "Composições simples confirmadas nas descrições do cliente atualizado. A composição em lote com Catalisador Mágico Concentrado consta no grupo 16582; seu rendimento não consta nessa tabela e permanece desconhecido. A receita histórica com Catalisador Mágico x10 e Essência de Ibellab x1 não foi republicada. Rendimentos de alquimia e probabilidade do subproduto permanecem desconhecidos."
+  },
+  "items": [
+    {
+      "id": 702,
+      "name": "Elixir da Vontade"
+    },
+    {
+      "id": 703,
+      "name": "Elixir da Vontade Extraordinária"
+    },
+    {
+      "id": 1178,
+      "name": "Óleo da Imortalidade Decadente"
+    },
+    {
+      "id": 1179,
+      "name": "[Evento] Óleo da Imortalidade Decadente"
+    },
+    {
+      "id": 1399,
+      "name": "Fármaco da Harmonia"
+    },
+    {
+      "id": 1407,
+      "name": "[Grupo] Fármaco da Harmonia - Edania"
+    },
+    {
+      "id": 1408,
+      "name": "[Grupo] Imortalidade: Fármaco da Harmonia - Edania"
+    },
+    {
+      "id": 1409,
+      "name": "Elixir de Edania"
+    },
+    {
+      "id": 1410,
+      "name": "Elixir de Edania Poderoso"
+    },
+    {
+      "id": 4916,
+      "name": "Reagente Azul"
+    },
+    {
+      "id": 4986,
+      "name": "Essência de Ibellab"
+    },
+    {
+      "id": 5008,
+      "name": "Casca de Árvore Velha"
+    },
+    {
+      "id": 5025,
+      "name": "Seiva de Árvore de Caphras"
+    },
+    {
+      "id": 5301,
+      "name": "Reagente Líquido Limpo"
+    },
+    {
+      "id": 5960,
+      "name": "Vestígio da Natureza"
+    },
+    {
+      "id": 6354,
+      "name": "Sangue do Pecador"
+    },
+    {
+      "id": 820936,
+      "name": "Catalisador Mágico"
+    },
+    {
+      "id": 821372,
+      "name": "Catalisador Mágico Concentrado"
+    }
+  ],
+  "recipes": [
+    {
+      "output": {
+        "item": 1407,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 1
+        },
+        {
+          "item": 1409,
+          "count": 3
+        },
+        {
+          "item": 702,
+          "count": 3
+        },
+        {
+          "item": 820936,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": 1407,
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 10
+        },
+        {
+          "item": 1409,
+          "count": 30
+        },
+        {
+          "item": 702,
+          "count": 30
+        },
+        {
+          "item": 821372,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1407,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 1
+        },
+        {
+          "item": 1409,
+          "count": 3
+        },
+        {
+          "item": 703,
+          "count": 1
+        },
+        {
+          "item": 820936,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": 1407,
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 10
+        },
+        {
+          "item": 1409,
+          "count": 30
+        },
+        {
+          "item": 703,
+          "count": 10
+        },
+        {
+          "item": 821372,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1407,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 1
+        },
+        {
+          "item": 1410,
+          "count": 1
+        },
+        {
+          "item": 702,
+          "count": 3
+        },
+        {
+          "item": 820936,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": 1407,
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 10
+        },
+        {
+          "item": 1410,
+          "count": 10
+        },
+        {
+          "item": 702,
+          "count": 30
+        },
+        {
+          "item": 821372,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1407,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 1
+        },
+        {
+          "item": 1410,
+          "count": 1
+        },
+        {
+          "item": 703,
+          "count": 1
+        },
+        {
+          "item": 820936,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": 1407,
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1399,
+          "count": 10
+        },
+        {
+          "item": 1410,
+          "count": 10
+        },
+        {
+          "item": 703,
+          "count": 10
+        },
+        {
+          "item": 821372,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1408,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1407,
+          "count": 1
+        },
+        {
+          "item": 1178,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1408,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1407,
+          "count": 1
+        },
+        {
+          "item": 1179,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "output": 1409,
+      "type": "ALCHEMY",
+      "inputs": [
+        {
+          "item": 6354,
+          "count": 2
+        },
+        {
+          "item": 5960,
+          "count": 4
+        },
+        {
+          "item": 5008,
+          "count": 5
+        },
+        {
+          "item": 5301,
+          "count": 5
+        },
+        {
+          "item": 5025,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "output": 1410,
+      "type": "ALCHEMY",
+      "inputs": [
+        {
+          "item": 6354,
+          "count": 2
+        },
+        {
+          "item": 5960,
+          "count": 4
+        },
+        {
+          "item": 5008,
+          "count": 5
+        },
+        {
+          "item": 5301,
+          "count": 5
+        },
+        {
+          "item": 5025,
+          "count": 6
+        }
+      ],
+      "byproductOf": 1409
+    },
+    {
+      "output": {
+        "item": 1410,
+        "count": 1
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1409,
+          "count": 3
+        },
+        {
+          "item": 4916,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "output": {
+        "item": 1410,
+        "count": 10
+      },
+      "type": "SIMPLE_ALCHEMY",
+      "inputs": [
+        {
+          "item": 1409,
+          "count": 30
+        },
+        {
+          "item": 4916,
+          "count": 10
+        },
+        {
+          "item": 4986,
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

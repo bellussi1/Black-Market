@@ -118,7 +118,7 @@ export const routes: Routes = [
       {
         path: 'recommendations',
 
-        title: $localize`Black Market · Ganhar prata`,
+        title: $localize`Black Market · O que fazer`,
 
         data: { private: true },
 

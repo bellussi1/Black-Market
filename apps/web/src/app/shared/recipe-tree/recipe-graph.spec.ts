@@ -220,7 +220,7 @@ describe('Accessible graph controls', () => {
         ).toBe(false);
       }
   });
-  it('never zooms in when decreasing zoom after fitting a very wide graph', async () => {
+  it('never zooms in when decreasing zoom after fitting a long graph', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = Array.from({ length: 40 }, (_, i) =>
@@ -235,7 +235,9 @@ describe('Accessible graph controls', () => {
     const graph = fixture.componentInstance;
     graph.fit();
     const fitted = graph.zoom();
-    expect(fitted).toBeLessThan(0.08);
+    expect(fitted).toBeLessThan(1);
+    expect(graph.layout().bounds.height * fitted).toBeLessThanOrEqual(600);
+    expect(graph.layout().bounds.width * fitted).toBeLessThanOrEqual(800);
     graph.scale(-0.15);
     expect(graph.zoom()).toBeLessThanOrEqual(fitted);
   });
@@ -246,5 +248,206 @@ describe('Accessible graph controls', () => {
     const state = { positions: new Map(), sizes: new Map([['root', { width: 248, height: 480 }]]) };
     const graph = layoutRecipeGraph(root, '', new Map(), state);
     expect(graph.nodes[1].y).toBeGreaterThanOrEqual(graph.nodes[0].y + 480 + 64);
+  });
+
+  it('stacks a large initial recipe downwards within two nearby columns', () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = Array.from({ length: 5 }, (_, index) =>
+      nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
+    );
+    const graph = layoutRecipeGraph(root);
+    const parent = graph.nodes[0];
+    expect(new Set(graph.nodes.slice(1).map((entry) => entry.x)).size).toBeLessThanOrEqual(2);
+    expect(graph.bounds.width).toBeLessThanOrEqual(600);
+    for (const child of graph.nodes.slice(1)) {
+      expect(child.y).toBeGreaterThanOrEqual(parent.y + parent.height + 64);
+      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(284);
+    }
+    expect(graph.bounds.height).toBeGreaterThan(700);
+  });
+
+  it('places five newly expanded ingredients below their parent without widening the graph', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [0, 1].map((index) =>
+      nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
+    );
+    const fixture = await renderComponent(RecipeGraph, { root });
+    const graph = fixture.componentInstance;
+    graph.pan.set({ x: -90, y: -35 });
+    graph.zoom.set(0.7);
+    const parent = graph.layout().nodes.find((entry) => entry.node.path === 'root/0')!;
+    const expanded = {
+      ...root,
+      children: root.children.map((node, index) =>
+        index === 0
+          ? {
+              ...node,
+              expanded: true,
+              children: Array.from({ length: 5 }, (_, child) =>
+                nodeFor(
+                  { itemId: child + 8, name: 'Material dependente', quantity: '1' },
+                  `root/0/${child}`,
+                ),
+              ),
+            }
+          : node,
+      ),
+    };
+    fixture.componentRef.setInput('root', expanded);
+    fixture.detectChanges();
+    expect(graph.pan()).toEqual({ x: -90, y: -35 });
+    expect(graph.zoom()).toBe(0.7);
+    expect(graph.layout().nodes.find((entry) => entry.node.path === 'root/0')).toMatchObject({
+      x: parent.x,
+      y: parent.y,
+    });
+    const nodes = graph.layout().nodes;
+    expect(graph.layout().bounds.width).toBeLessThanOrEqual(600);
+    for (const child of nodes.filter((entry) => entry.node.path.startsWith('root/0/'))) {
+      expect(child.y).toBeGreaterThanOrEqual(parent.y + parent.height + 64);
+      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(284);
+    }
+    for (let i = 0; i < nodes.length; i++)
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i],
+          b = nodes[j];
+        expect(
+          a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y,
+        ).toBe(false);
+      }
+  });
+
+  it('marks the root distinctly and selects the entire ancestry when a deep card is clicked', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [
+      nodeFor({ itemId: 2, name: 'Material', quantity: '1' }, 'root/0'),
+      nodeFor({ itemId: 3, name: 'Outro', quantity: '1' }, 'root/1'),
+    ];
+    root.children[0].expanded = true;
+    root.children[0].children = [nodeFor({ itemId: 4, name: 'Base', quantity: '1' }, 'root/0/0')];
+    const fixture = await renderComponent(RecipeGraph, { root });
+    fixture.nativeElement.querySelector('[data-node-path="root/0/0"] .node-select').click();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement
+        .querySelector('[data-node-path="root"]')
+        .classList.contains('root-node'),
+    ).toBe(true);
+    expect(
+      [...fixture.nativeElement.querySelectorAll('.graph-node.on-path')].map(
+        (node: HTMLElement) => node.dataset['nodePath'],
+      ),
+    ).toEqual(['root', 'root/0', 'root/0/0']);
+    expect(fixture.nativeElement.querySelectorAll('.graph-links path.highlight')).toHaveLength(2);
+  });
+
+  it('uses one world-space column for a narrow viewport and preserves it during zoom', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = Array.from({ length: 5 }, (_, index) =>
+      nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
+    );
+    const fixture = await renderComponent(RecipeGraph, { root });
+    const viewport = fixture.nativeElement.querySelector('.graph-viewport');
+    Object.defineProperties(viewport, {
+      clientWidth: { value: 380 },
+      clientHeight: { value: 600 },
+    });
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    fixture.detectChanges();
+    const graph = fixture.componentInstance;
+    expect(new Set(graph.layout().nodes.map((entry) => entry.x)).size).toBe(1);
+    const positions = graph.layout().nodes.map((entry) => ({ x: entry.x, y: entry.y }));
+    graph.scale(0.15);
+    expect(graph.layout().nodes.map((entry) => ({ x: entry.x, y: entry.y }))).toEqual(positions);
+  });
+
+  it('highlights acquisition methods and their complete item ancestry when choosing a source', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Madeira', quantity: '1' }, 'root');
+    root.expanded = true;
+    const source = {
+      id: 'node:1',
+      name: 'Floresta',
+      territory: null,
+      managerNode: null,
+      contribution: 1,
+      position: null,
+    };
+    const fixture = await renderComponent(RecipeGraph, { root, origins: new Map([[1, [source]]]) });
+    fixture.nativeElement
+      .querySelector('[data-node-path="root/workers/node:1"] .node-select')
+      .click();
+    fixture.detectChanges();
+    expect(
+      [...fixture.nativeElement.querySelectorAll('.graph-node.on-path')].map(
+        (node: HTMLElement) => node.dataset['nodePath'],
+      ),
+    ).toEqual(['root', 'root/workers', 'root/workers/node:1']);
+    expect(fixture.nativeElement.querySelectorAll('.graph-links path.highlight')).toHaveLength(2);
+  });
+
+  it('routes connections to lower siblings through a free corridor beside the intervening cards', () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = Array.from({ length: 5 }, (_, index) =>
+      nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
+    );
+    const graph = layoutRecipeGraph(root);
+    const edge = graph.edges.find((entry) => entry.to === 'root/4')!;
+    const target = graph.nodes.find((entry) => entry.node.path === 'root/4')!;
+    const intervening = graph.nodes.find((entry) => entry.node.path === 'root/2')!;
+    const corridor = edge.d.match(/L\s+([\d.]+)\s+([\d.]+)/);
+    expect(corridor).not.toBeNull();
+    const x = Number(corridor![1]),
+      y = Number(corridor![2]);
+    expect(x < intervening.x || x > intervening.x + intervening.width).toBe(true);
+    expect(y).toBeLessThan(target.y);
+  });
+
+  it('centers a selected acquisition location using its measured card box', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Madeira', quantity: '1' }, 'root');
+    root.expanded = true;
+    const source = {
+      id: 'node:1',
+      name: 'Floresta',
+      territory: null,
+      managerNode: null,
+      contribution: 1,
+      position: null,
+    };
+    const fixture = await renderComponent(RecipeGraph, { root, origins: new Map([[1, [source]]]) });
+    const viewport = fixture.nativeElement.querySelector('.graph-viewport');
+    Object.defineProperties(viewport, {
+      clientWidth: { value: 800 },
+      clientHeight: { value: 600 },
+    });
+    const graph = fixture.componentInstance;
+    graph.center('root/workers/node:1');
+    const location = graph.layout().sources.find((entry) => entry.path === 'root/workers/node:1')!;
+    expect((location.x + location.width / 2) * graph.zoom() + graph.pan().x).toBeCloseTo(400);
+    expect((location.y + location.height / 2) * graph.zoom() + graph.pan().y).toBeCloseTo(300);
+  });
+
+  it('clears a local descendant selection when switching to a different root item', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Primeiro produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [nodeFor({ itemId: 2, name: 'Material', quantity: '1' }, 'root/0')];
+    const fixture = await renderComponent(RecipeGraph, { root });
+    fixture.nativeElement.querySelector('[data-node-path="root/0"] .node-select').click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selection()).toBe('root/0');
+    fixture.componentRef.setInput('root', {
+      ...root,
+      part: { ...root.part, itemId: 10, name: 'Novo produto' },
+    });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selection()).toBe('root');
   });
 });

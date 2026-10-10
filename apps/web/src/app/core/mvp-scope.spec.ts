@@ -10,6 +10,7 @@ describe('Screenshot MVP scope', () => {
       '/scans',
       '/market',
       '/recipes',
+      '/recommendations',
       '/recipes/items/5301',
       '/inventory',
       '/storage',
@@ -24,14 +25,7 @@ describe('Screenshot MVP scope', () => {
       expect(isMvpPathEnabled(path)).toBe(true);
   });
   it('blocks direct access to suspended tools as well as navigation links', () => {
-    for (const path of [
-      '/demo',
-      '/world',
-      '/crafting',
-      '/recommendations',
-      '/lifeskills',
-      '/account',
-    ])
+    for (const path of ['/demo', '/world', '/crafting', '/lifeskills', '/account'])
       expect(isMvpPathEnabled(path)).toBe(false);
     const tree = { redirect: '/' };
     TestBed.configureTestingModule({

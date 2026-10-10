@@ -172,3 +172,84 @@ describe('Life skill discovery', () => {
     expect(sqlQuery(general.countQuery.where.mock.calls[0][0]).sql).not.toContain('"recipes"');
   });
 });
+
+describe('Production catalogue snapshot', () => {
+  it('returns all eligible recipes and unique item details bound to the selected version, retaining unknown yields and byproducts', async () => {
+    const statements = [
+      query([
+        { key: 'main', type: 'ALCHEMY', station: null, byproductOfItemId: null },
+        { key: 'proc', type: 'ALCHEMY', station: null, byproductOfItemId: 202 },
+      ]),
+      query([
+        { recipeKey: 'main', itemId: 101, quantity: '3.0000' },
+        { recipeKey: 'proc', itemId: 101, quantity: '3.0000' },
+      ]),
+      query([
+        { recipeKey: 'main', itemId: 202, quantity: null },
+        { recipeKey: 'proc', itemId: 203, quantity: null },
+      ]),
+      query([
+        { id: 101, name: 'Ore', weight: '0.1000', sourceData: { vendors: ['Vendor'] } },
+        { id: 202, name: 'Ingot', weight: '1.0000', sourceData: {} },
+        { id: 203, name: 'Rare ingot', weight: '1.0000', sourceData: {} },
+      ]),
+      query([{ itemId: 101, id: 'ore', parentId: null, sortOrder: 1, name: 'Ore category' }]),
+    ];
+    const select = vi.fn();
+    for (const statement of statements) select.mockReturnValueOnce(statement);
+    const instance = new CatalogService(
+      { db: { select } } as unknown as DatabaseService,
+      {
+        getIconUrl: (id: number) => Promise.resolve(`/icons/${id}`),
+      } as unknown as CatalogAssetsService,
+    );
+    const active = vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'snapshot',
+      version: 'reviewed',
+      region: 'sa',
+      locale: 'pt',
+      checksum: 'checksum',
+      itemCount: 74287,
+      recipeCount: 4420,
+      finishedAt: new Date('2026-10-09T00:00:00Z'),
+    } as never);
+    const result = await instance.productionCatalog({ region: 'sa', locale: 'pt' });
+    expect(active).toHaveBeenCalledOnce();
+    expect(result.dataset?.version).toBe('reviewed');
+    expect(result.recipes).toHaveLength(2);
+    expect(result.recipes[0]).toMatchObject({
+      key: 'main',
+      inputs: [{ itemId: 101, name: 'Ore', quantity: '3.0000' }],
+      outputs: [{ itemId: 202, name: 'Ingot', quantity: null }],
+    });
+    expect(result.recipes[1].byproductOfItemId).toBe(202);
+    expect(result.items.map((item) => item.id)).toEqual([101, 202, 203]);
+    expect(result.items[0]).toMatchObject({
+      weight: '0.1000',
+      sourceData: { vendors: ['Vendor'] },
+      categories: [{ id: 'ore' }],
+    });
+    const dialect = new PgDialect();
+    for (const statement of statements) {
+      expect(dialect.sqlToQuery(statement.where.mock.calls[0][0] as SQL).params).toContain(
+        'snapshot',
+      );
+      expect(statement.limit).not.toHaveBeenCalled();
+      expect(statement.offset).not.toHaveBeenCalled();
+    }
+    const recipeFilter = dialect.sqlToQuery(statements[0].where.mock.calls[0][0] as SQL).params;
+    expect(recipeFilter).toContain('SIMPLE_ALCHEMY');
+    expect(recipeFilter).not.toContain('HOUSE');
+    expect(recipeFilter).not.toContain('SKILL');
+  });
+
+  it('returns an empty snapshot when the requested region has no active data', async () => {
+    const instance = new CatalogService({} as DatabaseService, {} as CatalogAssetsService);
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue(null);
+    expect(await instance.productionCatalog({ region: 'sa' })).toEqual({
+      recipes: [],
+      items: [],
+      dataset: null,
+    });
+  });
+});

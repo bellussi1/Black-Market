@@ -57,6 +57,13 @@ export class CatalogController {
   listRecipes(@Query() query: Record<string, unknown>) {
     return this.catalog.listRecipes(query);
   }
+  @Get('production/catalog')
+  @ApiOperation({
+    summary: 'Snapshot completo de receitas de profissões e seus itens para planejamento',
+  })
+  productionCatalog(@Query() query: Record<string, unknown>) {
+    return this.catalog.productionCatalog(query);
+  }
   @Get('recipes/:key')
   @ApiOperation({ summary: 'Receita com materiais, resultados e imagens' })
   recipe(@Param('key') key: string, @Query() query: Record<string, unknown>) {

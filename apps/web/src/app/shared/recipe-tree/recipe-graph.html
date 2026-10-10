@@ -4,7 +4,7 @@
   <button type="button" (click)="scale(-0.15)" aria-label="Diminuir zoom" i18n-aria-label>−</button>
   <button type="button" (click)="fit()" i18n>Ajustar árvore</button>
   @if (advanced()) {
-    <button type="button" (click)="center(selected())" i18n>Centralizar seleção</button>
+    <button type="button" (click)="center(selection())" i18n>Centralizar seleção</button>
   }
   <button type="button" (click)="reset()" i18n>Restaurar vista</button>
   @if (advanced()) {
@@ -49,7 +49,7 @@
       aria-hidden="true"
     >
       @for (edge of layout().edges; track edge.to) {
-        <path [attr.d]="edge.d" [class.highlight]="ancestor(edge.to, selected())" />
+        <path [attr.d]="edge.d" [class.highlight]="ancestor(edge.to, selection())" />
       }
     </svg>
     @for (entry of layout().nodes; track entry.node.path) {
@@ -58,15 +58,16 @@
         animate.leave="node-leave"
         [attr.data-node-path]="entry.node.path"
         [attr.aria-busy]="entry.node.loading"
-        [class.selected]="selected() === entry.node.path"
-        [class.on-path]="ancestor(entry.node.path, selected())"
+        [class.root-node]="entry.depth === 0"
+        [class.selected]="selection() === entry.node.path"
+        [class.on-path]="ancestor(entry.node.path, selection())"
         [style.left.px]="entry.x"
         [style.top.px]="entry.y"
       >
         <button
           type="button"
           class="node-select"
-          [attr.aria-pressed]="selected() === entry.node.path"
+          [attr.aria-pressed]="selection() === entry.node.path"
           (focus)="focusNode(entry.node.path)"
           [attr.aria-label]="'Explorar ' + entry.node.part.name"
           [attr.aria-expanded]="entry.node.expanded"
@@ -142,6 +143,8 @@
         class="graph-node source-node"
         animate.leave="node-leave"
         [attr.data-node-path]="entry.path"
+        [class.selected]="selection() === entry.path"
+        [class.on-path]="ancestor(entry.path, selection())"
         [style.left.px]="entry.x"
         [style.top.px]="entry.y"
       >
@@ -149,7 +152,8 @@
           <button
             type="button"
             class="node-select"
-            (click)="locationSelected.emit({ path: entry.itemPath, source })"
+            [attr.aria-pressed]="selection() === entry.path"
+            (click)="selectLocation(entry.path, entry.itemPath, source)"
           >
             <span class="source-symbol" aria-hidden="true">⌖</span>
             <span
@@ -165,13 +169,18 @@
           <button
             type="button"
             class="expand-node"
-            (click)="locationSelected.emit({ path: entry.itemPath, source })"
+            (click)="selectLocation(entry.path, entry.itemPath, source)"
             i18n
           >
             Ver localização e recursos
           </button>
         } @else if (entry.kind === 'more') {
-          <button type="button" class="node-select" (click)="emit(entry.itemPath, 'source')">
+          <button
+            type="button"
+            class="node-select"
+            [attr.aria-pressed]="selection() === entry.path"
+            (click)="emit(entry.itemPath, 'source', entry.path)"
+          >
             <span class="source-symbol" aria-hidden="true">…</span
             ><span
               ><small i18n>LOCAIS AGRUPADOS</small
@@ -179,11 +188,21 @@
             >
           </button>
           <p i18n>Consulte todos os locais no painel do item.</p>
-          <button type="button" class="expand-node" (click)="emit(entry.itemPath, 'source')" i18n>
+          <button
+            type="button"
+            class="expand-node"
+            (click)="emit(entry.itemPath, 'source', entry.path)"
+            i18n
+          >
             Ver todas as fontes
           </button>
         } @else {
-          <button type="button" class="node-select" (click)="emit(entry.itemPath, 'source')">
+          <button
+            type="button"
+            class="node-select"
+            [attr.aria-pressed]="selection() === entry.path"
+            (click)="emit(entry.itemPath, 'source', entry.path)"
+          >
             <svg class="source-symbol" viewBox="0 0 24 24" aria-hidden="true">
               @if (entry.activity === 'grinding') {
                 <path d="M4 3l16 16M3 4l3 5 11 11 3-3L9 6zm17-1L4 19m-1-2l4 4m10-18l4 4" />

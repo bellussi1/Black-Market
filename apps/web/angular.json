@@ -80,6 +80,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "prebundle": {
+              "exclude": ["@bdo/shared", "@bdo/calculators"]
+            }
+          },
           "configurations": {
             "production": {
               "buildTarget": "web:build:production"

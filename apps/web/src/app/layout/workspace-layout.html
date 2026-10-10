@@ -163,12 +163,12 @@
       </div>
     }
     <div class="content-frame" [class.with-ad-rails]="showAds()">
-      @if (!screenshotMvp && store.demoActive()) {
+      @if (store.demoActive()) {
         <aside class="storage-warning" aria-label="Modo demonstração" i18n-aria-label>
           <span i18n
-            >Demonstração · Perfil e preços de exemplo são fictícios. As alterações duram apenas
-            nesta sessão.</span
-          ><a routerLink="/demo" i18n>Reiniciar exemplo</a
+            >Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão;
+            seus dados anteriores estão preservados.</span
+          ><a routerLink="/recommendations" i18n>Comparar produção</a
           ><button class="btn subtle" (click)="store.exitDemo()" i18n>Sair da demonstração</button>
         </aside>
       }

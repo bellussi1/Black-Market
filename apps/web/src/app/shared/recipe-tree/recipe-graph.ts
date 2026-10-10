@@ -11,6 +11,7 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { calculateProduction } from '@bdo/calculators';
@@ -34,6 +35,8 @@ export class RecipeGraph {
   readonly root = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly selected = input('root');
+  private readonly localSelection = signal<{ path: string; ownerPath: string } | null>(null);
+  readonly selection = computed(() => this.localSelection()?.path ?? this.selected());
   readonly advanced = input(false);
   readonly action = output<BranchAction>();
   readonly origins = input<ReadonlyMap<number, ItemSources['nodes']>>(new Map());
@@ -48,8 +51,10 @@ export class RecipeGraph {
   readonly typeLabel = recipeTypeLabel;
   private readonly destroyRef = inject(DestroyRef);
   private readonly sizes = signal<GraphLayoutState['sizes']>(new Map());
+  private readonly columns = signal<1 | 2>(2);
   private readonly positions: GraphLayoutState['positions'] = new Map();
   private rootIdentity = '';
+  private selectionRootIdentity = '';
   private initialFitPending = true;
   readonly layout = computed(() => {
     const root = this.root();
@@ -62,6 +67,7 @@ export class RecipeGraph {
     return layoutRecipeGraph(root, this.focus(), this.origins(), {
       positions: this.positions,
       sizes: this.sizes(),
+      columns: this.columns(),
     });
   });
   readonly transform = computed(
@@ -89,6 +95,18 @@ export class RecipeGraph {
   } | null = null;
 
   constructor() {
+    effect(() => {
+      const root = this.root();
+      const identity = root.part.itemId + ':' + (root.recipe?.key ?? '');
+      if (this.selectionRootIdentity && identity !== this.selectionRootIdentity)
+        this.localSelection.set(null);
+      this.selectionRootIdentity = identity;
+    });
+    effect(() => {
+      const selected = this.selected();
+      const local = untracked(this.localSelection);
+      if (local && local.ownerPath !== selected) this.localSelection.set(null);
+    });
     afterNextRender(() => {
       const viewport = this.viewport()?.nativeElement;
       if (!viewport) return;
@@ -150,6 +168,11 @@ export class RecipeGraph {
       }
       if (changed) this.sizes.set(sizes);
       if (this.initialFitPending && this.viewport()?.nativeElement.clientWidth) {
+        const columns = this.viewport()!.nativeElement.clientWidth < 560 ? 1 : 2;
+        if (columns !== this.columns()) {
+          this.positions.clear();
+          this.columns.set(columns);
+        }
         this.initialFitPending = false;
         this.fit();
       }
@@ -161,8 +184,13 @@ export class RecipeGraph {
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);
   }
-  emit(path: string, action: BranchAction['action']) {
+  emit(path: string, action: BranchAction['action'], selectionPath = path) {
+    this.localSelection.set({ path: selectionPath, ownerPath: path });
     this.action.emit({ path, action });
+  }
+  selectLocation(path: string, itemPath: string, source: ItemSources['nodes'][number]) {
+    this.localSelection.set({ path, ownerPath: itemPath });
+    this.locationSelected.emit({ path: itemPath, source });
   }
   activate(node: RecipeNode) {
     this.emit(node.path, 'source');
@@ -208,7 +236,10 @@ export class RecipeGraph {
     });
   };
   center(path = 'root') {
-    const node = this.layout().nodes.find((row) => row.node.path === path);
+    const layout = this.layout();
+    const node =
+      layout.nodes.find((row) => row.node.path === path) ??
+      layout.sources.find((row) => row.path === path);
     const viewport = this.viewport()?.nativeElement;
     if (node && viewport?.clientWidth && viewport.clientHeight)
       this.pan.set({
@@ -238,7 +269,8 @@ export class RecipeGraph {
     this.center();
   }
   focusBranch() {
-    this.focus.set(this.focus() ? '' : this.selected());
+    const owner = this.localSelection()?.ownerPath ?? this.selected();
+    this.focus.set(this.focus() ? '' : owner);
   }
   start(event: PointerEvent) {
     this.keyboardNavigation = false;

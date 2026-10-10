@@ -108,6 +108,7 @@ export class WorkspaceLayout {
         { path: '/scans', label: 'Importar capturas' },
         { path: '/market', label: 'Mercado' },
         { path: '/recipes', label: 'Explorar receitas' },
+        { path: '/recommendations', label: 'O que fazer' },
         { path: '/storage', label: 'Armazém' },
         { path: '/family', label: 'Família' },
         { path: '/shopping', label: 'Lista de materiais' },

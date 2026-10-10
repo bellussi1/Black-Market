@@ -103,4 +103,88 @@ describe('readExtractorDataset', () => {
 
     await expect(readExtractorDataset(directory)).rejects.toThrow('IDs de item duplicados');
   });
+
+  async function supplement(overrides: Record<string, unknown> = {}) {
+    const original = await readExtractorDataset(directory);
+    const path = join(directory, 'reviewed-recipes.json');
+    await writeFile(
+      path,
+      JSON.stringify({
+        region: 'sa',
+        locale: 'pt',
+        extractorChecksum: original.checksum,
+        reviewedAt: '2026-10-09',
+        sourceUrls: ['https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639'],
+        items: [
+          { id: 101, name: 'Test Ore' },
+          { id: 202, name: 'Test Ingot' },
+        ],
+        recipes: [
+          {
+            output: { item: 202, count: 1 },
+            type: 'SIMPLE_ALCHEMY',
+            inputs: [{ item: 101, count: 3 }],
+          },
+        ],
+        ...overrides,
+      }),
+    );
+    return { original, options: { supplementFile: path, region: 'sa', locale: 'pt' } };
+  }
+
+  it('restores a reviewed missing recipe with known yield and persists its source without replacing client records', async () => {
+    await writeFiles();
+    const { original, options } = await supplement();
+    const result = await readExtractorDataset(directory, options);
+    expect(result.recipes).toHaveLength(2);
+    expect(result.recipes.find((r) => r.type === 'SIMPLE_ALCHEMY')).toMatchObject({
+      outputItemId: 202,
+      outputQuantity: 1,
+      inputs: [{ itemId: 101, quantity: 3 }],
+    });
+    expect(result.recipes[0]).toEqual(original.recipes[0]);
+    expect(result.checksum).not.toBe(original.checksum);
+    expect(result.items[1].sourceData?.['verifiedRecipeSupplements']).toMatchObject([
+      {
+        reviewedAt: '2026-10-09',
+        sourceUrls: ['https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639'],
+      },
+    ]);
+  });
+
+  it('rejects a supplement reviewed for another client or region instead of silently publishing stale recipes', async () => {
+    await writeFiles();
+    const wrongClient = await supplement({ extractorChecksum: '0'.repeat(64) });
+    await expect(readExtractorDataset(directory, wrongClient.options)).rejects.toThrow('checksum');
+    const wrongRegion = await supplement({ region: 'na' });
+    await expect(readExtractorDataset(directory, wrongRegion.options)).rejects.toThrow('região');
+  });
+
+  it('validates item identity and keeps unreported supplemental yields unknown', async () => {
+    await writeFiles();
+    const unknown = await supplement({
+      recipes: [{ output: 202, type: 'ALCHEMY', inputs: [{ item: 101, count: 2 }] }],
+    });
+    const result = await readExtractorDataset(directory, unknown.options);
+    expect(result.recipes.find((r) => r.type === 'ALCHEMY')?.outputQuantity).toBeNull();
+    const wrongItem = await supplement({
+      items: [
+        { id: 101, name: 'Unrelated ore' },
+        { id: 202, name: 'Test Ingot' },
+      ],
+    });
+    await expect(readExtractorDataset(directory, wrongItem.options)).rejects.toThrow('101');
+  });
+
+  it('does not duplicate client recipes or replace an unknown client yield with a reviewed yield', async () => {
+    await writeFiles();
+    const { original, options } = await supplement({
+      recipes: [
+        { output: { item: 202, count: 1 }, type: 'Processing', inputs: [{ item: 101, count: 4 }] },
+      ],
+    });
+    const result = await readExtractorDataset(directory, options);
+    expect(result.recipes).toEqual(original.recipes);
+    expect(result.recipes[0]?.outputQuantity).toBeNull();
+  });
 });

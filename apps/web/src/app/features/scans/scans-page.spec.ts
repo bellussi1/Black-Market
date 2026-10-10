@@ -12,6 +12,17 @@ import { ScansPage } from './scans-page';
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('lets the user choose a destination before uploading and requires an explicit first analysis', async () => {
+    const fixture = await renderComponent(ScansPage);
+    expect(fixture.componentInstance.autoRead()).toBe(false);
+    const select = fixture.nativeElement.querySelector('#capture-type') as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    select.value = 'gear';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.mode).toBe('gear');
+    expect(fixture.nativeElement.textContent).toContain('Nome do personagem');
+  });
   it('creates a character inline while preserving the open capture and applying its destination', async () => {
     images();
     const fixture = await renderComponent(ScansPage),
@@ -27,6 +38,35 @@ describe('Screenshot entry', () => {
     expect(page.jobs()[0].hash).toBe(hash);
     expect(page.jobs()[0].profileId).toBe(page.store.activeCharacter()?.id);
     expect(page.profileId).toBe(page.store.activeCharacter()?.id);
+  });
+  it('keeps existing capture destinations when a different upload type and warehouse are chosen', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: { files: [new File(['first'], 'first.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const first = page.jobs()[0];
+    page.captureMode = 'inventory';
+    page.captureLocation = 'Heidel';
+    page.captureProfileId = 'another';
+    await page.file({
+      target: { files: [new File(['second'], 'second.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const second = page.jobs()[1];
+    await page.activateJob(second.id);
+    expect(first).toMatchObject({ mode: 'storage', location: 'Velia', profileId: '' });
+    expect(second).toMatchObject({ mode: 'inventory', location: 'Heidel', profileId: 'another' });
+  });
+  it('uses a newly created character even after an existing destination was selected before upload', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    page.captureMode = 'gear';
+    page.captureProfileId = 'previous';
+    page.captureCharacterName = 'New gear owner';
+    page.createCaptureCharacter();
+    expect(page.captureProfileId).toBe(page.store.activeCharacter()?.id);
+    expect(page.captureProfileId).not.toBe('previous');
   });
   it('confirms only clear item and exact quantity suggestions and keeps ambiguity in the pending queue', async () => {
     const fixture = await renderComponent(ScansPage),

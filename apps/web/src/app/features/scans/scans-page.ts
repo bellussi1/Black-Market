@@ -49,7 +49,7 @@ import {
   stockMatches,
   type StockUpdateMode,
 } from './scan-consolidation';
-import { isDefinitelyEmptySlot } from './slot-visibility';
+import { isDefinitelyEmptySlot, isKnownLockedSlot } from './slot-visibility';
 import { detectStorageGrids, type GridDetection } from './storage-grid';
 import { parseVisibleQuantity } from './visible-quantity';
 
@@ -168,7 +168,8 @@ export class ScansPage implements OnDestroy {
   readonly reviewPage = signal(0);
   readonly reviewPageSize = 12;
   readonly reviewFilter = signal<'pending' | 'all'>('pending');
-  readonly autoRead = signal(true);
+  readonly autoRead = signal(false);
+  readonly skipLockedSlots = signal(true);
   readonly reviewCells = computed(() =>
     this.reviewFilter() === 'pending'
       ? this.cells().filter((cell) => !cell.reviewed && !cell.ignored)
@@ -203,6 +204,30 @@ export class ScansPage implements OnDestroy {
   columns = 8;
   rows = 4;
   location = 'Velia';
+  private uploadMode: ScanMode | null = null;
+  private uploadLocation: string | null = null;
+  private uploadProfileId: string | null = null;
+  get captureMode() {
+    return this.uploadMode ?? this.mode;
+  }
+  set captureMode(value: ScanMode) {
+    this.uploadMode = value;
+    if (!this.jobs().length) this.mode = value;
+  }
+  get captureLocation() {
+    return this.uploadLocation ?? this.location;
+  }
+  set captureLocation(value: string) {
+    this.uploadLocation = value;
+    if (!this.jobs().length) this.location = value;
+  }
+  get captureProfileId() {
+    return this.uploadProfileId ?? this.profileId;
+  }
+  set captureProfileId(value: string) {
+    this.uploadProfileId = value;
+    if (!this.jobs().length) this.profileId = value;
+  }
   mode: ScanMode = (['storage', 'inventory', 'gear'].includes(
     inject(ActivatedRoute).snapshot.queryParamMap.get('type') ?? '',
   )
@@ -228,7 +253,7 @@ export class ScansPage implements OnDestroy {
   };
   profileId = '';
   captureCharacterName = '';
-  createCaptureCharacter() {
+  createCaptureCharacter(forNewCapture = false) {
     const parsed = characterSchema.safeParse({
       id: crypto.randomUUID(),
       name: this.captureCharacterName,
@@ -246,6 +271,15 @@ export class ScansPage implements OnDestroy {
       }))
     )
       return;
+    if (forNewCapture) {
+      this.uploadProfileId = parsed.data.id;
+      this.captureCharacterName = '';
+      this.message.set(
+        'Personagem criado para as novas capturas. Os destinos anteriores foram mantidos.',
+      );
+      return;
+    }
+    this.uploadProfileId = parsed.data.id;
     this.profileId = parsed.data.id;
     this.jobs.update((jobs) =>
       jobs.map((job) =>
@@ -438,7 +472,7 @@ export class ScansPage implements OnDestroy {
             !exact &&
             this.jobs().find((job) => imageHashDistance(job.fingerprint, fingerprint) <= 5);
           let areas: GridDetection[] = [];
-          if (this.mode !== 'gear')
+          if (this.captureMode !== 'gear')
             try {
               areas = detectStorageGrids(image, image.width, image.height);
             } catch {
@@ -446,7 +480,7 @@ export class ScansPage implements OnDestroy {
             }
           const first = areas[0];
           let autoArea = areas.length === 1;
-          if (this.mode === 'gear') {
+          if (this.captureMode === 'gear') {
             try {
               autoArea =
                 detectEquipmentFrames(image, {
@@ -469,12 +503,12 @@ export class ScansPage implements OnDestroy {
             fingerprint,
             width: image.width,
             height: image.height,
-            mode: this.mode,
-            location: this.location,
-            profileId: this.profileId,
+            mode: this.captureMode,
+            location: this.captureLocation,
+            profileId: this.captureProfileId,
             bounds: first?.bounds ?? { left: 0, top: 0, width: image.width, height: image.height },
-            columns: first?.columns ?? (this.mode === 'gear' ? 1 : 8),
-            rows: first?.rows ?? (this.mode === 'gear' ? 1 : 4),
+            columns: first?.columns ?? (this.captureMode === 'gear' ? 1 : 8),
+            rows: first?.rows ?? (this.captureMode === 'gear' ? 1 : 4),
             areas,
             cells: [],
             status: exact ? 'duplicate' : 'queued',
@@ -841,7 +875,11 @@ export class ScansPage implements OnDestroy {
           const ctx = test.getContext('2d', { willReadFrequently: true });
           ctx?.drawImage(image, cell.left, cell.top, cell.width, cell.height, 0, 0, 32, 32);
           const data = ctx?.getImageData(0, 0, 32, 32).data;
-          if (data && isDefinitelyEmptySlot(data, 32, 32)) {
+          if (
+            data &&
+            (isDefinitelyEmptySlot(data, 32, 32) ||
+              (mode !== 'gear' && this.skipLockedSlots() && isKnownLockedSlot(data, 32, 32)))
+          ) {
             this.emptySlots.update((n) => n + 1);
             continue;
           }

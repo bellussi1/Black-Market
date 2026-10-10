@@ -21,7 +21,14 @@ function parseArgs(argv: string[]): Map<string, string> {
     options.set(key, value);
     index += 1;
   }
-  const allowed = new Set(['--input', '--version', '--region', '--locale', '--assets']);
+  const allowed = new Set([
+    '--input',
+    '--version',
+    '--region',
+    '--locale',
+    '--assets',
+    '--recipe-supplement',
+  ]);
   const unknown = [...options.keys()].find((key) => !allowed.has(key));
   if (unknown) throw new Error(`Opção desconhecida: ${unknown}`);
   return options;
@@ -43,7 +50,11 @@ async function run(): Promise<void> {
   if (!/^[a-z0-9-]{2,12}$/i.test(region)) throw new Error('--region inválida.');
   if (!/^[a-z]{2,8}$/i.test(locale)) throw new Error('--locale inválido.');
 
-  const dataset = await readExtractorDataset(resolve(inputDirectory));
+  const supplementFile = args.get('--recipe-supplement');
+  const dataset = await readExtractorDataset(
+    resolve(inputDirectory),
+    supplementFile ? { supplementFile: resolve(supplementFile), region, locale } : undefined,
+  );
   const assetsDirectory = args.get('--assets');
   const assets = assetsDirectory
     ? await publishCatalogAssets(

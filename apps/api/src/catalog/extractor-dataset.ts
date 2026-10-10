@@ -79,6 +79,22 @@ const extractedFilesSchema = z.object({
   marketCategories: z.array(marketCategorySchema),
 });
 
+const recipeSupplementSchema = z.object({
+  region: z.string().min(2),
+  locale: z.string().min(2),
+  extractorChecksum: z.string().regex(/^[a-f0-9]{64}$/),
+  reviewedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  sourceUrls: z.array(z.url().refine((value) => value.startsWith('https://'))).min(1),
+  items: z.array(z.object({ id: z.number().int().positive(), name: z.string().min(1) })),
+  recipes: z.array(extractedRecipeSchema).min(1),
+});
+
+export interface RecipeSupplementOptions {
+  supplementFile: string;
+  region: string;
+  locale: string;
+}
+
 export interface ImportCategory {
   id: string;
   parentId: string | null;
@@ -144,7 +160,10 @@ function outputItem(output: z.infer<typeof recipeOutputSchema>): {
   return { itemId: output.item, quantity: output.count ?? null };
 }
 
-export async function readExtractorDataset(inputDirectory: string): Promise<ExtractedDataset> {
+export async function readExtractorDataset(
+  inputDirectory: string,
+  supplementOptions?: RecipeSupplementOptions,
+): Promise<ExtractedDataset> {
   const filenames = ['items.json', 'recipes.json', 'marketcategories.json'] as const;
   const contents = await Promise.all(
     filenames.map((filename) => readFile(join(inputDirectory, filename))),
@@ -245,7 +264,7 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
     };
   });
 
-  const recipes = extracted.recipes.map((recipe) => {
+  const normalizeRecipe = (recipe: z.infer<typeof extractedRecipeSchema>): ImportRecipe => {
     const output = outputItem(recipe.output);
     const inputs = recipe.inputs.map((input) => ({
       itemId: input.item,
@@ -278,16 +297,87 @@ export async function readExtractorDataset(inputDirectory: string): Promise<Extr
       inputs,
       byproductOfItemId: recipe.byproductOf ?? null,
     };
-  });
+  };
+
+  const recipes = extracted.recipes.map(normalizeRecipe);
 
   const distinctRecipes = new Map(recipes.map((recipe) => [recipe.key, recipe]));
-  const checksum = createHash('sha256')
+  let checksum = createHash('sha256')
     .update(
       filenames
         .map((filename, index) => `${filename}\0${contents[index].toString('base64')}`)
         .join('\0'),
     )
     .digest('hex');
+
+  if (supplementOptions) {
+    const bytes = await readFile(supplementOptions.supplementFile);
+    const supplement = recipeSupplementSchema.parse(JSON.parse(bytes.toString('utf8')));
+    if (
+      supplement.region !== supplementOptions.region ||
+      supplement.locale !== supplementOptions.locale
+    ) {
+      throw new Error('Suplemento de receitas revisado para outra região ou idioma.');
+    }
+    if (supplement.extractorChecksum !== checksum) {
+      throw new Error(
+        'O checksum do cliente diverge do suplemento revisado; revise as receitas antes de publicar.',
+      );
+    }
+    const reviewedItems = new Map(supplement.items.map((item) => [item.id, item.name]));
+    const itemMap = new Map(items.map((item) => [item.id, item]));
+    // A shared name may exist on several item IDs. Every reviewed reference must
+    // match the exact installed ID and localized name; never resolve it by name.
+    for (const recipe of supplement.recipes) {
+      const normalized = normalizeRecipe(recipe);
+      const references = [
+        normalized.outputItemId,
+        ...normalized.inputs.map((input) => input.itemId),
+        ...(normalized.byproductOfItemId ? [normalized.byproductOfItemId] : []),
+      ];
+      for (const id of references) {
+        if (!reviewedItems.has(id) || reviewedItems.get(id) !== itemMap.get(id)?.name) {
+          throw new Error(`Identidade do item ${id} diverge da receita revisada.`);
+        }
+      }
+      const composition = (value: ImportRecipe) =>
+        JSON.stringify({
+          output: value.outputItemId,
+          type: value.type,
+          station: value.station,
+          byproductOf: value.byproductOfItemId ?? null,
+          inputs: [...value.inputs].sort((a, b) => a.itemId - b.itemId),
+        });
+      // Client records take priority, including genuinely unknown yields. The
+      // supplement fills omissions, rather than changing extracted recipes.
+      if (
+        [...distinctRecipes.values()].some(
+          (value) => composition(value) === composition(normalized),
+        )
+      )
+        continue;
+      distinctRecipes.set(normalized.key, normalized);
+      const item = itemMap.get(normalized.outputItemId)!;
+      const provenance = {
+        recipeKey: normalized.key,
+        reviewedAt: supplement.reviewedAt,
+        sourceUrls: supplement.sourceUrls,
+        extractorChecksum: supplement.extractorChecksum,
+      };
+      const previous = item.sourceData?.['verifiedRecipeSupplements'];
+      item.sourceData = {
+        ...item.sourceData,
+        verifiedRecipeSupplements: [
+          ...(Array.isArray(previous) ? (previous as unknown[]) : []),
+          provenance,
+        ],
+      };
+    }
+    checksum = createHash('sha256')
+      .update(`${checksum}\0reviewed-recipes\0`)
+      .update(bytes)
+      .digest('hex');
+  }
 
   return {
     checksum,

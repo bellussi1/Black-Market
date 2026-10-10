@@ -21,3 +21,7 @@ data/
 
 # Local editor state
 .vscode/
+
+# Local browser QA evidence and generated test captures.
+.playwright-mcp/
+output/playwright/

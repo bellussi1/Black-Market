@@ -14,13 +14,53 @@
     </li>
     <li [class.current]="cells().length"><b>03</b><span i18n>Revisar e sincronizar</span></li>
   </ol>
-  @if (mode === 'gear' || mode === 'inventory') {
+  <section class="panel capture-destination" aria-label="Preparar destino da captura">
+    <h2>Destino das novas capturas</h2>
+    <div class="action-row">
+      <label for="capture-type"
+        >O que está na imagem?
+        <select id="capture-type" [(ngModel)]="captureMode" [disabled]="locked()">
+          <option value="storage">Armazém</option>
+          <option value="inventory">Inventário do personagem</option>
+          <option value="gear">Equipamentos do personagem</option>
+        </select>
+      </label>
+      @if (captureMode === 'storage') {
+        <label
+          >Cidade ou armazém<input
+            [(ngModel)]="captureLocation"
+            maxlength="120"
+            [disabled]="locked()"
+        /></label>
+      } @else {
+        <label
+          >Personagem de destino<select [(ngModel)]="captureProfileId" [disabled]="locked()">
+            <option value="">Selecione ou crie um personagem abaixo</option>
+            @for (profile of profiles(); track profile.id) {
+              <option [value]="profile.id">{{ profile.name }}</option>
+            }
+          </select></label
+        >
+      }
+    </div>
+    <p class="help">
+      Escolha o destino antes de enviar. Cada captura pode ter seu próprio destino. Recorte somente
+      uma janela e confira a grade antes de iniciar a leitura.
+    </p>
+    @if (captureMode === 'gear') {
+      <p class="help">
+        Use a janela com os ícones dos equipamentos. A ficha de atributos sozinha não contém os
+        itens. Nível e Caphras precisam ser conferidos separadamente.
+      </p>
+    }
+  </section>
+  @if (captureMode === 'gear' || captureMode === 'inventory') {
     <details class="panel" [open]="!profiles().length">
       <summary i18n>Adicionar personagem sem sair da importação</summary>
       <div class="action-row">
         <label i18n
           >Nome do personagem<input [(ngModel)]="captureCharacterName" maxlength="80" /></label
-        ><button type="button" (click)="createCaptureCharacter()" i18n>
+        ><button type="button" (click)="createCaptureCharacter(jobs().length > 0)" i18n>
           Criar e usar neste lote
         </button>
       </div>
@@ -207,6 +247,18 @@
     <section class="panel">
       <h2 i18n>2. Confira a área de leitura</h2>
       @if (mode === 'storage' || mode === 'inventory') {
+        <label
+          ><input
+            type="checkbox"
+            [ngModel]="skipLockedSlots()"
+            (ngModelChange)="skipLockedSlots.set($event)"
+            [disabled]="locked()"
+          />Ignorar espaços com o cadeado conhecido do armazém</label
+        >
+        <p class="help">
+          Se um item não aparecer na revisão, desmarque esta opção e analise novamente. Espaços com
+          aparência incerta continuam para conferência.
+        </p>
         <p class="grid-summary" i18n>
           {{ columns }} colunas × {{ rows }} linhas · {{ columns * rows }} espaços. Confira se o
           contorno cobre todos os itens e deixa os menus de fora.

@@ -2,7 +2,6 @@
 export const SCREENSHOT_MVP = true;
 export const SUSPENDED_MVP_ROOTS = [
   'world',
-  'recommendations',
   'account',
   'plans',
   'reference',
@@ -22,6 +21,7 @@ export function isMvpPathSuspended(path: string): boolean {
 const enabledRoots = new Set([
   '',
   'market',
+  'recommendations',
   'storage',
   'family',
   'inventory',

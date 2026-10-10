@@ -85,6 +85,12 @@ export interface CatalogRecipesResponse {
   pageSize?: number;
 }
 
+export interface ProductionCatalogResponse {
+  recipes: CatalogRecipe[];
+  items: CatalogItemDetail[];
+  dataset: ActiveDatasetSummary | null;
+}
+
 export interface RecipeListResponse {
   recipes: {
     key: string;

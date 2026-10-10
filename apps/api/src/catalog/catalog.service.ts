@@ -20,6 +20,7 @@ import type {
   CatalogPage,
   CatalogRecipe,
   CatalogRecipesResponse,
+  ProductionCatalogResponse,
 } from '@bdo/shared';
 import {
   CATALOG_FALLBACK_LOCALE,
@@ -40,6 +41,120 @@ export class CatalogService {
     private readonly database: DatabaseService,
     private readonly assets: CatalogAssetsService,
   ) {}
+
+  async productionCatalog(rawQuery: Record<string, unknown>): Promise<ProductionCatalogResponse> {
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    // Published dataset rows are immutable and retained when archived. Resolve
+    // once, then bind every relation to that ID even if an import activates now.
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset) return { recipes: [], items: [], dataset: null };
+    const recipeRows = await this.database.db
+      .select({
+        key: recipes.recipeKey,
+        type: recipes.recipeType,
+        station: recipes.station,
+        byproductOfItemId: recipes.byproductOfItemId,
+      })
+      .from(recipes)
+      .where(
+        and(
+          eq(recipes.datasetVersionId, dataset.id),
+          inArray(recipes.recipeType, LIFE_SKILL_RECIPE_TYPES),
+        ),
+      )
+      .orderBy(asc(recipes.recipeKey));
+
+    const parts = (table: typeof recipeIngredients | typeof recipeOutputs) =>
+      this.database.db
+        .select({ recipeKey: table.recipeKey, itemId: table.itemId, quantity: table.quantity })
+        .from(table)
+        .innerJoin(
+          recipes,
+          and(
+            eq(recipes.datasetVersionId, table.datasetVersionId),
+            eq(recipes.recipeKey, table.recipeKey),
+          ),
+        )
+        .where(
+          and(
+            eq(table.datasetVersionId, dataset.id),
+            inArray(recipes.recipeType, LIFE_SKILL_RECIPE_TYPES),
+          ),
+        )
+        .orderBy(asc(table.recipeKey), asc(table.position));
+    const [inputRows, outputRows, itemRows] = await Promise.all([
+      parts(recipeIngredients),
+      parts(recipeOutputs),
+      this.database.db
+        .select({
+          id: items.id,
+          name: itemTranslations.name,
+          description: itemTranslations.description,
+          grade: itemVersions.grade,
+          weight: itemVersions.weight,
+          category: itemVersions.category,
+          icon: itemVersions.icon,
+          sourceData: itemVersions.sourceData,
+        })
+        .from(itemVersions)
+        .innerJoin(items, eq(items.id, itemVersions.itemId))
+        .innerJoin(
+          itemTranslations,
+          and(
+            eq(itemTranslations.datasetVersionId, itemVersions.datasetVersionId),
+            eq(itemTranslations.itemId, itemVersions.itemId),
+            eq(itemTranslations.language, dataset.locale),
+          ),
+        )
+        .where(
+          and(
+            eq(itemVersions.datasetVersionId, dataset.id),
+            inArray(items.id, this.lifeSkillItemIds(dataset.id)),
+          ),
+        )
+        .orderBy(asc(items.id)),
+    ]);
+    const categories = await this.categoriesByItem(
+      dataset.id,
+      dataset.locale,
+      itemRows.map((item) => item.id),
+    );
+    const detailedItems = await Promise.all(
+      itemRows.map(async (item) => ({
+        ...item,
+        iconUrl: await this.assets.getIconUrl(item.id, dataset.checksum),
+        categories: categories.get(item.id) ?? [],
+      })),
+    );
+    const itemMap = new Map(detailedItems.map((item) => [item.id, item]));
+    const groupParts = (rows: typeof inputRows) => {
+      const groups = new Map<string, CatalogRecipe['inputs']>();
+      for (const row of rows) {
+        const item = itemMap.get(row.itemId);
+        groups.set(row.recipeKey, [
+          ...(groups.get(row.recipeKey) ?? []),
+          {
+            itemId: row.itemId,
+            name: item?.name ?? `Item #${row.itemId}`,
+            quantity: row.quantity,
+            iconUrl: item?.iconUrl ?? null,
+          },
+        ]);
+      }
+      return groups;
+    };
+    const inputs = groupParts(inputRows);
+    const outputs = groupParts(outputRows);
+    return {
+      recipes: recipeRows.map((row) => ({
+        ...row,
+        inputs: inputs.get(row.key) ?? [],
+        outputs: outputs.get(row.key) ?? [],
+      })),
+      items: detailedItems,
+      dataset: this.toSummary(dataset),
+    };
+  }
 
   async listRecipes(rawQuery: Record<string, unknown>) {
     const query = parseCatalogQuery(rawQuery);
@@ -596,7 +711,11 @@ export class CatalogService {
     return result;
   }
 
-  async getActiveDataset(region: string, locale?: string, preferredLocale = DEFAULT_DATA_LOCALE) {
+  async getActiveDataset(
+    region: string,
+    locale?: string,
+    preferredLocale = DEFAULT_DATA_LOCALE,
+  ): Promise<DatasetVersion | null> {
     const baseFilter = [
       eq(datasetVersions.source, 'bdo-data-extractor'),
       eq(datasetVersions.region, region),

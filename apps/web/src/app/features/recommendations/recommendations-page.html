@@ -1,130 +1,422 @@
-<div class="tool-page">
+<div class="tool-page production-page">
   <header class="tool-heading">
-    <p class="tool-kicker" i18n>GANHAR PRATA</p>
-    <h1 i18n>O que fazer agora?</h1>
-    <p i18n>
-      Compare suas sessões e cenários de produção com o tempo, a prata e a energia disponíveis. Toda
-      sugestão mostra a origem e as condições da estimativa.
+    <p class="tool-kicker">OFICINA DA FAMÍLIA</p>
+    <h1>O que fazer?</h1>
+    <p>
+      Compare receitas, estoque livre e mercado. O ranking usa o custo dos materiais próprios e o
+      tempo de toda a cadeia.
     </p>
   </header>
+  <div class="action-row">
+    <button class="btn" (click)="load()" [disabled]="busy()">Carregar catálogo</button>
+    <button class="btn subtle" (click)="startDemo()" [disabled]="busy()">
+      Criar personagem de teste
+    </button>
+    <a class="btn subtle" routerLink="/scans">Importar capturas</a>
+  </div>
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
-  <section class="panel">
-    <h2 i18n>Vender o que já possui</h2>
-    <p i18n>
-      Confira o valor de venda do estoque livre. Materiais reservados ficam de fora. Sem saber o
-      tempo para vender, não tratamos este valor como prata por hora.
-    </p>
-    <label
-      ><input type="checkbox" [(ngModel)]="valuePack" /><span i18n
-        >Tenho Pacote Econômico para recolher as vendas</span
-      ></label
-    >
-    <div class="overflow-x-auto">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th i18n>Item</th>
-            <th i18n>Quantidade livre</th>
-            <th i18n>Recebimento estimado</th>
-            <th i18n>Consulta</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (option of saleOptions(); track option.id) {
-            <tr>
-              <td>
-                <a routerLink="/market" [queryParams]="{ item: option.id }">{{ option.name }}</a>
-              </td>
-              <td>{{ option.quantity }}</td>
-              <td>
-                {{ option.net === null ? 'Informe um preço no mercado' : silver(option.net) }}
-              </td>
-              <td>{{ option.observedAt ?? 'Preço informado manualmente' }}</td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="4" i18n>
-                Cadastre os itens do armazém e seus preços para comparar vendas.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>
+  @if (store.demoActive()) {
+    <section class="panel demo-panel">
+      <h2>Modo de teste em memória</h2>
+      <p>{{ demoExplanation }}</p>
+      <button class="btn subtle" [disabled]="busy()" (click)="applyMockPrices()">
+        Aplicar preços fictícios para testar
+      </button>
+      <button class="btn subtle" [disabled]="busy()" (click)="store.exitDemo(); plans.set(null)">
+        Sair do teste e restaurar meus dados
+      </button>
+    </section>
+  }
   @if (profile(); as player) {
     <section class="panel">
+      <div class="panel-heading">
+        <h2>Condições do personagem</h2>
+        <a routerLink="/family">Editar na Família</a>
+      </div>
       <label class="field"
-        ><span i18n>Personagem</span
-        ><select [ngModel]="player.id" (ngModelChange)="selected.set($event)">
+        ><span>Personagem</span
+        ><select [ngModel]="player.id" (ngModelChange)="selected.set($event); plans.set(null)">
           @for (row of profiles(); track row.id) {
             <option [value]="row.id">{{ row.name }}</option>
           }
         </select></label
       >
-      <p i18n>
-        {{ player.activeMinutes }} minutos ativos · {{ silver(player.silver) }} disponíveis ·
-        {{ player.energy }} de energia
-      </p>
-      <a routerLink="/family" i18n>Editar personagem e preferências</a>
-    </section>
-    @for (row of suggestions(); track row.id) {
-      <section class="panel">
-        <div class="panel-heading">
-          <h2>{{ row.name }}</h2>
-          <span class="badge">{{ row.basis }}</span>
-        </div>
-        @if (row.perHour !== null) {
-          <div class="metric-grid">
-            <div class="metric hero-metric">
-              <span i18n>Prata estimada por hora</span><strong>{{ silver(row.perHour) }}</strong>
-            </div>
-            <div class="metric">
-              <span i18n>Retorno neste período</span><strong>{{ silver(row.profit) }}</strong>
-            </div>
-            <div class="metric">
-              <span i18n>Desembolso estimado</span><strong>{{ silver(row.cashCost) }}</strong>
-            </div>
-          </div>
-        } @else {
-          <p class="notice" i18n>
-            Faltam dados ou recursos para comparar esta opção com seu personagem.
-          </p>
+      <div class="profile-stats">
+        <span>{{ player.activeMinutes }} min ativos</span
+        ><span>{{ silver(player.silver) }} prata</span
+        ><span>{{ player.carriedWeight }} / {{ player.weightLimit }} LT</span>
+        <span>Alquimia: {{ player.mastery.alchemy }} de maestria</span
+        ><span>Culinária: {{ player.mastery.cooking }}</span>
+      </div>
+      <p>
+        Equipamento:
+        @for (part of player.gear; track part.slot) {
+          <span>{{ part.name }} · </span>
         }
-        <p i18n>{{ row.minutes }} minutos · {{ row.energy }} de energia</p>
-        <ul>
-          @for (warning of row.warnings; track $index) {
-            <li>{{ warning }}</li>
-          }
-        </ul>
-        <button class="btn" type="button" (click)="createPlan(row)" i18n>
-          Transformar em plano
-        </button>
-      </section>
-    }
-    @if (!suggestions().length) {
-      <section class="panel">
-        <h2 i18n>Crie sua primeira comparação</h2>
-        <p i18n>
-          Registre uma sessão de coleta/profissão ou salve um cenário na oficina. Não inventamos
-          rendimentos para atividades que você ainda não informou.
-        </p>
-        <div class="action-row">
-          <a class="btn" routerLink="/lifeskills" i18n>Registrar atividade</a
-          ><a class="btn subtle" routerLink="/crafting" i18n>Planejar produção</a>
-        </div>
-      </section>
-    }
+        @for (outfit of player.pearlOutfits ?? []; track outfit.itemId) {
+          <span>{{ outfit.name }} · </span>
+        }
+      </p>
+      <p>
+        Maestria, trajes e cristais servem de contexto para medir seu rendimento. Não há
+        multiplicadores automáticos. Se mudar o conjunto, confira as medições abaixo.
+      </p>
+      <div class="action-row">
+        <label
+          ><input type="checkbox" [(ngModel)]="useOwned" (ngModelChange)="plans.set(null)" /> Usar
+          estoque livre no cenário de produção</label
+        >
+        <label
+          ><input type="checkbox" [(ngModel)]="valuePack" (ngModelChange)="plans.set(null)" />
+          Pacote Econômico ao recolher vendas</label
+        >
+      </div>
+    </section>
   } @else {
     <section class="panel">
-      <h2 i18n>Comece pelo seu personagem</h2>
-      <p i18n>
-        Informe prata, energia e tempo disponível. Depois, registre uma atividade ou salve uma
-        receita para comparar.
-      </p>
-      <a class="btn" routerLink="/family" i18n>Cadastrar personagem</a>
+      <h2>Selecione um personagem</h2>
+      <p>Cadastre a prata, o peso e a maestria na Família ou crie o personagem de teste.</p>
+      <a class="btn" routerLink="/family">Abrir Família</a>
     </section>
+  }
+  @if (snapshot(); as data) {
+    <section class="panel">
+      <h2>Tempo e rendimento medidos</h2>
+      <p>
+        Segundos por operação incluem seu conjunto ativo. Alquimia e culinária exigem rendimento
+        médio informado; saídas variáveis de processamento permanecem pendentes. Não contamos
+        subprodutos sem uma medição específica.
+      </p>
+      <div class="calibration-grid">
+        @for (type of methods(); track type) {
+          <fieldset>
+            <legend>{{ methodLabel(type) }}</legend>
+            <label class="field"
+              ><span>Segundos por operação</span
+              ><input
+                type="number"
+                min="0.001"
+                step="0.1"
+                [ngModel]="calibration[type].seconds"
+                (ngModelChange)="calibration[type].seconds = $event; plans.set(null)"
+            /></label>
+            @if (type === 'ALCHEMY' || type === 'COOK') {
+              <label class="field"
+                ><span>Unidades médias por operação</span
+                ><input
+                  type="number"
+                  min="0.001"
+                  step="0.1"
+                  [ngModel]="calibration[type].yield"
+                  (ngModelChange)="calibration[type].yield = $event; plans.set(null)"
+              /></label>
+            }
+          </fieldset>
+        }
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Cotações e custos</h2>
+        <button class="btn" [disabled]="busy()" (click)="refreshQuotes()">Consultar mercado</button>
+        @if (resumable) {
+          <button class="btn subtle" [disabled]="busy()" (click)="refreshQuotes(true)">
+            Retomar consulta
+          </button>
+        }
+      </div>
+      <p>
+        Consultas em lotes de 100 itens. A fonte usa cache de até 30 minutos; os dados consultados
+        ficam válidos por 30 minutos nesta comparação. Preços manuais são premissas e não confirmam
+        oferta. Materiais sem cotação ou peso impedem um resultado completo. Equipamentos com
+        aprimoramento não usam preços agregados: informe o preço da variante desejada manualmente.
+      </p>
+      @if (progress().total) {
+        <p role="status">{{ progress().done }} / {{ progress().total }} itens consultados</p>
+      }
+      <label class="field"
+        ><span>Encontrar item para ajustar preço</span
+        ><input
+          [ngModel]="priceSearch()"
+          (ngModelChange)="priceSearch.set($event); pricePage.set(1)"
+          placeholder="Nome do ingrediente ou produto"
+      /></label>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Preço unitário em prata</th>
+              <th>Oferta / origem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of visiblePrices(); track item.id) {
+              <tr>
+                <td>
+                  <span class="item-name">
+                    @if (icon(item.id); as image) {
+                      <img [src]="image" alt="" width="36" height="36" />
+                    }
+                    {{ item.name }}</span
+                  >
+                </td>
+                <td>
+                  <input
+                    [attr.aria-label]="'Preço de ' + item.name"
+                    inputmode="numeric"
+                    [ngModel]="quotes()[item.id]?.unitPrice ?? ''"
+                    (ngModelChange)="manualPrice(item.id, $event)"
+                    placeholder="Sem preço"
+                  />
+                </td>
+                <td>
+                  {{
+                    quotes()[item.id]?.source === 'market'
+                      ? 'Mercado · ' + quotes()[item.id].available
+                      : quotes()[item.id]
+                        ? 'Premissa manual'
+                        : 'Pendente'
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button
+          class="btn subtle"
+          [disabled]="pricePage() <= 1"
+          (click)="pricePage.set(pricePage() - 1)"
+        >
+          Preços anteriores</button
+        ><span>{{ pricePage() }} / {{ pricePages() }}</span
+        ><button
+          class="btn subtle"
+          [disabled]="pricePage() >= pricePages()"
+          (click)="pricePage.set(pricePage() + 1)"
+        >
+          Próximos preços
+        </button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Receitas para comparar</h2>
+      <div class="filter-grid">
+        <label class="field"
+          ><span>Pesquisar receita</span
+          ><input
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event); methodChanged()"
+            placeholder="Edania, cerveja, reagente…"
+        /></label>
+        <label class="field"
+          ><span>Atividade</span
+          ><select [ngModel]="method()" (ngModelChange)="method.set($event); methodChanged()">
+            <option value="">Todas as Life Skills</option>
+            @for (type of methods(); track type) {
+              <option [value]="type">{{ methodLabel(type) }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <p>
+        {{ candidates().length }} receitas no escopo · {{ recipes().length }} no catálogo. Limpar a
+        busca compara todo o catálogo, com até 10.000 operações por cenário. Cada receita pode ter
+        várias fórmulas; o cenário de produção usa a primeira fórmula disponível, que você pode
+        substituir na personalização.
+      </p>
+      <label class="field"
+        ><span>Personalizar ingredientes de uma receita</span
+        ><select [ngModel]="focus()" (ngModelChange)="focusRecipe($event)">
+          <option [ngValue]="null">Selecione uma receita</option>
+          @for (row of candidates(); track row.id) {
+            <option [value]="row.id">
+              {{ row.name }} · {{ methodLabel(row.method) }} · {{ row.id.slice(0, 8) }}
+            </option>
+          }
+        </select></label
+      >
+      @if (focused(); as recipe) {
+        <div class="filter-grid">
+          <label class="field"
+            ><span>Segundos por operação desta fórmula</span
+            ><input
+              type="number"
+              min="0.001"
+              step="0.1"
+              [(ngModel)]="recipeCalibration[recipe.id].seconds"
+              (ngModelChange)="plans.set(null)"
+          /></label>
+          <label class="field"
+            ><span>Unidades médias por operação desta fórmula</span
+            ><input
+              type="number"
+              min="0.001"
+              step="0.1"
+              [(ngModel)]="recipeCalibration[recipe.id].yield"
+              (ngModelChange)="plans.set(null)"
+          /></label>
+        </div>
+        <p>
+          Em branco, usa a medição da atividade ou a saída exata do catálogo. Valores preenchidos
+          são premissas específicas desta fórmula, incluindo processamento e produção em lote.
+        </p>
+        <div class="custom-materials">
+          @for (part of recipe.ingredients; track $index) {
+            <label class="field"
+              ><span>{{ name(part.itemId) }}</span>
+              <select
+                [ngModel]="choices[part.itemId] ?? 'buy'"
+                (ngModelChange)="choose(part.itemId, $event)"
+              >
+                <option value="buy">Comprar</option>
+                <option value="produce">Produzir</option>
+                <option value="stock">Somente estoque</option>
+              </select>
+              @if (producers(part.itemId).length > 1) {
+                <select
+                  [attr.aria-label]="'Receita de ' + name(part.itemId)"
+                  [(ngModel)]="customRecipes[part.itemId]"
+                  (ngModelChange)="plans.set(null)"
+                >
+                  <option [ngValue]="undefined">Primeira fórmula</option>
+                  @for (source of producers(part.itemId); track source.id) {
+                    <option [value]="source.id">
+                      {{ methodLabel(source.method) }} · {{ source.id.slice(0, 12) }}
+                    </option>
+                  }
+                </select>
+              }
+            </label>
+          }
+        </div>
+      }
+      <button class="btn" [disabled]="busy() || !profile()" (click)="compare()">
+        Comparar lucro por hora
+      </button>
+    </section>
+    @if (plans(); as result) {
+      <section class="panel">
+        <h2>Ranking de lucro por hora</h2>
+        <p>
+          Faturamento bruto, recebimento após impostos e lucro econômico aparecem separados. O lucro
+          desconta o valor de reposição dos itens próprios. O lote respeita prata, tempo, peso e
+          oferta conhecidos; a venda não é garantida.
+        </p>
+        <div class="table-scroll">
+          <table class="data-table results-table">
+            <thead>
+              <tr>
+                <th>Receita / cenário</th>
+                <th>Lucro / hora</th>
+                <th>Faturamento bruto</th>
+                <th>Recebimento líquido</th>
+                <th>Desembolso</th>
+                <th>Custo econômico</th>
+                <th>Lote / tempo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of visiblePlans(); track row.recipeId + row.scenario) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/recipes', row.recipeId]">{{ row.name }}</a
+                    ><small>{{ scenarioNames[row.scenario] }}</small>
+                  </td>
+                  <td class="profit">{{ silver(row.profitPerHour) }}</td>
+                  <td>{{ silver(row.grossRevenue) }}</td>
+                  <td>{{ silver(row.netRevenue) }}</td>
+                  <td>{{ silver(row.cashCost) }}</td>
+                  <td>{{ silver(row.economicCost) }}</td>
+                  <td>
+                    {{ rounded(row.output) }} un. ·
+                    {{ rounded((row.seconds ?? 0) / 60) }} min<br />{{ rounded(row.peakWeight) }} LT
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7">
+                    <details>
+                      <summary>Materiais, etapas e premissas</summary>
+                      <p>
+                        Lucro do lote: {{ silver(row.profit) }} · {{ row.crafts }} operações
+                        principais
+                      </p>
+                      @for (part of row.materials; track part.itemId) {
+                        <p>
+                          {{ name(part.itemId) }}: comprar {{ rounded(part.bought) }}, estoque
+                          {{ rounded(part.owned) }}, produzir {{ rounded(part.produced) }}
+                        </p>
+                      }
+                      @for (step of row.steps; track $index) {
+                        <p>
+                          {{ step.crafts }} × {{ name(producersName(step.recipeId)) }} ·
+                          {{ rounded(step.seconds) }} s
+                        </p>
+                      }
+                      @for (text of row.assumptions; track $index) {
+                        <p>{{ text }}</p>
+                      }
+                    </details>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7">
+                    Ainda não há cenários completos. Confira as pendências abaixo.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="btn subtle" [disabled]="page() <= 1" (click)="page.set(page() - 1)">
+            Anterior</button
+          ><span>{{ page() }} / {{ resultPages() }} · 20 cenários por página</span
+          ><button
+            class="btn subtle"
+            [disabled]="page() >= resultPages()"
+            (click)="page.set(page() + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Dados pendentes · {{ result.incomplete.length }} cenários</h2>
+        <p>
+          Sem os dados abaixo, o resultado não entra no ranking. Mostrando os primeiros 30 cenários
+          pendentes.
+        </p>
+        @for (row of result.incomplete.slice(0, 30); track row.recipeId + row.scenario) {
+          <details class="pending">
+            <summary>
+              {{ row.name }} · {{ scenarioNames[row.scenario] }} ·
+              {{ row.issues.length }} pendências
+            </summary>
+            <ul>
+              @for (issue of row.issues; track $index) {
+                <li>
+                  {{ issue.message }}
+                  @if (issue.itemId) {
+                    <span>{{ name(issue.itemId) }}</span>
+                  }
+                  @if (issue.recipeId) {
+                    <span> · {{ issue.recipeId.slice(0, 12) }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </section>
+    }
+    <p class="dataset-note">
+      Catálogo: {{ data.dataset?.version }} · importado {{ data.dataset?.importedAt }}
+    </p>
   }
 </div>

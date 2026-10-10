@@ -37,7 +37,22 @@ function fixture(enabled = true) {
   const database = {
     db: {
       select: (selection: Record<string, unknown>) => {
-        const rows = 'payload' in selection ? [] : metadata;
+        const rows =
+          'payload' in selection
+            ? []
+            : 'sourceData' in selection
+              ? [
+                  ...Array.from({ length: 1700 }, (_, index) => ({
+                    itemId: index + 1,
+                    category: 'Etc',
+                    sourceData: { maxEnhance: 0 },
+                  })),
+                  { itemId: 5301, category: 'Etc', sourceData: { maxEnhance: 0 } },
+                  { itemId: 705047, category: 'Armor', sourceData: { maxEnhance: 20 } },
+                  { itemId: 705048, category: 'Armor', sourceData: { maxEnhance: 0 } },
+                  { itemId: 705049, category: 'Etc', sourceData: { maxEnhance: 5 } },
+                ]
+              : metadata;
         const query = {
           from: () => query,
           innerJoin: () => query,
@@ -111,6 +126,80 @@ function fixture(enabled = true) {
 }
 
 describe('market board', () => {
+  it('excludes equipment, enhanceable items and unknown catalogue IDs before requesting production prices', async () => {
+    const upstream = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          { id: 5301, name: 'Reagente', basePrice: '1234', currentStock: 50, totalTrades: '100' },
+          {
+            id: 705047,
+            name: 'Enhanced armour',
+            basePrice: '99999',
+            currentStock: 1,
+            totalTrades: '100',
+          },
+          {
+            id: 705048,
+            name: 'Armour without enhance',
+            basePrice: '99999',
+            currentStock: 1,
+            totalTrades: '100',
+          },
+          {
+            id: 705049,
+            name: 'Enhanceable material',
+            basePrice: '99999',
+            currentStock: 1,
+            totalTrades: '100',
+          },
+          { id: 9999, name: 'Unknown', basePrice: '99999', currentStock: 1, totalTrades: '100' },
+        ]),
+      ),
+    );
+    const { service } = fixture();
+    const result = await service.productionQuotes({ ids: '5301,705047,705048,705049,9999' });
+    expect(result.items.map((item) => item.itemId)).toEqual([5301]);
+    expect(JSON.parse(upstream.mock.calls[0][1]!.body as string)).toEqual([5301]);
+    const unsupported = await service.productionQuotes({ ids: '705047,9999' });
+    expect(unsupported.items).toEqual([]);
+    expect(upstream).toHaveBeenCalledOnce();
+  });
+
+  it('retains all fifteen production batches when a market board is visited between refreshes', async () => {
+    const upstream = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() => Promise.resolve(new Response(JSON.stringify(hot))));
+    const { service } = fixture();
+    const batches = Array.from({ length: 15 }, (_, batch) =>
+      Array.from({ length: 100 }, (_, index) => batch * 100 + index + 1).join(','),
+    );
+    for (const ids of batches) await service.productionQuotes({ ids });
+    await service.board({});
+    for (const ids of batches)
+      expect((await service.productionQuotes({ ids })).cacheStatus).toBe('cached');
+    expect(upstream).toHaveBeenCalledTimes(16);
+  });
+
+  it('batches production quotes, preserves missing prices and caches the same IDs', async () => {
+    const upstream = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          { id: 5301, name: 'Reagente', basePrice: '1234', currentStock: 50, totalTrades: '100' },
+          { id: 1407, name: 'Edania', basePrice: '0', currentStock: 0, totalTrades: '0' },
+          { id: 999, name: 'Outro', basePrice: '9999', currentStock: 1, totalTrades: '1' },
+        ]),
+      ),
+    );
+    const { service } = fixture();
+    const first = await service.productionQuotes({ ids: '5301,1407', region: 'sa', locale: 'pt' });
+    expect(first.items.map((row) => row.itemId)).toEqual([5301]);
+    expect(first.items[0].price).toBe('1234');
+    await service.productionQuotes({ ids: '1407,5301', region: 'sa', locale: 'pt' });
+    expect(upstream).toHaveBeenCalledTimes(1);
+    await expect(
+      service.productionQuotes({ ids: Array.from({ length: 101 }, (_, i) => i + 1).join(',') }),
+    ).rejects.toThrow();
+  });
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-10-09T12:00:00Z'));

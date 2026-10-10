@@ -35,6 +35,13 @@ export class MarketController {
   board(@Query() query: Record<string, unknown>) {
     return this.boardService.board(query);
   }
+  @Get('production-quotes')
+  @ApiOperation({
+    summary: 'Consulta em lote os preços resumidos de até 100 materiais de produção',
+  })
+  productionQuotes(@Query() query: Record<string, unknown>) {
+    return this.boardService.productionQuotes(query);
+  }
   @Get('items/:id/history')
   historyFor(@Param('id') itemId: string, @Query() query: Record<string, unknown>) {
     const input = querySchema

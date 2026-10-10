@@ -11,6 +11,8 @@ packages/database/drizzle/
 .env*
 .dev.vars*
 data/
+# Reviewed recipe snapshot bytes are included in the published dataset checksum.
+docs/recipe-supplements/*.json
 *.paz
 *.bss
 *.dbss

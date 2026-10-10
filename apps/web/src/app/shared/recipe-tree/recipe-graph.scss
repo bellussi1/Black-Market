@@ -72,7 +72,8 @@
 }
 .graph-links path.highlight {
   stroke: var(--bm-accent);
-  stroke-width: 2;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bm-accent) 45%, transparent));
 }
 .graph-node {
   position: absolute;
@@ -89,14 +90,30 @@
     background-color 160ms ease;
   animation: node-reveal 160ms ease-out;
 }
-.graph-node.selected {
+.graph-node.root-node {
+  border-color: var(--bm-accent);
+  border-top-width: 3px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bm-accent) 10%, var(--bm-surface)),
+    var(--bm-surface) 85px
+  );
+}
+.root-node .node-select small {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.graph-node.selected,
+.graph-node.on-path {
   border-color: var(--bm-accent);
   box-shadow:
     inset 0 0 0 1px var(--bm-accent),
     0 2px 6px #0003;
 }
-.graph-node.on-path:not(.selected) {
-  border-color: var(--bm-control-border);
+.graph-node.selected {
+  box-shadow:
+    inset 0 0 0 2px var(--bm-accent),
+    0 2px 6px #0003;
 }
 .graph-node:hover {
   border-color: var(--bm-accent);

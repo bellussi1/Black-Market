@@ -3,6 +3,7 @@ import {
   categoryTranslations,
   itemCategories,
   itemTranslations,
+  itemVersions,
 } from '@bdo/database/schema';
 import type {
   CatalogCategory,
@@ -71,6 +72,7 @@ function normalized(value: string) {
 @Injectable()
 export class MarketBoardService {
   private readonly cache = new Map<string, HeldBoard>();
+  private readonly productionCache = new Map<string, HeldBoard>();
   private readonly pending = new Map<string, Promise<HeldBoard>>();
   private active = 0;
   private requests = 0;
@@ -87,6 +89,108 @@ export class MarketBoardService {
   async refresh(): Promise<void> {
     if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true)) return;
     await this.hot(DEFAULT_REGION, DEFAULT_DATA_LOCALE);
+  }
+
+  /** Consumable production inputs; summary scope never establishes equipment variants. */
+  async productionQuotes(rawQuery: Record<string, unknown>): Promise<MarketLookup> {
+    const parsed = querySchema
+      .pick({ region: true, locale: true })
+      .extend({
+        ids: z
+          .string()
+          .max(1200)
+          .regex(/^\d+(,\d+)*$/)
+          .transform((value) => [...new Set(value.split(',').map(Number))])
+          .refine(
+            (ids) =>
+              ids.length > 0 &&
+              ids.length <= 100 &&
+              ids.every((id) => Number.isSafeInteger(id) && id > 0 && id <= 2_000_000_000),
+          ),
+      })
+      .safeParse(rawQuery);
+    if (!parsed.success) throw new BadRequestException('Informe até 100 IDs de materiais válidos.');
+    if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true))
+      throw new ServiceUnavailableException('O mercado está indisponível no momento.');
+    const { region, locale } = parsed.data;
+    const dataset = await this.catalog.getActiveDataset(region, undefined, locale);
+    const requested = new Set(parsed.data.ids);
+    const rows = dataset
+      ? await this.database.db
+          .select({
+            itemId: itemVersions.itemId,
+            category: itemVersions.category,
+            sourceData: itemVersions.sourceData,
+          })
+          .from(itemVersions)
+          .where(
+            and(
+              eq(itemVersions.datasetVersionId, dataset.id),
+              inArray(itemVersions.itemId, parsed.data.ids),
+            ),
+          )
+      : [];
+    const ids = rows
+      .filter((row) => {
+        const maxEnhance = row.sourceData['maxEnhance'] ?? 0;
+        const sourceCategory = row.sourceData['category'];
+        const categories = `${row.category ?? ''} ${typeof sourceCategory === 'string' ? sourceCategory : ''}`;
+        return (
+          requested.has(row.itemId) &&
+          typeof maxEnhance === 'number' &&
+          Number.isFinite(maxEnhance) &&
+          maxEnhance <= 0 &&
+          !/weapon|armor|accessory/i.test(categories)
+        );
+      })
+      .map((row) => row.itemId)
+      .sort((a, b) => a - b);
+    if (!ids.length)
+      return {
+        source: 'arsha',
+        region,
+        locale,
+        fetchedAt: new Date().toISOString(),
+        cacheStatus: 'fetched',
+        upstreamCacheMinutes: 30,
+        items: [],
+      };
+    const key = `production:${dataset!.id}:${region}:${locale}:${ids.join(',')}`;
+    const held = await this.loadBoard(key, async () => {
+      let items: MarketLookup['items'];
+      try {
+        items = normalizeArshaSummary(
+          await this.fetchPayload(`https://api.arsha.io/v2/${region}/search?lang=${locale}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ids),
+          }),
+          ids,
+        );
+      } catch {
+        throw new ServiceUnavailableException(
+          'Não foi possível consultar os preços de produção. Tente novamente.',
+        );
+      }
+      const now = Date.now();
+      const entry: HeldBoard = {
+        response: {
+          source: 'arsha',
+          region,
+          locale,
+          fetchedAt: new Date(now).toISOString(),
+          cacheStatus: 'fetched',
+          upstreamCacheMinutes: 30,
+          items,
+        },
+        metadata: new Map(),
+        expires: now + TTL,
+        retryAt: 0,
+      };
+      this.storeBoard(key, entry);
+      return entry;
+    });
+    return held.response;
   }
 
   async board(rawQuery: Record<string, unknown>): Promise<MarketBoardResponse> {
@@ -349,7 +453,7 @@ export class MarketBoardService {
     key: string,
     fetchBoard: (held?: HeldBoard) => Promise<HeldBoard>,
   ): Promise<HeldBoard> {
-    const held = this.cache.get(key);
+    const held = (key.startsWith('production:') ? this.productionCache : this.cache).get(key);
     const now = Date.now();
     if (held && held.expires > now)
       return { ...held, response: { ...held.response, cacheStatus: 'cached' } };
@@ -423,9 +527,11 @@ export class MarketBoardService {
   }
 
   private storeBoard(key: string, entry: HeldBoard) {
-    if (!this.cache.has(key) && this.cache.size >= 15)
-      this.cache.delete(this.cache.keys().next().value!);
-    this.cache.set(key, entry);
+    const production = key.startsWith('production:');
+    const cache = production ? this.productionCache : this.cache;
+    const capacity = production ? 24 : 15;
+    if (!cache.has(key) && cache.size >= capacity) cache.delete(cache.keys().next().value!);
+    cache.set(key, entry);
   }
 
   private async fetchPayload(url: string, options: RequestInit = {}): Promise<unknown> {

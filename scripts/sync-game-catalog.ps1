@@ -3,7 +3,8 @@ param(
   [ValidatePattern('^[a-z]{2,8}$')][string]$Locale = 'pt',
   [ValidatePattern('^[a-z0-9-]{2,12}$')][string]$Region = 'sa',
   [ValidatePattern('^[a-f0-9]{40}$')][string]$ExtractorCommit = '5bf11bd7bc60dcbb6126be34bf3d76633abdd8b2',
-  [ValidatePattern('^[a-z0-9-]{1,30}$')][string]$ImportRevision = 'catalog-v2',
+  [ValidatePattern('^[a-z0-9-]{1,30}$')][string]$ImportRevision = 'catalog-v3',
+  [string]$RecipeSupplementPath = 'docs/recipe-supplements/sa-pt-edania-recipes.json',
   [ValidatePattern('^[a-zA-Z0-9_]+$')][string]$DatabaseUser = 'bdo',
   [ValidatePattern('^[a-zA-Z0-9_]+$')][string]$DatabaseName = 'bdo_companion',
   [switch]$CheckOnly,
@@ -23,6 +24,13 @@ $taskExtractorHash = (Get-FileHash -LiteralPath $taskExtractor -Algorithm SHA256
 $taskScope = if ($RecipeCatalogOnly) { 'catalog' } else { 'full' }
 $taskVersion = "$Region-$Locale-meta-$($taskMeta.Substring(0,12))-loc-$($taskLanguage.Substring(0,12))-ext-$($ExtractorCommit.Substring(0,8))-bin-$($taskExtractorHash.Substring(0,8))-$taskScope"
 $taskImportVersion = "$taskVersion-$ImportRevision"
+if ($RecipeSupplementPath) {
+  $taskSupplement = (Resolve-Path -LiteralPath (Join-Path $taskWorkspace $RecipeSupplementPath)).Path
+  $taskSupplementRelative = [IO.Path]::GetRelativePath($taskWorkspace, $taskSupplement).Replace('\', '/')
+  if ($taskSupplementRelative.StartsWith('../') -or [IO.Path]::IsPathRooted($taskSupplementRelative)) { throw 'O suplemento precisa estar dentro do workspace.' }
+  $taskSupplementHash = (Get-FileHash -LiteralPath $taskSupplement -Algorithm SHA256).Hash.ToLowerInvariant()
+  $taskImportVersion += "-supp-$($taskSupplementHash.Substring(0,8))"
+}
 $taskExtraction = Join-Path $taskWorkspace "data/extracted/$taskVersion"
 
 Push-Location -LiteralPath $taskWorkspace
@@ -69,7 +77,9 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Falha ao preservar o backup; publicação interrompida.' }
   docker compose --profile data run --rm --no-deps import pnpm db:migrate
   if ($LASTEXITCODE -ne 0) { throw 'Falha na migração; publicação interrompida.' }
-  docker compose --profile data run --rm --no-deps import node apps/api/dist/catalog/import-game-data.js --input "/workspace/data/extracted/$taskVersion" --assets /workspace/data/assets --version $taskImportVersion --region $Region --locale $Locale
+  $taskImportArgs = @('compose', '--profile', 'data', 'run', '--rm', '--no-deps', 'import', 'node', 'apps/api/dist/catalog/import-game-data.js', '--input', "/workspace/data/extracted/$taskVersion", '--assets', '/workspace/data/assets', '--version', $taskImportVersion, '--region', $Region, '--locale', $Locale)
+  if ($RecipeSupplementPath) { $taskImportArgs += @('--recipe-supplement', "/workspace/$taskSupplementRelative") }
+  docker @taskImportArgs
   if ($LASTEXITCODE -ne 0) { throw 'Falha na importação. O catálogo anterior permanece ativo.' }
   & (Join-Path $PSScriptRoot 'publish-reference-data.ps1') -ExtractionVersion $taskVersion -Region $Region -Locale $Locale -DatabaseUser $DatabaseUser -DatabaseName $DatabaseName
   docker compose up -d --no-deps api
