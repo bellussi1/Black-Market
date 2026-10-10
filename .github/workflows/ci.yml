@@ -27,3 +27,20 @@ jobs:
       - run: pnpm --filter @bdo/web i18n:extract
       - run: git diff --exit-code -- apps/web/src/locale/messages.pt-BR.xlf
       - run: pnpm db:check
+      - name: Validate staging Compose
+        run: docker compose --env-file .env.example -f docker-compose.staging.yml config --quiet
+        env:
+          POSTGRES_PASSWORD: ci-validation-only
+          POSTGRES_APP_PASSWORD: ci-validation-only-runtime-password
+          CONTAINER_DATABASE_URL: postgresql://ci:ci@postgres:5432/ci
+          RUNTIME_DATABASE_URL: postgresql://ci:ci@postgres:5432/ci
+          PUBLIC_SITE_URL: https://staging.example
+          ASSET_CHECKSUMS: ci-validation-only
+      - name: Validate staging PowerShell syntax
+        shell: pwsh
+        run: |
+          foreach ($file in @('scripts/staging.ps1', 'scripts/staging-backup.ps1')) {
+            $tokens = $null; $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
+          }
