@@ -67,6 +67,96 @@ const row = (input: ProductionPlannerInput, scenario: string) =>
   )!;
 
 describe('production planner', () => {
+  it('finds the fastest profitable hybrid of buying and producing intermediates', () => {
+    const input = fixture();
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'cook',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [
+          { itemId: 2, quantity: 1 },
+          { itemId: 4, quantity: 1 },
+        ],
+      },
+      {
+        id: 'slow-middle',
+        name: 'Intermediário lento',
+        method: 'process',
+        output: { itemId: 2, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+      },
+      {
+        id: 'fast-middle',
+        name: 'Intermediário rápido',
+        method: 'process',
+        output: { itemId: 4, quantity: 1 },
+        ingredients: [{ itemId: 5, quantity: 1 }],
+      },
+    ];
+    input.quotes = {
+      1: { unitPrice: '10', available: 100, observedAt: now, source: 'market' },
+      2: { unitPrice: '11', available: 100, observedAt: now, source: 'market' },
+      3: { unitPrice: '1000', available: 100, observedAt: now, source: 'market' },
+      4: { unitPrice: '30', available: 100, observedAt: now, source: 'market' },
+      5: { unitPrice: '10', available: 100, observedAt: now, source: 'market' },
+    };
+    input.estimates = {
+      final: { craftSeconds: 60, source: 'fixed' },
+      'slow-middle': { craftSeconds: 600, source: 'fixed' },
+      'fast-middle': { craftSeconds: 1, source: 'fixed' },
+    };
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized).toMatchObject({
+      cashCost: '21',
+      economicCost: '21',
+      profit: '629',
+      seconds: 61,
+    });
+    expect(optimized?.materials).toEqual([
+      { itemId: 2, required: 1, bought: 1, owned: 0, produced: 0 },
+      { itemId: 4, required: 1, bought: 0, owned: 0, produced: 1 },
+      { itemId: 5, required: 1, bought: 1, owned: 0, produced: 0 },
+    ]);
+  });
+
+  it('uses only unreserved stock in the automatic strategy', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.inventory = [{ itemId: 2, quantity: 2, reserved: 1 }];
+    input.useOwnedInProduction = true;
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized?.materials.find((row) => row.itemId === 2)?.owned).toBe(1);
+    expect(input.inventory[0].quantity).toBe(2);
+  });
+
+  it('returns an explicit pending result when the route search exceeds its branch limit', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.maxOptimizationBranches = 1;
+
+    const result = planProduction(input);
+
+    expect(result.ranked.some((plan) => plan.scenario === 'optimized')).toBe(false);
+    expect(result.incomplete.find((plan) => plan.scenario === 'optimized')?.issues).toContainEqual(
+      expect.objectContaining({ code: 'optimization-limit' }),
+    );
+  });
+
+  it('does not add an automatic scenario when the candidate has no optimization request', () => {
+    const result = planProduction(fixture());
+
+    expect(result.ranked.map((plan) => plan.scenario).sort()).toEqual(
+      ['buy-all', 'produce-all', 'custom'].sort(),
+    );
+  });
+
   it('includes intermediate processing time and ranks economic profit per hour', () => {
     const result = planProduction(fixture());
     expect(result.best?.scenario).toBe('buy-all');

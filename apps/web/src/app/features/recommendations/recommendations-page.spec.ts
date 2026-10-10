@@ -176,6 +176,130 @@ describe('production recommendations', () => {
     expect(page.plans()?.ranked[0].netRevenue).toBe('4875');
     expect(page.plans()?.ranked[0].profit).toBe('4275');
   });
+  it('adds an automatic combination for the selected recipe and requested operation count', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'person',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+          weightLimit: 100,
+        }),
+      ],
+    }));
+    await page.load();
+    page.manualPrice(1, '10');
+    page.manualPrice(2, '100');
+    page.calibration['ALCHEMY'] = { seconds: 2, yield: 2.5 };
+    page.focusRecipe('elixir');
+    page.optimizationCrafts = 3;
+
+    await page.compare();
+
+    expect(page.plans()?.ranked.find((row) => row.scenario === 'optimized')).toMatchObject({
+      recipeId: 'elixir',
+      scenario: 'optimized',
+      crafts: 3,
+    });
+    expect(page.scenarioNames.optimized).toBe('Combinação automática');
+
+    page.focusRecipe(null);
+
+    expect(page.plans()).toBeNull();
+  });
+  it('discards an asynchronous optimized result when the focused recipe changes', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'person',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+          weightLimit: 100,
+        }),
+      ],
+    }));
+    await page.load();
+    page.manualPrice(1, '10');
+    page.manualPrice(2, '100');
+    page.calibration['ALCHEMY'] = { seconds: 2, yield: 2.5 };
+    page.focusRecipe('elixir');
+    const comparison = page.compare();
+
+    page.focusRecipe(null);
+    await comparison;
+
+    expect(page.plans()).toBeNull();
+    expect(page.message()).toContain('mudaram durante');
+  });
+  it('keeps the focused automatic pending result visible after the pending-list limit', async () => {
+    const recipes = Array.from({ length: 40 }, (_, index) => ({
+      key: `formula-${index}`,
+      type: 'ALCHEMY',
+      station: null,
+      inputs: [{ itemId: 1, name: 'Material', quantity: '1' }],
+      outputs: [{ itemId: index + 2, name: `Elixir ${index}`, quantity: '1' }],
+    }));
+    const data: ProductionCatalogResponse = {
+      dataset: null,
+      recipes,
+      items: [1, ...recipes.map((recipe) => recipe.outputs[0].itemId)].map((id) => ({
+        id,
+        name: `Item ${id}`,
+        description: null,
+        grade: null,
+        category: 'Potion',
+        icon: null,
+        weight: '0.1',
+        categories: [],
+        sourceData: { marketable: true, maxEnhance: 0 },
+      })),
+    };
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      {
+        provide: ProductionApi,
+        useValue: { ...api(), catalog: () => of(data) },
+      },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'person',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+          weightLimit: 100,
+        }),
+      ],
+    }));
+    await page.load();
+    page.focusRecipe('formula-39');
+    await page.compare();
+    fixture.detectChanges();
+
+    expect(page.plans()?.incomplete).toHaveLength(121);
+    expect(page.visibleIncomplete()).toHaveLength(30);
+    expect(page.visibleIncomplete().at(-1)).toMatchObject({
+      recipeId: 'formula-39',
+      scenario: 'optimized',
+    });
+  });
   it('uses only stock remaining after reservations and counts its economic cost', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },

@@ -115,6 +115,7 @@ export class RecommendationsPage implements OnDestroy {
     'buy-all': 'Comprar ingredientes',
     'produce-all': 'Produzir ingredientes',
     custom: 'Personalizado',
+    optimized: 'Combinação automática',
   };
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
@@ -145,6 +146,16 @@ export class RecommendationsPage implements OnDestroy {
   readonly visiblePlans = computed(
     () => this.plans()?.ranked.slice((this.page() - 1) * 20, this.page() * 20) ?? [],
   );
+  readonly visibleIncomplete = computed(() => {
+    const incomplete = this.plans()?.incomplete ?? [];
+    const focusedOptimization = incomplete.find(
+      (row) => row.scenario === 'optimized' && row.recipeId === this.focus(),
+    );
+    const visible = incomplete.slice(0, 30);
+    return focusedOptimization && !visible.includes(focusedOptimization)
+      ? [...visible.slice(0, 29), focusedOptimization]
+      : visible;
+  });
   readonly materialItems = computed(() => {
     const ids = new Set(
       this.recipes().flatMap((row) => [
@@ -180,6 +191,7 @@ export class RecommendationsPage implements OnDestroy {
   choices: Record<number, ProductionChoice> = {};
   customRecipes: Record<number, string> = {};
   useOwned = true;
+  optimizationCrafts = 1;
   valuePack = false;
   private quoteQueue: number[] = [];
   private loadedRegion = '';
@@ -403,7 +415,11 @@ export class RecommendationsPage implements OnDestroy {
     for (const item of this.snapshot()!.items)
       if (item.weight !== null && Number.isFinite(Number(item.weight)))
         weights[item.id] = Number(item.weight);
-    const candidates = this.candidates().map((row) => ({ recipeId: row.id }));
+    const focusedId = this.focus();
+    const candidates = this.candidates().map((row) => ({
+      recipeId: row.id,
+      ...(row.id === focusedId ? { optimizeCrafts: this.optimizationCrafts } : {}),
+    }));
     const context = this.comparisonContext();
     const run = ++this.comparisonRun;
     const input: ProductionPlannerInput = {
@@ -474,6 +490,8 @@ export class RecommendationsPage implements OnDestroy {
       choices: this.choices,
       customRecipes: this.customRecipes,
       useOwned: this.useOwned,
+      optimizationCrafts: this.optimizationCrafts,
+      focus: this.focus(),
       valuePack: this.valuePack,
       search: this.search(),
       method: this.method(),
@@ -511,6 +529,7 @@ export class RecommendationsPage implements OnDestroy {
     this.focus.set(id);
     if (id && !this.recipeCalibration[id])
       this.recipeCalibration[id] = { seconds: null, yield: null };
+    this.plans.set(null);
   }
   methodLabel(method: string) {
     const labels: Record<string, string> = {
