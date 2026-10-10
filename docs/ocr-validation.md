@@ -193,7 +193,7 @@ Imagens, URLs de origem, evidências de consentimento, manifestos e relatórios 
 
 ### Medir o leitor
 
-O benchmark usa o detector de grades, o leitor Tesseract em português com modo esparso, a escala do `ScreenTextReader` e os parsers de quantidade e aprimoramento existentes no frontend. Ele valida hash e dimensões antes de OCR, pontua a grade por associação um a um e IoU mínimo de 0,5, e associa texto aos limites rotulados no manifesto. A divisão `evaluation` é padrão; `calibration` exige seleção explícita. O JSON agregado não inclui texto OCR, rótulos esperados, caminhos ou URLs.
+O benchmark usa o detector de grades, o leitor Tesseract em português com modo esparso, a escala do `ScreenTextReader` e os parsers de quantidade e aprimoramento existentes no frontend. Ele valida hash e dimensões antes de OCR, pontua a grade por associação um a um e IoU mínimo de 0,5, e associa texto aos limites rotulados no manifesto. Em imagens de 4K, limita o maior eixo do recorte de OCR a 2.400 px para manter o consumo de memória previsível; as coordenadas reconhecidas voltam à resolução original. A divisão `evaluation` é padrão; `calibration` exige seleção explícita. O JSON agregado não inclui texto OCR, rótulos esperados, caminhos ou URLs.
 
 ```powershell
 node scripts/benchmark-ocr.mjs --manifest tmp/ocr-dataset/synthetic-evaluation/ground-truth.json --output tmp/ocr-dataset/benchmark.json

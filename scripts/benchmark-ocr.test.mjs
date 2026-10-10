@@ -396,6 +396,30 @@ test('usesTheFrontendScreenOcrScale', async () => {
   assert.equal(readers.screenOcrScale(3840, 2160), 1);
 });
 
+test('caps4KOcrResizeAt2400PixelsOnTheLongestEdge', async () => {
+  const fixture = await makeRecognitionFixture();
+  const image = await sharp({
+    create: { width: 3840, height: 2160, channels: 3, background: '#161616' },
+  })
+    .jpeg()
+    .toBuffer();
+  await writeFile(fixture.imagePath, image);
+  fixture.sample.width = 3840;
+  fixture.sample.height = 2160;
+  let recognizedDimensions;
+  fixture.worker.recognize = async (input) => {
+    const { width, height } = await sharp(input).metadata();
+    recognizedDimensions = { width, height };
+    return { data: { blocks: [] } };
+  };
+  const readers = await loadOcrReaders();
+  readers.detectGridAreas = () => [{ bounds: box(100, 100, 80, 60), columns: 1, rows: 1 }];
+
+  await recognizeSample({ ...fixture, readers, sharp });
+
+  assert.deepEqual(recognizedDimensions, { width: 2400, height: 1350 });
+});
+
 test('assignsQuantityTextToTheCorrectSlot', async () => {
   const fixture = await makeRecognitionFixture();
   const readers = await loadOcrReaders();

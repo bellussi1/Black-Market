@@ -632,7 +632,11 @@ export async function recognizeSample({
   const base = baseSampleRow(sample);
   const rows = [{ rowType: 'grid', ...base, grid: gridMatches }];
 
-  const ocrScale = readers.screenOcrScale(sample.width, sample.height);
+  const longestEdge = Math.max(sample.width, sample.height);
+  const ocrScale = Math.min(
+    readers.screenOcrScale(sample.width, sample.height),
+    2400 / longestEdge,
+  );
   const ocrWidth = Math.max(1, Math.round(sample.width * ocrScale));
   const ocrHeight = Math.max(1, Math.round(sample.height * ocrScale));
   const ocrImage =
