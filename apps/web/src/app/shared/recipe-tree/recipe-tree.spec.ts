@@ -52,6 +52,28 @@ function providers() {
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('opens known production ingredients inline in steps without opening the details panel', async () => {
+    const mocks = providers();
+    mocks.knowledge.produces.mockReturnValue(
+      of({
+        recipes: [
+          {
+            ...recipe,
+            key: 'salt',
+            outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+            inputs: [{ itemId: 4, name: 'Material', quantity: '2' }],
+          },
+        ],
+      }),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.view.set('tree');
+    tree.action({ path: 'root/0', action: 'expand' });
+    fixture.detectChanges();
+    expect(tree.find('root/0')?.expanded).toBe(true);
+    expect(tree.detailsOpen()).toBe(false);
+  });
   it('updates total ingredients as the desired quantity changes, including batch rounding', async () => {
     const harmony = {
       ...recipe,

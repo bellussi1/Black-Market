@@ -144,6 +144,12 @@
       <p role="status">{{ bulkMessage() }}</p>
     }
   </div>
+  @if (view() === 'tree') {
+    <p class="help" i18n>
+      Clique na linha de um item para ver seus ingredientes. Use Ajustes para trocar ingredientes ou
+      mudar a produção.
+    </p>
+  }
   @if (contextMessage()) {
     <p role="status" class="notice">{{ contextMessage() }}</p>
   }
@@ -379,7 +385,11 @@
                   (ngModelChange)="action({ path: current.path, action: 'choose', value: $event })"
                 >
                   <option value="">Escolha uma receita</option>
-                  @for (method of productionMethods(info.recipes); track method.key; let index = $index) {
+                  @for (
+                    method of productionMethods(info.recipes);
+                    track method.key;
+                    let index = $index
+                  ) {
                     <option [value]="method.key">
                       {{ methodLabel(method, index) }}
                     </option>

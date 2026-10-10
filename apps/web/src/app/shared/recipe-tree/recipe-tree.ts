@@ -632,7 +632,8 @@ export class RecipeTree {
             return families.length === 1 && preferred ? withRecipe(ready, preferred) : ready;
           });
           this.selectedPath.set(node.path);
-          this.showContext(this.find(node.path)!);
+          if (this.view() !== 'tree' || !this.find(node.path)?.recipe)
+            this.showContext(this.find(node.path)!);
         },
         error: () => {
           if (revision === this.revision && this.expansions.get(node.path) === request) {
