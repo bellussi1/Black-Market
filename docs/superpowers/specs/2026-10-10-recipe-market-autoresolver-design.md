@@ -1,7 +1,7 @@
 # Mercado automático e otimização de receitas
 
 **Data:** 10/10/2026  
-**Estado:** desenho aprovado; especificação aguardando revisão do usuário  
+**Estado:** especificação aprovada pelo usuário; planos de implementação aguardando revisão
 **Caso de validação:** `/recipes/items/1407` — `[Grupo] Fármaco da Harmonia - Edania`
 
 ## Objetivo
@@ -15,8 +15,9 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 - Resolver o grafo da fórmula selecionada e consultar somente os itens alcançáveis nele; não consultar o catálogo inteiro de 74.287 itens ao abrir uma receita.
 - Carregar cotações do cache primeiro. Atualizar automaticamente dados ausentes ou vencidos, limitando a concorrência e cancelando respostas de outra receita, região ou conjunto de dados.
 - Reaproveitar e estender `planProduction()` como o motor da melhor combinação, em vez de duplicar cálculo de impostos, quantidades e lucro na interface.
-- Cada material terá uma caixa de seleção de origem: marcada significa fazer/coletar; desmarcada significa comprar. O botão de otimização aplica a combinação escolhida pelo motor. A caixa não é um registro separado de tarefa concluída.
+- Cada material terá uma caixa de seleção de origem: marcada significa fazer/coletar; desmarcada significa comprar. O botão de otimização aplica a combinação escolhida pelo motor. A caixa não é um registro separado de tarefa concluída. A busca só considera fazer/coletar quando existe receita ou estimativa explícita de rendimento e tempo; não presume coleta gratuita ou instantânea.
 - A otimização avalia a fórmula atualmente selecionada. A escolha automática entre as 12 fórmulas diferentes do produto 1407 não faz parte desta entrega.
+- A busca usa os métodos produtores já selecionados na árvore; para intermediários ainda não expandidos, usa um produtor padrão em ordem estável. A otimização escolhe a origem comprar/fazer/coletar dentro desse grafo, sem comparar automaticamente métodos de receita alternativos.
 - Rendimentos fixos documentados do Edania continuam fixos. Fórmulas variáveis usam estimativa identificada como estimativa, sem sugerir que o resultado médio seja uma garantia de proc.
 - Não calcular ou rotular lucro/hora como completo se faltarem preços ou tempos necessários. A página lista as pendências e mantém visíveis os valores parciais com essa indicação.
 - Não habilitar coletor ou persistência periódica de fonte de mercado. A consulta permanece sob demanda da página ativa e usa a fonte já configurada, respeitando a política de mercado vigente.
@@ -36,7 +37,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 
 ### Resolução de preços
 
-1. A página deriva a lista única de IDs do grafo ativo, incluindo o produto e materiais intermediários.
+1. A página resolve o grafo completo da fórmula ativa, reaproveitando escolhas de métodos já feitas na árvore e usando produtor padrão determinístico para intermediários não expandidos. A lista única de IDs para cotação inclui produto e materiais alcançáveis.
 2. A camada de cache devolve imediatamente dados frescos e mantém dados vencidos visíveis enquanto os revalida.
 3. Cotações ausentes ou vencidas são buscadas com concorrência limitada. Uma revisão de contexto impede que uma resposta antiga sobrescreva o novo produto, região ou dataset.
 4. Enquanto a receita estiver ativa, a revalidação ocorre quando o TTL de cinco minutos expira. Ao sair da página, o temporizador é limpo.
@@ -45,9 +46,9 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 
 ### Planejador de produção
 
-1. A página monta a lista de receitas alcançáveis para a fórmula selecionada, valida ciclos e quantidades e converte o grafo para o contrato do planejador.
-2. O motor compara comprar ou produzir cada intermediário alcançável, respeitando a origem marcada manualmente, quando houver.
-3. A busca do cenário otimizado usa enumeração exata nos casos pequenos e poda exata de estados dominados nos casos longos. A poda só elimina um estado quando os recursos consumidos e as saídas relevantes são equivalentes e o estado retido não é pior em custo e duração. Limite de estados ou dado ausente resulta em cenário incompleto, nunca em um ótimo aproximado rotulado como exato.
+1. A página monta a lista de receitas alcançáveis para a fórmula selecionada, valida ciclos e quantidades e converte o grafo para o contrato do planejador; métodos internos seguem seleção existente ou produtor padrão determinístico.
+2. O motor compara comprar ou produzir cada intermediário alcançável e compara coleta somente quando há estimativa explícita de rendimento/tempo, respeitando a origem marcada manualmente, quando houver.
+3. A busca do cenário otimizado usa enumeração exata nos casos pequenos e poda exata de estados dominados nos casos longos. Como o objetivo é uma razão lucro/tempo e o lucro pode ser negativo, custo e duração Pareto-melhores, isoladamente, não provam dominância. A poda exige estado futuro equivalente e prova matemática de que o estado retido não perde para nenhuma continuação viável; estados sem essa prova permanecem na busca. Limite de estados ou dado ausente resulta em cenário incompleto, nunca em um ótimo aproximado rotulado como exato.
 4. A função objetivo compara lucro líquido por hora por aritmética inteira. Empates preferem menor desembolso; a próxima regra de desempate é determinística.
 5. O motor recebe a quantidade de operações selecionada, cotações e disponibilidade, estoque livre, impostos, rendimentos, pesos existentes e tempo estimado por método. Premissas e dados incompletos aparecem junto ao resultado.
 6. O botão de otimização aplica os valores de origem calculados às caixas. Alterar uma caixa cria/ajusta uma escolha manual para aquele item e invalida a recomendação anterior até o recálculo.
@@ -57,7 +58,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 - O campo de maestria começa com o valor do personagem ativo para a profissão da receita. A edição é um override local de cálculo; não altera silenciosamente o perfil do personagem.
 - Alterações são aplicadas após 250 ms sem nova digitação. O rendimento esperado e os indicadores são recalculados sem nova consulta de mercado.
 - Receitas de rendimento fixo preservam o valor verificado. Para rendimentos variáveis, a UI identifica o modelo como estimativa e mostra a premissa.
-- Tempos conhecidos/calibrados por método são reaproveitados. O usuário pode ajustar tempos nas opções avançadas. Se algum passo escolhido não tiver tempo útil, o motor não promete uma taxa horária completa.
+- Tempos conhecidos/calibrados por método são reaproveitados. O usuário pode ajustar tempos nas opções avançadas. Coleta sem estimativa de rendimento e tempo permanece incompleta. Se algum passo escolhido não tiver tempo útil, o motor não promete uma taxa horária completa.
 - O modo simples mantém produto, quantidade, materiais, origem e resumo econômico. A calibração de tempo, imposto e outras opções continuam progressivamente disponíveis no modo avançado.
 - Na tela de Mercado, busca e controles atuais permanecem; a busca passa a compartilhar debounce de 250 ms. Ordenação por coluna, histórico, limites de preço e volumes não são removidos nem substituídos por dados simulados.
 
@@ -72,7 +73,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 ## Validação de aceitação
 
 - Testes do cache cobrem resposta fresca imediata, atualização de ausentes/vencidas, dados antigos em caso de falha, concorrência limitada e descarte de resposta fora do contexto.
-- Testes do planejador incluem grafo Edania com dados sintéticos completos, alternativas comprar/fazer, fontes fixadas pelo usuário, estoque/reservas, impostos, tempo, rendimento fixo e variável, empate determinístico, ciclo, cotação ausente e estouro do limite de estados.
+- Testes do planejador incluem grafo Edania com dados sintéticos completos, alternativas comprar/fazer/coletar com estimativa explícita, fontes fixadas pelo usuário, estoque/reservas, impostos, tempo, rendimento fixo e variável, empate determinístico, ciclo, cotação ausente e estouro do limite de estados.
 - O teste Edania deve concluir e provar a melhor combinação para um fixture que cubra todo o grafo alcançável; não basta provar que a busca respeita o limite.
 - Testes da página cobrem preload automático ao abrir, revalidação no TTL, estado parcial sem falsa taxa horária, debounce exato de 250 ms, checkbox por item, aplicação da recomendação e atualização após edição manual.
 - Testes do mercado cobrem leitura cache-first por chave da consulta, revalidação e preservação da ordenação/filtros existentes.
