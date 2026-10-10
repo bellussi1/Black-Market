@@ -5,6 +5,7 @@ import {
   planProduction,
   type ProductionPlannerInput,
 } from './production-planner';
+import { edaniaSelectedGraphFixture } from './fixtures/edania-selected-graph';
 
 const now = '2026-10-09T12:00:00.000Z';
 it('merges batches by exact rates even when displayed hourly silver ties', () => {
@@ -308,6 +309,63 @@ describe('production planner', () => {
       profit: '64900',
       seconds: 1,
     });
+  });
+
+  it('completes an exact search for the selected Edania catalog topology snapshot', () => {
+    const topology = edaniaSelectedGraphFixture;
+    const root = {
+      id: topology.rootRecipeKey,
+      name: 'Edania',
+      method: 'alchemy',
+      output: { itemId: topology.outputItemId, quantity: 1 },
+      ingredients: topology.rootIngredientItemIds.map((itemId) => ({ itemId, quantity: 1 })),
+    };
+    const producers = topology.producers.map((producer) => ({
+      id: producer.recipeKey,
+      name: `Item ${producer.outputItemId}`,
+      method: 'alchemy',
+      output: { itemId: producer.outputItemId, quantity: 1 },
+      ingredients: producer.ingredientItemIds.map((itemId) => ({ itemId, quantity: 1 })),
+    }));
+    const recipes = [root, ...producers];
+    const itemIds = new Set([
+      topology.outputItemId,
+      ...topology.rootIngredientItemIds,
+      ...topology.producers.flatMap((producer) => [
+        producer.outputItemId,
+        ...producer.ingredientItemIds,
+      ]),
+    ]);
+    const input = fixture();
+    input.recipes = recipes;
+    input.quotes = Object.fromEntries(
+      [...itemIds].map((itemId) => [
+        itemId,
+        {
+          unitPrice: String(itemId === topology.outputItemId ? 100_000 : 100),
+          available: 1_000_000,
+          observedAt: now,
+          source: 'market' as const,
+        },
+      ]),
+    );
+    input.estimates = Object.fromEntries(
+      recipes.map((recipe) => [recipe.id, { expectedYield: 1, craftSeconds: 1, source: 'fixed' }]),
+    );
+    input.candidates = [{ recipeId: topology.rootRecipeKey, optimizeCrafts: 1 }];
+    input.maxOptimizationStates = 250_000;
+    input.profile.activeMinutes = 100_000;
+
+    const result = planProduction(input);
+    const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized).toBeDefined();
+    expect(optimized?.issues).toEqual([]);
+    expect(optimized?.profitPerHour).not.toBeNull();
+    expect(optimized?.assumptions.join(' ')).toMatch(
+      /\d+ estados podados pelo limite superior seguro/,
+    );
+    expect(result.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(false);
   });
 
   it('requires explicit gathering yield and time when gathering is selected', () => {
