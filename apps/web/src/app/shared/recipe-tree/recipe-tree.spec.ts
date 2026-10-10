@@ -4,12 +4,13 @@ import type {
   CatalogRecipesResponse,
   MarketItemQuote,
 } from '@bdo/shared';
+import { signal } from '@angular/core';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MarketApi } from '../../features/market/market-api';
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { MarketCacheService } from '../../core/market-cache.service';
+import { MarketCacheService, type CachedQuoteEntry } from '../../core/market-cache.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { RecipeTree } from './recipe-tree';
@@ -54,9 +55,15 @@ function providers() {
       of({ recipes: [], total: 0, direction: 'produces', dataset: null } as CatalogRecipesResponse),
     ),
   };
+  const quotesMap = signal(new Map<string, CachedQuoteEntry>());
   const marketCache = {
+    quotesMap,
     resolveQuotesBatch: vi.fn((_itemIds: (number | string)[], _region?: string) =>
       of(new Map<number, MarketItemQuote>()),
+    ),
+    getCachedQuoteEntry: vi.fn(
+      (itemId: number, region = 'sa'): CachedQuoteEntry | null =>
+        quotesMap().get(`${region}:${itemId}:0`) ?? null,
     ),
   };
   return {
@@ -172,6 +179,83 @@ describe('Interactive recipe tree', () => {
 
     expect(tree.livePrices().has(5301)).toBe(false);
     expect(tree.livePrices().get(6001)).toBe('200');
+    fixture.destroy();
+  });
+  it('shows fresh, stale and missing quote states without manual market buttons', async () => {
+    const mocks = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    const itemId = tree.root()!.part.itemId;
+    const now = Date.now();
+
+    expect(tree.quoteFreshness(itemId)).toEqual({ label: 'Cotação pendente', stale: false });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.quote-freshness')?.textContent).toContain(
+      'Cotação pendente',
+    );
+
+    const staleEntry: CachedQuoteEntry = {
+      quote: {
+        itemId,
+        subId: 0,
+        name: 'Sal',
+        price: '100',
+        stock: 10,
+        totalTrades: '20',
+        minPrice: '90',
+        maxPrice: '110',
+        lastSoldPrice: '100',
+        lastSoldAt: null,
+      },
+      region: 'sa',
+      fetchedAt: now - 6 * 60 * 1000,
+      expiresAt: now - 60 * 1000,
+    };
+    mocks.marketCache.quotesMap.set(new Map([[`sa:${itemId}:0`, staleEntry]]));
+    expect(tree.quoteFreshness(itemId)).toEqual({
+      label: 'Cotação antiga · há 6 min',
+      stale: true,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.quote-freshness')?.textContent).toContain(
+      'Cotação antiga · há 6 min',
+    );
+
+    const freshEntry: CachedQuoteEntry = {
+      quote: {
+        itemId,
+        subId: 0,
+        name: 'Sal',
+        price: '100',
+        stock: 10,
+        totalTrades: '20',
+        minPrice: '90',
+        maxPrice: '110',
+        lastSoldPrice: '100',
+        lastSoldAt: null,
+      },
+      region: 'sa',
+      fetchedAt: Date.now() - 30 * 1000,
+      expiresAt: Date.now() + 4 * 60 * 1000,
+    };
+    mocks.marketCache.quotesMap.set(new Map([[`sa:${itemId}:0`, freshEntry]]));
+    expect(tree.quoteFreshness(itemId)).toEqual({
+      label: 'Atualizada há menos de 1 min',
+      stale: false,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.quote-freshness')?.textContent).toContain(
+      'Atualizada há menos de 1 min',
+    );
+
+    tree.showContext(tree.root()!);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.market-subtle-refresh-btn')).toBeNull();
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')]
+      .map((button: HTMLButtonElement) => button.textContent ?? '')
+      .join(' ');
+    expect(buttons).not.toContain('Consultar cotação atual');
     fixture.destroy();
   });
   it('opens known production ingredients inline in steps without opening the details panel', async () => {
@@ -316,20 +400,6 @@ describe('Interactive recipe tree', () => {
     expect(tree.root()?.expanded).toBe(false);
     expect(tree.find('root/0')?.expanded).toBe(false);
     expect(tree.find('root/0')?.loading).toBe(false);
-  });
-  it('allows retrying a market lookup interrupted by collapse all', async () => {
-    const mocks = providers();
-    mocks.market.getItem.mockReturnValueOnce(new Subject<never>());
-    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
-    const tree = fixture.componentInstance;
-    tree.action({ path: 'root', action: 'source' });
-    tree.consultMarket();
-    expect(tree.marketLoading()).toBe(true);
-    tree.collapseAll();
-    expect(tree.marketLoading()).toBe(false);
-    tree.consultMarket();
-    expect(mocks.market.getItem).toHaveBeenCalledTimes(2);
-    expect(tree.livePrices().get(5301)).toBe('100');
   });
   it('shows known material cost directly in simple mode and marks absent quotations', async () => {
     const fixture = await renderComponent(
@@ -586,34 +656,6 @@ describe('Interactive recipe tree', () => {
     pending.next({ item });
     pending.complete();
     expect(tree.context()?.node.part.itemId).toBe(9001);
-  });
-  it('retains item detail behavior and graph state when a manual lookup returns stale data', async () => {
-    const dependencies = providers(),
-      fixture = await renderComponent(
-        RecipeTree,
-        { recipe, selectedItem: item },
-        dependencies.list,
-      ),
-      tree = fixture.componentInstance;
-    tree.action({ path: 'root', action: 'source' });
-    expect(dependencies.market.getItem).not.toHaveBeenCalled();
-    tree.consultMarket();
-    expect(tree.livePrices().get(5301)).toBe('100');
-    dependencies.market.getItem.mockReturnValueOnce(
-      of({
-        source: 'arsha',
-        region: 'sa',
-        fetchedAt: '2026-10-09T12:00:00Z',
-        cacheStatus: 'stale',
-        items: [{ itemId: 5301, subId: 0, price: '999', stock: 1 }],
-      }),
-    );
-    tree.consultMarket();
-    expect(tree.livePrices().get(5301)).toBe('100');
-    tree.action({ path: 'root', action: 'collapse' });
-    tree.view.set('list');
-    tree.view.set('graph');
-    expect(tree.root()?.expanded).toBe(false);
   });
   it('consults market quotes for all currently visible items and updates live prices', async () => {
     const dependencies = providers(),

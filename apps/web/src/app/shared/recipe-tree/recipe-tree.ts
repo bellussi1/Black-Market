@@ -26,7 +26,6 @@ import type {
   CatalogRecipe,
   CatalogRecipePart,
   MarketItemQuote,
-  MarketLookupResponse,
 } from '@bdo/shared';
 import {
   EMPTY,
@@ -260,9 +259,6 @@ export class RecipeTree {
   readonly graph = viewChild(RecipeGraph);
   readonly excludedLocations = signal<string[]>([]);
   readonly livePrices = signal(new Map<number, string>());
-  readonly marketResult = signal<MarketLookupResponse | null>(null);
-  readonly marketLoading = signal(false);
-  readonly marketMessage = signal('');
   readonly history = signal<MarketHistoryPoint[]>([]);
   readonly historyMessage = signal('');
   readonly context = signal<{
@@ -283,7 +279,6 @@ export class RecipeTree {
     value && Number.isFinite(Date.parse(value)) ? date(value) : 'Não informada';
   private revision = 0;
   private contextRevision = 0;
-  private marketRevision = 0;
   private selectionIdentity = '';
   private readonly expansions = new Map<string, symbol>();
   readonly locations = computed(() => {
@@ -831,13 +826,10 @@ export class RecipeTree {
       this.bulkMessage.set('');
       this.expansions.clear();
       this.contextRevision++;
-      this.marketRevision++;
       this.context.set(null);
       this.detailsOpen.set(false);
       this.contextMessage.set('');
       this.contextLoading.set(false);
-      this.marketResult.set(null);
-      this.marketLoading.set(false);
       this.history.set([]);
       this.historyMessage.set('');
       if (identity !== this.selectionIdentity) {
@@ -961,8 +953,6 @@ export class RecipeTree {
     this.expansions.clear();
     this.contextRevision++;
     this.contextLoading.set(false);
-    this.marketRevision++;
-    this.marketLoading.set(false);
     if (this.historyMessage() === 'Consultando histórico…') this.historyMessage.set('');
     const collapse = (node: RecipeNode): RecipeNode => ({
       ...node,
@@ -1223,12 +1213,9 @@ export class RecipeTree {
       if (key === path || key.startsWith(path + '/')) this.expansions.delete(key);
     if (this.selectedPath().startsWith(path + '/')) {
       this.contextRevision++;
-      this.marketRevision++;
       this.context.set(null);
       this.detailsOpen.set(false);
       this.contextLoading.set(false);
-      this.marketResult.set(null);
-      this.marketLoading.set(false);
       this.selectedLocation.set(null);
       this.selectedPath.set(path);
     }
@@ -1270,12 +1257,8 @@ export class RecipeTree {
     this.contextMessage.set('');
     this.context.set(null);
     this.selectedLocation.set(null);
-    this.marketResult.set(null);
-    this.marketLoading.set(false);
-    this.marketMessage.set('');
     this.history.set([]);
     this.historyMessage.set('');
-    this.marketRevision++;
     forkJoin({
       item: this.knowledge.item(node.part.itemId).pipe(catchError(() => of(null))),
       origins: this.knowledge.sources(node.part.itemId).pipe(catchError(() => of(null))),
@@ -1333,47 +1316,6 @@ export class RecipeTree {
       );
     } else this.showContext(node, event.source.id);
   }
-  consultMarket() {
-    const node = this.context()?.node;
-    if (!node || this.marketLoading()) return;
-    const revision = ++this.marketRevision,
-      region = this.region(),
-      contextRevision = this.contextRevision;
-    this.marketLoading.set(true);
-    this.marketMessage.set('');
-    this.market
-      .getItem(String(node.part.itemId), region)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (result) => {
-          if (
-            revision !== this.marketRevision ||
-            region !== this.region() ||
-            contextRevision !== this.contextRevision
-          )
-            return;
-          this.marketResult.set(result);
-          this.marketLoading.set(false);
-          const base = result.items.find((item) => item.subId === 0);
-          if (
-            base?.price !== null &&
-            base?.price !== undefined &&
-            result.cacheStatus !== 'stale' &&
-            result.region === region
-          ) {
-            this.livePrices.update((prices) => new Map(prices).set(node.part.itemId, base.price!));
-            this.marketQuotes.update((quotes) => new Map(quotes).set(node.part.itemId, base));
-          }
-          if (!base) this.marketMessage.set('Não há cotação da variante base para este item.');
-        },
-        error: () => {
-          if (revision === this.marketRevision) {
-            this.marketLoading.set(false);
-            this.marketMessage.set('Não foi possível consultar o mercado. Tente novamente.');
-          }
-        },
-      });
-  }
   consultHistory() {
     const node = this.context()?.node;
     if (!node) return;
@@ -1419,6 +1361,27 @@ export class RecipeTree {
         .quotes.filter((q) => q.region === this.region() && q.itemId === id && !q.subId)
         .sort((a, b) => b.observedAt.localeCompare(a.observedAt))[0] ?? null
     );
+  }
+  quoteFreshness(id: number): { label: string; stale: boolean } {
+    const entry = this.marketCache.getCachedQuoteEntry(id, this.region());
+    if (!entry) return { label: 'Cotação pendente', stale: false };
+
+    const now = Date.now();
+    const elapsedMs = Math.max(0, now - entry.fetchedAt);
+    const minutes = Math.floor(elapsedMs / 60_000);
+    const age =
+      minutes < 1
+        ? 'há menos de 1 min'
+        : minutes < 60
+          ? `há ${minutes} min`
+          : minutes < 1440
+            ? `há ${Math.floor(minutes / 60)} h`
+            : `há ${Math.floor(minutes / 1440)} dias`;
+    const stale = now >= entry.expiresAt;
+    return {
+      label: stale ? `Cotação antiga · ${age}` : `Atualizada ${age}`,
+      stale,
+    };
   }
   holdings(id: number) {
     return availableInventory(

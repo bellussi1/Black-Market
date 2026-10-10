@@ -150,61 +150,21 @@
   }
 }
 
-.market-subtle-refresh-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--bm-muted);
-  background: transparent;
-  border: 1px solid var(--bm-border);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover:not(:disabled) {
-    color: var(--bm-accent);
-    border-color: var(--bm-accent);
-    background: var(--bm-surface-raised, #242730);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-icon {
-    flex-shrink: 0;
-    transition: transform 300ms ease;
-  }
-
-  &:hover:not(:disabled) .btn-icon {
-    transform: rotate(45deg);
-  }
-}
-
-.btn-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--bm-border);
-  border-top-color: var(--bm-accent);
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .economic-notice {
   margin: 12px 16px 0;
   animation: fade-in 180ms ease-out;
+}
+
+.quote-freshness {
+  display: block;
+  margin: 4px 0;
+  color: var(--bm-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.quote-freshness.is-stale {
+  color: var(--bm-warning, #d49a84);
 }
 
 @keyframes fade-in {

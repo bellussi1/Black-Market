@@ -190,36 +190,12 @@
           <div class="economic-toolbar">
             <div class="cache-sync-indicator">
               <span class="cache-sync-dot" [class.syncing]="treeMarketLoading()"></span>
-              <span i18n>Cotações sincronizadas via cache</span>
-            </div>
-            <button
-              type="button"
-              class="market-subtle-refresh-btn"
-              [disabled]="treeMarketLoading()"
-              (click)="consultAllTreePrices()"
-              aria-label="Atualizar cotações do mercado"
-              title="Atualizar cotações do mercado"
-            >
               @if (treeMarketLoading()) {
-                <span class="btn-spinner" aria-hidden="true"></span>
-                <span i18n>Sincronizando…</span>
+                <span i18n>Atualizando cotações automaticamente</span>
               } @else {
-                <svg
-                  class="btn-icon"
-                  viewBox="0 0 16 16"
-                  width="13"
-                  height="13"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.418A6 6 0 1 1 8 2v1z" />
-                  <path
-                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
-                  />
-                </svg>
-                <span i18n>Atualizar</span>
+                <span i18n>Cotações atualizadas automaticamente · cache de 5 min</span>
               }
-            </button>
+            </div>
           </div>
         </div>
 
@@ -316,6 +292,11 @@
                 <ng-container i18n>Sem cotação de venda</ng-container>
               }
             </small>
+            <small
+              class="quote-freshness"
+              [class.is-stale]="quoteFreshness(product.part.itemId).stale"
+              >{{ quoteFreshness(product.part.itemId).label }}</small
+            >
           </div>
 
           <div class="metric-card">
@@ -874,30 +855,20 @@
                 {{ saved.source }}
               </p>
             }
-            <button type="button" (click)="consultMarket()" [disabled]="marketLoading()">
-              {{ marketLoading() ? 'Consultando…' : 'Consultar cotação atual' }}
-            </button>
-            @if (marketMessage()) {
-              <p role="status">{{ marketMessage() }}</p>
-            }
-            @if (marketResult(); as market) {
-              <p class="help">
-                Arsha · {{ market.region.toUpperCase() }} · {{ date(market.fetchedAt) }} ·
-                {{
-                  market.cacheStatus === 'stale'
-                    ? 'Cotação antiga: não usada no cálculo'
-                    : 'Cotação de referência'
-                }}
+            @if (marketQuotes().get(info.node.part.itemId); as market) {
+              <p>
+                Preço de venda {{ silver(market.price) }} · estoque {{ market.stock }} · última
+                venda
+                {{ silver(market.lastSoldPrice) }}
               </p>
-              @for (quote of market.items; track quote.subId) {
-                @if (quote.subId === 0) {
-                  <p>
-                    Preço {{ silver(quote.price) }} · estoque {{ quote.stock }} · última venda
-                    {{ silver(quote.lastSoldPrice) }}
-                  </p>
-                }
-              }
             }
+            <p
+              class="quote-freshness"
+              [class.is-stale]="quoteFreshness(info.node.part.itemId).stale"
+              role="status"
+            >
+              {{ quoteFreshness(info.node.part.itemId).label }}
+            </p>
             @if (advanced()) {
               <details>
                 <summary i18n>Histórico observado</summary>
