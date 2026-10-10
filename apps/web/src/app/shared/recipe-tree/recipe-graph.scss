@@ -181,6 +181,23 @@ svg.source-symbol {
   color: var(--bm-muted);
   overflow-wrap: anywhere;
 }
+.node-variant {
+  display: grid;
+  gap: 4px;
+  margin: 0 12px 10px;
+  font-size: 12px;
+  color: var(--bm-muted);
+}
+.node-variant select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 4px;
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  border: 1px solid var(--bm-border);
+  font: inherit;
+}
 .node-message {
   padding: 8px 12px;
   font-size: 12px;

@@ -6,6 +6,8 @@ import type { calculateProduction } from '@bdo/calculators';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
+import { fixedRecipeYield } from './recipe-fixed-yields';
 import type { RecipeNode } from './recipe-tree-model';
 export interface BranchAction {
   path: string;
@@ -25,6 +27,41 @@ export class RecipeBranch {
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly action = output<BranchAction>();
   readonly typeLabel = recipeTypeLabel;
+  readonly methods = computed(() => recipeFamilies(this.node().options).map((family) => family[0]));
+  readonly methodKey = computed(
+    () =>
+      recipeFamilies(this.node().options).find((family) =>
+        family.some((recipe) => recipe.key === this.node().recipe?.key),
+      )?.[0]?.key ?? '',
+  );
+  readonly batches = computed(() =>
+    this.node().recipe ? batchAlternatives(this.node().recipe!, this.node().options) : [],
+  );
+  readonly batchSize = computed(() => {
+    const node = this.node(),
+      output = node.recipe?.outputs.find((part) => part.itemId === node.part.itemId);
+    return output?.quantity && Number(output.quantity) > 0
+      ? Number(output.quantity)
+      : node.recipe
+        ? fixedRecipeYield(node.recipe, node.part.itemId)
+        : null;
+  });
+  readonly substitutionKey = computed(
+    () =>
+      this.node().substitutions?.find(
+        (choice) =>
+          choice.part.itemId === this.node().part.itemId &&
+          choice.part.quantity === this.node().part.quantity,
+      )?.recipeKey ?? '',
+  );
+  substitute(value: string) {
+    const path = this.node().path;
+    this.action.emit({ path: path.slice(0, path.lastIndexOf('/')), action: 'choose', value });
+  }
+  chooseBatch(quantity: number) {
+    const batch = this.batches().find((entry) => entry.quantity === Number(quantity));
+    if (batch) this.emit('choose', batch.recipe.key);
+  }
   readonly allocation = computed(() => this.allocations().find((a) => a.path === this.node().path));
   emit(action: BranchAction['action'], value?: BranchAction['value']) {
     this.action.emit({ path: this.node().path, action, value });

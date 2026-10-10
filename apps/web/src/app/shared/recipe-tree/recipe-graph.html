@@ -87,7 +87,9 @@
                   ? 'PRODUTO FINAL'
                   : entry.node.recipe
                     ? 'PRODUZIR · ' + typeLabel(entry.node.recipe.type)
-                    : 'OBTER / EXPLORAR'
+                    : entry.node.options.length
+                      ? 'RECEITAS DISPONÍVEIS · ESCOLHER'
+                      : 'OBTER / EXPLORAR'
               }}</small
             ><strong [attr.title]="entry.node.category ?? 'Categoria não consultada'">{{
               entry.node.part.name
@@ -109,6 +111,66 @@
         }
         @if (entry.node.category) {
           <span class="node-category">{{ entry.node.category }}</span>
+        }
+        @if (families(entry.node).length > 1) {
+          <label class="node-variant"
+            >Receita
+            <select
+              [attr.aria-label]="'Receita de ' + entry.node.part.name"
+              [value]="methodKey(entry.node)"
+              (change)="chooseRecipe(entry.node.path, $any($event.target).value)"
+            >
+              <option value="" disabled>Escolher método de produção</option>
+              @for (recipe of families(entry.node); track recipe.key; let index = $index) {
+                <option [value]="recipe.key">
+                  {{ typeLabel(recipe.type) }} · {{ index + 1 }} ·
+                  {{ recipe.inputs.length }} ingredientes
+                </option>
+              }
+            </select>
+          </label>
+        }
+        @if ((entry.node.substitutions?.length ?? 0) > 1) {
+          <label class="node-variant"
+            >Ingrediente equivalente
+            <select
+              [attr.aria-label]="'Substituir ' + entry.node.part.name"
+              [value]="substitutionKey(entry.node)"
+              (change)="
+                chooseRecipe(
+                  parentPath(entry.node.path),
+                  $any($event.target).value,
+                  entry.node.path
+                )
+              "
+            >
+              @for (choice of entry.node.substitutions; track choice.recipeKey) {
+                <option [value]="choice.recipeKey">
+                  {{ choice.part.name }} ×
+                  {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+        @if (batches(entry.node).length > 1) {
+          <label class="node-variant"
+            >Tamanho do lote
+            <select
+              [attr.aria-label]="'Lote de ' + entry.node.part.name"
+              [value]="batchSize(entry.node)"
+              (change)="
+                chooseRecipe(
+                  entry.node.path,
+                  batches(entry.node)[$any($event.target).selectedIndex].recipe.key
+                )
+              "
+            >
+              @for (batch of batches(entry.node); track batch.quantity) {
+                <option [value]="batch.quantity">{{ batch.quantity }} unidades por operação</option>
+              }
+            </select>
+          </label>
         }
         <button
           type="button"

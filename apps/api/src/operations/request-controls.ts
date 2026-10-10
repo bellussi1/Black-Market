@@ -64,6 +64,10 @@ export function requestControls(logger: LoggerService, environment: string, webO
     const market = req.path.startsWith('/api/v1/market/');
     const telemetry = req.path === '/api/v1/telemetry/errors';
     const calculate = req.path.startsWith('/api/v1/calculators/');
+    const crafting =
+      req.method === 'GET' &&
+      (/^\/api\/v1\/items\/[1-9]\d*\/recipes$/.test(req.path) ||
+        /^\/api\/v1\/world\/item-sources\/[1-9]\d*$/.test(req.path));
     const publicRequest =
       req.path.startsWith('/api/v1/') && !/^\/api\/v1\/items\/[1-9]\d*\/icon$/.test(req.path);
     const group = workspace
@@ -74,13 +78,15 @@ export function requestControls(logger: LoggerService, environment: string, webO
           ? 'telemetry'
           : calculate
             ? 'calculate'
-            : 'public';
+            : crafting
+              ? 'crafting'
+              : 'public';
     if (
       publicRequest &&
       req.method !== 'OPTIONS' &&
       !limiter.take(
         (req.ip ?? 'unknown') + ':' + group,
-        telemetry ? 10 : workspace || market || calculate ? 30 : 240,
+        telemetry ? 10 : workspace || market || calculate ? 30 : crafting ? 600 : 240,
       )
     ) {
       res.setHeader('Retry-After', '60');

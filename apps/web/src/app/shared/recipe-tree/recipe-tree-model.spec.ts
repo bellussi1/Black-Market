@@ -35,6 +35,86 @@ const stock = (id: string, itemId: number, quantity: number, location = 'Velia')
   target: 0,
 });
 describe('Recipe graph planning', () => {
+  it('preserves a confirmed yield and unaffected branches when switching equivalent ingredients', () => {
+    const base = recipe(
+      'base',
+      1,
+      [
+        [2, '5'],
+        [4, '1'],
+      ],
+      null,
+    );
+    const alternative = recipe(
+      'alternative',
+      1,
+      [
+        [3, '5'],
+        [4, '1'],
+      ],
+      null,
+    );
+    let root = withRecipe(nodeFor(part(1), 'root'), base, 2.5);
+    root.children[1] = withRecipe(root.children[1], recipe('nested', 4, [[5, '1']]), 2);
+    root.children[1].loading = true;
+    root = withRecipe(root, alternative);
+    expect(root.yield).toBe(2.5);
+    expect(root.children[0].part.itemId).toBe(3);
+    expect(root.children[1].recipe?.key).toBe('nested');
+    expect(root.children[1].loading).toBe(false);
+    expect(root.children[1].children[0].path).toBe('root/1/0');
+  });
+  it('calculates the Harmony batch automatically and keeps unknown sub-yields as required items', () => {
+    let root = withRecipe(nodeFor(part(1399), 'root'), {
+      ...recipe(
+        'harmony',
+        1399,
+        [
+          [1389, '10'],
+          [1391, '10'],
+          [1393, '10'],
+          [1395, '10'],
+          [1397, '10'],
+        ],
+        null,
+      ),
+      type: 'SIMPLE_ALCHEMY',
+    });
+    root = patchNode(root, 'root/0', (n) =>
+      withRecipe(n, recipe('unknown', 1389, [[4, '2']], null)),
+    );
+    expect(root.yield).toBe(10);
+    const result = planRecipeTree(root, 25, emptyWorkspace());
+    expect(result.value?.rows.find((r) => r.itemId === 1389)?.required).toBe(30);
+    expect(result.value?.rows.some((r) => r.itemId === 4)).toBe(false);
+    expect(result.warnings.join(' ')).toContain('rendimento');
+  });
+  it('uses reviewed Edania single and batch yields without guessing ordinary alchemy yields', () => {
+    const edania = (qty: string) => ({
+      ...recipe(
+        'edania',
+        1407,
+        [
+          [1399, qty],
+          [702, String(Number(qty) * 3)],
+          [1409, String(Number(qty) * 3)],
+          [Number(qty) === 1 ? 820936 : 821372, '1'],
+        ],
+        null,
+      ),
+      type: 'SIMPLE_ALCHEMY',
+    });
+    expect(withRecipe(nodeFor(part(1407), 'root'), edania('1')).yield).toBe(1);
+    const batch = withRecipe(nodeFor(part(1407), 'root'), edania('10'));
+    expect(batch.yield).toBe(10);
+    expect(
+      planRecipeTree(batch, 100, emptyWorkspace()).value?.rows.find((r) => r.itemId === 702)
+        ?.required,
+    ).toBe(300);
+    expect(
+      withRecipe(nodeFor(part(5301), 'root'), recipe('ordinary', 5301, [[4, '1']], null)).yield,
+    ).toBeNull();
+  });
   it('reuses shared stock only once across branches and consolidates the shortfall', () => {
     const state = emptyWorkspace();
     state.inventory = [

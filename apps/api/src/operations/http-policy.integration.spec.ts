@@ -43,16 +43,28 @@ describe('HTTP security through the native Nest adapter', () => {
       logger: false,
       bodyParser: false,
     });
+    app.enableCors(apiCorsOptions('https://platform.example'));
     app.use(requestControls(logger, 'production', 'https://platform.example'));
     app.useGlobalFilters(new SafeExceptionFilter(logger));
     app.useBodyParser('json', { limit: '256kb', type: (request) => jsonRequest(request, false) });
     app.useBodyParser('json', { limit: '20mb', type: (request) => jsonRequest(request, true) });
-    app.enableCors(apiCorsOptions('https://platform.example'));
     await app.listen(0, '127.0.0.1');
     url = await app.getUrl();
   });
   afterAll(async () => {
     await app?.close();
+  });
+  it('keeps CORS headers on rate limit responses for the allowed UI', async () => {
+    let response: Response | undefined;
+    for (let i = 0; i <= 10; i++)
+      response = await fetch(url + '/api/v1/telemetry/errors', {
+        method: 'POST',
+        headers: { Origin: 'https://platform.example', 'content-type': 'application/json' },
+        body: '{}',
+      });
+    expect(response?.status).toBe(429);
+    expect(response?.headers.get('access-control-allow-origin')).toBe('https://platform.example');
+    expect(response?.headers.get('retry-after')).toBe('60');
   });
   it('enforces body limits without reducing the personal backup limit', async () => {
     const body = JSON.stringify({ data: 'x'.repeat(300000) });

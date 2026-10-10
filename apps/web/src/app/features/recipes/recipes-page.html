@@ -34,6 +34,7 @@
   @if (item(); as selected) {
     <app-recipe-tree
       [recipe]="recipe()"
+      [recipes]="alternatives()"
       [selectedItem]="selected"
       [datasetVersion]="dataset()?.version ?? ''"
       (rootMethod)="setMethod($event)"
@@ -45,15 +46,15 @@
             <label for="root-recipe" i18n>Como você quer obter este item?</label
             ><select id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
-              @for (method of alternatives(); track method.key) {
-                <option [value]="method.key" [selected]="method.key === recipe()?.key">
+              @for (method of methods(); track method.key) {
+                <option [value]="method.key" [selected]="method.key === selectedMethodKey()">
                   {{ methodLabel(method) }}
                 </option>
               }
             </select>
             <div class="item-toolbar">
               <span class="help" i18n
-                >{{ alternatives().length }} variantes · um método por plano</span
+                >{{ methods().length }} métodos · ingredientes equivalentes na mesma receita</span
               >
               <a [routerLink]="['/market/items', selected.id]" i18n>Informações do item →</a>
             </div>

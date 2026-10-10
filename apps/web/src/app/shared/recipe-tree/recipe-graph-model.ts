@@ -45,12 +45,24 @@ export function layoutRecipeGraph(
     truncated = false;
   const included = (path: string) =>
     !focus || path === focus || path.startsWith(focus + '/') || focus.startsWith(path + '/');
-  const visit = (node: RecipeNode, depth: number): GraphNode | null => {
-    if (!included(node.path)) return null;
-    if (nodes.length + sources.length >= 200 || depth > 12) {
+  // Reserve shallow production cards before optional location cards. A dense
+  // early branch must not hide the remaining ingredients of the root recipe.
+  const allowed = new Set<string>();
+  const pending = [{ node: root, depth: 0 }];
+  while (pending.length) {
+    const { node, depth } = pending.shift()!;
+    if (!included(node.path)) continue;
+    if (allowed.size >= 200 || depth > 12) {
       truncated = true;
-      return null;
+      continue;
     }
+    allowed.add(node.path);
+    if (node.expanded)
+      pending.push(...node.children.map((child) => ({ node: child, depth: depth + 1 })));
+  }
+  const sourcesFull = () => sources.length >= 200 - allowed.size;
+  const visit = (node: RecipeNode, depth: number): GraphNode | null => {
+    if (!allowed.has(node.path)) return null;
     const positioned = { node, x: 0, y: depth * 264 + 24, depth, width: 248, height: 200 };
     nodes.push(positioned);
     const children = node.expanded
@@ -63,7 +75,7 @@ export function layoutRecipeGraph(
           .get(node.part.itemId)!
           .filter((source) => (source.activity ?? 'workers') === activity);
         if (!available.length) continue;
-        if (nodes.length + sources.length >= 200) {
+        if (sourcesFull()) {
           truncated = true;
           break;
         }
@@ -83,7 +95,7 @@ export function layoutRecipeGraph(
         sources.push(method);
         const locations: GraphSourceNode[] = [];
         for (const source of available.slice(0, 3)) {
-          if (nodes.length + sources.length >= 200) {
+          if (sourcesFull()) {
             truncated = true;
             break;
           }
@@ -102,7 +114,7 @@ export function layoutRecipeGraph(
           locations.push(location);
           sources.push(location);
         }
-        if (available.length > 3 && nodes.length + sources.length < 200) {
+        if (available.length > 3 && !sourcesFull()) {
           const more: GraphSourceNode = {
             tier: depth + 2,
             path: method.path + '/more',

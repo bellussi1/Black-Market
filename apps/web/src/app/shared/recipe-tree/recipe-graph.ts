@@ -20,6 +20,8 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import type { BranchAction } from './recipe-branch';
+import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
+import { fixedRecipeYield } from './recipe-fixed-yields';
 import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
 import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
@@ -49,6 +51,34 @@ export class RecipeGraph {
   readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
   readonly ancestor = isGraphAncestor;
   readonly typeLabel = recipeTypeLabel;
+  readonly families = (node: RecipeNode) => recipeFamilies(node.options).map((family) => family[0]);
+  readonly batches = (node: RecipeNode) =>
+    node.recipe ? batchAlternatives(node.recipe, node.options) : [];
+  readonly batchSize = (node: RecipeNode) => {
+    const output = node.recipe?.outputs.find((part) => part.itemId === node.part.itemId);
+    return output?.quantity && Number(output.quantity) > 0
+      ? Number(output.quantity)
+      : node.recipe
+        ? fixedRecipeYield(node.recipe, node.part.itemId)
+        : null;
+  };
+  methodKey(node: RecipeNode) {
+    return (
+      recipeFamilies(node.options).find((family) =>
+        family.some((recipe) => recipe.key === node.recipe?.key),
+      )?.[0]?.key ?? ''
+    );
+  }
+  parentPath(path: string) {
+    return path.slice(0, path.lastIndexOf('/'));
+  }
+  substitutionKey(node: RecipeNode) {
+    return (
+      node.substitutions?.find(
+        (c) => c.part.itemId === node.part.itemId && c.part.quantity === node.part.quantity,
+      )?.recipeKey ?? ''
+    );
+  }
   private readonly destroyRef = inject(DestroyRef);
   private readonly sizes = signal<GraphLayoutState['sizes']>(new Map());
   private readonly positions: GraphLayoutState['positions'] = new Map();
@@ -205,6 +235,10 @@ export class RecipeGraph {
   }
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);
+  }
+  chooseRecipe(path: string, value: string, selectionPath = path) {
+    this.localSelection.set({ path: selectionPath, ownerPath: selectionPath });
+    this.action.emit({ path, action: 'choose', value });
   }
   emit(path: string, action: BranchAction['action'], selectionPath = path) {
     this.localSelection.set({ path: selectionPath, ownerPath: path });

@@ -36,6 +36,7 @@ import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import { TaxOptionsComponent } from '../tax-options';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
+import { recipeFamilies } from './recipe-equivalents';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { RecipeSessions } from './recipe-session';
@@ -100,6 +101,7 @@ export class RecipeTree {
       this.planMessage.set('Lista salva. O estoque será recalculado ao abrir o planejamento.');
   }
   readonly recipe = input<CatalogRecipe | null>(null);
+  readonly recipes = input<CatalogRecipe[]>([]);
   readonly selectedItem = input<CatalogItemDetail | null>(null);
   readonly datasetVersion = input('');
   readonly rootMethod = output<CatalogRecipe | null>();
@@ -120,6 +122,32 @@ export class RecipeTree {
   private bulkStop: Subject<void> | null = null;
   private bulkLoadingPath: string | null = null;
   readonly target = signal(100);
+  readonly ingredientPreview = computed(() => {
+    const root = this.root();
+    const target = this.target();
+    if (
+      !root?.recipe ||
+      !root.yield ||
+      !Number.isFinite(root.yield) ||
+      root.yield <= 0 ||
+      !Number.isSafeInteger(target) ||
+      target <= 0 ||
+      target > 1_000_000
+    )
+      return null;
+    const operations = Math.ceil(target / root.yield);
+    return {
+      operations,
+      produced: operations * root.yield,
+      ingredients: root.children.map((child) => ({
+        ...child.part,
+        total:
+          child.part.quantity !== null && Number(child.part.quantity) > 0
+            ? Number(child.part.quantity) * operations
+            : null,
+      })),
+    };
+  });
   readonly view = signal<'graph' | 'tree' | 'list'>('graph');
   readonly selectedPath = signal('root');
   readonly graph = viewChild(RecipeGraph);
@@ -217,7 +245,7 @@ export class RecipeTree {
     const root = this.root(),
       plan = this.plan(),
       price = root ? this.price(root.part.itemId) : null;
-    if (!plan?.value || price === null) return null;
+    if (!plan?.value || plan.warnings.length || price === null) return null;
     try {
       return calculateMarket({
         ...this.store.data().taxOptions,
@@ -272,7 +300,7 @@ export class RecipeTree {
       this.root.set(
         output
           ? recipe
-            ? withRecipe(nodeFor(output, 'root'), recipe)
+            ? withRecipe({ ...nodeFor(output, 'root'), options: this.recipes() }, recipe)
             : nodeFor(output, 'root')
           : null,
       );
@@ -308,11 +336,21 @@ export class RecipeTree {
     return (
       (method.byproductOfItemId ? 'Subproduto · ' : '') +
       this.typeLabel(method.type) +
-      ' · variante ' +
+      ' · método ' +
       (index + 1) +
       ' · ' +
       method.inputs.length +
       ' materiais'
+    );
+  }
+  productionMethods(recipes: CatalogRecipe[]) {
+    return recipeFamilies(recipes).map((family) => family[0]);
+  }
+  methodKey(node: RecipeNode, recipes: CatalogRecipe[]) {
+    return (
+      recipeFamilies(recipes).find((family) =>
+        family.some((recipe) => recipe.key === node.recipe?.key),
+      )?.[0]?.key ?? ''
     );
   }
   setRootYield(value: number | null) {
@@ -403,19 +441,23 @@ export class RecipeTree {
               r.outputs.some((part) => part.itemId === node!.part.itemId),
             );
             this.patch(path, (n) => ({ ...n, options: recipes, loading: false }));
+            const families = recipeFamilies(recipes);
+            const preferred = families[0]?.[0];
             if (
-              recipes.length === 1 &&
+              families.length === 1 &&
+              preferred &&
               (response.total ?? response.recipes.length) <= response.recipes.length &&
-              this.count() + recipes[0].inputs.length <= 200 &&
-              this.canChoose(node, recipes[0])
+              this.count() + preferred.inputs.length <= 200 &&
+              this.canChoose(node, preferred)
             ) {
-              this.patch(path, (n) => withRecipe(n, recipes[0]));
-              if (path === 'root') this.rootMethod.emit(recipes[0]);
-            } else if (recipes.length > 1 || response.total > response.recipes.length) {
+              this.patch(path, (n) => withRecipe(n, preferred));
+              if (path === 'root') this.rootMethod.emit(preferred);
+            } else if (families.length > 1 || response.total > response.recipes.length) {
               choices++;
               this.patch(path, (n) => ({
                 ...n,
-                message: 'Escolha a variante em Detalhes do item para continuar esta ramificação.',
+                message:
+                  'Escolha o método de produção. Ingredientes substituíveis ficam na mesma receita.',
               }));
             } else if (recipes.length === 1) limited = true;
             else {
@@ -568,9 +610,12 @@ export class RecipeTree {
             }));
             return;
           }
+          const families = recipeFamilies(response.recipes);
+          const preferred = families[0]?.[0];
           if (
-            response.recipes.length === 1 &&
-            !this.canChoose(this.find(node.path)!, response.recipes[0])
+            families.length === 1 &&
+            preferred &&
+            !this.canChoose(this.find(node.path)!, preferred)
           ) {
             this.patch(node.path, (n) => ({ ...n, loading: false }));
             return;
@@ -584,7 +629,7 @@ export class RecipeTree {
                 ? ''
                 : 'Sem receita vinculada. Consulte as fontes conhecidas em Onde obter.',
             };
-            return response.recipes.length === 1 ? withRecipe(ready, response.recipes[0]) : ready;
+            return families.length === 1 && preferred ? withRecipe(ready, preferred) : ready;
           });
           this.selectedPath.set(node.path);
           this.showContext(this.find(node.path)!);

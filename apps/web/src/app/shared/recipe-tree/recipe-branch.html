@@ -60,16 +60,40 @@
   @if (node().message) {
     <p role="status">{{ node().message }}</p>
   }
-  @if (node().options.length > 1) {
+  @if (methods().length > 1) {
     <label
       ><span i18n>Método de produção</span
-      ><select [ngModel]="node().recipe?.key ?? ''" (ngModelChange)="emit('choose', $event)">
+      ><select [ngModel]="methodKey()" (ngModelChange)="emit('choose', $event)">
         <option value="" i18n>Escolha uma receita</option>
-        @for (option of node().options; track option.key) {
+        @for (option of methods(); track option.key) {
           <option [value]="option.key">
             {{ typeLabel(option.type) }} · {{ option.inputs.length }}
             <ng-container i18n>ingredientes</ng-container> · {{ option.key.slice(0, 6) }}
           </option>
+        }
+      </select></label
+    >
+  }
+  @if ((node().substitutions?.length ?? 0) > 1) {
+    <label
+      >Ingrediente equivalente<select
+        [ngModel]="substitutionKey()"
+        (ngModelChange)="substitute($event)"
+      >
+        @for (choice of node().substitutions; track choice.recipeKey) {
+          <option [value]="choice.recipeKey">
+            {{ choice.part.name }} ×
+            {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
+          </option>
+        }
+      </select></label
+    >
+  }
+  @if (batches().length > 1) {
+    <label
+      >Tamanho do lote<select [ngModel]="batchSize()" (ngModelChange)="chooseBatch($event)">
+        @for (batch of batches(); track batch.quantity) {
+          <option [ngValue]="batch.quantity">{{ batch.quantity }} unidades por operação</option>
         }
       </select></label
     >

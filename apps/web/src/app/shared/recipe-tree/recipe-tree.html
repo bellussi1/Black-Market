@@ -39,7 +39,7 @@
           /></label>
           @if (product.recipe) {
             <label class="root-yield" [class.needs-confirmation]="product.yield === null" i18n
-              >Rendimento por operação · cenário<input
+              >Produção por operação<input
                 type="number"
                 min=".001"
                 max="1000000"
@@ -87,6 +87,31 @@
         }
       </div>
     </div>
+    @if (ingredientPreview(); as preview) {
+      <section
+        class="material-totals"
+        aria-label="Ingredientes para a quantidade desejada"
+        aria-live="polite"
+      >
+        <h3>Ingredientes para {{ target() }} unidades</h3>
+        <p class="help">
+          {{ preview.operations }} operações · {{ preview.produced }} unidades produzidas.
+          @if (preview.produced > target()) {
+            Sobra de {{ preview.produced - target() }} unidades pelo tamanho do lote.
+          }
+          Quantidades totais antes de descontar seu estoque.
+        </p>
+        <ul>
+          @for (ingredient of preview.ingredients; track $index + ':' + target()) {
+            <li>
+              <app-item-icon [url]="catalog.resolveIconUrl(ingredient)" [name]="ingredient.name" />
+              <span>{{ ingredient.name }}</span
+              ><strong>{{ ingredient.total ?? 'A confirmar' }}</strong>
+            </li>
+          }
+        </ul>
+      </section>
+    }
   </section>
   <div class="tabs" aria-label="Visualização da produção" i18n-aria-label>
     <button type="button" [attr.aria-pressed]="view() === 'graph'" (click)="view.set('graph')" i18n>
@@ -123,8 +148,16 @@
     <p role="status" class="notice">{{ contextMessage() }}</p>
   }
   @if (plan(); as result) {
-    @for (warning of result.warnings; track $index) {
-      <p class="notice" role="status">{{ warning }}</p>
+    @if (result.warnings.length) {
+      <details class="notice calculation-notices" [open]="!result.value">
+        <summary>
+          {{ result.warnings.length }} dados a confirmar ·
+          {{ result.value ? 'totais conhecidos já calculados' : 'confira os dados para calcular' }}
+        </summary>
+        @for (warning of result.warnings; track $index) {
+          <p>{{ warning }}</p>
+        }
+      </details>
     }
     @if (result.value; as calculated) {
       <section class="production-overview" aria-label="Resumo da produção" i18n-aria-label>
@@ -136,7 +169,11 @@
               : silver(calculated.cost)
           }}</strong>
           <small>{{
-            result.knownCostOnly ? 'Parcial · faltam cotações' : 'Referência de mercado'
+            result.warnings.length
+              ? 'Parcial · faltam rendimentos'
+              : result.knownCostOnly
+                ? 'Parcial · faltam cotações'
+                : 'Referência de mercado'
           }}</small>
         </div>
         <div>
@@ -338,11 +375,11 @@
               }
               <label i18n
                 >Método de produção<select
-                  [ngModel]="current.recipe?.key ?? ''"
+                  [ngModel]="methodKey(current, info.recipes)"
                   (ngModelChange)="action({ path: current.path, action: 'choose', value: $event })"
                 >
                   <option value="">Escolha uma receita</option>
-                  @for (method of info.recipes; track method.key; let index = $index) {
+                  @for (method of productionMethods(info.recipes); track method.key; let index = $index) {
                     <option [value]="method.key">
                       {{ methodLabel(method, index) }}
                     </option>

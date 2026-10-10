@@ -1,0 +1,17 @@
+# Fórmulas unificadas e totais de materiais — 10/10/2026
+
+As variantes do catálogo são preservadas como evidência, mas a interface agrupa fórmulas do mesmo produto, método e estação conectadas por substituição de um ingrediente. Elixires comuns/superiores, carnes e grupos de sangue aparecem como escolhas do slot, não como dezenas de receitas. Trocar um ingrediente seleciona uma composição real compatível com os outros ingredientes, mantendo sua proporção, ID, estoque e preço.
+
+O agrupamento não compara adjetivos nem presume que todos os sangues/carnes sejam equivalentes. Para lotes de rendimento conhecido, compara quantidades por unidade produzida. Uma fórmula em lote com Essência de Ibellab pode se conectar à fórmula concentrada sem esse reagente; o seletor de tamanho de lote mantém a composição concreta e seus custos.
+
+Rendimentos fixos do Fármaco da Harmonia e seus cinco fármacos-base seguem as [notas oficiais de 25/07/2024](https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=4950). Substituições 3:1 e lotes concentrados foram confrontados com as descrições dos itens #820936 e #821372 do cliente SA instalado, atualizado em 08/10/2026. Edania aceita apenas as composições atuais verificadas: Harmonia, Vontade, Edania e catalisador; o lote concentrado com Ibellab usa dez vezes os materiais. Seu rendimento de 100 decorre dessa regra explícita de produção em massa aplicada ao lote de 10. Não se aplica essa regra a alquimia/culinária de rendimento variável, outros produtos ou fórmulas históricas.
+
+A quantidade final desejada atualiza uma lista imediata dos ingredientes diretos, antes do estoque. Arredondamento para operações inteiras mostra a sobra. O plano abaixo usa o estoque e conserva a exigência conhecida de um ingrediente mesmo quando o rendimento de sua sub-receita ainda precisa ser informado. Nessa situação, os ingredientes dessa sub-receita não recebem quantidades inventadas e o lucro da cadeia incompleta não é exibido.
+
+Trocas equivalentes preservam rendimentos confirmados e ramos não afetados; cargas canceladas são liberadas. Métodos de fato diferentes continuam separados. A expansão completa escolhe uma composição padrão quando há uma única família. O limite visual de 200 cards prioriza ingredientes por profundidade antes de locais opcionais.
+
+A skill `bdo-ui-design` e sua referência `recipe-equivalences.md` registram essas decisões para próximas alterações. Testes cobrem agrupamento, proporções, combinações ausentes, lotes, rendimento confirmado, quantidade final, seleção e prioridade dos tiers.
+
+Validação final: 268 testes do frontend e 12 testes da política HTTP passaram; lint e builds de produção passaram. No Playwright, Edania apresentou uma fórmula unificada, cinco fármacos-base com receitas e 200 cards sem conexões atravessando cards nas amostras. A expansão atingiu o limite visual sem falhas de consulta. Vontade → Vontade Extraordinária reduziu a necessidade de 300 para 100 para produzir 100 Edania. Para 25 Edania, lote de 10 gerou três operações, 30 unidades e sobra de cinco. Em 390 × 844 px, a página não teve overflow horizontal.
+
+A expansão maior revelou o limite genérico de 240 consultas/minuto da API. Receitas e fontes de obtenção recebem um grupo próprio, restrito a GET nas duas rotas, com limite de 600/minuto. Demais limites permanecem independentes. CORS é aplicado antes dos controles para que a interface autorizada possa ler também respostas 429; a integração testa esse comportamento.

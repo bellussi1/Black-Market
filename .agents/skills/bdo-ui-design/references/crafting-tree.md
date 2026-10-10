@@ -22,7 +22,7 @@ Pointer capture somente durante drag confirmado; soltar em up/cancel, limpar est
 
 Card tem altura natural. `ResizeObserver` mede o retângulo sem transform (`offsetHeight` ou tamanho de border-box), com atualização agrupada por frame. SVG conecta centro inferior REAL do pai ao centro superior REAL do filho. Nunca manter `y1 = parent.y + 168` após mudar a altura do card.
 
-Guardar posições pelo `path` na sessão visual. Recolher esconde descendentes, preserva coordenadas e reservas espaciais já conhecidas. Expandir novamente recupera as mesmas posições. Inserção de filhos novos busca espaço livre sem mover nós não afetados; se uma colisão exigir rearranjo, manter o card acionado ancorado por compensação de pan e limitar movimento ao ramo envolvido.
+Organizar por tiers: todos os cards de uma profundidade ficam na mesma linha. Pais ficam centralizados sobre as faixas de seus descendentes, formando uma árvore triangular para baixo. Conexões mudam de direção apenas nos intervalos vazios entre tiers. Reservar cards de ingredientes próximos à raiz antes de gastar o limite visual com locais opcionais. Recolher preserva escolhas e dados dos descendentes. Reorganização pode mover faixas, mas mantém o card acionado ancorado por compensação de pan. Atualizar posições, conexões e compensação juntas; animações de posição independentes deixam conexões soltas. Manter entrada, saída e destaque como feedback visual, respeitando redução de movimento.
 
 Não recentralizar em cada emissão de dados. Mudança de receita raiz pode reiniciar o layout; seleção e alteração de cálculo não devem fazer isso. Desligar observers/listeners/frames no destroy e preservar SSR.
 

@@ -6,6 +6,41 @@ import { layoutRecipeGraph } from './recipe-graph-model';
 import { nodeFor } from './recipe-tree-model';
 describe('Accessible graph controls', () => {
   useMemoryStorage();
+  it('reserves all shallow ingredients before spending the node limit on earlier branches', () => {
+    const root = nodeFor({ itemId: 1, name: 'Raiz', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [2, 3, 4, 5, 6].map((id, i) => ({
+      ...nodeFor({ itemId: id, name: 'Fármaco', quantity: '10' }, `root/${i}`),
+      expanded: true,
+      children: Array.from({ length: 50 }, (_, j) =>
+        nodeFor({ itemId: 100 + j, name: 'Ingrediente', quantity: '1' }, `root/${i}/${j}`),
+      ),
+    }));
+    const layout = layoutRecipeGraph(root);
+    expect(layout.nodes).toHaveLength(200);
+    expect(layout.truncated).toBe(true);
+    expect(
+      root.children.every((child) => layout.nodes.some((entry) => entry.node.path === child.path)),
+    ).toBe(true);
+  });
+  it('shows available variants on the card and emits the chosen recipe key', async () => {
+    const root = nodeFor({ itemId: 1389, name: 'Fármaco da Raiva', quantity: '10' }, 'root');
+    root.options = ['base', 'superior'].map((key) => ({
+      key,
+      type: key === 'base' ? 'SIMPLE_ALCHEMY' : 'ALCHEMY',
+      station: null,
+      inputs: [],
+      outputs: [root.part],
+    }));
+    const fixture = await renderComponent(RecipeGraph, { root });
+    const emit = vi.spyOn(fixture.componentInstance.action, 'emit');
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(select).not.toBeNull();
+    select.value = 'superior';
+    select.dispatchEvent(new Event('change'));
+    expect(emit).toHaveBeenCalledWith({ path: 'root', action: 'choose', value: 'superior' });
+    expect(fixture.nativeElement.textContent).toContain('Escolher método de produção');
+  });
   it('aligns each tier below its tallest card and keeps sibling branch spans separate', () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;

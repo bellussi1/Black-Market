@@ -30,6 +30,7 @@ async function bootstrap() {
       'trust proxy',
       config.get<boolean>('TRUST_PROXY', false) ? 'loopback,linklocal,uniquelocal' : false,
     );
+  app.enableCors(apiCorsOptions(config.getOrThrow<string>('WEB_ORIGIN')));
   app.use(
     requestControls(
       logger,
@@ -47,7 +48,6 @@ async function bootstrap() {
       { path: 'ready', method: RequestMethod.GET },
     ],
   });
-  app.enableCors(apiCorsOptions(config.getOrThrow<string>('WEB_ORIGIN')));
   app.enableShutdownHooks();
 
   const apiDocument = new DocumentBuilder()

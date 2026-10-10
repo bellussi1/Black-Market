@@ -1,5 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, RESPONSE_INIT, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  RESPONSE_INIT,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type {
@@ -29,6 +36,7 @@ import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { recipeFamilies } from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 @Component({
   selector: 'app-recipes-page',
@@ -49,6 +57,13 @@ export class RecipesPage {
   readonly recipe = signal<CatalogRecipe | null>(null);
   readonly item = signal<CatalogItemDetail | null>(null);
   readonly alternatives = signal<CatalogRecipe[]>([]);
+  readonly methodFamilies = computed(() => recipeFamilies(this.alternatives()));
+  readonly methods = computed(() => this.methodFamilies().map((family) => family[0]));
+  readonly selectedMethodKey = computed(
+    () =>
+      this.methodFamilies().find((family) => family.some((r) => r.key === this.recipe()?.key))?.[0]
+        ?.key ?? '',
+  );
   readonly dataset = signal<ActiveDatasetSummary | null>(null);
   readonly loading = signal(true);
   readonly message = signal('');
@@ -59,8 +74,8 @@ export class RecipesPage {
     return (
       (method.byproductOfItemId ? 'Subproduto · ' : '') +
       this.typeLabel(method.type) +
-      ' · variante ' +
-      (this.alternatives().findIndex((row) => row.key === method.key) + 1) +
+      ' · método ' +
+      (this.methods().findIndex((row) => row.key === method.key) + 1) +
       ' · ' +
       method.inputs.length +
       ' materiais'
@@ -157,7 +172,7 @@ export class RecipesPage {
           data.selectedKey === 'external'
             ? null
             : (data.recipes.recipes.find((r) => r.key === data.selectedKey) ??
-                data.recipes.recipes[0] ??
+                this.methods()[0] ??
                 null),
         );
         this.seo.describe(

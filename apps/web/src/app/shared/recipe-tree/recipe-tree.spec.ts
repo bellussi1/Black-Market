@@ -52,6 +52,28 @@ function providers() {
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('updates total ingredients as the desired quantity changes, including batch rounding', async () => {
+    const harmony = {
+      ...recipe,
+      type: 'SIMPLE_ALCHEMY',
+      inputs: [1389, 1391, 1393, 1395, 1397].map((itemId) => ({
+        itemId,
+        name: 'Material ' + itemId,
+        quantity: '10',
+      })),
+      outputs: [{ itemId: 1399, name: 'Fármaco da Harmonia', quantity: null }],
+    };
+    const fixture = await renderComponent(RecipeTree, { recipe: harmony }, providers().list);
+    const tree = fixture.componentInstance;
+    expect(tree.ingredientPreview()?.ingredients[0].total).toBe(100);
+    tree.target.set(25);
+    fixture.detectChanges();
+    expect(tree.ingredientPreview()).toMatchObject({ operations: 3, produced: 30 });
+    expect(tree.ingredientPreview()?.ingredients[0].total).toBe(30);
+    expect(fixture.nativeElement.querySelector('.material-totals').textContent).toContain(
+      'Sobra de 5',
+    );
+  });
   it('expands nested unique recipes and stops cycles without losing recipes on collapse', async () => {
     const mocks = providers();
     mocks.knowledge.produces.mockImplementation((...args: unknown[]) => {
@@ -82,7 +104,7 @@ describe('Interactive recipe tree', () => {
       outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
     };
     mocks.knowledge.produces.mockReturnValue(
-      of({ recipes: [salt, { ...salt, key: 'salt-other' }] }),
+      of({ recipes: [salt, { ...salt, key: 'salt-other', type: 'CRAFT' }] }),
     );
     const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
     const tree = fixture.componentInstance;

@@ -4,6 +4,8 @@ import { z } from 'zod';
 
 import type { Workspace } from '../../core/workspace-models';
 import { validationMessage } from '../calculation-feedback';
+import { ingredientAlternatives, recipeFamilies } from './recipe-equivalents';
+import { fixedRecipeYield } from './recipe-fixed-yields';
 export interface RecipeNode {
   path: string;
   part: CatalogRecipePart;
@@ -15,6 +17,7 @@ export interface RecipeNode {
   loading: boolean;
   message: string;
   category?: string;
+  substitutions?: { recipeKey: string; part: CatalogRecipePart }[];
   acquisition?: { kind: 'external' | 'workers' | 'grinding'; label: string; sourceId?: string };
 }
 export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
@@ -37,14 +40,46 @@ export function withRecipe(
   yieldOverride?: number,
 ): RecipeNode {
   const out = recipe.outputs.find((p) => p.itemId === node.part.itemId);
+  const sourceYield =
+    out?.quantity && Number(out.quantity) > 0
+      ? Number(out.quantity)
+      : fixedRecipeYield(recipe, node.part.itemId);
+  const previousOut = node.recipe?.outputs.find((p) => p.itemId === node.part.itemId);
+  const previousYield =
+    previousOut?.quantity && Number(previousOut.quantity) > 0
+      ? Number(previousOut.quantity)
+      : node.recipe
+        ? fixedRecipeYield(node.recipe, node.part.itemId)
+        : null;
+  const preserveYield =
+    node.recipe &&
+    sourceYield === previousYield &&
+    recipeFamilies([node.recipe, recipe]).length === 1;
   return {
     ...node,
     recipe,
     acquisition: undefined,
-    yield:
-      yieldOverride ?? (out?.quantity && Number(out.quantity) > 0 ? Number(out.quantity) : null),
+    yield: yieldOverride ?? (preserveYield ? (node.yield ?? sourceYield) : sourceYield),
     expanded: true,
-    children: recipe.inputs.map((p, i) => nodeFor(p, node.path + '/' + i)),
+    children: recipe.inputs.map((p, i) => {
+      const path = node.path + '/' + i;
+      const previous = node.children.find((child) => child.part.itemId === p.itemId);
+      const relocate = (child: RecipeNode, nextPath: string): RecipeNode => ({
+        ...child,
+        loading: false,
+        path: nextPath,
+        children: child.children.map((c, index) => relocate(c, nextPath + '/' + index)),
+      });
+      const child = previous ? { ...relocate(previous, path), part: p } : nodeFor(p, path);
+      return {
+        ...child,
+        substitutions: ingredientAlternatives(
+          recipe,
+          node.options.length ? node.options : [recipe],
+          p,
+        ),
+      };
+    }),
     message: '',
   };
 }
@@ -73,6 +108,7 @@ export function planRecipeTree(
   const recipes: ManualRecipe[] = [],
     warnings: string[] = [];
   let visited = 0;
+  let blocked = false;
   const prices = new Map<number, string>();
   for (const q of [...state.quotes]
     .filter((q) => q.region === state.region && !q.subId)
@@ -89,19 +125,31 @@ export function planRecipeTree(
     if (!node.recipe) return;
     if (ancestors.includes(node.part.itemId))
       throw new Error('Esta cadeia contém um ciclo. Escolha outra origem para o ingrediente.');
-    if (!node.yield || !Number.isFinite(node.yield) || node.yield <= 0)
-      warnings.push('Confirme o rendimento de ' + node.part.name + '.');
+    if (!node.yield || !Number.isFinite(node.yield) || node.yield <= 0) {
+      if (node.path === root.path) blocked = true;
+      warnings.push(
+        'Confirme o rendimento de ' +
+          node.part.name +
+          '. Seus ingredientes ainda não foram calculados.',
+      );
+      return;
+    }
     const ingredients = node.children.map((child) => {
       const quantity = Number(child.part.quantity);
-      if (!Number.isFinite(quantity) || quantity <= 0)
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        blocked = true;
         warnings.push('Confirme a quantidade de ' + child.part.name + '.');
+      }
       visit(child, [...ancestors, node.part.itemId]);
       return {
         itemId: child.part.itemId,
         name: child.part.name,
         quantity: quantity,
         price: prices.get(child.part.itemId) ?? '0',
-        recipeId: child.recipe ? child.path : null,
+        recipeId:
+          child.recipe && child.yield && Number.isFinite(child.yield) && child.yield > 0
+            ? child.path
+            : null,
       };
     });
     recipes.push({
@@ -175,7 +223,7 @@ export function planRecipeTree(
       };
     }
     visit(root, []);
-    if (warnings.length) return { value: null, warnings, unknownPrices: [], knownCostOnly: false };
+    if (blocked) return { value: null, warnings, unknownPrices: [], knownCostOnly: false };
     const value = calculateProduction({
       recipeId: root.path,
       quantity: target,
@@ -185,7 +233,12 @@ export function planRecipeTree(
     const unknownPrices = value.rows
       .filter((r) => r.purchased > 0 && (!r.itemId || !prices.has(r.itemId)))
       .map((r) => r.name);
-    return { value, warnings, unknownPrices, knownCostOnly: unknownPrices.length > 0 };
+    return {
+      value,
+      warnings,
+      unknownPrices,
+      knownCostOnly: unknownPrices.length > 0 || warnings.length > 0,
+    };
   } catch (error) {
     return {
       value: null,
