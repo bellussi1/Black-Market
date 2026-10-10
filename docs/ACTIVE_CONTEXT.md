@@ -4,27 +4,22 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ---
 
-## 1. Sessão Atual: 10/10/2026
+## 1. Estado Atual Verificado: 10/10/2026
 
-- **Agente Atual**: Antigravity
-- **Branch Ativa**: `codex/bdo-ui-redesign` (13 commits à frente de `origin/codex/bdo-ui-redesign`)
-- **Últimos Commits**:
-  - `9b73cb1` `feat(market): add centralized market cache service, auto-sync, interactive column sorting, and stock filters`
-  - `4612e1f` `docs: update context handoff with crafting calculator redesign and make-vs-buy insights`
-  - `df545ba` `feat(recipes): single craft count field, acquisition strategies, debounced market lookup, and make-vs-buy insights`
-  - `3d71d13` `feat(recipes): add recipe yield resolver with mastery scaling and life skill mapping`
-  - `c7ef564` `feat(scans): standardize bdo ui buttons, action confirmation animations, and unified batch consolidation`
-  - `cd97e78` `fix(scans): support full HD and 4K resolutions and calibrate grid pitch in storage detection`
-  - `e08e39a` `docs: update context handoff with crafting calculator and bdo ui standardization`
-  - `a421d2c` `feat(recipes): add crafting economics calculator, batch market query, and profit metrics`
-  - `497c2cb` `feat(scans): improve ocr quantity reconciliation, direct batch save, and bdo styled cards`
+- **Agente Atual**: Codex
+- **Branch Ativa**: `develop`, publicada e rastreando `origin/develop`.
+- **SHA do código implantado em staging**: `5a0f396003af580ddc065466f2903e883fe25ebd` (`feat(crafting): add focused hybrid production optimizer`).
+- **Imagem local do staging**: `black-market:staging-20261010213049`.
+- **Commits desta entrega**: `7a6cf4a` (limite OCR 4K), `e660d25` (coletores de mercado OFF), `4831f49` e `3f4d408` (contagens/fontes), `542dc72` (split de avaliação OCR), `c9290c9` (política de mercado) e `5a0f396` (combinação automática de crafting). Cada commit tem uma responsabilidade delimitada.
 
 ---
 
-## 2. Servidores Locais Ativos
+## 2. Servidores Locais Verificados Nesta Sessão
 
-- **Frontend Web (Angular + SSR)**: `http://localhost:4200/` (respondendo 200 OK)
-- **Backend API (NestJS)**: `http://localhost:3000/api/v1` (respondendo 200 OK)
+- **Staging local**: `http://localhost:8081` pronto após backup, migrações, atualização da imagem e readiness.
+- **Smoke**: `pnpm test:staging` passou, verificando HTTP/SSR, catálogo, ícone e bloqueio de indexação.
+- **Navegação visual**: `/scans`, `/recipes`, `/recommendations`, `/storage`, `/family` e `/market` abriram com os títulos esperados; console sem erros ou avisos. Recomendações, Armazém e Família mostram estados iniciais vazios porque não há personagem/estoque de teste.
+- **Coletores periódicos de mercado**: `MARKET_COLLECTOR_ENABLED=false` e `MARKET_BOARD_COLLECTOR_ENABLED=false` no `.env.staging`.
 
 ---
 
@@ -188,3 +183,23 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Verificações**: `pnpm test` passou com 522 testes (40 calculators, 126 API, 301 web e 55 scripts do pipeline). `pnpm check` passou com lint, Prettier e typecheck/build após o conserto do benchmark; o web reportou somente o aviso conhecido de locale `pt-BR`.
 - **Arquivos**: scripts/testes do gerador, coletor e benchmark; `package.json`; `docs/ocr-validation.md`; este contexto. Commits: `bf23986` gerador sintético, `289932c` coletor autorizado, `a7b7a4a` benchmark/documentação e `aefd6c4` confinamento seguro do caminho de relatório.
 - **Próximo agente**: usar as métricas como baseline e melhorar a leitura de texto pequeno em split de calibração antes de avaliação independente. Para validar dados reais, registrar autorização dos titulares e configurar `REDDIT_ACCESS_TOKEN`/`REDDIT_USER_AGENT` para Reddit; executar o coletor apenas com manifesto aprovado.
+
+## 9. Auditoria de lacunas e combinação automática (Codex, 10/10/2026)
+
+- **Pedido**: conferir o que falta após a pesquisa dos sites e 16 repositórios, registrar formas confiáveis de ampliar os dados e implementar uma lacuna útil.
+- **Diagnóstico verificado**: o navegador de referências já inclui conhecimento/temas e a ficha de item expõe dados existentes e relações de receita. O histórico de mercado calcula preço, estoque e volume por snapshots; volumes só são conhecidos com cobertura suficiente e contador consistente. Não há rota geral de comparação de itens; a tela de Gear compara caminhos de upgrade. As contagens foram reconciliadas em [recipe-counts.md](recipe-counts.md): extração atual 13.313 relações brutas, 292 referências inválidas em quarentena, 10.683 fórmulas distintas normalizadas mais duas revisadas; 10.685 no banco, 7.016 de Life Skills no endpoint e 6.813 elegíveis em Recomendações após excluir 203 subprodutos. As 4.406 pertencem à extração antiga.
+- **Implementado**: cenário `optimized` no motor de produção e execução para uma receita/quantidade selecionada em Recomendações. Enumera combinações comprar/produzir dos intermediários alcançáveis na fórmula selecionada; usa estoque livre quando o controle está ativo, contabiliza seu custo econômico e seleciona o maior lucro/hora. Limite padrão de 256 ramos, configurável até 1.024; acima dele deixa a linha pendente com `optimization-limit`. Não promete ótimo de catálogo nem busca fórmulas alternativas aninhadas.
+- **Contexto de dados**: criada [matriz de implementação e lacunas](research/implementation-gap-matrix.md), linkada ao índice de pesquisa e à cobertura do produto. Atualizado o aviso de confiança do master KB para separar observação de interface e hipótese sobre tecnologia/endpoints de terceiros.
+- **Verificações**: nesta continuação, `pnpm test` passou com 537 testes (44 calculators, 127 API, 304 web e 62 scripts); `pnpm check` passou com lint, Prettier e typecheck/build. O staging foi atualizado no SHA `5a0f396` e passou `pnpm test:staging`. Avisos conhecidos: locale `pt-BR` usa fallback `pt`; build emite avisos de tamanho de bundle/CSS e dependências CommonJS.
+- **Arquivos**: planejador e testes, página/teste de recomendações, especificação/plano, matriz de lacunas, `feature-coverage.md`, `implementation-status.md`, índice/master research e este arquivo.
+- **Próximo agente**: obter capturas reais novas com autorização verificável, anotá-las em sessões fora da calibração e preencher o split `evaluation`; manter revisão manual do OCR até avaliação independente suficiente. Manter os coletores de mercado OFF até uma fonte passar pelos critérios de permissão, contrato, cobertura e consistência. Comparação geral de itens e revisão de relações item–NPC–missão seguem oportunidades posteriores.
+
+## 10. Integração, staging e critérios ainda abertos (Codex, 10/10/2026)
+
+- **Benchmark OCR**: os três testes que falhavam foram corrigidos antes da publicação; os 25 testes de `scripts/benchmark-ocr.test.mjs` passaram na suíte completa. O limitador de escala mantém o maior lado das imagens de OCR em até 2.400 px. O holdout real foi separado do split de calibração: sessões não podem se repetir, cada captura de avaliação exige autorização e pelo menos um rótulo `verified`; split vazio retorna erro em vez de uma métrica enganosa.
+- **Evidência de OCR**: o corpus atual continua com 13 capturas e 29 rótulos, todos em calibração; `evaluation` segue vazio. Não há registro local de permissão/OAuth de fonte comunitária disponível para coletar novos exemplos. Portanto, a validação independente real não foi executada e a revisão manual permanece obrigatória. As métricas sintéticas anteriores (grade F1 1,0; quantidades 8,16%; romanos 6,67%) não representam acurácia de mundo real.
+- **Mercado**: não há fonte automática que tenha permissão documentada, contrato estável, cobertura medida e consistência observada por sete dias. Arsha permanece candidato comunitário apenas para consulta sob demanda; não está aprovado para persistência periódica. Os dois coletores estão OFF. Ver [política de fonte de preços](research/market-source-policy.md).
+- **Contagens rechecadas após deploy**: a versão ativa `sa-pt-meta-2e188c2680c1-loc-7e729a315ce6-ext-5bf11bd7-bin-60bd5677-catalog-catalog-v3-supp-30288a9c` e checksum `774bceba02a1536c940963c0a5fd992e11131157f82664e0e9f13c7f228f2987` reportam `dataset.recipeCount = 10685`; o endpoint paginado retorna `total = 7016`. A tela Explorar Receitas mostra as 7.016; Recomendações usa 6.813 após remover as 203 relações de subproduto.
+- **Seis áreas do MVP**: páginas acessíveis no staging: OCR `/scans` (capturas/revisão), Crafting `/recipes` (catálogo de 7.016), O que fazer `/recommendations`, Armazém `/storage`, Família `/family` e Mercado `/market`. As páginas com dados de usuário exibem estado vazio por falta de perfil seed/login de teste; isso confirma navegação e renderização da página, não fluxo autenticado nem gravação.
+- **Git flow**: `origin/develop` foi criado e aponta para o commit de código implantado `5a0f396`. O handoff documental desta seção será um commit separado; não muda o código da imagem de staging.
+- **Pendências que exigem dados ou evidência externa**: autorização registrada e capturas reais novas em sessões independentes para avaliação OCR; fonte de mercado licenciada/estável com relatório de cobertura e consistência. Não ligar coletores nem reduzir revisão manual antes desses critérios.
