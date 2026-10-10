@@ -1,17 +1,17 @@
+import { signal } from '@angular/core';
+import { characterSchema } from '@bdo/calculators';
 import type {
   CatalogItemDetail,
   CatalogRecipe,
   CatalogRecipesResponse,
   MarketItemQuote,
 } from '@bdo/shared';
-import { signal } from '@angular/core';
-import { characterSchema } from '@bdo/calculators';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
-import { MarketApi } from '../../features/market/market-api';
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { MarketCacheService, type CachedQuoteEntry } from '../../core/market-cache.service';
+import { type CachedQuoteEntry, MarketCacheService } from '../../core/market-cache.service';
+import { MarketApi } from '../../features/market/market-api';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import type { RecipeProductionGraph } from './recipe-production-graph';
@@ -137,7 +137,7 @@ describe('Interactive recipe tree', () => {
         dataset: null,
       } as CatalogRecipesResponse),
     );
-    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 

@@ -1,10 +1,10 @@
-import type { CatalogRecipe } from '@bdo/shared';
 import { emptyWorkspace, type Workspace } from '@bdo/calculators/workspace';
+import type { CatalogRecipe } from '@bdo/shared';
+import type { MarketItemQuote } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
-import type { MarketItemQuote } from '@bdo/shared';
-import type { RecipeProductionGraph } from './recipe-production-graph';
 import { buildRecipeProductionInput } from './recipe-production-adapter';
+import type { RecipeProductionGraph } from './recipe-production-graph';
 
 const now = new Date('2026-10-10T12:00:00.000Z');
 

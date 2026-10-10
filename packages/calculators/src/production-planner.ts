@@ -596,10 +596,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       ...(scenario === 'optimized'
         ? {
             sourceChoices: Object.fromEntries(
-              [...materials.keys()].map((itemId) => [
-                itemId,
-                optimizedChoices[itemId] ?? 'buy',
-              ]),
+              [...materials.keys()].map((itemId) => [itemId, optimizedChoices[itemId] ?? 'buy']),
             ),
           }
         : {}),

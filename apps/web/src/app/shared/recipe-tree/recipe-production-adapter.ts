@@ -7,9 +7,9 @@ import {
 import type { Workspace } from '@bdo/calculators/workspace';
 import type { CatalogRecipe, CatalogRecipePart, MarketItemQuote } from '@bdo/shared';
 
+import { fixedRecipeYield } from './recipe-fixed-yields';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { stockLocationKey } from './recipe-tree-model';
-import { fixedRecipeYield } from './recipe-fixed-yields';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 
 export interface RecipeProductionAdapterOptions {

@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-
 import type { ProductionChoice, ProductionEstimate } from '@bdo/calculators';
 
 import type { RecipeNode } from './recipe-tree-model';

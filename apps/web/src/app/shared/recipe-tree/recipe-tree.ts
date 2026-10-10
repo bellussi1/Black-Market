@@ -16,12 +16,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   availableInventory,
-  planProduction,
   type lifeSkills,
+  personalPlanSchema,
+  planProduction,
   type ProductionChoice,
   type ProductionEstimate,
   type ProductionPlan,
-  personalPlanSchema,
   type TaxOptions,
 } from '@bdo/calculators';
 import type {
@@ -30,19 +30,19 @@ import type {
   CatalogRecipePart,
   MarketItemQuote,
 } from '@bdo/shared';
+import type { Subscription } from 'rxjs';
 import {
-  EMPTY,
   catchError,
   debounceTime,
+  EMPTY,
   firstValueFrom,
   forkJoin,
+  type Observable,
   of,
   Subject,
-  Subscription,
   switchMap,
   takeUntil,
   timeout,
-  type Observable,
 } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -55,8 +55,14 @@ import { ItemIcon } from '../item-icon/item-icon';
 import { TaxOptionsComponent } from '../tax-options';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
 import { recipeFamilies } from './recipe-equivalents';
+import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
+import { buildRecipeProductionInput } from './recipe-production-adapter';
+import {
+  type RecipeProductionGraph,
+  resolveRecipeProductionGraph,
+} from './recipe-production-graph';
 import { RecipeSessions } from './recipe-session';
 import {
   nodeFor,
@@ -66,13 +72,7 @@ import {
   stockLocationKey,
   withRecipe,
 } from './recipe-tree-model';
-import { fixedRecipeYield } from './recipe-fixed-yields';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
-import {
-  resolveRecipeProductionGraph,
-  type RecipeProductionGraph,
-} from './recipe-production-graph';
-import { buildRecipeProductionInput } from './recipe-production-adapter';
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
 
