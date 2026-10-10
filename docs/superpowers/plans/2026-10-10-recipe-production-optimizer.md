@@ -221,7 +221,7 @@ Expected: entering mastery recalculates after 250 ms, quotes are reused from the
 Run: `pnpm test` and `pnpm check`.
 Expected: all tests, lint, format, typecheck and build succeed; update context with exact totals and any remaining incomplete-data limits.
 
-- [ ] **Step 4: Commit documentation and verification record**
+- [x] **Step 4: Commit documentation and verification record**
 
 ```bash
 git add docs/ACTIVE_CONTEXT.md

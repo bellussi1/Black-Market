@@ -1,7 +1,7 @@
 # Mercado automático e otimização de receitas
 
 **Data:** 10/10/2026  
-**Estado:** especificação e planos aprovados pelo usuário; implementação local em validação final
+**Estado:** implementada e integrada localmente em `develop` (`cd256fd`); não publicada em staging
 **Caso de validação:** `/recipes/items/1407` — `[Grupo] Fármaco da Harmonia - Edania`
 
 ## Objetivo

@@ -7,10 +7,10 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 ## 1. Estado Atual Verificado: 10/10/2026
 
 - **Agente Atual**: Codex
-- **Branch Ativa**: `develop`, publicada e rastreando `origin/develop`.
+- **Branch Ativa**: `develop`, rastreando `origin/develop`, com a entrega de cache/otimizador integrada localmente pelo merge `cd256fd48973563f94ca95aa2d3e0123e37f9d1d`. Há commits locais pendentes de push; esta entrega não foi enviada ao remoto.
 - **SHA do código implantado em staging**: `5a0f396003af580ddc065466f2903e883fe25ebd` (`feat(crafting): add focused hybrid production optimizer`).
 - **Imagem local do staging**: `black-market:staging-20261010213049`.
-- **Commits desta entrega**: `7a6cf4a` (limite OCR 4K), `e660d25` (coletores de mercado OFF), `4831f49` e `3f4d408` (contagens/fontes), `542dc72` (split de avaliação OCR), `c9290c9` (política de mercado) e `5a0f396` (combinação automática de crafting). Cada commit tem uma responsabilidade delimitada.
+- **Commits da entrega local de receita/mercado**: `39283cc` (orçamento Edania), `a0464df` (poda por limite de taxa segura), `37b8eb3` e `89c6a7a` (fixture e expectativa Edania), `fce45f1` (documentação) e `cd256fd` (merge em `develop`). A sequência foi mantida em commits de responsabilidades delimitadas.
 
 ---
 
@@ -216,7 +216,7 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ## 12. Execução do cache de receita e otimizador (Codex, 10/10/2026)
 
-- **Status**: os três planos foram implementados na branch `codex/recipe-market-autoresolver`; suíte completa, `pnpm check` e verificação visual local passaram. O commit documental e o merge local em `develop` estão pendentes nesta passagem. Não publicar staging sem pedido explícito.
+- **Status**: os três planos foram implementados e integrados localmente em `develop` pelo merge `cd256fd`; suíte completa, `pnpm check` e verificação visual local passaram. O workspace está limpo após o commit final deste handoff. Não publicar staging sem pedido explícito.
 - **Receita e cotações**: `RecipeProductionGraph` resolve IDs alcançáveis com concorrência limitada e produtor padrão determinístico; cotações usam o cache de cinco minutos, revalidam enquanto a receita está aberta e mantêm valores antigos sinalizados. A tela do Mercado lê a resposta da mesma chave de consulta antes da API, mantém cache vencido em revalidação/erro e usa debounce de 250 ms.
 - **Produção e controles**: origem por material (marcado = fazer/coletar, desmarcado = comprar), botão de otimização para a combinação completa, override local de maestria com debounce de 250 ms, calibração explícita de método e coleta. Rendimento estimado entra sem confirmação; rendimento fixo documentado prevalece. Estoque zero do produto final não sugere produzir para obter/consumir o item; a análise de receita final é para venda.
 - **Busca exata**: enumera estados de comprar/fazer/coletar no grafo selecionado e descarta duplicados. Poda por limite superior só ocorre sem subprodutos vendidos e quando receita líquida do produto final e duração mínima são conhecidas; usa comparação inteira estrita. Se os limites ou dados não permitirem prova, conserva estados ou retorna `optimization-limit` sem ranquear ótimo parcial. O planejador usa 100 mil estados por padrão, teto absoluto de 1 milhão; o adaptador da receita define 250 mil.
@@ -225,4 +225,4 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Verificações desta continuação**: planner `production-planner.spec.ts` passou com 28/28; adaptador passou com 9/9; `pnpm test` passou com 584 testes (52 calculators, 127 API, 343 Web, 62 scripts); `pnpm check` passou por lint, Prettier, typecheck e build. O teste da poda falhou antes da implementação e passou após a correção. Aviso conhecido: Angular usa locale `pt` como fallback para `pt-BR`.
 - **Verificação visual local**: `/recipes/items/1407` carregou a receita Edania, mostrou rendimento fixo/estimado sem botão de confirmação e o estado de cotação automática; a API de mercado local retornou indisponibilidade, portanto os botões econômicos ficaram corretamente desativados. `/market` exibiu ordenação, filtros, paginação, refresh e mensagem de indisponibilidade. A visualização confirma controles e estados, não disponibilidade externa nem preços atuais.
 - **Fontes e limites**: o mercado automático persistente continua desligado; o cache não aprova Arsha nem outra fonte para coleta periódica. A cobertura de volume continua desconhecida quando há lacunas/conflitos/reset. O browser local anterior mostrou falha do provedor de preços, então isso não prova disponibilidade externa.
-- **Próximo agente**: revisar o diff/branch limpo, concluir os checkboxes do plano após o merge e integrar localmente em `develop`. Staging não foi alterado nesta entrega.
+- **Próximo agente**: se solicitado, publicar `develop` em staging e repetir smoke/navegação antes de divulgar. Staging não foi alterado nesta entrega; a fonte de preços continua indisponível localmente e os coletores seguem desligados.
