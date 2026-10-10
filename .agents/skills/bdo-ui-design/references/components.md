@@ -16,7 +16,10 @@ Screenshots 06, 07 e 14: slot escuro, ícone proporcional, contorno fino. Reserv
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
 }
-.recipe-node__name { overflow-wrap: anywhere; line-height: 1.4; }
+.recipe-node__name {
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
 .recipe-node[aria-selected='true'] {
   border-color: var(--bm-accent);
   box-shadow: inset 0 0 0 1px var(--bm-accent);
