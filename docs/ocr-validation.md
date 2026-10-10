@@ -94,3 +94,71 @@ node apps/api/dist/catalog/build-icon-index.js data/assets/<checksum> <checksum>
 ## Famílias de materiais
 
 Grupos de sangue seguem o [guia oficial SA de Alquimia Avançada](https://www.sa.playblackdesert.com/es-mx/Wiki?wikiNo=71); membros visuais vêm do caminho de ícone do catálogo extraído. A numeração de outros sites varia. Esse agrupamento não implementa substituição nas receitas: a extração atual apresenta IDs específicos, sem um contrato geral de alternativas. O armazém preserva a identidade escolhida.
+
+## Pipeline de amostras sintéticas e reais
+
+Os scripts abaixo criam um conjunto local para armazéns e inventários e exercitam os leitores existentes. A meta 80/20 é uma proporção de volume, não uma autorização para coletar imagens. Capturas reais só são baixadas com permissão registrada para cada origem. O acesso público a uma postagem não concede, por si só, direito de treinamento; confira os [termos oficiais da API do Reddit](https://redditinc.com/policies/data-api-terms) e mantenha a evidência de autorização do titular.
+
+### Gerar capturas sintéticas
+
+O gerador usa ícones WebP de itens publicados no catálogo local fornecido por `--catalog`; não extrai arquivos do cliente do jogo e não inventa IDs. Ele produz JPEGs de 1920×1080, 2560×1440 e 3840×2160, escalas de interface 100%, 110% e 120%, grades de oito/nove colunas, valores comuns e abreviados, e tiers romanos I–X. O manifesto mantém hash, split, resolução, parâmetros, retângulos exatos dos slots e rótulos.
+
+```powershell
+node scripts/generate-synthetic-ocr-dataset.mjs --count 18 --seed 4102026 --split calibration --catalog data/assets/<checksum> --output tmp/ocr-dataset/synthetic
+node scripts/generate-synthetic-ocr-dataset.mjs --count 18 --seed 4102027 --split evaluation --catalog data/assets/<checksum> --output tmp/ocr-dataset/synthetic-evaluation
+```
+
+O split padrão é `calibration`. Use outra seed para `evaluation`; não ajuste leitores com o conjunto que será usado para medir avaliação. A saída é ignorada pelo Git em `tmp/ocr-dataset/`. O gerador recusa diretórios de saída não vazios sem o marcador próprio; `--overwrite` só substitui imagens listadas em um manifesto válido do próprio gerador.
+
+### Coletar capturas autorizadas
+
+`scripts/scrape-bdo-screenshots.mjs` ingere URLs diretas de guias autorizados sem navegar ou rastrear páginas. Cada fonte exige `sourceId`, provedor, URLs de imagem, hosts HTTPS permitidos, status de autorização, finalidade (`validation` ou `training`), titular, referência da autorização e data. Para Reddit, inclua também o `postId` e use somente a API OAuth oficial de `r/blackdesertonline`; nunca use endpoint anônimo ou scraping HTML.
+
+Exemplo de manifesto de guia (substitua os campos somente por uma fonte cuja permissão foi registrada):
+
+```json
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "guide-example-001",
+      "provider": "guide",
+      "imageUrls": ["https://images.example.org/bdo/storage.jpg"],
+      "allowedHosts": ["images.example.org"],
+      "status": "authorized",
+      "use": "validation",
+      "rightsHolder": "Titular identificado no registro local",
+      "authorizationRef": "referencia-local-de-consentimento",
+      "authorizedAt": "2026-10-10T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+Para imagens de guia, não configure credenciais Reddit:
+
+```powershell
+node scripts/scrape-bdo-screenshots.mjs --sources tmp/ocr-sources.json
+```
+
+Para pesquisar Reddit, solicite credenciais de um aplicativo OAuth registrado e informe-as apenas no ambiente do processo. O User-Agent deve identificar o aplicativo e um contato real. Não salve o token no manifesto, no repositório ou no terminal.
+
+```powershell
+$env:REDDIT_ACCESS_TOKEN = '<token OAuth emitido para o aplicativo registrado>'
+$env:REDDIT_USER_AGENT = 'web:BlackMarketOCR:1.0 (contact: contato-do-responsavel)'
+node scripts/scrape-bdo-screenshots.mjs --sources tmp/ocr-sources.json --query storage --limit 25 --use validation
+```
+
+O coletor cruza ID da postagem e URL exata com a permissão, limita redirects e bytes, valida o formato decodificado, e aceita apenas imagens de pelo menos 1920×1080. O manifesto usa SHA-256 para nomes e deduplicação sem perder a proveniência por titular. A URL gravada remove query strings; tokens OAuth nunca são armazenados. Não há downloads reais automatizados pelos testes. A coleta precisa das credenciais e registros de permissão do operador.
+
+Para revogar uma fonte, altere seu status para `revoked` no manifesto e execute a limpeza local:
+
+```powershell
+node scripts/scrape-bdo-screenshots.mjs --sources tmp/ocr-sources.json --prune-revoked
+```
+
+A limpeza verifica o marcador do coletor e só remove arquivos cujo hash não tenha outra autorização ativa no manifesto. A finalidade `validation` nunca dá direito de treino. Mesmo uma autorização `training` permanece sem elegibilidade até que os rótulos tenham sido revisados manualmente; screenshots reais não recebem ground truth automático.
+
+### Privacidade e proporção do corpus
+
+Imagens, URLs de origem, evidências de consentimento, manifestos e relatórios permanecem locais em `tmp/ocr-dataset/real/` e `tmp/ocr-dataset/`; não são enviados ao serviço de OCR nem incluídos no Git. O manifesto registra a meta de 80% sintético/20% real, além das capturas disponíveis, mas os percentuais reais só podem ser medidos depois de coleta autorizada. Não aumente a amostra para alcançar 20% sem novos registros de permissão.
