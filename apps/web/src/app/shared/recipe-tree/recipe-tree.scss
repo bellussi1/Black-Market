@@ -327,3 +327,16 @@
     min-height: 44px;
   }
 }
+
+.tree-expansion-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-block: 1rem;
+}
+.tree-expansion-controls p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--bm-muted);
+}

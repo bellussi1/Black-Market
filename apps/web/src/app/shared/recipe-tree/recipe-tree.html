@@ -107,6 +107,18 @@
       Detalhes do item
     </button>
   </div>
+  <div class="tree-expansion-controls">
+    <button type="button" (click)="expandAll()" [disabled]="bulkRunning()" i18n>
+      Expandir todos
+    </button>
+    <button type="button" (click)="collapseAll()" i18n>Recolher todos</button>
+    @if (bulkRunning()) {
+      <button type="button" (click)="stopExpansion()" i18n>Interromper expansão</button>
+    }
+    @if (bulkMessage()) {
+      <p role="status">{{ bulkMessage() }}</p>
+    }
+  </div>
   @if (contextMessage()) {
     <p role="status" class="notice">{{ contextMessage() }}</p>
   }

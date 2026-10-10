@@ -9,7 +9,7 @@ export interface GraphBox {
 export interface GraphLayoutState {
   positions: Map<string, GraphBox & { identity: string }>;
   sizes: ReadonlyMap<string, { width: number; height: number }>;
-  columns?: 1 | 2;
+  columns?: 1 | 2 | 3 | 4;
 }
 export interface GraphNode extends GraphBox {
   node: RecipeNode;
@@ -183,6 +183,7 @@ export function layoutRecipeGraph(
       a.x + a.width + 28 > b.x &&
       a.y < b.y + b.height + 48 &&
       a.y + a.height + 48 > b.y;
+    const placed = new Set<string>();
     // Parents before children, including acquisition method and location nodes.
     for (const entry of [...entries].sort(
       (a, b) => a.path.split('/').length - b.path.split('/').length,
@@ -208,18 +209,27 @@ export function layoutRecipeGraph(
           (a, b) => Math.abs(a - parent.x) - Math.abs(b - parent.x),
         );
         const index = siblings.get(parentPath)?.indexOf(path) ?? 0;
-        box.x = nearby[index % columns];
-        box.y = parent.y + parent.height + 64;
-        let blocker: GraphBox | undefined;
-        while (
-          (blocker = [...positions.entries()].find(
-            ([otherPath, other]) =>
-              otherPath !== path && !otherPath.startsWith(path + '/') && overlaps(box, other),
-          )?.[1])
-        )
-          box.y = blocker.y + blocker.height + 64;
+        const ordered = [...nearby.slice(index % columns), ...nearby.slice(0, index % columns)];
+        const candidates = ordered.map((x) => {
+          const candidate = { ...box, x, y: parent.y + parent.height + 64 };
+          let blocker: GraphBox | undefined;
+          while (
+            (blocker = [...positions.entries()].find(
+              ([otherPath, other]) =>
+                otherPath !== path &&
+                !otherPath.startsWith(path + '/') &&
+                overlaps(candidate, other),
+            )?.[1])
+          )
+            candidate.y = blocker.y + blocker.height + 64;
+          return candidate;
+        });
+        // Fill available space beside related cards before adding another distant row.
+        const best = candidates.sort((a, b) => a.y - b.y)[0];
+        box.x = best.x;
+        box.y = best.y;
       } else {
-        box.x = columns === 2 && (siblings.get(path)?.length ?? 0) > 1 ? originX + 142 : originX;
+        box.x = (siblings.get(path)?.length ?? 0) > 1 ? originX + (columns - 1) * 142 : originX;
         box.y = 24;
       }
       // This also applies to the first pass after switching the root recipe,
@@ -234,7 +244,7 @@ export function layoutRecipeGraph(
             otherPath !== path &&
             !otherPath.startsWith(path + '/') &&
             !path.startsWith(otherPath + '/') &&
-            other.y <= box.y &&
+            (other.y <= box.y || placed.has(otherPath)) &&
             overlaps(box, other),
         )?.[1])
       )
@@ -246,6 +256,7 @@ export function layoutRecipeGraph(
         height: box.height,
         identity,
       });
+      placed.add(path);
     }
   }
   // Both ends are derived from actual card boxes, not fixed CSS heights.
@@ -262,7 +273,9 @@ export function layoutRecipeGraph(
     if (y2 - y1 > 128) {
       // Siblings may stack in the same column. Run long connections in the gap
       // between columns (or the left margin on mobile), never behind another card.
-      const laneX = (state?.columns ?? 2) === 1 ? routingOrigin - 18 : routingOrigin + 266;
+      const columns = state?.columns ?? 2;
+      const lane = Math.max(0, Math.min(columns - 2, Math.floor((parent.x - routingOrigin) / 284)));
+      const laneX = columns === 1 ? routingOrigin - 18 : routingOrigin + lane * 284 + 266;
       edge.d = `M ${x1} ${y1} C ${x1} ${y1 + 24}, ${laneX} ${y1 + 24}, ${laneX} ${y1 + 24} L ${laneX} ${y2 - 24} C ${laneX} ${y2 - 24}, ${x2} ${y2 - 24}, ${x2} ${y2}`;
     } else edge.d = `M ${x1} ${y1} C ${x1} ${y1 + bend}, ${x2} ${y2 - bend}, ${x2} ${y2}`;
   }

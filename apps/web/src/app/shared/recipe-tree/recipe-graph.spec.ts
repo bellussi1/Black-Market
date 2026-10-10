@@ -266,8 +266,70 @@ describe('Accessible graph controls', () => {
     }
     expect(graph.bounds.height).toBeGreaterThan(700);
   });
+  it('balances a large recipe across four columns with fewer rows and no overlaps', () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = Array.from({ length: 9 }, (_, index) =>
+      nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
+    );
+    const narrow = layoutRecipeGraph(root);
+    const balanced = layoutRecipeGraph(root, '', new Map(), {
+      positions: new Map(),
+      sizes: new Map(),
+      columns: 4,
+    });
+    expect(new Set(balanced.nodes.slice(1).map((entry) => entry.x)).size).toBe(4);
+    expect(balanced.bounds.width).toBeLessThanOrEqual(1150);
+    expect(balanced.bounds.height).toBeLessThan(narrow.bounds.height);
+    for (const a of balanced.nodes)
+      for (const b of balanced.nodes) {
+        if (a === b) continue;
+        expect(
+          a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y,
+        ).toBe(false);
+      }
+  });
+  it('keeps a moved acquisition location from overlapping an already placed method', () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [2, 3].map((id, i) => ({
+      ...nodeFor({ itemId: id, name: 'Material', quantity: '1' }, `root/${i}`),
+      expanded: true,
+    }));
+    const source = (id: string) => ({
+      id,
+      name: id,
+      territory: null,
+      managerNode: null,
+      contribution: null,
+      position: null,
+    });
+    const positions = new Map([
+      ['root', { x: 450, y: 24, width: 248, height: 200, identity: '1' }],
+      ['root/0', { x: 24, y: 324, width: 248, height: 200, identity: '2' }],
+      ['root/1', { x: 308, y: 560, width: 248, height: 200, identity: '3' }],
+      ['root/0/workers', { x: 24, y: 1100, width: 248, height: 176, identity: 'method' }],
+      ['root/1/workers', { x: 308, y: 824, width: 248, height: 176, identity: 'method' }],
+      ['root/1/workers/b', { x: 24, y: 800, width: 248, height: 176, identity: 'b' }],
+    ]);
+    const graph = layoutRecipeGraph(
+      root,
+      '',
+      new Map([
+        [2, [source('a')]],
+        [3, [source('b')]],
+      ]),
+      { positions, sizes: new Map(), columns: 4 },
+    );
+    const method = graph.sources.find((node) => node.path === 'root/0/workers')!;
+    const location = graph.sources.find((node) => node.path === 'root/1/workers/b')!;
+    expect(location.y).toBeGreaterThanOrEqual(method.y + method.height + 48);
+  });
 
-  it('places five newly expanded ingredients below their parent without widening the graph', async () => {
+  it('places five expanded ingredients below their parent within bounded balanced columns', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = [0, 1].map((index) =>
@@ -304,10 +366,10 @@ describe('Accessible graph controls', () => {
       y: parent.y,
     });
     const nodes = graph.layout().nodes;
-    expect(graph.layout().bounds.width).toBeLessThanOrEqual(600);
+    expect(graph.layout().bounds.width).toBeLessThanOrEqual(1150);
     for (const child of nodes.filter((entry) => entry.node.path.startsWith('root/0/'))) {
       expect(child.y).toBeGreaterThanOrEqual(parent.y + parent.height + 64);
-      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(284);
+      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(852);
     }
     for (let i = 0; i < nodes.length; i++)
       for (let j = i + 1; j < nodes.length; j++) {

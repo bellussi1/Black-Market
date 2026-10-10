@@ -51,7 +51,8 @@ export class RecipeGraph {
   readonly typeLabel = recipeTypeLabel;
   private readonly destroyRef = inject(DestroyRef);
   private readonly sizes = signal<GraphLayoutState['sizes']>(new Map());
-  private readonly columns = signal<1 | 2>(2);
+  private readonly columns = signal<1 | 2 | 3 | 4>(4);
+  readonly balanced = signal(true);
   private readonly positions: GraphLayoutState['positions'] = new Map();
   private rootIdentity = '';
   private selectionRootIdentity = '';
@@ -168,7 +169,8 @@ export class RecipeGraph {
       }
       if (changed) this.sizes.set(sizes);
       if (this.initialFitPending && this.viewport()?.nativeElement.clientWidth) {
-        const columns = this.viewport()!.nativeElement.clientWidth < 560 ? 1 : 2;
+        const width = this.viewport()!.nativeElement.clientWidth;
+        const columns = width < 560 ? 1 : this.balanced() ? (width < 900 ? 3 : 4) : 2;
         if (columns !== this.columns()) {
           this.positions.clear();
           this.columns.set(columns);
@@ -180,6 +182,13 @@ export class RecipeGraph {
   }
   allocation(path: string) {
     return this.allocationIndex().get(path);
+  }
+  toggleArrangement() {
+    this.balanced.update((value) => !value);
+    const width = this.viewport()?.nativeElement.clientWidth ?? 900;
+    this.positions.clear();
+    this.columns.set(width < 560 ? 1 : this.balanced() ? (width < 900 ? 3 : 4) : 2);
+    this.fit();
   }
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);

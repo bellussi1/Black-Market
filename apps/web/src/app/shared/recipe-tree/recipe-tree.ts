@@ -26,7 +26,7 @@ import type {
   CatalogRecipePart,
   MarketLookupResponse,
 } from '@bdo/shared';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, Subject, takeUntil, timeout } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -115,6 +115,10 @@ export class RecipeTree {
   private readonly destroyRef = inject(DestroyRef);
   readonly region = computed(() => this.store.data().region);
   readonly root = signal<RecipeNode | null>(null);
+  readonly bulkRunning = signal(false);
+  readonly bulkMessage = signal('');
+  private bulkStop: Subject<void> | null = null;
+  private bulkLoadingPath: string | null = null;
   readonly target = signal(100);
   readonly view = signal<'graph' | 'tree' | 'list'>('graph');
   readonly selectedPath = signal('root');
@@ -226,6 +230,7 @@ export class RecipeTree {
     }
   });
   constructor() {
+    this.destroyRef.onDestroy(() => this.stopExpansion());
     effect(() => {
       const recipe = this.recipe(),
         item = this.selectedItem();
@@ -240,6 +245,8 @@ export class RecipeTree {
       if (identity === this.selectionIdentity && untracked(this.root)?.recipe?.key === recipe?.key)
         return;
       this.revision++;
+      this.stopExpansion();
+      this.bulkMessage.set('');
       this.expansions.clear();
       this.contextRevision++;
       this.marketRevision++;
@@ -329,7 +336,137 @@ export class RecipeTree {
     }
     return null;
   }
+  stopExpansion() {
+    if (this.bulkLoadingPath)
+      this.patch(this.bulkLoadingPath, (node) => ({ ...node, loading: false }));
+    this.bulkLoadingPath = null;
+    this.bulkStop?.next();
+    this.bulkStop?.complete();
+    this.bulkStop = null;
+    if (this.bulkRunning())
+      this.bulkMessage.set('Expansão interrompida. Os itens abertos foram mantidos.');
+    this.bulkRunning.set(false);
+  }
+  collapseAll() {
+    this.stopExpansion();
+    this.expansions.clear();
+    this.contextRevision++;
+    this.contextLoading.set(false);
+    this.marketRevision++;
+    this.marketLoading.set(false);
+    if (this.historyMessage() === 'Consultando histórico…') this.historyMessage.set('');
+    const collapse = (node: RecipeNode): RecipeNode => ({
+      ...node,
+      expanded: false,
+      loading: false,
+      children: node.children.map(collapse),
+    });
+    this.root.update((root) => (root ? collapse(root) : null));
+  }
+  async expandAll() {
+    if (!this.root() || this.bulkRunning()) return;
+    const stop = new Subject<void>();
+    this.bulkStop = stop;
+    this.bulkRunning.set(true);
+    const revision = this.revision;
+    const queue = ['root'];
+    let visited = 0,
+      choices = 0,
+      failures = 0,
+      limited = false;
+    const active = () => this.bulkStop === stop && revision === this.revision;
+    try {
+      while (queue.length && visited < 200 && active()) {
+        const path = queue.shift()!;
+        let node = this.find(path);
+        if (!node) continue;
+        visited++;
+        this.bulkMessage.set(`Explorando ${visited} itens · ${node.part.name}`);
+        if (this.ancestors(path).includes(node.part.itemId) || path.split('/').length > 12) {
+          this.patch(path, (n) => ({
+            ...n,
+            message: 'Ciclo ou limite de profundidade: explore outra origem.',
+          }));
+          continue;
+        }
+        if (!node.recipe && !node.loading) {
+          this.bulkLoadingPath = path;
+          this.patch(path, (n) => ({ ...n, loading: true }));
+          try {
+            const response = await firstValueFrom(
+              this.knowledge.produces(node.part.itemId).pipe(timeout(15000), takeUntil(stop)),
+            );
+            if (!active()) break;
+            if (this.datasetVersion() && response.dataset?.version !== this.datasetVersion())
+              throw new Error('Catalog version changed');
+            const recipes = response.recipes.filter((r) =>
+              r.outputs.some((part) => part.itemId === node!.part.itemId),
+            );
+            this.patch(path, (n) => ({ ...n, options: recipes, loading: false }));
+            if (
+              recipes.length === 1 &&
+              (response.total ?? response.recipes.length) <= response.recipes.length &&
+              this.count() + recipes[0].inputs.length <= 200 &&
+              this.canChoose(node, recipes[0])
+            ) {
+              this.patch(path, (n) => withRecipe(n, recipes[0]));
+              if (path === 'root') this.rootMethod.emit(recipes[0]);
+            } else if (recipes.length > 1 || response.total > response.recipes.length) {
+              choices++;
+              this.patch(path, (n) => ({
+                ...n,
+                message: 'Escolha a variante em Detalhes do item para continuar esta ramificação.',
+              }));
+            } else if (recipes.length === 1) limited = true;
+            else {
+              const origins = await firstValueFrom(
+                this.knowledge.sources(node.part.itemId).pipe(timeout(15000), takeUntil(stop)),
+              );
+              if (!active()) break;
+              if (this.datasetVersion() && origins.dataset?.version !== this.datasetVersion())
+                throw new Error('Catalog version changed');
+              const sources = [...origins.nodes, ...(origins.spots ?? [])];
+              this.origins.update((all) => new Map(all).set(node!.part.itemId, sources));
+              this.patch(path, (n) => ({
+                ...n,
+                expanded: true,
+                message: sources.length ? '' : 'Sem receita ou origem vinculada no catálogo.',
+              }));
+            }
+          } catch {
+            if (!active()) break;
+            failures++;
+            this.patch(path, (n) => ({
+              ...n,
+              message: 'Não foi possível explorar este item. Tente abrir individualmente.',
+            }));
+          } finally {
+            if (active()) {
+              this.patch(path, (n) => ({ ...n, loading: false }));
+              this.bulkLoadingPath = null;
+            }
+          }
+        }
+        node = this.find(path);
+        if (node?.recipe) {
+          this.patch(path, (n) => ({ ...n, expanded: true }));
+          queue.push(...node.children.map((child) => child.path));
+        }
+      }
+      if (active())
+        this.bulkMessage.set(
+          `${visited} ${visited === 1 ? 'item explorado' : 'itens explorados'}.${choices ? ` ${choices} ${choices === 1 ? 'item aguarda' : 'itens aguardam'} escolha de variante.` : ''}${failures ? ` ${failures} ${failures === 1 ? 'item precisa' : 'itens precisam'} de nova tentativa.` : ''}${limited || queue.length ? ' Limite de 200 itens atingido; continue por ramificação.' : ''}`,
+        );
+    } finally {
+      if (this.bulkStop === stop) {
+        this.bulkStop = null;
+        this.bulkRunning.set(false);
+      }
+      stop.complete();
+    }
+  }
   action(event: BranchAction) {
+    if (event.action !== 'source') this.stopExpansion();
     const node = this.find(event.path);
     if (!node) return;
     if (event.action === 'source') {

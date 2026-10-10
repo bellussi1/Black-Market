@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { MarketApi } from '../../features/market/market-api';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
-import { RecipeKnowledge } from './recipe-knowledge';
+import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { RecipeTree } from './recipe-tree';
 const item = {
   id: 5301,
@@ -27,7 +27,7 @@ function providers() {
     item: vi.fn(() => of({ item })),
     produces: vi.fn(() => of({ recipes: [recipe] })),
     uses: vi.fn(() => of({ recipes: [] })),
-    sources: vi.fn(() => of({ nodes: [], updatedAt: null })),
+    sources: vi.fn(() => of<ItemSources>({ nodes: [], updatedAt: null })),
   };
   const market = {
     getItem: vi.fn(() =>
@@ -52,6 +52,119 @@ function providers() {
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('expands nested unique recipes and stops cycles without losing recipes on collapse', async () => {
+    const mocks = providers();
+    mocks.knowledge.produces.mockImplementation((...args: unknown[]) => {
+      const id = args[0];
+      return of({
+        recipes:
+          id === 9001
+            ? [{ ...recipe, key: 'salt', outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }] }]
+            : [],
+      });
+    });
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    await tree.expandAll();
+    expect(tree.find('root/0')?.expanded).toBe(true);
+    expect(tree.find('root/0/0')?.recipe).toBeNull();
+    expect(tree.bulkRunning()).toBe(false);
+    expect(mocks.knowledge.produces).toHaveBeenCalledTimes(1);
+    tree.collapseAll();
+    expect(tree.root()?.expanded).toBe(false);
+    expect(tree.find('root/0')?.recipe?.key).toBe('salt');
+  });
+  it('keeps ambiguous recipes available without selecting a variant or changing the viewport', async () => {
+    const mocks = providers();
+    const salt = {
+      ...recipe,
+      key: 'salt',
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+    };
+    mocks.knowledge.produces.mockReturnValue(
+      of({ recipes: [salt, { ...salt, key: 'salt-other' }] }),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.graph()!.pan.set({ x: -100, y: 10 });
+    tree.graph()!.zoom.set(0.8);
+    await tree.expandAll();
+    expect(tree.find('root/0')?.recipe).toBeNull();
+    expect(tree.find('root/0')?.options).toHaveLength(2);
+    expect(tree.bulkMessage()).toContain('1 item aguarda escolha');
+    expect(tree.graph()!.pan()).toEqual({ x: -100, y: 10 });
+    expect(tree.graph()!.zoom()).toBe(0.8);
+  });
+  it('cancels pending bulk requests and ignores late results', async () => {
+    const mocks = providers();
+    const pending = new Subject<{ recipes: CatalogRecipe[] }>();
+    mocks.knowledge.produces.mockReturnValue(pending);
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    const expansion = tree.expandAll();
+    expect(tree.find('root/0')?.loading).toBe(true);
+    tree.stopExpansion();
+    await expansion;
+    pending.next({ recipes: [recipe] });
+    expect(tree.find('root/0')?.recipe).toBeNull();
+    expect(tree.find('root/0')?.loading).toBe(false);
+    expect(tree.bulkRunning()).toBe(false);
+    expect(tree.bulkMessage()).toContain('interrompida');
+  });
+  it('includes combat origins when expanding a noncraftable leaf', async () => {
+    const mocks = providers();
+    mocks.knowledge.produces.mockReturnValue(of({ recipes: [] }));
+    mocks.knowledge.sources.mockReturnValue(
+      of({
+        nodes: [],
+        spots: [
+          {
+            id: 'spot',
+            name: 'Caça',
+            territory: null,
+            managerNode: null,
+            contribution: null,
+            position: null,
+            activity: 'grinding',
+          },
+        ],
+        updatedAt: null,
+      }),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    await fixture.componentInstance.expandAll();
+    expect(fixture.componentInstance.origins().get(9001)?.[0].activity).toBe('grinding');
+    expect(fixture.componentInstance.find('root/0')?.message).toBe('');
+  });
+  it('keeps all branches collapsed when an individual expansion finishes late', async () => {
+    const mocks = providers();
+    const pending = new Subject<{ recipes: CatalogRecipe[] }>();
+    mocks.knowledge.produces.mockReturnValue(pending);
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.action({ path: 'root/0', action: 'expand' });
+    tree.collapseAll();
+    pending.next({
+      recipes: [{ ...recipe, outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }] }],
+    });
+    expect(tree.root()?.expanded).toBe(false);
+    expect(tree.find('root/0')?.expanded).toBe(false);
+    expect(tree.find('root/0')?.loading).toBe(false);
+  });
+  it('allows retrying a market lookup interrupted by collapse all', async () => {
+    const mocks = providers();
+    mocks.market.getItem.mockReturnValueOnce(new Subject<never>());
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.action({ path: 'root', action: 'source' });
+    tree.consultMarket();
+    expect(tree.marketLoading()).toBe(true);
+    tree.collapseAll();
+    expect(tree.marketLoading()).toBe(false);
+    tree.consultMarket();
+    expect(mocks.market.getItem).toHaveBeenCalledTimes(2);
+    expect(tree.livePrices().get(5301)).toBe('100');
+  });
   it('shows known material cost directly in simple mode and marks absent quotations', async () => {
     const fixture = await renderComponent(
       RecipeTree,

@@ -3,6 +3,9 @@
   <span>{{ (zoom() * 100).toFixed(0) }}%</span>
   <button type="button" (click)="scale(-0.15)" aria-label="Diminuir zoom" i18n-aria-label>−</button>
   <button type="button" (click)="fit()" i18n>Ajustar árvore</button>
+  <button type="button" (click)="toggleArrangement()" [attr.aria-pressed]="balanced()">
+    {{ balanced() ? 'Layout equilibrado' : 'Layout vertical' }}
+  </button>
   @if (advanced()) {
     <button type="button" (click)="center(selection())" i18n>Centralizar seleção</button>
   }
