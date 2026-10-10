@@ -122,6 +122,7 @@ describe('production planner', () => {
       { itemId: 4, required: 1, bought: 0, owned: 0, produced: 1 },
       { itemId: 5, required: 1, bought: 1, owned: 0, produced: 0 },
     ]);
+    expect(optimized?.sourceChoices).toEqual({ 2: 'buy', 4: 'produce', 5: 'buy' });
   });
 
   it('uses only unreserved stock in the automatic strategy', () => {
@@ -382,6 +383,25 @@ describe('production planner', () => {
     input.customChoices = { 2: 'produce' };
     input.quotes[1] = { unitPrice: '7', available: null, observedAt: now, source: 'npc' };
     expect(row(input, 'custom').cashCost).toBe('28');
+  });
+
+  it('uses available owned materials when a custom checkbox selects production', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', crafts: 1 }];
+    input.customChoices = { 2: 'produce' };
+    input.useOwnedInProduction = true;
+    input.inventory = [{ itemId: 2, quantity: 2 }];
+
+    const plan = row(input, 'custom');
+
+    expect(plan.materials.find((material) => material.itemId === 2)).toMatchObject({
+      required: 2,
+      owned: 2,
+      produced: 0,
+      bought: 0,
+    });
+    expect(plan.cashCost).toBe('0');
+    expect(plan.economicCost).toBe('60');
   });
 
   it('counts only explicitly valued byproducts and applies tax to their sale', () => {

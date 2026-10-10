@@ -110,6 +110,8 @@ export interface ProductionPlan {
     owned: number;
     produced: number;
   }[];
+  /** Exact source decisions certified by the optimized scenario. */
+  sourceChoices?: Record<number, ProductionChoice>;
   steps: { recipeId: string; crafts: number; output: number; seconds: number | null }[];
 }
 export interface ProductionPlannerResult {
@@ -306,7 +308,10 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       surplus.set(id, made - reused);
       if (
         choice === 'stock' ||
-        ((scenario === 'produce-all' || scenario === 'optimized') && input.useOwnedInProduction)
+        (input.useOwnedInProduction &&
+          (scenario === 'produce-all' ||
+            scenario === 'optimized' ||
+            (scenario === 'custom' && choice !== 'buy')))
       )
         missing = useStock(id, missing);
       if (missing === 0n) return;
@@ -588,6 +593,16 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         owned: unscaled(part.owned),
         produced: unscaled(part.produced),
       })),
+      ...(scenario === 'optimized'
+        ? {
+            sourceChoices: Object.fromEntries(
+              [...materials.keys()].map((itemId) => [
+                itemId,
+                optimizedChoices[itemId] ?? 'buy',
+              ]),
+            ),
+          }
+        : {}),
       steps,
     };
     durations.set(plan, totalMilliseconds);
