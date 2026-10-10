@@ -81,6 +81,7 @@ describe('recipe production planner adapter', () => {
 
     expect(result.recipes.map((entry) => entry.id)).toEqual(['root', 'producer']);
     expect(result.candidates).toEqual([{ recipeId: 'root', crafts: 4, optimizeCrafts: 4 }]);
+    expect(result.maxOptimizationStates).toBe(250_000);
     expect(result.estimates).toMatchObject({
       root: { expectedYield: 2.5, craftSeconds: 12, source: 'calibrated' },
       producer: { expectedYield: 1, craftSeconds: 8, source: 'calibrated' },

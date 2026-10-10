@@ -184,6 +184,9 @@ export function buildRecipeProductionInput(
     candidates: [
       { recipeId: graph.rootRecipe.key, crafts: operations, optimizeCrafts: operations },
     ],
+    // The selected Edania graph needs more than the planner's conservative 100k default.
+    // Keep the planner's 1M hard cap; it reports an inconclusive result if exceeded.
+    maxOptimizationStates: 250_000,
     profile: {
       budget: character?.silver ?? workspace.familySilver,
       activeMinutes: character?.activeMinutes ?? 60,
