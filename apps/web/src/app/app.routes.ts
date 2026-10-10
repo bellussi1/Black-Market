@@ -60,6 +60,19 @@ export const routes: Routes = [
       })),
 
       {
+        path: 'scans/profile',
+
+        title: $localize`Black Market · Importar dados do personagem`,
+
+        data: { private: true },
+
+        loadComponent: () =>
+          import('./features/scans/profile-screen-import').then(
+            (m) => m.ProfileScreenImportComponent,
+          ),
+      },
+
+      {
         path: 'scans',
 
         title: $localize`Black Market · Importar por print`,

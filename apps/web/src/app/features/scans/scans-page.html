@@ -7,6 +7,11 @@
       conta. Item e quantidade vêm preenchidos quando reconhecidos. Corrija as dúvidas e confirme o
       lote para salvar.
     </p>
+    <p>
+      <a routerLink="/scans/profile" class="btn subtle" i18n
+        >Importar dados de maestria, peso e personagem</a
+      >
+    </p>
   </header>
   <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
     <li [class.current]="!jobs().length"><b>01</b><span i18n>Enviar capturas</span></li>
