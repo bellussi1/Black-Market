@@ -553,4 +553,154 @@ describe('Interactive recipe tree', () => {
     expect(el.querySelector('.economic-metrics-grid')).toBeTruthy();
     expect(el.textContent).toContain('MERCADO CENTRAL & RENTABILIDADE');
   });
+
+  it('supports single craft count field and updates operations, produced quantity and target', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+    tree.setRootYield(2.5);
+    tree.setCraftCount(100);
+    fixture.detectChanges();
+
+    expect(tree.craftCount()).toBe(100);
+    expect(tree.operationsCount()).toBe(100);
+    expect(tree.producedQuantity()).toBe(250);
+    expect(tree.formattedProducedQuantity()).toBe('250');
+    expect(tree.target()).toBe(250);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.craft-count-card')).toBeTruthy();
+    expect(el.querySelector('.craft-count-input')).toBeTruthy();
+    expect(el.textContent).toContain('Quantia de receitas');
+  });
+
+  it('applies default yield based on life skill type and character mastery on click', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+
+    expect(tree.root()?.yield).toBeNull();
+    expect(tree.plan()?.value).toBeNull();
+
+    tree.applyDefaultYield();
+    fixture.detectChanges();
+
+    expect(tree.root()?.yield).toBe(2.5);
+    expect(tree.plan()?.value).not.toBeNull();
+  });
+
+  it('supports acquisition strategies: buy_all, gather_all (100% profit), and custom toggles', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+    tree.setRootYield(1);
+    tree.target.set(100);
+    tree.livePrices.update((p) => new Map(p).set(5301, '500').set(9001, '100'));
+    fixture.detectChanges();
+
+    // Default: buy_all
+    expect(tree.acquisitionStrategy()).toBe('buy_all');
+    const baseCost = tree.effectiveMaterialCost();
+    expect(BigInt(baseCost)).toBeGreaterThan(0n);
+    const buyProfit = tree.profit();
+    expect(buyProfit).not.toBeNull();
+
+    // Gather all: cost = 0, 100% profit
+    tree.setAcquisitionStrategy('gather_all');
+    fixture.detectChanges();
+    expect(tree.effectiveMaterialCost()).toBe('0');
+    expect(tree.profit()).toBe(tree.netRevenue());
+    expect(tree.profitMargin()).toBe(100.0);
+
+    // Custom toggle: toggling material
+    tree.setAcquisitionStrategy('custom');
+    expect(tree.materialSource(9001)).toBe('buy');
+    tree.toggleMaterialSource(9001);
+    expect(tree.materialSource(9001)).toBe('gather');
+    expect(tree.effectiveMaterialCost()).toBe('0');
+
+    tree.toggleMaterialSource(9001);
+    expect(tree.materialSource(9001)).toBe('buy');
+    expect(tree.effectiveMaterialCost()).toBe(baseCost);
+  });
+
+  it('computes Make vs Buy insights for final product and intermediate components', async () => {
+    const dependencies = providers(),
+      fixture = await renderComponent(
+        RecipeTree,
+        { recipe, selectedItem: item },
+        dependencies.list,
+      ),
+      tree = fixture.componentInstance;
+    tree.setRootYield(1);
+    tree.target.set(10);
+
+    // Product price = 1000, material (Sal, 2 per craft) = 200 per unit -> craft cost is 400
+    // Craft cost (400) < Market price (1000) => recommendation 'craft'
+    tree.livePrices.update((p) => new Map(p).set(5301, '1000').set(9001, '200'));
+    tree.marketQuotes.update((q) =>
+      new Map(q).set(5301, {
+        itemId: 5301,
+        subId: 0,
+        name: 'Reagente',
+        price: '1000',
+        stock: 50,
+        totalTrades: '10000',
+        minPrice: '900',
+        maxPrice: '1100',
+        lastSoldPrice: '1000',
+        lastSoldAt: null,
+      }),
+    );
+    fixture.detectChanges();
+
+    const craftInsight = tree.rootInsight();
+    expect(craftInsight).not.toBeNull();
+    expect(craftInsight?.recommendation).toBe('craft');
+    expect(craftInsight?.advice).toContain('Vale a pena');
+    expect(craftInsight?.marketStock).toBe(50);
+    expect(craftInsight?.totalTrades).toBe('10000');
+
+    // When material price is very high: Sal = 800 -> craft cost 1600 > market price 1000
+    tree.livePrices.update((p) => new Map(p).set(9001, '800'));
+    fixture.detectChanges();
+    const buyInsight = tree.rootInsight();
+    expect(buyInsight?.recommendation).toBe('buy');
+    expect(buyInsight?.advice).toContain('Mais barato comprar pronto');
+
+    // When market stock is 0: recommendation 'scarce'
+    tree.marketQuotes.update((q) =>
+      new Map(q).set(5301, {
+        itemId: 5301,
+        subId: 0,
+        name: 'Reagente',
+        price: '1000',
+        stock: 0,
+        totalTrades: '10000',
+        minPrice: '900',
+        maxPrice: '1100',
+        lastSoldPrice: '1000',
+        lastSoldAt: null,
+      }),
+    );
+    fixture.detectChanges();
+    const scarceInsight = tree.rootInsight();
+    expect(scarceInsight?.recommendation).toBe('scarce');
+    expect(scarceInsight?.advice).toContain('Estoque zerado');
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.insight-decision-card')).toBeTruthy();
+  });
 });

@@ -717,3 +717,327 @@
     animation: none;
   }
 }
+
+/* --- Black Market: Craft Count & Single Quantity Field --- */
+.craft-count-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+  padding: 14px 16px;
+  border-radius: 2px;
+}
+
+.craft-count-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-label-text {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bm-accent);
+}
+
+.craft-input-box {
+  display: flex;
+  align-items: center;
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  max-width: 280px;
+}
+
+.craft-input-box:focus-within {
+  border-color: var(--bm-accent);
+  box-shadow: 0 0 0 1px var(--bm-accent);
+}
+
+.craft-count-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--bm-text);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 12px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.craft-count-unit {
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--bm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+.craft-yield-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--bm-muted);
+}
+
+.yield-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  color: var(--bm-text);
+}
+
+.produced-badge {
+  color: var(--bm-text);
+}
+
+.produced-badge strong {
+  color: var(--bm-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.hidden-simple {
+  display: none !important;
+}
+
+/* --- Strategy Selector Bar --- */
+.strategy-selector-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+}
+
+.strategy-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bm-muted);
+}
+
+.strategy-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-strategy {
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+  color: var(--bm-text);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 120ms ease-out;
+}
+
+.btn-strategy:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--bm-accent);
+}
+
+.btn-strategy.active {
+  background: var(--bm-accent);
+  border-color: var(--bm-accent);
+  color: var(--bm-background);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.strategy-subtag {
+  color: var(--bm-accent);
+  font-weight: 500;
+}
+
+/* --- Make vs Buy Insight Decision Card --- */
+.insight-decision-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+  border-left: 3px solid var(--bm-accent);
+  border-radius: 2px;
+}
+
+.insight-decision-card.insight-craft {
+  border-left-color: #d4af37;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, var(--bm-surface) 100%);
+}
+
+.insight-decision-card.insight-buy {
+  border-left-color: #72a4d4;
+  background: linear-gradient(90deg, rgba(114, 164, 212, 0.08) 0%, var(--bm-surface) 100%);
+}
+
+.insight-decision-card.insight-scarce {
+  border-left-color: #d9822b;
+  background: linear-gradient(90deg, rgba(217, 130, 43, 0.08) 0%, var(--bm-surface) 100%);
+}
+
+.insight-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-decision {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.badge-craft {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid #d4af37;
+  color: #e5c158;
+}
+
+.badge-buy {
+  background: rgba(114, 164, 212, 0.15);
+  border: 1px solid #72a4d4;
+  color: #9ac2ea;
+}
+
+.badge-scarce {
+  background: rgba(217, 130, 43, 0.15);
+  border: 1px solid #d9822b;
+  color: #f0a256;
+}
+
+.badge-unknown {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--bm-border);
+  color: var(--bm-muted);
+}
+
+.insight-advice-text {
+  font-size: 13px;
+  color: var(--bm-text);
+  line-height: 1.4;
+}
+
+.insight-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--bm-muted);
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.meta-tag strong {
+  color: var(--bm-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Materials Table Custom Toggle & Insight Chips --- */
+.material-strategy-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btn-toggle-source {
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+  color: var(--bm-text);
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 120ms ease-out;
+  text-align: left;
+}
+
+.btn-toggle-source:hover {
+  border-color: var(--bm-accent);
+}
+
+.btn-toggle-source.is-gather {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: var(--bm-accent);
+  color: var(--bm-accent);
+  font-weight: 600;
+}
+
+.sub-insight-chip {
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 2px;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.chip-craft {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #e5c158;
+}
+
+.chip-buy {
+  background: rgba(114, 164, 212, 0.12);
+  border: 1px solid rgba(114, 164, 212, 0.4);
+  color: #9ac2ea;
+}
+
+.chip-scarce {
+  background: rgba(217, 130, 43, 0.12);
+  border: 1px solid rgba(217, 130, 43, 0.4);
+  color: #f0a256;
+}
+
+.yield-warning-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.btn-apply-default-yield {
+  align-self: flex-start;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid var(--bm-accent);
+  color: var(--bm-accent);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 120ms ease-out;
+}
+
+.btn-apply-default-yield:hover {
+  background: var(--bm-accent);
+  color: var(--bm-background);
+}

@@ -28,18 +28,36 @@
     <div class="production-configuration">
       <div class="production-method"><ng-content select="[recipe-method]" /></div>
       <div class="scenario-settings">
-        <div class="form-grid">
-          <label i18n
-            >Quantidade total desejada<input
-              type="number"
-              min="1"
-              max="1000000"
-              [ngModel]="target()"
-              (ngModelChange)="target.set($event)"
-          /></label>
+        <div class="craft-count-card">
+          <label class="craft-count-control">
+            <span class="control-label-text" i18n>Quantia de receitas</span>
+            <div class="craft-input-box">
+              <input
+                type="number"
+                min="1"
+                max="1000000"
+                class="craft-count-input"
+                [ngModel]="craftCount()"
+                (ngModelChange)="setCraftCount($event)"
+              />
+              <span class="craft-count-unit" i18n>receitas</span>
+            </div>
+          </label>
+          <div class="craft-yield-meta">
+            <span class="yield-badge">{{ yieldDescription() }}</span>
+            <span class="produced-badge" i18n>
+              Estimativa: <strong>{{ formattedProducedQuantity() }}</strong> unidades
+            </span>
+          </div>
+
           @if (product.recipe) {
-            <label class="root-yield" [class.needs-confirmation]="product.yield === null" i18n
-              >Produção por operação<input
+            <label
+              class="root-yield"
+              [class.hidden-simple]="!advanced()"
+              [class.needs-confirmation]="product.yield === null"
+              i18n
+            >
+              Produção por operação (ajuste fino)<input
                 type="number"
                 min=".001"
                 max="1000000"
@@ -49,11 +67,24 @@
             /></label>
           }
         </div>
-        <p class="help" i18n>Rendimento é um cenário. Confirme no jogo os campos ausentes.</p>
+        <p class="help" i18n>
+          O rendimento médio padrão ajusta-se à sua maestria. Você pode personalizá-lo nos detalhes
+          avançados.
+        </p>
         @if (product.recipe && product.yield === null) {
-          <p class="yield-warning" role="status" i18n>
-            Confirme o rendimento para calcular os materiais.
-          </p>
+          <div class="yield-warning-box">
+            <p class="yield-warning" role="status" i18n>
+              Confirme o rendimento para calcular os materiais.
+            </p>
+            <button
+              type="button"
+              class="btn-apply-default-yield"
+              (click)="applyDefaultYield()"
+              i18n
+            >
+              Usar rendimento padrão ({{ effectiveYield().toFixed(2) }} un / receita)
+            </button>
+          </div>
         }
         @if (advanced()) {
           <p class="help" i18n>
@@ -210,6 +241,80 @@
           <p class="notice economic-notice" role="status">{{ treeMarketMessage() }}</p>
         }
 
+        <div class="strategy-selector-bar">
+          <span class="strategy-label" i18n>Estratégia de insumos:</span>
+          <div
+            class="strategy-btn-group"
+            role="radiogroup"
+            aria-label="Estratégia de aquisição de insumos"
+          >
+            <button
+              type="button"
+              class="btn-strategy"
+              [class.active]="acquisitionStrategy() === 'buy_all'"
+              (click)="setAcquisitionStrategy('buy_all')"
+              i18n
+            >
+              Comprar todos
+            </button>
+            <button
+              type="button"
+              class="btn-strategy"
+              [class.active]="acquisitionStrategy() === 'gather_all'"
+              (click)="setAcquisitionStrategy('gather_all')"
+              i18n
+            >
+              Coletar / Fazer tudo (100% Lucro)
+            </button>
+            <button
+              type="button"
+              class="btn-strategy"
+              [class.active]="acquisitionStrategy() === 'custom'"
+              (click)="setAcquisitionStrategy('custom')"
+              i18n
+            >
+              Personalizado
+            </button>
+          </div>
+        </div>
+
+        @if (rootInsight(); as insight) {
+          <div
+            class="insight-decision-card"
+            [class.insight-craft]="insight.recommendation === 'craft'"
+            [class.insight-buy]="insight.recommendation === 'buy'"
+            [class.insight-scarce]="insight.recommendation === 'scarce'"
+          >
+            <div class="insight-badge-row">
+              @if (insight.recommendation === 'craft') {
+                <span class="badge-decision badge-craft" i18n>VALE A PENA CRAFTAR</span>
+              } @else if (insight.recommendation === 'buy') {
+                <span class="badge-decision badge-buy" i18n>MAIS BARATO COMPRAR DIRETO</span>
+              } @else if (insight.recommendation === 'scarce') {
+                <span class="badge-decision badge-scarce" i18n>ESTOQUE ZERADO NO MERCADO</span>
+              } @else {
+                <span class="badge-decision badge-unknown" i18n>ANÁLISE DE MERCADO</span>
+              }
+              <span class="insight-advice-text">{{ insight.advice }}</span>
+            </div>
+            @if (insight.marketStock !== null || insight.totalTrades) {
+              <div class="insight-meta-row">
+                @if (insight.marketStock !== null) {
+                  <span class="meta-tag">
+                    Estoque no mercado:
+                    <strong>{{ insight.marketStock.toLocaleString('pt-BR') }} un</strong>
+                  </span>
+                }
+                @if (insight.totalTrades) {
+                  <span class="meta-tag">
+                    Transações registradas: <strong>{{ insight.totalTrades }}</strong>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        }
+
         <div class="economic-metrics-grid">
           <div class="metric-card">
             <span class="metric-label" i18n>Faturamento líquido</span>
@@ -228,18 +333,26 @@
           <div class="metric-card">
             <span class="metric-label" i18n>Custo dos materiais</span>
             <strong class="metric-value">{{
-              result.knownCostOnly && calculated.cost === '0'
+              result.knownCostOnly &&
+              effectiveMaterialCost() === '0' &&
+              acquisitionStrategy() !== 'gather_all'
                 ? 'Sem cotações'
-                : silver(calculated.cost)
+                : silver(effectiveMaterialCost())
             }}</strong>
             <small class="metric-sub">
-              {{
-                result.warnings.length
-                  ? 'Parcial · faltam dados'
-                  : result.knownCostOnly
-                    ? 'Parcial · faltam cotações'
-                    : 'Materiais comprados'
-              }}
+              @if (acquisitionStrategy() === 'gather_all') {
+                <span class="strategy-subtag" i18n>100% Coletado (Custo zero)</span>
+              } @else if (acquisitionStrategy() === 'custom') {
+                <span class="strategy-subtag" i18n>Personalizado (Misto)</span>
+              } @else {
+                <span>{{
+                  result.warnings.length
+                    ? 'Parcial · faltam dados'
+                    : result.knownCostOnly
+                      ? 'Parcial · faltam cotações'
+                      : 'Materiais comprados'
+                }}</span>
+              }
             </small>
           </div>
 
@@ -388,6 +501,7 @@
                   <tr>
                     <th i18n>Material</th>
                     <th i18n>Origem escolhida</th>
+                    <th i18n>Estratégia</th>
                     <th i18n>Necessário</th>
                     <th i18n>Estoque usado</th>
                     <th i18n>Produzir</th>
@@ -412,6 +526,44 @@
                         </button>
                       </td>
                       <td>{{ methods(row.itemId) }}</td>
+                      <td>
+                        <div class="material-strategy-cell">
+                          <button
+                            type="button"
+                            class="btn-toggle-source"
+                            [class.is-gather]="materialSource(row.itemId ?? 0) === 'gather'"
+                            (click)="toggleMaterialSource(row.itemId ?? 0)"
+                            [title]="
+                              materialSource(row.itemId ?? 0) === 'gather'
+                                ? 'Clique para marcar como comprado no mercado'
+                                : 'Clique para marcar como coletado / próprio (custo zero)'
+                            "
+                          >
+                            {{
+                              materialSource(row.itemId ?? 0) === 'gather'
+                                ? 'Coletar / Próprio'
+                                : 'Comprar mercado'
+                            }}
+                          </button>
+                          @if (findIntermediateInsight(row.itemId ?? 0); as subInsight) {
+                            <span
+                              class="sub-insight-chip"
+                              [class.chip-craft]="subInsight.recommendation === 'craft'"
+                              [class.chip-buy]="subInsight.recommendation === 'buy'"
+                              [class.chip-scarce]="subInsight.recommendation === 'scarce'"
+                              [title]="subInsight.advice"
+                            >
+                              {{
+                                subInsight.recommendation === 'craft'
+                                  ? 'Craft vantajoso'
+                                  : subInsight.recommendation === 'buy'
+                                    ? 'Melhor comprar'
+                                    : 'Sem estoque'
+                              }}
+                            </span>
+                          }
+                        </div>
+                      </td>
                       <td>{{ row.required }}</td>
                       <td>{{ row.fromStock }}</td>
                       <td>{{ row.produced }}</td>
