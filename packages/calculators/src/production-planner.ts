@@ -16,7 +16,7 @@ export interface ProductionEstimate {
   source: 'informed' | 'calibrated' | 'fixed';
   contextHash?: string;
 }
-export type ProductionChoice = 'buy' | 'produce' | 'stock';
+export type ProductionChoice = 'buy' | 'produce' | 'gather' | 'stock';
 export type ProductionScenario = 'buy-all' | 'produce-all' | 'custom' | 'optimized';
 export interface ProductionCandidate {
   recipeId: string;
@@ -50,8 +50,9 @@ export interface ProductionPlannerInput {
   maxQuoteAgeMinutes?: number;
   /** Automatic rate optimization checks every feasible batch up to this bound, capped at 10,000. */
   maxCrafts?: number;
-  /** Maximum buy/produce combinations for a focused candidate, capped at 1,024. Defaults to 256. */
-  maxOptimizationBranches?: number;
+  /** Maximum exact decision states for a focused candidate, capped at 1,000,000. Defaults to 100,000. */
+  maxOptimizationStates?: number;
+  gatheringEstimates?: Record<number, ProductionEstimate>;
   itemWeights?: Record<number, number>;
   customChoices?: Record<number, ProductionChoice>;
   customRecipes?: Record<number, string>;
@@ -167,7 +168,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     recipeId: string,
     crafts: number,
     scenario: ProductionScenario,
-    optimizedChoices: Record<number, 'buy' | 'produce'> = {},
+    optimizedChoices: Record<number, ProductionChoice> = {},
   ): ProductionPlan {
     const root = recipes.get(recipeId);
     const issues: ProductionIssue[] = [];
@@ -317,6 +318,39 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         issue('stock-shortage', 'O estoque livre não cobre o cenário personalizado.', {
           itemId: id,
         });
+        return;
+      }
+      if (choice === 'gather') {
+        const estimate = input.gatheringEstimates?.[id];
+        const yieldValue = estimate?.expectedYield;
+        const seconds = estimate?.craftSeconds;
+        if (!positive(yieldValue) || scaled(yieldValue) === 0n) {
+          issue('missing-yield', 'Informe o rendimento esperado da coleta.', { itemId: id });
+          costsKnown = false;
+        }
+        if (!positive(seconds) || Math.round(seconds * 1000) === 0) {
+          issue('missing-time', 'Informe os segundos por operação de coleta.', { itemId: id });
+          timesKnown = false;
+        }
+        if (!positive(yieldValue) || scaled(yieldValue) === 0n) return;
+        const count = ceilDivide(missing, scaled(yieldValue));
+        if (count > 1_000_000_000n) {
+          issue('invalid-input', 'A coleta excede o limite de operações.', { itemId: id });
+          return;
+        }
+        const gathered = count * scaled(yieldValue);
+        material(id).produced += gathered;
+        surplus.set(id, (surplus.get(id) ?? 0n) + gathered - missing);
+        if (positive(seconds) && Math.round(seconds * 1000) > 0)
+          totalMilliseconds += BigInt(Math.round(seconds * 1000)) * count;
+        steps.push({
+          recipeId: `gather:${id}`,
+          crafts: Number(count),
+          output: unscaled(gathered),
+          seconds: positive(seconds) ? seconds * Number(count) : null,
+        });
+        weightSteps.push({ ingredients: [], outputs: [{ itemId: id, quantity: gathered }] });
+        assumptions.add(`Item ${id}: coleta estimada com rendimento e tempo calibrados.`);
         return;
       }
       const producer = producers.get(id);
@@ -560,23 +594,35 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     return plan;
   }
 
-  function optimizationItems(recipeId: string): number[] {
-    const itemIds = new Set<number>();
-    const visitedRecipes = new Set<string>();
-    const visit = (currentRecipeId: string) => {
-      if (visitedRecipes.has(currentRecipeId)) return;
-      visitedRecipes.add(currentRecipeId);
-      const recipe = recipes.get(currentRecipeId);
-      if (!recipe) return;
-      for (const ingredient of recipe.ingredients) {
-        const producer = producers.get(ingredient.itemId);
-        if (!producer) continue;
-        itemIds.add(ingredient.itemId);
-        visit(producer.id);
+  function nextOptimizationDecision(
+    recipeId: string,
+    choices: ReadonlyMap<number, ProductionChoice>,
+  ): number | null {
+    const root = recipes.get(recipeId);
+    if (!root) return null;
+    const visitedItems = new Set<number>();
+    const visit = (itemId: number, activeRecipes: ReadonlySet<string>): number | null => {
+      if (visitedItems.has(itemId)) return null;
+      visitedItems.add(itemId);
+      const producer = producers.get(itemId);
+      const hasGatherEstimate = input.gatheringEstimates?.[itemId] !== undefined;
+      if (!producer && !hasGatherEstimate) return null;
+      const choice = choices.get(itemId);
+      if (!choice) return itemId;
+      if (choice !== 'produce' || !producer || activeRecipes.has(producer.id)) return null;
+      const nextActive = new Set(activeRecipes).add(producer.id);
+      for (const ingredient of producer.ingredients) {
+        const next = visit(ingredient.itemId, nextActive);
+        if (next !== null) return next;
       }
+      return null;
     };
-    visit(recipeId);
-    return [...itemIds].sort((a, b) => a - b);
+    const activeRecipes = new Set([recipeId]);
+    for (const ingredient of root.ingredients) {
+      const next = visit(ingredient.itemId, activeRecipes);
+      if (next !== null) return next;
+    }
+    return null;
   }
 
   const ranked: ProductionPlan[] = [];
@@ -623,11 +669,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       else ranked.push(result);
     }
     if (candidate.optimizeCrafts !== undefined) {
-      const decisionItems = optimizationItems(candidate.recipeId);
-      const rawLimit = input.maxOptimizationBranches ?? 256;
-      const branchLimit =
-        Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 1024) : 256;
-      const combinations = 2 ** decisionItems.length;
+      const rawLimit = input.maxOptimizationStates ?? 100_000;
+      const stateLimit =
+        Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 1_000_000) : 100_000;
       if (
         !Number.isSafeInteger(candidate.optimizeCrafts) ||
         candidate.optimizeCrafts <= 0 ||
@@ -636,34 +680,45 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         const result = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
         if (result.profitPerHour === null) incomplete.push(result);
         else ranked.push(result);
-      } else if (combinations > branchLimit) {
-        const result = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
-        result.issues.push({
-          code: 'optimization-limit',
-          message: `A receita exige ${combinations} combinações comprar/produzir; o limite atual é ${branchLimit}.`,
-          recipeId: candidate.recipeId,
-        });
-        result.profit = null;
-        result.profitPerHour = null;
-        result.assumptions.push(
-          'A busca automática foi interrompida pelo limite; este cenário não entra no ranking.',
-        );
-        incomplete.push(result);
       } else {
         let best: ProductionPlan | null = null;
         let bestPending: ProductionPlan | null = null;
-        for (let mask = 0; mask < combinations; mask++) {
-          const choices = Object.fromEntries(
-            decisionItems.map((itemId, index) => [
-              itemId,
-              (mask & (1 << index)) === 0 ? 'buy' : 'produce',
-            ]),
-          ) as Record<number, 'buy' | 'produce'>;
+        let visitedStates = 0;
+        let prunedStates = 0;
+        let complete = true;
+        const initialChoices = new Map<number, ProductionChoice>();
+        const pending: Map<number, ProductionChoice>[] = [initialChoices];
+        const visited = new Set<string>();
+        while (pending.length && visitedStates < stateLimit) {
+          const choices = pending.pop()!;
+          const stateKey = [...choices]
+            .sort(([left], [right]) => left - right)
+            .map(([itemId, choice]) => `${itemId}:${choice}`)
+            .join('|');
+          if (visited.has(stateKey)) {
+            prunedStates++;
+            continue;
+          }
+          visited.add(stateKey);
+          visitedStates++;
+          const nextItemId = nextOptimizationDecision(candidate.recipeId, choices);
+          if (nextItemId !== null) {
+            const options: ProductionChoice[] = ['buy'];
+            if (producers.has(nextItemId)) options.push('produce');
+            if (input.gatheringEstimates?.[nextItemId]) options.push('gather');
+            for (const option of options.reverse()) {
+              const nextChoices = new Map(choices);
+              nextChoices.set(nextItemId, option);
+              pending.push(nextChoices);
+            }
+            continue;
+          }
+          const choiceRecord = Object.fromEntries(choices) as Record<number, ProductionChoice>;
           const result = evaluate(
             candidate.recipeId,
             candidate.optimizeCrafts,
             'optimized',
-            choices,
+            choiceRecord,
           );
           if (result.profitPerHour !== null) {
             if (
@@ -677,10 +732,29 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             bestPending = result;
           }
         }
-        const result = best ?? bestPending;
-        if (result) {
+        if (pending.length) complete = false;
+        const result =
+          best ??
+          bestPending ??
+          evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
+        result.assumptions.push(
+          `Busca exata por estados alcançáveis: ${visitedStates} visitados e ${prunedStates} duplicados eliminados, limite de ${stateLimit}.`,
+        );
+        if (!complete) {
+          result.issues.push({
+            code: 'optimization-limit',
+            message: `A busca excedeu o limite de ${stateLimit} estados; não há combinação ótima certificada.`,
+            recipeId: candidate.recipeId,
+          });
+          result.profit = null;
+          result.profitPerHour = null;
           result.assumptions.push(
-            `Busca automática avaliou exatamente ${combinations} combinações binárias de compra/produção para ${decisionItems.length} materiais intermediários, usando lucro econômico por hora e a fórmula produtora selecionada.`,
+            'O limite de segurança foi alcançado. Nenhum candidato parcial entra no ranking.',
+          );
+          incomplete.push(result);
+        } else {
+          result.assumptions.push(
+            'A busca automática avaliou todas as escolhas alcançáveis de compra, produção e coleta para a fórmula selecionada.',
           );
           if (best) ranked.push(best);
           else incomplete.push(result);
