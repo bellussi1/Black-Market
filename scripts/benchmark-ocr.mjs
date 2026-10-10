@@ -321,8 +321,17 @@ export function summarizeOcrRows(rows) {
   };
 }
 
+function pathForComparison(candidate) {
+  const absolute = path.resolve(candidate);
+  return process.platform === 'win32' ? absolute.toLowerCase() : absolute;
+}
+
+function samePath(first, second) {
+  return pathForComparison(first) === pathForComparison(second);
+}
+
 function withinDirectory(parent, candidate) {
-  const relative = path.relative(parent, candidate);
+  const relative = path.relative(pathForComparison(parent), pathForComparison(candidate));
   return (
     relative === '' ||
     (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative))
@@ -701,13 +710,27 @@ export async function recognizeSample({
   return rows;
 }
 
-function validBenchmarkOutputPath(outputPath) {
+function validBenchmarkOutputPath(outputPath, datasetRoot = defaultDatasetRoot) {
   const absolute = path.resolve(outputPath);
-  const parent = path.dirname(absolute);
-  return (
-    path.basename(parent).toLowerCase() === 'ocr-dataset' &&
-    path.basename(path.dirname(parent)).toLowerCase() === 'tmp'
-  );
+  return !samePath(absolute, datasetRoot) && withinDirectory(datasetRoot, absolute);
+}
+
+async function prepareBenchmarkOutput(outputPath) {
+  const absoluteOutput = path.resolve(outputPath);
+  if (!validBenchmarkOutputPath(absoluteOutput))
+    throw new Error('Benchmark report output must be inside tmp/ocr-dataset/.');
+
+  await mkdir(defaultDatasetRoot, { recursive: true });
+  const canonicalRoot = await realpath(defaultDatasetRoot);
+  if (!samePath(canonicalRoot, defaultDatasetRoot))
+    throw new Error('Benchmark output root cannot be redirected through a symlink.');
+
+  const outputParent = path.dirname(absoluteOutput);
+  await mkdir(outputParent, { recursive: true });
+  const canonicalParent = await realpath(outputParent);
+  if (!withinDirectory(canonicalRoot, canonicalParent))
+    throw new Error('Benchmark output parent escapes tmp/ocr-dataset/ through a symlink.');
+  return absoluteOutput;
 }
 
 async function readRealCompositionManifest(manifestPath) {
@@ -744,8 +767,8 @@ export async function runBenchmark({
   sharp = defaultSharp,
   evaluatedAt = new Date(),
 }) {
-  if (!outputPath || !validBenchmarkOutputPath(outputPath))
-    throw new Error('Benchmark report output must be inside tmp/ocr-dataset/.');
+  if (!outputPath) throw new Error('Benchmark report output must be inside tmp/ocr-dataset/.');
+  const absoluteOutput = await prepareBenchmarkOutput(outputPath);
   const validated = await validateSyntheticManifest(manifestPath, { split, sharp });
   const realManifest = await readRealCompositionManifest(realManifestPath);
   const readers = await loadOcrReaders();
@@ -771,11 +794,6 @@ export async function runBenchmark({
     realManifest,
     evaluatedAt,
   });
-  const absoluteOutput = path.resolve(outputPath);
-  await mkdir(path.dirname(absoluteOutput), { recursive: true });
-  const outputParent = path.dirname(absoluteOutput);
-  if ((await realpath(outputParent)) !== outputParent)
-    throw new Error('Benchmark output cannot use a symlinked directory.');
   const temporaryPath = `${absoluteOutput}.${randomUUID()}.tmp`;
   await writeFile(temporaryPath, `${JSON.stringify(report, null, 2)}\n`);
   await rename(temporaryPath, absoluteOutput);

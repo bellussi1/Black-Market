@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -22,6 +22,7 @@ import {
 const requireApi = createRequire(new URL('../apps/api/package.json', import.meta.url));
 const sharp = requireApi('sharp');
 const temporaryDirectories = [];
+const temporaryOutputFiles = [];
 
 function box(left, top, width, height) {
   return { left, top, width, height };
@@ -101,11 +102,10 @@ async function makeManifest({
   return manifestPath;
 }
 
-async function makeBenchmarkOutput() {
-  const parent = temporaryDirectories.at(-1);
-  const directory = path.join(parent, 'tmp', 'ocr-dataset');
-  await mkdir(directory, { recursive: true });
-  return path.join(directory, 'benchmark.json');
+function makeBenchmarkOutput() {
+  const outputPath = path.resolve('tmp/ocr-dataset', `benchmark-test-${randomUUID()}.json`);
+  temporaryOutputFiles.push(outputPath);
+  return outputPath;
 }
 
 async function makeRecognitionFixture({
@@ -185,6 +185,7 @@ afterEach(async () => {
       .splice(0)
       .map((directory) => rm(directory, { recursive: true, force: true })),
   );
+  await Promise.all(temporaryOutputFiles.splice(0).map((file) => rm(file, { force: true })));
 });
 
 test('matchesSlotsOnlyAtOrAboveHalfIou', () => {
@@ -504,6 +505,76 @@ test('rejectsOutputOutsideIgnoredDatasetRoot', () => {
     () => parseBenchmarkArgs(['--manifest', 'ground-truth.json', '--output', 'tmp/benchmark.json']),
     /tmp\/ocr-dataset/i,
   );
+  const unrelatedRoot = path.join(os.tmpdir(), 'unrelated-repo', 'tmp', 'ocr-dataset');
+  assert.throws(
+    () =>
+      parseBenchmarkArgs([
+        '--manifest',
+        'ground-truth.json',
+        '--output',
+        path.join(unrelatedRoot, 'report.json'),
+      ]),
+    /tmp\/ocr-dataset/i,
+  );
+});
+
+test('rejectsSymlinkedOutputParentBeforeStartingOcr', async (context) => {
+  const manifestPath = await makeManifest();
+  const datasetRoot = path.resolve('tmp/ocr-dataset');
+  const externalRoot = await mkdtemp(path.join(os.tmpdir(), 'bdo-ocr-output-external-'));
+  const linkPath = path.join(datasetRoot, `output-link-${randomUUID()}`);
+  await mkdir(datasetRoot, { recursive: true });
+  try {
+    await symlink(externalRoot, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+  } catch (error) {
+    await rm(externalRoot, { recursive: true, force: true });
+    context.skip(`Directory links are unavailable: ${error.message}`);
+    return;
+  }
+  let workerStarted = false;
+
+  try {
+    await assert.rejects(
+      runBenchmark({
+        manifestPath,
+        outputPath: path.join(linkPath, 'report.json'),
+        workerFactory: async () => {
+          workerStarted = true;
+          return {
+            recognize: async () => ({ data: { blocks: [] } }),
+            terminate: async () => undefined,
+          };
+        },
+      }),
+      /symlink|escape/i,
+    );
+    assert.equal(workerStarted, false);
+  } finally {
+    await rm(linkPath, { recursive: true, force: true });
+    await rm(externalRoot, { recursive: true, force: true });
+  }
+});
+
+test('acceptsLowercaseWindowsOutputDrive', async (context) => {
+  if (process.platform !== 'win32') {
+    context.skip('Windows path casing only applies on Windows.');
+    return;
+  }
+  const manifestPath = await makeManifest();
+  const outputPath = path.join(
+    path.resolve('tmp/ocr-dataset').toLowerCase(),
+    `benchmark-test-${randomUUID()}.json`,
+  );
+  temporaryOutputFiles.push(outputPath);
+
+  await runBenchmark({
+    manifestPath,
+    outputPath,
+    workerFactory: async () => ({
+      recognize: async () => ({ data: { blocks: [] } }),
+      terminate: async () => undefined,
+    }),
+  });
 });
 
 test('showsHelpWithoutLoadingOcr', async () => {
