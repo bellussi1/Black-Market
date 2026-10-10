@@ -25,3 +25,6 @@ data/
 # Local browser QA evidence and generated test captures.
 .playwright-mcp/
 output/playwright/
+
+# Local synthetic and authorized OCR corpora, labels, and benchmark reports.
+tmp/ocr-dataset/
