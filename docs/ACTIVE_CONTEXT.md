@@ -6,15 +6,16 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ## 1. Sessão Atual: 10/10/2026
 
-- **Agente Anterior**: OpenAI Codex (iniciou na branch `codex/bdo-ui-redesign`)
 - **Agente Atual**: Antigravity
-- **Branch Ativa**: `codex/bdo-ui-redesign` (5 commits à frente de `origin/codex/bdo-ui-redesign`)
+- **Branch Ativa**: `codex/bdo-ui-redesign` (8 commits à frente de `origin/codex/bdo-ui-redesign`)
 - **Últimos Commits**:
+  - `c7ef564` `feat(scans): standardize bdo ui buttons, action confirmation animations, and unified batch consolidation`
+  - `cd97e78` `fix(scans): support full HD and 4K resolutions and calibrate grid pitch in storage detection`
+  - `e08e39a` `docs: update context handoff with crafting calculator and bdo ui standardization`
   - `a421d2c` `feat(recipes): add crafting economics calculator, batch market query, and profit metrics`
   - `497c2cb` `feat(scans): improve ocr quantity reconciliation, direct batch save, and bdo styled cards`
   - `63ba41b` `fix(catalog): support powershell 5.1 paths and stabilize nest integration test`
   - `e5a31c4` `docs(research): add master bdo knowledge base and multi-agent handoff protocol`
-  - `b9c43c9` `feat: simplify expandable crafting steps and primary actions`
 
 ---
 
@@ -27,67 +28,60 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ## 3. Realizações Desta Sessão (Antigravity)
 
-### 3.1. Dados do Jogo e Catálogo (Extração e Verificação)
-1. **Cliente Local Detectado**:
-   - O jogo está instalado localmente em `C:\Program Files (x86)\Steam\steamapps\common\Black Desert Online`.
-   - O catálogo extraído atual é `sa-pt-meta-2e188c2680c1-loc-7e729a315ce6-ext-5bf11bd7-bin-60bd5677-catalog` (77MB de `items.json`, 2.7MB de `recipes.json`, `icons/`, `manufacture.json`, etc.).
-   - Corrigida a compatibilidade de resolução de caminhos no Windows PowerShell 5.1 no script `scripts/sync-game-catalog.ps1`.
-2. **Caso de Teste Extenso: Fármaco da Harmonia - Edania**:
-   - Verificados os itens de teste no catálogo e API:
-     - `1408`: `[Grupo] Imortalidade: Fármaco da Harmonia - Edania` (`/recipes/items/1408`).
-     - `1407`: `[Grupo] Fármaco da Harmonia - Edania` (paridade com `bdolytics.com/pt/crafting/1407:d08c075d84ae`).
-     - Cadeia profunda de alquimia simples com 6+ níveis de profundidade (Fármacos de Raiva, Adaptação, Potencial, Decadência, Ira Descontrolada, Elixir de Edania Poderoso, Óleos da Imortalidade).
+### 3.1. Padronização Rigorosa de UI nos Scans (Skill BDO UI Design)
+1. **Eliminação Completa do Botão Verde Fora da Regra**:
+   - O botão `.btn-save-master` anteriormente usava gradiente verde (`#388e3c`/`#2e7d32`) e borda verde `#4caf50`.
+   - Foi 100% remodelado para a identidade do Black Market: ouro/bronze nobre (`var(--bm-accent)`), texto carvão contrastante (`var(--bm-background)`), cantos chanfrados de 2px, box-shadow BDO e hover suave `var(--bm-accent-hover)`.
+   - Remoção de qualquer emoji (inclusive foguete ou ícones Unicode decorativos).
+2. **Unificação da Barra de Consolidação**:
+   - Eliminada a duplicação confusa onde dois botões com textos idênticos apareciam lado a lado.
+   - Definida hierarquia cristalina:
+     - **Ação Primária**: `Confirmar e salvar lote (X itens)` (ou no armazém/inventário/equipamentos dependendo do destino ativo via `saveBatchLabel()`), em ouro nobre BDO (`.btn-save-master`).
+     - **Ação Secundária Seletiva**: `Salvar apenas X revisados` (`.btn.subtle`), disponível quando o usuário escolhe atualizar manualmente apenas itens específicos marcados.
+3. **Animações e Transições de Confirmação de Ações**:
+   - Adicionada animação `@keyframes bm-confirm-glow` para dar feedback visual tátil e elegante no ato de inclusão/confirmação.
+   - Transição suave em `.btn-cell-confirm`, `.scan-cell.reviewed` (com borda e box-shadow inset dourado BDO).
+   - Notas discretas `.quantity-note` para indicar leitura original e valor convertido.
 
-### 3.2. Calculadora de Crafting & Rentabilidade (Paridade BDOLytics)
-1. **Consulta de Cotações da Receita em Lote (1-Click Market Query)**:
-   - Adicionado método `consultAllTreePrices()` em `RecipeTree`: consulta em paralelo as cotações de mercado de todos os insumos e subprodutos da árvore (`parts().keys()` + item raiz) via `MarketApi.getItem()`.
-   - Atualiza `livePrices` imediatamente, disparando o recálculo reativo da árvore, custos e rentabilidade.
-2. **Métricas Econômicas em Tempo Real**:
-   - **Faturamento Bruto**: Valor de venda base × quantidade total produzida.
-   - **Faturamento Líquido**: Retorno pós-taxa do Mercado Central considerando Pacote Econômico (84,5%) e buffs configurados pelo usuário (`calculateMarket`).
-   - **Custo dos Materiais**: Custo total de aquisição dos materiais faltantes (descontando estoque do usuário).
-   - **Lucro Líquido Total**: `Faturamento Líquido - Custo dos Materiais`.
-   - **Margem de Lucro (%)**: Margem percentual com classes semânticas `.profit-positive` (verde suave BDO) e `.profit-negative` (vermelho suave).
-   - **Tempo de Produção Configurável**: Input numérico para tempo em segundos por operação (padrão 1,0s), calculando o tempo total formatado (ex: `1m 15s` ou `2h 30m`).
-   - **Lucro por Hora**: Métrica em moedas de prata por hora para comparação direta com grind e outras lifeskills.
-   - **Faturamento por Hora**: Taxa de faturamento rateada por tempo.
-3. **Painel Econômico Dedicado**:
-   - Novo card `.economic-dashboard` no topo da árvore de produção com grid de métricas, botão de atualizar cotações com spinner discreto e suporte ao painel expansível de taxas do mercado (`<app-tax-options>`).
+### 3.2. Calibração do Reconhecimento OCR com Imagens Reais do Jogo
+1. **Resolução de Tela Desbloqueada (1080p, 1440p, 4K)**:
+   - Identificado e corrigido o limite de 2.000.000 pixels em `storage-grid.ts` que fazia capturas Full HD (1920×1080 = 2.073.600 px) retornarem array vazio de grades.
+   - Limite expandido para 12.000.000 px e suporte a pitches de 14px a 160px.
+2. **Grades de 8 e 9 Colunas Calibradas**:
+   - Calibrados os passos e tolerâncias para suportar fielmente tanto armazéns de 8 colunas quanto de 9 colunas (conforme screenshots reais de Velia).
+3. **Quantidades Abreviadas (k e M) e Itens Unitários**:
+   - Suporte refinado a sufixos `k` e `M` com limpeza de pontuações de borda (ex: `139.1k`, `319.9k`, `1.3M`).
+   - Itens unitários sem texto numérico na imagem do jogo agora são confiantemente atribuídos com 1 unidade.
+   - O botão de ação primária em lote (`confirmAndSaveAll()`) auto-converte e preenche estimativas para salvar tudo diretamente sem exigir que o usuário digite ou confirme slot a slot manualmente.
+4. **Numerais Romanos Estendidos para Equipamentos**:
+   - Validados tiers até X (DEC) para os novos equipamentos Fallen God e armas do Soberano (VI, VII, VIII, IX, X).
 
-### 3.3. Padronização Rigorosa de UI (Skill BDO UI Design)
-1. **Regra Absoluta: ZERO EMOJIS**:
-   - 100% dos emojis foram removidos da interface (inclusive símbolos Unicode em favor de SVGs acessíveis com tokens de design BDO).
-2. **Componentes e Interações**:
-   - Botões com altura mínima de 44px, cantos levemente arredondados (2px), fundo carvão neutro e bordas bronze/ouro.
-   - Inputs numéricos e selects com `tabular-nums`, foco dourado (`var(--bm-accent)`) e transição fluida de 180ms cubic-bezier(0.16, 1, 0.3, 1).
-   - Microinterações de confirmação (animações de fade-in e feedback visual de ação realizada).
-
-### 3.4. Qualidade e Testes (AGENTS.md)
+### 3.3. Qualidade e Testes (AGENTS.md)
 - `pnpm format`: Arquivos formatados via Prettier.
-- `pnpm check`: **PASSOU** 100% (0 erros de ESLint, formatação OK, bundles de browser e SSR gerados).
+- `pnpm check`: **PASSOU** 100% (0 erros de ESLint, formatação verificada, bundles Angular gerados com sucesso).
 - `pnpm test`: **PASSOU** 100% em todos os pacotes:
   - 126 testes unitários e de integração na API (`@bdo/api`).
-  - 284 testes unitários na Web (`@bdo/web`, incluindo novos testes para `consultAllTreePrices`, lucro por hora e métricas econômicas).
+  - 285 testes unitários na Web (`@bdo/web`).
   - 40 testes unitários em `@bdo/calculators`.
-  - Total: **450 testes passando** no monorepo.
+  - Total: **451 testes passando** no monorepo.
 
 ---
 
 ## 4. Arquivos Modificados / Criados
 
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`: Adicionados `craftTimeSeconds`, `treeMarketLoading`, `treeMarketMessage`, computeds econômicos (`grossRevenue`, `netRevenue`, `profit`, `profitPerHour`, `revenuePerHour`, `profitMargin`, etc.) e método `consultAllTreePrices()`.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.html`: Novo painel `.economic-dashboard`, grid de métricas econômicas, botão de consulta do mercado e preservação de `.cost-value`.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.scss`: Estilos BDO UI para `.economic-dashboard`, `.metric-card`, botões de ação e responsividade mobile.
-- `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts`: Testes unitários para consulta de cotações em lote e cálculo de métricas econômicas da receita.
-- `apps/web/src/app/features/recipes/recipes-page.scss`: Padronização de botões, inputs e selects BDO UI.
-- `apps/web/src/app/features/market/market-page.html`: Remoção de caractere Unicode e substituição por SVG acessível.
-- `scripts/sync-game-catalog.ps1`: Compatibilidade de caminhos relativos com Windows PowerShell 5.1.
-- `apps/api/src/operations/http-policy.integration.spec.ts`: Ajuste de timeout do hook `beforeAll` para estabilidade em concorrência.
+- `apps/web/src/app/features/scans/scans-page.scss`: Remoção do botão verde, adoção de tokens BDO, badges padronizados e animação `bm-confirm-glow`.
+- `apps/web/src/app/features/scans/scans-page.html`: Ações unificadas, botão mestre dinâmico `saveBatchLabel()`, notas limpas de quantidade e sem emojis.
+- `apps/web/src/app/features/scans/scans-page.ts`: Adicionado computed `saveBatchLabel`, refinamento de `reliable` e resolução de estimativas.
+- `apps/web/src/app/features/scans/scans-page.spec.ts`: Teste para `saveBatchLabel` e validação do fluxo de salvamento direto.
+- `apps/web/src/app/features/scans/storage-grid.ts`: Suporte a imagens 1080p, 1440p e 4K (até 12MP) e passos de pitch ampliados.
+- `apps/web/src/app/features/scans/storage-grid.spec.ts`: Teste com frame Full HD 1080p.
+- `apps/web/src/app/features/scans/visible-quantity.ts`: Higienização de pontuação pós-sufixo em quantidades k/M.
+- `apps/api/src/market/market-history.service.spec.ts`: Timeout de 30s para teste de estresse de 600k linhas.
 
 ---
 
 ## 5. Próximos Passos (Instruções para Codex ou Antigravity)
 
-1. Realizar merge da branch `codex/bdo-ui-redesign` na branch principal (`main` ou equivalente) conforme solicitado pelo usuário, ou criar pull request para validação final.
-2. Explorar o módulo de **Comparação de Itens** (inspirado na arquitetura do `bdo-viewer`).
-3. Adicionar opção no painel econômico da receita para salvar presets de maestria/tempo por tipo de profissão (Culinária vs Alquimia vs Processamento).
+1. Validar no navegador (`http://localhost:4200/scans`) o upload das imagens enviadas pelo usuário em lote.
+2. Seguir com o merge da branch `codex/bdo-ui-redesign` para a branch principal se solicitado pelo usuário.
+3. Explorar o módulo de **Comparação de Itens** ou presets de profissão na árvore de receitas.
