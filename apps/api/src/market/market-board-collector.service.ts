@@ -19,7 +19,7 @@ export class MarketBoardCollector implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     if (
       !this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true) ||
-      !this.config.get<boolean>('MARKET_BOARD_COLLECTOR_ENABLED', true)
+      !this.config.get<boolean>('MARKET_BOARD_COLLECTOR_ENABLED', false)
     )
       return;
     // Start the timer after the first fetch finishes so its 8-minute local cache has
