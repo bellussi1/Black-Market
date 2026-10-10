@@ -9,7 +9,6 @@ export interface GraphBox {
 export interface GraphLayoutState {
   positions: Map<string, GraphBox & { identity: string }>;
   sizes: ReadonlyMap<string, { width: number; height: number }>;
-  columns?: 1 | 2 | 3 | 4;
 }
 export interface GraphNode extends GraphBox {
   node: RecipeNode;
@@ -23,6 +22,7 @@ export interface GraphEdge {
   d: string;
 }
 export interface GraphSourceNode extends GraphBox {
+  tier: number;
   path: string;
   itemPath: string;
   kind: 'method' | 'location' | 'more';
@@ -68,6 +68,7 @@ export function layoutRecipeGraph(
           break;
         }
         const method: GraphSourceNode = {
+          tier: depth + 1,
           path: node.path + '/' + activity,
           itemPath: node.path,
           kind: 'method',
@@ -87,6 +88,7 @@ export function layoutRecipeGraph(
             break;
           }
           const location: GraphSourceNode = {
+            tier: depth + 2,
             path: method.path + '/' + source.id,
             itemPath: node.path,
             kind: 'location',
@@ -102,6 +104,7 @@ export function layoutRecipeGraph(
         }
         if (available.length > 3 && nodes.length + sources.length < 200) {
           const more: GraphSourceNode = {
+            tier: depth + 2,
             path: method.path + '/more',
             itemPath: node.path,
             kind: 'more',
@@ -159,125 +162,98 @@ export function layoutRecipeGraph(
     })),
   ];
   const byPath = new Map(entries.map((entry) => [entry.path, entry.box]));
-  const parents = new Map(edges.map((edge) => [edge.to, edge.from]));
-  {
-    const positions = state?.positions ?? new Map<string, GraphBox & { identity: string }>();
-    const columns = state?.columns ?? 2;
-    // Keep hidden descendants reserved. Changing an item at a path invalidates that subtree only.
-    for (const entry of entries) {
-      const previous = positions.get(entry.path);
-      if (previous && previous.identity !== entry.identity)
-        for (const path of positions.keys())
-          if (path === entry.path || path.startsWith(entry.path + '/')) positions.delete(path);
-    }
-    const originX = Math.min(24, ...[...positions.values()].map((box) => box.x));
-    const columnXs = Array.from({ length: columns }, (_, index) => originX + index * 284);
-    const siblings = new Map<string, string[]>();
-    for (const edge of edges) {
-      const paths = siblings.get(edge.from) ?? [];
-      paths.push(edge.to);
-      siblings.set(edge.from, paths);
-    }
-    const overlaps = (a: GraphBox, b: GraphBox) =>
-      a.x < b.x + b.width + 28 &&
-      a.x + a.width + 28 > b.x &&
-      a.y < b.y + b.height + 48 &&
-      a.y + a.height + 48 > b.y;
-    const placed = new Set<string>();
-    // Parents before children, including acquisition method and location nodes.
-    for (const entry of [...entries].sort(
-      (a, b) => a.path.split('/').length - b.path.split('/').length,
-    )) {
-      const { path, box, identity } = entry;
-      const size = state?.sizes.get(path);
-      if (size) {
-        box.width = size.width;
-        box.height = size.height;
-      }
-      const previous = positions.get(path);
-      const parentPath = parents.get(path);
-      const parent = parentPath ? byPath.get(parentPath) : undefined;
-      if (previous) {
-        box.x = previous.x;
-        box.y = previous.y;
-        // Only descendants of a growing card move; never recenter unrelated branches.
-        if (parent) box.y = Math.max(box.y, parent.y + parent.height + 64);
-      } else if (parent && parentPath) {
-        // Keep the graph within nearby world-space columns. A collision adds depth,
-        // never another distant column, regardless of the size of the new branch.
-        const nearby = [...columnXs].sort(
-          (a, b) => Math.abs(a - parent.x) - Math.abs(b - parent.x),
-        );
-        const index = siblings.get(parentPath)?.indexOf(path) ?? 0;
-        const ordered = [...nearby.slice(index % columns), ...nearby.slice(0, index % columns)];
-        const candidates = ordered.map((x) => {
-          const candidate = { ...box, x, y: parent.y + parent.height + 64 };
-          let blocker: GraphBox | undefined;
-          while (
-            (blocker = [...positions.entries()].find(
-              ([otherPath, other]) =>
-                otherPath !== path &&
-                !otherPath.startsWith(path + '/') &&
-                overlaps(candidate, other),
-            )?.[1])
-          )
-            candidate.y = blocker.y + blocker.height + 64;
-          return candidate;
-        });
-        // Fill available space beside related cards before adding another distant row.
-        const best = candidates.sort((a, b) => a.y - b.y)[0];
-        box.x = best.x;
-        box.y = best.y;
-      } else {
-        box.x = (siblings.get(path)?.length ?? 0) > 1 ? originX + (columns - 1) * 142 : originX;
-        box.y = 24;
-      }
-      // This also applies to the first pass after switching the root recipe,
-      // when sizes may already be cached but positions are being created anew.
-      if (parent) box.y = Math.max(box.y, parent.y + parent.height + 64);
-      // A taller card can cross into a neighboring branch's lower row. Resolve only
-      // the boxes below it; keep the edited card and unaffected neighbors anchored.
-      let blocker: GraphBox | undefined;
-      while (
-        (blocker = [...positions.entries()].find(
-          ([otherPath, other]) =>
-            otherPath !== path &&
-            !otherPath.startsWith(path + '/') &&
-            !path.startsWith(otherPath + '/') &&
-            (other.y <= box.y || placed.has(otherPath)) &&
-            overlaps(box, other),
-        )?.[1])
-      )
-        box.y = blocker.y + blocker.height + 64;
-      positions.set(path, {
-        x: box.x,
-        y: box.y,
-        width: box.width,
-        height: box.height,
-        identity,
-      });
-      placed.add(path);
-    }
+  const children = new Map<string, string[]>();
+  for (const edge of edges) {
+    const group = children.get(edge.from) ?? [];
+    group.push(edge.to);
+    children.set(edge.from, group);
   }
-  // Both ends are derived from actual card boxes, not fixed CSS heights.
+  const tiers = new Map<string, number>();
+  const spans = new Map<string, number>();
+  const rows: { y: number; height: number }[] = [];
+  const gap = 48;
+  // Measure actual cards first. Every tier uses the tallest card in that tier.
+  const measure = (path: string, depth: number): number => {
+    const box = byPath.get(path)!;
+    const size = state?.sizes.get(path);
+    if (size) Object.assign(box, size);
+    tiers.set(path, depth);
+    const row = (rows[depth] ??= { y: 0, height: 0 });
+    row.height = Math.max(row.height, box.height);
+    const descendants = children.get(path) ?? [];
+    const branchWidth =
+      descendants.reduce((width, child) => width + measure(child, depth + 1), 0) +
+      Math.max(0, descendants.length - 1) * gap;
+    const span = Math.max(box.width, branchWidth);
+    spans.set(path, span);
+    return span;
+  };
+  measure(root.path, 0);
+  let nextY = 24;
+  for (const row of rows) {
+    row.y = nextY;
+    nextY += row.height + 112;
+  }
+  // Disjoint subtree bands preserve sibling order and prevent unrelated roots
+  // from crossing. Parents sit at the center of the span occupied by their children.
+  const place = (path: string, left: number) => {
+    const box = byPath.get(path)!;
+    const span = spans.get(path)!;
+    box.x = left + (span - box.width) / 2;
+    box.y = rows[tiers.get(path)!].y;
+    const descendants = children.get(path) ?? [];
+    const childWidth =
+      descendants.reduce((width, child) => width + spans.get(child)!, 0) +
+      Math.max(0, descendants.length - 1) * gap;
+    let childX = left + (span - childWidth) / 2;
+    for (const child of descendants) {
+      place(child, childX);
+      childX += spans.get(child)! + gap;
+    }
+  };
+  place(root.path, 24);
+  state?.positions.clear();
+  for (const entry of entries)
+    state?.positions.set(entry.path, { ...entry.box, identity: entry.identity });
   const boxes = entries.map((entry) => entry.box);
-  const routingOrigin = Math.min(24, ...boxes.map((box) => box.x));
+  // Horizontal movement starts only below the tallest card of the parent tier.
+  // The entire fan-out stays inside the empty gutter between adjacent tiers.
   for (const edge of edges) {
     const parent = byPath.get(edge.from)!;
     const child = byPath.get(edge.to)!;
-    const x1 = parent.x + parent.width / 2,
-      y1 = parent.y + parent.height;
-    const x2 = child.x + child.width / 2,
-      y2 = child.y;
-    const bend = Math.max(24, (y2 - y1) / 2);
-    if (y2 - y1 > 128) {
-      // Siblings may stack in the same column. Run long connections in the gap
-      // between columns (or the left margin on mobile), never behind another card.
-      const columns = state?.columns ?? 2;
-      const lane = Math.max(0, Math.min(columns - 2, Math.floor((parent.x - routingOrigin) / 284)));
-      const laneX = columns === 1 ? routingOrigin - 18 : routingOrigin + lane * 284 + 266;
-      edge.d = `M ${x1} ${y1} C ${x1} ${y1 + 24}, ${laneX} ${y1 + 24}, ${laneX} ${y1 + 24} L ${laneX} ${y2 - 24} C ${laneX} ${y2 - 24}, ${x2} ${y2 - 24}, ${x2} ${y2}`;
-    } else edge.d = `M ${x1} ${y1} C ${x1} ${y1 + bend}, ${x2} ${y2 - bend}, ${x2} ${y2}`;
+    const row = rows[tiers.get(edge.from)!];
+    const x1 = parent.x + parent.width / 2;
+    const y1 = parent.y + parent.height;
+    const x2 = child.x + child.width / 2;
+    const y2 = child.y;
+    const top = row.y + row.height + 24;
+    const bottom = y2 - 24;
+    const middle = (top + bottom) / 2;
+    edge.d =
+      'M ' +
+      x1 +
+      ' ' +
+      y1 +
+      ' L ' +
+      x1 +
+      ' ' +
+      top +
+      ' C ' +
+      x1 +
+      ' ' +
+      middle +
+      ', ' +
+      x2 +
+      ' ' +
+      middle +
+      ', ' +
+      x2 +
+      ' ' +
+      bottom +
+      ' L ' +
+      x2 +
+      ' ' +
+      y2;
   }
   const minX = Math.min(...boxes.map((box) => box.x), 24);
   const minY = Math.min(...boxes.map((box) => box.y), 24);
@@ -291,6 +267,7 @@ export function layoutRecipeGraph(
     height: maxY + 24,
     bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
     truncated,
+    tiers: rows,
   };
 }
 export function isGraphAncestor(path: string, selected: string) {

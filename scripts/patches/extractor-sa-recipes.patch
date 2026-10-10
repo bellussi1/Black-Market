@@ -1,0 +1,19 @@
+diff --git a/internal/build/recipes.go b/internal/build/recipes.go
+index b738a30..06ac3e0 100644
+--- a/internal/build/recipes.go
++++ b/internal/build/recipes.go
+@@ -72,8 +72,12 @@ func (b *Builder) scanItemInfo() {
+ 	// Pass 1: the localized (lang) XMLs — English names + ingredient counts. Both
+ 	// passes enumerate only their ui_html/xml subtree (not the whole archive index)
+ 	// and parse the XMLs concurrently, then reduce serially in file order.
+-	langFiles := b.src.Index.FilesUnder("ui_html/xml/" + strings.ToLower(b.lang))
+-	for _, ii := range b.parseItemInfos(langFiles, func(p string) bool { return isItemRecipeXML(p, b.lang) }) {
++	recipeLanguage := b.lang
++	if b.region == "sa" && b.lang == "pt" {
++		recipeLanguage = "sa"
++	}
++	langFiles := b.src.Index.FilesUnder("ui_html/xml/" + strings.ToLower(recipeLanguage))
++	for _, ii := range b.parseItemInfos(langFiles, func(p string) bool { return isItemRecipeXML(p, recipeLanguage) }) {
+ 		if ii == nil {
+ 			continue
+ 		}

@@ -64,6 +64,8 @@ try {
   if ($taskProvenance.status -ne 'extracted' -or $taskProvenance.metaSha256 -ne $taskMeta -or $taskProvenance.localizationSha256 -ne $taskLanguage -or $taskProvenance.extractorSha256 -ne $taskExtractorHash) {
     throw 'A extração não está completa ou não corresponde ao cliente instalado. Preserve os arquivos e investigue antes de publicar.'
   }
+  node (Join-Path $PSScriptRoot 'quarantine-invalid-recipes.mjs') $taskExtraction
+  if ($LASTEXITCODE -ne 0) { throw 'Falha na revisão de referências; catálogo anterior preservado.' }
   if (-not $SkipBuild) {
     docker compose build api
     if ($LASTEXITCODE -ne 0) { throw 'Falha ao construir a imagem de importação.' }

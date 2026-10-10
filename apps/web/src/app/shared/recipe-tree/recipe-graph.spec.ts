@@ -6,6 +6,34 @@ import { layoutRecipeGraph } from './recipe-graph-model';
 import { nodeFor } from './recipe-tree-model';
 describe('Accessible graph controls', () => {
   useMemoryStorage();
+  it('aligns each tier below its tallest card and keeps sibling branch spans separate', () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [2, 3].map((id, i) => ({
+      ...nodeFor({ itemId: id, name: 'Material', quantity: '1' }, `root/${i}`),
+      expanded: true,
+      children: Array.from({ length: i === 0 ? 3 : 2 }, (_, j) =>
+        nodeFor({ itemId: 10 + i * 3 + j, name: 'Insumo', quantity: '1' }, `root/${i}/${j}`),
+      ),
+    }));
+    const graph = layoutRecipeGraph(root, '', new Map(), {
+      positions: new Map(),
+      sizes: new Map([['root/0', { width: 248, height: 480 }]]),
+    });
+    for (const depth of [0, 1, 2])
+      expect(
+        new Set(graph.nodes.filter((node) => node.depth === depth).map((node) => node.y)).size,
+      ).toBe(1);
+    const first = graph.nodes.find((node) => node.node.path === 'root/0')!;
+    expect(graph.nodes.find((node) => node.node.path === 'root/0/0')!.y).toBeGreaterThanOrEqual(
+      first.y + 480 + 96,
+    );
+    const left = graph.nodes.filter((node) => node.node.path.startsWith('root/0/'));
+    const right = graph.nodes.filter((node) => node.node.path.startsWith('root/1/'));
+    expect(Math.max(...left.map((node) => node.x + node.width))).toBeLessThan(
+      Math.min(...right.map((node) => node.x)),
+    );
+  });
   it('emits node selection and bounds zoom without changing the recipe', async () => {
     const root = nodeFor({ itemId: 5301, name: 'Reagente', quantity: '1' }, 'root');
     const fixture = await renderComponent(RecipeGraph, { root }),
@@ -62,7 +90,7 @@ describe('Accessible graph controls', () => {
     expect((180 - graph.pan().x) / graph.zoom()).toBeCloseTo(160, 5);
     expect((150 - graph.pan().y) / graph.zoom()).toBeCloseTo(120, 5);
   });
-  it('does not move existing nodes when adding or hiding a dependency branch', async () => {
+  it('keeps tier rows and restores branch placement when hiding and reopening dependencies', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = [0, 1, 2].map((i) =>
@@ -91,7 +119,6 @@ describe('Accessible graph controls', () => {
     const graph = fixture.componentInstance;
     for (const before of initial) {
       expect(graph.layout().nodes.find((n) => n.node.path === before.path)).toMatchObject({
-        x: before.x,
         y: before.y,
       });
     }
@@ -108,6 +135,45 @@ describe('Accessible graph controls', () => {
       x: childPosition.x,
       y: childPosition.y,
     });
+  });
+  it('anchors the selected card on screen when a tier expands horizontally', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [2, 3].map((id, i) =>
+      nodeFor({ itemId: id, name: 'Material', quantity: '1' }, `root/${i}`),
+    );
+    const fixture = await renderComponent(RecipeGraph, { root, selected: 'root/0' });
+    const viewport = fixture.nativeElement.querySelector('.graph-viewport');
+    Object.defineProperties(viewport, {
+      clientWidth: { value: 800 },
+      clientHeight: { value: 600 },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    fixture.detectChanges();
+    const graph = fixture.componentInstance;
+    graph.zoom.set(0.7);
+    graph.pan.set({ x: 100, y: 20 });
+    const before = graph.layout().nodes.find((entry) => entry.node.path === 'root/0')!;
+    const screenX = before.x * graph.zoom() + graph.pan().x;
+    fixture.componentRef.setInput('root', {
+      ...root,
+      children: root.children.map((node, i) =>
+        i
+          ? node
+          : {
+              ...node,
+              expanded: true,
+              children: [4, 5].map((id, j) =>
+                nodeFor({ itemId: id, name: 'Insumo', quantity: '1' }, `${node.path}/${j}`),
+              ),
+            },
+      ),
+    });
+    fixture.detectChanges();
+    const after = graph.layout().nodes.find((entry) => entry.node.path === 'root/0')!;
+    expect(after.x).not.toBe(before.x);
+    expect(after.x * graph.zoom() + graph.pan().x).toBeCloseTo(screenX);
+    expect(graph.zoom()).toBe(0.7);
   });
   it('fits the full height of a deep graph inside the viewport', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
@@ -250,7 +316,7 @@ describe('Accessible graph controls', () => {
     expect(graph.nodes[1].y).toBeGreaterThanOrEqual(graph.nodes[0].y + 480 + 64);
   });
 
-  it('stacks a large initial recipe downwards within two nearby columns', () => {
+  it('places all siblings on one tier with their parent centered above them', () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = Array.from({ length: 5 }, (_, index) =>
@@ -258,29 +324,27 @@ describe('Accessible graph controls', () => {
     );
     const graph = layoutRecipeGraph(root);
     const parent = graph.nodes[0];
-    expect(new Set(graph.nodes.slice(1).map((entry) => entry.x)).size).toBeLessThanOrEqual(2);
-    expect(graph.bounds.width).toBeLessThanOrEqual(600);
+    expect(new Set(graph.nodes.slice(1).map((entry) => entry.y)).size).toBe(1);
+    expect(parent.x + parent.width / 2).toBe((graph.nodes[1].x + graph.nodes.at(-1)!.x + 248) / 2);
     for (const child of graph.nodes.slice(1)) {
       expect(child.y).toBeGreaterThanOrEqual(parent.y + parent.height + 64);
-      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(284);
+      expect(child.y).toBe(graph.nodes[1].y);
     }
-    expect(graph.bounds.height).toBeGreaterThan(700);
+    expect(graph.bounds.height).toBeLessThan(600);
   });
-  it('balances a large recipe across four columns with fewer rows and no overlaps', () => {
+  it('lays out a wide tier without wrapping siblings or overlapping cards', () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = Array.from({ length: 9 }, (_, index) =>
       nodeFor({ itemId: index + 2, name: 'Ingrediente', quantity: '1' }, `root/${index}`),
     );
-    const narrow = layoutRecipeGraph(root);
     const balanced = layoutRecipeGraph(root, '', new Map(), {
       positions: new Map(),
       sizes: new Map(),
-      columns: 4,
     });
-    expect(new Set(balanced.nodes.slice(1).map((entry) => entry.x)).size).toBe(4);
-    expect(balanced.bounds.width).toBeLessThanOrEqual(1150);
-    expect(balanced.bounds.height).toBeLessThan(narrow.bounds.height);
+    expect(new Set(balanced.nodes.slice(1).map((entry) => entry.y)).size).toBe(1);
+    expect(balanced.bounds.width).toBeGreaterThan(2000);
+    expect(balanced.bounds.height).toBeLessThan(600);
     for (const a of balanced.nodes)
       for (const b of balanced.nodes) {
         if (a === b) continue;
@@ -322,14 +386,14 @@ describe('Accessible graph controls', () => {
         [2, [source('a')]],
         [3, [source('b')]],
       ]),
-      { positions, sizes: new Map(), columns: 4 },
+      { positions, sizes: new Map() },
     );
     const method = graph.sources.find((node) => node.path === 'root/0/workers')!;
     const location = graph.sources.find((node) => node.path === 'root/1/workers/b')!;
     expect(location.y).toBeGreaterThanOrEqual(method.y + method.height + 48);
   });
 
-  it('places five expanded ingredients below their parent within bounded balanced columns', async () => {
+  it('places expanded ingredients together on the next tier while preserving zoom', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = [0, 1].map((index) =>
@@ -362,14 +426,14 @@ describe('Accessible graph controls', () => {
     expect(graph.pan()).toEqual({ x: -90, y: -35 });
     expect(graph.zoom()).toBe(0.7);
     expect(graph.layout().nodes.find((entry) => entry.node.path === 'root/0')).toMatchObject({
-      x: parent.x,
       y: parent.y,
     });
     const nodes = graph.layout().nodes;
-    expect(graph.layout().bounds.width).toBeLessThanOrEqual(1150);
+    expect(graph.layout().bounds.width).toBeLessThanOrEqual(1800);
     for (const child of nodes.filter((entry) => entry.node.path.startsWith('root/0/'))) {
       expect(child.y).toBeGreaterThanOrEqual(parent.y + parent.height + 64);
-      expect(Math.abs(child.x - parent.x)).toBeLessThanOrEqual(852);
+      const movedParent = graph.layout().nodes.find((entry) => entry.node.path === 'root/0')!;
+      expect(Math.abs(child.x - movedParent.x)).toBeLessThanOrEqual(600);
     }
     for (let i = 0; i < nodes.length; i++)
       for (let j = i + 1; j < nodes.length; j++) {
@@ -409,7 +473,7 @@ describe('Accessible graph controls', () => {
     expect(fixture.nativeElement.querySelectorAll('.graph-links path.highlight')).toHaveLength(2);
   });
 
-  it('uses one world-space column for a narrow viewport and preserves it during zoom', async () => {
+  it('keeps sibling tiers intact in a narrow viewport and during zoom', async () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = Array.from({ length: 5 }, (_, index) =>
@@ -425,7 +489,14 @@ describe('Accessible graph controls', () => {
     await new Promise((resolve) => setTimeout(resolve, 40));
     fixture.detectChanges();
     const graph = fixture.componentInstance;
-    expect(new Set(graph.layout().nodes.map((entry) => entry.x)).size).toBe(1);
+    expect(
+      new Set(
+        graph
+          .layout()
+          .nodes.filter((entry) => entry.depth === 1)
+          .map((entry) => entry.y),
+      ).size,
+    ).toBe(1);
     const positions = graph.layout().nodes.map((entry) => ({ x: entry.x, y: entry.y }));
     graph.scale(0.15);
     expect(graph.layout().nodes.map((entry) => ({ x: entry.x, y: entry.y }))).toEqual(positions);
@@ -455,7 +526,7 @@ describe('Accessible graph controls', () => {
     expect(fixture.nativeElement.querySelectorAll('.graph-links path.highlight')).toHaveLength(2);
   });
 
-  it('routes connections to lower siblings through a free corridor beside the intervening cards', () => {
+  it('routes fan-out through the empty gutter above the entire child tier', () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
     root.children = Array.from({ length: 5 }, (_, index) =>
@@ -467,9 +538,8 @@ describe('Accessible graph controls', () => {
     const intervening = graph.nodes.find((entry) => entry.node.path === 'root/2')!;
     const corridor = edge.d.match(/L\s+([\d.]+)\s+([\d.]+)/);
     expect(corridor).not.toBeNull();
-    const x = Number(corridor![1]),
-      y = Number(corridor![2]);
-    expect(x < intervening.x || x > intervening.x + intervening.width).toBe(true);
+    const y = Number(corridor![2]);
+    expect(y).toBeLessThan(intervening.y);
     expect(y).toBeLessThan(target.y);
   });
 

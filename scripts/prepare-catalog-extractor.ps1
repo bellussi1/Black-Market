@@ -14,6 +14,12 @@ if ($LASTEXITCODE -ne 0) {
   if ($LASTEXITCODE -ne 0) { throw 'Falha ao aplicar o patch do extractor.' }
 }
 $env:GOPATH = Join-Path $recipeWorkspace 'data/tools/go-cache'
+$regionalPatch = Join-Path $PSScriptRoot 'patches/extractor-sa-recipes.patch'
+git -C $ExtractorDirectory apply --reverse --check $regionalPatch 2>$null
+if ($LASTEXITCODE -ne 0) {
+  git -C $ExtractorDirectory apply $regionalPatch
+  if ($LASTEXITCODE -ne 0) { throw 'Falha ao aplicar correção regional SA.' }
+}
 & $GoPath -C $ExtractorDirectory build -o ../bdo-catalog-extractor.exe .
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar o extractor.' }
 Write-Output 'Extractor preparado. -RecipeCatalogOnly mantém itens, receitas e geografia; omite buffs, habilidades, progressão e curvas de aprimoramento.'

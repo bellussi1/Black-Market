@@ -51,8 +51,6 @@ export class RecipeGraph {
   readonly typeLabel = recipeTypeLabel;
   private readonly destroyRef = inject(DestroyRef);
   private readonly sizes = signal<GraphLayoutState['sizes']>(new Map());
-  private readonly columns = signal<1 | 2 | 3 | 4>(4);
-  readonly balanced = signal(true);
   private readonly positions: GraphLayoutState['positions'] = new Map();
   private rootIdentity = '';
   private selectionRootIdentity = '';
@@ -68,7 +66,6 @@ export class RecipeGraph {
     return layoutRecipeGraph(root, this.focus(), this.origins(), {
       positions: this.positions,
       sizes: this.sizes(),
-      columns: this.columns(),
     });
   });
   readonly transform = computed(
@@ -96,6 +93,35 @@ export class RecipeGraph {
   } | null = null;
 
   constructor() {
+    let previous: ReturnType<typeof layoutRecipeGraph> | null = null;
+    let previousIdentity = '';
+    effect(() => {
+      const layout = this.layout();
+      const identity = this.root().part.itemId + ':' + (this.root().recipe?.key ?? '');
+      const selected = this.localSelection()?.ownerPath ?? this.selected();
+      if (
+        previous &&
+        previous !== layout &&
+        previousIdentity === identity &&
+        !this.initialFitPending
+      ) {
+        const before =
+          previous.nodes.find((entry) => entry.node.path === selected) ??
+          previous.sources.find((entry) => entry.path === selected);
+        const after =
+          layout.nodes.find((entry) => entry.node.path === selected) ??
+          layout.sources.find((entry) => entry.path === selected);
+        if (before && after)
+          untracked(() =>
+            this.pan.update((pan) => ({
+              x: pan.x + (before.x - after.x) * this.zoom(),
+              y: pan.y + (before.y - after.y) * this.zoom(),
+            })),
+          );
+      }
+      previous = layout;
+      previousIdentity = identity;
+    });
     effect(() => {
       const root = this.root();
       const identity = root.part.itemId + ':' + (root.recipe?.key ?? '');
@@ -169,12 +195,6 @@ export class RecipeGraph {
       }
       if (changed) this.sizes.set(sizes);
       if (this.initialFitPending && this.viewport()?.nativeElement.clientWidth) {
-        const width = this.viewport()!.nativeElement.clientWidth;
-        const columns = width < 560 ? 1 : this.balanced() ? (width < 900 ? 3 : 4) : 2;
-        if (columns !== this.columns()) {
-          this.positions.clear();
-          this.columns.set(columns);
-        }
         this.initialFitPending = false;
         this.fit();
       }
@@ -182,13 +202,6 @@ export class RecipeGraph {
   }
   allocation(path: string) {
     return this.allocationIndex().get(path);
-  }
-  toggleArrangement() {
-    this.balanced.update((value) => !value);
-    const width = this.viewport()?.nativeElement.clientWidth ?? 900;
-    this.positions.clear();
-    this.columns.set(width < 560 ? 1 : this.balanced() ? (width < 900 ? 3 : 4) : 2);
-    this.fit();
   }
   focusNode(path: string) {
     if (this.keyboardNavigation) this.center(path);

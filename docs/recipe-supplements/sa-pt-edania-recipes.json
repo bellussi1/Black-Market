@@ -1,11 +1,12 @@
 {
   "region": "sa",
   "locale": "pt",
-  "extractorChecksum": "a40ef27779f719e11001356a81fddea75573bdb2b05e9d2a35e49083228b30c0",
+  "extractorChecksum": "54eeb249e62f1c2196a66a360d8d197d49fe2cd5a69c4e5c1ef101f8e5fb2e4f",
   "reviewedAt": "2026-10-09",
   "sourceUrls": [
     "https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639",
-    "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694"
+    "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694",
+    "https://github.com/iDevelopThings/bdo-data-extractor/blob/5bf11bd7bc60dcbb6126be34bf3d76633abdd8b2/internal/tables/recipexml.go"
   ],
   "clientEvidence": {
     "extractionVersion": "sa-pt-meta-2e188c2680c1-loc-7e729a315ce6-ext-5bf11bd7-bin-80ebbce2-catalog",
@@ -95,6 +96,42 @@
     {
       "id": 821372,
       "name": "Catalisador Mágico Concentrado"
+    },
+    {
+      "id": 5304,
+      "name": "Cristal Variegado Bruto"
+    },
+    {
+      "id": 4466,
+      "name": "Cristal Translúcido"
+    },
+    {
+      "id": 4467,
+      "name": "Cristal Lama"
+    },
+    {
+      "id": 4470,
+      "name": "Cristal Negro"
+    },
+    {
+      "id": 4483,
+      "name": "Cristal Azul"
+    },
+    {
+      "id": 4485,
+      "name": "Cristal Violeta"
+    },
+    {
+      "id": 5305,
+      "name": "Pedra de Espírito Impecável"
+    },
+    {
+      "id": 6605,
+      "name": "Óleo de Tranquilidade"
+    },
+    {
+      "id": 5303,
+      "name": "Fonte da Vida Persistente"
     }
   ],
   "recipes": [
@@ -408,6 +445,50 @@
         {
           "item": 4986,
           "count": 1
+        }
+      ]
+    },
+    {
+      "output": "urn::item:5304",
+      "type": "ALCHEMY",
+      "inputs": [
+        {
+          "item": "urn::item:4466",
+          "count": 50
+        },
+        {
+          "item": "urn::item:4467",
+          "count": 50
+        },
+        {
+          "item": "urn::item:4470",
+          "count": 50
+        },
+        {
+          "item": "urn::item:4483",
+          "count": 50
+        },
+        {
+          "item": "urn::item:4485",
+          "count": 50
+        }
+      ]
+    },
+    {
+      "output": "urn::item:5305",
+      "type": "ALCHEMY",
+      "inputs": [
+        {
+          "item": "urn::item:6605",
+          "count": 10
+        },
+        {
+          "item": "urn::item:5303",
+          "count": 4
+        },
+        {
+          "item": "urn::item:5304",
+          "count": 4
         }
       ]
     }

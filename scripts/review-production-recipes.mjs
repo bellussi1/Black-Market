@@ -126,7 +126,10 @@ const missingRecipes = dataset.items
     (item) =>
       materials(item.description).length &&
       /Ferramenta de Alquimia|Utens[ií]lios Culin[aá]rios/i.test(item.description ?? '') &&
-      !outputGroups.has(item.id),
+      !outputGroups.has(item.id) &&
+      !materials(item.description)
+        .flat()
+        .some((ingredient) => ingredient.name === normalize(item.name)),
   )
   .map((item) => ({ id: item.id, name: item.name }));
 const snapshotResponse = await fetch(

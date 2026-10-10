@@ -1,5 +1,7 @@
 # Revisão das receitas — SA / português — 10/10/2026
 
+> Auditoria histórica anterior à correção. Para a versão atual publicada e suas limitações, consulte [Tiers e receitas regionais](tiers-and-regional-recipes.md).
+
 **Resultado: o catálogo ativo apresenta um problema de seleção da fonte regional. Quantidades e cobertura precisam ser corrigidas antes de tratar os cálculos de materiais e lucro por hora como validados.** Esta tarefa foi uma revisão; nenhuma receita, versão ativa ou informação pessoal foi alterada.
 
 ## Escopo e resultado
