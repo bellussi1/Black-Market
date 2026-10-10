@@ -1,7 +1,7 @@
 # Mercado automático e otimização de receitas
 
 **Data:** 10/10/2026  
-**Estado:** especificação aprovada pelo usuário; planos de implementação aguardando revisão
+**Estado:** especificação e planos aprovados pelo usuário; implementação local em validação final
 **Caso de validação:** `/recipes/items/1407` — `[Grupo] Fármaco da Harmonia - Edania`
 
 ## Objetivo
@@ -29,10 +29,10 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 
 - O endereço opaco enviado na conversa resolve para **Acompanhamentos Variados**. O produto pretendido abre em `/recipes/items/1407`.
 - A fórmula selecionada do produto 1407 tem quatro materiais diretos. A consulta do catálogo percorreu 94 itens alcançáveis e encontrou 38 itens com receita na fórmula selecionada.
-- O produto tem 12 fórmulas registradas. A comparação entre essas fórmulas foi explicitamente excluída; o cálculo permanece na fórmula escolhida na interface.
+- O produto tem 12 fórmulas registradas. A comparação entre essas fórmulas foi explicitamente excluída; o cálculo permanece na fórmula escolhida na interface. A auditoria inicial contou 94 itens e 38 intermediários com receitas; a fixture reproduzível do traversal atual por produtor padrão no dataset versionado chega a 117 IDs e 62 produtores. A diferença decorre da seleção/traversal do grafo; os números não são contagens intercambiáveis.
 - `MarketCacheService` usa TTL de cinco minutos e consulta itens em lote, mas o endpoint de cotações de uma receita não recebe atualização periódica enquanto essa receita fica aberta. A sondagem de seis minutos existente preenche itens em alta, não todo o grafo da receita.
 - `MarketBoard.load()` consulta a API ao carregar e salva a resposta em cache, mas não lê primeiro a resposta de mesmo filtro do cache. Há botão de atualização explícita na tela geral do mercado; a tela de receita deixará de exigir esse tipo de botão.
-- `planProduction()` já calcula cenários de compra/produção e lucro/hora, mas enumera combinações binárias com limite padrão de 256 e teto de 1.024. O grafo de Edania excede esse limite; elevar o número não resolve a busca `2^38`.
+- `planProduction()` já calcula cenários de compra/produção e lucro/hora, mas a enumeração antiga limitada a 256/1.024 não cobria o grafo de Edania. A implementação atual usa estados alcançáveis e limite seguro; detalhes da cobertura atual estão na matriz de lacunas.
 - O projeto já tem estilos globais de formulários, controles e feedback. A auditoria visual encontrou regras locais no crafting e no mercado que precisam ser alinhadas a essas primitivas.
 
 ## Arquitetura
@@ -50,7 +50,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 
 1. A página monta a lista de receitas alcançáveis para a fórmula selecionada, valida ciclos e quantidades e converte o grafo para o contrato do planejador; métodos internos seguem seleção existente ou produtor padrão determinístico.
 2. O motor compara comprar ou produzir cada intermediário alcançável e compara coleta somente quando há estimativa explícita de rendimento/tempo, respeitando a origem marcada manualmente, quando houver.
-3. A busca do cenário otimizado usa enumeração exata nos casos pequenos e poda exata de estados dominados nos casos longos. Como o objetivo é uma razão lucro/tempo e o lucro pode ser negativo, custo e duração Pareto-melhores, isoladamente, não provam dominância. A poda exige estado futuro equivalente e prova matemática de que o estado retido não perde para nenhuma continuação viável; estados sem essa prova permanecem na busca. Limite de estados ou dado ausente resulta em cenário incompleto, nunca em um ótimo aproximado rotulado como exato.
+3. A busca do cenário otimizado enumera estados alcançáveis e poda uma ramificação somente quando um limite superior matemático prova que ela não pode superar uma solução completa. Sem subproduto vendido, receita líquida do produto final limita o lucro e o tempo parcial limita inferiormente a duração; comparação inteira e estrita mantém empates. Como lucro pode ser negativo, não se usa dominância simples por custo/tempo. Se falta receita líquida ou duração mínima, ou há subproduto vendido, a poda é desativada. Limite de estados ou dado ausente resulta em cenário incompleto, nunca em um ótimo aproximado rotulado como exato.
 4. A função objetivo compara lucro líquido por hora por aritmética inteira. Empates preferem menor desembolso; a próxima regra de desempate é determinística.
 5. O motor recebe a quantidade de operações selecionada, cotações e disponibilidade, estoque livre, impostos, rendimentos, pesos existentes e tempo estimado por método. Premissas e dados incompletos aparecem junto ao resultado.
 6. O botão de otimização aplica os valores de origem calculados às caixas. Alterar uma caixa cria/ajusta uma escolha manual para aquele item e invalida a recomendação anterior até o recálculo.
@@ -76,7 +76,7 @@ Na página do Mercado, preservar busca, filtros, ordenação, histórico, preço
 ## Validação de aceitação
 
 - Testes do cache cobrem resposta fresca imediata, atualização de ausentes/vencidas, dados antigos em caso de falha, concorrência limitada e descarte de resposta fora do contexto.
-- Testes do planejador incluem grafo Edania com dados sintéticos completos, alternativas comprar/fazer/coletar com estimativa explícita, fontes fixadas pelo usuário, estoque/reservas, impostos, tempo, rendimento fixo e variável, empate determinístico, ciclo, cotação ausente e estouro do limite de estados.
+- Testes do planejador incluem uma cadeia Edania sintética, a topologia versionada da fórmula selecionada de Edania (117 IDs de item e 62 produtores, com preços/quantidades/rendimentos/tempos sintéticos), a poda contra um limite seguro, subprodutos vendidos e lucro negativo, alternativas comprar/fazer/coletar com estimativa explícita, fontes fixadas pelo usuário, estoque/reservas, impostos, tempo, rendimento fixo e variável, empate determinístico, ciclo, cotação ausente e estouro do limite de estados.
 - O teste Edania deve concluir e provar a melhor combinação para um fixture que cubra todo o grafo alcançável; não basta provar que a busca respeita o limite.
 - Testes da página cobrem preload automático ao abrir, revalidação no TTL, estado parcial sem falsa taxa horária, debounce exato de 250 ms, checkbox por item, aplicação da recomendação e atualização após edição manual.
 - Testes da página garantem que o rendimento estimado seja aplicado sem botão de confirmação e que estoque zero não mostre recomendação de produzir o produto final para obtê-lo.

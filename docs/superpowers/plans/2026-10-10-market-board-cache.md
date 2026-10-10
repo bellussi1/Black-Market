@@ -42,25 +42,25 @@
 - Keep `cacheBoardResponse(key: string, response: MarketBoardResponse, region: Region): void` and the five-minute TTL.
 - Return stale entries too; caller decides whether to refresh based on `expiresAt` and whether the refresh is forced.
 
-- [ ] **Step 1: Add failing board cache tests**
+- [x] **Step 1: Add failing board cache tests**
 
 Test `returns fresh board entries by canonical key`, `returns expired entries for stale display`, and `keeps region-specific board entries separate`.
 
-- [ ] **Step 2: Run the focused cache tests and confirm the new assertions fail**
+- [x] **Step 2: Run the focused cache tests and confirm the new assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts`
 Expected: the board-read/freshness assertions fail.
 
-- [ ] **Step 3: Implement board cache lookup**
+- [x] **Step 3: Implement board cache lookup**
 
 Read from `boardMap` by exact key and verify the requested region matches the stored entry. Do not change storage source or collector policy.
 
-- [ ] **Step 4: Run the focused cache tests**
+- [x] **Step 4: Run the focused cache tests**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts`
 Expected: all cache service tests pass.
 
-- [ ] **Step 5: Commit board cache lookup**
+- [x] **Step 5: Commit board cache lookup**
 
 ```bash
 git add apps/web/src/app/core/market-cache.service.ts apps/web/src/app/core/market-cache.service.spec.ts
@@ -82,29 +82,29 @@ git commit -m "feat(market): expose cached board responses"
 - Canonical key format: `board:${region}:${trimmedQuery}:${category}:${sort}:${sortColumn}:${sortDirection}:${page}:${pageSize}`.
 - On load, display a cached response immediately; skip API for a fresh cache unless force refresh was requested. For stale cache, refresh in the background and retain it on error.
 
-- [ ] **Step 1: Add failing board tests**
+- [x] **Step 1: Add failing board tests**
 
 Test `renders a fresh same-query board without an API request`, `renders stale cached results while revalidating`, `retains stale results on refresh failure`, `does not show a prior query under the new search`, `uses a different cache entry for every query and sort key`, and `debounces search at 250ms`.
 
-- [ ] **Step 2: Run market board tests and confirm the new assertions fail**
+- [x] **Step 2: Run market board tests and confirm the new assertions fail**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=features/market/market-board.spec.ts`
 Expected: cache-first and debounce assertions fail before implementation.
 
-- [ ] **Step 3: Implement cache-first query lifecycle**
+- [x] **Step 3: Implement cache-first query lifecycle**
 
 Build the canonical key from the request filters plus client-side sort column/direction. Render matching cached data immediately, skip fresh requests, revalidate stale data, preserve stale results after failures, and unsubscribe outdated query requests. When no cache entry exists for a changed query, do not label the prior query's response as the new result. Keep manual refresh as force refresh.
 
-- [ ] **Step 4: Set search debounce to 250 ms and preserve market data presentation**
+- [x] **Step 4: Set search debounce to 250 ms and preserve market data presentation**
 
 Update search scheduling. Keep sortable columns, stock filters, trend/range details, history and all three volume windows. Align local controls with shared global focus/disabled styles and honor reduced motion.
 
-- [ ] **Step 5: Run focused market tests**
+- [x] **Step 5: Run focused market tests**
 
 Run: `pnpm --filter @bdo/calculators build && pnpm --filter @bdo/web exec ng test --watch=false --include=features/market/market-board.spec.ts --include=features/market/market-page.spec.ts --include=features/market/market-history.spec.ts --include=features/market/market-refresh.spec.ts`
 Expected: cache lifecycle, sorting, filters, detail and history tests pass.
 
-- [ ] **Step 6: Commit board cache and interaction behavior**
+- [x] **Step 6: Commit board cache and interaction behavior**
 
 ```bash
 git add apps/web/src/app/features/market/market-board.ts apps/web/src/app/features/market/market-board.html apps/web/src/app/features/market/market-board.spec.ts apps/web/src/app/features/market/market-refresh.ts
@@ -113,16 +113,16 @@ git commit -m "feat(market): render cached board while refreshing"
 
 ### Task 3: Visual and interaction verification
 
-- [ ] **Step 1: Verify `/market` in the browser at wide and narrow viewport widths**
+- [x] **Step 1: Verify `/market` in the browser at wide and narrow viewport widths**
 
 Check sortable headers with keyboard, focus visibility, selected stock filters, search feedback, stale/loading/error states, price-history details, and reduced-motion behavior.
 
-- [ ] **Step 2: Run the focused and full repository checks**
+- [x] **Step 2: Run the focused and full repository checks**
 
 Run: `pnpm test` and `pnpm check`.
 Expected: all repository tests, lint, format, typecheck and build pass.
 
-- [ ] **Step 3: Update the handoff and reusable UI guidance**
+- [x] **Step 3: Update the handoff and reusable UI guidance**
 
 Record the cache key/TTL behavior and any market information that remains unavailable from the current source in `docs/ACTIVE_CONTEXT.md`; update `docs/feature-coverage.md` and `docs/research/implementation-gap-matrix.md` with verified status, without claiming a new source or broader coverage. Update `.agents/skills/bdo-ui-design/SKILL.md` only with reusable visual/interaction patterns confirmed by this implementation.
 
