@@ -11,6 +11,55 @@
   }
 }
 
+.auto-sync-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.sync-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bm-input, #1b1e24);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  font-size: 13px;
+  color: var(--bm-muted);
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bm-accent);
+  box-shadow: 0 0 6px rgba(200, 160, 90, 0.4);
+
+  &.syncing {
+    animation: bm-pulse-dot 1.2s infinite ease-in-out;
+  }
+}
+
+@keyframes bm-pulse-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.btn-refresh-quote {
+  min-height: 36px;
+  padding: 6px 14px;
+}
+
 .history-liquidity {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

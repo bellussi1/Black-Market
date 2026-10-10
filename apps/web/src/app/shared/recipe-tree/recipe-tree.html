@@ -208,21 +208,27 @@
             <h3 i18n>Rentabilidade e tempo de produção</h3>
           </div>
           <div class="economic-toolbar">
+            <div class="cache-sync-indicator">
+              <span class="cache-sync-dot" [class.syncing]="treeMarketLoading()"></span>
+              <span i18n>Cotações sincronizadas via cache</span>
+            </div>
             <button
               type="button"
-              class="market-refresh-btn"
+              class="market-subtle-refresh-btn"
               [disabled]="treeMarketLoading()"
               (click)="consultAllTreePrices()"
+              aria-label="Atualizar cotações do mercado"
+              title="Atualizar cotações do mercado"
             >
               @if (treeMarketLoading()) {
                 <span class="btn-spinner" aria-hidden="true"></span>
-                <span i18n>Consultando mercado…</span>
+                <span i18n>Sincronizando…</span>
               } @else {
                 <svg
                   class="btn-icon"
                   viewBox="0 0 16 16"
-                  width="14"
-                  height="14"
+                  width="13"
+                  height="13"
                   fill="currentColor"
                   aria-hidden="true"
                 >
@@ -231,7 +237,7 @@
                     d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
                   />
                 </svg>
-                <span i18n>Consultar cotações da receita</span>
+                <span i18n>Atualizar</span>
               }
             </button>
           </div>

@@ -40,6 +40,7 @@ import {
 } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { MarketCacheService } from '../../core/market-cache.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { MarketApi, type MarketHistoryPoint } from '../../features/market/market-api';
 import { date, silver } from '../formatters';
@@ -143,6 +144,7 @@ export class RecipeTree {
   private readonly sessions = inject(RecipeSessions);
   private sessionKey = '';
   private readonly market = inject(MarketApi);
+  private readonly marketCache = inject(MarketCacheService);
   private readonly destroyRef = inject(DestroyRef);
   readonly region = computed(() => this.store.data().region);
   readonly root = signal<RecipeNode | null>(null);
@@ -718,25 +720,18 @@ export class RecipeTree {
     if (itemIds.size === 0) return;
 
     this.treeMarketLoading.set(true);
-    this.treeMarketMessage.set('');
-
-    const requests = Array.from(itemIds).map((id) =>
-      this.market.getItem(String(id), region).pipe(catchError(() => of(null))),
-    );
-
-    forkJoin(requests)
+    this.marketCache
+      .resolveQuotesBatch(Array.from(itemIds), region)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (results) => {
+        next: (quotesMap) => {
           let updated = 0;
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
-          for (const res of results) {
-            if (!res || res.cacheStatus === 'stale') continue;
-            const base = res.items?.find((item) => item.subId === 0);
-            if (base && base.price !== null && base.price !== undefined && base.itemId) {
-              newPrices.set(base.itemId, base.price);
-              newQuotes.set(base.itemId, base);
+          for (const [id, base] of quotesMap.entries()) {
+            if (base && base.price !== null && base.price !== undefined) {
+              newPrices.set(id, base.price);
+              newQuotes.set(id, base);
               updated++;
             }
           }
@@ -745,7 +740,7 @@ export class RecipeTree {
           this.treeMarketLoading.set(false);
           this.treeMarketMessage.set(
             updated > 0
-              ? `${updated} ${updated === 1 ? 'cotação atualizada' : 'cotações atualizadas'} no mercado central.`
+              ? `${updated} ${updated === 1 ? 'cotação atualizada' : 'cotações atualizadas'} no mercado central (cache ativo).`
               : 'Nenhuma cotação recente encontrada no mercado central.',
           );
         },

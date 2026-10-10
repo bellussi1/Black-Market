@@ -32,6 +32,7 @@ import type { Subscription } from 'rxjs';
 import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { uiLocale } from '../../core/locale';
+import { MarketCacheService } from '../../core/market-cache.service';
 import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
@@ -107,6 +108,8 @@ export class MarketPage implements OnDestroy {
   }
   private readonly api = inject(MarketApi);
   private readonly catalog = inject(CatalogApiService);
+  readonly cache = inject(MarketCacheService);
+  private lookupTimer?: ReturnType<typeof setTimeout>;
   private liveRequest?: Subscription;
   private itemRequest?: Subscription;
   private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
@@ -119,6 +122,14 @@ export class MarketPage implements OnDestroy {
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');
+
+  onLookupIdChange(id: string): void {
+    this.lookupId.set(id);
+    if (/^[1-9]\d{0,9}$/.test(id)) {
+      if (this.lookupTimer) clearTimeout(this.lookupTimer);
+      this.lookupTimer = setTimeout(() => this.lookup(), 350);
+    }
+  }
   readonly store = inject(WorkspaceStore);
   private quoteRegion = this.store.data().region;
   readonly form = signal<MarketInput>({
@@ -407,6 +418,7 @@ export class MarketPage implements OnDestroy {
           status: 'success',
         });
         this.live.set(response);
+        this.cache.cacheLookupResponse(response, this.store.data().region);
         this.lookupLoading.set(false);
         if (!response.items.some((item) => item.subId === this.historySubId))
           this.historySubId = response.items[0]?.subId ?? 0;
@@ -485,6 +497,7 @@ export class MarketPage implements OnDestroy {
     this.workspaceView.set('calculator');
   }
   ngOnDestroy(): void {
+    if (this.lookupTimer) clearTimeout(this.lookupTimer);
     this.refresh?.destroy();
     this.itemRequest?.unsubscribe();
     this.liveRequest?.unsubscribe();

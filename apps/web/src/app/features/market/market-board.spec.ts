@@ -158,4 +158,79 @@ describe('MarketBoard', () => {
     expect(element.querySelector<HTMLOptionElement>('option[value="price"]')?.disabled).toBe(true);
     TestBed.inject(HttpTestingController).verify();
   });
+
+  it('sorts columns interactively and calculates price trends', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.items = [
+      {
+        ...data.items[0],
+        itemId: 1,
+        name: 'Alpha Item',
+        price: '1000',
+        meanPrice: '800', // +25%
+        stock: 10,
+        volume24h: '500',
+      },
+      {
+        ...data.items[0],
+        itemId: 2,
+        name: 'Beta Item',
+        price: '5000',
+        meanPrice: '6000', // -16.7%
+        stock: 5,
+        volume24h: '2000',
+      },
+    ];
+    takeRequest().flush(data);
+    fixture.detectChanges();
+
+    const board = fixture.componentInstance;
+    expect(board.displayItems().length).toBe(2);
+
+    // Test trend calculation
+    const trendAlpha = board.calculateTrend(data.items[0]);
+    expect(trendAlpha?.direction).toBe('up');
+    expect(trendAlpha?.label).toContain('+25.0%');
+
+    const trendBeta = board.calculateTrend(data.items[1]);
+    expect(trendBeta?.direction).toBe('down');
+
+    // Toggle sort by price
+    board.toggleColumnSort('price');
+    expect(board.sortColumn()).toBe('price');
+    expect(board.sortDirection()).toBe('desc');
+    expect(board.displayItems()[0].itemId).toBe(2); // 5000 first
+
+    // Toggle ascending
+    board.toggleColumnSort('price');
+    expect(board.sortDirection()).toBe('asc');
+    expect(board.displayItems()[0].itemId).toBe(1); // 1000 first
+  });
+
+  it('filters items by stock availability using quick filter pills', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.items = [
+      { ...data.items[0], itemId: 1, name: 'In Stock', stock: 15 },
+      { ...data.items[0], itemId: 2, name: 'Out of Stock', stock: 0 },
+      { ...data.items[0], itemId: 3, name: 'Unknown Stock', stock: null },
+    ];
+    takeRequest().flush(data);
+    fixture.detectChanges();
+
+    const board = fixture.componentInstance;
+    expect(board.displayItems().length).toBe(3);
+
+    board.setStockFilter('in_stock');
+    expect(board.displayItems().length).toBe(1);
+    expect(board.displayItems()[0].itemId).toBe(1);
+
+    board.setStockFilter('out_of_stock');
+    expect(board.displayItems().length).toBe(1);
+    expect(board.displayItems()[0].itemId).toBe(2);
+
+    board.setStockFilter('all');
+    expect(board.displayItems().length).toBe(3);
+  });
 });

@@ -1,7 +1,17 @@
 <section class="market-window" aria-labelledby="market-board-title">
   <header class="market-titlebar">
-    <h2 id="market-board-title">{{ fullCatalog() ? 'Catálogo do mercado' : 'Itens em alta' }}</h2>
-    <span>Mercado Central · {{ preferences.region().toUpperCase() }}</span>
+    <div class="titlebar-main">
+      <h2 id="market-board-title">{{ fullCatalog() ? 'Catálogo do mercado' : 'Itens em alta' }}</h2>
+      <span class="titlebar-region"
+        >Mercado Central · {{ preferences.region().toUpperCase() }}</span
+      >
+    </div>
+    <div class="titlebar-cache">
+      <span class="cache-indicator-dot" [class.syncing]="cache.isSyncing()"></span>
+      <span class="cache-indicator-text">
+        {{ cache.isSyncing() ? 'Sincronizando mercado…' : 'Cotações em cache automático' }}
+      </span>
+    </div>
   </header>
   <div class="market-directory">
     <aside class="market-categories" aria-label="Categorias do mercado">
@@ -57,64 +67,131 @@
     </aside>
     <div class="market-list">
       <div class="board-toolbar">
-        <label class="board-search"
-          ><span>Buscar no mercado</span
-          ><input
-            type="search"
-            placeholder="Nome ou código do item"
-            maxlength="80"
-            [ngModel]="search()"
-            (ngModelChange)="find($event)"
-        /></label>
-        <label
-          ><span>Ordenar por</span
-          ><select [ngModel]="sort()" (ngModelChange)="setSort($event)">
-            <option value="hot" [disabled]="fullCatalog()">Em alta</option>
-            <option value="price" [disabled]="fullCatalog()">Menor preço</option>
-            <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
-            <option value="name">Nome do item</option>
-          </select></label
-        >
-        <button
-          type="button"
-          (click)="load()"
-          [disabled]="loading()"
-          aria-label="Atualizar mercado"
-        >
-          Atualizar
-        </button>
+        <div class="board-search-group">
+          <label class="board-search">
+            <span>Buscar no mercado</span>
+            <div class="search-input-wrap">
+              <input
+                type="search"
+                placeholder="Nome ou código do item"
+                maxlength="80"
+                [ngModel]="search()"
+                (ngModelChange)="find($event)"
+              />
+              @if (search()) {
+                <button
+                  type="button"
+                  class="btn-clear-search"
+                  (click)="clearSearch()"
+                  aria-label="Limpar pesquisa"
+                >
+                  ✕
+                </button>
+              }
+            </div>
+          </label>
+        </div>
+
+        <div class="board-filters-group">
+          <div class="filter-pills" role="radiogroup" aria-label="Filtro rápido de estoque">
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="stockFilter() === 'all'"
+              (click)="setStockFilter('all')"
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="stockFilter() === 'in_stock'"
+              (click)="setStockFilter('in_stock')"
+            >
+              Com estoque
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="stockFilter() === 'out_of_stock'"
+              (click)="setStockFilter('out_of_stock')"
+            >
+              Estoque zerado
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="stockFilter() === 'with_volume'"
+              (click)="setStockFilter('with_volume')"
+            >
+              Com volume 24h
+            </button>
+          </div>
+
+          <label class="sort-select-wrap">
+            <span>Ordenar por</span>
+            <select [ngModel]="sort()" (ngModelChange)="setSort($event)">
+              <option value="hot" [disabled]="fullCatalog()">Em alta</option>
+              <option value="price" [disabled]="fullCatalog()">Menor preço</option>
+              <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
+              <option value="name">Nome do item</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            class="btn-refresh-market"
+            (click)="load()"
+            [disabled]="loading()"
+            aria-label="Atualizar cotações do mercado"
+          >
+            Atualizar
+          </button>
+        </div>
       </div>
+
       <div class="board-summary" aria-live="polite">
-        <span>{{
-          loading()
-            ? 'Carregando mercado…'
-            : number(result()?.total, 0) + (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
-        }}</span>
+        <span class="summary-total">
+          {{
+            loading()
+              ? 'Carregando mercado…'
+              : number(result()?.total, 0) +
+                (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
+          }}
+          @if (stockFilter() !== 'all') {
+            <span class="summary-filtered-count">
+              ({{ displayItems().length }} visíveis no filtro)
+            </span>
+          }
+        </span>
         @if (result(); as response) {
-          <span
-            >{{
+          <span class="summary-timestamp">
+            {{
               response.quotesUnavailable
                 ? 'Cotações indisponíveis'
                 : response.cacheStatus === 'stale'
                   ? 'Última consulta disponível'
-                  : 'Consulta'
+                  : 'Consulta sincronizada'
             }}
-            · {{ date(response.fetchedAt) }}</span
-          >
+            · {{ date(response.fetchedAt) }}
+          </span>
         }
       </div>
+
       @if (error()) {
         <p role="alert" class="error-box">
           {{ error() }} <button type="button" (click)="load()">Tentar novamente</button>
         </p>
       }
+
       @if (result()?.quotesUnavailable) {
         <p role="status" class="notice">
           A fonte não forneceu novas cotações para esta página. Os itens do catálogo continuam
-          disponíveis; confira a data dos preços anteriores, quando houver. Tente atualizar
-          novamente em um minuto.
+          disponíveis; confira a data dos preços anteriores, quando houver. O cache local mantém as
+          últimas cotações conhecidas.
         </p>
       }
+
       <div
         class="board-table-scroll"
         role="region"
@@ -124,31 +201,158 @@
       >
         <table class="market-board-table">
           <caption class="visually-hidden">
-            Itens do mercado: preços em prata por unidade e volumes em unidades negociadas.
+            Itens do mercado: preços em prata por unidade e volumes em unidades negociadas. Clique
+            no cabeçalho das colunas para ordenar.
           </caption>
           <thead>
             <tr>
-              <th scope="col">Item</th>
-              <th scope="col" class="numeric">
-                Preço atual<br />
-                <abbr
-                  title="Média aritmética das cotações observadas nos últimos 30 dias; não é a média das vendas"
-                  >Média 30d</abbr
-                >
+              <th
+                scope="col"
+                [attr.aria-sort]="
+                  sortColumn() === 'name'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button type="button" class="col-sort-btn" (click)="toggleColumnSort('name')">
+                  <span>Item</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'name'">
+                    {{ sortColumn() === 'name' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
+                  </span>
+                </button>
               </th>
-              <th scope="col" class="numeric">
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="
+                  sortColumn() === 'price'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button
+                  type="button"
+                  class="col-sort-btn numeric-btn"
+                  (click)="toggleColumnSort('price')"
+                >
+                  <span
+                    >Preço atual<br /><abbr
+                      title="Média aritmética das cotações observadas nos últimos 30 dias"
+                      >Média 30d</abbr
+                    ></span
+                  >
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'price'">
+                    {{ sortColumn() === 'price' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
+                  </span>
+                </button>
+              </th>
+              <th scope="col" class="numeric price-limits-th">
                 <abbr title="Preço máximo permitido pelo mercado">Topo</abbr><br />
                 <abbr title="Preço mínimo permitido pelo mercado">Bottom</abbr>
               </th>
-              <th scope="col" class="numeric">Estoque</th>
-              <th scope="col" class="numeric">Volume 24h</th>
-              <th scope="col" class="numeric">Volume 15d</th>
-              <th scope="col" class="numeric">Volume 30d</th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="
+                  sortColumn() === 'stock'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button
+                  type="button"
+                  class="col-sort-btn numeric-btn"
+                  (click)="toggleColumnSort('stock')"
+                >
+                  <span>Estoque</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'stock'">
+                    {{ sortColumn() === 'stock' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
+                  </span>
+                </button>
+              </th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="
+                  sortColumn() === 'volume24h'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button
+                  type="button"
+                  class="col-sort-btn numeric-btn"
+                  (click)="toggleColumnSort('volume24h')"
+                >
+                  <span>Volume 24h</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'volume24h'">
+                    {{
+                      sortColumn() === 'volume24h' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
+                    }}
+                  </span>
+                </button>
+              </th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="
+                  sortColumn() === 'volume15d'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button
+                  type="button"
+                  class="col-sort-btn numeric-btn"
+                  (click)="toggleColumnSort('volume15d')"
+                >
+                  <span>Volume 15d</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'volume15d'">
+                    {{
+                      sortColumn() === 'volume15d' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
+                    }}
+                  </span>
+                </button>
+              </th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="
+                  sortColumn() === 'volume30d'
+                    ? sortDirection() === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
+              >
+                <button
+                  type="button"
+                  class="col-sort-btn numeric-btn"
+                  (click)="toggleColumnSort('volume30d')"
+                >
+                  <span>Volume 30d</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'volume30d'">
+                    {{
+                      sortColumn() === 'volume30d' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
+                    }}
+                  </span>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
-            @for (item of result()?.items ?? []; track item.itemId + ':' + item.subId) {
-              <tr>
+            @for (item of displayItems(); track item.itemId + ':' + item.subId) {
+              <tr class="board-row">
                 <th scope="row">
                   <button
                     type="button"
@@ -158,10 +362,11 @@
                       'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
                     "
                   >
-                    <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" /><span
-                      ><strong>{{ item.name }}</strong
-                      ><small
-                        >{{ item.categories[0]?.name ?? 'Mercado Central' }}
+                    <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                    <span class="item-meta">
+                      <strong>{{ item.name }}</strong>
+                      <small>
+                        {{ item.categories[0]?.name ?? 'Mercado Central' }}
                         @if (item.quoteScope === 'summary') {
                           ·
                           {{
@@ -170,11 +375,11 @@
                         } @else if (item.subId) {
                           · Variante {{ item.subId }}
                         }
-                      </small></span
-                    >
+                      </small>
+                    </span>
                   </button>
                 </th>
-                <td class="numeric">
+                <td class="numeric col-price">
                   <span class="current-price">{{ silver(item.price) }}</span>
                   <small
                     class="secondary-price"
@@ -183,16 +388,53 @@
                         ? 'Histórico insuficiente para a média'
                         : item.observationCount + ' observações de preço'
                     "
-                    >Média {{ silver(item.meanPrice) }}</small
                   >
+                    Média {{ silver(item.meanPrice) }}
+                  </small>
+                  @if (calculateTrend(item); as trend) {
+                    <span
+                      class="trend-badge"
+                      [class.trend-up]="trend.direction === 'up'"
+                      [class.trend-down]="trend.direction === 'down'"
+                      [class.trend-flat]="trend.direction === 'flat'"
+                      [attr.title]="'Variação em relação à média dos últimos 30 dias'"
+                    >
+                      {{ trend.label }}
+                    </span>
+                  }
                 </td>
                 <td class="numeric price-limits">
-                  <span><small>Topo</small> {{ silver(item.maxPrice) }}</span
-                  ><span><small>Bottom</small> {{ silver(item.minPrice) }}</span>
+                  @if (item.minPrice !== null || item.maxPrice !== null) {
+                    <span><small>Topo</small> {{ silver(item.maxPrice) }}</span>
+                    <span><small>Bottom</small> {{ silver(item.minPrice) }}</span>
+                    @if (calculatePricePosition(item); as pos) {
+                      <div
+                        class="price-meter"
+                        [attr.title]="
+                          'Posição no limite de mercado: ' + pos.percent + '% entre Bottom e Topo'
+                        "
+                      >
+                        <div class="meter-bar">
+                          <div class="meter-fill" [style.width.%]="pos.percent"></div>
+                          <div class="meter-point" [style.left.%]="pos.percent"></div>
+                        </div>
+                      </div>
+                    }
+                  } @else {
+                    —
+                  }
                 </td>
-                <td class="numeric">{{ item.stock === null ? '—' : number(item.stock, 0) }}</td>
+                <td class="numeric col-stock">
+                  @if (item.stock === null) {
+                    —
+                  } @else if (item.stock === 0) {
+                    <span class="stock-badge stock-zero">0 un (Zerado)</span>
+                  } @else {
+                    {{ number(item.stock, 0) }}
+                  }
+                </td>
                 <td
-                  class="numeric"
+                  class="numeric col-volume"
                   [attr.title]="
                     item.volume24h === null
                       ? 'Histórico insuficiente para 24 horas'
@@ -202,7 +444,7 @@
                   {{ silver(item.volume24h) }}
                 </td>
                 <td
-                  class="numeric"
+                  class="numeric col-volume"
                   [attr.title]="
                     item.volume15d === null
                       ? 'Histórico insuficiente para 15 dias'
@@ -212,7 +454,7 @@
                   {{ silver(item.volume15d) }}
                 </td>
                 <td
-                  class="numeric"
+                  class="numeric col-volume"
                   [attr.title]="
                     item.volume30d === null
                       ? 'Histórico insuficiente para 30 dias'
@@ -262,13 +504,12 @@
         </div>
       </nav>
       <p class="board-note">
-        Consulta automática a cada 8 minutos enquanto esta aba estiver visível. A fonte mantém cache
-        de até {{ result()?.upstreamCacheMinutes ?? 30 }} minutos; uma nova consulta pode repetir os
-        mesmos valores. Busca por nome, código e categoria em todo o catálogo, com ordenação por
-        nome. Resumos agregam variantes; selecione um item para suas cotações individuais. Preços em
-        prata por unidade. Topo e bottom são os limites permitidos pelo mercado. Média de cotações
-        observadas em 30 dias; volumes exigem histórico completo do período.
-        <strong>—</strong> indica dado ainda indisponível.
+        Consulta e cache automáticos em background. Clicar no cabeçalho das colunas ordena a
+        visualização. A fonte mantém cache de até
+        {{ result()?.upstreamCacheMinutes ?? 30 }} minutos. Resumos agregam variantes; selecione um
+        item para suas cotações individuais. Preços em prata por unidade. Topo e bottom são os
+        limites permitidos pelo mercado. Média de cotações observadas em 30 dias; volumes exigem
+        histórico completo do período. <strong>—</strong> indica dado ainda indisponível.
       </p>
     </div>
   </div>

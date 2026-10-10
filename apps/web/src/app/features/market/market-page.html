@@ -84,14 +84,24 @@
                 placeholder="ID numérico do jogo"
                 i18n-placeholder
                 [ngModel]="lookupId()"
-                (ngModelChange)="lookupId.set($event)"
+                (ngModelChange)="onLookupIdChange($event)"
             /></label>
           </div>
         </details>
-        <div class="action-row">
-          <button class="btn" type="button" (click)="lookup()" [disabled]="lookupLoading()">
-            {{ lookupLoading() ? 'Consultando…' : 'Consultar mercado' }}</button
-          ><span class="help"
+        <div class="action-row auto-sync-row">
+          <div class="sync-status-badge">
+            <span class="sync-dot" [class.syncing]="lookupLoading()"></span>
+            <span i18n>Cotações sincronizadas automaticamente via cache</span>
+          </div>
+          <button
+            class="btn subtle btn-refresh-quote"
+            type="button"
+            (click)="lookup()"
+            [disabled]="lookupLoading()"
+          >
+            {{ lookupLoading() ? 'Atualizando…' : 'Atualizar cotação' }}
+          </button>
+          <span class="help"
             ><ng-container i18n
               >Mercado selecionado: {{ store.data().region.toUpperCase() }}.</ng-container
             ></span
