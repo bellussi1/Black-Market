@@ -68,7 +68,7 @@
         {{ player.activeMinutes }} minutos ativos · {{ silver(player.silver) }} disponíveis ·
         {{ player.energy }} de energia
       </p>
-      <a routerLink="/profile" i18n>Editar personagem e preferências</a>
+      <a routerLink="/family" i18n>Editar personagem e preferências</a>
     </section>
     @for (row of suggestions(); track row.id) {
       <section class="panel">
@@ -124,7 +124,7 @@
         Informe prata, energia e tempo disponível. Depois, registre uma atividade ou salve uma
         receita para comparar.
       </p>
-      <a class="btn" routerLink="/profile" i18n>Cadastrar personagem</a>
+      <a class="btn" routerLink="/family" i18n>Cadastrar personagem</a>
     </section>
   }
 </div>

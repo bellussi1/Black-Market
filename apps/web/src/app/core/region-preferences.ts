@@ -55,7 +55,7 @@ export class RegionPreferences {
     {
       label: $localize`Presets de cálculo`,
       value: this.metadata().presets.filter((r) => r.region === this.region()).length,
-      path: '/settings',
+      path: '/market',
     },
   ]);
   constructor() {

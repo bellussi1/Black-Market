@@ -1,33 +1,41 @@
 <div class="tool-page">
   <header class="page-heading">
-    <p class="eyebrow" i18n>SEU PERSONAGEM</p>
-    <h1 i18n>Meus equipamentos</h1>
+    @if (embedded()) {
+      <h2 i18n>Equipamentos do personagem</h2>
+    } @else {
+      <p class="eyebrow" i18n>SEU PERSONAGEM</p>
+      <h1 i18n>Meus equipamentos</h1>
+    }
     <p i18n>
       Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
       precisam ser conferidos no jogo.
     </p>
-    <div class="action-row">
-      <a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }" i18n
-        >Importar equipamentos por captura</a
-      ><a routerLink="/inventory" i18n>Ver inventário</a>
-    </div>
+    @if (!embedded()) {
+      <div class="action-row">
+        <a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }" i18n
+          >Importar equipamentos por captura</a
+        ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventário</a>
+      </div>
+    }
   </header>
-  <section class="panel">
-    <label
-      ><span i18n>Personagem</span
-      ><select [ngModel]="profile()?.id ?? ''" (ngModelChange)="selected.set($event)">
-        <option value="" i18n>Escolha</option>
-        @for (row of profiles(); track row.id) {
-          <option [value]="row.id">{{ row.name }}</option>
-        }
-      </select></label
-    >
-    <details [open]="!profiles().length">
-      <summary i18n>Cadastrar personagem</summary>
-      <label i18n>Nome do personagem<input [(ngModel)]="name" maxlength="120" /></label
-      ><button type="button" (click)="create()" i18n>Cadastrar</button>
-    </details>
-  </section>
+  @if (!embedded()) {
+    <section class="panel">
+      <label
+        ><span i18n>Personagem</span
+        ><select [ngModel]="profile()?.id ?? ''" (ngModelChange)="select($event)">
+          <option value="" i18n>Escolha</option>
+          @for (row of profiles(); track row.id) {
+            <option [value]="row.id">{{ row.name }}</option>
+          }
+        </select></label
+      >
+      <details [open]="!profiles().length">
+        <summary i18n>Cadastrar personagem</summary>
+        <label i18n>Nome do personagem<input [(ngModel)]="name" maxlength="80" /></label
+        ><button type="button" (click)="create()" i18n>Cadastrar</button>
+      </details>
+    </section>
+  }
   @if (profile(); as current) {
     <section class="panel" aria-label="Atributos informados do personagem" i18n-aria-label>
       <h2 i18n>Atributos da ficha</h2>

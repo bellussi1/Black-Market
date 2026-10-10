@@ -1,7 +1,24 @@
-import type { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { type RedirectFunction, Router, type Routes } from '@angular/router';
 
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
 import { WorkspaceLayout } from './layout/workspace-layout';
+
+const personalRedirect =
+  (path: string, tab: string): RedirectFunction =>
+  ({ queryParams, fragment }) =>
+    inject(Router).createUrlTree([path], {
+      queryParams: { ...queryParams, tab },
+      fragment: fragment ?? undefined,
+    });
+
+const marketRedirect =
+  (detail = false): RedirectFunction =>
+  ({ params, queryParams, fragment }) =>
+    inject(Router).createUrlTree(detail ? ['/market/items', params['id']] : ['/market'], {
+      queryParams,
+      fragment: fragment ?? undefined,
+    });
 
 export const routes: Routes = [
   {
@@ -12,9 +29,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'inventory',
-        title: 'Black Market � Inventário',
-        data: { private: true },
-        loadComponent: () => import('./features/stock/stock-page').then((m) => m.StockPage),
+        redirectTo: personalRedirect('/storage', 'inventory'),
+        pathMatch: 'full' as const,
       },
 
       {
@@ -80,9 +96,12 @@ export const routes: Routes = [
 
       {
         path: 'database/items/:id',
-
-        title: $localize`Black Market · Item`,
-
+        redirectTo: marketRedirect(true),
+        pathMatch: 'full' as const,
+      },
+      {
+        path: 'market/items/:id',
+        title: $localize`Black Market · Item no mercado`,
         loadComponent: () =>
           import('./features/catalog/item-detail-page').then((module) => module.ItemDetailPage),
       },
@@ -122,15 +141,14 @@ export const routes: Routes = [
 
       {
         path: 'profile',
-
-        title: $localize`Black Market · Meu personagem`,
-
+        redirectTo: personalRedirect('/family', 'character'),
+        pathMatch: 'full' as const,
+      },
+      {
+        path: 'family',
+        title: $localize`Black Market · Família`,
         data: { private: true },
-
-        loadComponent: () =>
-          SCREENSHOT_MVP
-            ? import('./features/player/player-page').then((m) => m.PlayerPage)
-            : import('./features/profile/profile-page').then((module) => module.ProfilePage),
+        loadComponent: () => import('./features/player/player-page').then((m) => m.PlayerPage),
       },
 
       {
@@ -182,11 +200,8 @@ export const routes: Routes = [
 
       {
         path: 'database/items',
-
-        title: $localize`Black Market · Catálogo`,
-
-        loadComponent: () =>
-          import('./features/catalog/item-catalog-page').then((m) => m.ItemCatalogPage),
+        redirectTo: marketRedirect(),
+        pathMatch: 'full' as const,
       },
 
       {
@@ -217,15 +232,8 @@ export const routes: Routes = [
 
       {
         path: 'gear',
-
-        title: $localize`Black Market · Equipamentos`,
-
-        data: { private: true },
-
-        loadComponent: () =>
-          SCREENSHOT_MVP
-            ? import('./features/gear/gear-inventory-page').then((m) => m.GearInventoryPage)
-            : import('./features/gear/gear-page').then((m) => m.GearPage),
+        redirectTo: personalRedirect('/family', 'equipment'),
+        pathMatch: 'full' as const,
       },
 
       {

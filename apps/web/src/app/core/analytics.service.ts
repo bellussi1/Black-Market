@@ -45,6 +45,7 @@ export interface EventProperties {
 export function featureOf(url: string): Feature {
   const path = url.split(/[?#]/)[0];
   if (path === '/') return 'home';
+  if (path === '/family') return 'profile';
   if (path.startsWith('/database/items')) return 'catalog';
   if (['/termos', '/privacidade', '/cookies', '/contato'].includes(path)) return 'legal';
   const area = path.split('/')[1];

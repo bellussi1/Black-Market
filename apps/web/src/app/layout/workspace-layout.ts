@@ -46,7 +46,7 @@ export class WorkspaceLayout {
   openItem(item: CatalogItem | null) {
     if (!item) return;
     this.quickSearchOpen.set(false);
-    void this.router.navigate(['/database/items', item.id]);
+    void this.router.navigate(['/market/items', item.id]);
   }
   readonly screenshotMvp = SCREENSHOT_MVP;
 
@@ -67,6 +67,7 @@ export class WorkspaceLayout {
         '/gear',
 
         '/profile',
+        '/family',
 
         '/plans',
 
@@ -107,13 +108,9 @@ export class WorkspaceLayout {
         { path: '/scans', label: 'Importar capturas' },
         { path: '/market', label: 'Mercado' },
         { path: '/recipes', label: 'Explorar receitas' },
-        { path: '/storage', label: 'Armazéns' },
-        { path: '/inventory', label: 'Inventário' },
-        { path: '/gear', label: 'Equipamentos' },
-        { path: '/profile', label: 'Personagens e família' },
+        { path: '/storage', label: 'Armazém' },
+        { path: '/family', label: 'Família' },
         { path: '/shopping', label: 'Lista de materiais' },
-        { path: '/database/items', label: 'Catálogo de itens' },
-        { path: '/settings', label: 'Dados e backup' },
       ]
     : [
         { path: '/', label: $localize`Início` },
@@ -122,14 +119,12 @@ export class WorkspaceLayout {
       ].filter((link) => isMvpPathEnabled(link.path));
 
   readonly navGroups = [
-    { title: 'Seus itens', links: [{ path: '/inventory', label: 'Inventário' }] },
+    { title: 'Seus itens', links: [{ path: '/storage', label: 'Armazém' }] },
 
     {
       title: $localize`Mercado e produção`,
 
       links: [
-        { path: '/database/items', label: $localize`Buscar itens` },
-
         { path: '/recipes', label: $localize`Receitas` },
 
         { path: '/market', label: $localize`Consultar mercado` },
@@ -142,9 +137,7 @@ export class WorkspaceLayout {
       title: $localize`Personagem e evolução`,
 
       links: [
-        { path: '/profile', label: $localize`Meu personagem` },
-
-        { path: '/gear', label: $localize`Equipamentos` },
+        { path: '/family', label: $localize`Família` },
 
         { path: '/enhancement', label: $localize`Aprimoramento e acúmulos` },
 
@@ -175,8 +168,6 @@ export class WorkspaceLayout {
 
       links: [
         { path: '/reference', label: $localize`Guia do mundo` },
-
-        { path: '/settings', label: $localize`Dados e backup` },
 
         { path: '/account', label: $localize`Minha conta` },
       ],

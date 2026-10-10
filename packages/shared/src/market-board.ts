@@ -3,7 +3,13 @@ import type { CatalogCategory, MarketItemQuote } from './index';
 export type MarketBoardSort = 'hot' | 'price' | 'stock' | 'name';
 export type MarketBoardPageSize = 20 | 50 | 100;
 
-export interface MarketBoardItem extends MarketItemQuote {
+export interface MarketBoardItem extends Omit<MarketItemQuote, 'stock' | 'totalTrades'> {
+  stock: number | null;
+  totalTrades: string | null;
+  /** Search/category quotes are per-item summaries, without an enhancement variant. */
+  quoteScope?: 'variant' | 'summary';
+  /** False means no usable provider quote; stock is unknown, not zero. */
+  marketAvailable?: boolean;
   iconUrl: string | null;
   categories: CatalogCategory[];
   /** Arithmetic mean of locally observed prices in the last 30 days; not a trade average. */
@@ -24,6 +30,12 @@ export interface MarketBoardResponse {
   fetchedAt: string;
   cacheStatus: 'fetched' | 'cached' | 'stale';
   upstreamCacheMinutes: number;
+  refreshMinutes?: number;
+  /** Catalog remains available when quotes cannot be fetched; existing quotes may be stale. */
+  quotesUnavailable?: boolean;
+  scope?: 'hot' | 'search' | 'category';
+  /** Catalog search uses name ordering before pagination. */
+  sort?: MarketBoardSort;
   items: MarketBoardItem[];
   total: number;
   page: number;

@@ -1,3 +1,4 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import {
@@ -6,6 +7,7 @@ import {
   computed,
   effect,
   inject,
+  PLATFORM_ID,
   signal,
   untracked,
 } from '@angular/core';
@@ -41,8 +43,15 @@ import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
+import {
+  type HistoryMetric,
+  historyObservations,
+  liquidityEstimate,
+  marketChart,
+} from './market-history';
+import { MarketRefresh } from './market-refresh';
 
-type MarketHistoryMetric = 'price' | 'stock' | 'totalTrades';
+type MarketHistoryMetric = HistoryMetric;
 type MarketHistoryRange = 'day' | 'week' | 'month';
 
 @Component({
@@ -59,16 +68,22 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     MarketBoard,
   ],
   templateUrl: './market-page.html',
+  styleUrl: './market-page.scss',
 })
 export class MarketPage implements OnDestroy {
   private readonly analytics = inject(AnalyticsService);
   constructor() {
+    effect(() => {
+      const active = this.workspaceView() === 'quote' && !!this.lookupId();
+      untracked(() => this.refresh?.setActive(active));
+    });
     effect(() => {
       const region = this.store.data().region;
       untracked(() => {
         if (region === this.quoteRegion) return;
         this.quoteRegion = region;
         this.liveRequest?.unsubscribe();
+        this.historyRequest?.unsubscribe();
         this.live.set(null);
         this.history.set([]);
         this.lookupLoading.set(false);
@@ -94,6 +109,11 @@ export class MarketPage implements OnDestroy {
   private readonly catalog = inject(CatalogApiService);
   private liveRequest?: Subscription;
   private itemRequest?: Subscription;
+  private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
+    ? new MarketRefresh(inject(DOCUMENT), () => {
+        if (!this.lookupLoading()) this.lookup(true);
+      })
+    : null;
   readonly lookupId = signal('');
   readonly workspaceView = signal<'board' | 'quote' | 'calculator' | 'saved'>('board');
   readonly lookupLoading = signal(false);
@@ -131,8 +151,8 @@ export class MarketPage implements OnDestroy {
         return $localize`Preço de venda`;
       case 'stock':
         return $localize`Estoque disponível`;
-      case 'totalTrades':
-        return $localize`Contador de transações`;
+      case 'volume':
+        return $localize`Volume observado por intervalo`;
     }
   });
   readonly historySeries = computed(() => {
@@ -151,68 +171,36 @@ export class MarketPage implements OnDestroy {
     });
   });
   readonly historyChart = computed(() => {
-    const points = this.historySeries()
-      .map((point) => ({ point, value: this.historyValue(point) }))
-      .filter(
-        (entry): entry is { point: MarketHistoryPoint; value: bigint } => entry.value !== null,
-      );
-    if (points.length < 2)
-      return {
-        points: '',
-        min: '—',
-        max: '—',
-        samples: points.length,
-        startAt: '',
-        endAt: '',
-      };
-
-    const values = points.map((entry) => entry.value);
-    const min = values.reduce((a, b) => (a < b ? a : b));
-    const max = values.reduce((a, b) => (a > b ? a : b));
-    const firstAt = Date.parse(points[0].point.fetchedAt);
-    const lastAt = Date.parse(points.at(-1)!.point.fetchedAt);
-    const timeSpan = Math.max(lastAt - firstAt, 1);
-    const coords = points.map(({ point, value }) => {
-      const elapsed = Date.parse(point.fetchedAt) - firstAt;
-      const x = 44 + Math.round((elapsed / timeSpan) * 640);
-      const relative = max === min ? 0.5 : Number(((value - min) * 1000n) / (max - min)) / 1000;
-      const y = 176 - Math.round(relative * 136);
-      return `${x},${y}`;
-    });
+    const duration =
+      this.historyRange() === 'day'
+        ? 24 * 60 * 60_000
+        : this.historyRange() === 'week'
+          ? 7 * 24 * 60 * 60_000
+          : 30 * 24 * 60 * 60_000;
+    const observations = historyObservations(this.history(), this.historyMetric()).filter(
+      (point) => Date.parse(point.fetchedAt) >= Date.now() - duration,
+    );
+    const chart = marketChart(observations, this.historyMetric() === 'volume');
     return {
-      points: coords.join(' '),
-      min: this.historyValueLabel(min),
-      max: this.historyValueLabel(max),
-      samples: points.length,
-      startAt: points[0].point.fetchedAt,
-      endAt: points.at(-1)!.point.fetchedAt,
+      ...chart,
+      min: chart.min === null ? '—' : this.historyValueLabel(chart.min),
+      max: chart.max === null ? '—' : this.historyValueLabel(chart.max),
     };
   });
+  readonly liquidity = computed(() => liquidityEstimate(this.history(), Date.now()));
+  readonly historyValueLabel = (value: bigint): string =>
+    new Intl.NumberFormat(uiLocale()).format(value);
+  readonly intervalLabel = (minutes: number | undefined): string =>
+    minutes === undefined ? '' : number(minutes, 1) + ' min';
 
-  private historyValue(point: MarketHistoryPoint): bigint | null {
-    const raw =
-      this.historyMetric() === 'price'
-        ? point.price
-        : this.historyMetric() === 'totalTrades'
-          ? point.totalTrades
-          : point.stock === null
-            ? null
-            : String(point.stock);
-    return raw !== null && raw !== undefined && /^\d{1,24}$/.test(raw) ? BigInt(raw) : null;
-  }
-
-  private historyValueLabel(value: bigint): string {
-    return new Intl.NumberFormat(uiLocale()).format(value);
-  }
-
-  showHistory() {
+  showHistory(preserve = false) {
     const id = Number(this.lookupId());
     if (!Number.isInteger(id) || id < 1 || id > 2147483647) {
       this.historyMessage.set('Escolha um item para consultar seu histórico.');
       return;
     }
     this.historyRequest?.unsubscribe();
-    this.history.set([]);
+    if (!preserve) this.history.set([]);
     this.historyMessage.set('Carregando histórico…');
     this.historyRequest = this.api
       .history(id, this.store.data().region, this.historySubId)
@@ -230,7 +218,7 @@ export class MarketPage implements OnDestroy {
       });
   }
 
-  selectItem(item: CatalogItem | null): void {
+  selectItem(item: CatalogItem | null, subId = 0): void {
     if (item) this.workspaceView.set('quote');
     this.liveRequest?.unsubscribe();
     this.live.set(null);
@@ -238,7 +226,7 @@ export class MarketPage implements OnDestroy {
     this.historyRequest?.unsubscribe();
     this.history.set([]);
     this.historyMessage.set('');
-    this.historySubId = 0;
+    this.historySubId = subId;
     this.catalogItem.set(item);
     this.lookupId.set(item ? String(item.id) : '');
     this.draft = {
@@ -250,18 +238,20 @@ export class MarketPage implements OnDestroy {
     if (item) this.lookup();
   }
   selectBoardItem(item: MarketBoardItem): void {
-    this.selectItem({
-      id: item.itemId,
-      name: item.name,
-      iconUrl: item.iconUrl,
-      icon: null,
-      categories: item.categories,
-      category: item.categories[0]?.name ?? null,
-      grade: null,
-      weight: null,
-      description: null,
-    });
-    this.historySubId = item.subId;
+    this.selectItem(
+      {
+        id: item.itemId,
+        name: item.name,
+        iconUrl: item.iconUrl,
+        icon: null,
+        categories: item.categories,
+        category: item.categories[0]?.name ?? null,
+        grade: null,
+        weight: null,
+        description: null,
+      },
+      item.quoteScope === 'summary' ? 0 : item.subId,
+    );
   }
   netPrice(price: string | null): string | null {
     if (price === null) return null;
@@ -392,18 +382,25 @@ export class MarketPage implements OnDestroy {
       )
       .join(' ');
   }
-  lookup(): void {
+  lookup(preserve = false): void {
     if (!/^[1-9]\d{0,9}$/.test(this.lookupId()) || Number(this.lookupId()) > 2_000_000_000) {
       this.lookupError.set('Informe um ID de item válido.');
       return;
     }
+    this.refresh?.markRefreshed();
     this.liveRequest?.unsubscribe();
+    this.historyRequest?.unsubscribe();
+    if (!preserve) {
+      this.history.set([]);
+      this.historyMessage.set('');
+    }
     this.analytics.capture('journey_started', { feature: 'market', action: 'search' });
     this.lookupLoading.set(true);
     this.lookupError.set('');
-    this.live.set(null);
+    if (!preserve) this.live.set(null);
     this.liveRequest = this.api.getItem(this.lookupId(), this.store.data().region).subscribe({
       next: (response) => {
+        this.refresh?.markRefreshed();
         this.analytics.capture('journey_completed', {
           feature: 'market',
           action: 'search',
@@ -411,6 +408,9 @@ export class MarketPage implements OnDestroy {
         });
         this.live.set(response);
         this.lookupLoading.set(false);
+        if (!response.items.some((item) => item.subId === this.historySubId))
+          this.historySubId = response.items[0]?.subId ?? 0;
+        this.showHistory(preserve);
       },
       error: (error: HttpErrorResponse) => {
         this.analytics.capture('journey_failed', {
@@ -485,6 +485,7 @@ export class MarketPage implements OnDestroy {
     this.workspaceView.set('calculator');
   }
   ngOnDestroy(): void {
+    this.refresh?.destroy();
     this.itemRequest?.unsubscribe();
     this.liveRequest?.unsubscribe();
     this.historyRequest?.unsubscribe();

@@ -24,8 +24,33 @@ describe('Screenshot MVP public sitemap', () => {
       '/inventory',
       '/storage',
       '/account',
+      '/family',
+      '/database/items',
     ])
       expect(xml).not.toContain(`<loc>https://example.com${path}`);
+  });
+  it('publishes item URLs under Mercado', async () => {
+    const database = {
+      db: {
+        select: () => ({
+          from: () => ({
+            where: () => ({
+              orderBy: () => ({
+                limit: () => ({ offset: () => Promise.resolve([{ id: 5301 }]) }),
+              }),
+            }),
+          }),
+        }),
+      },
+    } as unknown as DatabaseService;
+    const catalog = { getActiveDataset: vi.fn().mockResolvedValue({ id: 'dataset' }) };
+    const xml = await new CatalogSitemapService(
+      new ConfigService({ PUBLIC_SITE_URL: 'https://example.com' }),
+      catalog as unknown as CatalogService,
+      database,
+    ).page('items', 1);
+    expect(xml).toContain('<loc>https://example.com/market/items/5301</loc>');
+    expect(xml).not.toContain('/database/items');
   });
   it('does not serve a sitemap for disabled reference modules', async () => {
     await expect(service().page('reference', 1)).rejects.toThrow('temporariamente');

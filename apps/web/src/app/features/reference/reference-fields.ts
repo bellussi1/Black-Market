@@ -110,7 +110,7 @@ function linkFor(urn: string): string[] | undefined {
     'item-set': 'sets',
   };
   return match[1] === 'item'
-    ? ['/database/items', match[2]]
+    ? ['/market/items', match[2]]
     : kinds[match[1]]
       ? ['/reference', kinds[match[1]], urn]
       : undefined;

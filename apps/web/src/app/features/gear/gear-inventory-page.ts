@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { type CharacterProfile, characterSchema, gearSlots } from '@bdo/calculators';
+import { characterSchema, gearSlots } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -15,7 +15,7 @@ import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
 })
 export class GearInventoryPage {
   readonly store = inject(WorkspaceStore);
-  readonly selected = signal('');
+  readonly embedded = input(false);
   readonly message = signal('');
   readonly slots = gearSlots;
   readonly labels: Record<string, string> = {
@@ -38,14 +38,15 @@ export class GearInventoryPage {
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
   );
-  readonly profile = computed<CharacterProfile | null>(
-    () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter() ?? this.profiles()[0] ?? null,
-  );
+  readonly profile = this.store.activeCharacter;
   name = '';
   slot: (typeof gearSlots)[number] = 'mainhand';
   item: CatalogItem | null = null;
   level = 0;
   caphras = 0;
+  select(id: string) {
+    this.store.update((state) => ({ ...state, activeCharacterId: id }));
+  }
   create() {
     const name = this.name.trim();
     if (!name) {
@@ -68,7 +69,6 @@ export class GearInventoryPage {
         activeCharacterId: profile.data.id,
       }))
     ) {
-      this.selected.set(profile.data.id);
       this.name = '';
       this.message.set('Personagem cadastrado. Você já pode associar capturas a ele.');
     }

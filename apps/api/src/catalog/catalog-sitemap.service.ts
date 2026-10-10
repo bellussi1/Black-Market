@@ -82,7 +82,6 @@ export class CatalogSitemapService {
       paths = [
         '/',
         '/sobre',
-        '/database/items',
         '/recipes',
         '/reference/npcs',
         '/reference/quests',
@@ -111,7 +110,7 @@ export class CatalogSitemapService {
           .orderBy(asc(itemVersions.itemId))
           .limit(10000)
           .offset((page - 1) * 10000);
-        paths = rows.map((row) => '/database/items/' + row.id);
+        paths = rows.map((row) => '/market/items/' + row.id);
       } else if (type === 'recipes') {
         const rows = await this.database.db
           .select({ key: recipes.recipeKey })

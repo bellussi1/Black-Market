@@ -61,7 +61,7 @@
                 @case ('/gear') {
                   <path d="M6 3l12 12-3 3L3 6zm9 15l5 3m-7-5l5-5M18 3L6 15m-1-3l6 6m-8 3l4-4" />
                 }
-                @case ('/profile') {
+                @case ('/family') {
                   <circle cx="12" cy="7" r="4" />
                   <path d="M4 21v-3a8 8 0 0116 0v3" />
                 }
@@ -124,7 +124,7 @@
         >
           Buscar item <span aria-hidden="true">⌕</span>
         </button>
-        <a class="topbar-character" routerLink="/profile">{{
+        <a class="topbar-character" routerLink="/family">{{
           store.activeCharacter()?.name ?? 'Meu espaço'
         }}</a>
         <label for="market-region"
@@ -159,7 +159,7 @@
     @if (preferences.message()) {
       <div class="storage-warning" role="status">
         {{ preferences.message() }}
-        <a routerLink="/settings"><ng-container i18n>Dados e backup</ng-container></a>
+        <a routerLink="/settings"><ng-container i18n>Recuperar dados locais</ng-container></a>
       </div>
     }
     <div class="content-frame" [class.with-ad-rails]="showAds()">

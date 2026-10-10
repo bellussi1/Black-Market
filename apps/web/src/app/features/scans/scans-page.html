@@ -387,7 +387,7 @@
           @for (profile of profiles(); track profile.id) {
             <option [value]="profile.id">{{ profile.name }}</option>
           }</select
-        ><a routerLink="/profile" i18n>Cadastrar personagem</a
+        ><a routerLink="/family" i18n>Cadastrar personagem</a
         ><label for="scan-field" i18n>Campo a atualizar</label
         ><select id="scan-field" [(ngModel)]="field" (ngModelChange)="confirmNumber = false">
           @for (option of numericFields; track option.id) {
@@ -810,8 +810,8 @@
     </button>
     <nav class="action-row" aria-label="Consultar itens salvos" i18n-aria-label>
       <a routerLink="/storage" i18n>Ver armazéns</a
-      ><a routerLink="/inventory" i18n>Ver inventários</a
-      ><a routerLink="/gear" i18n>Ver equipamentos</a>
+      ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventários</a
+      ><a routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n>Ver equipamentos</a>
     </nav>
   </section>
 }

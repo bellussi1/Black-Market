@@ -58,28 +58,19 @@ export class DashboardPage {
           number: '03',
           icon: 'storage',
           title: 'Consultar meu armazém',
-          description: 'Encontre seus itens por cidade e ajuste as quantidades.',
+          description: 'Encontre seus itens por cidade ou personagem e ajuste as quantidades.',
           path: '/storage',
           tag: 'ARMAZÉM',
-          steps: 'Escolher cidade · pesquisar · editar',
+          steps: 'Armazéns e inventários · pesquisar · editar',
         },
         {
           number: '04',
           icon: 'storage',
-          title: 'Organizar meu inventário',
-          description: 'Separe os itens de cada personagem e atualize por novas capturas.',
-          path: '/inventory',
-          tag: 'INVENTÁRIO',
-          steps: 'Escolher personagem · revisar itens',
-        },
-        {
-          number: '05',
-          icon: 'craft',
-          title: 'Ver meus equipamentos',
-          description: 'Confira os equipamentos do personagem e corrija seus slots.',
-          path: '/gear',
-          tag: 'EQUIPAMENTOS',
-          steps: 'Escolher personagem · revisar posições',
+          title: 'Gerenciar minha família',
+          description: 'Reúna personagens, equipamentos, profissões e bônus da família.',
+          path: '/family',
+          tag: 'FAMÍLIA',
+          steps: 'Escolher personagem · revisar ficha e equipamentos',
         },
       ]
     : [
@@ -122,10 +113,10 @@ export class DashboardPage {
       ];
   readonly tools = [
     {
-      title: $localize`Buscar itens e receitas`,
-      description: $localize`Encontre itens do jogo, categorias e receitas relacionadas.`,
-      path: '/database/items',
-      tag: $localize`CATÁLOGO`,
+      title: $localize`Buscar itens no mercado`,
+      description: $localize`Encontre itens do jogo, preços e informações relacionadas.`,
+      path: '/market',
+      tag: $localize`MERCADO`,
     },
     {
       title: $localize`Aprimoramento e acúmulos`,
@@ -134,10 +125,10 @@ export class DashboardPage {
       tag: $localize`APRIMORAMENTO`,
     },
     {
-      title: $localize`Equipamentos`,
-      description: $localize`Organize sua progressão e compare melhorias possíveis.`,
-      path: '/gear',
-      tag: $localize`PERSONAGEM`,
+      title: $localize`Família`,
+      description: $localize`Organize personagens, equipamentos e bônus.`,
+      path: '/family',
+      tag: $localize`FAMÍLIA`,
     },
     {
       title: $localize`Profissões e treino`,

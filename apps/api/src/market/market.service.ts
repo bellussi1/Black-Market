@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { type MarketLookup, normalizeArsha } from './arsha-provider';
 import { MarketHistoryService } from './market-history.service';
 
-const TTL = 30 * 60 * 1000;
+const TTL = 8 * 60 * 1000;
 @Injectable()
 export class MarketService {
   private readonly cache = new Map<

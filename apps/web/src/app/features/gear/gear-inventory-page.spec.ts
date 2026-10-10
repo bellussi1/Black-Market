@@ -1,3 +1,4 @@
+import { characterSchema } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
@@ -5,6 +6,25 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { GearInventoryPage } from './gear-inventory-page';
 describe('Character equipment management', () => {
   useMemoryStorage();
+  it('uses the shared active character when equipment selection changes', async () => {
+    const fixture = await renderComponent(GearInventoryPage);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({ id: 'one', name: 'Primeiro', region: 'sa' }),
+        characterSchema.parse({ id: 'two', name: 'Segundo', region: 'sa' }),
+      ],
+      activeCharacterId: 'one',
+    }));
+    fixture.detectChanges();
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.value = 'two';
+    select.dispatchEvent(new Event('change'));
+    expect(page.store.activeCharacter()?.id).toBe('two');
+    page.store.update((state) => ({ ...state, activeCharacterId: 'one' }));
+    expect(page.profile()?.id).toBe('one');
+  });
   it('creates a character and saves manual equipment without calculating attributes', async () => {
     const fixture = await renderComponent(GearInventoryPage),
       page = fixture.componentInstance;

@@ -1,15 +1,33 @@
 <div class="tool-page stock-page">
   <header class="page-heading">
     <p class="eyebrow" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
-    <h1>{{ kind === 'storage' ? 'Meus armazéns' : 'Meus inventários' }}</h1>
+    <h1 i18n>Armazém</h1>
     <p i18n>Importe capturas, confira o que já possui e corrija quantidades quando precisar.</p>
     <div class="action-row">
-      <a class="btn" routerLink="/scans" [queryParams]="{ type: kind }" i18n>Importar capturas</a
+      <a class="btn" routerLink="/scans" [queryParams]="{ type: kind() }" i18n>Importar capturas</a
       ><button class="btn subtle" type="button" (click)="newItem()" i18n>
-        Adicionar item manualmente</button
-      ><a routerLink="/settings" i18n>Dados e backup</a>
+        Adicionar item manualmente
+      </button>
     </div>
   </header>
+  <div class="workspace-tabs" role="group" aria-label="Itens do armazém" i18n-aria-label>
+    <button
+      type="button"
+      [attr.aria-pressed]="kind() === 'storage'"
+      (click)="selectKind('storage')"
+      i18n
+    >
+      Armazéns por cidade
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="kind() === 'inventory'"
+      (click)="selectKind('inventory')"
+      i18n
+    >
+      Inventários dos personagens
+    </button>
+  </div>
   <section class="panel">
     <div class="form-grid">
       <label i18n
@@ -18,10 +36,10 @@
           [ngModel]="search()"
           (ngModelChange)="search.set($event); resetPage()" /></label
       ><label
-        >{{ kind === 'storage' ? 'Cidade ou armazém' : 'Personagem'
+        >{{ kind() === 'storage' ? 'Cidade ou armazém' : 'Personagem'
         }}<select [ngModel]="destination()" (ngModelChange)="destination.set($event); resetPage()">
           <option value="" i18n>Todos</option>
-          @if (kind === 'storage') {
+          @if (kind() === 'storage') {
             @for (location of locations(); track location) {
               <option [value]="location">{{ location }}</option>
             }
@@ -71,7 +89,7 @@
           <div>
             <ng-container>
               @if (row.itemId) {
-                <a [routerLink]="['/database/items', row.itemId]">{{ row.name }}</a>
+                <a [routerLink]="['/market/items', row.itemId]">{{ row.name }}</a>
               } @else {
                 <span>{{ row.name }}</span>
               }</ng-container
@@ -103,7 +121,7 @@
           <p class="help" i18n>
             Importe uma captura para começar ou ajuste a pesquisa e o destino.
           </p>
-          <a class="btn subtle" routerLink="/scans" [queryParams]="{ type: kind }" i18n
+          <a class="btn subtle" routerLink="/scans" [queryParams]="{ type: kind() }" i18n
             >Importar capturas</a
           >
         </div>
@@ -119,13 +137,19 @@
   </section>
   @if (draft) {
     <section class="panel">
-      <h2 i18n>Editar item</h2>
+      <h2>
+        {{
+          (draft.kind ?? 'storage') === 'storage'
+            ? 'Editar item do armazém'
+            : 'Editar item do inventário'
+        }}
+      </h2>
       <app-catalog-item-picker
         label="Item"
         [selectionName]="draft.name"
         (selected)="choose($event)"
       />
-      @if (kind === 'storage') {
+      @if ((draft.kind ?? 'storage') === 'storage') {
         <label i18n>Cidade ou armazém<input [(ngModel)]="draft.location" maxlength="120" /></label>
       } @else {
         <label
@@ -136,7 +160,7 @@
               <option [value]="profile.id">{{ profile.name }}</option>
             }
           </select></label
-        ><a routerLink="/gear" i18n>Cadastrar personagem</a>
+        ><a routerLink="/family" [queryParams]="{ tab: 'character' }" i18n>Cadastrar personagem</a>
       }
       <label i18n
         >Quantidade exata<input

@@ -291,7 +291,7 @@
         <app-catalog-item-picker (selected)="addOutput($event)" />
         @for (item of task.outputs; track item.itemId) {
           <div class="saved-row">
-            <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+            <a [routerLink]="['/market/items', item.itemId]">{{ item.name }}</a
             ><span
               >{{ item.quantity }} por ciclo ·
               {{ item.price === null ? 'Preço não informado' : silver(item.price) }}</span
@@ -431,7 +431,7 @@
             <ul>
               @for (item of row.outputs; track item.itemId) {
                 <li>
-                  <a [routerLink]="['/database/items', item.itemId]">{{ item.name }}</a
+                  <a [routerLink]="['/market/items', item.itemId]">{{ item.name }}</a
                   >: {{ item.dailyQuantity }} / dia
                 </li>
               }

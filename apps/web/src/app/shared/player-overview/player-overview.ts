@@ -19,7 +19,7 @@ import { silver } from '../formatters';
             </p>
             <h2 i18n>Seu personagem, seus próximos passos</h2>
           </div>
-          <a routerLink="/profile" i18n>Atualizar ficha →</a>
+          <a routerLink="/family" i18n>Atualizar ficha →</a>
         </div>
         <div class="form-grid">
           <div>
@@ -49,7 +49,7 @@ import { silver } from '../formatters';
         <div class="action-row">
           <a class="btn" routerLink="/recipes" i18n>Planejar uma produção</a
           ><a class="btn subtle" routerLink="/storage" i18n>Ver meus materiais</a
-          ><a class="btn subtle" routerLink="/gear" i18n>Revisar equipamentos</a>
+          ><a class="btn subtle" routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n>Revisar equipamentos</a>
         </div>
         <h3 i18n>Uma atividade para comparar</h3>
         @if (best(); as recommendation) {
@@ -80,7 +80,7 @@ import { silver } from '../formatters';
               </div>
             }
           </div>
-          <a routerLink="/profile" i18n>Conferir profissões e bônus →</a>
+          <a routerLink="/family" i18n>Conferir profissões e bônus →</a>
         }
       </section>
     }

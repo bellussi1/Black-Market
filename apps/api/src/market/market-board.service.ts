@@ -30,11 +30,11 @@ import { z } from 'zod';
 
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
-import { type MarketLookup, normalizeArshaHot } from './arsha-provider';
+import { type MarketLookup, normalizeArshaHot, normalizeArshaSummary } from './arsha-provider';
 import { MarketHistoryService } from './market-history.service';
 import { type MarketObservation, observedMarketStatistics } from './market-statistics';
 
-const TTL = 30 * 60 * 1000;
+const TTL = 8 * 60 * 1000;
 const querySchema = z.object({
   region: z.enum(MARKET_PROVIDER_REGIONS).default(DEFAULT_REGION),
   locale: z.preprocess(
@@ -51,11 +51,17 @@ const querySchema = z.object({
     .default(20),
 });
 type Metadata = { name: string; categories: CatalogCategory[] };
+type BoardQuery = z.infer<typeof querySchema>;
+type BoardCandidate = Pick<CatalogItem, 'id' | 'name' | 'iconUrl' | 'categories'>;
 type HeldBoard = {
   response: MarketLookup;
   metadata: Map<number, Metadata>;
   expires: number;
   retryAt: number;
+  catalogItems?: BoardCandidate[];
+  total?: number;
+  categories?: CatalogCategory[];
+  quotesUnavailable?: boolean;
 };
 
 function normalized(value: string) {
@@ -92,6 +98,7 @@ export class MarketBoardService {
     if (!this.config.get<boolean>('MARKET_PROVIDER_ENABLED', true))
       throw new ServiceUnavailableException('O mercado está indisponível no momento.');
     const query = parsed.data;
+    if (query.q || query.categoryId) return this.catalogBoard(query);
     const held = await this.hot(query.region, query.locale);
     const terms = normalized(query.q).split(/\s+/).filter(Boolean);
     let matches = held.response.items.filter((item) => {
@@ -143,7 +150,15 @@ export class MarketBoardService {
             .then((result) => result.items)
             .catch(() => [] as CatalogItem[])
         : Promise.resolve([] as CatalogItem[]),
-      this.history.boardObservations(query.region, ids, query.locale, now).catch(() => []),
+      this.history
+        .boardObservations(
+          query.region,
+          ids,
+          query.locale,
+          now,
+          page.map((item) => ({ itemId: item.itemId, subId: item.subId })),
+        )
+        .catch(() => []),
     ]);
     const catalogById = new Map(catalogItems.map((item) => [item.id, item]));
     const byItem = new Map<string, MarketObservation[]>();
@@ -154,12 +169,18 @@ export class MarketBoardService {
       byItem.set(key, existing);
     }
     const allCategories = new Map<string, CatalogCategory>();
+    for (const category of held.categories ?? []) allCategories.set(category.id, category);
     for (const metadata of held.metadata.values())
       for (const category of metadata.categories) allCategories.set(category.id, category);
     return {
       ...held.response,
+      scope: 'hot',
+      sort: query.sort,
+      refreshMinutes: 8,
       items: page.map((item) => ({
         ...item,
+        quoteScope: 'variant',
+        marketAvailable: true,
         name:
           held.metadata.get(item.itemId)?.name ?? catalogById.get(item.itemId)?.name ?? item.name,
         iconUrl: catalogById.get(item.itemId)?.iconUrl ?? null,
@@ -178,8 +199,156 @@ export class MarketBoardService {
     };
   }
 
+  private async catalogBoard(query: BoardQuery): Promise<MarketBoardResponse> {
+    const key = `${query.region}:${query.locale}:catalog:${JSON.stringify([
+      normalized(query.q),
+      query.categoryId,
+      query.page,
+      query.pageSize,
+    ])}`;
+    const held = await this.loadBoard(key, (previous) =>
+      this.fetchCatalogBoard(key, query, previous),
+    );
+    const quotes = new Map(held.response.items.map((item) => [item.itemId, item]));
+    return {
+      ...held.response,
+      scope: query.q ? 'search' : 'category',
+      sort: 'name',
+      refreshMinutes: 8,
+      quotesUnavailable: held.quotesUnavailable ?? false,
+      total: held.total ?? 0,
+      page: query.page,
+      pageSize: query.pageSize as MarketBoardPageSize,
+      categories: held.categories ?? [],
+      items: (held.catalogItems ?? []).map((item) => {
+        const quote = quotes.get(item.id);
+        return {
+          itemId: item.id,
+          // Placeholder only: consumers must obtain /item variants before showing history.
+          subId: 0,
+          name: item.name,
+          price: quote?.price ?? null,
+          stock: quote?.stock ?? null,
+          totalTrades: quote?.totalTrades ?? null,
+          minPrice: null,
+          maxPrice: null,
+          lastSoldPrice: null,
+          lastSoldAt: null,
+          quoteScope: 'summary',
+          marketAvailable: Boolean(quote),
+          iconUrl: item.iconUrl ?? null,
+          categories: item.categories,
+          ...observedMarketStatistics([], Date.now()),
+        };
+      }),
+    };
+  }
+
+  private async fetchCatalogBoard(
+    key: string,
+    query: BoardQuery,
+    held?: HeldBoard,
+  ): Promise<HeldBoard> {
+    try {
+      const catalogQuery = {
+        region: query.region,
+        preferredLocale: query.locale,
+        q: query.q,
+        categoryId: query.categoryId,
+        page: query.page,
+        pageSize: query.pageSize,
+      };
+      const [catalogPage, categoryPage] = await Promise.all([
+        this.catalog.listItems(catalogQuery),
+        this.catalog.listCategories({ region: query.region, preferredLocale: query.locale }),
+      ]);
+      let candidates: BoardCandidate[] = catalogPage.items;
+      let total = catalogPage.total;
+      const exactId = /^\d+$/.test(query.q) ? Number(query.q) : null;
+      // An exact provider ID remains usable before it reaches the local catalog.
+      if (
+        !total &&
+        !query.categoryId &&
+        exactId &&
+        Number.isSafeInteger(exactId) &&
+        exactId <= 2_000_000_000
+      ) {
+        total = 1;
+        if (query.page === 1)
+          candidates = [{ id: exactId, name: `Item #${exactId}`, iconUrl: null, categories: [] }];
+      }
+      const ids = candidates.map((item) => item.id);
+      let items: MarketLookup['items'] = [];
+      let quotesUnavailable = false;
+      try {
+        if (ids.length)
+          items = normalizeArshaSummary(
+            await this.fetchPayload(
+              `https://api.arsha.io/v2/${query.region}/search?lang=${query.locale}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ids),
+              },
+            ),
+            ids,
+          );
+      } catch {
+        if (held) {
+          held.retryAt = Date.now() + 60000;
+          held.quotesUnavailable = true;
+          return { ...held, response: { ...held.response, cacheStatus: 'stale' } };
+        }
+        quotesUnavailable = true;
+      }
+      const byId = new Map(items.map((item) => [item.itemId, item]));
+      // Provider names supply the label for IDs not yet present in the catalog.
+      if (!catalogPage.total)
+        candidates = candidates.map((item) => ({
+          ...item,
+          name: byId.get(item.id)?.name ?? item.name,
+        }));
+      const entry: HeldBoard = {
+        response: {
+          source: 'arsha',
+          region: query.region,
+          locale: query.locale,
+          fetchedAt: new Date().toISOString(),
+          cacheStatus: quotesUnavailable ? 'stale' : 'fetched',
+          upstreamCacheMinutes: 30,
+          items,
+        },
+        metadata: new Map(),
+        catalogItems: candidates,
+        total,
+        categories: categoryPage.categories,
+        quotesUnavailable,
+        expires: quotesUnavailable ? 0 : Date.now() + TTL,
+        retryAt: quotesUnavailable ? Date.now() + 60000 : 0,
+      };
+      this.storeBoard(key, entry);
+      // Summaries must not become sid=0 observations or hydrate complete /item snapshots.
+      return entry;
+    } catch {
+      if (held) {
+        held.retryAt = Date.now() + 60000;
+        return { ...held, response: { ...held.response, cacheStatus: 'stale' } };
+      }
+      throw new ServiceUnavailableException(
+        'Não foi possível consultar os itens do catálogo no mercado.',
+      );
+    }
+  }
+
   private async hot(region: string, locale: string): Promise<HeldBoard> {
     const key = `${region}:${locale}`;
+    return this.loadBoard(key, (held) => this.fetchHot(region, locale, held));
+  }
+
+  private async loadBoard(
+    key: string,
+    fetchBoard: (held?: HeldBoard) => Promise<HeldBoard>,
+  ): Promise<HeldBoard> {
     const held = this.cache.get(key);
     const now = Date.now();
     if (held && held.expires > now)
@@ -201,7 +370,7 @@ export class MarketBoardService {
     }
     this.active++;
     this.requests++;
-    const request = this.fetchHot(region, locale, held);
+    const request = fetchBoard(held);
     this.pending.set(key, request);
     try {
       return await request;
@@ -213,32 +382,9 @@ export class MarketBoardService {
 
   private async fetchHot(region: string, locale: string, held?: HeldBoard): Promise<HeldBoard> {
     try {
-      const upstream = await fetch(`https://api.arsha.io/v2/${region}/hot?lang=${locale}`, {
-        signal: AbortSignal.timeout(8000),
-        headers: { Accept: 'application/json' },
-      });
-      if (!upstream.ok) throw new Error('Upstream unavailable');
-      const reader = upstream.body?.getReader();
-      if (!reader) throw new Error('Empty upstream body');
-      const decoder = new TextDecoder();
-      let text = '';
-      let bytes = 0;
-      try {
-        while (true) {
-          const chunk = await reader.read();
-          if (chunk.done) break;
-          bytes += chunk.value.byteLength;
-          if (bytes > 2_000_000) {
-            await reader.cancel();
-            throw new Error('Payload too large');
-          }
-          text += decoder.decode(chunk.value, { stream: true });
-        }
-        text += decoder.decode();
-      } finally {
-        reader.releaseLock();
-      }
-      const items = normalizeArshaHot(JSON.parse(text));
+      const items = normalizeArshaHot(
+        await this.fetchPayload(`https://api.arsha.io/v2/${region}/hot?lang=${locale}`),
+      );
       const response: MarketLookup = {
         source: 'arsha',
         region,
@@ -248,16 +394,23 @@ export class MarketBoardService {
         upstreamCacheMinutes: 30,
         items,
       };
-      const metadata = await this.metadata(
-        region,
-        locale,
-        items.map((item) => item.itemId),
-      ).catch(() => new Map<number, Metadata>());
-      const entry = { response, metadata, expires: Date.now() + TTL, retryAt: 0 };
+      const [metadata, categoryPage] = await Promise.all([
+        this.metadata(
+          region,
+          locale,
+          items.map((item) => item.itemId),
+        ).catch(() => new Map<number, Metadata>()),
+        this.catalog.listCategories({ region, preferredLocale: locale }).catch(() => null),
+      ]);
+      const entry = {
+        response,
+        metadata,
+        categories: categoryPage?.categories,
+        expires: Date.now() + TTL,
+        retryAt: 0,
+      };
       const key = `${region}:${locale}`;
-      if (!this.cache.has(key) && this.cache.size >= 15)
-        this.cache.delete(this.cache.keys().next().value!);
-      this.cache.set(key, entry);
+      this.storeBoard(key, entry);
       await this.history.save(response, 'hot').catch(() => undefined);
       return entry;
     } catch {
@@ -267,6 +420,42 @@ export class MarketBoardService {
       }
       throw new ServiceUnavailableException('O provedor não forneceu um quadro de mercado válido.');
     }
+  }
+
+  private storeBoard(key: string, entry: HeldBoard) {
+    if (!this.cache.has(key) && this.cache.size >= 15)
+      this.cache.delete(this.cache.keys().next().value!);
+    this.cache.set(key, entry);
+  }
+
+  private async fetchPayload(url: string, options: RequestInit = {}): Promise<unknown> {
+    const upstream = await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(8000),
+      headers: { Accept: 'application/json', ...options.headers },
+    });
+    if (!upstream.ok) throw new Error('Upstream unavailable');
+    const reader = upstream.body?.getReader();
+    if (!reader) throw new Error('Empty upstream body');
+    const decoder = new TextDecoder();
+    let text = '';
+    let bytes = 0;
+    try {
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        bytes += chunk.value.byteLength;
+        if (bytes > 2_000_000) {
+          await reader.cancel();
+          throw new Error('Payload too large');
+        }
+        text += decoder.decode(chunk.value, { stream: true });
+      }
+      text += decoder.decode();
+    } finally {
+      reader.releaseLock();
+    }
+    return JSON.parse(text);
   }
 
   private async metadata(region: string, locale: string, ids: number[]) {

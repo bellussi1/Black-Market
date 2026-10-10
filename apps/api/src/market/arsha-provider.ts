@@ -45,6 +45,49 @@ export function normalizeArshaHot(payload: unknown) {
   return entries.map(toQuote);
 }
 
+/** /search and /category omit sid and all variant-specific sale fields. */
+export function normalizeArshaSummary(payload: unknown, expectedIds: number[]) {
+  const entries = z
+    .array(
+      rawItemSchema.omit({ sid: true }).extend({
+        id: z.number().int().positive().max(2_000_000_000),
+      }),
+    )
+    .max(100)
+    .parse(Array.isArray(payload) ? payload : [payload]);
+  const allowed = new Set(expectedIds);
+  const byId = new Map<number, (typeof entries)[number]>();
+  const conflicts = new Set<number>();
+  // /search returns all-zero placeholders even for invalid IDs and nonmarketable
+  // items. They establish no stock/counter observation. A priced item with zero
+  // stock remains a valid sold-out quote.
+  for (const entry of entries) {
+    // The public search cache can return another ID for legacy/prefix-matching
+    // IDs (observed: requested 16 returns 16004). Never attach it to the legacy ID.
+    if (
+      !allowed.has(entry.id) ||
+      (BigInt(entry.basePrice) === 0n &&
+        entry.currentStock === 0 &&
+        BigInt(entry.totalTrades) === 0n)
+    )
+      continue;
+    const previous = byId.get(entry.id);
+    if (
+      previous &&
+      (BigInt(previous.basePrice) !== BigInt(entry.basePrice) ||
+        previous.currentStock !== entry.currentStock ||
+        BigInt(previous.totalTrades) !== BigInt(entry.totalTrades))
+    )
+      conflicts.add(entry.id);
+    else if (!previous) byId.set(entry.id, entry);
+  }
+  // Identical duplicates establish one observation; conflicting summaries
+  // establish none for that ID, without hiding the rest of the catalog page.
+  return [...byId.values()]
+    .filter((entry) => !conflicts.has(entry.id))
+    .map((entry) => toQuote({ ...entry, sid: 0 }));
+}
+
 function toQuote(entry: z.infer<typeof rawItemSchema>) {
   return {
     itemId: entry.id,

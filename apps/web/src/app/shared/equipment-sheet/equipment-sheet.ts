@@ -68,7 +68,7 @@ const labels: Record<string, string> = {
             <a
               class="equipment-slot"
               [attr.data-slot]="position"
-              [routerLink]="['/database/items', part.itemId]"
+              [routerLink]="['/market/items', part.itemId]"
             >
               <span>{{ labels[position] }}</span
               ><app-item-icon
@@ -94,7 +94,7 @@ const labels: Record<string, string> = {
       <div class="equipment-slots">
         @for (part of profile().gear; track part.slot) {
           <a
-            [routerLink]="['/database/items', part.itemId]"
+            [routerLink]="['/market/items', part.itemId]"
             class="equipment-slot"
             [attr.data-slot]="part.slot"
             ><span>{{ labels[part.slot] }}</span
@@ -122,7 +122,7 @@ const labels: Record<string, string> = {
       <h3 i18n>Predefinição de cristais</h3>
       <div class="equipment-slots">
         @for (crystal of profile().crystals; track $index) {
-          <a [routerLink]="['/database/items', crystal.itemId]" class="equipment-slot"
+          <a [routerLink]="['/market/items', crystal.itemId]" class="equipment-slot"
             ><app-item-icon
               [url]="catalog.resolveIconUrl(items().get(crystal.itemId) ?? {})"
               [name]="crystal.name"

@@ -166,7 +166,7 @@ try {
     ['/market', 'Mercado Central'],
     ['/recipes', 'Oficina de produção'],
     ['/recipes/items/5301', 'Reagente Líquido Limpo'],
-    ['/database/items', 'Catálogo de itens'],
+    ['/market/items/5301', 'Reagente Líquido Limpo'],
     ['/contato', 'Contato'],
     ['/termos', 'Termos de Uso'],
     ['/privacidade', 'Política de Privacidade'],
@@ -227,6 +227,10 @@ try {
   const personal = await request('/profile');
   assert.equal(personal.status, 200);
   assert.equal(personal.headers.get('x-robots-tag'), 'noindex,nofollow');
+  const family = await request('/family');
+  assert.equal(family.status, 200);
+  assert.equal(family.headers.get('x-robots-tag'), 'noindex,nofollow');
+  assert.equal(family.headers.get('cache-control'), 'private,no-store');
   const settings = await request('/settings');
   assert.equal(settings.headers.get('x-robots-tag'), 'noindex,nofollow');
 
@@ -243,6 +247,14 @@ try {
   const aboutTrailing = await request('/sobre/', { redirect: 'manual' });
   assert.equal(aboutTrailing.status, 308);
   assert.equal(aboutTrailing.headers.get('location'), '/sobre');
+  for (const [from, to] of [
+    ['/database/items', '/market'],
+    ['/database/items/5301?region=sa', '/market/items/5301?region=sa'],
+  ]) {
+    const alias = await request(from, { redirect: 'manual' });
+    assert.equal(alias.status, 308);
+    assert.equal(alias.headers.get('location'), to);
+  }
 
   const sitemap = await request('/sitemap.xml');
   assert.equal(sitemap.status, 200);
@@ -258,7 +270,7 @@ try {
   assert.equal(imageBytes.readUInt32BE(16), 1200);
   assert.equal(imageBytes.readUInt32BE(20), 630);
 
-  const missingItem = await request('/database/items/999999');
+  const missingItem = await request('/market/items/999999');
   assert.equal(missingItem.status, 404);
   console.log(
     'SSR smoke: public routes, metadata, social card, sitemap, canonical redirects, 404 and private noindex passed.',

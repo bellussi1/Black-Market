@@ -210,7 +210,6 @@ describe('MarketHistoryService', () => {
 
     const response = await service.history('sa', 676, 0, 'pt');
 
-    expect(rowsQuery.limit).toHaveBeenCalledWith(1500);
     expect(response.points).toEqual([
       {
         fetchedAt,
@@ -219,5 +218,56 @@ describe('MarketHistoryService', () => {
         totalTrades: '1400',
       },
     ]);
+  });
+  it('retains a full thirty-day graph collected every eight minutes', async () => {
+    const now = Date.parse('2026-10-09T12:00:00Z');
+    const rows = Array.from({ length: 5401 }, (_, index) => ({
+      fetchedAt: new Date(now - index * 8 * 60000),
+      payload: { price: '100', stock: 2, totalTrades: String(10000 - index) },
+    }));
+    const query = {
+      from: () => query,
+      where: () => query,
+      orderBy: () => query,
+      limit: (cap: number) => Promise.resolve(rows.slice(0, cap)),
+    };
+    const database = { db: { select: () => query } } as unknown as DatabaseService;
+    const result = await new MarketHistoryService(database).history('sa', 10, 0, 'pt');
+    expect(result.points).toHaveLength(5401);
+    expect(result.points[0].fetchedAt.toISOString()).toBe('2026-09-09T12:00:00.000Z');
+    expect(result.points[5400].fetchedAt.toISOString()).toBe('2026-10-09T12:00:00.000Z');
+  });
+  it('reads only requested variants and preserves complete pairs when another series is truncated', async () => {
+    const row = (itemId: number, subId: number) => ({
+      itemId,
+      subId,
+      fetchedAt: new Date('2026-10-09T12:00:00Z'),
+      payload: { price: '10', totalTrades: '100' },
+    });
+    const rows = [row(10, 5), ...Array.from({ length: 600000 }, () => row(20, 0))];
+    let filter!: { sql: string; params: unknown[] };
+    const query = {
+      from: () => query,
+      where: (condition: SQL) => {
+        filter = new PgDialect().sqlToQuery(condition);
+        return query;
+      },
+      orderBy: () => query,
+      limit: (cap: number) => Promise.resolve(rows.slice(0, cap)),
+    };
+    const database = { db: { select: () => query } } as unknown as DatabaseService;
+    const result = await new MarketHistoryService(database).boardObservations(
+      'sa',
+      [10, 20],
+      'pt',
+      Date.parse('2026-10-09T12:00:00Z'),
+      [
+        { itemId: 10, subId: 5 },
+        { itemId: 20, subId: 0 },
+      ],
+    );
+    expect(result).toEqual([row(10, 5)]);
+    expect(filter.sql).toContain('sub_id');
+    expect(filter.params).toContain(5);
   });
 });

@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { CatalogItem } from '@bdo/shared';
+import type { CatalogItem, MarketBoardItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -61,6 +61,7 @@ describe('MarketPage', () => {
       cacheStatus: 'cached',
       items: [],
     });
+    http.expectOne((request) => request.url.endsWith('/676/history')).flush({ points: [] });
     page.setValuePack(true);
     expect(page.netPrice('10000')).toBe('8450');
     expect(page.store.data().taxOptions.valuePack).toBe(true);
@@ -97,6 +98,7 @@ describe('MarketPage', () => {
       upstreamCacheMinutes: 30,
       items: [item],
     });
+    http.expectOne((request) => request.url.endsWith('/676/history')).flush({ points: [] });
     page.saveLive(item);
     fixture.detectChanges();
     const quote = TestBed.inject(WorkspaceStore).data().quotes[0];
@@ -158,15 +160,57 @@ describe('MarketPage', () => {
     fixture.detectChanges();
 
     expect(page.historyChart().samples).toBe(2);
-    expect(page.historyChart().points.split(' ')).toHaveLength(2);
+    expect(page.historyChart().segments).toHaveLength(2);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
       'calculadas apenas quando há cobertura suficiente do período',
     );
 
     page.historyRange.set('day');
-    page.historyMetric.set('totalTrades');
+    page.historyMetric.set('volume');
     fixture.detectChanges();
-    expect(page.historyChart().samples).toBe(1);
-    expect(page.historyChart().points).toBe('');
+    expect(page.historyChart().samples).toBe(0);
+    expect(page.historyChart().segments).toEqual([]);
+  });
+
+  it('loads the selected enhancement history and resolves summary rows to an actual variant', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    const http = TestBed.inject(HttpTestingController);
+    const selected = {
+      itemId: 676,
+      subId: 3,
+      name: 'Item',
+      iconUrl: null,
+      categories: [],
+    } as unknown as MarketBoardItem;
+    const quote = { itemId: 676, subId: 3, name: 'Item', price: '1000', stock: 5 };
+    page.selectBoardItem(selected);
+    http
+      .expectOne((request) => request.url.endsWith('/market/items/676'))
+      .flush({
+        region: 'sa',
+        fetchedAt: new Date().toISOString(),
+        cacheStatus: 'fetched',
+        items: [quote],
+      });
+    const variant = http.expectOne((request) => request.url.endsWith('/676/history'));
+    expect(variant.request.params.get('subId')).toBe('3');
+    variant.flush({ points: [] });
+
+    page.selectBoardItem({ ...selected, subId: 0, quoteScope: 'summary' });
+    http
+      .expectOne((request) => request.url.endsWith('/market/items/676'))
+      .flush({
+        region: 'sa',
+        fetchedAt: new Date().toISOString(),
+        cacheStatus: 'fetched',
+        items: [{ ...quote, subId: 5 }],
+      });
+    const summaryVariant = http.expectOne((request) => request.url.endsWith('/676/history'));
+    expect(summaryVariant.request.params.get('subId')).toBe('5');
+    summaryVariant.flush({ points: [] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.notice > details').open).toBe(true);
+    http.verify();
   });
 });

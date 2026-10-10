@@ -1,3 +1,4 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import type { OnDestroy } from '@angular/core';
 import {
   ChangeDetectionStrategy,
@@ -5,7 +6,9 @@ import {
   computed,
   effect,
   inject,
+  input,
   output,
+  PLATFORM_ID,
   signal,
   untracked,
 } from '@angular/core';
@@ -23,6 +26,7 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { MarketApi } from './market-api';
+import { MarketRefresh } from './market-refresh';
 
 @Component({
   selector: 'app-market-board',
@@ -36,6 +40,8 @@ export class MarketBoard implements OnDestroy {
   readonly catalog = inject(CatalogApiService);
   readonly preferences = inject(RegionPreferences);
   readonly selected = output<MarketBoardItem>();
+  readonly active = input(true);
+  readonly fullCatalog = computed(() => !!this.search().trim() || !!this.category());
   readonly result = signal<MarketBoardResponse | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -71,8 +77,15 @@ export class MarketBoard implements OnDestroy {
   );
   private request?: Subscription;
   private timer?: ReturnType<typeof setTimeout>;
+  private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
+    ? new MarketRefresh(inject(DOCUMENT), () => this.load(true))
+    : null;
 
   constructor() {
+    effect(() => {
+      const active = this.active();
+      untracked(() => this.refresh?.setActive(active));
+    });
     effect(() => {
       this.preferences.region();
       untracked(() => {
@@ -84,7 +97,8 @@ export class MarketBoard implements OnDestroy {
     });
   }
 
-  load(): void {
+  load(preserve = false): void {
+    this.refresh?.markRefreshed();
     if (this.timer) clearTimeout(this.timer);
     this.request?.unsubscribe();
     this.loading.set(true);
@@ -100,7 +114,9 @@ export class MarketBoard implements OnDestroy {
       })
       .subscribe({
         next: (response) => {
+          this.refresh?.markRefreshed();
           this.result.set(response);
+          if (response.sort) this.sort.set(response.sort);
           this.loading.set(false);
           if (this.page() > this.pageCount()) {
             this.page.set(this.pageCount());
@@ -108,7 +124,7 @@ export class MarketBoard implements OnDestroy {
           }
         },
         error: () => {
-          this.result.set(null);
+          if (!preserve) this.result.set(null);
           this.loading.set(false);
           this.error.set('Não foi possível carregar o mercado. Tente novamente.');
         },
@@ -117,6 +133,8 @@ export class MarketBoard implements OnDestroy {
 
   find(value: string): void {
     this.search.set(value.slice(0, 80));
+    if (this.fullCatalog()) this.sort.set('name');
+    else this.sort.set('hot');
     this.page.set(1);
     this.request?.unsubscribe();
     this.loading.set(true);
@@ -125,6 +143,7 @@ export class MarketBoard implements OnDestroy {
   }
   filterCategory(value: string): void {
     this.category.set(value);
+    this.sort.set(this.fullCatalog() ? 'name' : 'hot');
     this.page.set(1);
     this.load();
   }
@@ -148,6 +167,7 @@ export class MarketBoard implements OnDestroy {
     this.load();
   }
   ngOnDestroy(): void {
+    this.refresh?.destroy();
     this.request?.unsubscribe();
     if (this.timer) clearTimeout(this.timer);
   }

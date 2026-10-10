@@ -59,20 +59,44 @@ function fixture(enabled = true) {
   } as unknown as DatabaseService;
   const catalog = {
     getActiveDataset: () => Promise.resolve({ id: 'dataset', locale: 'pt' }),
-    listItems: (query: Record<string, unknown>) =>
+    listCategories: () =>
       Promise.resolve({
-        items: String(query['ids'])
-          .split(',')
-          .map(
-            (id) =>
-              ({
-                id: Number(id),
-                name: `Catálogo ${id}`,
-                iconUrl: `/icons/${id}.png`,
-                categories: [],
-              }) as unknown as CatalogItem,
-          ),
+        categories: [{ id: 'accessories', parentId: null, sortOrder: 3, name: 'Acessórios' }],
       }),
+    listItems: (query: Record<string, unknown>) => {
+      const ids = typeof query['ids'] === 'string' ? query['ids'].split(',').map(Number) : null;
+      const terms = (typeof query['q'] === 'string' ? query['q'] : '')
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean);
+      const matches = hot.filter(
+        (item) =>
+          (!ids || ids.includes(item.id)) &&
+          terms.every((term) => item.name.toLowerCase().includes(term)) &&
+          (!query['categoryId'] || metadata[item.id - 1].id === query['categoryId']),
+      );
+      const size = Number(query['pageSize'] ?? 20);
+      const page = Number(query['page'] ?? 1);
+      return Promise.resolve({
+        total: matches.length,
+        items: matches.slice((page - 1) * size, page * size).map(
+          (item) =>
+            ({
+              id: item.id,
+              name: item.name,
+              iconUrl: `/icons/${item.id}.png`,
+              categories: [
+                {
+                  id: metadata[item.id - 1].id,
+                  parentId: null,
+                  name: metadata[item.id - 1].categoryName,
+                  sortOrder: 1,
+                },
+              ],
+            }) as unknown as CatalogItem,
+        ),
+      });
+    },
   } as unknown as CatalogService;
   const history = new MarketHistoryService(database);
   return {
@@ -111,6 +135,12 @@ describe('market board', () => {
       volume24h: null,
     });
     expect(first.total).toBe(55);
+    expect(first.categories).toContainEqual({
+      id: 'accessories',
+      parentId: null,
+      sortOrder: 3,
+      name: 'Acessórios',
+    });
     expect(inserted).toHaveLength(55);
     expect(inserted[0]).toMatchObject({ payload: { quoteScope: 'hot' } });
     expect(upstream).toHaveBeenCalledTimes(1);
@@ -118,9 +148,12 @@ describe('market board', () => {
     expect((await service.board({ pageSize: '50' })).cacheStatus).toBe('cached');
   });
   it('filters names and real catalog categories before slicing and sorts prices precisely', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-      Promise.resolve(new Response(JSON.stringify(hot))),
-    );
+    vi.spyOn(globalThis, 'fetch').mockImplementation((_url, options) => {
+      const ids = options?.body ? (JSON.parse(options.body as string) as number[]) : null;
+      return Promise.resolve(
+        new Response(JSON.stringify(hot.filter((item) => !ids || ids.includes(item.id)))),
+      );
+    });
     const { service } = fixture();
     expect((await service.board({ q: 'pedra armadura' })).items.map((item) => item.itemId)).toEqual(
       [54],
@@ -168,6 +201,23 @@ describe('market board', () => {
     await service.refresh();
     expect((await service.board({})).cacheStatus).toBe('cached');
     expect(upstream).toHaveBeenCalledTimes(1);
+  });
+  it('observes the hot board again after eight minutes while retaining the upstream cache disclosure', async () => {
+    const upstream = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() => Promise.resolve(new Response(JSON.stringify(hot))));
+    const { service } = fixture();
+    const original = await service.board({});
+    vi.setSystemTime(new Date('2026-10-09T12:07:59Z'));
+    expect((await service.board({})).fetchedAt).toBe(original.fetchedAt);
+    vi.setSystemTime(new Date('2026-10-09T12:08:00Z'));
+    expect(await service.board({})).toMatchObject({
+      cacheStatus: 'fetched',
+      refreshMinutes: 8,
+      upstreamCacheMinutes: 30,
+      fetchedAt: '2026-10-09T12:08:00.000Z',
+    });
+    expect(upstream).toHaveBeenCalledTimes(2);
   });
   it.each([
     { pageSize: 21 },

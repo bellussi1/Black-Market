@@ -50,6 +50,34 @@ const takeRequest = () =>
 
 describe('MarketBoard', () => {
   useMemoryStorage();
+  it('keeps catalogue results visible and explains unavailable provider quotes', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.scope = 'search';
+    data.cacheStatus = 'stale';
+    data.quotesUnavailable = true;
+    data.items[0] = {
+      ...data.items[0],
+      quoteScope: 'summary',
+      marketAvailable: false,
+      price: null,
+      stock: null,
+      totalTrades: null,
+      minPrice: null,
+      maxPrice: null,
+    };
+    takeRequest().flush(data);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.board-item')?.textContent).toContain('Cerveja');
+    expect(element.textContent).toContain('A fonte não forneceu novas cotações');
+    expect(element.querySelector('.board-summary')?.textContent).toContain(
+      'Cotações indisponíveis',
+    );
+    expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+    TestBed.inject(HttpTestingController).verify();
+  });
+
   it('paginates on the server and resets the page when changing page size', async () => {
     const fixture = await renderComponent(MarketBoard);
     const board = fixture.componentInstance;
@@ -102,6 +130,32 @@ describe('MarketBoard', () => {
     const search = takeRequest();
     expect(search.request.params.get('q')).toBe('Cerveja');
     search.flush(response());
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('uses catalog search context and keeps unknown stock separate from zero', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    takeRequest().flush(response());
+    fixture.componentInstance.find('676');
+    fixture.componentInstance.load();
+    const request = takeRequest();
+    expect(request.request.params.get('sort')).toBe('name');
+    const data = response();
+    data.scope = 'search';
+    data.items[0] = {
+      ...data.items[0],
+      quoteScope: 'summary',
+      marketAvailable: false,
+      stock: null,
+      price: null,
+    };
+    request.flush(data);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Catálogo do mercado');
+    expect(element.textContent).toContain('Sem cotação');
+    expect(element.querySelectorAll('tbody td')[2].textContent?.trim()).toBe('—');
+    expect(element.querySelector<HTMLOptionElement>('option[value="price"]')?.disabled).toBe(true);
     TestBed.inject(HttpTestingController).verify();
   });
 });

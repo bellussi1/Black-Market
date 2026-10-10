@@ -6,8 +6,9 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -27,7 +28,9 @@ type Stock = Workspace['inventory'][number];
 export class StockPage {
   readonly store = inject(WorkspaceStore);
   readonly catalog = inject(CatalogApiService);
-  readonly kind = inject(Router).url.split(/[?#]/)[0] === '/inventory' ? 'inventory' : 'storage';
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly kind = signal<'storage' | 'inventory'>('storage');
   readonly search = signal('');
   readonly destination = signal('');
   readonly view = signal<'grid' | 'list'>('grid');
@@ -41,7 +44,7 @@ export class StockPage {
     this.store
       .data()
       .inventory.filter(
-        (row) => row.region === this.store.data().region && (row.kind ?? 'storage') === this.kind,
+        (row) => row.region === this.store.data().region && (row.kind ?? 'storage') === this.kind(),
       ),
   );
   readonly locations = computed(() => [...new Set(this.stock().map((row) => row.location))].sort());
@@ -50,7 +53,7 @@ export class StockPage {
       (row) =>
         row.name.toLocaleLowerCase('pt-BR').includes(this.search().toLocaleLowerCase('pt-BR')) &&
         (!this.destination() ||
-          (this.kind === 'inventory'
+          (this.kind() === 'inventory'
             ? row.characterId === this.destination()
             : row.location === this.destination())),
     ),
@@ -70,6 +73,14 @@ export class StockPage {
   draft: Stock | null = null;
   removed: Stock | null = null;
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const kind = params.get('tab') === 'inventory' ? 'inventory' : 'storage';
+      if (kind !== this.kind()) {
+        this.kind.set(kind);
+        this.destination.set('');
+        this.resetPage();
+      }
+    });
     effect((cleanup) => {
       const ids = [
         ...new Set(
@@ -90,17 +101,23 @@ export class StockPage {
       cleanup(() => sub.unsubscribe());
     });
   }
+  selectKind(kind: 'storage' | 'inventory') {
+    void this.router.navigate(['/storage'], {
+      queryParams: { tab: kind },
+      queryParamsHandling: 'merge',
+    });
+  }
   newItem() {
     this.draft = {
       id: crypto.randomUUID(),
       region: this.store.data().region,
       name: '',
-      kind: this.kind,
+      kind: this.kind(),
       characterId:
-        this.kind === 'inventory'
+        this.kind() === 'inventory'
           ? this.destination() || this.store.activeCharacter()?.id
           : undefined,
-      location: this.kind === 'storage' ? this.destination() || 'Velia' : '',
+      location: this.kind() === 'storage' ? this.destination() || 'Velia' : '',
       quantity: 0,
       target: 0,
       price: '0',
@@ -156,12 +173,17 @@ export class StockPage {
       this.message.set('Selecione um item do catálogo.');
       return;
     }
+    if (draft.region !== this.store.data().region) {
+      this.message.set('Volte à região deste item para salvar a alteração.');
+      return;
+    }
+    const kind = draft.kind ?? 'storage';
     const profile = this.profiles().find((row) => row.id === draft.characterId);
-    if (this.kind === 'inventory' && !profile) {
+    if (kind === 'inventory' && !profile) {
       this.message.set('Selecione o personagem do inventário.');
       return;
     }
-    const location = this.kind === 'inventory' ? profile!.name : draft.location.trim();
+    const location = kind === 'inventory' ? profile!.name : draft.location.trim();
     if (
       !location ||
       !Number.isSafeInteger(draft.quantity) ||
@@ -171,14 +193,18 @@ export class StockPage {
       this.message.set('Confira o local e uma quantidade inteira entre zero e um bilhão.');
       return;
     }
-    const duplicate = this.stock().some(
-      (row) =>
-        row.id !== draft.id &&
-        row.itemId === draft.itemId &&
-        (this.kind === 'inventory'
-          ? row.characterId === draft.characterId
-          : row.location.toLocaleLowerCase('pt-BR') === location.toLocaleLowerCase('pt-BR')),
-    );
+    const duplicate = this.store
+      .data()
+      .inventory.some(
+        (row) =>
+          row.region === draft.region &&
+          (row.kind ?? 'storage') === kind &&
+          row.id !== draft.id &&
+          row.itemId === draft.itemId &&
+          (kind === 'inventory'
+            ? row.characterId === draft.characterId
+            : row.location.toLocaleLowerCase('pt-BR') === location.toLocaleLowerCase('pt-BR')),
+      );
     if (duplicate) {
       this.message.set(
         'Este item já está neste local. Edite o registro existente para atualizar a quantidade.',
@@ -192,7 +218,8 @@ export class StockPage {
           ...state.inventory.filter((row) => row.id !== draft.id),
           {
             ...draft,
-            kind: this.kind,
+            kind,
+            characterId: kind === 'inventory' ? draft.characterId : undefined,
             region: state.region,
             location,
             updatedAt: new Date().toISOString(),

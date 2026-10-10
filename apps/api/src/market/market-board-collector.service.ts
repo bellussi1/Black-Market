@@ -22,7 +22,7 @@ export class MarketBoardCollector implements OnModuleInit, OnModuleDestroy {
       !this.config.get<boolean>('MARKET_BOARD_COLLECTOR_ENABLED', true)
     )
       return;
-    // Start the timer after the first fetch finishes so its 30-minute cache has
+    // Start the timer after the first fetch finishes so its 8-minute local cache has
     // expired at the next tick. History warms only while this API stays running.
     void this.collect().then(() => this.schedule());
   }
@@ -38,7 +38,7 @@ export class MarketBoardCollector implements OnModuleInit, OnModuleDestroy {
       () => {
         void this.collect().then(() => this.schedule());
       },
-      30 * 60 * 1000,
+      8 * 60 * 1000,
     );
     this.timer.unref();
   }

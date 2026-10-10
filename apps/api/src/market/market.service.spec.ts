@@ -42,6 +42,24 @@ describe('market cache', () => {
     await service.lookup('sa', 10);
     expect(upstream).toHaveBeenCalledTimes(2);
   });
+  it('reuses a quote until eight minutes and then obtains the latest provider observation', async () => {
+    const upstream = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ ...payload, currentStock: 7 }))),
+      );
+    const service = new MarketService(new ConfigService());
+    const original = await service.lookup('sa', 10);
+    vi.setSystemTime(new Date('2026-10-07T12:07:59Z'));
+    expect((await service.lookup('sa', 10)).fetchedAt).toBe(original.fetchedAt);
+    vi.setSystemTime(new Date('2026-10-07T12:08:00Z'));
+    expect(await service.lookup('sa', 10)).toMatchObject({
+      cacheStatus: 'fetched',
+      fetchedAt: '2026-10-07T12:08:00.000Z',
+      items: [{ ...original.items[0], stock: 7 }],
+    });
+    expect(upstream).toHaveBeenCalledTimes(2);
+  });
   it('does not make an outbound request when disabled', async () => {
     const upstream = vi.spyOn(globalThis, 'fetch');
     const service = new MarketService(new ConfigService({ MARKET_PROVIDER_ENABLED: false }));

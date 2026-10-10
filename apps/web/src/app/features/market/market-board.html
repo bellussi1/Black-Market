@@ -1,6 +1,6 @@
 <section class="market-window" aria-labelledby="market-board-title">
   <header class="market-titlebar">
-    <h2 id="market-board-title">Itens em alta</h2>
+    <h2 id="market-board-title">{{ fullCatalog() ? 'Catálogo do mercado' : 'Itens em alta' }}</h2>
     <span>Mercado Central · {{ preferences.region().toUpperCase() }}</span>
   </header>
   <div class="market-directory">
@@ -12,7 +12,7 @@
           [ngModel]="category()"
           (ngModelChange)="filterCategory($event)"
         >
-          <option value="">Todos os itens em alta</option>
+          <option value="">{{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}</option>
           @for (entry of categoryRoots(); track entry.id) {
             <optgroup [label]="entry.name">
               <option [value]="entry.id">{{ entry.name }} · Todos</option>
@@ -25,7 +25,7 @@
       </label>
       <h3>Categorias</h3>
       <button type="button" [attr.aria-pressed]="!category()" (click)="filterCategory('')">
-        Todos os itens em alta
+        {{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}
       </button>
       <div class="category-list">
         @for (entry of categoryRoots(); track entry.id) {
@@ -51,7 +51,9 @@
           }
         }
       </div>
-      <p class="category-note">Itens em destaque no mercado da região selecionada.</p>
+      <p class="category-note">
+        Pesquise um nome ou código para encontrar itens de todo o catálogo.
+      </p>
     </aside>
     <div class="market-list">
       <div class="board-toolbar">
@@ -59,7 +61,7 @@
           ><span>Buscar no mercado</span
           ><input
             type="search"
-            placeholder="Nome do item"
+            placeholder="Nome ou código do item"
             maxlength="80"
             [ngModel]="search()"
             (ngModelChange)="find($event)"
@@ -67,9 +69,9 @@
         <label
           ><span>Ordenar por</span
           ><select [ngModel]="sort()" (ngModelChange)="setSort($event)">
-            <option value="hot">Em alta</option>
-            <option value="price">Menor preço</option>
-            <option value="stock">Maior estoque</option>
+            <option value="hot" [disabled]="fullCatalog()">Em alta</option>
+            <option value="price" [disabled]="fullCatalog()">Menor preço</option>
+            <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
             <option value="name">Nome do item</option>
           </select></label
         >
@@ -84,12 +86,20 @@
       </div>
       <div class="board-summary" aria-live="polite">
         <span>{{
-          loading() ? 'Carregando mercado…' : number(result()?.total, 0) + ' itens em alta'
+          loading()
+            ? 'Carregando mercado…'
+            : number(result()?.total, 0) + (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
         }}</span>
         @if (result(); as response) {
           <span
-            >{{ response.cacheStatus === 'stale' ? 'Última consulta disponível' : 'Consulta' }} ·
-            {{ date(response.fetchedAt) }}</span
+            >{{
+              response.quotesUnavailable
+                ? 'Cotações indisponíveis'
+                : response.cacheStatus === 'stale'
+                  ? 'Última consulta disponível'
+                  : 'Consulta'
+            }}
+            · {{ date(response.fetchedAt) }}</span
           >
         }
       </div>
@@ -98,16 +108,23 @@
           {{ error() }} <button type="button" (click)="load()">Tentar novamente</button>
         </p>
       }
+      @if (result()?.quotesUnavailable) {
+        <p role="status" class="notice">
+          A fonte não forneceu novas cotações para esta página. Os itens do catálogo continuam
+          disponíveis; confira a data dos preços anteriores, quando houver. Tente atualizar
+          novamente em um minuto.
+        </p>
+      }
       <div
         class="board-table-scroll"
         role="region"
-        aria-label="Preços e volumes dos itens em alta"
+        aria-label="Itens, preços e volumes do mercado"
         tabindex="0"
         [attr.aria-busy]="loading()"
       >
         <table class="market-board-table">
           <caption class="visually-hidden">
-            Itens em alta: preços em prata por unidade e volumes em unidades negociadas.
+            Itens do mercado: preços em prata por unidade e volumes em unidades negociadas.
           </caption>
           <thead>
             <tr>
@@ -145,7 +162,12 @@
                       ><strong>{{ item.name }}</strong
                       ><small
                         >{{ item.categories[0]?.name ?? 'Mercado Central' }}
-                        @if (item.subId) {
+                        @if (item.quoteScope === 'summary') {
+                          ·
+                          {{
+                            item.marketAvailable === false ? 'Sem cotação' : 'Resumo das variantes'
+                          }}
+                        } @else if (item.subId) {
                           · Variante {{ item.subId }}
                         }
                       </small></span
@@ -168,7 +190,7 @@
                   <span><small>Topo</small> {{ silver(item.maxPrice) }}</span
                   ><span><small>Bottom</small> {{ silver(item.minPrice) }}</span>
                 </td>
-                <td class="numeric">{{ number(item.stock, 0) }}</td>
+                <td class="numeric">{{ item.stock === null ? '—' : number(item.stock, 0) }}</td>
                 <td
                   class="numeric"
                   [attr.title]="
@@ -205,10 +227,10 @@
                 <td colspan="7" class="board-empty">
                   {{
                     loading()
-                      ? 'Consultando itens em alta…'
+                      ? 'Consultando mercado…'
                       : error()
                         ? 'O mercado está temporariamente indisponível.'
-                        : 'Nenhum item em alta corresponde a esta pesquisa.'
+                        : 'Nenhum item corresponde a esta pesquisa.'
                   }}
                 </td>
               </tr>
@@ -240,8 +262,12 @@
         </div>
       </nav>
       <p class="board-note">
-        Preços em prata por unidade. Topo e bottom são os limites permitidos pelo mercado. Média de
-        cotações observadas em 30 dias; volumes exigem histórico completo do período.
+        Consulta automática a cada 8 minutos enquanto esta aba estiver visível. A fonte mantém cache
+        de até {{ result()?.upstreamCacheMinutes ?? 30 }} minutos; uma nova consulta pode repetir os
+        mesmos valores. Busca por nome, código e categoria em todo o catálogo, com ordenação por
+        nome. Resumos agregam variantes; selecione um item para suas cotações individuais. Preços em
+        prata por unidade. Topo e bottom são os limites permitidos pelo mercado. Média de cotações
+        observadas em 30 dias; volumes exigem histórico completo do período.
         <strong>—</strong> indica dado ainda indisponível.
       </p>
     </div>

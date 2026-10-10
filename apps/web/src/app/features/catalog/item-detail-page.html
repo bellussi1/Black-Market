@@ -1,5 +1,5 @@
 <div class="tool-page guided-page item-detail-page">
-  <a routerLink="/database/items" i18n>← Catálogo de itens</a>
+  <a routerLink="/market" i18n>← Mercado</a>
   @if (loading()) {
     <p class="loading-state" role="status" i18n>Carregando item…</p>
   }
@@ -14,7 +14,7 @@
         [grade]="selected.grade"
       />
       <div>
-        <p class="eyebrow">CATÁLOGO · #{{ selected.id }}</p>
+        <p class="eyebrow">MERCADO · INFORMAÇÕES DO ITEM · #{{ selected.id }}</p>
         <h1>{{ selected.name }}</h1>
       </div>
     </header>

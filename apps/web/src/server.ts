@@ -158,6 +158,16 @@ app.use((req, res, next) => {
   res.redirect(308, path + query);
 });
 const publicOrigin = process.env['PUBLIC_SITE_URL'];
+// Preserve shared links while consolidating item discovery in Mercado.
+app.use((req, res, next) => {
+  const detail = /^\/database\/items\/([1-9]\d*)$/.exec(req.path);
+  if (req.path !== '/database/items' && !detail) {
+    next();
+    return;
+  }
+  const query = req.originalUrl.slice(req.path.length);
+  res.redirect(308, (detail ? '/market/items/' + detail[1] : '/market') + query);
+});
 const angularApp = new AngularNodeAppEngine({
   trustProxyHeaders: process.env['NODE_ENV'] === 'production' ? ['x-forwarded-proto'] : false,
   allowedHosts: [

@@ -18,6 +18,8 @@ export const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Planeje seu império de bases e trabalhadores em Black Desert Online. Compare produção diária, custos e contribuição compartilhada.',
   '/market':
     'Consulte preços e disponibilidade no mercado SA de Black Desert Online. Confira a origem e a data de atualização dos dados.',
+  '/market/items':
+    'Consulte informações, imagens e relações de produção de itens de Black Desert Online no Mercado.',
   '/crafting':
     'Explore receitas de Black Desert Online e compare materiais, custos de produção e retorno estimado no mercado SA.',
   '/enhancement':
@@ -35,6 +37,7 @@ export const PRIVATE_DESCRIPTIONS: Readonly<Record<string, string>> = {
   '/inventory': 'Organize os itens dos seus personagens com revisão das capturas.',
   '/scans': 'Importe até oito capturas e revise seus itens e quantidades.',
   '/storage': 'Gerencie seu armazém pessoal no Black Market.',
+  '/family': 'Gerencie os personagens, equipamentos e bônus da sua família no Black Market.',
   '/gear': 'Planeje seus equipamentos pessoais no Black Market.',
 };
 
@@ -43,6 +46,7 @@ export function isPublicSeoPath(path: string): boolean {
     isMvpPathEnabled(path) &&
     (Object.hasOwn(PUBLIC_DESCRIPTIONS, path) ||
       /^\/database\/items\/[1-9]\d*$/.test(path) ||
+      /^\/market\/items\/[1-9]\d*$/.test(path) ||
       /^\/recipes\/[^/]+$/.test(path) ||
       /^\/recipes\/items\/[1-9]\d*$/.test(path) ||
       /^\/reference\/[a-z]+(?:\/[^/]+)?$/.test(path))
@@ -56,8 +60,10 @@ export function publicDescription(path: string): string | undefined {
       ? PUBLIC_DESCRIPTIONS['/reference']
       : path.startsWith('/recipes/')
         ? PUBLIC_DESCRIPTIONS['/recipes']
-        : path.startsWith('/database/items/')
-          ? PUBLIC_DESCRIPTIONS['/database/items']
-          : undefined)
+        : path.startsWith('/market/items/')
+          ? PUBLIC_DESCRIPTIONS['/market/items']
+          : path.startsWith('/database/items/')
+            ? PUBLIC_DESCRIPTIONS['/database/items']
+            : undefined)
   );
 }

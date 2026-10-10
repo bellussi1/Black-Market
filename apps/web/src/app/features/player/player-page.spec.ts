@@ -1,9 +1,31 @@
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { PlayerPage } from './player-page';
 describe('Progressive player workspace', () => {
   useMemoryStorage();
+  it('opens equipment inside family while retaining the active character and family data', async () => {
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'equipment' }));
+    const fixture = await renderComponent(PlayerPage, {}, [
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    page.saveFamily({ name: 'Minha família' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-gear-inventory-page')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('h1')).toHaveLength(1);
+    params.next(convertToParamMap({ tab: 'family' }));
+    fixture.detectChanges();
+    expect(page.family().name).toBe('Minha família');
+    expect(page.current()?.name).toBe('Aventureiro');
+    params.next(convertToParamMap({ tab: 'character' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Conjuntos e complementos');
+  });
   it('creates with only a name and rejects invalid edits without mutating saved mastery', async () => {
     const fixture = await renderComponent(PlayerPage),
       page = fixture.componentInstance;

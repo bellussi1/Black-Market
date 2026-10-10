@@ -23,6 +23,7 @@ const enabledRoots = new Set([
   '',
   'market',
   'storage',
+  'family',
   'inventory',
   'gear',
   'scans',

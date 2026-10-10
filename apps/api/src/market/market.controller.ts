@@ -30,7 +30,7 @@ export class MarketController {
   ) {}
   @Get('board')
   @ApiOperation({
-    summary: 'Quadro de itens populares do Arsha, com filtros e cache de 30 minutos',
+    summary: 'Itens populares e busca no catálogo completo, com atualização local de 8 minutos',
   })
   board(@Query() query: Record<string, unknown>) {
     return this.boardService.board(query);
@@ -49,7 +49,7 @@ export class MarketController {
     );
   }
   @Get('items/:id')
-  @ApiOperation({ summary: 'Consulta um ID no Arsha, com cache de 30 minutos' })
+  @ApiOperation({ summary: 'Consulta um ID no Arsha, com cache local de 8 minutos' })
   @ApiQuery({ name: 'region', required: false, enum: [...MARKET_PROVIDER_REGIONS] })
   @ApiQuery({ name: 'locale', required: false, enum: [...DATA_LOCALES], example: 'pt' })
   lookup(

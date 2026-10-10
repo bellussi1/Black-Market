@@ -4,8 +4,8 @@
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
     <p>
       <ng-container i18n
-        >Acompanhe itens em alta, preços e volumes. Selecione um item para consultar suas variantes
-        ou calcular o valor recebido depois das taxas.
+        >Busque itens do catálogo, acompanhe preços, volumes e estoque. Selecione um item para
+        consultar suas variantes ou calcular o valor recebido depois das taxas.
       </ng-container>
     </p>
   </header>
@@ -43,7 +43,11 @@
       Minhas cotações
     </button>
   </nav>
-  <app-market-board [hidden]="workspaceView() !== 'board'" (selected)="selectBoardItem($event)" />
+  <app-market-board
+    [active]="workspaceView() === 'board'"
+    [hidden]="workspaceView() !== 'board'"
+    (selected)="selectBoardItem($event)"
+  />
   @if (workspaceView() === 'quote') {
     <section class="panel">
       <details class="market-search" [open]="!live()">
@@ -63,6 +67,9 @@
           (selected)="selectItem($event)"
         />
         @if (catalogItem(); as selected) {
+          <a class="btn subtle" [routerLink]="['/market/items', selected.id]" i18n
+            >Detalhes do item</a
+          >
           <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
             >Explorar receitas e origens</a
           >
@@ -93,7 +100,8 @@
         <p class="help">
           <ng-container i18n
             >Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um
-            item para consultar sua cotação.
+            item para consultar sua cotação. Consulta automática a cada 8 minutos enquanto esta aba
+            estiver visível; a fonte pode manter os mesmos dados por até 30 minutos.
           </ng-container>
         </p>
         @if (lookupError()) {
@@ -155,11 +163,11 @@
                 : response.cacheStatus === 'cached'
                   ? 'Últimos preços consultados'
                   : 'Preços consultados agora'
-            }}. Atualização da fonte a cada {{ response.upstreamCacheMinutes }} minutos.
+            }}. Cache informado pela fonte: {{ response.upstreamCacheMinutes }} minutos.
           </ng-container>
         </p>
         <div class="max-w-full overflow-x-auto">
-          <table class="data-table">
+          <table class="data-table market-quote-table">
             <thead>
               <tr>
                 <th><ng-container i18n>Item / variante</ng-container></th>
@@ -206,11 +214,15 @@
       }
     </section>
     <div class="notice">
-      <details>
-        <summary i18n>Histórico observado do mercado</summary>
+      <details [open]="!!lookupId()">
+        <summary i18n>Preços, volume e liquidez observados</summary>
         <label class="field"
           ><span i18n>Variante do item selecionado</span
-          ><input type="number" min="0" max="100" [(ngModel)]="historySubId" /></label
+          ><select [ngModel]="historySubId" (ngModelChange)="historySubId = +$event; showHistory()">
+            @for (item of live()?.items ?? []; track item.subId) {
+              <option [value]="item.subId">{{ item.name }} · {{ item.subId }}</option>
+            }
+          </select></label
         ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
         <p role="status">{{ historyMessage() }}</p>
         <div class="mt-6 grid gap-4">
@@ -281,14 +293,33 @@
             <button
               type="button"
               class="btn subtle"
-              [attr.aria-pressed]="historyMetric() === 'totalTrades'"
-              (click)="historyMetric.set('totalTrades')"
+              [attr.aria-pressed]="historyMetric() === 'volume'"
+              (click)="historyMetric.set('volume')"
               i18n
             >
-              Transações
+              Volume por intervalo
             </button>
           </div>
-          @if (historyChart().samples >= 2) {
+          <div class="history-liquidity" aria-live="polite">
+            <strong i18n>Liquidez · giro estimado do estoque</strong>
+            @if (liquidity(); as estimate) {
+              <span>{{ number(estimate.days, 2) }} dias</span>
+              <p class="help" i18n>
+                Estoque observado dividido pelo ritmo de unidades negociadas nas últimas 24 horas:
+                {{ historyValueLabel(estimate.stock) }} em estoque ·
+                {{ historyValueLabel(estimate.volume) }} negociadas. É uma estimativa de giro; a
+                posição das ofertas e a demanda podem mudar.
+              </p>
+            } @else {
+              <span i18n>— Histórico insuficiente</span>
+              <p class="help" i18n>
+                A estimativa exige 24 horas completas, estoque conhecido e transações observadas sem
+                lacunas ou reinícios do contador. Compare estoque e volume por intervalo enquanto o
+                histórico se forma.
+              </p>
+            }
+          </div>
+          @if (historyChart().samples >= 1) {
             <div class="min-w-0" aria-live="polite">
               <svg
                 class="h-auto w-full overflow-visible text-[var(--accent)]"
@@ -301,15 +332,42 @@
                 <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
                 <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
                 <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
-                <polyline
-                  [attr.points]="historyChart().points"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  vector-effect="non-scaling-stroke"
-                />
+                @if (historyMetric() !== 'volume') {
+                  @for (segment of historyChart().segments; track $index) {
+                    <polyline
+                      [attr.points]="segment"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  }
+                }
+                @for (point of historyChart().dots; track point.fetchedAt) {
+                  @if (historyMetric() === 'volume') {
+                    <line
+                      [attr.x1]="point.x"
+                      [attr.x2]="point.x"
+                      y1="176"
+                      [attr.y2]="point.y"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  }
+                  <circle [attr.cx]="point.x" [attr.cy]="point.y" r="3" fill="currentColor">
+                    <title>
+                      {{ date(point.fetchedAt) }} · {{ historyValueLabel(point.value)
+                      }}{{
+                        historyMetric() === 'volume'
+                          ? ' unidades em ' + intervalLabel(point.intervalMinutes)
+                          : ''
+                      }}
+                    </title>
+                  </circle>
+                }
               </svg>
               <div class="flex justify-between text-xs text-[var(--text-muted)]">
                 <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
@@ -323,17 +381,23 @@
             </div>
           } @else {
             <p class="notice" role="status" i18n>
-              Ainda não há duas observações válidas neste período para desenhar o gráfico. As
-              consultas começam a formar histórico depois que são registradas.
+              Ainda não há observações válidas neste período para desenhar o gráfico. O volume exige
+              duas consultas consecutivas válidas. As consultas começam a formar histórico depois
+              que são registradas.
             </p>
           }
         </div>
         <p class="help mt-4" i18n>
-          O gráfico mostra cotações observadas e o contador acumulado de transações. Os volumes do
-          quadro de mercado são diferenças desse contador, calculadas apenas quando há cobertura
-          suficiente do período. A média de cotações não representa uma média ponderada das vendas.
+          Preço e estoque são observações no horário da consulta. Volume é a diferença do contador
+          entre consultas, em unidades por intervalo; passe o cursor sobre um ponto para ver sua
+          duração. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem o
+          gráfico. As estimativas de liquidez são calculadas apenas quando há cobertura suficiente
+          do período. A média de cotações não representa uma média ponderada das vendas.
         </p>
         @if (history().length) {
+          <p class="help" i18n>
+            Últimas 50 observações do período. O gráfico usa todas as observações disponíveis.
+          </p>
           <div class="overflow-x-auto">
             <table class="data-table">
               <thead>
@@ -345,7 +409,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (point of historySeries(); track point.fetchedAt) {
+                @for (point of historySeries().slice(-50); track $index) {
                   <tr>
                     <td>{{ date(point.fetchedAt) }}</td>
                     <td>{{ silver(point.price) }}</td>

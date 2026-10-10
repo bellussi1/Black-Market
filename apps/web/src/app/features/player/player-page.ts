@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   type CharacterProfile,
   characterSchema,
@@ -13,16 +14,18 @@ import type { CatalogItem } from '@bdo/shared';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { GearInventoryPage } from '../gear/gear-inventory-page';
 
 @Component({
   selector: 'app-player-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, TaxOptionsComponent],
+  imports: [FormsModule, RouterLink, CatalogItemPicker, TaxOptionsComponent, GearInventoryPage],
   templateUrl: './player-page.html',
 })
 export class PlayerPage {
   readonly store = inject(WorkspaceStore);
-  readonly tab = signal<'character' | 'family'>('character');
+  private readonly router = inject(Router);
+  readonly tab = signal<'character' | 'family' | 'equipment'>('character');
   readonly message = signal('');
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
@@ -66,6 +69,20 @@ export class PlayerPage {
     { key: 'awakeAp', label: 'PA de despertar', max: 5000 },
     { key: 'dp', label: 'PD', max: 5000 },
   ] as const;
+  constructor() {
+    inject(ActivatedRoute)
+      .queryParamMap.pipe(takeUntilDestroyed())
+      .subscribe((params) => {
+        const tab = params.get('tab');
+        this.tab.set(tab === 'family' || tab === 'equipment' ? tab : 'character');
+      });
+  }
+  selectTab(tab: 'character' | 'family' | 'equipment') {
+    void this.router.navigate(['/family'], {
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+    });
+  }
   create() {
     const parsed = characterSchema.safeParse({
       id: crypto.randomUUID(),

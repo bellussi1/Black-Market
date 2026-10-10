@@ -22,13 +22,13 @@ describe('market board collector', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
-  it('observes the full board on startup and every 30 minutes, then cancels on shutdown', async () => {
+  it('observes the full board on startup and every 8 minutes, then cancels on shutdown', async () => {
     const { collector, refresh, prune } = fixture();
     collector.onModuleInit();
     await vi.advanceTimersByTimeAsync(0);
     expect(refresh).toHaveBeenCalledTimes(1);
     expect(prune).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+    await vi.advanceTimersByTimeAsync(8 * 60 * 1000);
     expect(refresh).toHaveBeenCalledTimes(2);
     collector.onModuleDestroy();
     await vi.advanceTimersByTimeAsync(60 * 60 * 1000);

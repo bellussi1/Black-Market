@@ -7,7 +7,7 @@ import { PlatformFooter } from './platform-footer';
 
 describe('platform footer', () => {
   useMemoryStorage();
-  it('provides one named footer with real legal, support and backup links', async () => {
+  it('provides one named footer with legal and support links', async () => {
     const fixture = await renderComponent(PlatformFooter);
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('footer').length).toBe(1);
@@ -17,12 +17,12 @@ describe('platform footer', () => {
       '/privacidade',
       '/cookies',
       '/contato',
-      '/settings',
       '/sobre/',
     ]) {
       expect(element.querySelector(`a[href="${path}"]`)).not.toBeNull();
     }
     expect(element.querySelectorAll('nav[aria-label]').length).toBe(2);
+    expect(element.querySelector('a[href="/settings"]')).toBeNull();
     expect(element.textContent).toContain('© ' + new Date().getUTCFullYear());
     expect(element.textContent).toContain('sem afiliação');
   });
