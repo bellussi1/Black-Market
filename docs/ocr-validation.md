@@ -95,6 +95,34 @@ node apps/api/dist/catalog/build-icon-index.js data/assets/<checksum> <checksum>
 
 Grupos de sangue seguem o [guia oficial SA de Alquimia Avançada](https://www.sa.playblackdesert.com/es-mx/Wiki?wikiNo=71); membros visuais vêm do caminho de ícone do catálogo extraído. A numeração de outros sites varia. Esse agrupamento não implementa substituição nas receitas: a extração atual apresenta IDs específicos, sem um contrato geral de alternativas. O armazém preserva a identidade escolhida.
 
+## Campos de telas e corpus local
+
+Atualizado em 10/10/2026. A rota privada `/scans/profile` usa Tesseract.js com o pacote `por`, detecção por cabeçalhos reconhecidos e parser de campos conhecidos. Ela cobre nome e nível, PA/PD identificados por rótulo, maestria por profissão, capacidade usada no inventário e peso do personagem em LT. Local/capacidade do armazém e carga de mercado em VT aparecem apenas como prévia. A leitura automática não reconhece identidade de item por texto nem grava valores sem seleção explícita de um personagem existente e dos campos.
+
+As capturas atuais estão em `data/ocr-corpus/`, ignorado pelo Git. O manifesto `manifest.json` guarda versão, caminho relativo, SHA-256, dimensões, sessão aproximada, idioma, categorias de tela, divisão e rótulos com limites em pixels. Cada rótulo registra texto de origem, valor conferido e estado. Os nomes dos arquivos locais são derivados do hash. Uma cópia binária repetida foi removida; referências de comunidade e layout não entram na calibração. O validador verifica contenção de caminhos, integridade, dimensões, hashes únicos e limites dos rótulos, e imprime apenas totais:
+
+```powershell
+node scripts/validate-ocr-corpus.mjs data/ocr-corpus/manifest.json
+```
+
+O corpus contém 13 capturas únicas e 29 rótulos manuais de uma amostra pequena, concentrada em poucas sessões. Todo o material está marcado como calibração. Esses números descrevem a composição do acervo; **não são uma medida de acurácia**, não justificam treino de um modelo próprio e não demonstram generalização para outras interfaces, resoluções ou idiomas. A imagem e o manifesto permanecem locais; só arquivos de distribuição do Tesseract podem ser carregados sob demanda, nunca a captura.
+
+LT e VT são domínios separados. Um valor em VT é somente leitura e nunca preenche `carriedWeight` ou `weightLimit`. Se a unidade de uma fração associada ao rótulo Peso não for lida, os campos ficam ambíguos e desmarcados; o jogador precisa confirmar explicitamente LT antes de selecioná-los. Frações seguidas de LT/VT são excluídas da leitura de capacidade de inventário. A ocupação do armazém só é associada à cidade indicada no cabeçalho do próprio armazém; cidades vizinhas não competem silenciosamente pelo mesmo campo. Conflitos de valores ficam ambíguos e desmarcados. Editar qualquer campo remove sua confirmação anterior; o jogador deve marcá-lo novamente. A tela também compara o valor proposto com o valor atual do personagem selecionado. Não há uso de chat, HUD ou diálogo.
+
+### Avaliar as capturas locais
+
+O leitor amplia capturas pequenas até 1,5×, limitado a 2.400 pixels no maior lado, e converte as caixas OCR de volta para as coordenadas da imagem original. Com o manifesto local validado, execute o mesmo idioma, modo esparso, escala e parser de campos usados pela rota no navegador:
+
+```powershell
+node scripts/validate-screen-ocr.mjs data/ocr-corpus/manifest.json
+```
+
+O relatório agrupa contagens absolutas por tela e campo: `exact`, `unread`, `incorrect`, `ambiguous` e `unsupported`. Só rótulos marcados como conferidos entram na comparação. Antes da comparação, cada candidato precisa pertencer a um tipo de painel compatível com o campo e sua caixa precisa coincidir espacialmente com a área anotada. Valores diferentes para o mesmo campo na região anotada são contados como ambíguos, mesmo quando um deles coincide com o rótulo. Quando o detector não encontra uma tela, a categoria anotada no manifesto é usada apenas para avaliar o parser; `paneSources` informa quantas telas foram detectadas e quantas usaram esse recurso. O JSON não inclui texto OCR, valores esperados, nomes de arquivo nem caminhos. A imagem é lida localmente pelo processo Node e não é enviada a um serviço de OCR.
+
+Resultado observado em 10/10/2026 nas 13 capturas e 29 rótulos de calibração, com associação por painel e região: **16 exatos, 11 sem leitura, 1 incorreto e 1 não suportado; nenhum ambíguo**. Foram reconhecidos 14 painéis automaticamente; 7 categorias anotadas foram usadas como fallback para medir os campos sem atribuir sucesso à detecção da tela. O candidato incorreto permanece visível para revisão e não é aplicado sem confirmação. A amostra não é independente e não representa uma taxa geral de acerto.
+
+Esta implementação de leitura estruturada não tem avaliação independente nem validação de interface automatizada nesta entrega. Antes de publicar qualquer número de acurácia, separe sessões de captura para avaliação, anote cada valor diretamente no jogo e meça resultados por campo, unidade e tipo de tela.
+
 ## Pipeline de amostras sintéticas e reais
 
 Os scripts abaixo criam um conjunto local para armazéns e inventários e exercitam os leitores existentes. A meta 80/20 é uma proporção de volume, não uma autorização para coletar imagens. Capturas reais só são baixadas com permissão registrada para cada origem. O acesso público a uma postagem não concede, por si só, direito de treinamento; confira os [termos oficiais da API do Reddit](https://redditinc.com/policies/data-api-terms) e mantenha a evidência de autorização do titular.

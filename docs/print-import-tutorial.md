@@ -29,6 +29,15 @@ Selecione **Equipamento do personagem**. Recorte um ícone por vez com uma linha
 
 ## Privacidade e limites
 
+### Importar maestria, peso e ficha do personagem
+
+1. Abra **Importar capturas** e escolha **Importar dados de maestria, peso e personagem**.
+2. Envie uma imagem nítida com as janelas desejadas visíveis. Se houver painéis lado a lado, selecione o painel detectado; confira o tipo de tela e ajuste os limites se necessário.
+3. O OCR local apresenta texto de origem, valor atual do personagem, pontuação bruta e estado de cada campo. Campos ambíguos e não modelados permanecem desmarcados ou somente leitura. Corrija valores reconhecidos ou adicione manualmente um campo modelado; ao editar, marque novamente o campo para confirmar a revisão.
+4. Escolha explicitamente um personagem já cadastrado e marque somente os campos conferidos. **Aplicar campos selecionados** salva apenas esses valores; dados que não aparecem na imagem são preservados.
+
+O importador distingue o peso do personagem em **LT** da carga do mercado em **VT**. VT e ocupação de armazém são exibidos como prévia e não mudam o perfil. Uma ocupação de armazém só é ligada à cidade visível no cabeçalho, e linhas de peso não são interpretadas como capacidade do inventário. A captura fica na memória da página; cancelar ou sair encerra o leitor e libera a imagem temporária. O acervo de calibração fica em `data/ocr-corpus/`, ignorado pelo Git. Não envie imagens de outras pessoas nem inclua capturas ou anotações privadas em commits.
+
 A imagem e os recortes ficam na memória deste navegador durante a revisão. Não são enviados ao servidor nem salvos no backup ou na conta. Arquivos do mecanismo de leitura são baixados na primeira utilização; a busca de candidatos consulta os IDs no catálogo. Depois da confirmação, os dados estruturados seguem a mesma política do armazém/perfil: locais, com sincronização explícita opcional.
 
 A versão inicial usa comparação visual e leitura de números. As capturas fornecidas foram usadas para calibrar o detector, sem treinamento de uma rede neural. A precisão de identificação e quantidades ainda não foi medida com um conjunto representativo de prints reais do BDO. Escala, bordas, efeitos, números abreviados e sobreposição alteram o resultado. Nenhum resultado é aplicado automaticamente. Não há junção automática de prints com rolagem nem leitura da ficha completa de gear; equipamentos usam recorte individual. Cadastro manual e CSV permanecem disponíveis. Ver [validação e limitações](ocr-validation.md).
