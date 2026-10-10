@@ -29,18 +29,22 @@ import type {
   MarketLookupResponse,
 } from '@bdo/shared';
 import {
+  EMPTY,
   catchError,
   debounceTime,
   firstValueFrom,
   forkJoin,
   of,
   Subject,
+  Subscription,
+  switchMap,
   takeUntil,
   timeout,
+  type Observable,
 } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { MarketCacheService } from '../../core/market-cache.service';
+import { DEFAULT_MARKET_CACHE_TTL_MS, MarketCacheService } from '../../core/market-cache.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { MarketApi, type MarketHistoryPoint } from '../../features/market/market-api';
 import { date, silver } from '../formatters';
@@ -61,6 +65,10 @@ import {
   withRecipe,
 } from './recipe-tree-model';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
+import {
+  resolveRecipeProductionGraph,
+  type RecipeProductionGraph,
+} from './recipe-production-graph';
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom';
 
@@ -161,6 +169,11 @@ export class RecipeTree {
   readonly craftTimeSeconds = signal(1.0);
   readonly treeMarketLoading = signal(false);
   readonly treeMarketMessage = signal('');
+  private quoteSubscription?: Subscription;
+  private quoteRefreshTimer?: ReturnType<typeof setInterval>;
+  private recipeGraph: RecipeProductionGraph | null = null;
+  private recipeGraphIdentity = '';
+  private quoteRevision = 0;
 
   readonly userMasteryForCurrentRecipe = computed(() => {
     const root = this.root();
@@ -679,49 +692,122 @@ export class RecipeTree {
   }
 
   consultAllTreePrices() {
-    if (this.treeMarketLoading()) return;
+    if (this.treeMarketLoading() && this.quoteSubscription && !this.quoteSubscription.closed)
+      return;
     const region = this.region();
-    const itemIds = new Set<number>();
     const root = this.root();
-    if (root) itemIds.add(root.part.itemId);
-    for (const id of this.parts().keys()) {
-      itemIds.add(id);
-    }
-    if (itemIds.size === 0) return;
-
+    if (!root) return;
+    this.startRecipeQuoteRefresh();
+    const selectedMethods = this.selectedRecipeMethods(root);
+    const selectedMethodIdentity = [...selectedMethods]
+      .sort(([left], [right]) => left - right)
+      .map(([itemId, key]) => `${itemId}:${key}`);
+    const graphIdentity = [
+      region,
+      this.datasetVersion(),
+      root.part.itemId,
+      root.recipe?.key ?? 'external',
+      ...selectedMethodIdentity,
+    ].join('/');
+    if (graphIdentity !== this.recipeGraphIdentity) this.recipeGraph = null;
+    this.recipeGraphIdentity = graphIdentity;
+    const graph$: Observable<RecipeProductionGraph | null> = this.recipeGraph
+      ? of(this.recipeGraph)
+      : root.recipe
+        ? resolveRecipeProductionGraph(
+            root.recipe,
+            this.catalog,
+            selectedMethods,
+            this.datasetVersion(),
+          )
+        : of(null);
+    const revision = ++this.quoteRevision;
+    this.quoteSubscription?.unsubscribe();
     this.treeMarketLoading.set(true);
-    this.marketCache
-      .resolveQuotesBatch(Array.from(itemIds), region)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.treeMarketMessage.set('Atualizando cotações da receita...');
+    this.quoteSubscription = graph$
+      .pipe(
+        switchMap((graph) => {
+          if (revision !== this.quoteRevision) return EMPTY;
+          if (graph) {
+            if (graph.issues.some((issue) => issue.code === 'dataset-mismatch'))
+              throw new Error('O catálogo mudou durante a consulta da receita.');
+            this.recipeGraph = graph;
+            return this.marketCache.resolveQuotesBatch(graph.itemIds, region);
+          }
+          const itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
+            (left, right) => left - right,
+          );
+          return this.marketCache.resolveQuotesBatch(itemIds, region);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
         next: (quotesMap) => {
-          let updated = 0;
+          if (revision !== this.quoteRevision) return;
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
-          for (const [id, base] of quotesMap.entries()) {
-            if (base && base.price !== null && base.price !== undefined) {
-              newPrices.set(id, base.price);
-              newQuotes.set(id, base);
-              updated++;
+          for (const [id, quote] of quotesMap) {
+            if (quote?.price !== null && quote?.price !== undefined) {
+              newPrices.set(id, quote.price);
+              newQuotes.set(id, quote);
             }
           }
           this.livePrices.set(newPrices);
           this.marketQuotes.set(newQuotes);
-          this.treeMarketLoading.set(false);
-          this.treeMarketMessage.set(
-            updated > 0
-              ? `${updated} ${updated === 1 ? 'cotação atualizada' : 'cotações atualizadas'} no mercado central (cache ativo).`
-              : 'Nenhuma cotação recente encontrada no mercado central.',
-          );
         },
         error: () => {
+          if (revision !== this.quoteRevision) return;
           this.treeMarketLoading.set(false);
-          this.treeMarketMessage.set('Não foi possível consultar as cotações do mercado.');
+          this.treeMarketMessage.set('Não foi possível atualizar as cotações da receita.');
+        },
+        complete: () => {
+          if (revision !== this.quoteRevision) return;
+          this.treeMarketLoading.set(false);
+          const count = this.marketQuotes().size;
+          this.treeMarketMessage.set(
+            count > 0
+              ? `${count} ${count === 1 ? 'cotação disponível' : 'cotações disponíveis'} no cache do Mercado Central.`
+              : 'Nenhuma cotação encontrada para os itens desta receita.',
+          );
         },
       });
   }
+
+  private selectedRecipeMethods(root: RecipeNode): ReadonlyMap<number, string> {
+    const methods = new Map<number, string>();
+    const visit = (node: RecipeNode) => {
+      if (node.recipe) methods.set(node.part.itemId, node.recipe.key);
+      node.children.forEach(visit);
+    };
+    visit(root);
+    return methods;
+  }
+
+  private startRecipeQuoteRefresh(): void {
+    if (this.quoteRefreshTimer) return;
+    this.quoteRefreshTimer = setInterval(
+      () => this.consultAllTreePrices(),
+      DEFAULT_MARKET_CACHE_TTL_MS,
+    );
+  }
+
+  private stopRecipeQuoteRefresh(): void {
+    if (this.quoteRefreshTimer) clearInterval(this.quoteRefreshTimer);
+    this.quoteRefreshTimer = undefined;
+    this.quoteSubscription?.unsubscribe();
+    this.quoteSubscription = undefined;
+    this.quoteRevision++;
+    this.recipeGraph = null;
+    this.recipeGraphIdentity = '';
+    this.treeMarketLoading.set(false);
+  }
+
   constructor() {
-    this.destroyRef.onDestroy(() => this.stopExpansion());
+    this.destroyRef.onDestroy(() => {
+      this.stopExpansion();
+      this.stopRecipeQuoteRefresh();
+    });
     this.autoMarket$.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.consultAllTreePrices();
     });
@@ -739,6 +825,7 @@ export class RecipeTree {
       // A root-method output is echoed by the page. Keep the already updated tree and context.
       if (identity === this.selectionIdentity && untracked(this.root)?.recipe?.key === recipe?.key)
         return;
+      this.stopRecipeQuoteRefresh();
       this.revision++;
       this.stopExpansion();
       this.bulkMessage.set('');
@@ -760,7 +847,6 @@ export class RecipeTree {
         this.acquisitionStrategy.set('buy_all');
         this.origins.set(new Map());
         this.selectionIdentity = identity;
-        this.autoMarket$.next();
       }
       this.sessionKey = identity + '/' + (recipe?.key ?? 'external');
       this.selectedPath.set('root');
@@ -783,6 +869,7 @@ export class RecipeTree {
         this.view.set(session.view);
         this.excludedLocations.set(session.excludedLocations);
       }
+      this.autoMarket$.next();
     });
     effect(() => {
       const root = this.root(),

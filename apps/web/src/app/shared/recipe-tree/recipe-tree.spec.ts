@@ -1,8 +1,15 @@
-import type { CatalogItemDetail, CatalogRecipe, CatalogRecipesResponse } from '@bdo/shared';
+import type {
+  CatalogItemDetail,
+  CatalogRecipe,
+  CatalogRecipesResponse,
+  MarketItemQuote,
+} from '@bdo/shared';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MarketApi } from '../../features/market/market-api';
+import { CatalogApiService } from '../../core/catalog-api.service';
+import { MarketCacheService } from '../../core/market-cache.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { RecipeTree } from './recipe-tree';
@@ -41,17 +48,132 @@ function providers() {
     ),
     history: vi.fn(() => of({ points: [] })),
   };
+  const catalog = {
+    resolveIconUrl: vi.fn(() => null),
+    getItemRecipes: vi.fn((_itemId: number, _direction: 'produces' | 'uses') =>
+      of({ recipes: [], total: 0, direction: 'produces', dataset: null } as CatalogRecipesResponse),
+    ),
+  };
+  const marketCache = {
+    resolveQuotesBatch: vi.fn((_itemIds: (number | string)[], _region?: string) =>
+      of(new Map<number, MarketItemQuote>()),
+    ),
+  };
   return {
     knowledge,
     market,
+    catalog,
+    marketCache,
     list: [
       { provide: RecipeKnowledge, useValue: knowledge },
       { provide: MarketApi, useValue: market },
+      { provide: CatalogApiService, useValue: catalog },
+      { provide: MarketCacheService, useValue: marketCache },
     ],
   };
 }
 describe('Interactive recipe tree', () => {
   useMemoryStorage();
+  it('loads quotes for every item reachable from the active recipe', async () => {
+    const mocks = providers();
+    const salt: CatalogRecipe = {
+      key: 'salt',
+      type: 'PROCESSING',
+      station: null,
+      inputs: [{ itemId: 8001, name: 'Pedra', quantity: '2' }],
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+    };
+    mocks.catalog.getItemRecipes.mockImplementation((itemId) =>
+      of({
+        recipes: itemId === 9001 ? [salt] : [],
+        total: itemId === 9001 ? 1 : 0,
+        direction: 'produces',
+        dataset: null,
+      } as CatalogRecipesResponse),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(9001, 'produces');
+    expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(8001, 'produces');
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith([5301, 8001, 9001], 'sa');
+  });
+
+  it('refreshes the active recipe quotes after five minutes and stops after destroy', async () => {
+    const mocks = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    vi.useFakeTimers();
+
+    tree.consultAllTreePrices();
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledTimes(2);
+
+    fixture.destroy();
+    await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it('ignores a quote response from a recipe that is no longer selected', async () => {
+    const mocks = providers();
+    const oldResponse = new Subject<Map<number, MarketItemQuote>>();
+    const newQuote: MarketItemQuote = {
+      itemId: 6001,
+      subId: 0,
+      name: 'Produto novo',
+      price: '200',
+      stock: 5,
+      totalTrades: '10',
+      minPrice: '190',
+      maxPrice: '210',
+      lastSoldPrice: '200',
+      lastSoldAt: null,
+    };
+    mocks.marketCache.resolveQuotesBatch
+      .mockReturnValueOnce(oldResponse)
+      .mockReturnValueOnce(of(new Map([[6001, newQuote]])));
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+
+    tree.consultAllTreePrices();
+    fixture.componentRef.setInput('recipe', {
+      ...recipe,
+      key: 'new-recipe',
+      outputs: [{ itemId: 6001, name: 'Produto novo', quantity: '1' }],
+      inputs: [{ itemId: 8002, name: 'Ingrediente novo', quantity: '1' }],
+    });
+    fixture.componentRef.setInput('selectedItem', { ...item, id: 6001, name: 'Produto novo' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    tree.consultAllTreePrices();
+
+    oldResponse.next(
+      new Map([
+        [
+          5301,
+          {
+            itemId: 5301,
+            subId: 0,
+            name: 'Reagente',
+            price: '999',
+            stock: 1,
+            totalTrades: '1',
+            minPrice: '900',
+            maxPrice: '1000',
+            lastSoldPrice: '999',
+            lastSoldAt: null,
+          },
+        ],
+      ]),
+    );
+
+    expect(tree.livePrices().has(5301)).toBe(false);
+    expect(tree.livePrices().get(6001)).toBe('200');
+    fixture.destroy();
+  });
   it('opens known production ingredients inline in steps without opening the details panel', async () => {
     const mocks = providers();
     mocks.knowledge.produces.mockReturnValue(
@@ -465,7 +587,7 @@ describe('Interactive recipe tree', () => {
     pending.complete();
     expect(tree.context()?.node.part.itemId).toBe(9001);
   });
-  it('queries prices only on user action, respects stale results and retains graph state across view switches', async () => {
+  it('retains item detail behavior and graph state when a manual lookup returns stale data', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -493,7 +615,7 @@ describe('Interactive recipe tree', () => {
     tree.view.set('graph');
     expect(tree.root()?.expanded).toBe(false);
   });
-  it('consults market quotes for all items in the tree and updates live prices', async () => {
+  it('consults market quotes for all currently visible items and updates live prices', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -505,14 +627,13 @@ describe('Interactive recipe tree', () => {
     tree.target.set(10);
     fixture.detectChanges();
 
-    dependencies.market.getItem.mockImplementation((id = '') =>
-      of({
-        source: 'arsha',
-        region: 'sa',
-        fetchedAt: '2026-10-09T12:00:00Z',
-        cacheStatus: 'cached',
-        items: [{ itemId: Number(id), subId: 0, price: id === '5301' ? '500' : '50', stock: 10 }],
-      }),
+    dependencies.marketCache.resolveQuotesBatch.mockReturnValue(
+      of(
+        new Map([
+          [5301, { itemId: 5301, subId: 0, name: 'Reagente', price: '500', stock: 10 }],
+          [9001, { itemId: 9001, subId: 0, name: 'Sal', price: '50', stock: 10 }],
+        ]) as Map<number, MarketItemQuote>,
+      ),
     );
 
     tree.consultAllTreePrices();
@@ -520,7 +641,7 @@ describe('Interactive recipe tree', () => {
 
     expect(tree.livePrices().get(5301)).toBe('500');
     expect(tree.livePrices().get(9001)).toBe('50');
-    expect(tree.treeMarketMessage()).toContain('cotações atualizadas');
+    expect(tree.treeMarketMessage()).toContain('cotações disponíveis');
   });
   it('calculates gross revenue, net revenue, profit, profitPerHour and formattedCraftTime', async () => {
     const dependencies = providers(),
