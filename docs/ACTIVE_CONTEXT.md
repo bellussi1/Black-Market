@@ -247,3 +247,24 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Arquivos**: `packages/calculators/src/models.ts`, `packages/calculators/src/tools.ts` e respectivos testes; `apps/web/src/app/shared/recipe-tree/recipe-tree-model.ts`, `recipe-tree.ts`, `recipe-tree.html`, `recipe-tree.spec.ts`, `recipe-session.ts` e `recipe-session.spec.ts`.
 - **Verificação**: caso de regressão reproduzido antes do ajuste (10 operações resultavam em 11); depois, `pnpm test` passou com 585 testes e `pnpm check` passou por lint, Prettier, typecheck e build. O aviso conhecido de fallback do locale `pt-BR` para `pt` permanece.
 - **Próximo agente**: manter “receitas” como unidade de entrada e operações da fórmula; não reinterpretar esse campo como unidades finais do produto. O rendimento altera somente a quantidade prevista de saída.
+
+## 15. Ordenação e filtro de estoque no Market Board pré-paginação (Antigravity, 10/10/2026)
+
+- **Problema corrigido**: a tabela do mercado (`MarketBoard`) realizava a ordenação e o filtro de estoque (`in_stock` / `out_of_stock`) apenas sobre a página visível (20–100 itens), em vez de ordenar/filtrar o universo completo de itens antes de paginar.
+- **Implementação**:
+  - `packages/shared/src/market-board.ts`: adicionados tipos `MarketBoardDirection` (`'asc' | 'desc'`) e `MarketBoardStockFilter` (`'all' | 'in_stock' | 'out_of_stock'`).
+  - `apps/api/src/market/market-board.service.ts`: adicionados parâmetros `direction` e `stock` na query do endpoint `/market/board`. O escopo de itens em alta (`hot`) aplica o filtro de estoque e a ordenação com direção antes da fatia de paginação. Itens com preço desconhecido permanecem no final.
+  - `apps/web/src/app/features/market/market-api.ts`: envio dos parâmetros `direction` e `stock` na requisição HTTP.
+  - `apps/web/src/app/features/market/market-board.ts`: delegação de ordenação (`price`, `stock`, `name`) e de filtro de estoque para o servidor com redefinição de página para 1. Colunas calculadas apenas localmente mantêm sinalização visual explícita com a propriedade `pageOnlyOrdering()`.
+  - `apps/web/src/app/features/market/market-board.html`: aviso textual claro quando ordenação ou filtro se aplica somente aos itens visíveis da página corrente.
+  - `apps/web/src/app/features/market/market-board.spec.ts`: suíte de testes atualizada e expandida com asserções de requisição e reuso de cache.
+- **Verificações**:
+  - `pnpm check`: lint, Prettier, typecheck e build completos passaram sem erros.
+  - `pnpm test`: 585 testes passaram (52 calculators, 128 API, 343 Web, 62 scripts).
+- **Commits atômicos**:
+  - `41e0365` `feat(api): sort and filter hot market board by direction and stock before pagination`
+  - `621e6a5` `feat(market): send sort direction and stock filter to the API before pagination`
+- **Próximos passos**:
+  - Exploração de receitas (`apps/web/src/app/features/recipes/`): ordenação por lucro líquido estimado e volume de vendas, com unidades e períodos transparentes.
+  - Alinhamento da interface de Armazém (`apps/web/src/app/features/storage/`) com grade estilo jogo e simplificação da aba Família.
+  - Continuidade na padronização visual BDO UI (sem emojis, tokens de contraste e transições discretas).
