@@ -1147,6 +1147,28 @@ describe('Interactive recipe tree', () => {
     expect(el.textContent).toContain('Resultado da receita');
   });
 
+  it('preserves production calculations in the compact market summary without rendering the graph', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item, summaryOnly: true },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '100' });
+    tree.setRootYield(2);
+    tree.setCraftCount(50);
+    tree.setMethodTime('ALCHEMY', 1.5);
+    fixture.detectChanges();
+    expect(tree.grossRevenue()).toBe('100000');
+    expect(tree.profitPerHour()).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-recipe-graph')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.metric-card')).toHaveLength(4);
+    expect(fixture.nativeElement.querySelectorAll('.economic-summary-header button')).toHaveLength(
+      3,
+    );
+  });
+
   it('does not present partial material prices as definitive profit or an optimal combination', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(

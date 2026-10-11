@@ -94,6 +94,7 @@ export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimiz
   ],
   templateUrl: './recipe-tree.html',
   styleUrl: './recipe-tree.scss',
+  host: { '[class.summary-only]': 'summaryOnly()' },
 })
 export class RecipeTree {
   readonly planMessage = signal('');
@@ -144,6 +145,7 @@ export class RecipeTree {
   readonly recipes = input<CatalogRecipe[]>([]);
   readonly selectedItem = input<CatalogItemDetail | null>(null);
   readonly datasetVersion = input('');
+  readonly summaryOnly = input(false);
   readonly rootMethod = output<CatalogRecipe | null>();
   readonly advancedChanged = output<boolean>();
   readonly advanced = signal(false);
