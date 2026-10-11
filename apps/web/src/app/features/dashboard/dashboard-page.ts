@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
 
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
@@ -11,7 +13,7 @@ import { PlayerOverview } from '../../shared/player-overview/player-overview';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-page',
-  imports: [RouterLink, PlayerOverview, CatalogItemPicker],
+  imports: [HlmCard, HlmButton, RouterLink, PlayerOverview, CatalogItemPicker],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
