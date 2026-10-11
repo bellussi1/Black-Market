@@ -423,3 +423,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 ## 23. Migração das demais telas para UI BDO (11/10/2026)
 
 36 templates de features, shell e controles compartilhados migrados para Helm/Tailwind. Native select e textarea adicionados; BdoSelect mantém eventos de selects existentes. Cards preservam layout e padding responsivo. Corrigido texto de outline herdado de .btn. Build e 598 testes passaram; validação Playwright desktop/mobile das rotas habilitadas e fluxos Família/Mercado/Armazém/OCR. Ver docs/modernization/pages-migration.md. Próximo agente: preservar SCSS especializado ainda ativo, verificar fonte de mercado permitida e seguir testes visuais com dados completos. Axe-core/CI visual e MCP permanecem tarefas independentes; não afirmar que foram configurados.
+
+## 24. Rebuild do Docker local (11/10/2026)
+
+- Executado `docker compose -f docker-compose.yml --profile web up -d --build` com a migração UI atual. PostgreSQL e seu volume preservados; migrate terminou com código 0, API saudável e frontend ativo em http://localhost:4200. HTTP 200 confirmado em `/market` no frontend e `/ready` na API (porta 3000).
+- O primeiro build revelou limites de produção excedidos: bundle inicial de 1,02 MB (limite 1 MB) e CSS de recipe-tree de 30,39 kB (limite 20 kB). O Dockerfile agora aceita `WEB_BUILD_CONFIGURATION`, com padrão `production`; apenas o compose local usa `development`, coerente com seu `ng serve`. Staging/produção não foram reconstruídos e seus limites continuam ativos.
+- Arquivos alterados: `Dockerfile` e `docker-compose.yml`, commit `759983a` (`fix(docker): use development web build for local services`). `pnpm check` e `pnpm test` passaram (598 testes). Contexto atualizado neste documento.
+- Próximo agente: reduzir bundle inicial e CSS da árvore antes de publicar a modernização em produção/staging. O rebuild local não valida preços externos nem os fluxos completos por navegador.
