@@ -841,7 +841,7 @@ describe('Interactive recipe tree', () => {
       fixture.nativeElement.querySelector('.economic-dashboard').closest('details'),
     ).toBeNull();
   });
-  it('keeps required yield accessible and preserves the graph and planning choices across modes', async () => {
+  it('keeps contextual settings accessible without a global mode and preserves the graph', async () => {
     const fixture = await renderComponent(
       RecipeTree,
       { recipe, selectedItem: item },
@@ -850,10 +850,10 @@ describe('Interactive recipe tree', () => {
     const tree = fixture.componentInstance;
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.context-panel')).toBeNull();
-    expect(element.querySelector('.stock-settings')).toBeNull();
+    expect(element.querySelector('.stock-settings')).not.toBeNull();
     expect(element.querySelector('.root-yield input')).not.toBeNull();
-    const toggle = element.querySelector('.mode-toggle') as HTMLButtonElement;
-    expect(toggle).not.toBeNull();
+    expect(element.querySelector('.mode-toggle')).toBeNull();
+    const settings = element.querySelector('.stock-settings') as HTMLDetailsElement;
     tree.setRootYield(2);
     tree.setCraftCount(5);
     tree.excludedLocations.set(['storage:test']);
@@ -863,12 +863,12 @@ describe('Interactive recipe tree', () => {
     graph.pan.set({ x: -120, y: 35 });
     graph.zoom.set(0.7);
     graph.focus.set('root/0');
-    toggle.click();
+    settings.open = !settings.open;
     fixture.detectChanges();
     expect(element.querySelector('.stock-settings')).not.toBeNull();
-    toggle.click();
+    settings.open = !settings.open;
     fixture.detectChanges();
-    expect(element.querySelector('.stock-settings')).toBeNull();
+    expect(element.querySelector('.stock-settings')).not.toBeNull();
     expect(tree.graph()).toBe(graph);
     expect(graph.pan()).toEqual({ x: -120, y: 35 });
     expect(graph.zoom()).toBe(0.7);
@@ -1143,7 +1143,7 @@ describe('Interactive recipe tree', () => {
     const metricsGrid = el.querySelector('.economic-metrics-grid');
     expect(metricsGrid).toBeTruthy();
     expect(metricsGrid?.querySelectorAll(':scope > .metric-card')).toHaveLength(4);
-    expect(el.querySelector('.economic-summary-header .btn-optimizer')).toBeTruthy();
+    expect(el.querySelectorAll('.economic-summary-header button[hlmBtn]')).toHaveLength(3);
     expect(el.textContent).toContain('Resultado da receita');
   });
 

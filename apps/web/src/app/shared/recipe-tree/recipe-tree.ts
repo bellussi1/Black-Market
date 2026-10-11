@@ -30,6 +30,7 @@ import type {
   CatalogRecipePart,
   MarketItemQuote,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
 import type { Subscription } from 'rxjs';
 import {
   catchError,
@@ -82,7 +83,15 @@ export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimiz
 @Component({
   selector: 'app-recipe-tree',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, RecipeBranch, RecipeGraph, ItemIcon, TaxOptionsComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    RecipeBranch,
+    RecipeGraph,
+    ItemIcon,
+    TaxOptionsComponent,
+    HlmButton,
+  ],
   templateUrl: './recipe-tree.html',
   styleUrl: './recipe-tree.scss',
 })
@@ -1664,16 +1673,7 @@ export class RecipeTree {
       });
   }
   price(id: number) {
-    return (
-      this.livePrices().get(id) ??
-      this.quote(id)?.price ??
-      this.store
-        .data()
-        .inventory.find(
-          (row) => row.region === this.region() && row.itemId === id && row.price !== '0',
-        )?.price ??
-      null
-    );
+    return this.marketQuotes().get(id)?.price ?? null;
   }
   quote(id: number) {
     return (

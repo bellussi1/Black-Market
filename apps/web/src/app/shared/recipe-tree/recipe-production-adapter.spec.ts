@@ -232,7 +232,7 @@ describe('recipe production planner adapter', () => {
     expect(result.quotes).toEqual({});
   });
 
-  it('uses a cached timestamp or the workspace manual quote without inventing freshness', () => {
+  it('uses only API quotes with observed timestamps and ignores manual workspace prices', () => {
     const workspace = emptyWorkspace() as Workspace;
     workspace.quotes.push({
       id: 'manual-item-100',
@@ -262,7 +262,7 @@ describe('recipe production planner adapter', () => {
     );
 
     expect(result.quotes[2]).toMatchObject({ unitPrice: '100', source: 'market' });
-    expect(result.quotes[100]).toMatchObject({ unitPrice: '500', source: 'manual' });
+    expect(result.quotes[100]).toBeUndefined();
     expect(result.estimates['root']?.craftSeconds).toBeUndefined();
   });
 

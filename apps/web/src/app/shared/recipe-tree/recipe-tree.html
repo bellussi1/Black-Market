@@ -15,14 +15,6 @@
         <span class="badge">{{
           product.recipe ? typeLabel(product.recipe.type) : 'Explorar obtenção'
         }}</span>
-        <button
-          type="button"
-          class="mode-toggle"
-          [attr.aria-pressed]="advanced()"
-          (click)="toggleAdvanced()"
-        >
-          {{ advanced() ? 'Voltar ao modo simples' : 'Modo avançado' }}
-        </button>
       </div>
     </div>
     <div class="production-configuration">
@@ -119,7 +111,7 @@
           </div>
 
           @if (canAdjustRootYield()) {
-            <label class="root-yield" [class.hidden-simple]="!advanced()" i18n>
+            <label class="root-yield" i18n>
               Produção por operação (ajuste fino)<input
                 type="number"
                 min=".001"
@@ -130,7 +122,9 @@
             /></label>
           }
         </div>
-        @if (advanced()) {
+
+        <details class="production-options">
+          <summary>Configurações de produção</summary>
           <details class="production-calibration">
             <summary i18n>Calibrar tempo por método</summary>
             @for (row of methodCalibrationRows(); track row.method) {
@@ -203,7 +197,7 @@
               simular.
             </p>
           </details>
-        }
+        </details>
       </div>
     </div>
   </section>
@@ -229,11 +223,34 @@
           <div>
             <h3 i18n>Resultado da receita</h3>
           </div>
-          @if (bestProductionPlan()) {
-            <button type="button" class="btn btn-optimizer" (click)="optimizeAcquisition()" i18n>
-              Aplicar melhor combinação
+          <div class="flex flex-wrap gap-2" role="group" aria-label="Cenário de produção">
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
+              (click)="setAcquisitionStrategy('buy_all')"
+            >
+              Comprar subreceitas
             </button>
-          }
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
+              (click)="setAcquisitionStrategy('gather_all')"
+            >
+              Fazer / coletar tudo
+            </button>
+            <button
+              hlmBtn
+              type="button"
+              [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
+              (click)="optimizeAcquisition()"
+            >
+              Otimizar lucro por hora
+            </button>
+          </div>
         </div>
 
         <div class="economic-metrics-grid">
@@ -310,12 +327,10 @@
           }
         </div>
 
-        @if (advanced()) {
-          <details class="tax-config-panel">
-            <summary i18n>Opções de impostos e buffs do mercado</summary>
-            <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
-          </details>
-        }
+        <details class="tax-config-panel">
+          <summary i18n>Opções de impostos e buffs do mercado</summary>
+          <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
+        </details>
       </section>
     }
 
@@ -373,7 +388,7 @@
           <div class="desktop-graph" [hidden]="view() !== 'graph'">
             <app-recipe-graph
               [root]="product"
-              [advanced]="advanced()"
+              [advanced]="true"
               [allocations]="result.value?.allocations ?? []"
               [selected]="selectedPath()"
               [origins]="origins()"
@@ -633,7 +648,7 @@
               </div>
 
               @if (selectedNode(); as current) {
-                @if (current.path !== 'root' && (advanced() || current.part.quantity === null)) {
+                @if (current.path !== 'root' && current.part.quantity === null) {
                   <label i18n
                     >Unidades por operação<input
                       type="number"
@@ -742,24 +757,6 @@
                 </p>
               </div>
 
-              <!-- Campo de Preço Personalizado (para itens sem mercado ou simulações) -->
-              <div class="custom-price-field">
-                <label>
-                  <span i18n>Preço Personalizado (prata/un):</span>
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    placeholder="Ex: 50000"
-                    [ngModel]="customPrice(info.node.part.itemId)"
-                    (ngModelChange)="setCustomPrice(info.node.part.itemId, $event)"
-                  />
-                </label>
-                <small class="help-text" i18n
-                  >Defina o preço de compra em NPC ou valor estimado para recalcular as
-                  margens.</small
-                >
-              </div>
-
               <a
                 routerLink="/market"
                 [queryParams]="{ item: info.node.part.itemId }"
@@ -769,21 +766,19 @@
                 Abrir mercado completo →
               </a>
 
-              @if (advanced()) {
-                <details>
-                  <summary i18n>Histórico observado</summary>
-                  <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
-                  <p role="status">{{ historyMessage() }}</p>
-                  <ul>
-                    @for (point of history().slice(-20); track $index) {
-                      <li>
-                        {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
-                        {{ point.stock ?? '—' }}
-                      </li>
-                    }
-                  </ul>
-                </details>
-              }
+              <details>
+                <summary i18n>Histórico observado</summary>
+                <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
+                <p role="status">{{ historyMessage() }}</p>
+                <ul>
+                  @for (point of history().slice(-20); track $index) {
+                    <li>
+                      {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
+                      {{ point.stock ?? '—' }}
+                    </li>
+                  }
+                </ul>
+              </details>
             </div>
 
             <!-- Coluna 4: Obtenção no Mundo & Trabalhadores -->

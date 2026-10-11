@@ -38,7 +38,6 @@
       [selectedItem]="selected"
       [datasetVersion]="dataset()?.version ?? ''"
       (rootMethod)="setMethod($event)"
-      (advancedChanged)="advanced.set($event)"
     >
       <div recipe-method>
         @if (alternatives().length) {
@@ -100,16 +99,14 @@
       </nav>
     </section>
   }
-  @if (advanced() || !item()) {
-    @if (dataset(); as data) {
-      <details class="dataset-provenance">
-        <summary i18n>Fonte e versão do catálogo · {{ data.region.toUpperCase() }}</summary>
-        <p>
-          Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
-          {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
-          rendimentos podem ter lacunas ou divergências.
-        </p>
-      </details>
-    }
+  @if (dataset(); as data) {
+    <details class="dataset-provenance">
+      <summary i18n>Fonte e versão do catálogo · {{ data.region.toUpperCase() }}</summary>
+      <p>
+        Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
+        {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
+        rendimentos podem ter lacunas ou divergências.
+      </p>
+    </details>
   }
 </div>

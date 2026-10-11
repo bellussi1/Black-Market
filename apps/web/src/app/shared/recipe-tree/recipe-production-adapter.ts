@@ -46,7 +46,6 @@ function outputPart(recipe: CatalogRecipe, itemId: number): CatalogRecipePart | 
 }
 
 function quoteRecord(
-  workspace: Workspace,
   quotes: ReadonlyMap<number, MarketItemQuote>,
   observedAt: ReadonlyMap<number, string>,
 ): ProductionPlannerInput['quotes'] {
@@ -63,25 +62,6 @@ function quoteRecord(
     };
   }
 
-  const manual = workspace.quotes
-    .filter(
-      (quote) =>
-        quote.region === workspace.region &&
-        quote.itemId !== null &&
-        quote.subId === 0 &&
-        /^\d{1,24}$/.test(quote.price) &&
-        Number.isFinite(Date.parse(quote.observedAt)),
-    )
-    .sort((left, right) => left.observedAt.localeCompare(right.observedAt));
-  for (const quote of manual) {
-    if (quote.itemId === null || result[quote.itemId]) continue;
-    result[quote.itemId] = {
-      unitPrice: quote.price,
-      available: quote.stock,
-      observedAt: quote.observedAt,
-      source: quote.source === 'manual' ? 'manual' : 'market',
-    };
-  }
   return result;
 }
 
@@ -184,7 +164,7 @@ export function buildRecipeProductionInput(
   }
   const character = activeCharacter;
   const quoteObservedAt = new Map(options.quoteObservedAt ?? []);
-  const mappedQuotes = quoteRecord(workspace, quotes, quoteObservedAt);
+  const mappedQuotes = quoteRecord(quotes, quoteObservedAt);
   const gatheringEstimates = Object.fromEntries(gatherEstimates);
   const customChoices = Object.fromEntries(sourceOverrides);
 
