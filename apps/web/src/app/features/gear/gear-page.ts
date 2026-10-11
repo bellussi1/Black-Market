@@ -1,16 +1,28 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { calculateGear, type GearInput, gearSchema } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
 import { EquipmentReference } from '../../shared/equipment-reference/equipment-reference';
 import { number, silver } from '../../shared/formatters';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-gear-page',
-  imports: [FormsModule, CalculationProof, EquipmentReference],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    CalculationProof,
+    EquipmentReference,
+  ],
   templateUrl: './gear-page.html',
 })
 export class GearPage {
