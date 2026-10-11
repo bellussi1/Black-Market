@@ -8,6 +8,9 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -19,7 +22,7 @@ import { WorkspaceStore } from '../../core/workspace-store';
 @Component({
   selector: 'app-account-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [HlmInput, HlmCard, HlmButton, FormsModule],
   templateUrl: './account-page.html',
 })
 export class AccountPage {

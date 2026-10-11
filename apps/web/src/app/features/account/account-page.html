@@ -13,7 +13,7 @@
   @if (!identity.ready()) {
     <p role="status" i18n>Consultando sua conta…</p>
   } @else if (!identity.enabled()) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>Continue como visitante</h2>
       <p i18n>
         A sincronização entre dispositivos ainda não está disponível. Você pode usar as ferramentas
@@ -21,11 +21,12 @@
       </p>
     </section>
   } @else if (!identity.email()) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>Entrar sem senha</h2>
       <label class="field"
         ><span i18n>Seu e-mail</span
         ><input
+          hlmInput
           type="email"
           name="email"
           autocomplete="email"
@@ -33,20 +34,46 @@
           [(ngModel)]="email"
       /></label>
       <div class="action-row">
-        <button class="btn" type="button" (click)="signIn()" [disabled]="loading() || !email" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn"
+          type="button"
+          (click)="signIn()"
+          [disabled]="loading() || !email"
+          i18n
+        >
           Receber link de acesso</button
-        ><button class="btn subtle" type="button" (click)="google()" [disabled]="loading()" i18n>
+        ><button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="google()"
+          [disabled]="loading()"
+          i18n
+        >
           Entrar com Google
         </button>
       </div>
     </section>
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>{{ identity.email() }}</h2>
       <div class="action-row">
-        <button class="btn" type="button" (click)="load()" [disabled]="loading()" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn"
+          type="button"
+          (click)="load()"
+          [disabled]="loading()"
+          i18n
+        >
           Consultar meus dados salvos</button
         ><button
+          hlmBtn
+          variant="outline"
           class="btn subtle"
           type="button"
           (click)="identity.signOut()"
@@ -62,7 +89,7 @@
       </p>
     </section>
     @if (cloudVersion() !== null) {
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2 i18n>Revisar antes de sincronizar</h2>
         <p i18n>
           Você tem {{ summary(store.data()).materials }} materiais,
@@ -80,6 +107,8 @@
               >Quero substituir a cópia deste navegador pela cópia da conta.</span
             ></label
           ><button
+            hlmBtn
+            variant="outline"
             class="btn subtle"
             type="button"
             (click)="download()"
@@ -94,6 +123,8 @@
             >Revisei e quero enviar a cópia deste navegador, substituindo a cópia da conta.</span
           ></label
         ><button
+          hlmBtn
+          variant="outline"
           class="btn"
           type="button"
           (click)="upload()"
@@ -110,6 +141,8 @@
               mantido.</span
             ></label
           ><button
+            hlmBtn
+            variant="outline"
             class="btn danger"
             type="button"
             (click)="remove()"
