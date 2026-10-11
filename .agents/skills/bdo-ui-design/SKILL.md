@@ -13,7 +13,7 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - Ícones reais do catálogo em slots reservados de 44 × 44 px, no máximo 48 × 48 px, `object-fit: contain`. Não usar imagens de menus como fundo de interface.
 - Conteúdo legível determina a altura do card. Não cortar nomes com line-clamp; quebrar texto e medir o card antes de calcular conexões.
 - Títulos de janelas usam uma sans discreta; não impor serifas decorativas aos controles de crafting.
-- Modo simples mostra produto, quantidade, materiais, origens e custo conhecido. Modo avançado revela opções existentes sem desmontar o grafo ou perder escolhas.
+- Produto, quantidade, materiais, origens e resultado ficam no fluxo principal. Ajustes de tempo, impostos e estoque ficam em detalhes no próprio contexto, sem um modo avançado global. Não desmontar o grafo ou perder escolhas.
 - Dados não conhecidos continuam identificados como ausentes. Não presumir rendimentos, preços, origens ou qualidade de itens por estética.
 - Unificar fórmulas do mesmo produto que diferem apenas por ingredientes substituíveis. Elixires com adjetivos de qualidade e carnes/sangues de um mesmo grupo são escolhas de ingrediente, não receitas independentes. Preservar IDs, estoques e proporções de substituição (como 3 comuns para 1 superior). Confirmar equivalências pelas fórmulas do catálogo; não considerar toda carne ou todo sangue intercambiável. Ver [Equivalências](references/recipe-equivalences.md).
 - Posições, seleção, expansão e viewport são estados separados. Expandir não significa recentralizar.

@@ -4,10 +4,12 @@ Modo simples é o padrão. Na receita, manter produto, fórmula, número de oper
 
 No avançado: seleção de estoques, impostos, premissas, filtros e controles secundários. Preservar o componente do grafo montado, `root`, seleção, escolhas de receitas, pan e zoom ao alternar.
 
-Clique no card: selecionar e explorar/recolher a dependência quando aplicável. Botão de detalhes explícito permite consultar dados sem alternar ramo ou deslocar a página inteira. Detalhes abrem em painel com rolagem própria; ao fechar, devolver o foco ao botão do material. Usar eventos sem propagação ambígua entre ação principal e botão secundário. Drag acima de um limiar de 5 px não deve gerar clique de expansão.
+Clique no card: selecionar e explorar/recolher a dependência quando aplicável. Botão de detalhes explícito permite consultar dados sem alternar ramo ou deslocar a página inteira. Detalhes abrem em painel com rolagem própria; ao fechar, devolver o foco ao acionador original, inclusive quando veio do grafo ou do produto raiz. Usar eventos sem propagação ambígua entre ação principal e botão secundário. Drag acima de um limiar de 5 px não deve gerar clique de expansão.
 
 Hover altera fundo/contorno, pressed dá resposta imediata, selected mantém contorno e indicador, expanded/collapsed têm chevron e `aria-expanded`. Foco permanece visível. Loading não troca as dimensões do card. Animação de ramos em 140–200 ms com opacity e transform; reduced-motion evita animação.
 
 Painel de detalhes tem texto selecionável e rolagem própria. Scroll interno não vira zoom da árvore.
 
 Otimização usa apenas um plano completo e classificável por lucro por hora. Nunca rotular comparação parcial de custo ou cotação ausente como “melhor combinação”. A caixa de cada insumo ativo escolhe fazer/coletar quando marcada e comprar quando desmarcada. Detalhes de impostos, estoque, preços próprios e tempos ficam sob demanda.
+
+Se a quantidade de um insumo ativo não existe no catálogo, mantenha sua linha visível com “Quantidade pendente”; nunca mostre zero como se fosse medido. Habilite maestria somente se alterar de fato um rendimento de fórmula ativa no cálculo. Ao consultar preços em lotes, preserve os lotes concluídos mesmo quando outro falhar.
