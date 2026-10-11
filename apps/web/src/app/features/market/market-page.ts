@@ -27,6 +27,9 @@ import type {
   MarketItemQuote,
   MarketLookupResponse,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
@@ -42,6 +45,7 @@ import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
 import {
@@ -59,6 +63,10 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
   imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
     FormsModule,
     RouterLink,
     TaxOptionsComponent,

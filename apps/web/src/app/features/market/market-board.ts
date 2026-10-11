@@ -20,6 +20,8 @@ import type {
   MarketBoardSort,
   MarketBoardStockFilter,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -27,6 +29,7 @@ import { type CachedBoardEntry, MarketCacheService } from '../../core/market-cac
 import { RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketApi } from './market-api';
 import { MarketRefresh } from './market-refresh';
 
@@ -47,7 +50,7 @@ export interface PriceRangePosition {
 @Component({
   selector: 'app-market-board',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, ItemIcon],
   templateUrl: './market-board.html',
   styleUrl: './market-board.scss',
 })

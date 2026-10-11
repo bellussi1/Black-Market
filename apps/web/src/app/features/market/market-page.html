@@ -11,6 +11,8 @@
   </header>
   <nav class="workspace-tabs" aria-label="Ferramentas do mercado" i18n-aria-label>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="workspaceView() === 'board'"
       (click)="workspaceView.set('board')"
@@ -19,6 +21,8 @@
       Mercado
     </button>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="workspaceView() === 'quote'"
       (click)="workspaceView.set('quote')"
@@ -27,6 +31,8 @@
       Cotação do item
     </button>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="workspaceView() === 'calculator'"
       (click)="workspaceView.set('calculator')"
@@ -35,6 +41,8 @@
       Calcular venda
     </button>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="workspaceView() === 'saved'"
       (click)="workspaceView.set('saved')"
@@ -49,7 +57,7 @@
     (selected)="selectBoardItem($event)"
   />
   @if (workspaceView() === 'quote') {
-    <section class="panel">
+    <section hlmCard class="panel">
       <details class="market-search" [open]="!live()">
         <summary>
           <span i18n>Buscar item</span
@@ -67,10 +75,20 @@
           (selected)="selectItem($event)"
         />
         @if (catalogItem(); as selected) {
-          <a class="btn subtle" [routerLink]="['/market/items', selected.id]" i18n
+          <a
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            [routerLink]="['/market/items', selected.id]"
+            i18n
             >Detalhes do item</a
           >
-          <a class="btn subtle" [routerLink]="['/recipes/items', selected.id]" i18n
+          <a
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            [routerLink]="['/recipes/items', selected.id]"
+            i18n
             >Explorar receitas e origens</a
           >
         }
@@ -80,6 +98,7 @@
             <label class="field"
               ><ng-container i18n>ID do item</ng-container
               ><input
+                hlmInput
                 inputmode="numeric"
                 placeholder="ID numérico do jogo"
                 i18n-placeholder
@@ -94,6 +113,8 @@
             <span i18n>Cotações sincronizadas automaticamente via cache</span>
           </div>
           <button
+            hlmBtn
+            variant="outline"
             class="btn subtle btn-refresh-quote"
             type="button"
             (click)="lookup()"
@@ -138,6 +159,8 @@
             i18n-aria-label
           >
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               [attr.aria-pressed]="priceView() === 'gross'"
               (click)="priceView.set('gross')"
@@ -146,6 +169,8 @@
               Preço bruto
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               [attr.aria-pressed]="priceView() === 'net'"
               (click)="priceView.set('net')"
@@ -208,6 +233,8 @@
                   <td>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Sem horário informado' }}</td>
                   <td>
                     <button
+                      hlmBtn
+                      variant="outline"
                       type="button"
                       class="btn subtle"
                       [disabled]="item.price === null || response.cacheStatus === 'stale'"
@@ -228,12 +255,18 @@
         <summary i18n>Preços, volume e liquidez observados</summary>
         <label class="field"
           ><span i18n>Variante do item selecionado</span
-          ><select [ngModel]="historySubId" (ngModelChange)="historySubId = +$event; showHistory()">
+          ><select
+            appBdoSelect
+            [ngModel]="historySubId"
+            (ngModelChange)="historySubId = +$event; showHistory()"
+          >
             @for (item of live()?.items ?? []; track item.subId) {
               <option [value]="item.subId">{{ item.name }} · {{ item.subId }}</option>
             }
           </select></label
-        ><button class="btn" (click)="showHistory()" i18n>Consultar histórico</button>
+        ><button hlmBtn variant="outline" class="btn" (click)="showHistory()" i18n>
+          Consultar histórico
+        </button>
         <p role="status">{{ historyMessage() }}</p>
         <div class="mt-6 grid gap-4">
           <div class="flex flex-wrap items-end justify-between gap-4">
@@ -248,6 +281,8 @@
               i18n-aria-label
             >
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 [attr.aria-pressed]="historyRange() === 'day'"
@@ -257,6 +292,8 @@
                 24 horas
               </button>
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 [attr.aria-pressed]="historyRange() === 'week'"
@@ -266,6 +303,8 @@
                 7 dias
               </button>
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 [attr.aria-pressed]="historyRange() === 'month'"
@@ -283,6 +322,8 @@
             i18n-aria-label
           >
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="btn subtle"
               [attr.aria-pressed]="historyMetric() === 'price'"
@@ -292,6 +333,8 @@
               Preço
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="btn subtle"
               [attr.aria-pressed]="historyMetric() === 'stock'"
@@ -301,6 +344,8 @@
               Estoque
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="btn subtle"
               [attr.aria-pressed]="historyMetric() === 'volume'"
@@ -449,7 +494,14 @@
             {{ date(quote.observedAt) }}</small
           >
         </div>
-        <button class="btn subtle" type="button" (click)="workspaceView.set('quote')" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="workspaceView.set('quote')"
+          i18n
+        >
           Consultar outro item
         </button>
       </div>
@@ -457,18 +509,20 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Preço por unidade</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().price"
               (ngModelChange)="patch({ price: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Quantidade</ng-container
             ><input
+              hlmInput
               type="number"
               min="1"
               [ngModel]="form().quantity"
@@ -476,6 +530,7 @@
           ><label class="field"
             ><ng-container i18n>Custo total de aquisição</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().cost"
               (ngModelChange)="patch({ cost: $event })"
@@ -543,7 +598,7 @@
     </div>
   }
   @if (workspaceView() === 'saved') {
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2>
           <ng-container i18n
@@ -555,20 +610,21 @@
       <div class="row-editor">
         <div class="form-grid">
           <label class="field"
-            ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
+            ><ng-container i18n>Item</ng-container
+            ><input hlmInput [value]="draft.name" readonly /></label
           ><label class="field"
             ><ng-container i18n>Categoria</ng-container
-            ><input [value]="draft.category" readonly /></label
+            ><input hlmInput [value]="draft.category" readonly /></label
           ><label class="field"
             ><ng-container i18n>Preço unitário</ng-container
-            ><input inputmode="numeric" [(ngModel)]="draft.price" /></label
+            ><input hlmInput inputmode="numeric" [(ngModel)]="draft.price" /></label
           ><label class="field"
             ><ng-container i18n>Estoque observado</ng-container
-            ><input type="number" min="0" [(ngModel)]="draft.stock"
+            ><input hlmInput type="number" min="0" [(ngModel)]="draft.stock"
           /></label>
         </div>
         <div class="action-row">
-          <button class="btn" type="button" (click)="saveQuote()">
+          <button hlmBtn variant="outline" class="btn" type="button" (click)="saveQuote()">
             <ng-container i18n>Registrar cotação</ng-container></button
           ><span class="help"
             ><ng-container i18n
@@ -583,10 +639,14 @@
       <div class="form-grid" style="margin: 24px 0">
         <label class="field"
           ><ng-container i18n>Buscar</ng-container
-          ><input [(ngModel)]="search" placeholder="Nome do item" i18n-placeholder /></label
+          ><input
+            hlmInput
+            [(ngModel)]="search"
+            placeholder="Nome do item"
+            i18n-placeholder /></label
         ><label class="field"
           ><ng-container i18n>Categoria</ng-container
-          ><select [(ngModel)]="category">
+          ><select appBdoSelect [(ngModel)]="category">
             <option value=""><ng-container i18n>Todas</ng-container></option>
             @for (c of categories; track c) {
               <option [value]="c">{{ c }}</option>
@@ -594,7 +654,7 @@
           </select></label
         ><label class="field"
           ><ng-container i18n>Ordenar</ng-container
-          ><select [(ngModel)]="sort">
+          ><select appBdoSelect [(ngModel)]="sort">
             <option value="name"><ng-container i18n>Nome</ng-container></option>
             <option value="price"><ng-container i18n>Menor preço</ng-container></option>
           </select></label
@@ -644,11 +704,29 @@
                   <td>{{ date(q.observedAt) }}</td>
                   <td>
                     <div class="action-row" style="margin: 0">
-                      <button class="btn subtle" type="button" (click)="use(q)">
+                      <button
+                        hlmBtn
+                        variant="outline"
+                        class="btn subtle"
+                        type="button"
+                        (click)="use(q)"
+                      >
                         <ng-container i18n>Calcular</ng-container></button
-                      ><button class="btn subtle" type="button" (click)="toggle(q)">
+                      ><button
+                        hlmBtn
+                        variant="outline"
+                        class="btn subtle"
+                        type="button"
+                        (click)="toggle(q)"
+                      >
                         {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}</button
-                      ><button class="btn danger" type="button" (click)="remove(q.id)">
+                      ><button
+                        hlmBtn
+                        variant="outline"
+                        class="btn danger"
+                        type="button"
+                        (click)="remove(q.id)"
+                      >
                         <ng-container i18n>Excluir </ng-container>
                       </button>
                     </div>
@@ -666,7 +744,7 @@
       }
     </section>
     @if (selected(); as q) {
-      <section class="panel">
+      <section hlmCard class="panel">
         <div class="panel-heading">
           <h2>
             <ng-container i18n>Histórico pessoal · {{ q.name }}</ng-container>

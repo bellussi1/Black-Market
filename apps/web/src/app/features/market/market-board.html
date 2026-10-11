@@ -18,6 +18,7 @@
       <label class="mobile-category"
         >Categoria
         <select
+          appBdoSelect
           aria-label="Categoria do mercado"
           [ngModel]="category()"
           (ngModelChange)="filterCategory($event)"
@@ -34,12 +35,20 @@
         </select>
       </label>
       <h3>Categorias</h3>
-      <button type="button" [attr.aria-pressed]="!category()" (click)="filterCategory('')">
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        [attr.aria-pressed]="!category()"
+        (click)="filterCategory('')"
+      >
         {{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}
       </button>
       <div class="category-list">
         @for (entry of categoryRoots(); track entry.id) {
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             [class.subcategory]="!!entry.parentId"
             [attr.aria-pressed]="category() === entry.id"
@@ -50,6 +59,8 @@
           @if (selectedCategoryParent() === entry.id) {
             @for (child of childrenOf(entry.id); track child.id) {
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="subcategory"
                 [attr.aria-pressed]="category() === child.id"
@@ -72,6 +83,7 @@
             <span>Buscar no mercado</span>
             <div class="search-input-wrap">
               <input
+                hlmInput
                 type="search"
                 placeholder="Nome ou código do item"
                 maxlength="80"
@@ -80,6 +92,8 @@
               />
               @if (search()) {
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="btn-clear-search"
                   (click)="clearSearch()"
@@ -95,6 +109,8 @@
         <div class="board-filters-group">
           <div class="filter-pills" role="radiogroup" aria-label="Filtro rápido de estoque">
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'all'"
@@ -103,6 +119,8 @@
               Todos
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'in_stock'"
@@ -111,6 +129,8 @@
               Com estoque
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'out_of_stock'"
@@ -119,6 +139,8 @@
               Estoque zerado
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'with_volume'"
@@ -130,7 +152,7 @@
 
           <label class="sort-select-wrap">
             <span>Ordenar por</span>
-            <select [ngModel]="sort()" (ngModelChange)="setSort($event)">
+            <select appBdoSelect [ngModel]="sort()" (ngModelChange)="setSort($event)">
               <option value="hot" [disabled]="fullCatalog()">Em alta</option>
               <option value="price" [disabled]="fullCatalog()">Menor preço</option>
               <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
@@ -139,6 +161,8 @@
           </label>
 
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn-refresh-market"
             (click)="refreshBoard()"
@@ -196,7 +220,10 @@
 
       @if (error()) {
         <p role="alert" class="error-box">
-          {{ error() }} <button type="button" (click)="refreshBoard()">Tentar novamente</button>
+          {{ error() }}
+          <button hlmBtn variant="outline" type="button" (click)="refreshBoard()">
+            Tentar novamente
+          </button>
         </p>
       }
 
@@ -232,7 +259,13 @@
                     : 'none'
                 "
               >
-                <button type="button" class="col-sort-btn" (click)="toggleColumnSort('name')">
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="col-sort-btn"
+                  (click)="toggleColumnSort('name')"
+                >
                   <span>Item</span>
                   <span class="sort-arrow" [class.active]="sortColumn() === 'name'">
                     {{ sortColumn() === 'name' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
@@ -251,6 +284,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('price')"
@@ -282,6 +317,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('stock')"
@@ -304,6 +341,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume24h')"
@@ -328,6 +367,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume15d')"
@@ -352,6 +393,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume30d')"
@@ -371,6 +414,8 @@
               <tr class="board-row">
                 <th scope="row">
                   <button
+                    hlmBtn
+                    variant="outline"
                     type="button"
                     class="board-item"
                     (click)="selected.emit(item)"
@@ -501,6 +546,7 @@
         <label
           >Itens por página
           <select
+            appBdoSelect
             aria-label="Itens por página"
             [ngModel]="pageSize()"
             (ngModelChange)="setPageSize($event)"
@@ -511,10 +557,22 @@
           </select></label
         >
         <div>
-          <button type="button" (click)="move(-1)" [disabled]="loading() || page() === 1">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="move(-1)"
+            [disabled]="loading() || page() === 1"
+          >
             Anterior</button
           ><span>{{ page() }} / {{ pageCount() }}</span
-          ><button type="button" (click)="move(1)" [disabled]="loading() || page() >= pageCount()">
+          ><button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="move(1)"
+            [disabled]="loading() || page() >= pageCount()"
+          >
             Próxima
           </button>
         </div>
