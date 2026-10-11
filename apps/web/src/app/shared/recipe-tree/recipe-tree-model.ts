@@ -103,7 +103,11 @@ export function planRecipeTree(
   root: RecipeNode,
   target: number,
   state: Workspace,
-  options: { excludedLocations?: string[]; prices?: ReadonlyMap<number, string> } = {},
+  options: {
+    excludedLocations?: string[];
+    prices?: ReadonlyMap<number, string>;
+    rootCrafts?: number;
+  } = {},
 ) {
   const recipes: ManualRecipe[] = [],
     warnings: string[] = [];
@@ -227,6 +231,7 @@ export function planRecipeTree(
     const value = calculateProduction({
       recipeId: root.path,
       quantity: target,
+      ...(options.rootCrafts === undefined ? {} : { rootCrafts: options.rootCrafts }),
       recipes,
       inventory,
     });

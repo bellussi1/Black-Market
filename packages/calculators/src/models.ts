@@ -199,6 +199,7 @@ export const inventorySchema = z.object({
 export const productionSchema = z.object({
   recipeId: z.string().min(1).max(64),
   quantity: positiveCount.max(1_000_000),
+  rootCrafts: positiveCount.max(1_000_000).optional(),
   recipes: z.array(recipeSchema).min(1).max(100),
   inventory: z.array(inventorySchema).max(4000),
 });

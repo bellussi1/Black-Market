@@ -539,26 +539,43 @@ describe('Interactive recipe tree', () => {
     expect(tree.find('root/0')?.expanded).toBe(true);
     expect(tree.detailsOpen()).toBe(false);
   });
-  it('updates total ingredients as the desired quantity changes, including batch rounding', async () => {
-    const harmony = {
+  it('multiplies each ingredient by the requested recipe count without yield rounding extra operations', async () => {
+    const multiInputRecipe: CatalogRecipe = {
       ...recipe,
-      type: 'SIMPLE_ALCHEMY',
-      inputs: [1389, 1391, 1393, 1395, 1397].map((itemId) => ({
-        itemId,
-        name: 'Material ' + itemId,
-        quantity: '10',
-      })),
-      outputs: [{ itemId: 1399, name: 'Fármaco da Harmonia', quantity: null }],
+      inputs: [
+        { itemId: 9001, name: 'X', quantity: '1' },
+        { itemId: 9002, name: 'Y', quantity: '2' },
+        { itemId: 9003, name: 'Z', quantity: '1' },
+      ],
     };
-    const fixture = await renderComponent(RecipeTree, { recipe: harmony }, providers().list);
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: multiInputRecipe, selectedItem: item },
+      providers().list,
+    );
     const tree = fixture.componentInstance;
-    expect(tree.ingredientPreview()?.ingredients[0].total).toBe(100);
-    tree.target.set(25);
+    tree.setRootYield(1.55);
+    tree.setCraftCount(10);
+    configureProduction(tree, { 5301: '1000', 9001: '10', 9002: '20', 9003: '30' });
     fixture.detectChanges();
-    expect(tree.ingredientPreview()).toMatchObject({ operations: 3, produced: 30 });
-    expect(tree.ingredientPreview()?.ingredients[0].total).toBe(30);
-    expect(fixture.nativeElement.querySelector('.material-totals').textContent).toContain(
-      'Sobra de 5',
+
+    expect(tree.ingredientPreview()).toMatchObject({ operations: 10, produced: 15.5 });
+    expect(tree.ingredientPreview()?.ingredients.map((ingredient) => ingredient.total)).toEqual([
+      10, 20, 10,
+    ]);
+    expect(tree.plan()?.value?.tasks.find((task) => task.id === 'root')?.crafts).toBe(10);
+    expect(
+      tree
+        .plannerMaterials()
+        .sort((left, right) => left.itemId - right.itemId)
+        .map(({ itemId, required }) => [itemId, required]),
+    ).toEqual([
+      [9001, 10],
+      [9002, 20],
+      [9003, 10],
+    ]);
+    expect(fixture.nativeElement.querySelector('.material-totals h3').textContent).toContain(
+      '10 receitas',
     );
   });
   it('expands nested unique recipes and stops cycles without losing recipes on collapse', async () => {
@@ -698,7 +715,7 @@ describe('Interactive recipe tree', () => {
     const toggle = element.querySelector('.mode-toggle') as HTMLButtonElement;
     expect(toggle).not.toBeNull();
     tree.setRootYield(2);
-    tree.target.set(10);
+    tree.setCraftCount(5);
     tree.excludedLocations.set(['storage:test']);
     tree.selectedPath.set('root/0');
     const root = tree.root();
@@ -898,7 +915,7 @@ describe('Interactive recipe tree', () => {
       datasetVersion: 'dataset-v1',
     });
     tree.setRootYield(2.5);
-    tree.target.set(10);
+    tree.setCraftCount(4);
     fixture.detectChanges();
     expect(tree.plan()?.value?.rows.find((r) => r.itemId === 9001)?.required).toBe(8);
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
@@ -936,7 +953,7 @@ describe('Interactive recipe tree', () => {
       ),
       tree = fixture.componentInstance;
     tree.setRootYield(1);
-    tree.target.set(10);
+    tree.setCraftCount(10);
     fixture.detectChanges();
 
     dependencies.marketCache.resolveQuotesBatch.mockReturnValue(

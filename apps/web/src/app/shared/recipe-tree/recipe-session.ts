@@ -5,6 +5,7 @@ import type { RecipeNode } from './recipe-tree-model';
 export interface RecipeSession {
   root: RecipeNode;
   target: number;
+  craftCount?: number;
   view: 'graph' | 'tree' | 'list';
   excludedLocations: string[];
   methodTimes?: Record<string, number>;

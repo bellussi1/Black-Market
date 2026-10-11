@@ -112,7 +112,7 @@ export class RecipeTree {
     );
     const parsed = personalPlanSchema.safeParse({
       id: existing?.id ?? crypto.randomUUID(),
-      name: this.target().toLocaleString('pt-BR') + ' × ' + root.part.name,
+      name: this.craftCount().toLocaleString('pt-BR') + ' receitas de ' + root.part.name,
       region: state.region,
       createdAt: new Date().toISOString(),
       sourceItemId: root.part.itemId,
@@ -257,7 +257,7 @@ export class RecipeTree {
     const count = Math.max(1, Math.min(1_000_000, Math.floor(Number(value) || 1)));
     this.craftCount.set(count);
     const y = this.effectiveYield();
-    this.target.set(Math.max(1, Math.round(count * y)));
+    this.target.set(Math.max(1, Math.floor(count * y)));
   }
 
   setAcquisitionStrategy(strategy: AcquisitionStrategy) {
@@ -440,11 +440,9 @@ export class RecipeTree {
 
   readonly ingredientPreview = computed(() => {
     const root = this.root();
-    const target = this.target();
+    const operations = this.requestedOperations();
     const y = this.effectiveYield();
-    if (!root?.recipe || !Number.isSafeInteger(target) || target <= 0 || target > 1_000_000)
-      return null;
-    const operations = Math.ceil(target / y);
+    if (!root?.recipe || !Number.isSafeInteger(operations) || operations <= 0) return null;
     return {
       operations,
       produced: operations * y,
@@ -507,10 +505,16 @@ export class RecipeTree {
   readonly plan = computed(() => {
     const root = this.root();
     return root
-      ? planRecipeTree(this.withEstimatedYields(root), this.target(), this.store.data(), {
-          excludedLocations: this.excludedLocations(),
-          prices: this.livePrices(),
-        })
+      ? planRecipeTree(
+          this.withEstimatedYields(root),
+          Math.max(1, Math.floor(this.requestedOperations() * this.effectiveYield())),
+          this.store.data(),
+          {
+            rootCrafts: this.requestedOperations(),
+            excludedLocations: this.excludedLocations(),
+            prices: this.livePrices(),
+          },
+        )
       : null;
   });
   readonly parts = computed(() => {
@@ -1069,7 +1073,9 @@ export class RecipeTree {
       const session = this.sessions.get(this.sessionKey);
       if (session) {
         this.root.set(session.root);
-        this.target.set(session.target);
+        this.setCraftCount(
+          session.craftCount ?? Math.max(1, Math.ceil(session.target / this.effectiveYield())),
+        );
         this.view.set(session.view);
         this.excludedLocations.set(session.excludedLocations);
         this.methodTimes.set(new Map(Object.entries(session.methodTimes ?? {})));
@@ -1109,6 +1115,7 @@ export class RecipeTree {
     effect(() => {
       const root = this.root(),
         target = this.target(),
+        craftCount = this.craftCount(),
         view = this.view(),
         excludedLocations = this.excludedLocations(),
         methodTimes = this.methodTimes(),
@@ -1119,6 +1126,7 @@ export class RecipeTree {
         this.sessions.save(this.sessionKey, {
           root,
           target,
+          craftCount,
           view,
           excludedLocations,
           methodTimes: Object.fromEntries(methodTimes),
@@ -1161,6 +1169,7 @@ export class RecipeTree {
   setRootYield(value: number | null) {
     if (!this.canAdjustRootYield()) return;
     this.patch('root', (node) => ({ ...node, yield: value }));
+    this.setCraftCount(this.craftCount());
   }
   private withEstimatedYields(node: RecipeNode): RecipeNode {
     const recipe = node.recipe;
