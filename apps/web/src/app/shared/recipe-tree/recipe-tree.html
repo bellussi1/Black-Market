@@ -185,46 +185,6 @@
       </section>
     }
   </section>
-  <div class="tabs" aria-label="Visualização da produção" i18n-aria-label>
-    <button type="button" [attr.aria-pressed]="view() === 'graph'" (click)="view.set('graph')" i18n>
-      Árvore visual
-    </button>
-    <button type="button" [attr.aria-pressed]="view() === 'tree'" (click)="view.set('tree')" i18n>
-      Etapas expansíveis
-    </button>
-    <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')" i18n>
-      Materiais consolidados
-    </button>
-    <button
-      type="button"
-      class="product-details"
-      (click)="action({ path: selectedPath(), action: 'source' })"
-      i18n
-    >
-      Detalhes do item
-    </button>
-  </div>
-  <div class="tree-expansion-controls">
-    <button type="button" (click)="expandAll()" [disabled]="bulkRunning()" i18n>
-      Expandir todos
-    </button>
-    <button type="button" (click)="collapseAll()" i18n>Recolher todos</button>
-    @if (bulkRunning()) {
-      <button type="button" (click)="stopExpansion()" i18n>Interromper expansão</button>
-    }
-    @if (bulkMessage()) {
-      <p role="status">{{ bulkMessage() }}</p>
-    }
-  </div>
-  @if (view() === 'tree') {
-    <p class="help" i18n>
-      Clique na linha de um item para ver seus ingredientes. Use Ajustes para trocar ingredientes ou
-      mudar a produção.
-    </p>
-  }
-  @if (contextMessage()) {
-    <p role="status" class="notice">{{ contextMessage() }}</p>
-  }
   @if (plan(); as result) {
     @if (result.warnings.length) {
       <details class="notice calculation-notices" [open]="!result.value">
@@ -262,138 +222,6 @@
 
         @if (treeMarketMessage()) {
           <p class="notice economic-notice" role="status">{{ treeMarketMessage() }}</p>
-        }
-
-        <div class="acquisition-toolbar">
-          <div class="acquisition-presets">
-            <span class="control-label-text" i18n>Origem dos materiais</span>
-            <div class="segmented-control" role="group" aria-label="Origem dos materiais">
-              <button
-                type="button"
-                [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
-                (click)="setAcquisitionStrategy('buy_all')"
-                [disabled]="!recipeGraph()"
-                i18n
-              >
-                Comprar todos
-              </button>
-              <button
-                type="button"
-                [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
-                (click)="setAcquisitionStrategy('gather_all')"
-                [disabled]="!recipeGraph()"
-                i18n
-              >
-                Fazer / coletar tudo
-              </button>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="btn btn-optimizer"
-            [class.subtle]="acquisitionStrategy() !== 'optimized'"
-            [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
-            (click)="optimizeAcquisition()"
-            [disabled]="treeMarketLoading() || !recipeGraph()"
-            i18n
-          >
-            Melhor combinação por lucro/hora
-          </button>
-        </div>
-        @if (optimizationMessage()) {
-          <p class="notice economic-notice" role="status">{{ optimizationMessage() }}</p>
-        }
-
-        @if (materialDecisions().length > 0) {
-          <div class="material-decisions-panel" aria-label="Estratégia e decisões por material">
-            <div class="material-decisions-header">
-              <span class="control-label-text" i18n>Decisões por material</span>
-              <span class="material-decisions-hint" i18n>
-                Defina em 1 clique o que comprar no Mercado Central ou produzir/coletar por conta
-                própria:
-              </span>
-            </div>
-            <div class="material-decisions-grid">
-              @for (item of materialDecisions(); track item.itemId) {
-                <div
-                  class="material-decision-card"
-                  [class.decision-buy]="item.source === 'buy'"
-                  [class.decision-make]="item.source !== 'buy'"
-                  [class.decision-has-insight]="!!item.insight"
-                >
-                  <div class="decision-item-header">
-                    <app-item-icon [url]="item.iconUrl" [name]="item.name" />
-                    <div class="decision-item-details">
-                      <div class="decision-item-title">
-                        <strong>{{ item.name }}</strong>
-                        <span class="decision-qty-badge"
-                          >{{ item.required.toLocaleString('pt-BR') }} un</span
-                        >
-                      </div>
-                      <div class="decision-market-quote">
-                        @if (item.unitPrice !== null) {
-                          <span class="quote-price">{{ silver(item.unitPrice) }} prata/un</span>
-                          @if (item.stock !== null) {
-                            <span class="quote-stock">
-                              · Estoque: {{ item.stock.toLocaleString('pt-BR') }}</span
-                            >
-                          }
-                        } @else {
-                          <span class="quote-unavailable" i18n>Sem cotação no Mercado</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-
-                  @if (item.insight; as ins) {
-                    <div
-                      class="decision-insight-pill"
-                      [class.insight-craft]="ins.recommendation === 'craft'"
-                      [class.insight-buy]="ins.recommendation === 'buy'"
-                    >
-                      @if (ins.recommendation === 'craft') {
-                        <span class="insight-tag" i18n
-                          >★ Mais lucro produzir (-{{ silver(ins.savingsUnit ?? '0') }}/un)</span
-                        >
-                      } @else {
-                        <span class="insight-tag" i18n
-                          >★ Mais barato comprar (-{{ silver(ins.savingsUnit ?? '0') }}/un)</span
-                        >
-                      }
-                    </div>
-                  }
-
-                  <div class="decision-toggle-group">
-                    <button
-                      type="button"
-                      class="decision-btn"
-                      [class.active]="item.source === 'buy'"
-                      [attr.aria-pressed]="item.source === 'buy'"
-                      (click)="setMaterialSource(item.itemId, 'buy')"
-                      i18n
-                    >
-                      Comprar no Mercado
-                    </button>
-                    @if (item.canProduce) {
-                      <button
-                        type="button"
-                        class="decision-btn"
-                        [class.active]="item.source !== 'buy'"
-                        [attr.aria-pressed]="item.source !== 'buy'"
-                        (click)="setMaterialSource(item.itemId, makeChoice(item.itemId))"
-                      >
-                        {{
-                          item.sourceLabel === 'Coletar' || makeChoice(item.itemId) === 'gather'
-                            ? 'Coletar'
-                            : 'Fazer / Craftar'
-                        }}
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
         }
 
         @if (rootInsight(); as insight) {
@@ -595,439 +423,609 @@
         }
       </details>
     }
-    <div class="exploration-layout" [class.has-details]="detailsOpen()">
-      <div class="exploration-main">
-        @if (view() === 'list' && recipeGraph()) {
-          <section class="panel">
-            <h3 i18n>Materiais e origem escolhida</h3>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th i18n>Material</th>
-                    <th i18n>Fazer / coletar</th>
-                    <th i18n>Necessário</th>
-                    <th i18n>Estoque usado</th>
-                    <th i18n>Comprar</th>
-                    <th i18n>Produzir / coletar</th>
-                    <th i18n>Valor comprado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of plannerMaterials(); track row.itemId) {
-                    <tr>
-                      <td>
-                        <button
-                          type="button"
-                          class="text-button"
-                          (click)="action({ path: allocationPath(row.itemId), action: 'source' })"
-                        >
-                          <app-item-icon
-                            [url]="
-                              catalog.resolveIconUrl(parts().get(row.itemId) ?? { iconUrl: null })
-                            "
-                            [name]="productionMaterialName(row.itemId)"
-                          />
-                          {{ productionMaterialName(row.itemId) }}
-                        </button>
-                      </td>
-                      <td>
-                        <label class="material-source-checkbox">
-                          <input
-                            type="checkbox"
-                            [checked]="materialSource(row.itemId) !== 'buy'"
-                            (change)="toggleMaterialSource(row.itemId)"
-                            [attr.aria-label]="
-                              (materialSource(row.itemId) === 'buy'
-                                ? 'Marcar fazer ou coletar: '
-                                : 'Marcar comprar: ') + productionMaterialName(row.itemId)
-                            "
-                          />
-                          <span>{{ materialSourceLabel(row.itemId) }}</span>
-                        </label>
-                      </td>
-                      <td>{{ row.required.toLocaleString('pt-BR') }}</td>
-                      <td>{{ row.owned.toLocaleString('pt-BR') }}</td>
-                      <td>{{ row.bought.toLocaleString('pt-BR') }}</td>
-                      <td>{{ row.produced.toLocaleString('pt-BR') }}</td>
-                      <td>{{ materialPurchaseValue(row.itemId, row.bought) }}</td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="7" i18n>Nenhum material disponível no cenário atual.</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            <p class="help" i18n>
-              A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque próprio
-              é descontado e valorizado conforme as opções do cálculo.
-            </p>
-          </section>
-        } @else if (view() === 'list') {
-          <p i18n>Confira as estimativas e quantidades antes de gerar a lista consolidada.</p>
-        }
-        <div class="desktop-graph" [hidden]="view() !== 'graph'">
-          <app-recipe-graph
-            [root]="product"
-            [advanced]="advanced()"
-            [allocations]="result.value?.allocations ?? []"
-            [selected]="selectedPath()"
-            [origins]="origins()"
-            (action)="action($event)"
-            (locationSelected)="openLocation($event)"
-          />
-        </div>
-        @if (view() !== 'list') {
-          <div [class.mobile-tree]="view() === 'graph'">
-            <app-recipe-branch
-              [node]="product"
-              [allocations]="result.value?.allocations ?? []"
-              (action)="action($event)"
-            />
-          </div>
-        }
-      </div>
-      @if (detailsOpen()) {
-        <aside
-          class="context-panel panel"
-          aria-label="Detalhes do item selecionado"
-          i18n-aria-label
-        >
-          <div class="context-titlebar">
-            <strong i18n>Informações do item</strong>
-            <button type="button" class="context-close" (click)="detailsOpen.set(false)" i18n>
-              Fechar
+
+    <!-- WORKSPACE DE CRAFTING: Canvas 70% + Sidebar de Insumos 30% -->
+    <div class="crafting-workspace-grid">
+      <!-- Coluna da Esquerda: Canvas do Grafo e Visualização (70%) -->
+      <div class="workspace-canvas-column">
+        <div class="canvas-header-bar">
+          <div class="tabs" aria-label="Visualização da produção" i18n-aria-label>
+            <button
+              type="button"
+              [attr.aria-pressed]="view() === 'graph'"
+              (click)="view.set('graph')"
+              i18n
+            >
+              Árvore visual
+            </button>
+            <button
+              type="button"
+              [attr.aria-pressed]="view() === 'tree'"
+              (click)="view.set('tree')"
+              i18n
+            >
+              Etapas expansíveis
+            </button>
+            <button
+              type="button"
+              [attr.aria-pressed]="view() === 'list'"
+              (click)="view.set('list')"
+              i18n
+            >
+              Materiais consolidados
+            </button>
+            <button
+              type="button"
+              class="product-details"
+              (click)="action({ path: selectedPath(), action: 'source' })"
+              i18n
+            >
+              Detalhes do item
             </button>
           </div>
-          @if (contextLoading()) {
-            <p role="status" i18n>Consultando o item e suas fontes…</p>
-          }
-          @if (context(); as info) {
-            <div class="context-heading">
-              <app-item-icon
-                [url]="catalog.resolveIconUrl(info.item ?? info.node.part)"
-                [name]="info.node.part.name"
+
+          <div class="tree-expansion-controls">
+            <button type="button" (click)="expandAll()" [disabled]="bulkRunning()" i18n>
+              Expandir todos
+            </button>
+            <button type="button" (click)="collapseAll()" i18n>Recolher todos</button>
+            @if (bulkRunning()) {
+              <button type="button" (click)="stopExpansion()" i18n>Interromper expansão</button>
+            }
+            @if (bulkMessage()) {
+              <p role="status">{{ bulkMessage() }}</p>
+            }
+          </div>
+        </div>
+
+        @if (view() === 'tree') {
+          <p class="help" i18n>
+            Clique na linha de um item para ver seus ingredientes. Use Ajustes para trocar
+            ingredientes ou mudar a produção.
+          </p>
+        }
+        @if (contextMessage()) {
+          <p role="status" class="notice">{{ contextMessage() }}</p>
+        }
+
+        <div class="canvas-viewport-container">
+          <div class="desktop-graph" [hidden]="view() !== 'graph'">
+            <app-recipe-graph
+              [root]="product"
+              [advanced]="advanced()"
+              [allocations]="result.value?.allocations ?? []"
+              [selected]="selectedPath()"
+              [origins]="origins()"
+              (action)="action($event)"
+              (locationSelected)="openLocation($event)"
+            />
+          </div>
+
+          @if (view() !== 'list') {
+            <div [class.mobile-tree]="view() === 'graph'">
+              <app-recipe-branch
+                [node]="product"
+                [allocations]="result.value?.allocations ?? []"
+                (action)="action($event)"
               />
-              <div>
-                <small
-                  >#{{ info.node.part.itemId }} ·
-                  {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
-                >
-                <h3>{{ info.node.part.name }}</h3>
+            </div>
+          }
+
+          @if (view() === 'list' && recipeGraph()) {
+            <section class="panel">
+              <h3 i18n>Materiais e origem escolhida</h3>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th i18n>Material</th>
+                      <th i18n>Fazer / coletar</th>
+                      <th i18n>Necessário</th>
+                      <th i18n>Estoque usado</th>
+                      <th i18n>Comprar</th>
+                      <th i18n>Produzir / coletar</th>
+                      <th i18n>Valor comprado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of plannerMaterials(); track row.itemId) {
+                      <tr>
+                        <td>
+                          <button
+                            type="button"
+                            class="text-button"
+                            (click)="action({ path: allocationPath(row.itemId), action: 'source' })"
+                          >
+                            <app-item-icon
+                              [url]="
+                                catalog.resolveIconUrl(parts().get(row.itemId) ?? { iconUrl: null })
+                              "
+                              [name]="productionMaterialName(row.itemId)"
+                            />
+                            {{ productionMaterialName(row.itemId) }}
+                          </button>
+                        </td>
+                        <td>
+                          <label class="material-source-checkbox">
+                            <input
+                              type="checkbox"
+                              [checked]="materialSource(row.itemId) !== 'buy'"
+                              (change)="toggleMaterialSource(row.itemId)"
+                              [attr.aria-label]="
+                                (materialSource(row.itemId) === 'buy'
+                                  ? 'Marcar fazer ou coletar: '
+                                  : 'Marcar comprar: ') + productionMaterialName(row.itemId)
+                              "
+                            />
+                            <span>{{ materialSourceLabel(row.itemId) }}</span>
+                          </label>
+                        </td>
+                        <td>{{ row.required.toLocaleString('pt-BR') }}</td>
+                        <td>{{ row.owned.toLocaleString('pt-BR') }}</td>
+                        <td>{{ row.bought.toLocaleString('pt-BR') }}</td>
+                        <td>{{ row.produced.toLocaleString('pt-BR') }}</td>
+                        <td>{{ materialPurchaseValue(row.itemId, row.bought) }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" i18n>Nenhum material disponível no cenário atual.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <p class="help" i18n>
+                A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque
+                próprio é descontado e valorizado conforme as opções do cálculo.
+              </p>
+            </section>
+          } @else if (view() === 'list') {
+            <p i18n>Confira as estimativas e quantidades antes de gerar a lista consolidada.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Coluna da Direita: Sidebar de Insumos da Receita (30%) -->
+      <aside class="workspace-materials-sidebar panel" aria-label="Insumos e origens da receita">
+        <div class="sidebar-header">
+          <div class="sidebar-title-row">
+            <h3><span class="bdo-diamond">◇</span> Insumos & Origem</h3>
+            <span class="sidebar-item-count-badge">{{ materialDecisions().length }} itens</span>
+          </div>
+
+          <!-- Barra de Ações Rápidas -->
+          <div class="acquisition-toolbar">
+            <div class="segmented-control" role="group" aria-label="Origem dos materiais">
+              <button
+                type="button"
+                [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
+                (click)="setAcquisitionStrategy('buy_all')"
+                [disabled]="!recipeGraph()"
+                i18n
+              >
+                Comprar todos
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
+                (click)="setAcquisitionStrategy('gather_all')"
+                [disabled]="!recipeGraph()"
+                i18n
+              >
+                Fazer tudo
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-optimizer"
+              [class.subtle]="acquisitionStrategy() !== 'optimized'"
+              [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
+              (click)="optimizeAcquisition()"
+              [disabled]="treeMarketLoading() || !recipeGraph()"
+              i18n
+            >
+              Melhor combinação por lucro/hora
+            </button>
+          </div>
+          @if (optimizationMessage()) {
+            <p class="notice economic-notice" role="status">{{ optimizationMessage() }}</p>
+          }
+        </div>
+
+        <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
+        <div class="sidebar-materials-list">
+          @for (item of materialDecisions(); track item.itemId) {
+            <div
+              class="sidebar-material-row"
+              [class.is-crafting]="item.source !== 'buy'"
+              [class.is-buying]="item.source === 'buy'"
+              [class.is-selected]="selectedNode()?.part?.itemId === item.itemId"
+            >
+              <label
+                class="material-source-checkbox bdo-checkbox-container"
+                [title]="
+                  item.source === 'buy'
+                    ? 'Comprar no Mercado Central'
+                    : 'Fazer ou coletar por conta própria'
+                "
+              >
+                <input
+                  type="checkbox"
+                  [checked]="item.source !== 'buy'"
+                  (change)="
+                    setMaterialSource(
+                      item.itemId,
+                      item.source === 'buy' ? makeChoice(item.itemId) : 'buy'
+                    )
+                  "
+                  [attr.aria-label]="
+                    (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') +
+                    item.name
+                  "
+                />
+                <span class="bdo-checkbox-visual"></span>
+              </label>
+
+              <div
+                class="sidebar-item-slot"
+                (click)="action({ path: allocationPath(item.itemId), action: 'source' })"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'Ver detalhes de ' + item.name"
+              >
+                <app-item-icon [url]="item.iconUrl" [name]="item.name" />
+              </div>
+
+              <div
+                class="sidebar-item-info"
+                (click)="action({ path: allocationPath(item.itemId), action: 'source' })"
+                role="button"
+                tabindex="0"
+              >
+                <div class="sidebar-item-name-line">
+                  <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
+                  <span class="sidebar-item-qty"
+                    >{{ item.required.toLocaleString('pt-BR') }} un</span
+                  >
+                </div>
+                <div class="sidebar-item-price-line">
+                  @if (item.unitPrice !== null) {
+                    <span class="sidebar-price">{{ silver(item.unitPrice) }}</span>
+                    @if (item.stock !== null) {
+                      <span class="sidebar-stock"
+                        >· Est: {{ item.stock.toLocaleString('pt-BR') }}</span
+                      >
+                    }
+                  } @else {
+                    <span class="sidebar-unlisted" i18n>Sem cotação</span>
+                  }
+                  @if (item.insight; as ins) {
+                    <span
+                      class="sub-insight-chip"
+                      [class.chip-craft]="ins.recommendation === 'craft'"
+                      [class.chip-buy]="ins.recommendation === 'buy'"
+                    >
+                      {{ ins.recommendation === 'craft' ? 'Fazer' : 'Comprar' }}
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div
+                class="sidebar-source-badge"
+                [class.is-make]="item.source !== 'buy'"
+                [class.is-buy]="item.source === 'buy'"
+              >
+                {{
+                  item.source === 'buy'
+                    ? 'Comprar'
+                    : item.sourceLabel === 'Coletar' || makeChoice(item.itemId) === 'gather'
+                      ? 'Coletar'
+                      : 'Fazer'
+                }}
               </div>
             </div>
-            @if (info.incomplete) {
-              <p role="status" i18n>
-                Parte das informações não pôde ser carregada.
-                <button type="button" (click)="showContext(info.node)">Tentar novamente</button>
-              </p>
-            }
-            <div class="action-row">
-              <button type="button" (click)="graph()?.center(info.node.path)" i18n>
-                Centralizar</button
-              ><a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
-                >Explorar como produto</a
-              >
-            </div>
-            @if (advanced()) {
-              <h4 i18n>Materiais conhecidos no seu estoque</h4>
-              @if (selectedAllocation(); as allocation) {
-                <p>
-                  Necessário {{ allocation.required }} · estoque usado {{ allocation.fromStock }} ·
-                  sobras usadas {{ allocation.fromSurplus }} · faltam {{ allocation.missing }}.
+          } @empty {
+            <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
+          }
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="footer-cost-row">
+            <span i18n>Custo de materiais:</span>
+            <strong>{{
+              effectiveMaterialCost() !== null ? silver(effectiveMaterialCost()) : 'Sem dados'
+            }}</strong>
+          </div>
+          <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>
+            Salvar lista de compras
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <!-- BANDEJA HORIZONTAL INFERIOR DE DETALHES (100% de largura, abaixo do Canvas e Sidebar) -->
+    @if (detailsOpen()) {
+      <aside
+        class="context-panel panel bottom-details-tray"
+        aria-label="Detalhes do item selecionado"
+        i18n-aria-label
+      >
+        <div class="context-titlebar">
+          <div class="tray-title-text">
+            <span class="bdo-diamond">◇</span>
+            <strong i18n
+              >Informações do item:
+              {{ context()?.node?.part?.name ?? selectedNode()?.part?.name }}</strong
+            >
+          </div>
+          <button type="button" class="context-close" (click)="detailsOpen.set(false)" i18n>
+            Fechar
+          </button>
+        </div>
+
+        @if (contextLoading()) {
+          <p role="status" class="tray-loading" i18n>Consultando o item e suas fontes…</p>
+        }
+
+        @if (context(); as info) {
+          <div class="bottom-tray-grid">
+            <!-- Coluna 1: Identidade & Métodos -->
+            <div class="tray-column">
+              <h4 class="tray-col-title" i18n>Identidade & Métodos</h4>
+              <div class="context-heading">
+                <app-item-icon
+                  [url]="catalog.resolveIconUrl(info.item ?? info.node.part)"
+                  [name]="info.node.part.name"
+                />
+                <div>
+                  <small
+                    >#{{ info.node.part.itemId }} ·
+                    {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
+                  >
+                  <h3>{{ info.node.part.name }}</h3>
+                </div>
+              </div>
+              @if (info.incomplete) {
+                <p role="status" class="notice" i18n>
+                  Parte das informações não pôde ser carregada.
+                  <button type="button" (click)="showContext(info.node)">Tentar novamente</button>
                 </p>
               }
-              <ul>
-                @for (row of holdings(info.node.part.itemId); track row.id) {
-                  <li>{{ row.quantity }} · {{ row.location }} · {{ date(row.updatedAt) }}</li>
-                } @empty {
-                  <li i18n>Sem quantidade conhecida nos locais selecionados.</li>
-                }
-              </ul>
-            }
-            <h4 i18n>Como obter</h4>
-            @if (selectedNode(); as current) {
-              @if (current.path !== 'root' && (advanced() || current.part.quantity === null)) {
-                <label i18n
-                  >Unidades por operação da receita acima<input
-                    type="number"
-                    min="1"
-                    max="1000000"
-                    [ngModel]="current.part.quantity"
-                    (ngModelChange)="
-                      action({ path: current.path, action: 'quantity', value: $event })
-                    "
-                /></label>
-              }
-              <label i18n
-                >Método de produção<select
-                  [ngModel]="methodKey(current, info.recipes)"
-                  (ngModelChange)="action({ path: current.path, action: 'choose', value: $event })"
+              <div class="action-row">
+                <button type="button" (click)="graph()?.center(info.node.path)" i18n>
+                  Centralizar no mapa
+                </button>
+                <a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
+                  >Explorar como produto →</a
                 >
-                  <option value="">Escolha uma receita</option>
-                  @for (
-                    method of productionMethods(info.recipes);
-                    track method.key;
-                    let index = $index
-                  ) {
-                    <option [value]="method.key">
-                      {{ methodLabel(method, index) }}
-                    </option>
+              </div>
+
+              @if (selectedNode(); as current) {
+                @if (current.path !== 'root' && (advanced() || current.part.quantity === null)) {
+                  <label i18n
+                    >Unidades por operação<input
+                      type="number"
+                      min="1"
+                      max="1000000"
+                      [ngModel]="current.part.quantity"
+                      (ngModelChange)="
+                        action({ path: current.path, action: 'quantity', value: $event })
+                      "
+                  /></label>
+                }
+                <label i18n
+                  >Método de produção<select
+                    [ngModel]="methodKey(current, info.recipes)"
+                    (ngModelChange)="
+                      action({ path: current.path, action: 'choose', value: $event })
+                    "
+                  >
+                    <option value="">Escolha uma receita</option>
+                    @for (
+                      method of productionMethods(info.recipes);
+                      track method.key;
+                      let index = $index
+                    ) {
+                      <option [value]="method.key">
+                        {{ methodLabel(method, index) }}
+                      </option>
+                    }
+                  </select></label
+                >
+                @if (current.yield) {
+                  <label i18n
+                    >Rendimento por operação<input
+                      type="number"
+                      min=".001"
+                      max="1000000"
+                      step=".001"
+                      [ngModel]="current.yield"
+                      (ngModelChange)="
+                        action({ path: current.path, action: 'yield', value: $event })
+                      "
+                  /></label>
+                }
+              }
+
+              <details>
+                <summary i18n>Descrição informada pelo jogo</summary>
+                <p class="item-description">
+                  {{ plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
+                </p>
+              </details>
+            </div>
+
+            <!-- Coluna 2: Estoque do Jogador -->
+            <div class="tray-column">
+              <h4 class="tray-col-title" i18n>Estoque nos Armazéns</h4>
+              @if (selectedAllocation(); as allocation) {
+                <div class="alloc-box">
+                  <p>
+                    Necessário: <strong>{{ allocation.required }}</strong> · do estoque:
+                    <strong>{{ allocation.fromStock }}</strong> · faltam:
+                    <strong>{{ allocation.missing }}</strong>
+                  </p>
+                </div>
+              }
+              <div class="holdings-box">
+                <span class="sub-heading" i18n>Quantidades cadastradas:</span>
+                <ul class="tray-holdings-list">
+                  @for (row of holdings(info.node.part.itemId); track row.id) {
+                    <li>
+                      <span>{{ row.location }}</span>
+                      <strong>{{ row.quantity.toLocaleString('pt-BR') }} un</strong>
+                    </li>
+                  } @empty {
+                    <li class="empty-item" i18n>Sem quantidade nos armazéns selecionados.</li>
                   }
-                </select></label
+                </ul>
+              </div>
+            </div>
+
+            <!-- Coluna 3: Mercado Central & Preço Personalizado -->
+            <div class="tray-column">
+              <h4 class="tray-col-title" i18n>Mercado Central & Cotação</h4>
+              <div class="market-quote-card">
+                @if (marketQuotes().get(info.node.part.itemId); as market) {
+                  <div class="quote-stat-row">
+                    <span>Preço de venda:</span>
+                    <strong>{{ silver(market.price) }}</strong>
+                  </div>
+                  <div class="quote-stat-row">
+                    <span>Última venda:</span>
+                    <strong>{{ silver(market.lastSoldPrice) }}</strong>
+                  </div>
+                  <div class="quote-stat-row">
+                    <span>Estoque:</span>
+                    <strong>{{ market.stock.toLocaleString('pt-BR') }} un</strong>
+                  </div>
+                } @else {
+                  <p class="empty-item" i18n>Sem cotação ativa no Mercado Central.</p>
+                }
+                <p
+                  class="quote-freshness"
+                  [class.is-stale]="quoteFreshness(info.node.part.itemId).stale"
+                >
+                  {{ quoteFreshness(info.node.part.itemId).label }}
+                </p>
+              </div>
+
+              <!-- Campo de Preço Personalizado (para itens sem mercado ou simulações) -->
+              <div class="custom-price-field">
+                <label>
+                  <span i18n>Preço Personalizado (prata/un):</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="Ex: 50000"
+                    [ngModel]="customPrice(info.node.part.itemId)"
+                    (ngModelChange)="setCustomPrice(info.node.part.itemId, $event)"
+                  />
+                </label>
+                <small class="help-text" i18n
+                  >Defina o preço de compra em NPC ou valor estimado para recalcular as
+                  margens.</small
+                >
+              </div>
+
+              <a
+                routerLink="/market"
+                [queryParams]="{ item: info.node.part.itemId }"
+                class="market-external-link"
+                i18n
               >
-              @if (current.recipe; as method) {
-                <details class="context-ingredients">
-                  <summary i18n>{{ method.inputs.length }} materiais por operação</summary>
+                Abrir mercado completo →
+              </a>
+
+              @if (advanced()) {
+                <details>
+                  <summary i18n>Histórico observado</summary>
+                  <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
+                  <p role="status">{{ historyMessage() }}</p>
                   <ul>
-                    @for (part of method.inputs; track $index) {
-                      <li>{{ part.name }} · {{ part.quantity ?? 'quantidade a confirmar' }}</li>
+                    @for (point of history().slice(-20); track $index) {
+                      <li>
+                        {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
+                        {{ point.stock ?? '—' }}
+                      </li>
                     }
                   </ul>
                 </details>
               }
-              @if (current.recipe) {
-                @if (current.recipe.byproductOfItemId) {
-                  <p class="notice" i18n>
-                    Esta receita é um resultado secundário vinculado ao item #{{
-                      current.recipe.byproductOfItemId
-                    }}. O rendimento não entra nas contas sem uma quantidade validada.
-                  </p>
-                }
-                <label i18n
-                  >Rendimento por operação · cenário<input
-                    type="number"
-                    min=".001"
-                    max="1000000"
-                    step=".001"
-                    [ngModel]="current.yield"
-                    (ngModelChange)="
-                      action({ path: current.path, action: 'yield', value: $event })
-                    "
-                /></label>
-                @if (current.path !== 'root') {
+            </div>
+
+            <!-- Coluna 4: Obtenção no Mundo & Trabalhadores -->
+            <div class="tray-column">
+              <h4 class="tray-col-title" i18n>Obtenção no Mundo</h4>
+              <div class="origins-scroll-box">
+                <span class="sub-heading" i18n>Trabalhadores · bases conhecidas:</span>
+                @for (source of info.origins.nodes; track source.id) {
                   <button
                     type="button"
-                    (click)="action({ path: current.path, action: 'buy' })"
-                    i18n
+                    class="source-option"
+                    (click)="selectedLocation.set(source)"
                   >
-                    Comprar este material em vez de produzir
+                    <strong>{{ source.managerNodeName ?? source.name }}</strong
+                    ><small
+                      >{{ source.name }} ·
+                      {{ source.territoryName ?? 'Território não identificado' }} ·
+                      {{ source.contribution ?? '—' }} CP</small
+                    >
                   </button>
-                }
-                @if (current.recipe.outputs.length > 1) {
-                  <h4 i18n>Outros resultados desta receita</h4>
-                  <ul>
-                    @for (out of current.recipe.outputs; track $index) {
-                      @if (out.itemId !== current.part.itemId) {
-                        <li>{{ out.name }} · {{ out.quantity ?? 'rendimento desconhecido' }}</li>
-                      }
-                    }
-                  </ul>
-                  <p class="help" i18n>
-                    Não abatemos custos nem garantimos subprodutos sem probabilidades validadas.
-                  </p>
-                }
-              }
-            }
-            @if (!info.recipes.length) {
-              <p i18n>
-                Sem receita de produção vinculada. Isso não significa que o item só possa ser
-                comprado.
-              </p>
-            }
-            <details open>
-              <summary i18n>Descrição e obtenção informadas pelo jogo</summary>
-              <p class="item-description">
-                {{ plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
-              </p>
-              <p class="help" i18n>
-                Confira requisitos e materiais descritos. Relações divergentes não são corrigidas
-                automaticamente.
-              </p>
-            </details>
-            <h4 i18n>Trabalhadores · bases conhecidas</h4>
-            @for (source of info.origins.nodes; track source.id) {
-              <button type="button" class="source-option" (click)="selectedLocation.set(source)">
-                <strong>{{ source.managerNodeName ?? source.name }}</strong
-                ><small
-                  >{{ source.name }} · {{ source.territoryName ?? 'Território não identificado' }} ·
-                  {{ source.contribution ?? '—' }} CP</small
-                >
-              </button>
-            } @empty {
-              <p i18n>Não há produção de trabalhadores vinculada neste catálogo.</p>
-            }
-            @if (info.origins.truncated) {
-              <p i18n>
-                Exibindo até 50 locais por método; a lista possui mais relações no catálogo.
-              </p>
-            }
-            <h4 i18n>Combate convencional · spots de grind</h4>
-            @for (source of info.origins.spots ?? []; track source.id) {
-              <button type="button" class="source-option" (click)="selectedLocation.set(source)">
-                <strong>{{ source.name }}</strong
-                ><small
-                  >{{ source.territoryName ?? 'Território não identificado' }} · drops
-                  registrados</small
-                >
-              </button>
-            } @empty {
-              <p i18n>Nenhum spot com drop deste item vinculado no catálogo.</p>
-            }
-            @if (points().length) {
-              <h4 i18n>Localizações conhecidas</h4>
-              <svg
-                class="source-map"
-                viewBox="0 0 360 200"
-                role="img"
-                aria-label="Esquema das coordenadas de locais de obtenção"
-                i18n-aria-label
-              >
-                @for (point of points(); track point.node.id) {
-                  <circle [attr.cx]="point.x" [attr.cy]="point.y" r="5">
-                    <title>{{ point.node.managerNodeName ?? point.node.name }}</title>
-                  </circle>
-                  <text [attr.x]="point.x + 8" [attr.y]="point.y + 4">{{ point.index + 1 }}</text>
-                }
-              </svg>
-              <p class="help" i18n>
-                Esquema relativo das coordenadas do jogo. Não é um mapa topográfico. Selecione uma
-                localização acima para ver os detalhes.
-              </p>
-            }
-            @if (selectedLocation(); as location) {
-              <section class="location-detail">
-                <h4>
-                  {{
-                    location.activity === 'grinding'
-                      ? location.name
-                      : (location.managerNodeName ?? location.name)
-                  }}
-                </h4>
-                <p>
-                  {{ location.territoryName ?? 'Território não identificado' }} ·
-                  {{ location.name }}
-                </p>
-                @if (location.activity === 'grinding') {
-                  <p i18n>
-                    Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas.
-                  </p>
-                  <p>
-                    AP de equipamento: {{ location.sheetAP ?? 'não informado' }} · DP de
-                    equipamento:
-                    {{ location.sheetDP ?? 'não informado' }}
-                  </p>
-                  <p>
-                    Monstros registrados no spot:
-                    {{ location.monsters?.join(', ') || 'não informados' }}
-                  </p>
-                  <p class="help" i18n>
-                    O item está vinculado ao loot do spot; isso não confirma qual criatura o
-                    fornece. Probabilidades e rendimento não foram informados.
-                  </p>
-                } @else {
-                  <p>CP da produção: {{ location.contribution ?? 'não informado' }}</p>
-                }
-                <p>Material vinculado: {{ info.node.part.name }}.</p>
-                <p>
-                  {{
-                    location.activity === 'grinding'
-                      ? 'Coordenadas da base vinculada'
-                      : 'Coordenadas da produção'
-                  }}: {{ location.position?.join(', ') ?? 'não disponíveis' }}
-                </p>
-                @if (selectedNode()?.recipe) {
-                  <p class="help" i18n>
-                    Selecione obter pronto em vez de produzir para escolher este local como origem.
-                  </p>
-                } @else {
-                  <button type="button" (click)="chooseSource(location)" i18n>
-                    Usar este local como origem
-                  </button>
-                }
-                <p>
-                  {{ location.links?.length ?? 0 }} conexões registradas ·
-                  {{ location.products?.length ?? 0 }} produtos vinculados.
-                </p>
-                @if (location.activity !== 'grinding') {
-                  <p class="help" i18n>
-                    Conexões, alojamento e trabalho podem exigir CP adicional. O custo acima não é o
-                    investimento total do império.
-                  </p>
-                }
-              </section>
-            }
-            <p class="help" i18n>
-              Locais de coleta, caça, pesca, monstros e vendedores só são exibidos quando vinculados
-              por dados verificáveis. A descrição pode informar uma atividade sem fornecer
-              localização estruturada.
-            </p>
-            @if (advanced()) {
-              @if (info.origins.dataset; as data) {
-                <p class="provenance">
-                  Fonte: extração do jogo · {{ data.region.toUpperCase() }} / {{ data.locale
-                  }}<br />{{ data.version }} · {{ date(info.origins.updatedAt) }}
-                </p>
-              }
-            }
-            <h4 i18n>Mercado do item</h4>
-            @if (quote(info.node.part.itemId); as saved) {
-              <p>
-                Preço salvo: {{ silver(saved.price) }} · {{ date(saved.observedAt) }} ·
-                {{ saved.source }}
-              </p>
-            }
-            @if (marketQuotes().get(info.node.part.itemId); as market) {
-              <p>
-                Preço de venda {{ silver(market.price) }} · estoque {{ market.stock }} · última
-                venda
-                {{ silver(market.lastSoldPrice) }}
-              </p>
-            }
-            <p
-              class="quote-freshness"
-              [class.is-stale]="quoteFreshness(info.node.part.itemId).stale"
-              role="status"
-            >
-              {{ quoteFreshness(info.node.part.itemId).label }}
-            </p>
-            @if (advanced()) {
-              <details>
-                <summary i18n>Histórico observado</summary>
-                <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
-                <p role="status">{{ historyMessage() }}</p>
-                <ul>
-                  @for (point of history().slice(-20); track $index) {
-                    <li>
-                      {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
-                      {{ point.stock ?? '—' }}
-                    </li>
-                  }
-                </ul>
-              </details>
-            }
-            <a routerLink="/market" [queryParams]="{ item: info.node.part.itemId }" i18n
-              >Abrir mercado completo</a
-            >
-            <details>
-              <summary i18n>Receitas que usam este material</summary>
-              <ul>
-                @for (use of info.uses; track use.key) {
-                  <li>
-                    <a [routerLink]="['/recipes', use.key]">{{
-                      use.outputs[0]?.name ?? typeLabel(use.type)
-                    }}</a>
-                  </li>
                 } @empty {
-                  <li i18n>Nenhum uso vinculado na extração.</li>
+                  <p class="empty-item" i18n>Sem produção de trabalhadores vinculada.</p>
                 }
-              </ul>
-            </details>
-          }
-        </aside>
-      }
-    </div>
+
+                @if (info.origins.spots?.length) {
+                  <span class="sub-heading" i18n>Combate convencional · spots de grind:</span>
+                  @for (source of info.origins.spots; track source.id) {
+                    <button
+                      type="button"
+                      class="source-option"
+                      (click)="selectedLocation.set(source)"
+                    >
+                      <strong>{{ source.name }}</strong
+                      ><small
+                        >{{ source.territoryName ?? 'Território não identificado' }} · drops</small
+                      >
+                    </button>
+                  }
+                }
+              </div>
+
+              @if (selectedLocation(); as location) {
+                <section class="location-detail">
+                  <h4>
+                    {{
+                      location.activity === 'grinding'
+                        ? location.name
+                        : (location.managerNodeName ?? location.name)
+                    }}
+                  </h4>
+                  <p>
+                    {{ location.territoryName ?? 'Território não identificado' }} ·
+                    {{ location.name }}
+                  </p>
+                  @if (location.activity === 'grinding') {
+                    <p i18n>
+                      Atividade: combate convencional. Não é Hunting nem coleta de criaturas
+                      abatidas.
+                    </p>
+                    <p>
+                      AP: {{ location.sheetAP ?? 'não informado' }} · DP:
+                      {{ location.sheetDP ?? 'não informado' }}
+                    </p>
+                  } @else {
+                    <p>CP: {{ location.contribution ?? 'não informado' }}</p>
+                  }
+                  <p>Material: {{ info.node.part.name }}.</p>
+                </section>
+              }
+            </div>
+          </div>
+        }
+      </aside>
+    }
   }
 }

@@ -24,6 +24,18 @@ function positiveNumber(value: string | number | null | undefined): number | und
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
+/** Standard BDO craft durations per method (in seconds), aligned with game equipment & buffs. */
+export function defaultRecipeMethodSeconds(type: string): number {
+  const norm = (type || '').toLowerCase();
+  if (norm.includes('cooking') || norm.includes('culinaria')) return 1.2;
+  if (norm.includes('alchemy') || norm.includes('alquimia')) {
+    if (norm.includes('simple') || norm.includes('simples')) return 6.0;
+    return 1.2;
+  }
+  if (norm.includes('gathering') || norm.includes('coleta')) return 4.0;
+  return 6.0;
+}
+
 function outputQuantity(recipe: CatalogRecipe, itemId: number): number | null {
   const part = recipe.outputs.find((output) => output.itemId === itemId);
   return positiveNumber(part?.quantity) ?? fixedRecipeYield(recipe, itemId);

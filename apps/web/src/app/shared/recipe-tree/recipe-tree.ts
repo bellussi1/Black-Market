@@ -58,7 +58,10 @@ import { recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
-import { buildRecipeProductionInput } from './recipe-production-adapter';
+import {
+  buildRecipeProductionInput,
+  defaultRecipeMethodSeconds,
+} from './recipe-production-adapter';
 import {
   type RecipeProductionGraph,
   resolveRecipeProductionGraph,
@@ -169,6 +172,7 @@ export class RecipeTree {
   readonly acquisitionStrategy = signal<AcquisitionStrategy>('buy_all');
   readonly optimizationMessage = signal('');
   readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
+  readonly customItemPrices = signal(new Map<number, string>());
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
   readonly quoteObservedAt = signal(new Map<number, string>());
   readonly methodTimes = signal(new Map<string, number>());
@@ -190,6 +194,7 @@ export class RecipeTree {
   readonly recipeGraph = signal<RecipeProductionGraph | null>(null);
   private recipeGraphIdentity = '';
   private quoteRevision = 0;
+  private lastConsultTime = 0;
 
   readonly userMasteryForCurrentRecipe = computed(() => {
     const root = this.root();
@@ -294,6 +299,30 @@ export class RecipeTree {
 
   materialSource(itemId: number): ProductionChoice {
     return this.customMaterialSource().get(itemId) ?? 'buy';
+  }
+
+  setCustomPrice(itemId: number, price: string | number | null): void {
+    const str = price === null || price === '' ? null : String(price).replace(/\D/g, '');
+    const updated = new Map(this.customItemPrices());
+    if (str && /^\d+$/.test(str) && BigInt(str) > 0n) {
+      updated.set(itemId, str);
+      const live = new Map(this.livePrices());
+      live.set(itemId, str);
+      this.livePrices.set(live);
+      const observed = new Map(this.quoteObservedAt());
+      observed.set(itemId, new Date().toISOString());
+      this.quoteObservedAt.set(observed);
+    } else {
+      updated.delete(itemId);
+      const live = new Map(this.livePrices());
+      live.delete(itemId);
+      this.livePrices.set(live);
+    }
+    this.customItemPrices.set(updated);
+  }
+
+  customPrice(itemId: number): string {
+    return this.customItemPrices().get(itemId) ?? '';
   }
 
   readonly materialDecisions = computed(() => {
@@ -693,7 +722,22 @@ export class RecipeTree {
   });
 
   readonly effectiveMaterialCost = computed(() => {
-    return this.currentProductionPlan()?.economicCost ?? null;
+    const planCost = this.currentProductionPlan()?.economicCost;
+    if (planCost !== null && planCost !== undefined) return planCost;
+    const decisions = this.materialDecisions();
+    let totalCost = 0n;
+    let hasKnown = false;
+    for (const item of decisions) {
+      if (item.source === 'buy' || !item.canProduce) {
+        const p = item.unitPrice ?? this.price(item.itemId);
+        if (p && /^\d+$/.test(p)) {
+          const qty = BigInt(Math.max(0, item.bought || item.required));
+          totalCost += BigInt(p) * qty;
+          hasKnown = true;
+        }
+      }
+    }
+    return hasKnown ? String(totalCost) : null;
   });
 
   readonly productPrice = computed(() => {
@@ -706,11 +750,30 @@ export class RecipeTree {
   });
 
   readonly netRevenue = computed(() => {
-    return this.currentProductionPlan()?.netRevenue ?? null;
+    const fromPlan = this.currentProductionPlan()?.netRevenue;
+    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
+    const price = this.productPrice();
+    const ops = this.operationsCount();
+    const yieldVal = this.effectiveYield();
+    if (!price || !/^\d+$/.test(price) || ops <= 0) return null;
+    try {
+      const gross = BigInt(price) * BigInt(Math.floor(ops * yieldVal));
+      const taxRetention = 8450n;
+      return String((gross * taxRetention) / 10000n);
+    } catch {
+      return null;
+    }
   });
 
   readonly profit = computed(() => {
-    return this.currentProductionPlan()?.profit ?? null;
+    const fromPlan = this.currentProductionPlan()?.profit;
+    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
+    const rev = this.netRevenue();
+    const cost = this.effectiveMaterialCost();
+    if (rev !== null && cost !== null && /^\d+$/.test(rev) && /^\d+$/.test(cost)) {
+      return String(BigInt(rev) - BigInt(cost));
+    }
+    return null;
   });
 
   readonly isPositiveProfit = computed(() => {
@@ -741,6 +804,24 @@ export class RecipeTree {
     return this.currentProductionPlan()?.seconds ?? null;
   });
 
+  applyDefaultMethodTimes(): void {
+    const graph = this.recipeGraph();
+    const rootRecipe = this.root()?.recipe;
+    const recipes = graph
+      ? [graph.rootRecipe, ...graph.producerRecipes]
+      : rootRecipe
+        ? [rootRecipe]
+        : [];
+    if (!recipes.length) return;
+    const updated = new Map(this.methodTimes());
+    for (const r of recipes) {
+      if (!updated.has(r.type)) {
+        updated.set(r.type, defaultRecipeMethodSeconds(r.type));
+      }
+    }
+    this.methodTimes.set(updated);
+  }
+
   readonly formattedCraftTime = computed(() => {
     const seconds = this.totalCraftTimeSeconds();
     if (seconds === null || !Number.isFinite(seconds) || seconds <= 0) return '—';
@@ -756,7 +837,18 @@ export class RecipeTree {
   });
 
   readonly profitPerHour = computed(() => {
-    return this.currentProductionPlan()?.profitPerHour ?? null;
+    const fromPlan = this.currentProductionPlan()?.profitPerHour;
+    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
+    const p = this.profit();
+    const time = this.totalCraftTimeSeconds();
+    if (p === null || time === null || time <= 0) return null;
+    try {
+      const pBig = BigInt(p);
+      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
+      return String((pBig * 3_600_000n) / timeMs);
+    } catch {
+      return null;
+    }
   });
 
   readonly revenuePerHour = computed(() => {
@@ -933,6 +1025,9 @@ export class RecipeTree {
   }
 
   consultAllTreePrices() {
+    const now = Date.now();
+    if (now - this.lastConsultTime < 500) return;
+    this.lastConsultTime = now;
     if (this.treeMarketLoading() && this.quoteSubscription && !this.quoteSubscription.closed)
       return;
     const region = this.region();
@@ -1109,6 +1204,7 @@ export class RecipeTree {
         this.optimizationMessage.set('');
         this.origins.set(new Map());
         this.selectionIdentity = identity;
+        this.lastConsultTime = 0;
       }
       const nextSessionKey = identity + '/' + (recipe?.key ?? 'external');
       if (nextSessionKey !== this.sessionKey) {

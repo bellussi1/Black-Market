@@ -250,7 +250,9 @@ export class RecipeGraph {
   }
   activate(node: RecipeNode) {
     this.emit(node.path, 'source');
-    if (!node.loading) this.emit(node.path, node.expanded ? 'collapse' : 'expand');
+    if (!node.loading && !node.expanded) {
+      this.emit(node.path, 'expand');
+    }
   }
   private zoomAt(next: number, x: number, y: number) {
     const zoom = Math.max(0.005, Math.min(1.75, next));
