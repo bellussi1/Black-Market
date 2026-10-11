@@ -9,18 +9,23 @@
       </ng-container>
     </p>
   </header>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2 i18n>Contexto da atividade</h2>
     <div class="form-grid">
       <label class="field"
         ><span i18n>Uso do tempo</span
-        ><select [ngModel]="form().mode ?? 'active'" (ngModelChange)="patch({ mode: $event })">
+        ><select
+          appBdoSelect
+          [ngModel]="form().mode ?? 'active'"
+          (ngModelChange)="patch({ mode: $event })"
+        >
           <option value="active" i18n>Ativo</option>
           <option value="afk" i18n>AFK</option>
         </select></label
       ><label class="field"
         ><span i18n>Profissão desta sessão</span
         ><select
+          appBdoSelect
           [ngModel]="form().skill ?? ''"
           (ngModelChange)="patch({ skill: $event || undefined })"
         >
@@ -32,6 +37,7 @@
       ><label class="field"
         ><span i18n>Maestria usada na sessão</span
         ><input
+          hlmInput
           type="number"
           min="0"
           max="5000"
@@ -46,6 +52,8 @@
   </section>
   <div class="tabs">
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'sessions'"
       [attr.aria-pressed]="tab() === 'sessions'"
@@ -53,6 +61,8 @@
     >
       <ng-container i18n>Sessões e lucro</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'mastery'"
       [attr.aria-pressed]="tab() === 'mastery'"
@@ -60,6 +70,8 @@
     >
       <ng-container i18n>Retorno de mastery</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'training'"
       [attr.aria-pressed]="tab() === 'training'"
@@ -72,18 +84,20 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Atividade / rota</ng-container
             ><input
+              hlmInput
               maxlength="140"
               [ngModel]="form().name"
               (ngModelChange)="patch({ name: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Duração (minutos)</ng-container
             ><input
+              hlmInput
               type="number"
               min="0.001"
               step="0.001"
@@ -92,6 +106,7 @@
           ><label class="field"
             ><ng-container i18n>Energia consumida</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               [ngModel]="form().energy"
@@ -99,12 +114,14 @@
           ><label class="field"
             ><ng-container i18n>Prata direta / venda em NPC</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().directIncome"
               (ngModelChange)="patch({ directIncome: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Despesas da sessão</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().cost"
               (ngModelChange)="patch({ cost: $event })"
@@ -123,6 +140,7 @@
               <label class="field"
                 ><ng-container i18n>Quantidade</ng-container
                 ><input
+                  hlmInput
                   type="number"
                   min="1"
                   [ngModel]="item.quantity"
@@ -130,24 +148,27 @@
               ><label class="field"
                 ><ng-container i18n>Preço unitário</ng-container
                 ><input
+                  hlmInput
                   inputmode="numeric"
                   [ngModel]="item.price"
                   (ngModelChange)="row(k, { price: $event })"
               /></label>
             </div>
             <div class="action-row">
-              <button type="button" class="btn danger" (click)="remove(k)">
+              <button hlmBtn variant="outline" type="button" class="btn danger" (click)="remove(k)">
                 <ng-container i18n>Remover item</ng-container>
               </button>
             </div>
           </div>
         }
         <div class="action-row">
-          <button type="button" class="btn subtle" (click)="add()">
+          <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="add()">
             <ng-container i18n>Adicionar item</ng-container>
           </button>
         </div>
         <app-tax-options [value]="form()" (changed)="patch($event)" /><button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn"
           [disabled]="!result().value"
@@ -196,7 +217,7 @@
         </p>
       </section>
     </div>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>
         <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
       </h2>
@@ -235,10 +256,22 @@
                   </td>
                   <td>{{ silver(sessionProfit(session.input)) }}</td>
                   <td>
-                    <button type="button" class="btn subtle" (click)="useSession(session.id)">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      class="btn subtle"
+                      (click)="useSession(session.id)"
+                    >
                       <ng-container i18n>Usar cenário </ng-container>
                     </button>
-                    <button type="button" class="btn danger" (click)="removeSession(session.id)">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      class="btn danger"
+                      (click)="removeSession(session.id)"
+                    >
                       <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
@@ -257,30 +290,34 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Investimento e ganho observado</ng-container></h2>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Custo líquido do upgrade</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="investment().upgradeCost"
               (ngModelChange)="patchInvestment({ upgradeCost: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Lucro atual por hora</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="investment().currentHourly"
               (ngModelChange)="patchInvestment({ currentHourly: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Lucro previsto / medido por hora</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="investment().nextHourly"
               (ngModelChange)="patchInvestment({ nextHourly: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Horas de atividade por dia</ng-container
             ><input
+              hlmInput
               type="number"
               min="0.001"
               max="24"
@@ -328,12 +365,13 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Estimador de XP</ng-container></h2>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>XP que falta para o alvo</ng-container
             ><input
+              hlmInput
               type="number"
               min="1"
               [ngModel]="training().remainingXp"
@@ -341,6 +379,7 @@
           ><label class="field"
             ><ng-container i18n>XP por hora medido</ng-container
             ><input
+              hlmInput
               type="number"
               min="0.001"
               step="0.001"
@@ -349,6 +388,7 @@
           ><label class="field"
             ><ng-container i18n>Duração de cada sessão (minutos)</ng-container
             ><input
+              hlmInput
               type="number"
               min="1"
               max="1440"
