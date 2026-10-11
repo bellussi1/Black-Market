@@ -1,4 +1,8 @@
 name: black-market
+x-local-build: &local-build
+  context: .
+  args:
+    WEB_BUILD_CONFIGURATION: development
 services:
   postgres:
     image: postgres:17-alpine
@@ -20,7 +24,7 @@ services:
 
   migrate:
     image: black-market-migrate:local
-    build: .
+    build: *local-build
     command: ['pnpm', 'db:migrate']
     environment:
       DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
@@ -31,7 +35,7 @@ services:
 
   api:
     image: black-market-api:local
-    build: .
+    build: *local-build
     environment:
       NODE_ENV: development
       ANALYTICS_ENABLED: ${ANALYTICS_ENABLED:-false}
@@ -72,7 +76,7 @@ services:
   web:
     profiles: ['web']
     image: black-market-api:local
-    build: .
+    build: *local-build
     command: ['pnpm', '--filter', '@bdo/web', 'start']
     environment:
       API_BASE_URL: http://api:3000
@@ -91,7 +95,7 @@ services:
   import:
     profiles: ['data']
     image: black-market-api:local
-    build: .
+    build: *local-build
     command: ['node', 'apps/api/dist/catalog/import-game-data.js']
     environment:
       NODE_ENV: development
