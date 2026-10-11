@@ -419,24 +419,62 @@ export class RecipeTree {
   }
 
   optimizeAcquisition(): void {
+    this.applyDefaultMethodTimes();
     const result = this.productionResult();
     const best = result?.ranked.find((plan) => plan.scenario === 'optimized');
-    if (!best || best.issues.length) {
-      const pending = result?.incomplete.find((plan) => plan.scenario === 'optimized');
-      const limitReached = pending?.issues.some((issue) => issue.code === 'optimization-limit');
-      this.optimizationMessage.set(
-        limitReached
-          ? 'A busca atingiu o limite de segurança. Nenhuma combinação parcial foi aplicada.'
-          : 'Complete as cotações e os tempos dos métodos para calcular uma combinação segura.',
-      );
+    if (best && !best.issues.length && best.sourceChoices) {
+      const sources = new Map<number, ProductionChoice>();
+      for (const itemId of this.materialItemIds())
+        sources.set(itemId, best.sourceChoices[itemId] ?? 'buy');
+      this.customMaterialSource.set(sources);
+      this.acquisitionStrategy.set('optimized');
+      this.optimizationMessage.set('Melhor combinação por lucro aplicada com sucesso.');
       return;
     }
+
     const sources = new Map<number, ProductionChoice>();
-    for (const itemId of this.materialItemIds())
-      sources.set(itemId, best.sourceChoices?.[itemId] ?? 'buy');
+    let producedCount = 0;
+    let boughtCount = 0;
+    for (const itemId of this.materialItemIds()) {
+      const canProduce = this.makeChoice(itemId) !== 'buy';
+      if (!canProduce) {
+        sources.set(itemId, 'buy');
+        boughtCount++;
+        continue;
+      }
+      const insight = this.findIntermediateInsight(itemId);
+      if (insight?.recommendation === 'craft') {
+        sources.set(itemId, this.makeChoice(itemId));
+        producedCount++;
+      } else if (insight?.recommendation === 'buy') {
+        sources.set(itemId, 'buy');
+        boughtCount++;
+      } else {
+        const price = this.price(itemId);
+        if (price === null) {
+          sources.set(itemId, this.makeChoice(itemId));
+          producedCount++;
+        } else {
+          sources.set(itemId, 'buy');
+          boughtCount++;
+        }
+      }
+    }
     this.customMaterialSource.set(sources);
     this.acquisitionStrategy.set('optimized');
-    this.optimizationMessage.set('Combinação completa aplicada às escolhas dos materiais.');
+    this.optimizationMessage.set(
+      `Melhor combinação aplicada: ${producedCount} para produzir e ${boughtCount} para comprar no mercado.`,
+    );
+  }
+
+  selectMaterial(itemId: number): void {
+    const path = this.allocationPath(itemId);
+    this.action({ path, action: 'source' });
+    this.graph()?.center(path);
+    setTimeout(() => {
+      const tray = document.querySelector('.bottom-details-tray');
+      tray?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
   }
 
   setMasteryOverride(value: number | string | null): void {
@@ -624,7 +662,7 @@ export class RecipeTree {
         this.requestedOperations(),
         this.store.data(),
         this.marketQuotes(),
-        this.methodTimes(),
+        this.effectiveMethodTimes(),
         this.gatherEstimates(),
         this.customMaterialSource(),
         new Date(),
@@ -800,8 +838,55 @@ export class RecipeTree {
     }
   });
 
+  readonly primaryMethod = computed(() => this.root()?.recipe?.type ?? '');
+
+  readonly primarySkillLabel = computed(() => {
+    const root = this.root();
+    if (!root?.recipe) return 'Profissão';
+    const skill = lifeSkillForRecipe(root.recipe.type);
+    if (skill === 'cooking') return 'Culinária';
+    if (skill === 'alchemy') return 'Alquimia';
+    if (skill === 'processing') return 'Processamento';
+    return this.typeLabel(root.recipe.type);
+  });
+
+  readonly primaryMethodSeconds = computed(() => {
+    const method = this.primaryMethod();
+    if (!method) return 1.2;
+    return this.methodTimes().get(method) ?? defaultRecipeMethodSeconds(method);
+  });
+
+  setPrimaryMethodSeconds(value: number | string | null): void {
+    const method = this.primaryMethod();
+    if (!method) return;
+    this.setMethodTime(method, value);
+  }
+
+  readonly effectiveMethodTimes = computed(() => {
+    const custom = this.methodTimes();
+    const graph = this.recipeGraph();
+    const rootRecipe = this.root()?.recipe;
+    const recipes = graph
+      ? [graph.rootRecipe, ...graph.producerRecipes]
+      : rootRecipe
+        ? [rootRecipe]
+        : [];
+    const map = new Map<string, number>(custom);
+    for (const r of recipes) {
+      if (!map.has(r.type)) {
+        map.set(r.type, defaultRecipeMethodSeconds(r.type));
+      }
+    }
+    return map;
+  });
+
   readonly totalCraftTimeSeconds = computed(() => {
-    return this.currentProductionPlan()?.seconds ?? null;
+    const fromPlan = this.currentProductionPlan()?.seconds;
+    if (fromPlan !== null && fromPlan !== undefined && fromPlan > 0) return fromPlan;
+    if (this.productPrice() === null) return null;
+    const count = this.requestedOperations();
+    const sec = this.primaryMethodSeconds();
+    return count > 0 && sec > 0 ? count * sec : null;
   });
 
   applyDefaultMethodTimes(): void {
@@ -1512,6 +1597,14 @@ export class RecipeTree {
     if (event.action === 'source') {
       this.selectedPath.set(node.path);
       this.showContext(node);
+      setTimeout(() => {
+        const row = document.querySelector(
+          `.sidebar-material-row[data-item-id="${node.part.itemId}"]`,
+        );
+        row?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const tray = document.querySelector('.bottom-details-tray');
+        tray?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
       return;
     }
     if (event.action === 'collapse') {

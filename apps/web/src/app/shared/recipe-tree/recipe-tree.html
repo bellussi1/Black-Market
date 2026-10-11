@@ -28,80 +28,146 @@
     <div class="production-configuration">
       <div class="production-method"><ng-content select="[recipe-method]" /></div>
       <div class="scenario-settings">
-        <div class="craft-count-card">
-          <label class="craft-count-control">
-            <span class="control-label-text" i18n>Quantia de receitas</span>
-            <div class="craft-input-box">
-              <input
-                type="number"
-                min="1"
-                max="1000000"
-                class="craft-count-input"
-                [ngModel]="craftCount()"
-                (ngModelChange)="setCraftCount($event)"
-              />
-              <span class="craft-count-unit" i18n>receitas</span>
+        <div class="craft-count-card craft-parameters-card">
+          <div class="craft-parameters-grid">
+            <!-- Coluna 1: Quantia de receitas -->
+            <div class="craft-param-col">
+              <label class="craft-count-control">
+                <span class="control-label-text" i18n>Quantia de receitas</span>
+                <div class="craft-input-box">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000000"
+                    class="craft-count-input"
+                    [ngModel]="craftCount()"
+                    (ngModelChange)="setCraftCount($event)"
+                  />
+                  <span class="craft-count-unit" i18n>receitas</span>
+                </div>
+              </label>
+              <div
+                class="craft-quick-multipliers"
+                role="group"
+                aria-label="Atalhos de lote de receitas"
+              >
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 1"
+                  (click)="setCraftCount(1)"
+                >
+                  1x
+                </button>
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 10"
+                  (click)="setCraftCount(10)"
+                >
+                  10x
+                </button>
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 50"
+                  (click)="setCraftCount(50)"
+                >
+                  50x
+                </button>
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 100"
+                  (click)="setCraftCount(100)"
+                >
+                  100x
+                </button>
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 500"
+                  (click)="setCraftCount(500)"
+                >
+                  500x
+                </button>
+                <button
+                  type="button"
+                  class="btn-multiplier"
+                  [class.active]="craftCount() === 1000"
+                  (click)="setCraftCount(1000)"
+                >
+                  1.000x
+                </button>
+              </div>
             </div>
-          </label>
-          <div
-            class="craft-quick-multipliers"
-            role="group"
-            aria-label="Atalhos de lote de receitas"
-          >
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 1"
-              (click)="setCraftCount(1)"
-            >
-              1x
-            </button>
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 10"
-              (click)="setCraftCount(10)"
-            >
-              10x
-            </button>
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 50"
-              (click)="setCraftCount(50)"
-            >
-              50x
-            </button>
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 100"
-              (click)="setCraftCount(100)"
-            >
-              100x
-            </button>
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 500"
-              (click)="setCraftCount(500)"
-            >
-              500x
-            </button>
-            <button
-              type="button"
-              class="btn-multiplier"
-              [class.active]="craftCount() === 1000"
-              (click)="setCraftCount(1000)"
-            >
-              1.000x
-            </button>
+
+            <!-- Coluna 2: Maestria da Profissão (SEMPRE VISÍVEL) -->
+            <div class="craft-param-col">
+              <label class="craft-count-control">
+                <span class="control-label-text">
+                  <span class="bdo-diamond">◇</span> Maestria ({{ primarySkillLabel() }})
+                </span>
+                <div class="craft-input-box">
+                  <input
+                    type="number"
+                    min="0"
+                    max="5000"
+                    step="10"
+                    class="craft-count-input"
+                    placeholder="Ex: 1250"
+                    [ngModel]="displayedMastery()"
+                    (ngModelChange)="setMasteryOverride($event)"
+                  />
+                  <span class="craft-count-unit">pts</span>
+                </div>
+              </label>
+              <div class="craft-param-hint">
+                <span class="yield-badge">{{ yieldDescription() }}</span>
+              </div>
+            </div>
+
+            <!-- Coluna 3: Tempo por Receita & Ação Rápida -->
+            <div class="craft-param-col">
+              <label class="craft-count-control">
+                <span class="control-label-text">
+                  <span class="bdo-diamond">◇</span> Tempo por receita
+                </span>
+                <div class="craft-input-box">
+                  <input
+                    type="number"
+                    min="0.1"
+                    max="60"
+                    step="0.1"
+                    class="craft-count-input"
+                    [ngModel]="primaryMethodSeconds()"
+                    (ngModelChange)="setPrimaryMethodSeconds($event)"
+                  />
+                  <span class="craft-count-unit">seg</span>
+                </div>
+              </label>
+              <div class="craft-param-hint">
+                <span class="produced-badge">
+                  Tempo total: <strong>{{ formattedCraftTime() }}</strong>
+                </span>
+              </div>
+            </div>
           </div>
+
           <div class="craft-yield-meta">
-            <span class="yield-badge">{{ yieldDescription() }}</span>
             <span class="produced-badge" i18n>
-              Estimativa: <strong>{{ formattedProducedQuantity() }}</strong> unidades
+              Estimativa do produto: <strong>{{ formattedProducedQuantity() }}</strong> unidades
             </span>
+            <button
+              type="button"
+              class="btn btn-optimizer btn-optimizer-top"
+              [class.subtle]="acquisitionStrategy() !== 'optimized'"
+              (click)="optimizeAcquisition()"
+              [disabled]="treeMarketLoading() || !recipeGraph()"
+              i18n
+            >
+              ★ Maximizar Lucro
+            </button>
           </div>
 
           @if (canAdjustRootYield()) {
@@ -116,31 +182,7 @@
             /></label>
           }
         </div>
-        <p class="help" i18n>
-          O rendimento estimado entra no cálculo automaticamente. Você pode ajustar a estimativa nos
-          detalhes avançados.
-        </p>
         @if (advanced()) {
-          <p class="help" i18n>
-            Rendimentos médios são estimativas, não uma garantia de produção. A estimativa considera
-            a maestria da profissão.
-          </p>
-          <div class="production-calibration">
-            <label class="calibration-control">
-              <span i18n>Maestria da profissão</span>
-              <input
-                type="number"
-                min="0"
-                max="5000"
-                step="1"
-                [ngModel]="displayedMastery()"
-                (ngModelChange)="setMasteryOverride($event)"
-              />
-            </label>
-            <small i18n
-              >O valor do perfil é usado como padrão. A alteração vale só nesta receita.</small
-            >
-          </div>
           <details class="production-calibration">
             <summary i18n>Calibrar tempo por método</summary>
             @for (row of methodCalibrationRows(); track row.method) {
@@ -736,6 +778,7 @@
           @for (item of materialDecisions(); track item.itemId) {
             <div
               class="sidebar-material-row"
+              [attr.data-item-id]="item.itemId"
               [class.is-crafting]="item.source !== 'buy'"
               [class.is-buying]="item.source === 'buy'"
               [class.is-selected]="selectedNode()?.part?.itemId === item.itemId"
@@ -767,7 +810,7 @@
 
               <div
                 class="sidebar-item-slot"
-                (click)="action({ path: allocationPath(item.itemId), action: 'source' })"
+                (click)="selectMaterial(item.itemId)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'Ver detalhes de ' + item.name"
@@ -777,7 +820,7 @@
 
               <div
                 class="sidebar-item-info"
-                (click)="action({ path: allocationPath(item.itemId), action: 'source' })"
+                (click)="selectMaterial(item.itemId)"
                 role="button"
                 tabindex="0"
               >

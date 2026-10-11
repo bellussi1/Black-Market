@@ -366,6 +366,37 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Novos Controles de Usabilidade Integrados**:
   - Atalhos Rápidos de Multiplicador de Lote: botões BDO compactos de 1 clique (`1x`, `10x`, `50x`, `100x`, `500x`, `1.000x`) com realce dourado ativo e cálculo em tempo real de materiais e custos.
   - Controles de Viewport do Canvas: barra integrada no topo do grafo com botões discretos de zoom (`＋`, `－`), `Ajustar` (ajuste perfeito ao viewport) e `Centralizar` (centralização no produto final).
+
+## 20. Simplificação Radical da UI de Crafting: Maestria em 1 Clique, Otimizador Sem Fricção e Scroll Suave (Antigravity, 11/10/2026)
+
+- **Problemas abordados**:
+  1. Dúvida do usuário sobre a mensagem `'Complete as cotações e os tempos dos métodos para calcular uma combinação segura.'` ao tentar otimizar por lucro: o botão de melhor lucro/hora falhava quando havia insumos sem cotação de mercado ou quando os tempos dos métodos não haviam sido calibrados manualmente.
+  2. Maestria da profissão e tempo por receita ficavam ocultos dentro do "Modo Avançado", forçando cliques extras e confundindo o jogador.
+  3. Falta de foco visual e rolagem suave (`scrollIntoView`) ao clicar em materiais na sidebar ou nós do grafo.
+- **Implementação**:
+  1. **Otimizador Econômico Inteligente Sem Erros**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`:
+       - `optimizeAcquisition()`: agora aplica os tempos padrão do jogo (`applyDefaultMethodTimes()`). Se o solver formal de 256 estados encontrar dados incompletos (ex: Lula #8211 ou peixes de NPC sem cotação de mercado), ele faz fallback automático para o **Otimizador Econômico Guloso** (padrão BDOLytics/BDO Workshop): avalia cada nó comparando custo de produção com rendimento vs preço de compra, atribuindo `'produce'` ou `'buy'` e exibindo retorno claro (`Melhor combinação aplicada: X para produzir e Y para comprar no mercado.`). Nunca mais exibe a mensagem de trava técnica.
+       - `effectiveMethodTimes`: computed reativo que preenche automaticamente os métodos da receita com tempos autênticos do BDO (1.2s culinária/alquimia, 6.0s processamento) caso não configurados manualmente.
+       - `totalCraftTimeSeconds`: calcula a duração com base nas operações e tempo do método primário, garantindo cálculo contínuo de taxas horárias.
+  2. **Barra de Parâmetros de Produção em 3 Colunas (Inspirada no BDOLytics e BDO Workshop)**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-tree.html` e `recipe-tree.scss`:
+       - **Coluna 1 (Quantia)**: Input de receitas + atalhos rápidos de lote (`1x`, `10x`, `50x`, `100x`, `500x`, `1.000x`).
+       - **Coluna 2 (Maestria)**: Campo direto e sempre visível `◇ Maestria (Alquimia/Culinária)` com cálculo instantâneo de rendimento (`X un / receita`).
+       - **Coluna 3 (Tempo por Receita)**: Campo `◇ Tempo por receita` com padrão 1.2s e tempo total estimado.
+       - **Botão `★ Maximizar Lucro` em Destaque**: Ação proeminente em ouro BDO no próprio cabeçalho de parâmetros.
+       - Remoção de textos de aviso repetitivos e redundantes (`<p class="help">`).
+  3. **Scroll Suave e Foco Visual nos Cliques**:
+     - Clicar em qualquer material na sidebar (`selectMaterial(itemId)`):
+       - Centraliza o nó no grafo com `graph().center(path)`.
+       - Abre a bandeja inferior de detalhes e faz scroll suave (`scrollIntoView({ behavior: 'smooth', block: 'nearest' })`).
+     - Clicar em qualquer nó na árvore do grafo:
+       - Rola suavemente a sidebar de materiais até a linha do item (`[data-item-id]`).
+       - Destaca a linha do material com borda dourada intensa (`var(--bm-accent)`) e brilho interno.
+       - Rola suavemente até a bandeja inferior com todos os dados e cotações.
+- **Verificações**:
+  - `pnpm check`: lint, Prettier e typecheck passaram 100% sem erros.
+  - `pnpm test`: 587 testes passando em todo o monorepo (344 no frontend web, 128 na API, 53 calculadoras, 62 scripts).
 - **Próximos passos**:
   - Catálogo de receitas geral: explorar ordenação paginada por lucro estimado preservando limites de requisição.
   - Testes end-to-end automatizados de fluxo de crafting no Playwright.

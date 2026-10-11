@@ -732,6 +732,71 @@
   border: 1px solid var(--bm-border);
   padding: 14px 16px;
   border-radius: 2px;
+
+  &.craft-parameters-card {
+    padding: 16px 18px;
+    gap: 14px;
+  }
+}
+
+.craft-parameters-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .craft-parameters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.craft-param-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.craft-param-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--bm-muted);
+  min-height: 28px;
+}
+
+.btn-optimizer-top {
+  margin-left: auto;
+  min-height: 32px;
+  padding: 4px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: var(--bm-accent);
+  color: #0d0f12;
+  border: 1px solid var(--bm-accent);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 140ms ease;
+
+  &:hover {
+    background: #dfb76c;
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.4);
+  }
+
+  &.subtle {
+    background: rgba(197, 160, 89, 0.15);
+    color: var(--bm-accent);
+    border-color: var(--bm-accent);
+
+    &:hover {
+      background: var(--bm-accent);
+      color: #0d0f12;
+    }
+  }
 }
 
 .craft-count-control {
@@ -1461,9 +1526,10 @@
     }
 
     &.is-selected {
-      background: rgba(197, 160, 89, 0.08);
-      border-left: 2px solid var(--bm-accent);
-      padding-left: 10px;
+      background: rgba(197, 160, 89, 0.12);
+      border-left: 3px solid var(--bm-accent);
+      padding-left: 9px;
+      box-shadow: inset 0 0 12px rgba(197, 160, 89, 0.15);
     }
   }
 
@@ -1667,6 +1733,8 @@
   border: 1px solid var(--bm-border);
   border-radius: 2px;
   padding: 0;
+  scroll-margin-top: 24px;
+  animation: slide-up-tray 180ms ease-out;
 
   .context-titlebar {
     margin: 0;
@@ -1903,5 +1971,16 @@
     text-align: center;
     color: var(--bm-muted);
     font-size: 11px;
+  }
+}
+
+@keyframes slide-up-tray {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
