@@ -19,18 +19,20 @@
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Preço e resultados</ng-container></h2>
       <div class="form-grid">
         <label class="field"
           ><ng-container i18n>Preço por caixa / oferta do vendor</ng-container
           ><input
+            hlmInput
             inputmode="numeric"
             [ngModel]="form().boxPrice"
             (ngModelChange)="patch({ boxPrice: $event })" /></label
         ><label class="field"
           ><ng-container i18n>Quantidade de caixas</ng-container
           ><input
+            hlmInput
             type="number"
             min="1"
             [ngModel]="form().boxes"
@@ -49,6 +51,7 @@
             <label class="field"
               ><ng-container i18n>Probabilidade (%)</ng-container
               ><input
+                hlmInput
                 type="number"
                 min="0"
                 max="100"
@@ -58,6 +61,7 @@
             ><label class="field"
               ><ng-container i18n>Quantidade do prêmio</ng-container
               ><input
+                hlmInput
                 type="number"
                 min="1"
                 [ngModel]="outcome.quantity"
@@ -65,20 +69,21 @@
             ><label class="field"
               ><ng-container i18n>Preço de venda por unidade</ng-container
               ><input
+                hlmInput
                 inputmode="numeric"
                 [ngModel]="outcome.price"
                 (ngModelChange)="row(k, { price: $event })"
             /></label>
           </div>
           <div class="action-row">
-            <button type="button" class="btn danger" (click)="remove(k)">
+            <button hlmBtn variant="outline" type="button" class="btn danger" (click)="remove(k)">
               <ng-container i18n>Remover resultado</ng-container>
             </button>
           </div>
         </div>
       }
       <div class="action-row">
-        <button type="button" class="btn subtle" (click)="add()">
+        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="add()">
           <ng-container i18n>Adicionar resultado</ng-container></button
         ><span class="badge">{{ number(total()) }}% / 100%</span>
       </div>
@@ -128,7 +133,7 @@
             >
           </div>
         </div>
-        <div class="panel">
+        <div hlmCard class="panel">
           <h2><ng-container i18n>Composição do valor esperado</ng-container></h2>
           <div class="max-w-full overflow-x-auto">
             <table class="data-table">

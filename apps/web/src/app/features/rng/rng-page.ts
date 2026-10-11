@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { type BoxInput, boxSchema, calculateBox, defaultTax } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
@@ -11,7 +14,16 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-rng-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    FormsModule,
+    TaxOptionsComponent,
+    PresetBar,
+    CalculationProof,
+    CatalogItemPicker,
+  ],
   templateUrl: './rng-page.html',
 })
 export class RngPage {
