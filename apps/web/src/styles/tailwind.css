@@ -12,6 +12,7 @@
 }
 
 :root {
+  --bm-panel-padding: 1.25rem;
   color-scheme: dark;
   --radius: 2px;
   --background: var(--bm-background, #17181b);
@@ -32,4 +33,10 @@
   --input: var(--border);
   --ring: #e3bf70;
   --destructive: #ef8888;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --bm-panel-padding: 1.125rem;
+  }
 }

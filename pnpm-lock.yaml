@@ -177,6 +177,12 @@ importers:
       '@bdo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@ng-icons/core':
+        specifier: '>=32.0.0 <34.0.0'
+        version: 33.4.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2)
+      '@ng-icons/lucide':
+        specifier: '>=32.0.0 <34.0.0'
+        version: 33.4.0
       '@spartan-ng/brain':
         specifier: 1.6.3
         version: 1.6.3(21164edcd34b7ce10188533e7508d345)
@@ -2628,6 +2634,18 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  '@ng-icons/core@33.4.0':
+    resolution: {integrity: sha512-UGAs6q67mdS87qJE3u3iXVjnaKxxB8ALxCWvxQz+vDaE/3o9OpgCPrL4ZZIwPOYjBER0YUPctJNy6ng1C24FEA==}
+    peerDependencies:
+      '@angular-devkit/schematics': '>=21.0.0'
+      '@angular/common': '>=21.0.0'
+      '@angular/core': '>=21.0.0'
+      '@schematics/angular': '>=21.0.0'
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@ng-icons/lucide@33.4.0':
+    resolution: {integrity: sha512-fOztOy5T+Y07fru7nWq27PC96B35Y2DeJY357ZeKBr5R1yUJhxqQXPRcxOf+wrTJes8I20sKBqfWhHH1eiL9JQ==}
 
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
@@ -8754,6 +8772,19 @@ snapshots:
       swagger-ui-dist: 5.33.0
     optionalDependencies:
       typescript: 6.0.3
+
+  '@ng-icons/core@33.4.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2)':
+    dependencies:
+      '@angular-devkit/schematics': 22.2.2(chokidar@5.0.0)
+      '@angular/common': 22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)
+      '@schematics/angular': 22.2.2(chokidar@5.0.0)
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@ng-icons/lucide@33.4.0':
+    dependencies:
+      tslib: 2.8.1
 
   '@noble/hashes@1.8.0':
     optional: true

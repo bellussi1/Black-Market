@@ -20,7 +20,7 @@ export class HlmCard {
   constructor() {
     classes(
       () =>
-        'ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-[2px] py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col',
+        'bg-card text-card-foreground min-w-0 rounded-[2px] border border-border p-[var(--bm-panel-padding,1.25rem)] text-sm data-[size=sm]:p-4 group/card block',
     );
   }
 }

@@ -16,7 +16,9 @@
       "@bdo/ui/button": ["./src/app/ui/button/src/index.ts"],
       "@bdo/ui/utils": ["./src/app/ui/utils/src/index.ts"],
       "@bdo/ui/input": ["./src/app/ui/input/src/index.ts"],
-      "@bdo/ui/card": ["./src/app/ui/card/src/index.ts"]
+      "@bdo/ui/card": ["./src/app/ui/card/src/index.ts"],
+      "@bdo/ui/native-select": ["./src/app/ui/native-select/src/index.ts"],
+      "@bdo/ui/textarea": ["./src/app/ui/textarea/src/index.ts"]
     }
   },
   "angularCompilerOptions": {
