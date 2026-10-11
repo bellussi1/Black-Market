@@ -15,10 +15,10 @@
       conta nem sincronização entre dispositivos; o backup permite transferir seus dados.
     </ng-container>
   </div>
-  <section class="panel">
+  <section hlmCard class="panel">
     <div class="panel-heading">
       <h2><ng-container i18n>Conteúdo local</ng-container></h2>
-      <button type="button" class="btn" (click)="store.exportBackup()">
+      <button hlmBtn variant="outline" type="button" class="btn" (click)="store.exportBackup()">
         <ng-container i18n>Exportar backup completo </ng-container>
       </button>
     </div>
@@ -32,7 +32,7 @@
     </div>
   </section>
   @if (store.blocked()) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Recuperar meus dados</ng-container></h2>
       <p class="help">
         <ng-container i18n
@@ -47,6 +47,8 @@
           vazio.</ng-container
         ></label
       ><button
+        hlmBtn
+        variant="outline"
         type="button"
         class="btn danger"
         [disabled]="!confirmRecoveryReset"
@@ -56,7 +58,7 @@
       </button>
     </section>
   }
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2><ng-container i18n>Importar backup</ng-container></h2>
     <label class="field"
       ><ng-container i18n>Arquivo de backup do Black Market</ng-container
@@ -94,15 +96,28 @@
         ></label
       >
       <div class="action-row">
-        <button type="button" class="btn" [disabled]="!confirmReplace" (click)="replace()">
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn"
+          [disabled]="!confirmReplace"
+          (click)="replace()"
+        >
           <ng-container i18n>Importar e substituir</ng-container></button
-        ><button type="button" class="btn subtle" (click)="candidate.set(null)">
+        ><button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          (click)="candidate.set(null)"
+        >
           <ng-container i18n>Cancelar</ng-container>
         </button>
       </div>
     }
   </section>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2><ng-container i18n>Itens, receitas e imagens</ng-container></h2>
     <p class="help">
       <ng-container i18n
