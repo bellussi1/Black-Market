@@ -46,14 +46,14 @@
     </ul>
   </nav>
   @for (section of document().sections; track section.title) {
-    <section class="panel" [attr.aria-labelledby]="'legal-section-' + $index">
+    <section hlmCard class="panel" [attr.aria-labelledby]="'legal-section-' + $index">
       <h2 [id]="'legal-section-' + $index">{{ section.title }}</h2>
       @for (paragraph of section.paragraphs; track $index) {
         <p>{{ paragraph }}</p>
       }
     </section>
   }
-  <section class="panel legal-contact" aria-labelledby="legal-contact">
+  <section hlmCard class="panel legal-contact" aria-labelledby="legal-contact">
     <h2 id="legal-contact" i18n>Responsável e contato</h2>
     @if (config().controllerName) {
       <p>{{ config().controllerName }}</p>
@@ -66,7 +66,14 @@
       <p i18n>Canal público de contato ainda não configurado.</p>
     }
     <div class="action-row">
-      <button type="button" class="btn subtle" (click)="privacy.open.set(true)" i18n>
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        class="btn subtle"
+        (click)="privacy.open.set(true)"
+        i18n
+      >
         Alterar preferências de privacidade
       </button>
     </div>

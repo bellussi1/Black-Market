@@ -3,6 +3,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { publicContact } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
 
 import { environment } from '../../../environments/environment';
 import { PrivacyService } from '../../core/privacy.service';
@@ -10,7 +12,7 @@ import { legalDocuments, legalUpdatedOn } from './legal-content';
 @Component({
   selector: 'app-legal-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [HlmCard, HlmButton, RouterLink, RouterLinkActive],
   templateUrl: './legal-page.html',
   styleUrl: './legal-page.scss',
 })
