@@ -197,4 +197,46 @@ describe('shared stock in production chains', () => {
       }),
     ).toThrow();
   });
+  it('uses the requested number of root recipe operations for ingredient totals', () => {
+    const result = calculateProduction({
+      recipeId: 'root',
+      quantity: 16,
+      rootCrafts: 10,
+      recipes: [
+        {
+          id: 'root',
+          name: 'Product',
+          itemId: 1,
+          yield: 1.55,
+          ingredients: [
+            { name: 'X', quantity: 1, price: '10', recipeId: null },
+            { name: 'Y', quantity: 2, price: '20', recipeId: null },
+            { name: 'Z', quantity: 1, price: '30', recipeId: null },
+          ],
+        },
+      ],
+      inventory: [
+        {
+          id: 'finished',
+          name: 'Product',
+          itemId: 1,
+          quantity: 100,
+          target: 0,
+          location: 'Velia',
+          price: '0',
+        },
+      ],
+    });
+
+    expect(result.tasks.find((task) => task.id === 'root')).toMatchObject({
+      crafts: 10,
+      produced: 15,
+    });
+    expect(result.rows.map(({ name, required }) => [name, required])).toEqual([
+      ['Product', 15],
+      ['X', 10],
+      ['Y', 20],
+      ['Z', 10],
+    ]);
+  });
 });

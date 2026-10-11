@@ -9,9 +9,16 @@ describe('Recipe exploration sessions', () => {
       ...nodeFor({ itemId: 1, name: 'Produto', quantity: null }, 'root'),
       loading: true,
     };
-    sessions.save('sa/v1/1/external', { root, target: 500, view: 'list', excludedLocations: [] });
+    sessions.save('sa/v1/1/external', {
+      root,
+      target: 500,
+      craftCount: 20,
+      view: 'list',
+      excludedLocations: [],
+    });
     expect(sessions.get('sa/v1/1/external')).toMatchObject({
       target: 500,
+      craftCount: 20,
       view: 'list',
       root: { loading: false },
     });

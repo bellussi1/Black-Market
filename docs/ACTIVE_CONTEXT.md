@@ -238,3 +238,12 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Verificações**: o teste de regressão falhou antes do ajuste e passou depois; `recipe-tree.spec.ts` passou com 33/33. `pnpm test` passou com 584 testes e `pnpm check` passou por lint, Prettier, typecheck e build. Permanece o aviso conhecido de fallback do locale `pt-BR` para `pt`.
 - **Commits atômicos**: código `b943da7 fix(ui): align recipe profitability dashboard`; padrão reutilizável `00277b0 docs(ui): define recipe metric layout pattern`; merge local em `develop` `c61319e merge: align recipe profitability interface`.
 - **Integração**: concluída localmente em `develop`; este handoff registra a entrega. Sem publicação em staging; manter os coletores de mercado desligados.
+
+## 14. Quantia de receitas por operação (Codex, 10/10/2026)
+
+- **Pedido**: o campo “Quantia de receitas” conta execuções da fórmula. Para uma fórmula com X×1, Y×2 e Z×1, 10 receitas exigem X×10, Y×20 e Z×10.
+- **Causa**: a tela tratava a quantidade como unidades inteiras de saída, multiplicava pelo rendimento médio, arredondava e depois convertia de volta para operações. Com rendimento 1,55, 10 receitas podiam virar 11 operações.
+- **Implementação**: o planejador aceita `rootCrafts` para executar exatamente a quantidade solicitada, independentemente do estoque do produto acabado. O resumo e a árvore usam esses mesmos totais; o rendimento continua determinando separadamente as unidades previstas. A quantidade de receitas também é salva na sessão e a lista salva usa essa unidade.
+- **Arquivos**: `packages/calculators/src/models.ts`, `packages/calculators/src/tools.ts` e respectivos testes; `apps/web/src/app/shared/recipe-tree/recipe-tree-model.ts`, `recipe-tree.ts`, `recipe-tree.html`, `recipe-tree.spec.ts`, `recipe-session.ts` e `recipe-session.spec.ts`.
+- **Verificação**: caso de regressão reproduzido antes do ajuste (10 operações resultavam em 11); depois, `pnpm test` passou com 585 testes e `pnpm check` passou por lint, Prettier, typecheck e build. O aviso conhecido de fallback do locale `pt-BR` para `pt` permanece.
+- **Próximo agente**: manter “receitas” como unidade de entrada e operações da fórmula; não reinterpretar esse campo como unidades finais do produto. O rendimento altera somente a quantidade prevista de saída.

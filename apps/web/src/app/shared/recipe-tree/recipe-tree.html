@@ -165,19 +165,16 @@
     @if (ingredientPreview(); as preview) {
       <section
         class="material-totals"
-        aria-label="Ingredientes para a quantidade desejada"
+        aria-label="Ingredientes para as receitas selecionadas"
         aria-live="polite"
       >
-        <h3>Ingredientes para {{ target() }} unidades</h3>
+        <h3>Ingredientes para {{ craftCount() }} receitas</h3>
         <p class="help">
-          {{ preview.operations }} operações · {{ preview.produced }} unidades produzidas.
-          @if (preview.produced > target()) {
-            Sobra de {{ preview.produced - target() }} unidades pelo tamanho do lote.
-          }
+          {{ preview.operations }} operações · {{ preview.produced }} unidades previstas.
           Quantidades totais antes de descontar seu estoque.
         </p>
         <ul>
-          @for (ingredient of preview.ingredients; track $index + ':' + target()) {
+          @for (ingredient of preview.ingredients; track $index + ':' + craftCount()) {
             <li>
               <app-item-icon [url]="catalog.resolveIconUrl(ingredient)" [name]="ingredient.name" />
               <span>{{ ingredient.name }}</span
