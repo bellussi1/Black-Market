@@ -268,3 +268,21 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
   - Exploração de receitas (`apps/web/src/app/features/recipes/`): ordenação por lucro líquido estimado e volume de vendas, com unidades e períodos transparentes.
   - Alinhamento da interface de Armazém (`apps/web/src/app/features/storage/`) com grade estilo jogo e simplificação da aba Família.
   - Continuidade na padronização visual BDO UI (sem emojis, tokens de contraste e transições discretas).
+
+## 16. Grade do Armazém com slots estilo BDO e alternância de visualização (Antigravity, 10/10/2026)
+
+- **Problema abordado**: a tela de Armazém (`StoragePage`) exibia os materiais cadastrados apenas em formato de tabela simples, distante da experiência in-game do Black Desert Online.
+- **Implementação**:
+  - Adicionado controle segmentado de modo de visualização (`viewMode`: `'grid'` | `'table'`) com persistência de estado.
+  - No modo grade (`'grid'`), renderiza slots quadrados característicos do BDO (`.bdo-slot`, 44x44px/52px com bordas cinza/dourado e fundo afundado), ícones reais dos itens via `ItemIcon` e contador sobreposto com sombra/contorno tipográfico (`.bdo-slot-count`).
+  - Cada slot é interativo (`tabindex="0"`, `role="button"`), suporta clique e tecla Enter para abrir edição rápida do material no formulário do painel, com tooltip descritivo completo.
+  - No modo tabela detalhada (`'table'`), adicionado o ícone de cada item junto ao nome para consistência visual.
+  - Cobertura de testes unitários expandida em `storage-page.spec.ts` validando a alternância entre grade e tabela e atributos de slot.
+- **Verificações**:
+  - `pnpm check`: lint, Prettier, typecheck e build completos passaram sem erros.
+  - `pnpm test`: 586 testes passaram (52 calculators, 128 API, 344 Web, 62 scripts).
+- **Commits atômicos**:
+  - `1834121` `feat(storage): add BDO-style slot grid view and detailed table toggle`
+- **Próximos passos**:
+  - Explorar receitas com ordenação por lucro estimado e volume de vendas no catálogo.
+  - Otimizações adicionais na aba Família e validações Playwright nas rotas ativas.
