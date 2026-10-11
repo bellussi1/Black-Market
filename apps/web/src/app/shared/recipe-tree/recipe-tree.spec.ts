@@ -328,6 +328,57 @@ describe('Interactive recipe tree', () => {
       providers().list,
     );
     expect(fixture.componentInstance.yieldDescription()).toContain('proc adicional não modelado');
+    expect(fixture.componentInstance.masteryApplies()).toBe(false);
+    expect(
+      (
+        fixture.nativeElement.querySelector(
+          'input[aria-label="Maestria da profissão"]',
+        ) as HTMLInputElement
+      ).disabled,
+    ).toBe(true);
+    fixture.destroy();
+  });
+
+  it('shows materials whose required quantity is missing instead of displaying zero', async () => {
+    const incompleteRecipe: CatalogRecipe = {
+      ...recipe,
+      inputs: [{ itemId: 9001, name: 'Sal', quantity: null }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: incompleteRecipe, selectedItem: item },
+      providers().list,
+    );
+    configureProduction(fixture.componentInstance, { 5301: '1000', 9001: '5' });
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector(
+      '.sidebar-material-row[data-item-id="9001"]',
+    ) as HTMLElement | null;
+    expect(row).not.toBeNull();
+    expect(row?.textContent).toContain('Quantidade pendente');
+    expect(row?.textContent).not.toContain('0 un');
+    fixture.destroy();
+  });
+
+  it('returns focus to the graph trigger after closing root details', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const trigger = document.createElement('button');
+    fixture.nativeElement.appendChild(trigger);
+    trigger.focus();
+    fixture.componentInstance.action({ path: 'root', action: 'source' });
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(document.activeElement?.classList.contains('context-close')).toBe(true);
+    fixture.componentInstance.closeDetails();
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.activeElement).toBe(trigger);
     fixture.destroy();
   });
 
@@ -347,6 +398,58 @@ describe('Interactive recipe tree', () => {
     ) as HTMLInputElement;
     expect(masteryInput.disabled).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Maestria sem efeito nesta fórmula');
+    fixture.destroy();
+  });
+
+  it('does not offer a mastery override when processing yield ignores mastery', async () => {
+    const processingRecipe: CatalogRecipe = { ...recipe, type: 'PROCESSING' };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: processingRecipe, selectedItem: item },
+      providers().list,
+    );
+    expect(fixture.componentInstance.masteryApplies()).toBe(false);
+    expect(
+      (
+        fixture.nativeElement.querySelector(
+          'input[aria-label="Maestria da profissão"]',
+        ) as HTMLInputElement
+      ).disabled,
+    ).toBe(true);
+    fixture.destroy();
+  });
+
+  it('keeps mastery available when an active intermediate recipe has variable yield', async () => {
+    const rootRecipe: CatalogRecipe = {
+      ...recipe,
+      outputs: [{ itemId: 5301, name: item.name, quantity: '1' }],
+    };
+    const producer: CatalogRecipe = {
+      ...recipe,
+      key: 'make-salt',
+      inputs: [],
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: null }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: rootRecipe, selectedItem: item },
+      providers().list,
+    );
+    fixture.componentInstance.recipeGraph.set({
+      rootRecipe,
+      producerRecipes: [producer],
+      itemIds: [5301, 9001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    fixture.componentInstance.customMaterialSource.set(new Map([[9001, 'produce']]));
+    fixture.componentInstance.acquisitionStrategy.set('custom');
+    fixture.detectChanges();
+
+    expect(
+      fixture.componentInstance.currentProductionPlan()?.steps.map((step) => step.recipeId),
+    ).toContain('make-salt');
+    expect(fixture.componentInstance.masteryApplies()).toBe(true);
     fixture.destroy();
   });
 

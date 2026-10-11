@@ -181,6 +181,7 @@ export class RecipeTree {
   private recipeGraphIdentity = '';
   private quoteRevision = 0;
   private lastConsultTime = 0;
+  private detailsReturnFocus: HTMLElement | null = null;
 
   readonly userMasteryForCurrentRecipe = computed(() => {
     const root = this.root();
@@ -318,6 +319,11 @@ export class RecipeTree {
     const plannerRows = this.plannerMaterials();
     const quotes = this.marketQuotes();
     const partsMap = this.parts();
+    const pendingQuantityIds = new Set(
+      this.currentProductionPlan()
+        ?.issues.filter((issue) => issue.code === 'missing-quantity' && issue.itemId !== undefined)
+        .map((issue) => issue.itemId!) ?? [],
+    );
 
     return itemIds
       .map((itemId) => {
@@ -329,6 +335,7 @@ export class RecipeTree {
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
         const required = plannerRow?.required ?? 0;
+        const quantityPending = pendingQuantityIds.has(itemId);
         const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
         const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
         const fromStock = plannerRow?.owned ?? 0;
@@ -343,6 +350,7 @@ export class RecipeTree {
           name,
           iconUrl,
           required,
+          quantityPending,
           bought,
           produced,
           fromStock,
@@ -355,7 +363,7 @@ export class RecipeTree {
           totalTrades,
         };
       })
-      .filter((item) => item.required > 0);
+      .filter((item) => item.required > 0 || item.quantityPending);
   });
 
   private materialItemIds(): number[] {
@@ -433,13 +441,20 @@ export class RecipeTree {
   closeDetails(): void {
     const itemId = this.selectedNode()?.part.itemId;
     this.detailsOpen.set(false);
-    if (itemId === undefined) return;
+    const trigger = this.detailsReturnFocus;
+    this.detailsReturnFocus = null;
     setTimeout(() => {
-      document
-        .querySelector<HTMLElement>(
-          `.sidebar-material-row[data-item-id="${itemId}"] .sidebar-material-details`,
-        )
-        ?.focus({ preventScroll: true });
+      const fallback =
+        itemId === undefined
+          ? null
+          : document.querySelector<HTMLElement>(
+              `.sidebar-material-row[data-item-id="${itemId}"] .sidebar-material-details`,
+            );
+      const target =
+        trigger?.isConnected && !trigger.closest('.bottom-details-tray')
+          ? trigger
+          : (fallback ?? document.querySelector<HTMLElement>('.craft-count-input'));
+      target?.focus({ preventScroll: true });
     }, 0);
   }
 
@@ -783,7 +798,22 @@ export class RecipeTree {
   });
 
   readonly primaryMethod = computed(() => this.root()?.recipe?.type ?? '');
-  readonly masteryApplies = computed(() => lifeSkillForRecipe(this.primaryMethod()) !== null);
+  readonly masteryApplies = computed(() => {
+    const graph = this.recipeGraph();
+    const root = this.root();
+    const rootSkill = root?.recipe ? lifeSkillForRecipe(root.recipe.type) : null;
+    if ((rootSkill !== 'cooking' && rootSkill !== 'alchemy') || !root?.recipe) return false;
+    const activeRecipes = new Set(this.currentProductionPlan()?.steps.map((step) => step.recipeId));
+    const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
+    return recipes.some((recipe) => {
+      if (graph && !activeRecipes.has(recipe.key)) return false;
+      if (lifeSkillForRecipe(recipe.type) !== rootSkill) return false;
+      const output = recipe.outputs[0];
+      if (!output || fixedRecipeYield(recipe, output.itemId) !== null) return false;
+      if (Number(output.quantity) > 0) return false;
+      return recipe.key !== root.recipe?.key || !(root.yield !== null && root.yield > 0);
+    });
+  });
 
   readonly primarySkillLabel = computed(() => {
     const root = this.root();
@@ -1536,6 +1566,10 @@ export class RecipeTree {
     return node ? 1 + node.children.reduce((n, c) => n + this.count(c), 0) : 0;
   }
   showContext(node: RecipeNode, locationId?: string) {
+    if (!this.detailsOpen()) {
+      this.detailsReturnFocus =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    }
     this.detailsOpen.set(true);
     this.selectedPath.set(node.path);
     const revision = ++this.contextRevision,

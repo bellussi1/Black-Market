@@ -523,9 +523,13 @@
                 <span class="sidebar-item-info">
                   <span class="sidebar-item-name-line">
                     <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
-                    <span class="sidebar-item-qty"
-                      >{{ item.required.toLocaleString('pt-BR') }} un</span
-                    >
+                    <span class="sidebar-item-qty">
+                      @if (item.quantityPending) {
+                        Quantidade pendente
+                      } @else {
+                        {{ item.required.toLocaleString('pt-BR') }} un
+                      }
+                    </span>
                   </span>
                   <span class="sidebar-item-price-line">
                     @if (item.unitPrice !== null) {
