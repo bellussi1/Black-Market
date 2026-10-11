@@ -1,5 +1,5 @@
 <div class="tool-page recipe-explorer">
-  <header class="tool-heading">
+  <header class="tool-heading" [hidden]="!!item()">
     <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
     <h1 i18n>Oficina de produção</h1>
     <p [hidden]="!!item()" i18n>
@@ -43,7 +43,7 @@
       <div recipe-method>
         @if (alternatives().length) {
           <section class="recipe-methods">
-            <label for="root-recipe" i18n>Como você quer obter este item?</label
+            <label for="root-recipe" i18n>Fórmula</label
             ><select id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
               @for (method of methods(); track method.key) {
@@ -52,27 +52,6 @@
                 </option>
               }
             </select>
-            <div class="item-toolbar">
-              <span class="help" i18n
-                >{{ methods().length }} métodos · ingredientes equivalentes na mesma receita</span
-              >
-              <a [routerLink]="['/market/items', selected.id]" i18n>Informações do item →</a>
-            </div>
-            @if (recipe(); as method) {
-              <details class="ingredient-preview">
-                <summary i18n>{{ method.inputs.length }} ingredientes por operação</summary>
-                <div class="method-ingredients">
-                  @for (part of method.inputs; track $index) {
-                    <span
-                      ><app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" />{{
-                        part.name
-                      }}
-                      × {{ part.quantity ?? 'a confirmar' }}</span
-                    >
-                  }
-                </div>
-              </details>
-            }
           </section>
         } @else {
           <p class="notice" i18n>

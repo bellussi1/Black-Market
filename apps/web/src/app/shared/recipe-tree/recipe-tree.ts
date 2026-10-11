@@ -79,20 +79,6 @@ import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
 
-export interface MakeVsBuyTradeInsight {
-  itemId: number;
-  name: string;
-  isRoot: boolean;
-  marketPrice: string | null;
-  craftCostUnit: string | null;
-  recommendation: 'craft' | 'buy' | 'unprofitable' | 'unknown';
-  savingsUnit: string | null;
-  savingsPercent: number | null;
-  marketStock: number | null;
-  totalTrades: string | null;
-  advice: string;
-}
-
 @Component({
   selector: 'app-recipe-tree',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -242,11 +228,13 @@ export class RecipeTree {
   readonly yieldDescription = computed(() => {
     const root = this.root();
     if (!root?.recipe) return 'Item sem receita direta';
-    const fixed =
-      fixedRecipeYield(root.recipe, root.part.itemId) ??
-      (Number(root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity) ||
-        null);
-    if (fixed !== null) return `Rendimento fixo: ${fixed} un / receita`;
+    const fixed = fixedRecipeYield(root.recipe, root.part.itemId);
+    if (fixed !== null) return `Rendimento fixo verificado: ${fixed} un / receita`;
+    const catalogQuantity = Number(
+      root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
+    );
+    if (catalogQuantity > 0)
+      return `Saída do catálogo: ${catalogQuantity} un / receita; proc adicional não modelado`;
     if (root.yield !== null && root.yield > 0) {
       return `Rendimento ajustado: ${root.yield} un / receita`;
     }
@@ -331,43 +319,43 @@ export class RecipeTree {
     const quotes = this.marketQuotes();
     const partsMap = this.parts();
 
-    return itemIds.map((itemId) => {
-      const plannerRow = plannerRows.find((r) => r.itemId === itemId);
-      const name = this.productionMaterialName(itemId);
-      const part = partsMap.get(itemId);
-      const iconUrl = this.catalog.resolveIconUrl(part ?? { iconUrl: null });
-      const canProduce = this.makeChoice(itemId) !== 'buy';
-      const source = this.materialSource(itemId);
-      const sourceLabel = this.materialSourceLabel(itemId);
-      const required = plannerRow?.required ?? 0;
-      const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
-      const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
-      const fromStock = plannerRow?.owned ?? 0;
-      const unitPrice = this.price(itemId);
-      const totalMarketCost = this.materialPurchaseValue(itemId, required);
-      const liveQuote = quotes.get(itemId);
-      const stock = liveQuote?.stock ?? null;
-      const totalTrades = liveQuote?.totalTrades ?? null;
-      const insight = this.findIntermediateInsight(itemId);
+    return itemIds
+      .map((itemId) => {
+        const plannerRow = plannerRows.find((r) => r.itemId === itemId);
+        const name = this.productionMaterialName(itemId);
+        const part = partsMap.get(itemId);
+        const iconUrl = this.catalog.resolveIconUrl(part ?? { iconUrl: null });
+        const canProduce = this.makeChoice(itemId) !== 'buy';
+        const source = this.materialSource(itemId);
+        const sourceLabel = this.materialSourceLabel(itemId);
+        const required = plannerRow?.required ?? 0;
+        const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
+        const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
+        const fromStock = plannerRow?.owned ?? 0;
+        const unitPrice = this.price(itemId);
+        const totalMarketCost = this.materialPurchaseValue(itemId, required);
+        const liveQuote = quotes.get(itemId);
+        const stock = liveQuote?.stock ?? null;
+        const totalTrades = liveQuote?.totalTrades ?? null;
 
-      return {
-        itemId,
-        name,
-        iconUrl,
-        required,
-        bought,
-        produced,
-        fromStock,
-        source,
-        sourceLabel,
-        canProduce,
-        unitPrice,
-        totalMarketCost,
-        stock,
-        totalTrades,
-        insight,
-      };
-    });
+        return {
+          itemId,
+          name,
+          iconUrl,
+          required,
+          bought,
+          produced,
+          fromStock,
+          source,
+          sourceLabel,
+          canProduce,
+          unitPrice,
+          totalMarketCost,
+          stock,
+          totalTrades,
+        };
+      })
+      .filter((item) => item.required > 0);
   });
 
   private materialItemIds(): number[] {
@@ -431,39 +419,8 @@ export class RecipeTree {
       this.optimizationMessage.set('Melhor combinação por lucro aplicada com sucesso.');
       return;
     }
-
-    const sources = new Map<number, ProductionChoice>();
-    let producedCount = 0;
-    let boughtCount = 0;
-    for (const itemId of this.materialItemIds()) {
-      const canProduce = this.makeChoice(itemId) !== 'buy';
-      if (!canProduce) {
-        sources.set(itemId, 'buy');
-        boughtCount++;
-        continue;
-      }
-      const insight = this.findIntermediateInsight(itemId);
-      if (insight?.recommendation === 'craft') {
-        sources.set(itemId, this.makeChoice(itemId));
-        producedCount++;
-      } else if (insight?.recommendation === 'buy') {
-        sources.set(itemId, 'buy');
-        boughtCount++;
-      } else {
-        const price = this.price(itemId);
-        if (price === null) {
-          sources.set(itemId, this.makeChoice(itemId));
-          producedCount++;
-        } else {
-          sources.set(itemId, 'buy');
-          boughtCount++;
-        }
-      }
-    }
-    this.customMaterialSource.set(sources);
-    this.acquisitionStrategy.set('optimized');
     this.optimizationMessage.set(
-      `Melhor combinação aplicada: ${producedCount} para produzir e ${boughtCount} para comprar no mercado.`,
+      `Não há combinação conclusiva: ${result?.incomplete.find((plan) => plan.scenario === 'optimized')?.issues.length ?? 1} dados da cadeia precisam ser confirmados.`,
     );
   }
 
@@ -471,10 +428,19 @@ export class RecipeTree {
     const path = this.allocationPath(itemId);
     this.action({ path, action: 'source' });
     this.graph()?.center(path);
+  }
+
+  closeDetails(): void {
+    const itemId = this.selectedNode()?.part.itemId;
+    this.detailsOpen.set(false);
+    if (itemId === undefined) return;
     setTimeout(() => {
-      const tray = document.querySelector('.bottom-details-tray');
-      tray?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 50);
+      document
+        .querySelector<HTMLElement>(
+          `.sidebar-material-row[data-item-id="${itemId}"] .sidebar-material-details`,
+        )
+        ?.focus({ preventScroll: true });
+    }, 0);
   }
 
   setMasteryOverride(value: number | string | null): void {
@@ -690,6 +656,16 @@ export class RecipeTree {
       null
     );
   });
+  readonly bestProductionPlan = computed(
+    () => this.productionResult()?.ranked.find((plan) => plan.scenario === 'optimized') ?? null,
+  );
+  readonly bestCombinationSummary = computed(() => {
+    const choices = this.bestProductionPlan()?.sourceChoices;
+    if (!choices) return null;
+    const values = Object.values(choices);
+    const made = values.filter((choice) => choice === 'produce' || choice === 'gather').length;
+    return `${made} fazer/coletar · ${values.length - made} comprar`;
+  });
   readonly methodCalibrationRows = computed(() => {
     const graph = this.recipeGraph();
     if (!graph) return [];
@@ -760,22 +736,8 @@ export class RecipeTree {
   });
 
   readonly effectiveMaterialCost = computed(() => {
-    const planCost = this.currentProductionPlan()?.economicCost;
-    if (planCost !== null && planCost !== undefined) return planCost;
-    const decisions = this.materialDecisions();
-    let totalCost = 0n;
-    let hasKnown = false;
-    for (const item of decisions) {
-      if (item.source === 'buy' || !item.canProduce) {
-        const p = item.unitPrice ?? this.price(item.itemId);
-        if (p && /^\d+$/.test(p)) {
-          const qty = BigInt(Math.max(0, item.bought || item.required));
-          totalCost += BigInt(p) * qty;
-          hasKnown = true;
-        }
-      }
-    }
-    return hasKnown ? String(totalCost) : null;
+    const plan = this.currentProductionPlan();
+    return plan && plan.issues.length === 0 ? plan.economicCost : null;
   });
 
   readonly productPrice = computed(() => {
@@ -788,30 +750,12 @@ export class RecipeTree {
   });
 
   readonly netRevenue = computed(() => {
-    const fromPlan = this.currentProductionPlan()?.netRevenue;
-    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
-    const price = this.productPrice();
-    const ops = this.operationsCount();
-    const yieldVal = this.effectiveYield();
-    if (!price || !/^\d+$/.test(price) || ops <= 0) return null;
-    try {
-      const gross = BigInt(price) * BigInt(Math.floor(ops * yieldVal));
-      const taxRetention = 8450n;
-      return String((gross * taxRetention) / 10000n);
-    } catch {
-      return null;
-    }
+    return this.currentProductionPlan()?.netRevenue ?? null;
   });
 
   readonly profit = computed(() => {
-    const fromPlan = this.currentProductionPlan()?.profit;
-    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
-    const rev = this.netRevenue();
-    const cost = this.effectiveMaterialCost();
-    if (rev !== null && cost !== null && /^\d+$/.test(rev) && /^\d+$/.test(cost)) {
-      return String(BigInt(rev) - BigInt(cost));
-    }
-    return null;
+    const plan = this.currentProductionPlan();
+    return plan && plan.issues.length === 0 ? plan.profit : null;
   });
 
   readonly isPositiveProfit = computed(() => {
@@ -839,6 +783,7 @@ export class RecipeTree {
   });
 
   readonly primaryMethod = computed(() => this.root()?.recipe?.type ?? '');
+  readonly masteryApplies = computed(() => lifeSkillForRecipe(this.primaryMethod()) !== null);
 
   readonly primarySkillLabel = computed(() => {
     const root = this.root();
@@ -855,12 +800,6 @@ export class RecipeTree {
     if (!method) return 1.2;
     return this.methodTimes().get(method) ?? defaultRecipeMethodSeconds(method);
   });
-
-  setPrimaryMethodSeconds(value: number | string | null): void {
-    const method = this.primaryMethod();
-    if (!method) return;
-    this.setMethodTime(method, value);
-  }
 
   readonly effectiveMethodTimes = computed(() => {
     const custom = this.methodTimes();
@@ -922,192 +861,9 @@ export class RecipeTree {
   });
 
   readonly profitPerHour = computed(() => {
-    const fromPlan = this.currentProductionPlan()?.profitPerHour;
-    if (fromPlan !== null && fromPlan !== undefined) return fromPlan;
-    const p = this.profit();
-    const time = this.totalCraftTimeSeconds();
-    if (p === null || time === null || time <= 0) return null;
-    try {
-      const pBig = BigInt(p);
-      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
-      return String((pBig * 3_600_000n) / timeMs);
-    } catch {
-      return null;
-    }
+    const plan = this.currentProductionPlan();
+    return plan && plan.issues.length === 0 ? plan.profitPerHour : null;
   });
-
-  readonly revenuePerHour = computed(() => {
-    const net = this.netRevenue();
-    const time = this.totalCraftTimeSeconds();
-    if (net === null || time === null || time <= 0) return null;
-    try {
-      const netBig = BigInt(net);
-      const timeMs = BigInt(Math.max(1, Math.round(time * 1000)));
-      return String((netBig * 3_600_000n) / timeMs);
-    } catch {
-      return null;
-    }
-  });
-
-  readonly rootInsight = computed<MakeVsBuyTradeInsight | null>(() => {
-    const root = this.root();
-    if (!root) return null;
-    const itemId = root.part.itemId;
-    const quote = this.marketQuotes().get(itemId);
-    const marketPrice = this.price(itemId);
-    const produced = this.producedQuantity();
-    const matCost = this.effectiveMaterialCost();
-
-    if (!produced || produced <= 0) return null;
-    if (marketPrice === null) {
-      return {
-        itemId,
-        name: root.part.name,
-        isRoot: true,
-        marketPrice: null,
-        craftCostUnit:
-          matCost === null ? null : String(BigInt(matCost) / BigInt(Math.floor(produced))),
-        recommendation: 'unknown',
-        savingsUnit: null,
-        savingsPercent: null,
-        marketStock: null,
-        totalTrades: quote?.totalTrades ?? null,
-        advice: 'Sem cotação de venda disponível para estimar o faturamento e a margem.',
-      };
-    }
-    if (matCost === null) {
-      return {
-        itemId,
-        name: root.part.name,
-        isRoot: true,
-        marketPrice,
-        craftCostUnit: null,
-        recommendation: 'unknown',
-        savingsUnit: null,
-        savingsPercent: null,
-        marketStock: null,
-        totalTrades: quote?.totalTrades ?? null,
-        advice: 'Informe os tempos dos métodos e os dados de venda para calcular a rentabilidade.',
-      };
-    }
-    const craftCostUnitBig = BigInt(matCost) / BigInt(Math.max(1, Math.floor(produced)));
-    const craftCostUnit = String(craftCostUnitBig);
-
-    const marketPriceBig = BigInt(marketPrice);
-    const totalTrades = quote?.totalTrades ?? null;
-
-    if (craftCostUnitBig < marketPriceBig) {
-      const diff = marketPriceBig - craftCostUnitBig;
-      const pct = marketPriceBig > 0n ? Number((diff * 10000n) / marketPriceBig) / 100 : 0;
-      return {
-        itemId,
-        name: root.part.name,
-        isRoot: true,
-        marketPrice,
-        craftCostUnit,
-        recommendation: 'craft',
-        savingsUnit: String(diff),
-        savingsPercent: pct,
-        marketStock: null,
-        totalTrades,
-        advice: `Margem estimada de ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade para venda no Mercado Central.`,
-      };
-    } else {
-      const diff = craftCostUnitBig - marketPriceBig;
-      const pct = craftCostUnitBig > 0n ? Number((diff * 10000n) / craftCostUnitBig) / 100 : 0;
-      return {
-        itemId,
-        name: root.part.name,
-        isRoot: true,
-        marketPrice,
-        craftCostUnit,
-        recommendation: 'unprofitable',
-        savingsUnit: String(diff),
-        savingsPercent: pct,
-        marketStock: null,
-        totalTrades,
-        advice: `Custo de produção acima do preço de venda estimado em ${silver(String(diff))} (${pct.toFixed(1)}%) por unidade.`,
-      };
-    }
-  });
-
-  readonly intermediateInsights = computed<MakeVsBuyTradeInsight[]>(() => {
-    const root = this.root();
-    if (!root) return [];
-    const insights: MakeVsBuyTradeInsight[] = [];
-    const quotes = this.marketQuotes();
-
-    const scan = (node: RecipeNode) => {
-      if (node !== root && node.recipe) {
-        const itemId = node.part.itemId;
-        const quote = quotes.get(itemId);
-        const marketPrice = this.price(itemId);
-        const y = node.yield ?? 1;
-
-        let subCost = 0n;
-        let allInputsHavePrice = true;
-        for (const child of node.children) {
-          const p = this.price(child.part.itemId);
-          const q = Number(child.part.quantity) || 1;
-          if (p === null) {
-            allInputsHavePrice = false;
-          } else {
-            subCost += BigInt(p) * BigInt(q);
-          }
-        }
-
-        if (allInputsHavePrice && y > 0 && marketPrice !== null) {
-          const subCraftCostPerUnit = subCost / BigInt(Math.max(1, Math.round(y)));
-          const marketPriceBig = BigInt(marketPrice);
-          const stock = quote?.stock ?? null;
-          const totalTrades = quote?.totalTrades ?? null;
-
-          if (subCraftCostPerUnit < marketPriceBig) {
-            const diff = marketPriceBig - subCraftCostPerUnit;
-            const pct = marketPriceBig > 0n ? Number((diff * 10000n) / marketPriceBig) / 100 : 0;
-            insights.push({
-              itemId,
-              name: node.part.name,
-              isRoot: false,
-              marketPrice,
-              craftCostUnit: String(subCraftCostPerUnit),
-              recommendation: 'craft',
-              savingsUnit: String(diff),
-              savingsPercent: pct,
-              marketStock: stock,
-              totalTrades,
-              advice: `Compensa craftar (-${silver(String(diff))}/un)`,
-            });
-          } else {
-            const diff = subCraftCostPerUnit - marketPriceBig;
-            const pct =
-              subCraftCostPerUnit > 0n ? Number((diff * 10000n) / subCraftCostPerUnit) / 100 : 0;
-            insights.push({
-              itemId,
-              name: node.part.name,
-              isRoot: false,
-              marketPrice,
-              craftCostUnit: String(subCraftCostPerUnit),
-              recommendation: 'buy',
-              savingsUnit: String(diff),
-              savingsPercent: pct,
-              marketStock: stock,
-              totalTrades,
-              advice: `Mais barato comprar pronto (-${silver(String(diff))}/un)`,
-            });
-          }
-        }
-      }
-      node.children.forEach(scan);
-    };
-
-    scan(root);
-    return insights;
-  });
-
-  findIntermediateInsight(itemId: number): MakeVsBuyTradeInsight | null {
-    return this.intermediateInsights().find((i) => i.itemId === itemId) ?? null;
-  }
 
   consultAllTreePrices() {
     const now = Date.now();
@@ -1602,8 +1358,9 @@ export class RecipeTree {
           `.sidebar-material-row[data-item-id="${node.part.itemId}"]`,
         );
         row?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        const tray = document.querySelector('.bottom-details-tray');
-        tray?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document
+          .querySelector<HTMLElement>('.bottom-details-tray .context-close')
+          ?.focus({ preventScroll: true });
       }, 50);
       return;
     }

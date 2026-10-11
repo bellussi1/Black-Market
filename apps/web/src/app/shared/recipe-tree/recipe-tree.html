@@ -70,34 +70,10 @@
                 <button
                   type="button"
                   class="btn-multiplier"
-                  [class.active]="craftCount() === 50"
-                  (click)="setCraftCount(50)"
-                >
-                  50x
-                </button>
-                <button
-                  type="button"
-                  class="btn-multiplier"
                   [class.active]="craftCount() === 100"
                   (click)="setCraftCount(100)"
                 >
                   100x
-                </button>
-                <button
-                  type="button"
-                  class="btn-multiplier"
-                  [class.active]="craftCount() === 500"
-                  (click)="setCraftCount(500)"
-                >
-                  500x
-                </button>
-                <button
-                  type="button"
-                  class="btn-multiplier"
-                  [class.active]="craftCount() === 1000"
-                  (click)="setCraftCount(1000)"
-                >
-                  1.000x
                 </button>
               </div>
             </div>
@@ -116,6 +92,8 @@
                     step="10"
                     class="craft-count-input"
                     placeholder="Ex: 1250"
+                    aria-label="Maestria da profissão"
+                    [disabled]="!masteryApplies()"
                     [ngModel]="displayedMastery()"
                     (ngModelChange)="setMasteryOverride($event)"
                   />
@@ -124,32 +102,9 @@
               </label>
               <div class="craft-param-hint">
                 <span class="yield-badge">{{ yieldDescription() }}</span>
-              </div>
-            </div>
-
-            <!-- Coluna 3: Tempo por Receita & Ação Rápida -->
-            <div class="craft-param-col">
-              <label class="craft-count-control">
-                <span class="control-label-text">
-                  <span class="bdo-diamond">◇</span> Tempo por receita
-                </span>
-                <div class="craft-input-box">
-                  <input
-                    type="number"
-                    min="0.1"
-                    max="60"
-                    step="0.1"
-                    class="craft-count-input"
-                    [ngModel]="primaryMethodSeconds()"
-                    (ngModelChange)="setPrimaryMethodSeconds($event)"
-                  />
-                  <span class="craft-count-unit">seg</span>
-                </div>
-              </label>
-              <div class="craft-param-hint">
-                <span class="produced-badge">
-                  Tempo total: <strong>{{ formattedCraftTime() }}</strong>
-                </span>
+                @if (!masteryApplies()) {
+                  <span i18n>Maestria sem efeito nesta fórmula</span>
+                }
               </div>
             </div>
           </div>
@@ -158,16 +113,9 @@
             <span class="produced-badge" i18n>
               Estimativa do produto: <strong>{{ formattedProducedQuantity() }}</strong> unidades
             </span>
-            <button
-              type="button"
-              class="btn btn-optimizer btn-optimizer-top"
-              [class.subtle]="acquisitionStrategy() !== 'optimized'"
-              (click)="optimizeAcquisition()"
-              [disabled]="treeMarketLoading() || !recipeGraph()"
-              i18n
-            >
-              ★ Maximizar Lucro
-            </button>
+            <span class="produced-badge" i18n>
+              Tempo estimado: <strong>{{ formattedCraftTime() }}</strong>
+            </span>
           </div>
 
           @if (canAdjustRootYield()) {
@@ -258,31 +206,9 @@
         }
       </div>
     </div>
-    @if (ingredientPreview(); as preview) {
-      <section
-        class="material-totals"
-        aria-label="Ingredientes para as receitas selecionadas"
-        aria-live="polite"
-      >
-        <h3>Ingredientes para {{ craftCount() }} receitas</h3>
-        <p class="help">
-          {{ preview.operations }} operações · {{ preview.produced }} unidades previstas.
-          Quantidades totais antes de descontar seu estoque.
-        </p>
-        <ul>
-          @for (ingredient of preview.ingredients; track $index + ':' + craftCount()) {
-            <li>
-              <app-item-icon [url]="catalog.resolveIconUrl(ingredient)" [name]="ingredient.name" />
-              <span>{{ ingredient.name }}</span
-              ><strong>{{ ingredient.total ?? 'A confirmar' }}</strong>
-            </li>
-          }
-        </ul>
-      </section>
-    }
   </section>
   @if (plan(); as result) {
-    @if (result.warnings.length) {
+    @if (result.warnings.length && !result.value) {
       <details class="notice calculation-notices" [open]="!result.value">
         <summary>
           {{ result.warnings.length }} dados a confirmar ·
@@ -299,147 +225,89 @@
         aria-label="Rentabilidade e mercado central"
         i18n-aria-label
       >
-        <div class="panel-heading economic-heading">
+        <div class="economic-summary-header">
           <div>
-            <p class="eyebrow" i18n>MERCADO CENTRAL & RENTABILIDADE</p>
-            <h3 i18n>Rentabilidade e tempo de produção</h3>
+            <h3 i18n>Resultado da receita</h3>
           </div>
-          <div class="economic-toolbar">
-            <div class="cache-sync-indicator">
-              <span class="cache-sync-dot" [class.syncing]="treeMarketLoading()"></span>
-              @if (treeMarketLoading()) {
-                <span i18n>Atualizando cotações automaticamente</span>
-              } @else {
-                <span i18n>Cotações atualizadas automaticamente · cache de 5 min</span>
-              }
-            </div>
-          </div>
+          @if (bestProductionPlan()) {
+            <button type="button" class="btn btn-optimizer" (click)="optimizeAcquisition()" i18n>
+              Aplicar melhor combinação
+            </button>
+          }
         </div>
 
-        @if (treeMarketMessage()) {
-          <p class="notice economic-notice" role="status">{{ treeMarketMessage() }}</p>
-        }
-
-        @if (rootInsight(); as insight) {
-          <div
-            class="insight-decision-card"
-            [class.insight-craft]="insight.recommendation === 'craft'"
-            [class.insight-buy]="insight.recommendation === 'buy'"
-            [class.insight-unprofitable]="insight.recommendation === 'unprofitable'"
-          >
-            <div class="insight-badge-row">
-              @if (insight.recommendation === 'craft') {
-                <span class="badge-decision badge-craft" i18n>VALE A PENA CRAFTAR</span>
-              } @else if (insight.recommendation === 'buy') {
-                <span class="badge-decision badge-buy" i18n>MAIS BARATO COMPRAR DIRETO</span>
-              } @else if (insight.recommendation === 'unprofitable') {
-                <span class="badge-decision badge-unprofitable" i18n
-                  >CUSTO ACIMA DO PREÇO DE VENDA</span
-                >
-              } @else {
-                <span class="badge-decision badge-unknown" i18n>ANÁLISE DE MERCADO</span>
-              }
-              <span class="insight-advice-text">{{ insight.advice }}</span>
-            </div>
-            @if (insight.marketStock !== null || insight.totalTrades) {
-              <div class="insight-meta-row">
-                @if (insight.marketStock !== null) {
-                  <span class="meta-tag">
-                    Estoque no mercado:
-                    <strong>{{ insight.marketStock.toLocaleString('pt-BR') }} un</strong>
-                  </span>
-                }
-                @if (insight.totalTrades) {
-                  <span class="meta-tag">
-                    Transações registradas: <strong>{{ insight.totalTrades }}</strong>
-                  </span>
-                }
-              </div>
-            }
-          </div>
-        }
-
-        <div class="economic-metrics-grid economic-metrics-grid--balanced">
-          <div class="metric-card">
-            <span class="metric-label" i18n>Faturamento líquido</span>
+        <div class="economic-metrics-grid">
+          <div class="metric-card highlight-metric">
+            <span class="metric-label" i18n>Lucro por hora</span>
             <strong class="metric-value">{{
-              netRevenue() !== null ? silver(netRevenue()) : 'Sem cotação'
+              profitPerHour() !== null ? silver(profitPerHour()) : 'Pendente'
             }}</strong>
-            <small class="metric-sub">
-              @if (productPrice() !== null) {
-                <ng-container i18n>Preço un: </ng-container>{{ silver(productPrice()) }}
-              } @else {
-                <ng-container i18n>Sem cotação de venda</ng-container>
-              }
-            </small>
-            <small
-              class="quote-freshness"
-              [class.is-stale]="quoteFreshness(product.part.itemId).stale"
-              >{{ quoteFreshness(product.part.itemId).label }}</small
-            >
           </div>
-
-          <div class="metric-card">
-            <span class="metric-label" i18n>Custo dos materiais</span>
-            <strong class="metric-value">{{
-              effectiveMaterialCost() !== null ? silver(effectiveMaterialCost()) : 'Sem dados'
-            }}</strong>
-            <small class="metric-sub">
-              @if (acquisitionStrategy() === 'gather_all') {
-                <span class="strategy-subtag" i18n>Fontes para fazer/coletar marcadas</span>
-              } @else if (acquisitionStrategy() === 'custom') {
-                <span class="strategy-subtag" i18n>Fontes definidas pelos itens</span>
-              } @else if (acquisitionStrategy() === 'optimized') {
-                <span class="strategy-subtag" i18n>Combinação otimizada aplicada</span>
-              } @else {
-                <span>{{
-                  currentProductionPlan()?.issues?.length
-                    ? 'Parcial · faltam dados'
-                    : 'Materiais comprados'
-                }}</span>
-              }
-            </small>
-          </div>
-
           <div
             class="metric-card profit-card"
             [class.profit-positive]="isPositiveProfit()"
             [class.profit-negative]="isNegativeProfit()"
           >
-            <span class="metric-label" i18n>Lucro líquido total</span>
-            <strong class="metric-value">
-              {{ profit() !== null ? silver(profit()) : '—' }}
-            </strong>
-            <div class="metric-sub">
-              @if (profitMargin() !== null) {
-                <span class="margin-badge">
-                  {{ profitMargin()! >= 0 ? '+' : '' }}{{ profitMargin()!.toFixed(1) }}% margem
-                </span>
-              } @else if (effectiveMaterialCost() === '0') {
-                <small i18n>Sem custo monetário nesta seleção</small>
-              } @else {
-                <small i18n>Aguardando cotações e custo</small>
-              }
-            </div>
+            <span class="metric-label" i18n>Lucro líquido</span>
+            <strong class="metric-value">{{
+              profit() !== null ? silver(profit()) : 'Pendente'
+            }}</strong>
+            @if (profitMargin() !== null) {
+              <small class="metric-sub">{{ profitMargin()!.toFixed(1) }}% de margem</small>
+            }
           </div>
-
-          <div class="metric-card highlight-metric">
-            <span class="metric-label" i18n>Lucro por hora</span>
-            <strong class="metric-value">
-              {{ profitPerHour() !== null ? silver(profitPerHour()) : '—' }}
-            </strong>
-            <small class="metric-sub">
-              {{ operationsCount() }} op. em {{ formattedCraftTime() }}
-            </small>
-          </div>
-
           <div class="metric-card">
-            <span class="metric-label" i18n>Faturamento / hora</span>
-            <strong class="metric-value">
-              {{ revenuePerHour() !== null ? silver(revenuePerHour()) : '—' }}
-            </strong>
-            <small class="metric-sub" i18n>Receita líquida rateada</small>
+            <span class="metric-label" i18n>Custo dos materiais</span>
+            <strong class="metric-value cost-value">{{
+              effectiveMaterialCost() !== null ? silver(effectiveMaterialCost()) : 'Pendente'
+            }}</strong>
           </div>
+          <div class="metric-card">
+            <span class="metric-label" i18n>Faturamento líquido</span>
+            <strong class="metric-value">{{
+              netRevenue() !== null ? silver(netRevenue()) : 'Sem cotação'
+            }}</strong>
+            <small class="metric-sub"
+              >Preço un.: {{ productPrice() !== null ? silver(productPrice()) : '—' }}</small
+            >
+          </div>
+        </div>
+
+        <div class="economic-summary-footer">
+          @if (bestProductionPlan(); as best) {
+            <span
+              >Melhor opção desta fórmula: {{ bestCombinationSummary() }} ·
+              {{ best.profitPerHour !== null ? silver(best.profitPerHour) : '—' }}/h</span
+            >
+          }
+          @if (treeMarketLoading()) {
+            <span role="status" i18n>Atualizando cotações</span>
+          } @else {
+            <span
+              class="quote-freshness"
+              [class.is-stale]="quoteFreshness(product.part.itemId).stale"
+              >{{ quoteFreshness(product.part.itemId).label }}</span
+            >
+          }
+          @if (currentProductionPlan()?.issues?.length) {
+            <details class="production-issues-notice">
+              <summary>
+                Resultado incompleto · {{ currentProductionPlan()!.issues.length }} dados a
+                confirmar
+              </summary>
+              <ul class="production-issues">
+                @for (issue of currentProductionPlan()!.issues; track $index) {
+                  <li>{{ issue.message }}</li>
+                }
+              </ul>
+            </details>
+          }
+          @if (treeMarketMessage().startsWith('Não')) {
+            <span role="status">{{ treeMarketMessage() }}</span>
+          }
+          @if (optimizationMessage()) {
+            <span role="status">{{ optimizationMessage() }}</span>
+          }
         </div>
 
         @if (advanced()) {
@@ -449,75 +317,6 @@
           </details>
         }
       </section>
-
-      <section class="production-overview" aria-label="Resumo da produção" i18n-aria-label>
-        <div>
-          <span i18n>Custo econômico dos materiais</span>
-          <strong class="cost-value">{{
-            effectiveMaterialCost() === null
-              ? 'Sem dados completos'
-              : silver(effectiveMaterialCost())
-          }}</strong>
-          <small i18n>Considera compra, estoque utilizado e fontes escolhidas</small>
-        </div>
-        <div>
-          <span i18n>Etapas planejadas</span
-          ><strong>{{ currentProductionPlan()?.steps?.length ?? 0 }}</strong>
-        </div>
-        <div class="action-buttons-inline">
-          <button type="button" class="btn" (click)="saveShoppingList()" i18n>
-            Salvar lista de materiais
-          </button>
-          <a routerLink="/shopping" class="btn-secondary" i18n>Abrir planejamento →</a>
-        </div>
-      </section>
-      @if (planMessage()) {
-        <p role="status" class="plan-feedback">{{ planMessage() }}</p>
-      }
-      <details class="production-estimates">
-        <summary i18n>
-          Custos e premissas · {{ currentProductionPlan()?.steps?.length ?? 0 }} etapas planejadas
-        </summary>
-        <div class="production-totals" aria-label="Estimativas da produção" i18n-aria-label>
-          <div>
-            <small i18n>Custo econômico</small
-            ><strong>{{
-              effectiveMaterialCost() === null ? 'Incompleto' : silver(effectiveMaterialCost())
-            }}</strong
-            ><span i18n>Mercado e estoque próprio valorizado</span>
-          </div>
-          <div>
-            <small i18n>Preço de venda por unidade</small
-            ><strong>{{ productPrice() === null ? 'Sem cotação' : silver(productPrice()) }}</strong
-            ><span i18n>Referência do Mercado Central</span>
-          </div>
-          <div>
-            <small i18n>Tempo da cadeia</small><strong>{{ formattedCraftTime() }}</strong
-            ><span i18n>Requer calibração dos métodos utilizados</span>
-          </div>
-        </div>
-        @if (advanced()) {
-          <p class="help" i18n>
-            Materiais próprios reduzem o desembolso, mas têm valor econômico. Custos de coleta,
-            energia, ferramentas e tempo não estão incluídos. Valores salvos podem estar antigos;
-            preço não garante uma compra. Valores de trabalhadores são referências de compra, não
-            custos reais de produção da base.
-          </p>
-        }
-        @if (currentProductionPlan(); as activePlan) {
-          @if (activePlan.issues.length) {
-            <p class="help" role="status">
-              Cálculo incompleto: {{ activePlan.issues.length }} dados ou limites precisam de
-              atenção.
-            </p>
-            <ul class="production-issues">
-              @for (issue of activePlan.issues; track $index) {
-                <li>{{ issue.message }}</li>
-              }
-            </ul>
-          }
-        }
-      </details>
     }
 
     <!-- WORKSPACE DE CRAFTING: Canvas 70% + Sidebar de Insumos 30% -->
@@ -550,14 +349,6 @@
             >
               Materiais consolidados
             </button>
-            <button
-              type="button"
-              class="product-details"
-              (click)="action({ path: selectedPath(), action: 'source' })"
-              i18n
-            >
-              Detalhes do item
-            </button>
           </div>
 
           <div class="tree-expansion-controls">
@@ -568,62 +359,11 @@
             @if (bulkRunning()) {
               <button type="button" (click)="stopExpansion()" i18n>Interromper expansão</button>
             }
-            @if (bulkMessage()) {
-              <p role="status">{{ bulkMessage() }}</p>
-            }
-          </div>
-
-          <div
-            class="canvas-viewport-tools"
-            role="group"
-            aria-label="Controles de zoom e navegação do mapa"
-          >
-            <button
-              type="button"
-              class="btn-canvas-tool"
-              (click)="graph()?.scale(0.2)"
-              title="Aproximar zoom (+)"
-              aria-label="Aproximar zoom"
-            >
-              ＋
-            </button>
-            <button
-              type="button"
-              class="btn-canvas-tool"
-              (click)="graph()?.scale(-0.2)"
-              title="Afastar zoom (−)"
-              aria-label="Afastar zoom"
-            >
-              －
-            </button>
-            <button
-              type="button"
-              class="btn-canvas-tool"
-              (click)="graph()?.fit()"
-              title="Ajustar ao espaço visível da tela"
-              aria-label="Ajustar visualização"
-              i18n
-            >
-              Ajustar
-            </button>
-            <button
-              type="button"
-              class="btn-canvas-tool"
-              (click)="graph()?.center('root')"
-              title="Centralizar no produto final"
-              aria-label="Centralizar na raiz"
-              i18n
-            >
-              Centralizar
-            </button>
           </div>
         </div>
 
-        @if (view() === 'tree') {
-          <p class="help" i18n>
-            Clique na linha de um item para ver seus ingredientes. Use Ajustes para trocar
-            ingredientes ou mudar a produção.
-          </p>
+        @if (bulkMessage()) {
+          <p role="status" class="notice">{{ bulkMessage() }}</p>
         }
         @if (contextMessage()) {
           <p role="status" class="notice">{{ contextMessage() }}</p>
@@ -730,47 +470,10 @@
       <aside class="workspace-materials-sidebar panel" aria-label="Insumos e origens da receita">
         <div class="sidebar-header">
           <div class="sidebar-title-row">
-            <h3><span class="bdo-diamond">◇</span> Insumos & Origem</h3>
+            <h3 i18n>Materiais da receita</h3>
             <span class="sidebar-item-count-badge">{{ materialDecisions().length }} itens</span>
           </div>
-
-          <!-- Barra de Ações Rápidas -->
-          <div class="acquisition-toolbar">
-            <div class="segmented-control" role="group" aria-label="Origem dos materiais">
-              <button
-                type="button"
-                [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
-                (click)="setAcquisitionStrategy('buy_all')"
-                [disabled]="!recipeGraph()"
-                i18n
-              >
-                Comprar todos
-              </button>
-              <button
-                type="button"
-                [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
-                (click)="setAcquisitionStrategy('gather_all')"
-                [disabled]="!recipeGraph()"
-                i18n
-              >
-                Fazer tudo
-              </button>
-            </div>
-            <button
-              type="button"
-              class="btn btn-optimizer"
-              [class.subtle]="acquisitionStrategy() !== 'optimized'"
-              [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
-              (click)="optimizeAcquisition()"
-              [disabled]="treeMarketLoading() || !recipeGraph()"
-              i18n
-            >
-              Melhor combinação por lucro/hora
-            </button>
-          </div>
-          @if (optimizationMessage()) {
-            <p class="notice economic-notice" role="status">{{ optimizationMessage() }}</p>
-          }
+          <p class="sidebar-hint" i18n>Marque para fazer ou coletar. Desmarque para comprar.</p>
         </div>
 
         <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
@@ -808,50 +511,36 @@
                 <span class="bdo-checkbox-visual"></span>
               </label>
 
-              <div
-                class="sidebar-item-slot"
+              <button
+                type="button"
+                class="sidebar-material-details"
                 (click)="selectMaterial(item.itemId)"
-                role="button"
-                tabindex="0"
                 [attr.aria-label]="'Ver detalhes de ' + item.name"
               >
-                <app-item-icon [url]="item.iconUrl" [name]="item.name" />
-              </div>
-
-              <div
-                class="sidebar-item-info"
-                (click)="selectMaterial(item.itemId)"
-                role="button"
-                tabindex="0"
-              >
-                <div class="sidebar-item-name-line">
-                  <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
-                  <span class="sidebar-item-qty"
-                    >{{ item.required.toLocaleString('pt-BR') }} un</span
-                  >
-                </div>
-                <div class="sidebar-item-price-line">
-                  @if (item.unitPrice !== null) {
-                    <span class="sidebar-price">{{ silver(item.unitPrice) }}</span>
-                    @if (item.stock !== null) {
-                      <span class="sidebar-stock"
-                        >· Est: {{ item.stock.toLocaleString('pt-BR') }}</span
-                      >
-                    }
-                  } @else {
-                    <span class="sidebar-unlisted" i18n>Sem cotação</span>
-                  }
-                  @if (item.insight; as ins) {
-                    <span
-                      class="sub-insight-chip"
-                      [class.chip-craft]="ins.recommendation === 'craft'"
-                      [class.chip-buy]="ins.recommendation === 'buy'"
+                <span class="sidebar-item-slot">
+                  <app-item-icon [url]="item.iconUrl" [name]="item.name" />
+                </span>
+                <span class="sidebar-item-info">
+                  <span class="sidebar-item-name-line">
+                    <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
+                    <span class="sidebar-item-qty"
+                      >{{ item.required.toLocaleString('pt-BR') }} un</span
                     >
-                      {{ ins.recommendation === 'craft' ? 'Fazer' : 'Comprar' }}
-                    </span>
-                  }
-                </div>
-              </div>
+                  </span>
+                  <span class="sidebar-item-price-line">
+                    @if (item.unitPrice !== null) {
+                      <span class="sidebar-price">{{ silver(item.unitPrice) }}</span>
+                      @if (item.stock !== null) {
+                        <span class="sidebar-stock"
+                          >· Est: {{ item.stock.toLocaleString('pt-BR') }}</span
+                        >
+                      }
+                    } @else {
+                      <span class="sidebar-unlisted" i18n>Sem cotação</span>
+                    }
+                  </span>
+                </span>
+              </button>
 
               <div
                 class="sidebar-source-badge"
@@ -873,15 +562,13 @@
         </div>
 
         <div class="sidebar-footer">
-          <div class="footer-cost-row">
-            <span i18n>Custo de materiais:</span>
-            <strong>{{
-              effectiveMaterialCost() !== null ? silver(effectiveMaterialCost()) : 'Sem dados'
-            }}</strong>
-          </div>
           <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>
             Salvar lista de compras
           </button>
+          @if (planMessage()) {
+            <p role="status" class="plan-feedback">{{ planMessage() }}</p>
+          }
+          <a routerLink="/shopping" class="footer-link" i18n>Abrir planejamento</a>
         </div>
       </aside>
     </div>
@@ -901,9 +588,7 @@
               {{ context()?.node?.part?.name ?? selectedNode()?.part?.name }}</strong
             >
           </div>
-          <button type="button" class="context-close" (click)="detailsOpen.set(false)" i18n>
-            Fechar
-          </button>
+          <button type="button" class="context-close" (click)="closeDetails()" i18n>Fechar</button>
         </div>
 
         @if (contextLoading()) {

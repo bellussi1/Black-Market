@@ -317,6 +317,39 @@ describe('Interactive recipe tree', () => {
     vi.useRealTimers();
   });
 
+  it('explains when catalog output has no supported mastery proc model', async () => {
+    const catalogYield: CatalogRecipe = {
+      ...recipe,
+      outputs: [{ itemId: 5301, name: item.name, quantity: '1' }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: catalogYield, selectedItem: item },
+      providers().list,
+    );
+    expect(fixture.componentInstance.yieldDescription()).toContain('proc adicional não modelado');
+    fixture.destroy();
+  });
+
+  it('does not offer a mastery override for simple alchemy with fixed output', async () => {
+    const simpleRecipe: CatalogRecipe = {
+      ...recipe,
+      type: 'SIMPLE_ALCHEMY',
+      outputs: [{ itemId: 5301, name: item.name, quantity: '1' }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: simpleRecipe, selectedItem: item },
+      providers().list,
+    );
+    const masteryInput = fixture.nativeElement.querySelector(
+      'input[aria-label="Maestria da profissão"]',
+    ) as HTMLInputElement;
+    expect(masteryInput.disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Maestria sem efeito nesta fórmula');
+    fixture.destroy();
+  });
+
   it('does not mutate the active character mastery when a local override changes', async () => {
     const fixture = await renderComponent(
       RecipeTree,
@@ -491,7 +524,7 @@ describe('Interactive recipe tree', () => {
 
     expect(buttons).not.toContain('Personalizado');
     expect(text).not.toContain('ESTOQUE ZERADO NO MERCADO');
-    expect(tree.rootInsight()?.advice).not.toContain('única forma de obtenção');
+    expect(text).not.toContain('única forma de obtenção');
     tree.view.set('list');
     fixture.detectChanges();
     const sourceCheckbox = fixture.nativeElement.querySelector(
@@ -574,9 +607,13 @@ describe('Interactive recipe tree', () => {
       [9002, 20],
       [9003, 10],
     ]);
-    expect(fixture.nativeElement.querySelector('.material-totals h3').textContent).toContain(
-      '10 receitas',
-    );
+    const rows = [...fixture.nativeElement.querySelectorAll('.sidebar-material-row')];
+    expect(rows).toHaveLength(3);
+    expect(rows.map((row: Element) => row.textContent)).toEqual([
+      expect.stringContaining('X'),
+      expect.stringContaining('Y'),
+      expect.stringContaining('Z'),
+    ]);
   });
   it('expands nested unique recipes and stops cycles without losing recipes on collapse', async () => {
     const mocks = providers();
@@ -688,17 +725,17 @@ describe('Interactive recipe tree', () => {
     tree.setCraftCount(10);
     fixture.detectChanges();
     expect(
-      fixture.nativeElement.querySelector('.production-overview .cost-value')?.textContent,
-    ).toContain('Sem dados completos');
+      fixture.nativeElement.querySelector('.economic-metrics-grid .cost-value')?.textContent,
+    ).toContain('Pendente');
     configureProduction(tree, { 5301: '1000', 9001: '5' });
     tree.setMethodTime('ALCHEMY', 1);
     fixture.detectChanges();
     expect(tree.advanced()).toBe(false);
     expect(
-      fixture.nativeElement.querySelector('.production-overview .cost-value')?.textContent,
+      fixture.nativeElement.querySelector('.economic-metrics-grid .cost-value')?.textContent,
     ).toContain('100');
     expect(
-      fixture.nativeElement.querySelector('.production-overview').closest('details'),
+      fixture.nativeElement.querySelector('.economic-dashboard').closest('details'),
     ).toBeNull();
   });
   it('keeps required yield accessible and preserves the graph and planning choices across modes', async () => {
@@ -996,24 +1033,39 @@ describe('Interactive recipe tree', () => {
     expect(tree.netRevenue()).not.toBeNull();
     expect(tree.profit()).not.toBeNull();
     expect(tree.profitPerHour()).not.toBeNull();
-    expect(tree.revenuePerHour()).not.toBeNull();
     expect(tree.isPositiveProfit()).toBe(true);
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.economic-dashboard')).toBeTruthy();
     const metricsGrid = el.querySelector('.economic-metrics-grid');
     expect(metricsGrid).toBeTruthy();
-    expect(metricsGrid?.classList.contains('economic-metrics-grid--balanced')).toBe(true);
-    expect(metricsGrid?.querySelectorAll(':scope > .metric-card')).toHaveLength(5);
-    const acquisitionToolbar = el.querySelector('.acquisition-toolbar');
-    expect(acquisitionToolbar?.querySelectorAll('.segmented-control button')).toHaveLength(2);
-    expect(acquisitionToolbar?.querySelector('.btn-optimizer')).toBeTruthy();
-    expect(
-      [...(acquisitionToolbar?.querySelectorAll('.segmented-control button') ?? [])].filter(
-        (button) => button.getAttribute('aria-pressed') === 'true',
-      ),
-    ).toHaveLength(1);
-    expect(el.textContent).toContain('MERCADO CENTRAL & RENTABILIDADE');
+    expect(metricsGrid?.querySelectorAll(':scope > .metric-card')).toHaveLength(4);
+    expect(el.querySelector('.economic-summary-header .btn-optimizer')).toBeTruthy();
+    expect(el.textContent).toContain('Resultado da receita');
+  });
+
+  it('does not present partial material prices as definitive profit or an optimal combination', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000' });
+    tree.setRootYield(1);
+    tree.setCraftCount(100);
+    tree.setMethodTime('ALCHEMY', 1);
+    fixture.detectChanges();
+
+    expect(tree.currentProductionPlan()?.issues.length).toBeGreaterThan(0);
+    expect(tree.effectiveMaterialCost()).toBeNull();
+    expect(tree.profit()).toBeNull();
+    expect(tree.profitPerHour()).toBeNull();
+    tree.optimizeAcquisition();
+    expect(tree.acquisitionStrategy()).toBe('buy_all');
+    expect(tree.optimizationMessage()).toContain('dados');
+    fixture.destroy();
   });
 
   it('supports single craft count field and updates operations, produced quantity and target', async () => {
@@ -1038,6 +1090,24 @@ describe('Interactive recipe tree', () => {
     expect(el.querySelector('.craft-count-card')).toBeTruthy();
     expect(el.querySelector('.craft-count-input')).toBeTruthy();
     expect(el.textContent).toContain('Quantia de receitas');
+  });
+
+  it('offers one semantic details action per visible material', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    fixture.detectChanges();
+
+    const row: Element | null = fixture.nativeElement.querySelector('.sidebar-material-row');
+    expect(row).not.toBeNull();
+    expect(row!.querySelectorAll('button')).toHaveLength(1);
+    expect(row!.querySelector('[role="button"]')).toBeNull();
+    fixture.destroy();
   });
 
   it('automatically estimates yield from life skill and character mastery', async () => {
@@ -1095,7 +1165,7 @@ describe('Interactive recipe tree', () => {
     expect(tree.effectiveMaterialCost()).toBe(baseCost);
   });
 
-  it('computes Make vs Buy insights for final product and intermediate components', async () => {
+  it('keeps sale profitability independent from final product market stock', async () => {
     const dependencies = providers(),
       fixture = await renderComponent(
         RecipeTree,
@@ -1110,31 +1180,25 @@ describe('Interactive recipe tree', () => {
     tree.marketQuotes.update((q) => new Map(q).set(5301, { ...q.get(5301)!, stock: 50 }));
     fixture.detectChanges();
 
-    const craftInsight = tree.rootInsight();
-    expect(craftInsight).not.toBeNull();
-    expect(craftInsight?.recommendation).toBe('craft');
-    expect(craftInsight?.advice).toContain('Margem estimada');
-    expect(craftInsight?.marketStock).toBeNull();
-    expect(craftInsight?.totalTrades).toBe('10000');
+    const initialProfit = tree.profit();
+    expect(initialProfit).not.toBeNull();
 
     // When material price is very high: Sal = 800 -> craft cost 1600 > market price 1000
     tree.livePrices.update((p) => new Map(p).set(9001, '800'));
     tree.marketQuotes.update((q) => new Map(q).set(9001, { ...q.get(9001)!, price: '800' }));
     fixture.detectChanges();
-    const buyInsight = tree.rootInsight();
-    expect(buyInsight?.recommendation).toBe('unprofitable');
-    expect(buyInsight?.advice).toContain('preço de venda estimado');
+    const higherCostProfit = tree.profit();
+    expect(higherCostProfit).not.toBeNull();
+    expect(BigInt(higherCostProfit!)).toBeLessThan(BigInt(initialProfit!));
 
     // Zero stock does not turn a sale analysis into a recommendation about obtaining the item.
     tree.marketQuotes.update((q) => new Map(q).set(5301, { ...q.get(5301)!, stock: 0 }));
     fixture.detectChanges();
-    const unavailableInsight = tree.rootInsight();
-    expect(unavailableInsight?.recommendation).not.toBe('scarce');
-    expect(unavailableInsight?.advice).not.toContain('Estoque zerado');
     expect(tree.netRevenue()).not.toBeNull();
+    expect(tree.profit()).toBe(higherCostProfit);
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.insight-decision-card')).toBeTruthy();
+    expect(el.querySelector('.economic-dashboard')).toBeTruthy();
     expect(el.textContent).not.toContain('ESTOQUE ZERADO NO MERCADO');
     expect(el.textContent).not.toContain('Produzir é a única forma de obtenção imediata');
   });
