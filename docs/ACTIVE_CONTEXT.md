@@ -362,7 +362,10 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
   - Validação visual via Playwright em `http://localhost:4200/recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0` e `http://localhost:4200/recipes/items/1407`: os 5 indicadores financeiros exibem dados reais completos instantaneamente (Faturamento líquido: 27.671.250 prata, Custo dos materiais: 1.050.400 prata, Lucro líquido: +26.620.850 prata [+2.534,4%], Lucro/hora: 801.408.000 prata/h, Faturamento/hora: 833.024.160 prata/h).
 - **Commits atômicos**:
   - `d5be804` `feat(crafting): implement 70/30 workspace layout with BDO checkboxes and bottom details tray`
+  - `b11b5e1` `feat(crafting): add quick batch multipliers and canvas viewport navigation tools`
+- **Novos Controles de Usabilidade Integrados**:
+  - Atalhos Rápidos de Multiplicador de Lote: botões BDO compactos de 1 clique (`1x`, `10x`, `50x`, `100x`, `500x`, `1.000x`) com realce dourado ativo e cálculo em tempo real de materiais e custos.
+  - Controles de Viewport do Canvas: barra integrada no topo do grafo com botões discretos de zoom (`＋`, `－`), `Ajustar` (ajuste perfeito ao viewport) e `Centralizar` (centralização no produto final).
 - **Próximos passos**:
   - Catálogo de receitas geral: explorar ordenação paginada por lucro estimado preservando limites de requisição.
   - Testes end-to-end automatizados de fluxo de crafting no Playwright.
-

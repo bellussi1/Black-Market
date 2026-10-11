@@ -43,6 +43,60 @@
               <span class="craft-count-unit" i18n>receitas</span>
             </div>
           </label>
+          <div
+            class="craft-quick-multipliers"
+            role="group"
+            aria-label="Atalhos de lote de receitas"
+          >
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 1"
+              (click)="setCraftCount(1)"
+            >
+              1x
+            </button>
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 10"
+              (click)="setCraftCount(10)"
+            >
+              10x
+            </button>
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 50"
+              (click)="setCraftCount(50)"
+            >
+              50x
+            </button>
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 100"
+              (click)="setCraftCount(100)"
+            >
+              100x
+            </button>
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 500"
+              (click)="setCraftCount(500)"
+            >
+              500x
+            </button>
+            <button
+              type="button"
+              class="btn-multiplier"
+              [class.active]="craftCount() === 1000"
+              (click)="setCraftCount(1000)"
+            >
+              1.000x
+            </button>
+          </div>
           <div class="craft-yield-meta">
             <span class="yield-badge">{{ yieldDescription() }}</span>
             <span class="produced-badge" i18n>
@@ -475,6 +529,51 @@
             @if (bulkMessage()) {
               <p role="status">{{ bulkMessage() }}</p>
             }
+          </div>
+
+          <div
+            class="canvas-viewport-tools"
+            role="group"
+            aria-label="Controles de zoom e navegação do mapa"
+          >
+            <button
+              type="button"
+              class="btn-canvas-tool"
+              (click)="graph()?.scale(0.2)"
+              title="Aproximar zoom (+)"
+              aria-label="Aproximar zoom"
+            >
+              ＋
+            </button>
+            <button
+              type="button"
+              class="btn-canvas-tool"
+              (click)="graph()?.scale(-0.2)"
+              title="Afastar zoom (−)"
+              aria-label="Afastar zoom"
+            >
+              －
+            </button>
+            <button
+              type="button"
+              class="btn-canvas-tool"
+              (click)="graph()?.fit()"
+              title="Ajustar ao espaço visível da tela"
+              aria-label="Ajustar visualização"
+              i18n
+            >
+              Ajustar
+            </button>
+            <button
+              type="button"
+              class="btn-canvas-tool"
+              (click)="graph()?.center('root')"
+              title="Centralizar no produto final"
+              aria-label="Centralizar na raiz"
+              i18n
+            >
+              Centralizar
+            </button>
           </div>
         </div>
 
