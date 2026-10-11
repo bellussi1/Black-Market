@@ -14,6 +14,7 @@ import type { CatalogItem } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import type { StorageCsvRow } from '../../core/storage-csv';
@@ -24,15 +25,17 @@ import { validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { download } from '../../shared/download';
 import { number, silver } from '../../shared/formatters';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 type Stock = Workspace['inventory'][number];
 type Project = Workspace['projects'][number];
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-storage-page',
-  imports: [FormsModule, RouterLink, CatalogItemPicker],
+  imports: [FormsModule, RouterLink, CatalogItemPicker, ItemIcon],
   templateUrl: './storage-page.html',
 })
 export class StoragePage implements OnDestroy {
+  readonly catalogApi = inject(CatalogApiService);
   private readonly analytics = inject(AnalyticsService);
   private readonly catalog = inject(CatalogApiService);
   private importRequest?: Subscription;
@@ -215,6 +218,7 @@ export class StoragePage implements OnDestroy {
   }
   readonly store = inject(WorkspaceStore);
   readonly tab = signal('stock');
+  readonly viewMode = signal<'grid' | 'table'>('table');
   search = '';
   location = '';
   draft: Stock = this.newStock();
@@ -223,6 +227,9 @@ export class StoragePage implements OnDestroy {
   readonly error = signal('');
   readonly silver = silver;
   readonly number = number;
+  resolveIcon(row: Stock): string | null {
+    return row.itemId ? `${environment.apiBaseUrl}/api/v1/items/${row.itemId}/icon` : null;
+  }
   selectStock(item: CatalogItem | null): void {
     this.draft = { ...this.draft, name: item?.name || '', itemId: item?.id };
   }

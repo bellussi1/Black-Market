@@ -259,44 +259,112 @@
           </select></label
         >
       </div>
-      @if (rows.length) {
-        <div class="max-w-full overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th><ng-container i18n>Item</ng-container></th>
-                <th><ng-container i18n>Local</ng-container></th>
-                <th class="numeric"><ng-container i18n>Tenho</ng-container></th>
-                <th class="numeric"><ng-container i18n>Meta</ng-container></th>
-                <th class="numeric"><ng-container i18n>Falta</ng-container></th>
-                <th class="numeric"><ng-container i18n>Preço</ng-container></th>
-                <th><ng-container i18n>Ações</ng-container></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of rows; track row.id) {
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td>{{ row.location }}</td>
-                  <td class="numeric">{{ number(row.quantity, 0) }}</td>
-                  <td class="numeric">{{ number(row.target, 0) }}</td>
-                  <td class="numeric">
-                    {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
-                  </td>
-                  <td class="numeric">{{ silver(row.price) }}</td>
-                  <td>
-                    <button type="button" class="btn subtle" (click)="edit(row)">
-                      <ng-container i18n>Editar</ng-container>
-                    </button>
-                    <button type="button" class="btn danger" (click)="remove(row.id)">
-                      <ng-container i18n>Excluir </ng-container>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+      <div
+        class="action-row"
+        style="margin-bottom: 16px; justify-content: space-between; align-items: center"
+      >
+        <div class="view-mode-toggle segmented-control">
+          <button
+            type="button"
+            class="btn subtle"
+            [class.active]="viewMode() === 'grid'"
+            [attr.aria-pressed]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
+          >
+            Grade do jogo
+          </button>
+          <button
+            type="button"
+            class="btn subtle"
+            [class.active]="viewMode() === 'table'"
+            [attr.aria-pressed]="viewMode() === 'table'"
+            (click)="viewMode.set('table')"
+          >
+            Lista detalhada
+          </button>
         </div>
+        <span class="help">{{ rows.length }} itens filtrados</span>
+      </div>
+      @if (rows.length) {
+        @if (viewMode() === 'grid') {
+          <div
+            class="storage-game-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+              gap: 6px;
+              padding: 12px;
+              background: var(--bm-input);
+              border: 1px solid var(--bm-border);
+              border-radius: 2px;
+            "
+          >
+            @for (row of rows; track row.id) {
+              <div
+                class="bdo-slot"
+                tabindex="0"
+                role="button"
+                [attr.title]="
+                  row.name +
+                  ' (' +
+                  row.location +
+                  ') · Tenho: ' +
+                  number(row.quantity, 0) +
+                  (row.target ? ' / Meta: ' + number(row.target, 0) : '')
+                "
+                (click)="edit(row)"
+                (keydown.enter)="edit(row)"
+                style="cursor: pointer"
+              >
+                <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
+                <span class="bdo-slot-count">{{ number(row.quantity, 0) }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="max-w-full overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><ng-container i18n>Item</ng-container></th>
+                  <th><ng-container i18n>Local</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Tenho</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Meta</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Falta</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Preço</ng-container></th>
+                  <th><ng-container i18n>Ações</ng-container></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track row.id) {
+                  <tr>
+                    <td>
+                      <div style="display: inline-flex; align-items: center; gap: 8px">
+                        <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
+                        <span>{{ row.name }}</span>
+                      </div>
+                    </td>
+                    <td>{{ row.location }}</td>
+                    <td class="numeric">{{ number(row.quantity, 0) }}</td>
+                    <td class="numeric">{{ number(row.target, 0) }}</td>
+                    <td class="numeric">
+                      {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
+                    </td>
+                    <td class="numeric">{{ silver(row.price) }}</td>
+                    <td>
+                      <button type="button" class="btn subtle" (click)="edit(row)">
+                        <ng-container i18n>Editar</ng-container>
+                      </button>
+                      <button type="button" class="btn danger" (click)="remove(row.id)">
+                        <ng-container i18n>Excluir </ng-container>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       } @else {
         <div class="empty">
           <strong><ng-container i18n>Seu armazém começa aqui.</ng-container></strong
