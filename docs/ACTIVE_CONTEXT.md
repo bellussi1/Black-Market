@@ -445,3 +445,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Removido “Ordenar por”, seu handler `setSort` e estilos sem uso. A lista mantém ordenação apenas pelos cabeçalhos. Categorias quebram texto e crescem em altura, com rolagem apenas vertical.
 - Arquivos: `features/market/market-board.{html,scss,ts,spec.ts}`, este contexto, revisão de Mercado e referência de interações da skill BDO. Playwright no Docker local mediu `scrollWidth === clientWidth` (143px) no menu; documento móvel com largura 390px sem overflow. Seis cabeçalhos ordenáveis preservados. Capturas ignoradas em `output/playwright/market-menu-{desktop,mobile}.png`.
 - `pnpm check` e `pnpm test` passaram (604 testes). Próximo agente: manter nomes completos nas categorias, sem `white-space: nowrap` ou altura fixa que provoque corte/scroll horizontal; não reintroduzir seletor de ordenação paralelo.
+
+## 27. Busca e paginação de receitas (11/10/2026)
+
+- Picker compartilhado com separação de 16px, padding interno, resultados com altura automática/texto quebrável e entrada suave. Transições de ações e rolagem do dropdown respeitam movimento reduzido. Busca da oficina também recebe espaço após o summary.
+- A lista de receitas permanece montada durante a paginação. Status de atualização fica fora do fluxo e cliques de paginação em andamento são ignorados, evitando desmontagem e salto ao topo durante o carregamento.
+- Arquivos: `shared/catalog-item-picker/catalog-item-picker.scss` e `features/recipes/recipes-page.{ts,html,scss}`. `pnpm check` e `pnpm test` passaram. Playwright em localhost:4200 confirmou dropdown de cerveja com gap 16px, altura de resultado 65px e texto normal; após paginação, scrollY 1273 e navegação montada. Capturas ignoradas em `output/playwright/recipe-{search-spacing,pagination}.png`.
+- Próximo agente: preservar conteúdo existente durante revalidação; não aplicar animações que alterem dimensões de cards. Esta etapa revisou busca/ações/paginação de receitas, não constitui auditoria de todas as animações do aplicativo. Alturas diferentes entre conteúdos finais ainda podem variar; não afirmar CLS global zerado.
