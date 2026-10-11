@@ -19,3 +19,7 @@
 ## Limites
 
 A disponibilidade externa de preços e o tempo calibrado ainda determinam quando o lucro/hora pode ser concluído. Não há lucro real verificado nesta revisão para toda a cadeia do Fármaco do Azul-Profundo. Fonte e política de coleta não foram alteradas. A descrição estática continua em `/market/items/:id`, identificada como dados do catálogo; gráfico e produção pertencem ao detalhe contextual do Mercado.
+
+## Ajuste do menu e ordenação
+
+Removido o seletor “Ordenar por”, seu método sem consumidores e seus estilos. A ordenação explícita da lista fica nos seis cabeçalhos. Categorias usam altura automática e quebra de texto; só a rolagem vertical permanece. Playwright mediu largura visível e `scrollWidth` do menu iguais a 143px no desktop 1440px; no celular 390px, o documento também ficou em 390px. Capturas: `output/playwright/market-menu-{desktop,mobile}.png`.
