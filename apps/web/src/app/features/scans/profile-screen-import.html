@@ -17,7 +17,7 @@
     <li [class.current]="selectedFields().length > 0"><b>03</b><span i18n>Aplicar campos</span></li>
   </ol>
 
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2 i18n>1. Escolha uma captura</h2>
     <p class="help" i18n>
       Envie uma tela nítida. Chat, HUD e diálogos não são usados. A captura permanece na memória
@@ -47,7 +47,7 @@
   </section>
 
   @if (imageUrl()) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>2. Confira a tela e a área</h2>
       <p class="help" i18n>
         A detecção usa títulos reconhecidos e posição do texto. Se houver mais de uma janela,
@@ -57,7 +57,12 @@
 
       @if (panes().length > 1) {
         <label for="profile-pane" i18n>Painel detectado</label>
-        <select id="profile-pane" [ngModel]="paneIndex()" (ngModelChange)="paneChanged($event)">
+        <select
+          appBdoSelect
+          id="profile-pane"
+          [ngModel]="paneIndex()"
+          (ngModelChange)="paneChanged($event)"
+        >
           @for (pane of panes(); track $index) {
             <option [value]="$index">{{ kindLabel(pane.kind) }} · {{ $index + 1 }}</option>
           }
@@ -68,6 +73,7 @@
         <label for="profile-screen-kind" i18n
           >Tipo de tela
           <select
+            appBdoSelect
             id="profile-screen-kind"
             [ngModel]="selectedKind()"
             (ngModelChange)="setKind($event)"
@@ -81,6 +87,7 @@
           <label i18n
             >Esquerda
             <input
+              hlmInput
               type="number"
               min="0"
               [max]="imageSize().width"
@@ -91,6 +98,7 @@
           <label i18n
             >Topo
             <input
+              hlmInput
               type="number"
               min="0"
               [max]="imageSize().height"
@@ -101,6 +109,7 @@
           <label i18n
             >Largura
             <input
+              hlmInput
               type="number"
               min="1"
               [max]="imageSize().width"
@@ -111,6 +120,7 @@
           <label i18n
             >Altura
             <input
+              hlmInput
               type="number"
               min="1"
               [max]="imageSize().height"
@@ -125,20 +135,34 @@
         <div class="ocr-progress" role="status" aria-live="polite">
           <span i18n>Lendo texto localmente…</span>
           <progress [value]="progress()" max="1"></progress>
-          <button type="button" class="btn subtle" (click)="cancelReading()" i18n>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn subtle"
+            (click)="cancelReading()"
+            i18n
+          >
             Cancelar leitura
           </button>
         </div>
       } @else {
-        <button type="button" class="btn subtle" (click)="retry()" i18n>Ler novamente</button>
+        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="retry()" i18n>
+          Ler novamente
+        </button>
       }
     </section>
 
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>3. Escolha o personagem e revise os campos</h2>
       @if (characters().length) {
         <label for="profile-target" i18n>Personagem existente</label>
-        <select id="profile-target" [ngModel]="targetId()" (ngModelChange)="targetId.set($event)">
+        <select
+          appBdoSelect
+          id="profile-target"
+          [ngModel]="targetId()"
+          (ngModelChange)="targetId.set($event)"
+        >
           <option value="" i18n>Escolha um personagem</option>
           @for (character of characters(); track character.id) {
             <option [value]="character.id">
@@ -172,6 +196,7 @@
                   <label class="candidate-value" [for]="'unit-' + candidate.field"
                     >Confirme a unidade antes de selecionar
                     <select
+                      appBdoSelect
                       [id]="'unit-' + candidate.field"
                       [value]="candidate.unit ?? ''"
                       (change)="confirmWeightUnit(candidate, $any($event.target).value)"
@@ -188,6 +213,7 @@
                 <label class="candidate-value" [for]="'candidate-' + candidate.field">
                   <span i18n>Valor revisável</span>
                   <input
+                    hlmInput
                     [id]="'candidate-' + candidate.field"
                     type="text"
                     [value]="displayValue(candidate.value)"
@@ -223,6 +249,7 @@
         <div>
           <label for="manual-profile-field" i18n>Adicionar campo do perfil</label>
           <select
+            appBdoSelect
             id="manual-profile-field"
             [ngModel]="manualField()"
             (ngModelChange)="manualField.set($event)"
@@ -234,6 +261,8 @@
           </select>
         </div>
         <button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn subtle"
           (click)="addManualField()"
@@ -255,6 +284,8 @@
           >
         }
         <button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn"
           (click)="apply()"

@@ -13,6 +13,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { characterSchema, gearSlots } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -22,6 +25,7 @@ import { SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import {
   confirmedEquipmentStatistics,
   emptyEquipmentStatistics,
@@ -107,7 +111,16 @@ interface ScanJob {
 @Component({
   selector: 'app-scans-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, ItemIcon],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    ItemIcon,
+  ],
   templateUrl: './scans-page.html',
   styleUrl: './scans-page.scss',
 })

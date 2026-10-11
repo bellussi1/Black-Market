@@ -10,8 +10,12 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { CharacterProfile } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import type { Crop } from './print-reader';
 import { applyProfileFieldCandidates } from './profile-field-application';
 import {
@@ -123,7 +127,7 @@ function dedupeCandidates(candidates: readonly ScreenFieldCandidate[]): ScreenFi
 @Component({
   selector: 'app-profile-screen-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './profile-screen-import.html',
   styleUrl: './profile-screen-import.scss',
 })
