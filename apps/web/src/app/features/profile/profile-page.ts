@@ -11,6 +11,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { type CharacterProfile, characterSchema, gearSlots, lifeSkills } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -18,10 +21,20 @@ import { validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
 import { silver } from '../../shared/formatters';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CatalogItemPicker, RouterLink, EquipmentSheet],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    CatalogItemPicker,
+    RouterLink,
+    EquipmentSheet,
+  ],
   templateUrl: './profile-page.html',
 })
 export class ProfilePage {
