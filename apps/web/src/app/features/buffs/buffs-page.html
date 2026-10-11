@@ -9,24 +9,28 @@
       </ng-container>
     </p>
   </header>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2 i18n>Artefatos e pedras de luz</h2>
     <p i18n>Consulte as combinações conhecidas, os itens necessários e seus efeitos.</p>
-    <a class="btn" routerLink="/reference/lightstones" i18n>Ver combinações do jogo →</a
-    ><a class="btn subtle" routerLink="/reference/crystals" i18n>Consultar grupos de cristais →</a>
+    <a hlmBtn variant="outline" class="btn" routerLink="/reference/lightstones" i18n
+      >Ver combinações do jogo →</a
+    ><a hlmBtn variant="outline" class="btn subtle" routerLink="/reference/crystals" i18n
+      >Consultar grupos de cristais →</a
+    >
   </section>
   <div
     class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
   >
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Adicionar ou editar buff</ng-container></h2>
       <div class="form-grid">
         <label class="field"
           ><ng-container i18n>Nome</ng-container
-          ><input maxlength="140" [(ngModel)]="draft.name" /></label
+          ><input hlmInput maxlength="140" [(ngModel)]="draft.name" /></label
         ><label class="field"
           ><ng-container i18n>Efeito</ng-container
           ><input
+            hlmInput
             placeholder="Ex.: EXP de treino"
             i18n-placeholder
             maxlength="140"
@@ -34,6 +38,7 @@
         ><label class="field"
           ><ng-container i18n>Grupo exclusivo</ng-container
           ><input
+            hlmInput
             placeholder="Livre, comida, elixir…"
             i18n-placeholder
             maxlength="140"
@@ -46,21 +51,27 @@
           ></label
         ><label class="field"
           ><ng-container i18n>Valor do efeito</ng-container
-          ><input type="number" [(ngModel)]="draft.value" /></label
+          ><input hlmInput type="number" [(ngModel)]="draft.value" /></label
         ><label class="field"
           ><ng-container i18n>Unidade</ng-container
-          ><input maxlength="20" [(ngModel)]="draft.unit" /></label
+          ><input hlmInput maxlength="20" [(ngModel)]="draft.unit" /></label
         ><label class="field"
           ><ng-container i18n>Duração (minutos)</ng-container
-          ><input type="number" min="0" max="1440" [(ngModel)]="draft.duration" /><small
+          ><input hlmInput type="number" min="0" max="1440" [(ngModel)]="draft.duration" /><small
             ><ng-container i18n>Zero para duração indefinida.</ng-container></small
           ></label
         >
       </div>
       <div class="action-row">
-        <button type="button" class="btn" (click)="save()">
+        <button hlmBtn variant="outline" type="button" class="btn" (click)="save()">
           <ng-container i18n>Salvar buff</ng-container></button
-        ><button type="button" class="btn subtle" (click)="draft = newBuff()">
+        ><button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          (click)="draft = newBuff()"
+        >
           <ng-container i18n>Novo buff</ng-container>
         </button>
       </div>
@@ -68,7 +79,7 @@
         <p class="error-box" role="alert">{{ error() }}</p>
       }
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2><ng-container i18n>Combinação ativa</ng-container></h2>
         <span class="badge"
@@ -92,15 +103,24 @@
         </ng-container>
       </p>
       <div class="action-row">
-        <button type="button" class="btn subtle" [disabled]="!active().length" (click)="start()">
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          [disabled]="!active().length"
+          (click)="start()"
+        >
           <ng-container i18n>Iniciar timers </ng-container>
         </button>
       </div>
       <div class="preset-bar">
         <label class="field"
           ><ng-container i18n>Nome da combinação</ng-container
-          ><input maxlength="140" [(ngModel)]="presetName" /></label
+          ><input hlmInput maxlength="140" [(ngModel)]="presetName" /></label
         ><button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn"
           [disabled]="!presetName.trim() || !active().length"
@@ -109,13 +129,15 @@
           <ng-container i18n>Salvar combinação</ng-container></button
         ><label class="field"
           ><ng-container i18n>Combinação salva</ng-container
-          ><select [(ngModel)]="selectedPreset">
+          ><select appBdoSelect [(ngModel)]="selectedPreset">
             <option value=""><ng-container i18n>Escolher</ng-container></option>
             @for (p of store.data().buffPresets; track p.id) {
               <option [value]="p.id">{{ p.name }}</option>
             }
           </select></label
         ><button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn subtle"
           [disabled]="!selectedPreset"
@@ -123,6 +145,8 @@
         >
           <ng-container i18n>Carregar</ng-container></button
         ><button
+          hlmBtn
+          variant="outline"
           type="button"
           class="btn danger"
           [disabled]="!selectedPreset"
@@ -133,10 +157,10 @@
       </div>
     </section>
   </div>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2><ng-container i18n>Biblioteca pessoal de buffs</ng-container></h2>
     <label class="field" style="margin-bottom: 20px"
-      ><ng-container i18n>Buscar nome ou efeito</ng-container><input [(ngModel)]="search"
+      ><ng-container i18n>Buscar nome ou efeito</ng-container><input hlmInput [(ngModel)]="search"
     /></label>
     @if (buffs.length) {
       <div class="max-w-full overflow-x-auto">
@@ -156,6 +180,8 @@
               <tr>
                 <td>
                   <button
+                    hlmBtn
+                    variant="outline"
                     type="button"
                     class="btn subtle"
                     [attr.aria-pressed]="isActive(b)"
@@ -169,10 +195,22 @@
                 <td>{{ b.group }}</td>
                 <td>{{ remaining(b) }}</td>
                 <td>
-                  <button type="button" class="btn subtle" (click)="edit(b)">
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    class="btn subtle"
+                    (click)="edit(b)"
+                  >
                     <ng-container i18n>Editar</ng-container>
                   </button>
-                  <button type="button" class="btn danger" (click)="remove(b.id)">
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    class="btn danger"
+                    (click)="remove(b.id)"
+                  >
                     <ng-container i18n>Excluir</ng-container>
                   </button>
                 </td>
