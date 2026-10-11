@@ -984,7 +984,18 @@ describe('Interactive recipe tree', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.economic-dashboard')).toBeTruthy();
-    expect(el.querySelector('.economic-metrics-grid')).toBeTruthy();
+    const metricsGrid = el.querySelector('.economic-metrics-grid');
+    expect(metricsGrid).toBeTruthy();
+    expect(metricsGrid?.classList.contains('economic-metrics-grid--balanced')).toBe(true);
+    expect(metricsGrid?.querySelectorAll(':scope > .metric-card')).toHaveLength(5);
+    const acquisitionToolbar = el.querySelector('.acquisition-toolbar');
+    expect(acquisitionToolbar?.querySelectorAll('.segmented-control button')).toHaveLength(2);
+    expect(acquisitionToolbar?.querySelector('.btn-optimizer')).toBeTruthy();
+    expect(
+      [...(acquisitionToolbar?.querySelectorAll('.segmented-control button') ?? [])].filter(
+        (button) => button.getAttribute('aria-pressed') === 'true',
+      ),
+    ).toHaveLength(1);
     expect(el.textContent).toContain('MERCADO CENTRAL & RENTABILIDADE');
   });
 

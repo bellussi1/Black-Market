@@ -267,44 +267,41 @@
           <p class="notice economic-notice" role="status">{{ treeMarketMessage() }}</p>
         }
 
-        <div class="strategy-selector-bar">
-          <span class="strategy-label" i18n>Escolha das fontes:</span>
-          <div
-            class="strategy-btn-group"
-            role="group"
-            aria-label="Ações de aquisição dos materiais"
-          >
-            <button
-              type="button"
-              class="btn-strategy"
-              [class.active]="acquisitionStrategy() === 'buy_all'"
-              (click)="setAcquisitionStrategy('buy_all')"
-              [disabled]="!recipeGraph()"
-              i18n
-            >
-              Comprar todos
-            </button>
-            <button
-              type="button"
-              class="btn-strategy"
-              [class.active]="acquisitionStrategy() === 'gather_all'"
-              (click)="setAcquisitionStrategy('gather_all')"
-              [disabled]="!recipeGraph()"
-              i18n
-            >
-              Marcar tudo para fazer / coletar
-            </button>
-            <button
-              type="button"
-              class="btn-strategy"
-              [class.active]="acquisitionStrategy() === 'optimized'"
-              (click)="optimizeAcquisition()"
-              [disabled]="treeMarketLoading() || !recipeGraph()"
-              i18n
-            >
-              Melhor combinação por lucro/hora
-            </button>
+        <div class="acquisition-toolbar">
+          <div class="acquisition-presets">
+            <span class="control-label-text" i18n>Origem dos materiais</span>
+            <div class="segmented-control" role="group" aria-label="Origem dos materiais">
+              <button
+                type="button"
+                [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
+                (click)="setAcquisitionStrategy('buy_all')"
+                [disabled]="!recipeGraph()"
+                i18n
+              >
+                Comprar todos
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
+                (click)="setAcquisitionStrategy('gather_all')"
+                [disabled]="!recipeGraph()"
+                i18n
+              >
+                Fazer / coletar tudo
+              </button>
+            </div>
           </div>
+          <button
+            type="button"
+            class="btn btn-optimizer"
+            [class.subtle]="acquisitionStrategy() !== 'optimized'"
+            [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
+            (click)="optimizeAcquisition()"
+            [disabled]="treeMarketLoading() || !recipeGraph()"
+            i18n
+          >
+            Melhor combinação por lucro/hora
+          </button>
         </div>
         @if (optimizationMessage()) {
           <p class="notice economic-notice" role="status">{{ optimizationMessage() }}</p>
@@ -349,7 +346,7 @@
           </div>
         }
 
-        <div class="economic-metrics-grid">
+        <div class="economic-metrics-grid economic-metrics-grid--balanced">
           <div class="metric-card">
             <span class="metric-label" i18n>Faturamento líquido</span>
             <strong class="metric-value">{{
