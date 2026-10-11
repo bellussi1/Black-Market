@@ -18,6 +18,7 @@ import type {
   LifeSkillRecipeGroup,
   RecipeListResponse,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
 import {
   catchError,
   combineLatest,
@@ -38,10 +39,11 @@ import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { recipeFamilies } from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-recipes-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CatalogItemPicker, ItemIcon, RecipeTree],
+  imports: [HlmButton, BdoSelect, RouterLink, CatalogItemPicker, ItemIcon, RecipeTree],
   templateUrl: './recipes-page.html',
   styleUrl: './recipes-page.scss',
 })

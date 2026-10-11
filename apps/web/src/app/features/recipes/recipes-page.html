@@ -28,7 +28,10 @@
   }
   @if (message()) {
     <p class="error-box" role="alert">
-      {{ message() }} <button type="button" (click)="retry()" i18n>Tentar novamente</button>
+      {{ message() }}
+      <button hlmBtn variant="outline" type="button" (click)="retry()" i18n>
+        Tentar novamente
+      </button>
     </p>
   }
   @if (item(); as selected) {
@@ -43,7 +46,7 @@
         @if (alternatives().length) {
           <section class="recipe-methods">
             <label for="root-recipe" i18n>Fórmula</label
-            ><select id="root-recipe" (change)="choose($event)">
+            ><select appBdoSelect id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
               @for (method of methods(); track method.key) {
                 <option [value]="method.key" [selected]="method.key === selectedMethodKey()">
@@ -68,7 +71,12 @@
       </div>
       <label class="field recipe-group-filter" for="recipe-group">
         <ng-container i18n>Atividade</ng-container>
-        <select id="recipe-group" [value]="recipeGroup()" (change)="filterGroup($event)">
+        <select
+          appBdoSelect
+          id="recipe-group"
+          [value]="recipeGroup()"
+          (change)="filterGroup($event)"
+        >
           <option value="" i18n>Todas as profissões</option>
           <option value="cooking" i18n>Culinária</option>
           <option value="alchemy" i18n>Alquimia</option>
@@ -91,9 +99,16 @@
         }
       </div>
       <nav class="action-row pagination-bar" aria-label="Páginas de receitas" i18n-aria-label>
-        <button (click)="move(-1)" [disabled]="page === 1" i18n>Anterior</button
+        <button hlmBtn variant="outline" (click)="move(-1)" [disabled]="page === 1" i18n>
+          Anterior</button
         ><span>{{ page }}</span
-        ><button (click)="move(1)" [disabled]="page * list.pageSize >= list.total" i18n>
+        ><button
+          hlmBtn
+          variant="outline"
+          (click)="move(1)"
+          [disabled]="page * list.pageSize >= list.total"
+          i18n
+        >
           Próxima
         </button>
       </nav>
