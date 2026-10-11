@@ -52,6 +52,24 @@ const takeRequest = () =>
 
 describe('MarketBoard', () => {
   useMemoryStorage();
+  it('shows only the observed mean price and opens details with the row button', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.items[0].meanPrice = '1100';
+    takeRequest().flush(data);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.col-price')?.textContent).toContain('1.100');
+    expect(element.querySelector('.price-limits')).toBeNull();
+    expect(element.querySelector('thead')?.textContent).not.toContain('Bottom');
+    const selected = vi.fn();
+    fixture.componentInstance.selected.subscribe(selected);
+    element.querySelector<HTMLButtonElement>('.board-item')!.click();
+    expect(selected).toHaveBeenCalledWith(data.items[0]);
+    fixture.componentInstance.toggleColumnSort('meanPrice');
+    expect(fixture.componentInstance.pageOnlyOrdering()).toBe(true);
+    TestBed.inject(HttpTestingController).verify();
+  });
   it('keeps catalogue results visible and explains unavailable provider quotes', async () => {
     const fixture = await renderComponent(MarketBoard);
     const data = response();
@@ -111,7 +129,7 @@ describe('MarketBoard', () => {
     expect(
       element.querySelector('[title="Histórico insuficiente para 24 horas"]')?.textContent?.trim(),
     ).toBe('—');
-    expect(element.textContent).toContain('Bottom');
+    expect(element.textContent).not.toContain('Bottom');
     const emit = vi.spyOn(fixture.componentInstance.selected, 'emit');
     element.querySelector<HTMLButtonElement>('.board-item')!.click();
     expect(emit).toHaveBeenCalledWith(data.items[0]);
@@ -156,7 +174,7 @@ describe('MarketBoard', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain('Catálogo do mercado');
     expect(element.textContent).toContain('Sem cotação');
-    expect(element.querySelectorAll('tbody td')[2].textContent?.trim()).toBe('—');
+    expect(element.querySelector('.col-stock')?.textContent?.trim()).toBe('—');
     expect(element.querySelector<HTMLOptionElement>('option[value="price"]')?.disabled).toBe(true);
     TestBed.inject(HttpTestingController).verify();
   });

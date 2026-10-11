@@ -264,8 +264,34 @@
   width: 100%;
   min-width: 820px;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 14px;
   line-height: 1.35;
+}
+.market-board-table thead th:first-child {
+  width: 35%;
+}
+.market-board-table thead th:nth-child(2) {
+  width: 15%;
+}
+.market-board-table .board-row-cell {
+  padding: 0;
+}
+.board-item.board-full-row {
+  display: grid;
+  grid-template-columns: 35% 15% repeat(4, 12.5%);
+  gap: 0;
+  border-radius: 0;
+  padding: 10px 0;
+}
+.board-full-row > span {
+  padding-inline: 10px;
+}
+.board-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 .market-board-table thead th {
   position: sticky;
@@ -288,6 +314,7 @@
   font-weight: 500;
   cursor: pointer;
   text-align: left;
+  justify-content: flex-start;
   transition: color 0.15s ease;
 }
 .col-sort-btn:hover {
@@ -330,6 +357,8 @@
   font-weight: 400;
 }
 .board-row {
+  position: relative;
+  cursor: pointer;
   transition: background-color 0.15s ease;
   animation: bm-row-fade 0.25s ease-out;
 }
@@ -346,6 +375,11 @@
 .board-row:hover {
   background: var(--bm-surface-raised);
 }
+.board-row:focus-within {
+  outline: 2px solid var(--bm-accent);
+  outline-offset: -2px;
+  background: var(--bm-surface-raised);
+}
 .board-item {
   display: flex;
   align-items: center;
@@ -354,10 +388,16 @@
   border: 0;
   background: transparent;
   text-align: left;
+  justify-content: flex-start;
+  height: auto;
+  white-space: normal;
   color: var(--bm-text);
   padding: 0;
   min-height: 44px;
   cursor: pointer;
+}
+.board-item:active {
+  transform: none;
 }
 .item-meta {
   min-width: 0;
