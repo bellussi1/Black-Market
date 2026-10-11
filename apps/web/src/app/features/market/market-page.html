@@ -57,8 +57,20 @@
     (selected)="selectBoardItem($event)"
   />
   @if (workspaceView() === 'quote') {
+    <header class="item-detail-heading">
+      <button hlmBtn variant="outline" type="button" (click)="workspaceView.set('board')">
+        Voltar ao mercado
+      </button>
+      <app-item-icon [url]="quoteIcon()" [name]="catalogItem()?.name ?? 'Item'" />
+      <h2>{{ catalogItem()?.name || 'Detalhes do item' }}</h2>
+      @if (catalogItem()) {
+        <button hlmBtn variant="outline" type="button" (click)="showItemDetails()">
+          Gráfico e detalhes
+        </button>
+      }
+    </header>
     <section hlmCard class="panel">
-      <details class="market-search" [open]="!live()">
+      <details class="market-search" [open]="!catalogItem()">
         <summary>
           <span i18n>Buscar item</span
           ><strong>{{
@@ -81,7 +93,7 @@
             class="btn subtle"
             [routerLink]="['/market/items', selected.id]"
             i18n
-            >Detalhes do item</a
+            >Descrição e dados do catálogo</a
           >
           <a
             hlmBtn
@@ -150,35 +162,14 @@
           </div>
         }
       </details>
+      @if (lookupError()) {
+        <p role="alert" class="error-box">{{ lookupError() }}</p>
+      }
+      @if (lookupLoading()) {
+        <p role="status">Atualizando preço e estoque…</p>
+      }
       @if (live(); as response) {
         <div class="market-view-toolbar">
-          <div
-            class="segmented-control"
-            role="group"
-            aria-label="Exibição de preços"
-            i18n-aria-label
-          >
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              [attr.aria-pressed]="priceView() === 'gross'"
-              (click)="priceView.set('gross')"
-              i18n
-            >
-              Preço bruto
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              [attr.aria-pressed]="priceView() === 'net'"
-              (click)="priceView.set('net')"
-              i18n
-            >
-              Recebimento líquido
-            </button>
-          </div>
           <label
             ><input
               type="checkbox"
@@ -201,83 +192,123 @@
             }}. Cache informado pela fonte: {{ response.upstreamCacheMinutes }} minutos.
           </ng-container>
         </p>
-        <div class="max-w-full overflow-x-auto">
-          <table class="data-table market-quote-table">
-            <thead>
-              <tr>
-                <th><ng-container i18n>Item / variante</ng-container></th>
-                <th>
-                  {{ priceView() === 'gross' ? 'Preço bruto / unidade' : 'Líquido / unidade' }}
-                </th>
-                <th><ng-container i18n>Estoque</ng-container></th>
-                <th><ng-container i18n>Transações (contador)</ng-container></th>
-                <th><ng-container i18n>Última venda</ng-container></th>
-                <th><ng-container i18n>Ação</ng-container></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of response.items; track item.subId) {
-                <tr>
-                  <td>
-                    <span class="market-item-name"
-                      ><app-item-icon
-                        [url]="quoteIcon()"
-                        [name]="item.name"
-                        [grade]="catalogItem()?.grade ?? null"
-                      />{{ item.name }} · {{ item.subId }}</span
-                    >
-                  </td>
-                  <td>{{ silver(priceView() === 'gross' ? item.price : netPrice(item.price)) }}</td>
-                  <td>{{ number(item.stock, 0) }}</td>
-                  <td>{{ silver(item.totalTrades) }}</td>
-                  <td>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Sem horário informado' }}</td>
-                  <td>
-                    <button
-                      hlmBtn
-                      variant="outline"
-                      type="button"
-                      class="btn subtle"
-                      [disabled]="item.price === null || response.cacheStatus === 'stale'"
-                      (click)="saveLive(item)"
-                    >
-                      <ng-container i18n>Guardar e calcular </ng-container>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        @if (currentQuote(); as item) {
+          <dl class="quote-facts">
+            <div>
+              <dt>Preço atual / unidade</dt>
+              <dd>{{ silver(item.price) }}</dd>
+            </div>
+            <div>
+              <dt>Líquido após taxas</dt>
+              <dd>{{ silver(netPrice(item.price)) }}</dd>
+            </div>
+            <div>
+              <dt>Estoque</dt>
+              <dd>{{ number(item.stock, 0) }}</dd>
+            </div>
+            <div>
+              <dt>Transações registradas</dt>
+              <dd>{{ silver(item.totalTrades) }}</dd>
+            </div>
+            <div>
+              <dt>Limite mínimo</dt>
+              <dd>{{ silver(item.minPrice) }}</dd>
+            </div>
+            <div>
+              <dt>Limite máximo</dt>
+              <dd>{{ silver(item.maxPrice) }}</dd>
+            </div>
+            <div>
+              <dt>Última venda</dt>
+              <dd>{{ item.lastSoldAt ? date(item.lastSoldAt) : 'Não informado' }}</dd>
+            </div>
+            <div>
+              <dt>Preço da última venda</dt>
+              <dd>{{ silver(item.lastSoldPrice) }}</dd>
+            </div>
+          </dl>
+        }
       }
     </section>
-    <div class="notice">
-      <details [open]="!!lookupId()">
-        <summary i18n>Preços, volume e liquidez observados</summary>
-        <label class="field"
-          ><span i18n>Variante do item selecionado</span
-          ><select
-            appBdoSelect
-            [ngModel]="historySubId"
-            (ngModelChange)="historySubId = +$event; showHistory()"
+    <div class="market-analysis-grid">
+      @if (lookupId()) {
+        <section hlmCard class="panel">
+          <app-market-production [itemId]="lookupId()" [subId]="historySubId" />
+        </section>
+      }
+      <section
+        hlmCard
+        class="panel market-history-panel"
+        id="market-history"
+        tabindex="-1"
+        aria-label="Gráfico e detalhes do item"
+      >
+        <details [open]="!!lookupId()">
+          <summary i18n>Preços, volume e liquidez observados</summary>
+          <label class="field"
+            ><span i18n>Variante do item selecionado</span
+            ><select
+              appBdoSelect
+              [ngModel]="historySubId"
+              (ngModelChange)="historySubId = +$event; showHistory()"
+            >
+              @for (item of live()?.items ?? []; track item.subId) {
+                <option [value]="item.subId">{{ item.name }} · {{ item.subId }}</option>
+              }
+            </select></label
           >
-            @for (item of live()?.items ?? []; track item.subId) {
-              <option [value]="item.subId">{{ item.name }} · {{ item.subId }}</option>
-            }
-          </select></label
-        ><button hlmBtn variant="outline" class="btn" (click)="showHistory()" i18n>
-          Consultar histórico
-        </button>
-        <p role="status">{{ historyMessage() }}</p>
-        <div class="mt-6 grid gap-4">
-          <div class="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h3 class="font-semibold" i18n>Evolução das observações</h3>
-              <p class="help" i18n>Veja o que foi registrado pelo Black Market neste item.</p>
+          <p role="status">{{ historyMessage() }}</p>
+          <div class="mt-6 grid gap-4">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h3 class="font-semibold" i18n>Evolução das observações</h3>
+                <p class="help" i18n>Veja o que foi registrado pelo Black Market neste item.</p>
+              </div>
+              <div
+                class="flex flex-wrap gap-2"
+                role="group"
+                aria-label="Período do histórico"
+                i18n-aria-label
+              >
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="btn subtle"
+                  [attr.aria-pressed]="historyRange() === 'day'"
+                  (click)="historyRange.set('day')"
+                  i18n
+                >
+                  24 horas
+                </button>
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="btn subtle"
+                  [attr.aria-pressed]="historyRange() === 'week'"
+                  (click)="historyRange.set('week')"
+                  i18n
+                >
+                  7 dias
+                </button>
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="btn subtle"
+                  [attr.aria-pressed]="historyRange() === 'month'"
+                  (click)="historyRange.set('month')"
+                  i18n
+                >
+                  30 dias
+                </button>
+              </div>
             </div>
             <div
               class="flex flex-wrap gap-2"
               role="group"
-              aria-label="Período do histórico"
+              aria-label="Indicador do gráfico"
               i18n-aria-label
             >
               <button
@@ -285,203 +316,167 @@
                 variant="outline"
                 type="button"
                 class="btn subtle"
-                [attr.aria-pressed]="historyRange() === 'day'"
-                (click)="historyRange.set('day')"
+                [attr.aria-pressed]="historyMetric() === 'price'"
+                (click)="historyMetric.set('price')"
                 i18n
               >
-                24 horas
+                Preço
               </button>
               <button
                 hlmBtn
                 variant="outline"
                 type="button"
                 class="btn subtle"
-                [attr.aria-pressed]="historyRange() === 'week'"
-                (click)="historyRange.set('week')"
+                [attr.aria-pressed]="historyMetric() === 'stock'"
+                (click)="historyMetric.set('stock')"
                 i18n
               >
-                7 dias
+                Estoque
               </button>
               <button
                 hlmBtn
                 variant="outline"
                 type="button"
                 class="btn subtle"
-                [attr.aria-pressed]="historyRange() === 'month'"
-                (click)="historyRange.set('month')"
+                [attr.aria-pressed]="historyMetric() === 'volume'"
+                (click)="historyMetric.set('volume')"
                 i18n
               >
-                30 dias
+                Volume por intervalo
               </button>
             </div>
-          </div>
-          <div
-            class="flex flex-wrap gap-2"
-            role="group"
-            aria-label="Indicador do gráfico"
-            i18n-aria-label
-          >
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyMetric() === 'price'"
-              (click)="historyMetric.set('price')"
-              i18n
-            >
-              Preço
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyMetric() === 'stock'"
-              (click)="historyMetric.set('stock')"
-              i18n
-            >
-              Estoque
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="btn subtle"
-              [attr.aria-pressed]="historyMetric() === 'volume'"
-              (click)="historyMetric.set('volume')"
-              i18n
-            >
-              Volume por intervalo
-            </button>
-          </div>
-          <div class="history-liquidity" aria-live="polite">
-            <strong i18n>Liquidez · giro estimado do estoque</strong>
-            @if (liquidity(); as estimate) {
-              <span>{{ number(estimate.days, 2) }} dias</span>
-              <p class="help" i18n>
-                Estoque observado dividido pelo ritmo de unidades negociadas nas últimas 24 horas:
-                {{ historyValueLabel(estimate.stock) }} em estoque ·
-                {{ historyValueLabel(estimate.volume) }} negociadas. É uma estimativa de giro; a
-                posição das ofertas e a demanda podem mudar.
-              </p>
+            <div class="history-liquidity" aria-live="polite">
+              <strong i18n>Liquidez · giro estimado do estoque</strong>
+              @if (liquidity(); as estimate) {
+                <span>{{ number(estimate.days, 2) }} dias</span>
+                <p class="help" i18n>
+                  Estoque observado dividido pelo ritmo de unidades negociadas nas últimas 24 horas:
+                  {{ historyValueLabel(estimate.stock) }} em estoque ·
+                  {{ historyValueLabel(estimate.volume) }} negociadas. É uma estimativa de giro; a
+                  posição das ofertas e a demanda podem mudar.
+                </p>
+              } @else {
+                <span i18n>— Histórico insuficiente</span>
+                <p class="help" i18n>
+                  A estimativa exige 24 horas completas, estoque conhecido e transações observadas
+                  sem lacunas ou reinícios do contador. Compare estoque e volume por intervalo
+                  enquanto o histórico se forma.
+                </p>
+              }
+            </div>
+            @if (historyChart().samples >= 1) {
+              <div class="min-w-0" aria-live="polite">
+                <svg
+                  class="h-auto w-full overflow-visible text-[var(--accent)]"
+                  viewBox="0 0 720 220"
+                  role="img"
+                  [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
+                >
+                  <title>{{ historyMetricLabel() }}</title>
+                  <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
+                  <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
+                  <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
+                  <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
+                  @if (historyMetric() !== 'volume') {
+                    @for (segment of historyChart().segments; track $index) {
+                      <polyline
+                        [attr.points]="segment"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        vector-effect="non-scaling-stroke"
+                      />
+                    }
+                  }
+                  @for (point of historyChart().dots; track point.fetchedAt) {
+                    @if (historyMetric() === 'volume') {
+                      <line
+                        [attr.x1]="point.x"
+                        [attr.x2]="point.x"
+                        y1="176"
+                        [attr.y2]="point.y"
+                        stroke="currentColor"
+                        stroke-width="4"
+                        vector-effect="non-scaling-stroke"
+                      />
+                    }
+                    <circle [attr.cx]="point.x" [attr.cy]="point.y" r="3" fill="currentColor">
+                      <title>
+                        {{ date(point.fetchedAt) }} · {{ historyValueLabel(point.value)
+                        }}{{
+                          historyMetric() === 'volume'
+                            ? ' unidades em ' + intervalLabel(point.intervalMinutes)
+                            : ''
+                        }}
+                      </title>
+                    </circle>
+                  }
+                </svg>
+                <div class="flex justify-between text-xs text-[var(--text-muted)]">
+                  <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
+                  <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
+                </div>
+                <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
+                  <span>{{ date(historyChart().startAt) }}</span>
+                  <span>{{ date(historyChart().endAt) }}</span>
+                </div>
+                <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
+              </div>
             } @else {
-              <span i18n>— Histórico insuficiente</span>
-              <p class="help" i18n>
-                A estimativa exige 24 horas completas, estoque conhecido e transações observadas sem
-                lacunas ou reinícios do contador. Compare estoque e volume por intervalo enquanto o
-                histórico se forma.
+              <p class="notice" role="status" i18n>
+                Ainda não há observações válidas neste período para desenhar o gráfico. O volume
+                exige duas consultas consecutivas válidas. As consultas começam a formar histórico
+                depois que são registradas.
               </p>
             }
           </div>
-          @if (historyChart().samples >= 1) {
-            <div class="min-w-0" aria-live="polite">
-              <svg
-                class="h-auto w-full overflow-visible text-[var(--accent)]"
-                viewBox="0 0 720 220"
-                role="img"
-                [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
-              >
-                <title>{{ historyMetricLabel() }}</title>
-                <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
-                <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
-                <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
-                <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
-                @if (historyMetric() !== 'volume') {
-                  @for (segment of historyChart().segments; track $index) {
-                    <polyline
-                      [attr.points]="segment"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      vector-effect="non-scaling-stroke"
-                    />
-                  }
-                }
-                @for (point of historyChart().dots; track point.fetchedAt) {
-                  @if (historyMetric() === 'volume') {
-                    <line
-                      [attr.x1]="point.x"
-                      [attr.x2]="point.x"
-                      y1="176"
-                      [attr.y2]="point.y"
-                      stroke="currentColor"
-                      stroke-width="4"
-                      vector-effect="non-scaling-stroke"
-                    />
-                  }
-                  <circle [attr.cx]="point.x" [attr.cy]="point.y" r="3" fill="currentColor">
-                    <title>
-                      {{ date(point.fetchedAt) }} · {{ historyValueLabel(point.value)
-                      }}{{
-                        historyMetric() === 'volume'
-                          ? ' unidades em ' + intervalLabel(point.intervalMinutes)
-                          : ''
-                      }}
-                    </title>
-                  </circle>
-                }
-              </svg>
-              <div class="flex justify-between text-xs text-[var(--text-muted)]">
-                <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
-                <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
-              </div>
-              <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
-                <span>{{ date(historyChart().startAt) }}</span>
-                <span>{{ date(historyChart().endAt) }}</span>
-              </div>
-              <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
-            </div>
-          } @else {
-            <p class="notice" role="status" i18n>
-              Ainda não há observações válidas neste período para desenhar o gráfico. O volume exige
-              duas consultas consecutivas válidas. As consultas começam a formar histórico depois
-              que são registradas.
+          <details class="mt-4">
+            <summary>Como ler estes dados</summary>
+            <p class="help" i18n>
+              Preço e estoque são observações no horário da consulta. Volume é a diferença do
+              contador entre consultas, em unidades por intervalo; passe o cursor sobre um ponto
+              para ver sua duração. Lacunas acima de 16 minutos, dados ausentes e reinícios do
+              contador interrompem o gráfico. As estimativas de liquidez são calculadas apenas
+              quando há cobertura suficiente do período. A média de cotações não representa uma
+              média ponderada das vendas.
             </p>
+          </details>
+          @if (history().length) {
+            <details>
+              <summary>Observações registradas</summary>
+              <p class="help" i18n>
+                Últimas 50 observações do período. O gráfico usa todas as observações disponíveis.
+              </p>
+              <div class="overflow-x-auto">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th i18n>Consulta</th>
+                      <th i18n>Preço</th>
+                      <th i18n>Estoque</th>
+                      <th i18n>Transações (contador)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (point of historySeries().slice(-50); track $index) {
+                      <tr>
+                        <td>{{ date(point.fetchedAt) }}</td>
+                        <td>{{ silver(point.price) }}</td>
+                        <td>
+                          {{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}
+                        </td>
+                        <td>{{ silver(point.totalTrades) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
           }
-        </div>
-        <p class="help mt-4" i18n>
-          Preço e estoque são observações no horário da consulta. Volume é a diferença do contador
-          entre consultas, em unidades por intervalo; passe o cursor sobre um ponto para ver sua
-          duração. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem o
-          gráfico. As estimativas de liquidez são calculadas apenas quando há cobertura suficiente
-          do período. A média de cotações não representa uma média ponderada das vendas.
-        </p>
-        @if (history().length) {
-          <p class="help" i18n>
-            Últimas 50 observações do período. O gráfico usa todas as observações disponíveis.
-          </p>
-          <div class="overflow-x-auto">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th i18n>Consulta</th>
-                  <th i18n>Preço</th>
-                  <th i18n>Estoque</th>
-                  <th i18n>Transações (contador)</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (point of historySeries().slice(-50); track $index) {
-                  <tr>
-                    <td>{{ date(point.fetchedAt) }}</td>
-                    <td>{{ silver(point.price) }}</td>
-                    <td>{{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}</td>
-                    <td>{{ silver(point.totalTrades) }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </details>
-      <ng-container i18n
-        >Seus registros reúnem registros manuais e consultas que você guardou do Arsha. Preço base
-        zero no provedor é exibido como indisponível; registros antigos continuam com seu horário
-        original.
-      </ng-container>
+        </details>
+      </section>
     </div>
   }
   @if (workspaceView() === 'calculator') {

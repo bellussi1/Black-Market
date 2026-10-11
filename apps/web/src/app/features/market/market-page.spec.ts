@@ -112,6 +112,13 @@ describe('MarketPage', () => {
     fixture.detectChanges();
     expect(page.live()?.items[0].price).toBe('340000');
     expect(page.form().price).toBe('340000');
+    const dataset = { version: 'test-dataset' };
+    http
+      .expectOne((r) => r.url.endsWith('/items/676'))
+      .flush({ item: { id: 676, name: 'Example', categories: [] }, dataset });
+    http
+      .expectOne((r) => r.url.endsWith('/items/676/recipes'))
+      .flush({ recipes: [], total: 0, dataset });
     http.verify();
   });
 
@@ -210,7 +217,7 @@ describe('MarketPage', () => {
     expect(summaryVariant.request.params.get('subId')).toBe('5');
     summaryVariant.flush({ points: [] });
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.notice > details').open).toBe(true);
+    expect(fixture.nativeElement.querySelector('#market-history > details').open).toBe(true);
     http.verify();
   });
 });
