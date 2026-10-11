@@ -11,6 +11,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import { forkJoin, of, type Subscription, switchMap } from 'rxjs';
 import { z } from 'zod';
 
@@ -18,6 +20,7 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { ReferenceApi } from '../../core/reference-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { referenceFields } from '../../features/reference/reference-fields';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { CatalogItemPicker } from '../catalog-item-picker/catalog-item-picker';
 import { silver } from '../formatters';
 
@@ -50,7 +53,7 @@ const caphras = z.object({
 @Component({
   selector: 'app-equipment-reference',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker],
+  imports: [HlmInput, HlmCard, BdoSelect, FormsModule, RouterLink, CatalogItemPicker],
   templateUrl: './equipment-reference.html',
 })
 export class EquipmentReference implements OnDestroy {

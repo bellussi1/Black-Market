@@ -9,12 +9,15 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { CalculatorKey } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../core/workspace-store';
+import { BdoSelect } from '../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-preset-bar',
-  imports: [FormsModule],
+  imports: [HlmInput, HlmButton, BdoSelect, FormsModule],
   templateUrl: './preset-bar.html',
 })
 export class PresetBar {

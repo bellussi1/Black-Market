@@ -1,11 +1,15 @@
-<section class="panel">
+<section hlmCard class="panel">
   <h2 i18n>Consultar equipamento do jogo</h2>
   <app-catalog-item-picker [selectionName]="selected()?.name ?? ''" (selected)="select($event)" />
   <p role="status">{{ message() }}</p>
   @if (enhancements(); as table) {
     <label class="field"
       ><span i18n>Nível do equipamento</span
-      ><select [ngModel]="level()" (ngModelChange)="level.set(+$event); from.set(0); to.set(1)">
+      ><select
+        appBdoSelect
+        [ngModel]="level()"
+        (ngModelChange)="level.set(+$event); from.set(0); to.set(1)"
+      >
         @for (row of table.levels; track row.level) {
           <option [ngValue]="row.level">{{ row.name }}</option>
         }
@@ -40,7 +44,7 @@
     <div class="form-grid">
       <label class="field"
         ><span i18n>Nível atual de Caphras</span
-        ><select [ngModel]="from()" (ngModelChange)="from.set(+$event)">
+        ><select appBdoSelect [ngModel]="from()" (ngModelChange)="from.set(+$event)">
           <option [ngValue]="0">0</option>
           @for (step of steps(); track step.level) {
             <option [ngValue]="step.level">{{ step.level }}</option>
@@ -48,7 +52,7 @@
         </select></label
       ><label class="field"
         ><span i18n>Nível desejado</span
-        ><select [ngModel]="to()" (ngModelChange)="to.set(+$event)">
+        ><select appBdoSelect [ngModel]="to()" (ngModelChange)="to.set(+$event)">
           @for (step of steps(); track step.level) {
             <option [ngValue]="step.level">{{ step.level }}</option>
           }
@@ -56,6 +60,7 @@
       ><label class="field"
         ><span i18n>Preço de cada Pedra Caphras</span
         ><input
+          hlmInput
           inputmode="numeric"
           [ngModel]="stonePrice()"
           (ngModelChange)="stonePrice.set($event)"
