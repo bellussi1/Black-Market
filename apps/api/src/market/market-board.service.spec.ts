@@ -282,6 +282,29 @@ describe('market board', () => {
       (await fixture().service.board({ sort: 'price' })).items.map((item) => item.itemId),
     ).toEqual([4, 5, 1, 2, 3]);
   });
+  it('applies direction and stock filter to the whole hot set before paginating', async () => {
+    const payload = [
+      { ...hot[0], id: 1, basePrice: 300, currentStock: 5 },
+      { ...hot[0], id: 2, basePrice: 100, currentStock: 0 },
+      { ...hot[0], id: 3, basePrice: 200, currentStock: 9 },
+      { ...hot[0], id: 4, basePrice: 0, currentStock: 2 },
+    ];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify(payload))),
+    );
+    const { service } = fixture();
+    const ids = async (query: Record<string, unknown>) =>
+      (await service.board({ pageSize: '20', ...query })).items.map((item) => item.itemId);
+    expect(await ids({ sort: 'price', direction: 'desc' })).toEqual([1, 3, 2, 4]);
+    expect(await ids({ sort: 'stock', direction: 'asc' })).toEqual([2, 4, 1, 3]);
+    expect(await ids({ sort: 'stock' })).toEqual([3, 1, 4, 2]);
+    const inStock = await service.board({ stock: 'in_stock', sort: 'price' });
+    expect(inStock.items.map((item) => item.itemId)).toEqual([3, 1, 4]);
+    expect(inStock.total).toBe(3);
+    expect((await service.board({ stock: 'out_of_stock' })).items.map((i) => i.itemId)).toEqual([
+      2,
+    ]);
+  });
   it('shares collector refreshes with the page cache without fetching individual item quotes', async () => {
     const upstream = vi
       .spyOn(globalThis, 'fetch')
