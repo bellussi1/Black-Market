@@ -11,6 +11,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
@@ -26,12 +29,22 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { download } from '../../shared/download';
 import { number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 type Stock = Workspace['inventory'][number];
 type Project = Workspace['projects'][number];
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-storage-page',
-  imports: [FormsModule, RouterLink, CatalogItemPicker, ItemIcon],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    ItemIcon,
+  ],
   templateUrl: './storage-page.html',
 })
 export class StoragePage implements OnDestroy {
