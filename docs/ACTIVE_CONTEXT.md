@@ -299,3 +299,32 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Arquivos sincronizados**:
   - `docs/research/implementation-gap-matrix.md` atualizado com as prioridades P0 e limites transparentes de engenharia.
   - Este arquivo `docs/ACTIVE_CONTEXT.md` atualizado para assegurar continuidade entre os turnos de Antigravity e Codex.
+
+## 18. Auto-resolver de cotações em lote e matriz de decisões em 1 clique por material (Antigravity, 10/10/2026)
+
+- **Problema abordado**:
+  - Na tela de detalhes de receita (ex: `/recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0` - Acompanhamentos Variados), a consulta de mercado para árvores profundas disparava múltiplas requisições paralelas individuais, provocando respostas HTTP 429 devido a limitadores severos da API.
+  - O fluxo para selecionar se cada ingrediente é comprado ou produzido exigia múltiplos passos e navegação na árvore de nós, e o botão de confirmação de rendimento manual adicionava fricção desnecessária.
+- **Implementação**:
+  - `apps/api/src/operations/request-controls.ts`: ajustado rate limit da API de mercado de 30 para 300 requisições/min.
+  - `apps/api/src/market/market.service.ts`: aumentado o limitador de concorrência interna de 2 para 10 ativas e de 20 para 120 requisições simultâneas.
+  - `docker-compose.yml`: montagem de volumes dos diretórios `dist/` dos pacotes locais no contêiner web.
+  - `apps/web/src/app/features/market/market-api.ts`: adicionado método `productionQuotes(itemIds, region)` integrando com `/api/v1/market/production-quotes`.
+  - `apps/web/src/app/core/market-cache.service.ts`: implementado `resolveProductionQuotes(itemIds, region)` que resolve em lote até 100 insumos com 1 única requisição HTTP, armazenando em cache reativo e persistindo em `localStorage`.
+  - `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`:
+    - Atualizado `consultAllTreePrices()` para utilizar `resolveProductionQuotes()`.
+    - Adicionado método público `setMaterialSource(itemId, choice)` para alternância direta.
+    - Implementado computed signal `materialDecisions` com nome, ícone, quantidade necessária, preço unitário, estoque, cotação de mercado e insight de rentabilidade (fazer vs comprar).
+  - `apps/web/src/app/shared/recipe-tree/recipe-tree.html` e `.scss`:
+    - Adicionado painel `.material-decisions-panel` ("Decisões por material") com cards no padrão BDO para cada insumo da receita.
+    - Alternância em 1 clique: botões diretos `[Comprar no Mercado]` e `[Fazer / Craftar]` / `[Coletar]` com badges de economia e cotação de mercado.
+- **Verificações**:
+  - `pnpm check`: lint, Prettier, typecheck e build completos sem erros.
+  - `pnpm test`: 586 testes passando em todo o monorepo.
+  - Testado via navegador em `http://localhost:4200/recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0` com resolução imediata de 11 cotações sem erros 429 e alternância fluida em 1 clique.
+- **Commits atômicos**:
+  - `06e0fdc` `fix(api): raise market rate limit to 300/min and mount package dists in web container`
+  - `9ea99ed` `feat(recipes): batch resolve tree quotes and add 1-click material decision matrix`
+- **Próximos passos**:
+  - Exploração de receitas (`apps/web/src/app/features/recipes/`): ordenação por lucro líquido estimado e volume de vendas, com unidades e períodos transparentes.
+  - Monitoramento de novas sugestões de UX/UI mantendo o design autêntico do BDO.
