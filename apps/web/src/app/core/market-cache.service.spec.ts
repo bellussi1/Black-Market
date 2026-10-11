@@ -268,6 +268,28 @@ describe('MarketCacheService', () => {
     expect(service.isSyncing()).toBe(false);
   });
 
+  it('returns successful bulk quotes when a later batch is unavailable', () => {
+    const itemIds = Array.from({ length: 117 }, (_, index) => index + 1);
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveProductionQuotes(itemIds, 'sa').subscribe((result) => emissions.push(result));
+
+    const requests = httpTesting.match((request) => request.url.includes('/production-quotes'));
+    const first = requests.find(
+      (request) => request.request.params.get('ids')!.split(',').length === 100,
+    )!;
+    const second = requests.find((request) => request !== first)!;
+    first.flush({
+      ...mockLookupResponse,
+      items: itemIds.slice(0, 100).map((id) => ({ ...mockLookupResponse.items[0], itemId: id })),
+    });
+    second.flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+
+    expect(emissions.at(-1)?.size).toBe(100);
+    expect(emissions.at(-1)?.has(101)).toBe(false);
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
+    expect(service.isSyncing()).toBe(false);
+  });
+
   it('preloads hot items and registers individual quotes into the cache', () => {
     service.preloadHotItems('sa').subscribe();
 

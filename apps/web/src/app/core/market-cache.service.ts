@@ -243,33 +243,42 @@ export class MarketCacheService implements OnDestroy {
     const batches = Array.from({ length: Math.ceil(missingOrExpired.length / 100) }, (_, index) =>
       missingOrExpired.slice(index * 100, (index + 1) * 100),
     );
+    const refreshedMap = new Map(cachedMap);
+    const resolvedIds = new Set<number>();
     const bulk$ = from(batches).pipe(
       mergeMap((ids) => this.api.productionQuotes(ids, region), 2),
       tap((response) => {
         this.cacheLookupResponse(response, region);
+        for (const item of response.items) {
+          refreshedMap.set(item.itemId, item);
+          resolvedIds.add(item.itemId);
+        }
         this.lastSyncAt.set(new Date());
       }),
       toArray(),
-      mergeMap((responses) => {
-        const resultMap = new Map(cachedMap);
-        for (const response of responses)
-          for (const item of response.items) resultMap.set(item.itemId, item);
-        const remaining = missingOrExpired.filter((id) => !resultMap.has(id));
+      mergeMap(() => {
+        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
         if (!remaining.length) {
-          return of(resultMap);
+          return of(refreshedMap);
         }
         return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
           map((fallbacks) => {
             for (const [id, quote] of fallbacks) {
-              resultMap.set(id, quote);
+              refreshedMap.set(id, quote);
             }
-            return resultMap;
+            return refreshedMap;
           }),
         );
       }),
       catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse && error.status === 503) return of(cachedMap);
-        return this.resolveQuotesBatch(missingOrExpired, region, forceRefresh);
+        if (error instanceof HttpErrorResponse && error.status === 503) return of(refreshedMap);
+        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
+        return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+          map((fallbacks) => {
+            for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
+            return refreshedMap;
+          }),
+        );
       }),
       finalize(() => this.isSyncing.set(false)),
     );
