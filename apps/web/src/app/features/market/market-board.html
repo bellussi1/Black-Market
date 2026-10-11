@@ -150,16 +150,6 @@
             </button>
           </div>
 
-          <label class="sort-select-wrap">
-            <span>Ordenar por</span>
-            <select appBdoSelect [ngModel]="sort()" (ngModelChange)="setSort($event)">
-              <option value="hot" [disabled]="fullCatalog()">Em alta</option>
-              <option value="price" [disabled]="fullCatalog()">Menor preço</option>
-              <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
-              <option value="name">Nome do item</option>
-            </select>
-          </label>
-
           <button
             hlmBtn
             variant="outline"

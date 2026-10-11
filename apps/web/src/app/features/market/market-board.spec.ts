@@ -175,7 +175,8 @@ describe('MarketBoard', () => {
     expect(element.textContent).toContain('Catálogo do mercado');
     expect(element.textContent).toContain('Sem cotação');
     expect(element.querySelector('.col-stock')?.textContent?.trim()).toBe('—');
-    expect(element.querySelector<HTMLOptionElement>('option[value="price"]')?.disabled).toBe(true);
+    expect(element.querySelector('.sort-select-wrap')).toBeNull();
+    expect(element.querySelectorAll('thead .col-sort-btn')).toHaveLength(6);
     TestBed.inject(HttpTestingController).verify();
   });
 

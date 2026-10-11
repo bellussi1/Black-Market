@@ -393,16 +393,6 @@ export class MarketBoard implements OnDestroy {
     this.load();
   }
 
-  setSort(value: string): void {
-    if (!['hot', 'price', 'stock', 'name'].includes(value)) return;
-    this.sort.set(value as MarketBoardSort);
-    this.sortColumn.set(value);
-    // Labels promise "Menor preço", "Maior estoque" and A-Z.
-    this.sortDirection.set(value === 'price' || value === 'name' ? 'asc' : 'desc');
-    this.page.set(1);
-    this.load();
-  }
-
   toggleColumnSort(column: string): void {
     if (this.sortColumn() === column) {
       this.sortDirection.update((dir) => (dir === 'asc' ? 'desc' : 'asc'));
