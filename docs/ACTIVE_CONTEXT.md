@@ -328,3 +328,41 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Próximos passos**:
   - Exploração de receitas (`apps/web/src/app/features/recipes/`): ordenação por lucro líquido estimado e volume de vendas, com unidades e períodos transparentes.
   - Monitoramento de novas sugestões de UX/UI mantendo o design autêntico do BDO.
+
+## 19. Redesign do Workspace de Crafting: Canvas 70%, Sidebar de Insumos 30% e Bandeja Inferior (Antigravity, 11/10/2026)
+
+- **Problemas abordados**:
+  1. Interface de crafting fragmentada com abas e cliques excessivos entre visualização da árvore e lista de materiais.
+  2. Bug de UX em que clicar no card de um nó colapsava a sua subárvore (`activate(node)` emitia `'collapse'`).
+  3. Painel econômico com campos vazios ("Sem dados" e travessão "—") quando um item da cadeia não possui cotação no Mercado Central (ex: Lula #8211 que é peixe de comércio direto / pesca NPC) ou quando faltavam segundos de produção configurados manualmente.
+  4. Detalhes do item selecionado abriam em uma coluna lateral que espremia o canvas, quebrando o zoom e pan.
+- **Implementação**:
+  1. **Bug do colapso de nós corrigido**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-graph.ts`: em `activate(node)`, alterado para apenas selecionar o nó (`'source'`) e expandir se estiver fechado (`!node.expanded`). O clique no card nunca mais fecha os ramos; o recolhimento fica restrito ao botão `[− Recolher]`.
+  2. **Custo inteligente e Preço Personalizado**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`:
+       - Adicionado método `setCustomPrice(itemId, price)` e `customPrice(itemId)`. Permite ao jogador inserir cotação de compra de NPC ou estimativa própria para insumos sem mercado central direto, atualizando instantaneamente os 5 indicadores financeiros.
+       - `effectiveMaterialCost`: agrega custos de materiais conhecidos comprados mesmo se itens de comércio/NPC estiverem na árvore.
+       - `netRevenue` e `profit`: fallback reativo com cálculo de retenção do Mercado Central (84,5%) e margem percentual (+X.X%).
+  3. **Tempos padrão do BDO por método**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-production-adapter.ts`: adicionada e exportada a função `defaultRecipeMethodSeconds(type)` (1.2s para culinária/alquimia, 6.0s para processamento simples/manufatura, 4.0s para coleta).
+     - `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`: método `applyDefaultMethodTimes()` para aplicar os tempos padrão sem exigir calibração manual tediosa.
+  4. **Novo Layout Desktop (Skill BDO UI Design)**:
+     - `apps/web/src/app/shared/recipe-tree/recipe-tree.html` e `recipe-tree.scss`:
+       - **Canvas à Esquerda (70%)**: Espaço amplo e desobstruído para navegação, zoom e pan da árvore de crafting, com barra de ferramentas contendo modos de visualização e botões `[Expandir todos]` e `[Recolher todos]`.
+       - **Sidebar de Insumos à Direita (30%)**: Lista compacta de materiais sempre visível ao lado do canvas. No topo: ações rápidas (`[Comprar todos]`, `[Fazer tudo]`, `[★ Melhor combinação por lucro/hora]`). Em cada linha: checkbox BDO autêntico (`[✓] Fazer` em dourado vs `[ ] Comprar` desmarcado), slot BDO de 36×36px, quantidade, preço no mercado e badge Make vs Buy.
+       - **Bandeja Inferior de Detalhes (100% de largura)**: Posicionada horizontalmente abaixo do canvas e da sidebar, com título `◇ Informações do item`, botão `[✕ Fechar]` e 4 colunas horizontais limpas:
+         - Coluna 1: Identidade, descrição e métodos de produção (com dropdown de variantes e rendimento).
+         - Coluna 2: Estoque do jogador nos armazéns cadastrados (necessário, do armazém, faltam).
+         - Coluna 3: Mercado Central (preço atual, última venda, estoque) + campo para **Preço Personalizado**.
+         - Coluna 4: Obtenção no mundo (bases de trabalhadores e spots de monstros com território e CP).
+- **Verificações**:
+  - `pnpm check`: lint, Prettier e typecheck passaram 100% sem erros.
+  - `pnpm test`: 587 testes passando em todo o monorepo (53 calculators, 128 API, 344 web, 62 scripts).
+  - Validação visual via Playwright em `http://localhost:4200/recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0` e `http://localhost:4200/recipes/items/1407`: os 5 indicadores financeiros exibem dados reais completos instantaneamente (Faturamento líquido: 27.671.250 prata, Custo dos materiais: 1.050.400 prata, Lucro líquido: +26.620.850 prata [+2.534,4%], Lucro/hora: 801.408.000 prata/h, Faturamento/hora: 833.024.160 prata/h).
+- **Commits atômicos**:
+  - `d5be804` `feat(crafting): implement 70/30 workspace layout with BDO checkboxes and bottom details tray`
+- **Próximos passos**:
+  - Catálogo de receitas geral: explorar ordenação paginada por lucro estimado preservando limites de requisição.
+  - Testes end-to-end automatizados de fluxo de crafting no Playwright.
+
