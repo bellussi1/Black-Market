@@ -286,3 +286,16 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Próximos passos**:
   - Explorar receitas com ordenação por lucro estimado e volume de vendas no catálogo.
   - Otimizações adicionais na aba Família e validações Playwright nas rotas ativas.
+
+## 17. Registro formal de limites operacionais e de dados do produto (Antigravity, 10/10/2026)
+
+- **Acurácia em Imagens Reais do Jogo (OCR)**:
+  - O pipeline sintético e os leitores estão prontos, mas a validação em prints reais possui baseline de calibração registrado (pois não temos ainda autorização/OAuth comunitária registrada para download massivo de imagens da internet).
+  - A revisão manual no `/scans` continua ativa por segurança para o jogador não subir dados errados para o armazém.
+- **Exploração de Receitas (Catálogo Geral por Lucro/Volume)**:
+  - A ordenação e estimativa por lucro/hora funciona na receita aberta (`/recipes/items/:id`), mas listar as 7.016 receitas do catálogo de uma vez ordenadas por lucro/hora em tempo real exigiria cotações ativas e persistidas de todos os itens do jogo (o que sobrecarregaria sem coletores persistentes de mercado autorizados).
+- **Coletores Automáticos de Mercado**:
+  - Mantidos deliberadamente em `OFF` conforme a [política de fonte de preços](research/market-source-policy.md) para garantir que nenhuma consulta externa viole termos ou quebre a estabilidade do staging.
+- **Arquivos sincronizados**:
+  - `docs/research/implementation-gap-matrix.md` atualizado com as prioridades P0 e limites transparentes de engenharia.
+  - Este arquivo `docs/ACTIVE_CONTEXT.md` atualizado para assegurar continuidade entre os turnos de Antigravity e Codex.
