@@ -18,6 +18,7 @@ import type {
   MarketBoardPageSize,
   MarketBoardResponse,
   MarketBoardSort,
+  MarketBoardStockFilter,
 } from '@bdo/shared';
 import type { Subscription } from 'rxjs';
 
@@ -117,17 +118,43 @@ export class MarketBoard implements OnDestroy {
     return entry !== null && entry.expiresAt <= Date.now();
   });
 
+  /** Columns the API orders over the complete hot set before paginating. */
+  private static readonly SERVER_SORT_COLUMNS = ['price', 'stock', 'name'];
+
+  /** Stock filter forwarded to the API (hot board only); catalogue scopes lack per-item stock. */
+  readonly serverStockFilter = computed<MarketBoardStockFilter>(() => {
+    const filter = this.stockFilter();
+    return !this.fullCatalog() && (filter === 'in_stock' || filter === 'out_of_stock')
+      ? filter
+      : 'all';
+  });
+
+  /** True when the active ordering or filter can only reorder the 20-100 rows on screen. */
+  readonly pageOnlyOrdering = computed(() => {
+    const column = this.sortColumn();
+    const columnPageOnly =
+      column !== 'hot' &&
+      (this.fullCatalog()
+        ? !(column === 'name' && this.sortDirection() === 'asc')
+        : !MarketBoard.SERVER_SORT_COLUMNS.includes(column));
+    const filter = this.stockFilter();
+    const filterPageOnly = filter === 'with_volume' || (filter !== 'all' && this.fullCatalog());
+    return columnPageOnly || filterPageOnly;
+  });
+
   /**
-   * Filtered and client-sorted items for the current page view.
+   * Items for the current page. Price, stock and name ordering plus the stock filter arrive
+   * already applied to the complete set; the remaining columns reorder this page only.
    */
   readonly displayItems = computed(() => {
     const rawItems = this.result()?.items ?? [];
     const filter = this.stockFilter();
+    const serverFiltered = this.serverStockFilter() !== 'all';
 
     let filtered = rawItems;
-    if (filter === 'in_stock') {
+    if (filter === 'in_stock' && !serverFiltered) {
       filtered = rawItems.filter((i) => i.stock !== null && i.stock > 0);
-    } else if (filter === 'out_of_stock') {
+    } else if (filter === 'out_of_stock' && !serverFiltered) {
       filtered = rawItems.filter((i) => i.stock === 0);
     } else if (filter === 'with_volume') {
       filtered = rawItems.filter((i) => i.volume24h !== null && i.volume24h !== '0');
@@ -137,7 +164,7 @@ export class MarketBoard implements OnDestroy {
     const dir = this.sortDirection();
     const factor = dir === 'asc' ? 1 : -1;
 
-    if (col === 'hot') {
+    if (col === 'hot' || (!this.fullCatalog() && MarketBoard.SERVER_SORT_COLUMNS.includes(col))) {
       return filtered;
     }
 
@@ -223,6 +250,7 @@ export class MarketBoard implements OnDestroy {
       region,
       this.search().trim(),
       this.category(),
+      this.serverStockFilter(),
       this.sort(),
       this.sortColumn(),
       this.sortDirection(),
@@ -265,6 +293,8 @@ export class MarketBoard implements OnDestroy {
         q: this.search().trim(),
         categoryId: this.category(),
         sort: this.sort(),
+        direction: this.sortDirection(),
+        stock: this.serverStockFilter(),
         page: this.page(),
         pageSize: this.pageSize(),
       })
@@ -343,7 +373,13 @@ export class MarketBoard implements OnDestroy {
   }
 
   setStockFilter(filter: StockFilterType): void {
+    const before = this.serverStockFilter();
     this.stockFilter.set(filter);
+    // Stock filters on the hot board are resolved by the API over the whole list.
+    if (before !== this.serverStockFilter()) {
+      this.page.set(1);
+      this.load({ preservePrevious: true });
+    }
   }
 
   setPageSize(value: string): void {
@@ -358,7 +394,8 @@ export class MarketBoard implements OnDestroy {
     if (!['hot', 'price', 'stock', 'name'].includes(value)) return;
     this.sort.set(value as MarketBoardSort);
     this.sortColumn.set(value);
-    this.sortDirection.set(value === 'name' ? 'asc' : 'desc');
+    // Labels promise "Menor preço", "Maior estoque" and A-Z.
+    this.sortDirection.set(value === 'price' || value === 'name' ? 'asc' : 'desc');
     this.page.set(1);
     this.load();
   }
@@ -371,7 +408,15 @@ export class MarketBoard implements OnDestroy {
       this.sortDirection.set(column === 'name' ? 'asc' : 'desc');
     }
 
-    // Column headers sort the current page locally. The select controls the server-side sort.
+    if (!this.fullCatalog() && MarketBoard.SERVER_SORT_COLUMNS.includes(column)) {
+      // The API orders the complete hot list before paginating.
+      this.sort.set(column as MarketBoardSort);
+      this.page.set(1);
+      this.load({ preservePrevious: true });
+      return;
+    }
+
+    // Other columns reorder the rows already on screen; reuse the cached page under the new key.
     const current = this.result();
     if (current) {
       const region = this.preferences.region();

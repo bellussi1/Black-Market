@@ -198,55 +198,51 @@ describe('MarketBoard', () => {
     const trendBeta = board.calculateTrend(data.items[1]);
     expect(trendBeta?.direction).toBe('down');
 
-    // Toggle sort by price
+    // Price sort is delegated to the API so it applies before pagination.
     board.toggleColumnSort('price');
     expect(board.sortColumn()).toBe('price');
     expect(board.sortDirection()).toBe('desc');
-    expect(board.displayItems()[0].itemId).toBe(2); // 5000 first
+    const descending = takeRequest();
+    expect(descending.request.params.get('sort')).toBe('price');
+    expect(descending.request.params.get('direction')).toBe('desc');
+    expect(descending.request.params.get('page')).toBe('1');
+    descending.flush(data);
 
-    // Toggle ascending
     board.toggleColumnSort('price');
     expect(board.sortDirection()).toBe('asc');
-    expect(board.displayItems()[0].itemId).toBe(1); // 1000 first
-
-    board.load();
-    expect(board.loading()).toBe(false);
-    expect(board.displayItems()[0].itemId).toBe(1);
-    expect(
-      [...TestBed.inject(MarketCacheService).boardMap().keys()].some((key) =>
-        key.endsWith(':hot:price:asc:1:20'),
-      ),
-    ).toBe(true);
-    TestBed.inject(HttpTestingController).expectNone((request) =>
-      request.url.endsWith('/market/board'),
-    );
+    const ascending = takeRequest();
+    expect(ascending.request.params.get('direction')).toBe('asc');
+    ascending.flush(data);
     TestBed.inject(HttpTestingController).verify();
   });
 
-  it('filters items by stock availability using quick filter pills', async () => {
+  it('sends the stock filter to the API instead of filtering the visible page', async () => {
     const fixture = await renderComponent(MarketBoard);
     const data = response();
     data.items = [
       { ...data.items[0], itemId: 1, name: 'In Stock', stock: 15 },
       { ...data.items[0], itemId: 2, name: 'Out of Stock', stock: 0 },
-      { ...data.items[0], itemId: 3, name: 'Unknown Stock', stock: null },
     ];
-    takeRequest().flush(data);
+    const initial = takeRequest();
+    expect(initial.request.params.has('stock')).toBe(false);
+    initial.flush(data);
     fixture.detectChanges();
 
     const board = fixture.componentInstance;
-    expect(board.displayItems().length).toBe(3);
+    expect(board.displayItems().length).toBe(2);
 
     board.setStockFilter('in_stock');
-    expect(board.displayItems().length).toBe(1);
-    expect(board.displayItems()[0].itemId).toBe(1);
-
-    board.setStockFilter('out_of_stock');
-    expect(board.displayItems().length).toBe(1);
-    expect(board.displayItems()[0].itemId).toBe(2);
+    const inStock = takeRequest();
+    expect(inStock.request.params.get('stock')).toBe('in_stock');
+    inStock.flush({ ...data, items: [data.items[0]], total: 1 });
+    expect(board.displayItems().map((item) => item.itemId)).toEqual([1]);
 
     board.setStockFilter('all');
-    expect(board.displayItems().length).toBe(3);
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+    expect(board.displayItems().map((item) => item.itemId)).toEqual([1, 2]);
+    TestBed.inject(HttpTestingController).verify();
   });
 
   it('uses a fresh same-query cache entry without requesting the board again', async () => {

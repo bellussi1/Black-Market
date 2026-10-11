@@ -165,6 +165,11 @@
               ({{ displayItems().length }} visíveis no filtro)
             </span>
           }
+          @if (pageOnlyOrdering()) {
+            <span class="summary-filtered-count">
+              · ordenação/filtro aplicado aos itens visíveis desta página
+            </span>
+          }
         </span>
         @if (cacheEntry()) {
           <span class="summary-timestamp">

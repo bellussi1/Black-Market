@@ -1,6 +1,8 @@
 import type { CatalogCategory, MarketItemQuote } from './index';
 
 export type MarketBoardSort = 'hot' | 'price' | 'stock' | 'name';
+export type MarketBoardDirection = 'asc' | 'desc';
+export type MarketBoardStockFilter = 'all' | 'in_stock' | 'out_of_stock';
 export type MarketBoardPageSize = 20 | 50 | 100;
 
 export interface MarketBoardItem extends Omit<MarketItemQuote, 'stock' | 'totalTrades'> {
