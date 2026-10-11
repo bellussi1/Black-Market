@@ -11,6 +11,8 @@
   </header>
   <div class="tabs" aria-label="Modos da oficina" i18n-aria-label>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'profit'"
       [attr.aria-pressed]="tab() === 'profit'"
@@ -18,6 +20,8 @@
     >
       <ng-container i18n>Lucro da receita</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'chain'"
       [attr.aria-pressed]="tab() === 'chain'"
@@ -30,7 +34,7 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2 i18n>Comece pelo que deseja produzir</h2>
         <app-catalog-item-picker
           [selectionName]="recipeProduct()?.name || ''"
@@ -46,7 +50,13 @@
           <p class="help" i18n>Escolha a receita para preencher os materiais:</p>
           <div class="action-row">
             @for (recipe of catalogRecipes(); track recipe.key; let index = $index) {
-              <button class="btn subtle" type="button" (click)="useCatalogRecipe(recipe)">
+              <button
+                hlmBtn
+                variant="outline"
+                class="btn subtle"
+                type="button"
+                (click)="useCatalogRecipe(recipe)"
+              >
                 {{ recipeTypeLabel(recipe.type) }} · {{ index + 1 }}
               </button>
             }
@@ -54,7 +64,14 @@
         }
         <h2><ng-container i18n>Seu cenário de produção</ng-container></h2>
         @if (recipeProduct()) {
-          <button class="btn subtle" type="button" (click)="saveToLibrary()" i18n>
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="saveToLibrary()"
+            i18n
+          >
             Preparar esta receita para minha biblioteca
           </button>
         }
@@ -62,6 +79,7 @@
           <label class="field"
             ><ng-container i18n>Número de crafts</ng-container
             ><input
+              hlmInput
               type="number"
               min="1"
               [ngModel]="form().crafts"
@@ -72,6 +90,7 @@
               <small i18n>Não informado na receita. Preencha para calcular.</small>
             }
             <input
+              hlmInput
               type="number"
               min="0.001"
               step="0.001"
@@ -80,18 +99,21 @@
           ><label class="field"
             ><ng-container i18n>Preço de venda unitário</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().salePrice"
               (ngModelChange)="patch({ salePrice: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Outros custos do lote</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().extraCost"
               (ngModelChange)="patch({ extraCost: $event })" /></label
           ><label class="field"
             ><ng-container i18n>Tempo do lote (minutos)</ng-container
             ><input
+              hlmInput
               type="number"
               min="0.001"
               step="0.001"
@@ -115,6 +137,7 @@
                   <small i18n>Confira a quantidade deste material.</small>
                 }
                 <input
+                  hlmInput
                   type="number"
                   step="0.001"
                   min="0.001"
@@ -123,12 +146,14 @@
               ><label class="field"
                 ><ng-container i18n>Preço unitário</ng-container
                 ><input
+                  hlmInput
                   inputmode="numeric"
                   [ngModel]="ing.price"
                   (ngModelChange)="ingredient(k, { price: $event })" /></label
               ><label class="field"
                 ><ng-container i18n>Quantidade no armazém</ng-container
                 ><input
+                  hlmInput
                   type="number"
                   step="0.001"
                   min="0"
@@ -137,16 +162,34 @@
               /></label>
             </div>
             <div class="action-row">
-              <button type="button" class="btn subtle" (click)="fillStock(k)">
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="btn subtle"
+                (click)="fillStock(k)"
+              >
                 <ng-container i18n>Usar armazém e cotação</ng-container></button
-              ><button class="btn danger" type="button" (click)="removeIngredient(k)">
+              ><button
+                hlmBtn
+                variant="outline"
+                class="btn danger"
+                type="button"
+                (click)="removeIngredient(k)"
+              >
                 <ng-container i18n>Remover </ng-container>
               </button>
             </div>
           </div>
         }
         <div class="action-row">
-          <button class="btn subtle" type="button" (click)="addIngredient()">
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="addIngredient()"
+          >
             <ng-container i18n>Adicionar ingrediente </ng-container>
           </button>
         </div>
@@ -202,7 +245,7 @@
               ><strong>{{ silver(r.breakEvenPrice) }}</strong>
             </div>
           </div>
-          <div class="panel">
+          <div hlmCard class="panel">
             <h2><ng-container i18n>Materiais do lote</ng-container></h2>
             <div class="max-w-full overflow-x-auto">
               <table class="data-table">
@@ -244,7 +287,7 @@
       </section>
     </div>
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2><ng-container i18n>Biblioteca de receitas manuais</ng-container></h2>
         <span class="badge"
@@ -260,7 +303,7 @@
         </div>
         <label class="field"
           ><ng-container i18n>Unidades por craft (inteiro)</ng-container
-          ><input type="number" min="1" [(ngModel)]="draft.yield"
+          ><input hlmInput type="number" min="1" [(ngModel)]="draft.yield"
         /></label>
       </div>
       @for (ing of draft.ingredients; track $index; let k = $index) {
@@ -278,10 +321,14 @@
             </div>
             <label class="field"
               ><ng-container i18n>Quantidade por craft</ng-container
-              ><input type="number" min="1" [(ngModel)]="ing.quantity" /></label
+              ><input hlmInput type="number" min="1" [(ngModel)]="ing.quantity" /></label
             ><label class="field"
               ><ng-container i18n>Modo</ng-container
-              ><select [ngModel]="ing.recipeId" (ngModelChange)="linkIngredient(k, $event)">
+              ><select
+                appBdoSelect
+                [ngModel]="ing.recipeId"
+                (ngModelChange)="linkIngredient(k, $event)"
+              >
                 <option [ngValue]="null">
                   <ng-container i18n>Comprar / usar estoque</ng-container>
                 </option>
@@ -295,22 +342,44 @@
               </select></label
             ><label class="field"
               ><ng-container i18n>Preço de compra</ng-container
-              ><input inputmode="numeric" [(ngModel)]="ing.price" [disabled]="!!ing.recipeId"
+              ><input
+                hlmInput
+                inputmode="numeric"
+                [(ngModel)]="ing.price"
+                [disabled]="!!ing.recipeId"
             /></label>
           </div>
           <div class="action-row">
-            <button class="btn danger" type="button" (click)="removeDraftIngredient(k)">
+            <button
+              hlmBtn
+              variant="outline"
+              class="btn danger"
+              type="button"
+              (click)="removeDraftIngredient(k)"
+            >
               <ng-container i18n>Remover ingrediente </ng-container>
             </button>
           </div>
         </div>
       }
       <div class="action-row">
-        <button class="btn subtle" type="button" (click)="addDraftIngredient()">
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="addDraftIngredient()"
+        >
           <ng-container i18n>Adicionar ingrediente</ng-container></button
-        ><button class="btn" type="button" (click)="saveRecipe()">
+        ><button hlmBtn variant="outline" class="btn" type="button" (click)="saveRecipe()">
           <ng-container i18n>Salvar receita</ng-container></button
-        ><button class="btn subtle" type="button" (click)="draft = newRecipe()">
+        ><button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="draft = newRecipe()"
+        >
           <ng-container i18n>Nova receita </ng-container>
         </button>
       </div>
@@ -335,10 +404,22 @@
                   <td>{{ recipe.yield }}</td>
                   <td>{{ recipe.ingredients.length }}</td>
                   <td>
-                    <button class="btn subtle" type="button" (click)="editRecipe(recipe)">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      class="btn subtle"
+                      type="button"
+                      (click)="editRecipe(recipe)"
+                    >
                       <ng-container i18n>Editar </ng-container>
                     </button>
-                    <button class="btn danger" type="button" (click)="removeRecipe(recipe.id)">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      class="btn danger"
+                      type="button"
+                      (click)="removeRecipe(recipe.id)"
+                    >
                       <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
@@ -349,12 +430,12 @@
         </div>
       }
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Plano de produção</ng-container></h2>
       <div class="form-grid">
         <label class="field"
           ><ng-container i18n>Receita alvo</ng-container
-          ><select [ngModel]="target()" (ngModelChange)="target.set($event)">
+          ><select appBdoSelect [ngModel]="target()" (ngModelChange)="target.set($event)">
             <option value=""><ng-container i18n>Escolher receita</ng-container></option>
             @for (recipe of store.data().recipes; track recipe.id) {
               <option [value]="recipe.id">{{ recipe.name }}</option>
@@ -363,6 +444,7 @@
         ><label class="field"
           ><ng-container i18n>Quantidade desejada</ng-container
           ><input
+            hlmInput
             type="number"
             min="1"
             [ngModel]="quantity()"

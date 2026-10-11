@@ -22,6 +22,9 @@ import {
   recipeSchema,
 } from '@bdo/calculators';
 import type { CatalogItem, CatalogRecipe } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
@@ -34,10 +37,21 @@ import { number, silver } from '../../shared/formatters';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-crafting-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    TaxOptionsComponent,
+    PresetBar,
+    CalculationProof,
+    CatalogItemPicker,
+  ],
   templateUrl: './crafting-page.html',
 })
 export class CraftingPage implements OnDestroy {
