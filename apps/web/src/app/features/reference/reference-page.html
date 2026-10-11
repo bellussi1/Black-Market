@@ -7,21 +7,29 @@
       atividades. Campos ainda sem interpretação confirmada não entram nos cálculos.
     </p>
   </header>
-  <section class="panel">
+  <section hlmCard class="panel">
     <div class="form-grid">
       <label class="field"
         ><span i18n>O que deseja consultar?</span
-        ><select [(ngModel)]="kind" (change)="changeKind()">
+        ><select appBdoSelect [(ngModel)]="kind" (change)="changeKind()">
           @for (row of kinds(); track row.kind) {
             <option [value]="row.kind">{{ row.label }} · {{ row.total }}</option>
           }
         </select></label
       ><label class="field"
         ><span i18n>Buscar nome ou código</span
-        ><input type="search" [(ngModel)]="search" (keydown.enter)="searchNow()"
+        ><input hlmInput type="search" [(ngModel)]="search" (keydown.enter)="searchNow()"
       /></label>
     </div>
-    <button class="btn" type="button" (click)="searchNow()" [disabled]="loading()" i18n>
+    <button
+      hlmBtn
+      variant="outline"
+      class="btn"
+      type="button"
+      (click)="searchNow()"
+      [disabled]="loading()"
+      i18n
+    >
       Buscar
     </button>
   </section>
@@ -32,7 +40,7 @@
     <p class="notice" role="status">{{ message() }}</p>
   }
   @if (selected(); as record) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <a [routerLink]="['/reference', kind]" i18n>Voltar à lista</a>
       <h2>{{ record.name }}</h2>
       <dl class="reference-details">
@@ -70,6 +78,8 @@
     }
     <nav class="action-row" aria-label="Páginas da consulta" i18n-aria-label>
       <button
+        hlmBtn
+        variant="outline"
         class="btn subtle"
         type="button"
         (click)="next(-1)"
@@ -79,6 +89,8 @@
         Anterior</button
       ><span i18n>Página {{ page }} · {{ total() }} resultados</span
       ><button
+        hlmBtn
+        variant="outline"
         class="btn subtle"
         type="button"
         (click)="next(1)"
