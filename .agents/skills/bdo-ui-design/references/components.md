@@ -34,7 +34,7 @@ Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por fa
 
 Mensagens de estado permanecem no fluxo e alinhadas às margens internas do painel. Escolhas mutuamente exclusivas usam `.segmented-control`, cada opção declara `aria-pressed` e mantém a mesma altura; uma ação calculada, como otimizar lucro por hora, fica separada em `.btn`.
 
-Para cinco indicadores econômicos, use cartões de mesma base visual e números tabulares. Quando o painel tiver ao menos 1200 px, mostre cinco colunas. Em painéis menores, use três colunas e centralize os dois cartões finais; abaixo de 900 px, empilhe os cartões. Reserve o bronze para seleção e para o indicador principal da tarefa, sem criar cartões de cores diferentes sem motivo funcional.
+Na receita, priorize quatro indicadores em uma única faixa: lucro por hora, lucro líquido, custo dos materiais e faturamento líquido. Use números tabulares, colunas iguais no desktop e duas colunas no celular. O estado pendente ocupa o lugar do número quando faltam preço, rendimento ou tempo para fechar a conta. A melhor combinação aparece junto do resultado apenas quando o otimizador retorna um plano completo. Reserve o bronze para seleção e para o indicador principal da tarefa.
 
 ## Tooltips e estados
 

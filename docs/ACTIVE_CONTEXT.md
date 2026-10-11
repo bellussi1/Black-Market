@@ -400,3 +400,16 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 - **Próximos passos**:
   - Catálogo de receitas geral: explorar ordenação paginada por lucro estimado preservando limites de requisição.
   - Testes end-to-end automatizados de fluxo de crafting no Playwright.
+
+## 21. Revisão compacta do workspace de receitas e integridade do resultado (Codex, 11/10/2026)
+
+- **Estado**: o registro abaixo substitui as recomendações de custo parcial, fallback guloso chamado de “melhor combinação”, duplicações de controles e o painel de detalhes no rodapé descritos nas seções 19–20. Trabalho na branch `codex/recipe-workspace-ui`.
+- **Concluído**:
+  - Produto, fórmula, número de operações e maestria aplicável estão na faixa inicial. O resultado usa quatro métricas compactas, seguido da árvore e dos insumos ativos lado a lado. Uma operação multiplica cada ingrediente da fórmula uma vez; dez operações multiplicam os insumos por dez.
+  - Custo, lucro e lucro por hora são definitivos apenas para um plano sem pendências. A melhor combinação só pode ser aplicada quando o otimizador devolve um plano completo. A comparação gulosa de custo com preço bruto e os badges associados foram removidos.
+  - Detalhes do material abrem em painel fixo com rolagem própria e foco devolvido ao botão ao fechar. Os controles de tempo e estoque ficam no modo avançado. Quantidade base do catálogo é identificada separadamente de rendimento fixo verificado; proc adicional sem modelo não é afirmado. Alquimia simples desativa a edição de maestria porque ela não entra no motor.
+  - Consultas de produção com mais de 100 IDs são divididas em lotes. Na falha 503 do provedor, o cache é mantido e não há rajada de consultas individuais. O coletor de mercado continua desligado conforme `docs/research/market-source-policy.md`.
+- **Validação**: `pnpm test` passou com 593 testes (53 calculators, 128 API, 350 web, 62 scripts). `pnpm check` passou com lint, Prettier, typecheck e build de desenvolvimento. Playwright na receita Acompanhamentos Variados mediu início do workspace em 603 px no desktop e 980 px no celular, contra 1177 px e 2300 px antes, sem rolagem horizontal. Edania gerou lotes de 100 e 17 IDs, mas o provedor local respondeu 503; não há lucro real verificado para essa cadeia. Ver `docs/recipe-workspace-review-2026-10-11.md`.
+- **Commits**: `9db5bf4` (`fix(market): chunk production quotes at API limit`) e `bf0627a` (`refactor(recipes): compact workspace and gate incomplete results`).
+- **Arquivos**: `apps/web/src/app/shared/recipe-tree/{recipe-tree.ts,recipe-tree.html,recipe-tree.scss,recipe-tree.spec.ts}`, `apps/web/src/app/features/recipes/recipes-page.html`, `apps/web/src/app/core/{market-cache.service.ts,market-cache.service.spec.ts}`, este documento, `docs/recipe-workspace-review-2026-10-11.md` e referências da skill `.agents/skills/bdo-ui-design/`.
+- **Próximo agente**: validar uma fonte de mercado permitida/estável e completar as cotações necessárias para Edania antes de afirmar a melhor combinação ou lucro por hora real. Calibrar proc por maestria somente com fonte ou amostras autorizadas verificadas. Preservar a árvore visual e suas interações. Rodar `pnpm check` e `pnpm test` após alterações.
