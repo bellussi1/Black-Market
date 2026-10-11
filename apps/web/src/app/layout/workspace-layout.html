@@ -11,6 +11,8 @@
         ></a
       >
       <button
+        hlmBtn
+        variant="outline"
         class="mobile-nav-toggle"
         type="button"
         aria-controls="workspace-navigation"
@@ -115,6 +117,8 @@
       </nav>
       <div class="topbar-tools">
         <button
+          hlmBtn
+          variant="outline"
           class="global-search-toggle"
           type="button"
           [attr.aria-expanded]="quickSearchOpen()"
@@ -130,6 +134,7 @@
         <label for="market-region"
           ><ng-container i18n>Região do mercado</ng-container
           ><select
+            appBdoSelect
             id="market-region"
             [ngModel]="preferences.region()"
             (ngModelChange)="preferences.setRegion($event)"
@@ -153,7 +158,9 @@
           [compact]="true"
           (selected)="openItem($event)"
         />
-        <button type="button" (click)="quickSearchOpen.set(false)" i18n>Fechar busca</button>
+        <button hlmBtn variant="outline" type="button" (click)="quickSearchOpen.set(false)" i18n>
+          Fechar busca
+        </button>
       </section>
     }
     @if (preferences.message()) {
@@ -169,7 +176,9 @@
             >Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão;
             seus dados anteriores estão preservados.</span
           ><a routerLink="/recommendations" i18n>Comparar produção</a
-          ><button class="btn subtle" (click)="store.exitDemo()" i18n>Sair da demonstração</button>
+          ><button hlmBtn variant="outline" class="btn subtle" (click)="store.exitDemo()" i18n>
+            Sair da demonstração
+          </button>
         </aside>
       }
       @if (showAds()) {

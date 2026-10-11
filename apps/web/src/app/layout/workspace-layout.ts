@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
@@ -14,6 +15,7 @@ import { AdSlot } from '../shared/ad-slot/ad-slot';
 import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-picker';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
+import { BdoSelect } from '../ui/native-select/bdo-select';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +23,8 @@ import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
   selector: 'app-workspace-layout',
 
   imports: [
+    HlmButton,
+    BdoSelect,
     RouterLink,
 
     RouterLinkActive,
