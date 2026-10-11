@@ -1,4 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import type { MarketBoardResponse, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
@@ -207,8 +208,8 @@ export class MarketCacheService implements OnDestroy {
 
   /**
    * Resolves quotes for crafting/production materials using the bulk production-quotes endpoint.
-   * Uses a single HTTP request for up to 100 materials, caching all returned quotes and falling
-   * back to resolveQuotesBatch only for items omitted by the bulk endpoint.
+   * Uses requests of at most 100 materials, caching all returned quotes and falling back to
+   * resolveQuotesBatch only for items omitted by the bulk endpoint.
    */
   resolveProductionQuotes(
     itemIds: (number | string)[],
@@ -239,16 +240,20 @@ export class MarketCacheService implements OnDestroy {
     }
 
     this.isSyncing.set(true);
-    const bulk$ = this.api.productionQuotes(missingOrExpired, region).pipe(
+    const batches = Array.from({ length: Math.ceil(missingOrExpired.length / 100) }, (_, index) =>
+      missingOrExpired.slice(index * 100, (index + 1) * 100),
+    );
+    const bulk$ = from(batches).pipe(
+      mergeMap((ids) => this.api.productionQuotes(ids, region), 2),
       tap((response) => {
         this.cacheLookupResponse(response, region);
         this.lastSyncAt.set(new Date());
       }),
-      mergeMap((response) => {
+      toArray(),
+      mergeMap((responses) => {
         const resultMap = new Map(cachedMap);
-        for (const item of response.items) {
-          resultMap.set(item.itemId, item);
-        }
+        for (const response of responses)
+          for (const item of response.items) resultMap.set(item.itemId, item);
         const remaining = missingOrExpired.filter((id) => !resultMap.has(id));
         if (!remaining.length) {
           return of(resultMap);
@@ -262,7 +267,8 @@ export class MarketCacheService implements OnDestroy {
           }),
         );
       }),
-      catchError(() => {
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === 503) return of(cachedMap);
         return this.resolveQuotesBatch(missingOrExpired, region, forceRefresh);
       }),
       finalize(() => this.isSyncing.set(false)),

@@ -230,6 +230,44 @@ describe('MarketCacheService', () => {
     expect(emissions[0].size).toBe(7);
   });
 
+  it('splits long production quote requests at the API limit and combines all results', () => {
+    const itemIds = Array.from({ length: 117 }, (_, index) => index + 1);
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveProductionQuotes(itemIds, 'sa').subscribe((result) => emissions.push(result));
+
+    const requests = httpTesting.match((request) => request.url.includes('/production-quotes'));
+    expect(requests).toHaveLength(2);
+    for (const request of requests) {
+      const ids = request.request.params.get('ids')!.split(',').map(Number);
+      expect(ids.length).toBeLessThanOrEqual(100);
+      request.flush({
+        ...mockLookupResponse,
+        items: ids.map((id) => ({ ...mockLookupResponse.items[0], itemId: id })),
+      });
+    }
+
+    expect(emissions).toHaveLength(1);
+    expect(emissions[0].size).toBe(117);
+    expect(service.cachedQuotesCount()).toBe(117);
+  });
+
+  it('keeps cached quotes without individual retries when the market provider is unavailable', () => {
+    service.cacheLookupResponse(mockLookupResponse, 'sa');
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service
+      .resolveProductionQuotes([1408, 9001], 'sa')
+      .subscribe((result) => emissions.push(result));
+
+    httpTesting
+      .expectOne((request) => request.url.includes('/production-quotes'))
+      .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+
+    httpTesting.expectNone((request) => request.url.includes('/market/items/9001'));
+    expect(emissions.at(-1)?.get(1408)).toEqual(mockLookupResponse.items[0]);
+    expect(emissions.at(-1)?.has(9001)).toBe(false);
+    expect(service.isSyncing()).toBe(false);
+  });
+
   it('preloads hot items and registers individual quotes into the cache', () => {
     service.preloadHotItems('sa').subscribe();
 
