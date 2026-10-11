@@ -30,6 +30,12 @@ Screenshots 06, 07 e 14: slot escuro, ícone proporcional, contorno fino. Reserv
 
 Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Alvos web têm pelo menos 44 px de altura, fonte legível e foco visível. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível.
 
+## Indicadores econômicos e ações de origem
+
+Mensagens de estado permanecem no fluxo e alinhadas às margens internas do painel. Escolhas mutuamente exclusivas usam `.segmented-control`, cada opção declara `aria-pressed` e mantém a mesma altura; uma ação calculada, como otimizar lucro por hora, fica separada em `.btn`.
+
+Para cinco indicadores econômicos, use cartões de mesma base visual e números tabulares. Quando o painel tiver ao menos 1200 px, mostre cinco colunas. Em painéis menores, use três colunas e centralize os dois cartões finais; abaixo de 900 px, empilhe os cartões. Reserve o bronze para seleção e para o indicador principal da tarefa, sem criar cartões de cores diferentes sem motivo funcional.
+
 ## Tooltips e estados
 
 Tooltip para identificação/qualidade ou informação complementar, nunca para esconder informação essencial. Sucesso e erro incluem texto, não apenas verde/vermelho. Loading preserva o nome do item e desabilita somente a ação duplicada; `aria-busy` comunica o estado.
