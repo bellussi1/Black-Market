@@ -86,7 +86,7 @@ export function requestControls(logger: LoggerService, environment: string, webO
       req.method !== 'OPTIONS' &&
       !limiter.take(
         (req.ip ?? 'unknown') + ':' + group,
-        telemetry ? 10 : workspace || market || calculate ? 30 : crafting ? 600 : 240,
+        telemetry ? 10 : workspace || calculate ? 30 : market ? 300 : crafting ? 600 : 240,
       )
     ) {
       res.setHeader('Retry-After', '60');

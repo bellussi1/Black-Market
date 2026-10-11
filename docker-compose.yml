@@ -81,9 +81,12 @@ services:
     ports:
       - '127.0.0.1:4200:4200'
     volumes:
-      - ./apps/web/src:/workspace/apps/web/src:ro
-      - ./packages/calculators/src:/workspace/packages/calculators/src:ro
-      - ./packages/shared/src:/workspace/packages/shared/src:ro
+      - ./apps/web/src:/workspace/apps/web/src
+      - ./packages/calculators/src:/workspace/packages/calculators/src
+      - ./packages/calculators/dist:/workspace/packages/calculators/dist
+      - ./packages/shared/src:/workspace/packages/shared/src
+      - ./packages/shared/dist:/workspace/packages/shared/dist
+      - ./packages/domain/dist:/workspace/packages/domain/dist
 
   import:
     profiles: ['data']
