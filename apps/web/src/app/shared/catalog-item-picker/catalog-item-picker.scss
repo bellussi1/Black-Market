@@ -35,7 +35,11 @@
 }
 
 .results {
-  margin-top: 10px;
+  margin-top: 16px;
+  padding-block: 6px;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  animation: picker-open 160ms ease-out;
   border: 1px solid var(--bm-border);
   background: var(--bm-input);
   max-height: 320px;
@@ -68,7 +72,31 @@ button:focus-visible {
   gap: 12px;
   padding: 10px 14px;
   text-align: left;
+  height: auto;
+  white-space: normal;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
   border-bottom: 1px solid var(--bm-border);
+}
+@keyframes picker-open {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .results {
+    animation: none;
+    scroll-behavior: auto;
+  }
+  .result-item {
+    transition: none;
+  }
 }
 
 .result-item:hover,

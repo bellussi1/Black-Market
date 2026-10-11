@@ -97,7 +97,8 @@ export class RecipesPage {
           this.message.set('');
           this.recipe.set(null);
           this.item.set(null);
-          this.result.set(null);
+          // Keep the existing page mounted while fetching the next page, preserving scroll geometry.
+          if (params.get('key') || params.get('id') || query.get('item')) this.result.set(null);
           this.alternatives.set([]);
           const key = params.get('key'),
             rawId = params.get('id') ?? query.get('item'),
@@ -202,6 +203,7 @@ export class RecipesPage {
     });
   }
   move(delta: number) {
+    if (this.loading()) return;
     this.page += delta;
     this.refresh.next();
   }

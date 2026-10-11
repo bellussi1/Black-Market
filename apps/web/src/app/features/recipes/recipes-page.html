@@ -24,7 +24,9 @@
     </p>
   </details>
   @if (loading()) {
-    <p class="loading-state" role="status" i18n>Carregando item e receitas…</p>
+    <p class="loading-state" [class.refresh-status]="!!result()" role="status" i18n>
+      Carregando item e receitas…
+    </p>
   }
   @if (message()) {
     <p class="error-box" role="alert">

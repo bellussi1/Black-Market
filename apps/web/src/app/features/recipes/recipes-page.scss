@@ -3,7 +3,32 @@
   min-width: 0;
 }
 .recipe-explorer {
+  position: relative;
   max-width: 1600px;
+}
+.refresh-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--bm-surface);
+  padding: 8px;
+}
+.search-panel app-catalog-item-picker {
+  display: block;
+  padding-top: 8px;
+}
+.recipe-explorer button,
+.recipe-explorer a {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .recipe-explorer button,
+  .recipe-explorer a {
+    transition: none;
+  }
 }
 .recipe-explorer .tool-heading {
   margin-bottom: 12px;
