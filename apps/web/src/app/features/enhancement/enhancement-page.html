@@ -12,6 +12,8 @@
   <app-equipment-reference />
   <div class="tabs">
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'cost'"
       [attr.aria-pressed]="tab() === 'cost'"
@@ -19,6 +21,8 @@
     >
       <ng-container i18n>Custo e probabilidade</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'stack'"
       [attr.aria-pressed]="tab() === 'stack'"
@@ -26,6 +30,8 @@
     >
       <ng-container i18n>Custo de failstack</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'log'"
       [attr.aria-pressed]="tab() === 'log'"
@@ -45,12 +51,13 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Premissas da tentativa</ng-container></h2>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Chance inicial (%)</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               max="100"
@@ -64,6 +71,7 @@
           <label class="field"
             ><ng-container i18n>Aumento por falha (pontos percentuais)</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               max="100"
@@ -74,6 +82,7 @@
           <label class="field"
             ><ng-container i18n>Teto de chance (%)</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               max="100"
@@ -84,6 +93,7 @@
           <label class="field"
             ><ng-container i18n>Limite de tentativas do cenário</ng-container
             ><input
+              hlmInput
               type="number"
               min="1"
               max="2000"
@@ -93,6 +103,7 @@
           <label class="field"
             ><ng-container i18n>Pity: total de falhas necessário</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               max="2000"
@@ -107,6 +118,7 @@
           <label class="field"
             ><ng-container i18n>Essência já acumulada</ng-container
             ><input
+              hlmInput
               type="number"
               min="0"
               [ngModel]="form().currentPity"
@@ -115,6 +127,7 @@
           <label class="field"
             ><ng-container i18n>Materiais + crons por tentativa</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().attemptCost"
               (ngModelChange)="patch({ attemptCost: $event })"
@@ -122,6 +135,7 @@
           <label class="field"
             ><ng-container i18n>Reparo / perdas após uma falha</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().failureCost"
               (ngModelChange)="patch({ failureCost: $event })"
@@ -129,6 +143,7 @@
           <label class="field"
             ><ng-container i18n>Custo da tentativa garantida</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().guaranteedCost"
               (ngModelChange)="patch({ guaranteedCost: $event })"
@@ -141,6 +156,7 @@
           <label class="field"
             ><ng-container i18n>Custo inicial alocado ao stack</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().stackCost"
               (ngModelChange)="patch({ stackCost: $event })"
@@ -148,6 +164,7 @@
           <label class="field"
             ><ng-container i18n>Preço de comprar pronto</ng-container
             ><input
+              hlmInput
               inputmode="numeric"
               [ngModel]="form().buyPrice"
               (ngModelChange)="patch({ buyPrice: $event })"
@@ -198,7 +215,7 @@
               ><strong>{{ r.guaranteedAttempt ?? 'Sem pity' }}</strong>
             </div>
           </div>
-          <section class="panel">
+          <section hlmCard class="panel">
             <h2><ng-container i18n>Probabilidade acumulada</ng-container></h2>
             <svg
               class="chart"
@@ -260,11 +277,12 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Caminho até o stack alvo</ng-container></h2>
         <label class="field"
           ><ng-container i18n>Custo do stack-base por rodada</ng-container
           ><input
+            hlmInput
             inputmode="numeric"
             [ngModel]="stack().baseCost"
             (ngModelChange)="patchStack({ baseCost: $event })"
@@ -274,10 +292,14 @@
             <div class="form-grid">
               <label class="field"
                 ><ng-container i18n>Etapa / stack alvo</ng-container
-                ><input [ngModel]="row.label" (ngModelChange)="step(k, { label: $event })" /></label
+                ><input
+                  hlmInput
+                  [ngModel]="row.label"
+                  (ngModelChange)="step(k, { label: $event })" /></label
               ><label class="field"
                 ><ng-container i18n>Chance de sucesso indesejado (%)</ng-container
                 ><input
+                  hlmInput
                   type="number"
                   min="0"
                   max="99.99"
@@ -287,19 +309,27 @@
               ><label class="field"
                 ><ng-container i18n>Custo da tentativa</ng-container
                 ><input
+                  hlmInput
                   inputmode="numeric"
                   [ngModel]="row.cost"
                   (ngModelChange)="step(k, { cost: $event })" /></label
               ><label class="field"
                 ><ng-container i18n>Custo extra se falhar</ng-container
                 ><input
+                  hlmInput
                   inputmode="numeric"
                   [ngModel]="row.failureCost"
                   (ngModelChange)="step(k, { failureCost: $event })"
               /></label>
             </div>
             <div class="action-row">
-              <button type="button" class="btn danger" (click)="removeStep(k)">
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="btn danger"
+                (click)="removeStep(k)"
+              >
                 <ng-container i18n>Remover etapa </ng-container>
               </button>
             </div>
@@ -307,6 +337,8 @@
         }
         <div class="action-row">
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn subtle"
             (click)="addStep()"
@@ -343,7 +375,7 @@
       </section>
     </div>
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Registro observado</ng-container></h2>
       <p class="help">
         <ng-container i18n
@@ -354,10 +386,10 @@
       <div class="form-grid">
         <label class="field"
           ><ng-container i18n>Equipamento / cenário</ng-container
-          ><input [(ngModel)]="name" maxlength="140" /></label
+          ><input hlmInput [(ngModel)]="name" maxlength="140" /></label
         ><label class="field"
           ><ng-container i18n>Resultado</ng-container
-          ><select [(ngModel)]="outcome">
+          ><select appBdoSelect [(ngModel)]="outcome">
             <option value="failure"><ng-container i18n>Falha</ng-container></option>
             <option value="success"><ng-container i18n>Sucesso</ng-container></option>
           </select></label
@@ -370,6 +402,8 @@
         </ng-container>
       </p>
       <button
+        hlmBtn
+        variant="outline"
         type="button"
         class="btn"
         [disabled]="!name.trim() || !result().value"
@@ -378,7 +412,7 @@
         <ng-container i18n>Registrar tentativa </ng-container>
       </button>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>
         <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
       </h2>
@@ -404,7 +438,13 @@
                   <td>{{ silver(log.cost) }}</td>
                   <td>{{ log.outcome === 'success' ? 'Sucesso' : 'Falha' }}</td>
                   <td>
-                    <button type="button" class="btn danger" (click)="removeLog(log.id)">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      class="btn danger"
+                      (click)="removeLog(log.id)"
+                    >
                       <ng-container i18n>Excluir </ng-container>
                     </button>
                   </td>
