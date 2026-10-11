@@ -21,6 +21,9 @@ import {
   type ProductionRecipe,
 } from '@bdo/calculators';
 import type { CatalogItemDetail, CatalogRecipe, ProductionCatalogResponse } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -33,6 +36,7 @@ import {
 } from '../../core/production-demo';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type Quotes = ProductionPlannerInput['quotes'];
 /** Provider summaries merge enhancement variants. Only known plain materials are safe here. */
@@ -88,7 +92,7 @@ export function productionRecipes(rows: CatalogRecipe[]): ProductionRecipe[] {
 @Component({
   selector: 'app-recommendations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',
 })
