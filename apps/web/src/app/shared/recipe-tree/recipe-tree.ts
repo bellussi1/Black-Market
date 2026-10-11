@@ -284,9 +284,62 @@ export class RecipeTree {
     this.optimizationMessage.set('');
   }
 
+  setMaterialSource(itemId: number, choice: ProductionChoice): void {
+    const updated = new Map(this.customMaterialSource());
+    updated.set(itemId, choice);
+    this.customMaterialSource.set(updated);
+    this.acquisitionStrategy.set('custom');
+    this.optimizationMessage.set('');
+  }
+
   materialSource(itemId: number): ProductionChoice {
     return this.customMaterialSource().get(itemId) ?? 'buy';
   }
+
+  readonly materialDecisions = computed(() => {
+    const itemIds = this.materialItemIds();
+    const plannerRows = this.plannerMaterials();
+    const quotes = this.marketQuotes();
+    const partsMap = this.parts();
+
+    return itemIds.map((itemId) => {
+      const plannerRow = plannerRows.find((r) => r.itemId === itemId);
+      const name = this.productionMaterialName(itemId);
+      const part = partsMap.get(itemId);
+      const iconUrl = this.catalog.resolveIconUrl(part ?? { iconUrl: null });
+      const canProduce = this.makeChoice(itemId) !== 'buy';
+      const source = this.materialSource(itemId);
+      const sourceLabel = this.materialSourceLabel(itemId);
+      const required = plannerRow?.required ?? 0;
+      const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
+      const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
+      const fromStock = plannerRow?.owned ?? 0;
+      const unitPrice = this.price(itemId);
+      const totalMarketCost = this.materialPurchaseValue(itemId, required);
+      const liveQuote = quotes.get(itemId);
+      const stock = liveQuote?.stock ?? null;
+      const totalTrades = liveQuote?.totalTrades ?? null;
+      const insight = this.findIntermediateInsight(itemId);
+
+      return {
+        itemId,
+        name,
+        iconUrl,
+        required,
+        bought,
+        produced,
+        fromStock,
+        source,
+        sourceLabel,
+        canProduce,
+        unitPrice,
+        totalMarketCost,
+        stock,
+        totalTrades,
+        insight,
+      };
+    });
+  });
 
   private materialItemIds(): number[] {
     const graph = this.recipeGraph();
@@ -304,7 +357,7 @@ export class RecipeTree {
     return [...ids].sort((left, right) => left - right);
   }
 
-  private makeChoice(itemId: number): ProductionChoice {
+  makeChoice(itemId: number): ProductionChoice {
     const producer = this.recipeGraph()?.producerRecipes.some((recipe) =>
       recipe.outputs.some((output) => output.itemId === itemId),
     );
@@ -930,12 +983,16 @@ export class RecipeTree {
               }
               return next;
             });
-            return this.marketCache.resolveQuotesBatch(graph.itemIds, region);
+            return (
+              this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
+            ).call(this.marketCache, graph.itemIds, region);
           }
           const itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
             (left, right) => left - right,
           );
-          return this.marketCache.resolveQuotesBatch(itemIds, region);
+          return (
+            this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
+          ).call(this.marketCache, itemIds, region);
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -946,9 +1003,11 @@ export class RecipeTree {
           const newQuotes = new Map(this.marketQuotes());
           const observed = new Map(this.quoteObservedAt());
           for (const [id, quote] of quotesMap) {
-            if (quote?.price !== null && quote?.price !== undefined) {
-              newPrices.set(id, quote.price);
+            if (quote) {
               newQuotes.set(id, quote);
+              if (quote.price !== null && quote.price !== undefined) {
+                newPrices.set(id, quote.price);
+              }
               const entry = this.marketCache.getCachedQuoteEntry(id, region);
               if (entry) observed.set(id, new Date(entry.fetchedAt).toISOString());
             }

@@ -62,4 +62,18 @@ export class MarketApi {
       { params: { region, locale: preferredDataLocale() } },
     );
   }
+
+  productionQuotes(itemIds: (number | string)[], region: Region) {
+    const ids = itemIds.map(Number).filter((id) => Number.isFinite(id) && id > 0);
+    return this.http.get<MarketLookupResponse>(
+      `${environment.apiBaseUrl}/api/v1/market/production-quotes`,
+      {
+        params: {
+          ids: ids.join(','),
+          region,
+          locale: preferredDataLocale(),
+        },
+      },
+    );
+  }
 }

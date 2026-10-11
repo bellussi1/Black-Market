@@ -879,6 +879,158 @@
   font-weight: 500;
 }
 
+/* --- Material Decisions Quick Matrix --- */
+.material-decisions-panel {
+  margin: 0 16px 16px;
+  padding: 14px 16px;
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+}
+
+.material-decisions-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.material-decisions-hint {
+  font-size: 12px;
+  color: var(--bm-muted);
+}
+
+.material-decisions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.material-decision-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+
+  &:hover {
+    border-color: var(--bm-border-strong, #544b3f);
+  }
+}
+
+.decision-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.decision-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.decision-item-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  strong {
+    font-size: 14px;
+    color: var(--bm-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.decision-qty-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bm-accent);
+  background: rgba(200, 160, 90, 0.12);
+  border: 1px solid rgba(200, 160, 90, 0.3);
+  padding: 1px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.decision-market-quote {
+  font-size: 11px;
+  color: var(--bm-muted);
+  margin-top: 2px;
+
+  .quote-price {
+    color: #e5c158;
+    font-weight: 600;
+  }
+
+  .quote-stock {
+    color: var(--bm-muted);
+  }
+
+  .quote-unavailable {
+    color: var(--bm-muted);
+    font-style: italic;
+  }
+}
+
+.decision-insight-pill {
+  padding: 4px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+
+  &.insight-craft {
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #f0cb62;
+  }
+
+  &.insight-buy {
+    background: rgba(114, 164, 212, 0.15);
+    border: 1px solid rgba(114, 164, 212, 0.4);
+    color: #a4c9ee;
+  }
+}
+
+.decision-toggle-group {
+  display: flex;
+  gap: 6px;
+
+  .decision-btn {
+    flex: 1;
+    min-height: 36px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bm-muted);
+    background: var(--bm-surface);
+    border: 1px solid var(--bm-border);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 140ms ease;
+
+    &:hover {
+      color: var(--bm-text);
+      border-color: var(--bm-border-strong);
+    }
+
+    &.active {
+      color: #0d0f12;
+      background: var(--bm-accent);
+      border-color: var(--bm-accent);
+      font-weight: 700;
+    }
+  }
+}
+
 /* --- Make vs Buy Insight Decision Card --- */
 .insight-decision-card {
   display: flex;

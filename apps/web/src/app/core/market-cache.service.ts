@@ -206,6 +206,72 @@ export class MarketCacheService implements OnDestroy {
   }
 
   /**
+   * Resolves quotes for crafting/production materials using the bulk production-quotes endpoint.
+   * Uses a single HTTP request for up to 100 materials, caching all returned quotes and falling
+   * back to resolveQuotesBatch only for items omitted by the bulk endpoint.
+   */
+  resolveProductionQuotes(
+    itemIds: (number | string)[],
+    region: Region = this.preferences.region(),
+    forceRefresh = false,
+  ): Observable<Map<number, MarketItemQuote>> {
+    const uniqueIds = [...new Set(itemIds.map((id) => Number(id)).filter((id) => id > 0))];
+    if (!uniqueIds.length) {
+      return of(new Map());
+    }
+
+    const cachedMap = new Map<number, MarketItemQuote>();
+    const missingOrExpired: number[] = [];
+
+    for (const id of uniqueIds) {
+      const entry = this.getCachedQuoteEntry(id, region, 0);
+      if (entry) {
+        cachedMap.set(id, entry.quote);
+      }
+      const isFresh = entry && Date.now() < entry.expiresAt && !forceRefresh;
+      if (!isFresh) {
+        missingOrExpired.push(id);
+      }
+    }
+
+    if (!missingOrExpired.length) {
+      return of(cachedMap);
+    }
+
+    this.isSyncing.set(true);
+    const bulk$ = this.api.productionQuotes(missingOrExpired, region).pipe(
+      tap((response) => {
+        this.cacheLookupResponse(response, region);
+        this.lastSyncAt.set(new Date());
+      }),
+      mergeMap((response) => {
+        const resultMap = new Map(cachedMap);
+        for (const item of response.items) {
+          resultMap.set(item.itemId, item);
+        }
+        const remaining = missingOrExpired.filter((id) => !resultMap.has(id));
+        if (!remaining.length) {
+          return of(resultMap);
+        }
+        return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+          map((fallbacks) => {
+            for (const [id, quote] of fallbacks) {
+              resultMap.set(id, quote);
+            }
+            return resultMap;
+          }),
+        );
+      }),
+      catchError(() => {
+        return this.resolveQuotesBatch(missingOrExpired, region, forceRefresh);
+      }),
+      finalize(() => this.isSyncing.set(false)),
+    );
+
+    return cachedMap.size ? concat(of(new Map(cachedMap)), bulk$) : bulk$;
+  }
+
+  /**
    * Preloads and caches the top hot items or board items for the active region.
    */
   preloadHotItems(

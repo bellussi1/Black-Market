@@ -57,7 +57,7 @@ export class MarketService {
       this.windowStart = now;
       this.requests = 0;
     }
-    if (this.active >= 2 || this.requests >= 20)
+    if (this.active >= 10 || this.requests >= 120)
       throw new HttpException(
         'Limite temporário de consultas. Aguarde antes de tentar novamente.',
         HttpStatus.TOO_MANY_REQUESTS,
