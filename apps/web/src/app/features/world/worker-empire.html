@@ -8,7 +8,9 @@
         e os rendimentos que você observa no jogo.
       </p>
     </div>
-    <button type="button" class="btn subtle" (click)="reset()" i18n>Novo império</button>
+    <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="reset()" i18n>
+      Novo império
+    </button>
   </header>
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
@@ -23,6 +25,8 @@
         <div class="saved-row">
           <span>{{ plan.name }} · {{ plan.workers.length }} trabalhadores</span>
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn subtle"
             (click)="load(plan)"
@@ -32,6 +36,8 @@
             Carregar
           </button>
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn subtle"
             (click)="deleteSaved(plan.id)"
@@ -44,16 +50,21 @@
       }
     </details>
   }
-  <section class="panel" aria-labelledby="empire-settings">
+  <section hlmCard class="panel" aria-labelledby="empire-settings">
     <h3 id="empire-settings" i18n>1. Sua rotina</h3>
     <div class="form-grid">
       <label class="field"
         ><span i18n>Nome do império</span
-        ><input maxlength="140" [ngModel]="draft().name" (ngModelChange)="patch({ name: $event })"
+        ><input
+          hlmInput
+          maxlength="140"
+          [ngModel]="draft().name"
+          (ngModelChange)="patch({ name: $event })"
       /></label>
       <label class="field"
         ><span i18n>Horas de produção por dia</span
         ><input
+          hlmInput
           type="number"
           min="0"
           max="24"
@@ -64,6 +75,7 @@
       <label class="field"
         ><span i18n>Contribuição total destinada ao império</span
         ><input
+          hlmInput
           type="number"
           min="0"
           max="10000"
@@ -80,17 +92,22 @@
       tarefa. Não simulamos produção contínua enquanto você está desconectado.
     </p>
   </section>
-  <section class="panel" aria-labelledby="empire-workers">
+  <section hlmCard class="panel" aria-labelledby="empire-workers">
     <h3 id="empire-workers" i18n>2. Trabalhadores e cidades</h3>
     <label class="field"
       ><span i18n>Buscar uma base para os seletores</span
-      ><input type="search" [ngModel]="nodeSearch()" (ngModelChange)="nodeSearch.set($event)"
+      ><input
+        hlmInput
+        type="search"
+        [ngModel]="nodeSearch()"
+        (ngModelChange)="nodeSearch.set($event)"
     /></label>
     <form (ngSubmit)="addWorker()">
       <div class="form-grid">
         <label class="field"
           ><span i18n>Nome do trabalhador</span
           ><input
+            hlmInput
             name="workerName"
             required
             maxlength="140"
@@ -100,7 +117,7 @@
         /></label>
         <label class="field"
           ><span i18n>Cidade de origem</span
-          ><select name="workerCity" required [(ngModel)]="worker.cityNodeId">
+          ><select appBdoSelect name="workerCity" required [(ngModel)]="worker.cityNodeId">
             <option value="" i18n>Escolha a cidade</option>
             @for (node of selectable(); track node.id) {
               <option [value]="node.id">{{ node.name }}</option>
@@ -109,7 +126,7 @@
         >
         <label class="field"
           ><span i18n>Espécie</span
-          ><select name="workerSpecies" [(ngModel)]="worker.species">
+          ><select appBdoSelect name="workerSpecies" [(ngModel)]="worker.species">
             <option value="other" i18n>Outro</option>
             <option value="goblin" i18n>Goblin</option>
             <option value="human" i18n>Humano</option>
@@ -119,6 +136,7 @@
         <label class="field"
           ><span i18n>Nível</span
           ><input
+            hlmInput
             name="workerLevel"
             type="number"
             min="1"
@@ -127,7 +145,9 @@
             [(ngModel)]="worker.level"
         /></label>
       </div>
-      <button type="submit" class="btn subtle" i18n>Adicionar ou atualizar trabalhador</button>
+      <button hlmBtn variant="outline" type="submit" class="btn subtle" i18n>
+        Adicionar ou atualizar trabalhador
+      </button>
     </form>
     <div class="worker-list">
       @for (entry of draft().workers; track entry.id) {
@@ -140,6 +160,8 @@
             </p>
           </div>
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn subtle"
             (click)="editWorker(entry)"
@@ -149,6 +171,8 @@
             Editar
           </button>
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn subtle"
             (click)="removeWorker(entry.id)"
@@ -172,7 +196,7 @@
         <div class="form-grid">
           <label class="field"
             ><span i18n>Cidade</span
-            ><select [ngModel]="cityNodeId" (ngModelChange)="editCity($event)">
+            ><select appBdoSelect [ngModel]="cityNodeId" (ngModelChange)="editCity($event)">
               <option value="" i18n>Escolha</option>
               @for (city of cities(); track city) {
                 <option [value]="city">{{ nodeName(city) }}</option>
@@ -181,14 +205,14 @@
           >
           <label class="field"
             ><span i18n>Contribuição da infraestrutura</span
-            ><input type="number" min="0" max="10000" [(ngModel)]="cityContribution"
+            ><input hlmInput type="number" min="0" max="10000" [(ngModel)]="cityContribution"
           /></label>
           <label class="field"
             ><span i18n>Vagas de alojamento disponíveis</span
-            ><input type="number" min="0" max="100" [(ngModel)]="lodgingSlots"
+            ><input hlmInput type="number" min="0" max="100" [(ngModel)]="lodgingSlots"
           /></label>
         </div>
-        <button type="button" class="btn subtle" (click)="addCity()" i18n>
+        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="addCity()" i18n>
           Guardar custos no rascunho
         </button>
         @for (city of draft().cities; track city.nodeId) {
@@ -199,7 +223,7 @@
       </details>
     }
   </section>
-  <section class="panel" aria-labelledby="empire-tasks">
+  <section hlmCard class="panel" aria-labelledby="empire-tasks">
     <h3 id="empire-tasks" i18n>3. Produção de cada trabalhador</h3>
     <p class="help" i18n>
       O tempo inclui trabalho e ida/volta. Espécie e nível identificam o trabalhador; o rendimento
@@ -210,6 +234,7 @@
         <label class="field"
           ><span i18n>Nome da tarefa</span
           ><input
+            hlmInput
             name="taskName"
             required
             maxlength="140"
@@ -219,7 +244,7 @@
         /></label>
         <label class="field"
           ><span i18n>Trabalhador</span
-          ><select name="taskWorker" required [(ngModel)]="task.workerId">
+          ><select appBdoSelect name="taskWorker" required [(ngModel)]="task.workerId">
             <option value="" i18n>Escolha</option>
             @for (entry of draft().workers; track entry.id) {
               <option [value]="entry.id">{{ entry.name }}</option>
@@ -228,7 +253,7 @@
         >
         <label class="field"
           ><span i18n>Base de destino</span
-          ><select name="taskNode" required [(ngModel)]="task.nodeId">
+          ><select appBdoSelect name="taskNode" required [(ngModel)]="task.nodeId">
             <option value="" i18n>Escolha</option>
             @for (node of selectable(); track node.id) {
               <option [value]="node.id">{{ node.name }}</option>
@@ -238,6 +263,7 @@
         <label class="field"
           ><span i18n>Ciclo completo observado (minutos)</span
           ><input
+            hlmInput
             name="taskMinutes"
             type="number"
             min="0.001"
@@ -248,11 +274,17 @@
         /></label>
         <label class="field"
           ><span i18n>Alimentação e outros custos por ciclo</span
-          ><input name="taskCost" inputmode="numeric" required [(ngModel)]="task.costPerCycle"
+          ><input
+            hlmInput
+            name="taskCost"
+            inputmode="numeric"
+            required
+            [(ngModel)]="task.costPerCycle"
         /></label>
         <label class="field"
           ><span i18n>CP de produção adicional à rota</span
           ><input
+            hlmInput
             name="taskCp"
             type="number"
             min="0"
@@ -271,6 +303,7 @@
           <label class="field"
             ><span i18n>Quantidade média observada</span
             ><input
+              hlmInput
               name="outputQuantity"
               type="number"
               min="0.001"
@@ -281,6 +314,7 @@
           <label class="field"
             ><span i18n>Preço unitário confirmado (prata)</span
             ><input
+              hlmInput
               name="outputPrice"
               inputmode="numeric"
               [(ngModel)]="outputPrice"
@@ -297,6 +331,8 @@
               {{ item.price === null ? 'Preço não informado' : silver(item.price) }}</span
             >
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="btn subtle"
               (click)="removeOutput(item.itemId)"
@@ -313,13 +349,20 @@
           >Incluir tarefa no total do império</span
         ></label
       >
-      <button type="submit" class="btn subtle" [disabled]="!draft().workers.length" i18n>
+      <button
+        hlmBtn
+        variant="outline"
+        type="submit"
+        class="btn subtle"
+        [disabled]="!draft().workers.length"
+        i18n
+      >
         Adicionar ou atualizar tarefa
       </button>
     </form>
   </section>
   @if (result().value; as result) {
-    <section class="panel summary" aria-labelledby="empire-summary">
+    <section hlmCard class="panel summary" aria-labelledby="empire-summary">
       <h3 id="empire-summary" i18n>Seu império em um dia</h3>
       <div class="empire-metrics">
         <div class="metric">
@@ -390,12 +433,12 @@
         </details>
       }
     </section>
-    <section class="panel" aria-labelledby="empire-compare">
+    <section hlmCard class="panel" aria-labelledby="empire-compare">
       <h3 id="empire-compare" i18n>Comparar tarefas</h3>
       <div class="form-grid">
         <label class="field"
           ><span i18n>Filtrar pela cidade do trabalhador</span
-          ><select [ngModel]="cityFilter()" (ngModelChange)="cityFilter.set($event)">
+          ><select appBdoSelect [ngModel]="cityFilter()" (ngModelChange)="cityFilter.set($event)">
             <option value="" i18n>Todas</option>
             @for (city of cities(); track city) {
               <option [value]="city">{{ nodeName(city) }}</option>
@@ -404,7 +447,7 @@
         >
         <label class="field"
           ><span i18n>Ordenar por</span
-          ><select [ngModel]="order()" (ngModelChange)="order.set($event)">
+          ><select appBdoSelect [ngModel]="order()" (ngModelChange)="order.set($event)">
             <option value="net" i18n>Maior resultado diário</option>
             <option value="cp" i18n>Maior resultado por CP da rota isolada</option>
           </select></label
@@ -450,6 +493,8 @@
             }
             <div class="task-actions">
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 (click)="toggle(row.id)"
@@ -458,6 +503,8 @@
                 {{ row.enabled ? 'Pausar' : 'Incluir no império' }}
               </button>
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 (click)="editTask(row.id)"
@@ -466,6 +513,8 @@
               >
                 Editar</button
               ><button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="btn subtle"
                 (click)="removeTask(row.id)"
@@ -487,7 +536,15 @@
     <p class="notice" role="status">{{ result().error }}</p>
   }
   <div class="empire-save">
-    <button class="btn" type="button" (click)="save()" [disabled]="store.blocked()" i18n>
+    <button
+      hlmBtn
+      variant="outline"
+      class="btn"
+      type="button"
+      (click)="save()"
+      [disabled]="store.blocked()"
+      i18n
+    >
       Salvar meu império</button
     ><a routerLink="/settings" i18n>Exportar meus dados</a>
   </div>

@@ -14,14 +14,18 @@
   @if (loading()) {
     <p role="status" i18n>Carregando conexões…</p>
   }
-  <section class="panel">
+  <section hlmCard class="panel">
     <div class="form-grid">
       <label class="field"
         ><span i18n>Filtrar bases pelo nome</span
-        ><input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" /></label
+        ><input
+          hlmInput
+          type="search"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)" /></label
       ><label class="field"
         ><span i18n>Partida</span
-        ><select [ngModel]="start()" (ngModelChange)="start.set($event)">
+        ><select appBdoSelect [ngModel]="start()" (ngModelChange)="start.set($event)">
           <option value="" i18n>Escolha uma base</option>
           @for (node of filtered(); track node.id) {
             <option [value]="node.id">{{ node.name }}</option>
@@ -29,7 +33,7 @@
         </select></label
       ><label class="field"
         ><span i18n>Destino</span
-        ><select [ngModel]="destination()" (ngModelChange)="destination.set($event)">
+        ><select appBdoSelect [ngModel]="destination()" (ngModelChange)="destination.set($event)">
           <option value="" i18n>Escolha uma base</option>
           @for (node of filtered(); track node.id) {
             <option [value]="node.id">{{ node.name }}</option>
@@ -76,7 +80,7 @@
       jogo.
     </p>
   </section>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2 i18n>Estimar produção de trabalhadores</h2>
     <app-catalog-item-picker
       [selectionName]="workerItem()?.name ?? ''"
@@ -86,6 +90,7 @@
       <label class="field"
         ><span i18n>Duração de um ciclo (minutos)</span
         ><input
+          hlmInput
           type="number"
           min="0.001"
           [ngModel]="cycleMinutes()"
@@ -93,6 +98,7 @@
       ><label class="field"
         ><span i18n>Número de ciclos</span
         ><input
+          hlmInput
           type="number"
           min="1"
           [ngModel]="cycles()"
@@ -100,6 +106,7 @@
       ><label class="field"
         ><span i18n>Quantidade média por ciclo</span
         ><input
+          hlmInput
           type="number"
           min="1"
           [ngModel]="quantity()"
@@ -107,12 +114,13 @@
       ><label class="field"
         ><span i18n>Preço unitário</span
         ><input
+          hlmInput
           inputmode="numeric"
           [ngModel]="price()"
           (ngModelChange)="price.set($event)" /></label
       ><label class="field"
         ><span i18n>Custo de alimentação e outros custos</span
-        ><input inputmode="numeric" [ngModel]="cost()" (ngModelChange)="cost.set($event)"
+        ><input hlmInput inputmode="numeric" [ngModel]="cost()" (ngModelChange)="cost.set($event)"
       /></label>
     </div>
     @if (workerItem()) {

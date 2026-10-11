@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { calculateActivity, defaultTax } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -20,12 +22,21 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { connectionRoute, type WorldNode } from './node-routing';
 import { WorkerEmpireComponent } from './worker-empire';
 @Component({
   selector: 'app-world-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, WorkerEmpireComponent],
+  imports: [
+    HlmInput,
+    HlmCard,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    WorkerEmpireComponent,
+  ],
   templateUrl: './world-page.html',
   styleUrl: './world-page.scss',
 })
