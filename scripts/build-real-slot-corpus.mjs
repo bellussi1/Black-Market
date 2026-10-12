@@ -42,7 +42,9 @@ const definitions = [
   {
     id: 'velia-20261010',
     captureId: 'capture-3b5639390052',
-    grid: [949, 210, 35.2, 35.2, 31],
+    // Measured row frames: the old 35.2px vertical pitch accumulated a 4px
+    // offset by row nine, clipping the icon and the upper numeric glyphs.
+    grid: [949, 209, 35.2, 34.9, 31],
     quantities: [
       '2 246 23567 29166 36485 30764 562 192 866',
       '299 946 2437 262 22 103 17104 3996 723',
