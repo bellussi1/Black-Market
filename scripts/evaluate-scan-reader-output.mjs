@@ -3,12 +3,21 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 /** Score actual browser Scan output without feeding labels to the readers. */
 export function scoreScanOutput(sample, output) {
-  const expected = sample.slots.filter((slot) => slot.itemId);
+  const expected = sample.slots.filter((slot) => slot.normalizedValue !== undefined || slot.itemId);
+  const expectedItems = expected.filter(
+    (slot) => slot.itemId !== null && slot.itemId !== undefined,
+  ).length;
   const matched = new Set();
   let itemsExact = 0;
   let quantitiesExact = 0;
   let quantitiesAccepted = 0;
   let falsePositiveSlots = 0;
+  let visibleExact = 0;
+  let reviewRequired = 0;
+  let acceptedPairs = 0;
+  let falseAcceptedPairs = 0;
+  let iconReferences = 0;
+  let iconCandidatesCorrect = 0;
   for (const cell of output.cells) {
     const a = cell.rect;
     if (!a) continue;
@@ -32,7 +41,34 @@ export function scoreScanOutput(sample, output) {
       continue;
     }
     matched.add(hit.index);
-    if (String(cell.item) === String(hit.slot.itemId)) itemsExact++;
+    if (hit.slot.iconReferenceId) {
+      iconReferences++;
+      if ((cell.options ?? []).some((id) => String(id) === String(hit.slot.iconReferenceId)))
+        iconCandidatesCorrect++;
+    }
+    const itemLabeled = hit.slot.itemId !== null && hit.slot.itemId !== undefined;
+    const itemCorrect = itemLabeled && String(cell.item) === String(hit.slot.itemId);
+    if (itemCorrect) itemsExact++;
+    const text = String(cell.text ?? '').trim();
+    const visible = /^(\d+)(?:[.,](\d+))?([kKmM])?$/.exec(text);
+    const visibleValue = visible
+      ? Math.round(
+          Number(`${visible[1]}.${visible[2] ?? '0'}`) *
+            (visible[3]?.toLowerCase() === 'k'
+              ? 1000
+              : visible[3]?.toLowerCase() === 'm'
+                ? 1000000
+                : 1),
+        )
+      : null;
+    if (visibleValue !== null && String(visibleValue) === String(hit.slot.normalizedValue))
+      visibleExact++;
+    if (cell.uncertain || cell.itemUncertain || !cell.item || !cell.quantity) reviewRequired++;
+    if (itemLabeled && !cell.itemUncertain && cell.item && !cell.uncertain && cell.quantity) {
+      acceptedPairs++;
+      if (!itemCorrect || String(cell.quantity) !== String(hit.slot.normalizedValue))
+        falseAcceptedPairs++;
+    }
     if (!cell.uncertain && cell.quantity) {
       quantitiesAccepted++;
       if (String(cell.quantity) === String(hit.slot.normalizedValue)) quantitiesExact++;
@@ -43,11 +79,27 @@ export function scoreScanOutput(sample, output) {
     expectedOccupiedSlots: expected.length,
     matchedSlots: matched.size,
     falsePositiveSlots,
-    itemTop1: { exact: itemsExact, accuracy: itemsExact / expected.length },
+    itemTop1: {
+      labeled: expectedItems,
+      exact: itemsExact,
+      accuracy: expectedItems ? itemsExact / expectedItems : null,
+    },
+    visibleQuantities: {
+      exact: visibleExact,
+      accuracy: expected.length ? visibleExact / expected.length : null,
+    },
+    review: { required: reviewRequired, rate: matched.size ? reviewRequired / matched.size : null },
+    acceptedPairs: { total: acceptedPairs, incorrect: falseAcceptedPairs },
+    iconCandidateCoverage: {
+      labeled: iconReferences,
+      found: iconCandidatesCorrect,
+      accuracy: iconReferences ? iconCandidatesCorrect / iconReferences : null,
+    },
+    durationMs: output.durationMs ?? null,
     acceptedQuantities: {
       total: quantitiesAccepted,
       exact: quantitiesExact,
-      accuracy: quantitiesExact / expected.length,
+      accuracy: expected.length ? quantitiesExact / expected.length : null,
       precision: quantitiesAccepted ? quantitiesExact / quantitiesAccepted : null,
     },
     limitations: [
@@ -70,6 +122,14 @@ if (process.argv[1]?.endsWith('evaluate-scan-reader-output.mjs')) {
   const log = await readFile(logPath, 'utf8');
   const output = JSON.parse(log.split('### Result')[1].trim().split('\n')[0]);
   const report = scoreScanOutput(sample, output);
+  report.split = sample.split ?? null;
+  report.sessionId = sample.sessionId ?? null;
+  report.readerComparison = Object.fromEntries(
+    Object.entries(output.readers ?? {}).map(([name, reader]) => {
+      const scored = scoreScanOutput(sample, reader);
+      return [name, { ...scored.visibleQuantities, durationMs: reader.durationMs }];
+    }),
+  );
   await writeFile(outputPath, JSON.stringify(report, null, 2) + '\n');
   process.stdout.write(JSON.stringify(report) + '\n');
 }
