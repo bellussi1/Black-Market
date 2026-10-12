@@ -126,6 +126,74 @@ describe('production planner', () => {
     expect(optimized?.sourceChoices).toEqual({ 2: 'buy', 4: 'produce', 5: 'buy' });
   });
 
+  it('optimizes nested buy and produce decisions for 1000 recipes including all time and revenue', () => {
+    const input = fixture();
+    input.enforcePurchaseLimits = false;
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'alchemy',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [
+          { itemId: 2, quantity: 1 },
+          { itemId: 4, quantity: 1 },
+        ],
+      },
+      {
+        id: 'slow',
+        name: 'Slow',
+        method: 'alchemy',
+        output: { itemId: 2, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+      },
+      {
+        id: 'middle',
+        name: 'Middle',
+        method: 'alchemy',
+        output: { itemId: 4, quantity: 1 },
+        ingredients: [{ itemId: 5, quantity: 1 }],
+      },
+      {
+        id: 'nested',
+        name: 'Nested',
+        method: 'alchemy',
+        output: { itemId: 5, quantity: 1 },
+        ingredients: [{ itemId: 6, quantity: 1 }],
+      },
+    ];
+    input.quotes = Object.fromEntries(
+      [
+        [1, 10],
+        [2, 11],
+        [3, 1000],
+        [4, 30],
+        [5, 10],
+        [6, 1],
+      ].map(([id, price]) => [
+        id,
+        { unitPrice: String(price), available: null, observedAt: now, source: 'market' as const },
+      ]),
+    );
+    input.estimates = {
+      final: { craftSeconds: 60, source: 'fixed' },
+      slow: { craftSeconds: 600, source: 'fixed' },
+      middle: { craftSeconds: 1, source: 'fixed' },
+      nested: { craftSeconds: 0.1, source: 'fixed' },
+    };
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1000 }];
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+    expect(optimized).toMatchObject({
+      sourceChoices: { 2: 'buy', 4: 'produce', 5: 'produce', 6: 'buy' },
+      crafts: 1000,
+      seconds: 61100,
+      grossRevenue: '1000000',
+      netRevenue: '650000',
+      economicCost: '12000',
+      profit: '638000',
+    });
+  });
+
   it('uses only unreserved stock in the automatic strategy', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
