@@ -208,5 +208,6 @@ export function buildRecipeProductionInput(
     gatheringEstimates,
     customChoices,
     useOwnedInProduction: true,
+    enforcePurchaseLimits: false,
   };
 }

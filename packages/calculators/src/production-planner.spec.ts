@@ -473,6 +473,23 @@ describe('production planner', () => {
     expect(row(input, 'buy-all').issues.map((i) => i.code)).toContain('budget');
   });
 
+  it('compares economic plans without requiring current market stock or imported silver', () => {
+    const input = fixture();
+    input.profile.budget = '0';
+    input.quotes[2].available = 0;
+    input.enforcePurchaseLimits = false;
+    const plan = row(input, 'buy-all');
+    expect(plan.issues.map((issue) => issue.code)).not.toContain('budget');
+    expect(plan.issues.map((issue) => issue.code)).not.toContain('market-stock');
+    expect(plan.profitPerHour).not.toBeNull();
+    input.quotes[2].available = null;
+    expect(row(input, 'buy-all').issues.map((issue) => issue.code)).not.toContain(
+      'unknown-availability',
+    );
+    delete input.quotes[2];
+    expect(row(input, 'buy-all').profitPerHour).toBeNull();
+  });
+
   it('handles custom stock-only choices and NPC purchase prices', () => {
     const input = fixture();
     input.customChoices = { 2: 'stock' };

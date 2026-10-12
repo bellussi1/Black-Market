@@ -57,6 +57,8 @@ export interface ProductionPlannerInput {
   customChoices?: Record<number, ProductionChoice>;
   customRecipes?: Record<number, string>;
   useOwnedInProduction?: boolean;
+  /** False for economic simulations independent of current purchasing capacity. Defaults to true. */
+  enforcePurchaseLimits?: boolean;
   byproductValues?: Record<
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
@@ -243,6 +245,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           issue('stale-quote', 'Atualize a cotação de mercado.', { itemId: id });
         if (
           buying &&
+          input.enforcePurchaseLimits !== false &&
           (value.available === null || !Number.isFinite(value.available) || value.available < 0)
         )
           issue('unknown-availability', 'Informe a quantidade disponível no mercado.', {
@@ -263,6 +266,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       }
       const value = input.quotes[id];
       if (
+        input.enforcePurchaseLimits !== false &&
         value?.source === 'market' &&
         value.available !== null &&
         Number.isFinite(value.available) &&
@@ -502,7 +506,12 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     else output = produce(root, crafts, new Set());
     const cash = costsKnown ? ceilDivide(cashScaled, QUANTITY_SCALE) : null;
     const economic = costsKnown ? ceilDivide(economicScaled, QUANTITY_SCALE) : null;
-    if (cash !== null && money(input.profile.budget) && cash > BigInt(input.profile.budget))
+    if (
+      input.enforcePurchaseLimits !== false &&
+      cash !== null &&
+      money(input.profile.budget) &&
+      cash > BigInt(input.profile.budget)
+    )
       issue('budget', 'A prata disponível não cobre as compras do lote.');
     if (timesKnown && unscaled(totalMilliseconds * 1000n) > input.profile.activeMinutes * 60)
       issue('time', 'A cadeia excede o tempo ativo disponível.');
