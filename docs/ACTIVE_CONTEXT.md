@@ -483,3 +483,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Atalhos 1x/10x/100x usam Helm com variante outline e tamanho pequeno. Removidos estilos duplicados de botão. Indicadores econômicos e área de impostos com padding menor; aviso econômico resumido com explicação no title.
 - Próximo agente: manter as três ações e resultado no fluxo principal, ajustes no contexto e avisos de dados ausentes. Esta etapa não corrige a limitação da tabela de maestria ou a duração do solver.
 - Validação: 607 testes passaram; Playwright revisado em 1600px e 390px, sem overflow horizontal móvel (scrollWidth 390 = clientWidth 390). Capturas ignoradas em `output/playwright/compact-controls-{desktop,mobile}-final.png`. Preços reais de Edania não estavam disponíveis no navegador de QA; estados pendentes permaneceram visíveis.
+
+## 32. Dois boxes de decisão lado a lado (12/10/2026)
+
+- Correção da interpretação do layout: produto/configurações e resultado são dois boxes na mesma linha do host RecipeTree, não duas barras empilhadas. Workspace da árvore ocupa as duas colunas abaixo. Em até 900px, boxes voltam ao fluxo vertical; resumo de produção no Mercado preserva seu layout próprio.
+- Fórmula ocupa a largura do box esquerdo; quantidade e maestria ficam lado a lado. Métricas do resultado organizadas em 2x2. Nenhuma alteração de cálculo.
+- Playwright desktop 1600px confirmou ambos os boxes em y=168, largura=628px, x=288 e x=932. Captura ignorada: `output/playwright/two-boxes-desktop.png`.
+- Próximo agente: preservar esta composição em dois boxes solicitada explicitamente, sem retornar a barras de largura inteira no desktop.
+- Validação móvel: 390px sem overflow horizontal; boxes com x=18 e largura=354, empilhados. Botão de otimização verificado como BUTTON, cursor pointer, borda 1px e fundo carvão com texto dourado. Cursor pointer compartilhado para links, botões, summaries, selects, tabs e controles de escolha habilitados. Estilo de botão outline aplicado à otimização para distingui-la do fundo bronze.
+- Após ajustes de cursor/botão, `pnpm test` passou novamente (607 testes). Check completo desta etapa registrado no resultado final.
