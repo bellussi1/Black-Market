@@ -262,7 +262,9 @@ export class IconRefiner {
     const sample = (source: CanvasImageSource, c: Crop) => {
       context.fillStyle = '#000';
       context.fillRect(0, 0, 64, 64);
-      context.drawImage(source, c.left, c.top, c.width, c.height, 0, 0, 64, 64);
+      // Use the same upper icon region for screenshot and catalog. Never scale
+      // the screenshot's quantity overlay into the icon descriptor.
+      context.drawImage(source, c.left, c.top, c.width, c.height * 0.72, 0, 0, 64, 64);
       return averageRgb(context.getImageData(0, 0, 64, 64).data, 64, 16);
     };
     const samples = [0.04, 0.07, 0.1, 0.13].map((inset) =>
