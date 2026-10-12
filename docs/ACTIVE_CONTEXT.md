@@ -586,3 +586,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Otimizador abre prévia com política de item esgotado e exige Apply to plan; não era botão inoperante. Permitindo pré-ordem coincide com Buy all; exigindo produção retorna cadeia mista com taxa maior apesar de lucro total menor que Craft all. Soma das operações e tempos conferida.
 - Maestria 1000 gera aproximadamente 14143 reagentes por 5000 operações, compatível com modelo de proc padrão. Dobrar segundos de alquimia preserva lucro e reduz taxa; tempo de alquimia simples permanece separado. Não foi inspecionado código interno nem comprovado ótimo global do site.
 - Apenas documentação alterada, sem executar testes de código nesta inspeção. Próximo agente: usar os exemplos verificados para normalizar lote, produto, NPC, subprodutos, políticas de aquisição e todos os tempos; manter ressalvas sobre pré-ordens e fontes regionais.
+
+## 46. Scan desktop primeiro e espaço no topo (12/10/2026)
+
+- Entrada usa duas colunas até 1200px: captura/aviso à esquerda, tutorial/exemplo à direita. Espaço superior 24px; status vazio não reserva linha. Guia de correção recolhido por padrão, preservando todo seu conteúdo. Até 1000px volta a uma coluna; revisão continua em uma coluna.
+- Playwright: desktop 1280×720, ambos os painéis iniciam em y96 e tutorial termina em y679,75, permitindo ver o conteúdo inicial sem scroll. Mobile 390px tem scrollWidth 390. Screenshot output/playwright/scan-desktop-compact.png conferido.
+- Próximo agente: preservar informação de captura e correção acessível; evitar voltar ao empilhamento no desktop amplo.
+- Revisão de legibilidade solicitada: textos de instrução/aviso/legenda em 14px, títulos de passos em 15px, marcadores numéricos de 16px em caixas 28px; instruções e aviso usam cor de texto principal. Contraste medido via cores computadas: instruções 12,03:1, aviso 10,33:1, introdução/legenda 7,09:1, summary/marcadores 8:1. Não equivale a auditoria completa de acessibilidade.
+- Screenshot output/playwright/scan-contrast.png; tutorial termina em y673 em viewport 1280×720. pnpm check e pnpm test passaram para refatoração; lint web repetido após ajustes de SCSS passou. Mantidos todos os conteúdos, com divulgação do guia de correção sob demanda.
