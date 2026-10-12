@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import type { CharacterProfile } from '@bdo/calculators';
+import { type CharacterProfile, characterSchema } from '@bdo/calculators';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
@@ -153,7 +153,47 @@ export class ProfileScreenImportComponent implements OnDestroy {
   readonly candidates = signal<ScreenFieldCandidate[]>([]);
   readonly selectedFields = signal<string[]>([]);
   readonly manualField = signal('');
-  readonly targetId = signal('');
+  readonly targetId = signal(this.store.data().activeCharacterId ?? '');
+  selectValidFields(): void {
+    this.selectedFields.set(
+      this.candidates()
+        .filter(
+          (candidate) =>
+            this.canEdit(candidate) &&
+            this.canSelect(candidate) &&
+            candidate.status === 'candidate',
+        )
+        .map((candidate) => candidate.field),
+    );
+  }
+  readonly newCharacterName = signal('');
+  createTarget(): void {
+    const name = this.newCharacterName().trim();
+    if (!name) {
+      this.message.set('Informe o nome do personagem.');
+      return;
+    }
+    const parsed = characterSchema.safeParse({
+      id: crypto.randomUUID(),
+      name,
+      region: this.store.data().region,
+    });
+    if (!parsed.success) {
+      this.message.set('Confira o nome do personagem.');
+      return;
+    }
+    if (
+      this.store.update((state) => ({
+        ...state,
+        characters: [...state.characters, parsed.data],
+        activeCharacterId: state.activeCharacterId || parsed.data.id,
+      }))
+    ) {
+      this.targetId.set(parsed.data.id);
+      this.newCharacterName.set('');
+      this.message.set('Personagem criado. Selecione os campos revisados e confirme a importação.');
+    }
+  }
   readonly kindOptions = kinds;
   readonly manualFields = manualFieldOptions;
   readonly labels = fieldLabels;

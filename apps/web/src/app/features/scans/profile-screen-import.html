@@ -171,13 +171,34 @@
           }
         </select>
       } @else {
-        <p class="notice" i18n>
-          Cadastre um personagem na área Família antes de aplicar campos do OCR.
-        </p>
+        <p class="notice" i18n>Crie o personagem abaixo para receber os campos revisados.</p>
       }
 
+      <details [open]="!characters().length">
+        <summary>Criar personagem para esta importação</summary>
+        <label
+          >Nome do personagem<input
+            hlmInput
+            [ngModel]="newCharacterName()"
+            (ngModelChange)="newCharacterName.set($event)"
+            maxlength="80"
+        /></label>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          (click)="createTarget()"
+          [disabled]="!newCharacterName().trim()"
+        >
+          Criar e selecionar personagem
+        </button>
+      </details>
+
       @if (candidates().length) {
-        <div class="candidate-list">
+        <button hlmBtn variant="outline" type="button" (click)="selectValidFields()">
+          Selecionar campos válidos para importar
+        </button>
+        <div class="candidate-list" [class.mastery-list]="selectedKind() === 'mastery'">
           @for (candidate of visibleCandidates(); track candidate.field) {
             <article class="candidate-row" [class.is-ambiguous]="candidate.status !== 'candidate'">
               <label class="candidate-select">

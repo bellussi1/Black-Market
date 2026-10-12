@@ -74,6 +74,28 @@
   display: grid;
   gap: 0.65rem;
 }
+.mastery-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mastery-list .candidate-row {
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 130px);
+  border-top: 2px solid var(--bm-accent);
+}
+.mastery-list .candidate-source,
+.mastery-list .candidate-preview {
+  grid-column: 1 / -1;
+}
+.profile-screen-import h2 {
+  background: var(--bm-titlebar);
+  padding: 12px 16px;
+  margin: 0;
+  font-size: 18px;
+}
+@media (max-width: 700px) {
+  .mastery-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 .candidate-row {
   display: grid;
