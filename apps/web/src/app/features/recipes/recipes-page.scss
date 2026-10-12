@@ -89,12 +89,15 @@
 }
 .recipe-methods label {
   display: block;
-  margin-bottom: 0.6rem;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 .recipe-methods select {
   max-width: 100%;
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
   background: var(--bm-input);
   border: 1px solid var(--bm-border);
   color: var(--bm-text);

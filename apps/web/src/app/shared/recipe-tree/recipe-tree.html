@@ -1,12 +1,5 @@
 @if (root(); as product) {
   <section class="production-settings panel">
-    @if (!store.data().characters.length) {
-      <p class="notice">
-        Simulação sem personagem: materiais sem receita usam a hipótese de 1 unidade por obtenção em
-        4 segundos. Ajuste o rendimento e o tempo nas configurações de produção. Essa hipótese não
-        comprova que o material seja coletável.
-      </p>
-    }
     <div class="panel-heading production-heading">
       <div class="product-identity">
         <app-item-icon
@@ -51,6 +44,9 @@
                 aria-label="Atalhos de lote de receitas"
               >
                 <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
                   type="button"
                   class="btn-multiplier"
                   [class.active]="craftCount() === 1"
@@ -59,6 +55,9 @@
                   1x
                 </button>
                 <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
                   type="button"
                   class="btn-multiplier"
                   [class.active]="craftCount() === 10"
@@ -67,6 +66,9 @@
                   10x
                 </button>
                 <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
                   type="button"
                   class="btn-multiplier"
                   [class.active]="craftCount() === 100"
@@ -80,9 +82,7 @@
             <!-- Coluna 2: Maestria da Profissão (SEMPRE VISÍVEL) -->
             <div class="craft-param-col">
               <label class="craft-count-control">
-                <span class="control-label-text">
-                  <span class="bdo-diamond">◇</span> Maestria ({{ primarySkillLabel() }})
-                </span>
+                <span class="control-label-text"> Maestria ({{ primarySkillLabel() }}) </span>
                 <div class="craft-input-box">
                   <input
                     type="number"
@@ -122,7 +122,16 @@
               Tempo estimado: <strong>{{ formattedCraftTime() }}</strong>
             </span>
           </div>
+        </div>
 
+        <details class="production-options">
+          <summary>Configurações de produção</summary>
+          @if (!store.data().characters.length) {
+            <p class="help">
+              Sem personagem: a simulação de coleta usa 1 unidade em 4 segundos. Ajuste abaixo; essa
+              hipótese não comprova que o material seja coletável.
+            </p>
+          }
           @if (canAdjustRootYield()) {
             <label class="root-yield" i18n>
               Produção por operação (ajuste fino)<input
@@ -134,10 +143,6 @@
                 (ngModelChange)="setRootYield($event)"
             /></label>
           }
-        </div>
-
-        <details class="production-options">
-          <summary>Configurações de produção</summary>
           <details class="production-calibration">
             <summary i18n>Calibrar tempo por método</summary>
             @for (row of methodCalibrationRows(); track row.method) {
@@ -235,9 +240,12 @@
         <div class="economic-summary-header">
           <div>
             <h3 i18n>Resultado da receita</h3>
-            <p class="help" i18n>
-              Simulação aos preços de mercado: não limitada pela prata do perfil ou pelo estoque
-              disponível para compra imediata.
+            <p
+              class="help"
+              title="Não limitada pela prata do perfil ou pelo estoque disponível para compra imediata."
+              i18n
+            >
+              Simulação econômica · compra imediata não garantida
             </p>
           </div>
           <div class="flex flex-wrap gap-2" role="group" aria-label="Cenário de produção">
