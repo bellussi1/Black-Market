@@ -36,3 +36,5 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 ## Antes de entregar
 
 Validar no navegador o conteúdo mais longo, expansão de vários níveis, scroll com cursor fora do centro, pan após zoom, teclado e largura móvel. Usar os testes existentes de receitas para preservar cálculo, estoque e alternativas. Documentar as limitações verificadas; imagem bonita não prova funcionamento.
+
+- Otimização: proposta fora do fluxo em dialog; ação otimizar/cancelar ocupa o mesmo espaço. Reservar feedback antes do cálculo e medir posições após fontes/cotações carregarem, incluindo resultado incompleto.

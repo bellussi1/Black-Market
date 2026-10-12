@@ -620,3 +620,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Playwright com captura real autorizada: 90 espaços analisados, desktop 1440x900 e mobile 390x844 sem overflow horizontal (scrollWidth 390); maestrias em desktop sem overflow. Screenshots conferidos em output/playwright/scan-compact-desktop.png, scan-compact-cards.png, scan-compact-mobile.png e scan-compact-profile.png. Nenhuma importação confirmada durante QA. Mensagens de resolução do Tesseract no console são diagnósticos do motor.
 - Teste de regressão verifica recolhimento após resultados, acesso ao contexto e ausência de seletor vazio. Esta alteração não comprova melhora de reconhecimento; manter limitações e revisão descritas na seção 47. Próximo agente: continuar calibração independente e avaliar redução adicional de campos de perfil sem esconder divergências.
 - Verificação final: pnpm check e pnpm test passaram (623 testes); git diff --check sem erros.
+
+## 50. Estabilidade do clique de otimização (12/10/2026)
+
+- Causa: cancelar cálculo e prévia eram inseridos no fluxo; mensagens e resultado incompleto também alteravam altura. A mesma ação alterna otimizar/cancelar com largura fixa. Prévia usa dialog nativo na camada superior, com foco modal, Escape e clique fora; não empurra métricas ou árvore. Status tem espaço reservado e rodapé mantém altura com scroll interno para avisos extensos.
+- Teste existente de otimização verifica estrutura de dialog e status. Playwright conferiu estado de cálculo e prévia com fixture de apresentação (não cotação), fechamento por Escape, desktop1280 e mobile390. Cotações assíncronas devem terminar antes de medir estabilidade específica do clique.
+- Arquivos: recipe-tree.ts/html/scss/spec.ts. Próximo agente: preservar prévia fora do fluxo, tamanho do botão e espaço de feedback; não voltar a inserir cancelar ou proposta acima da árvore.
+- Medição com página estabilizada: filhos do painel mantiveram y/altura ao abrir e fechar dialog; cálculo preservou y168 e altura565,67. Primeira medição durante carregamento mostrou variação residual, portanto não equivale a estabilidade de toda a carga inicial. Screenshots optimization-stable-dialog.png e optimization-stable-mobile.png conferidos. pnpm test passou com 623 testes.
+- pnpm check final passou; git diff --check sem erros.
