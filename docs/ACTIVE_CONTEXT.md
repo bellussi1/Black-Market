@@ -475,3 +475,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Teste de regressão cobre prata zero, oferta zero/desconhecida e cotação ausente. A validação completa fica registrada no resultado desta execução.
 - Próximo agente: preservar limites no planejador de execução e distinguir simulação econômica de compra viável. Maestria 3000 continua sujeita à limitação do modelo de rendimento descrita na seção 28; esta correção não valida tabelas de proc nem cobertura real de mercado.
 - Validação: `pnpm check` e `pnpm test` passaram (607 testes). Playwright confirmou o texto da simulação em Edania; o clique de otimização excedeu o timeout de 5s, portanto não há validação visual de conclusão da busca nesta execução. Investigar custo síncrono do solver antes de afirmar interação fluida.
+
+## 31. Controles compactos da oficina (11/10/2026)
+
+- Fórmula, quantidade e maestria compartilham uma faixa mais compacta, com altura alinhada e sem divisor vertical que deixava uma coluna visualmente vazia.
+- Ajuste fino do rendimento e hipótese de coleta sem personagem movidos para Configurações de produção. Informações e handlers preservados; nenhuma alteração nos cálculos.
+- Atalhos 1x/10x/100x usam Helm com variante outline e tamanho pequeno. Removidos estilos duplicados de botão. Indicadores econômicos e área de impostos com padding menor; aviso econômico resumido com explicação no title.
+- Próximo agente: manter as três ações e resultado no fluxo principal, ajustes no contexto e avisos de dados ausentes. Esta etapa não corrige a limitação da tabela de maestria ou a duração do solver.
+- Validação: 607 testes passaram; Playwright revisado em 1600px e 390px, sem overflow horizontal móvel (scrollWidth 390 = clientWidth 390). Capturas ignoradas em `output/playwright/compact-controls-{desktop,mobile}-final.png`. Preços reais de Edania não estavam disponíveis no navegador de QA; estados pendentes permaneceram visíveis.

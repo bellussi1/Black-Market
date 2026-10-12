@@ -19,3 +19,5 @@ Se a quantidade de um insumo ativo não existe no catálogo, mantenha sua linha 
 Categorias do Mercado devem quebrar nomes longos e crescer em altura, sem rolagem horizontal. Ordenação explícita da lista fica nos cabeçalhos da tabela; não duplicar com um seletor “Ordenar por” na toolbar.
 
 Roda normal sobre a árvore rola a página; Ctrl/Command + roda controla zoom. Importação de perfil deve permitir criar um destino sem sair da revisão e selecionar explicitamente os campos válidos, sem aceitar ambiguidades automaticamente. Hipóteses iniciais de coleta são estimativas informadas/editáveis; não provam origem coletável e não devem virar plano otimizado conclusivo sem validação da origem e do rendimento.
+
+Oficina compacta: ajuste fino de rendimento e hipóteses sem perfil ficam nas configurações locais. Fórmula, quantidade e maestria usam altura consistente; atalhos de quantidade usam o botão Helm compartilhado. Não ocultar pendências de cálculo ao compactar.
