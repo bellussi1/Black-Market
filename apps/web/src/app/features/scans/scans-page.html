@@ -1,70 +1,72 @@
 <div class="tool-page guided-page">
-  <header class="page-heading">
-    <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
-    <h1 i18n>Importar capturas</h1>
-    <p i18n>
-      Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para sua
-      conta. Item e quantidade vêm preenchidos quando reconhecidos. Corrija as dúvidas e confirme o
-      lote para salvar.
-    </p>
-    <p>
-      <a hlmBtn variant="outline" routerLink="/scans/profile" class="btn subtle" i18n
-        >Importar dados de maestria, peso e personagem</a
-      >
-    </p>
-  </header>
-  <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
-    <li [class.current]="!jobs().length"><b>01</b><span i18n>Enviar capturas</span></li>
-    <li [class.current]="jobs().length && !cells().length">
-      <b>02</b><span i18n>Reconhecer itens</span>
-    </li>
-    <li [class.current]="cells().length"><b>03</b><span i18n>Revisar e sincronizar</span></li>
-  </ol>
-  <section hlmCard class="panel capture-destination" aria-label="Preparar destino da captura">
-    <h2>Destino das novas capturas</h2>
-    <div class="action-row">
-      <label for="capture-type"
-        >O que está na imagem?
-        <select appBdoSelect id="capture-type" [(ngModel)]="captureMode" [disabled]="locked()">
-          <option value="storage">Armazém</option>
-          <option value="inventory">Inventário do personagem</option>
-          <option value="gear">Equipamentos do personagem</option>
-        </select>
-      </label>
-      @if (captureMode === 'storage') {
-        <label
-          >Cidade ou armazém<input
-            hlmInput
-            [(ngModel)]="captureLocation"
-            maxlength="120"
-            [disabled]="locked()"
-        /></label>
-      } @else {
-        <label
-          >Personagem de destino<select
-            appBdoSelect
-            [(ngModel)]="captureProfileId"
-            [disabled]="locked()"
-          >
-            <option value="">Selecione ou crie um personagem abaixo</option>
-            @for (profile of profiles(); track profile.id) {
-              <option [value]="profile.id">{{ profile.name }}</option>
-            }
-          </select></label
-        >
-      }
-    </div>
-    <p class="help">
-      Escolha o destino antes de enviar. Cada captura pode ter seu próprio destino. Recorte somente
-      uma janela e confira a grade antes de iniciar a leitura.
-    </p>
-    @if (captureMode === 'gear') {
-      <p class="help">
-        Use a janela com os ícones dos equipamentos. A ficha de atributos sozinha não contém os
-        itens. Nível e Caphras precisam ser conferidos separadamente.
+  @if (!jobs().length) {
+    <header class="page-heading">
+      <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+      <h1 i18n>Importar capturas</h1>
+      <p i18n>
+        Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para
+        sua conta. Item e quantidade vêm preenchidos quando reconhecidos. Corrija as dúvidas e
+        confirme o lote para salvar.
       </p>
-    }
-  </section>
+      <p>
+        <a hlmBtn variant="outline" routerLink="/scans/profile" class="btn subtle" i18n
+          >Importar dados de maestria, peso e personagem</a
+        >
+      </p>
+    </header>
+    <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
+      <li [class.current]="!jobs().length"><b>01</b><span i18n>Enviar capturas</span></li>
+      <li [class.current]="jobs().length && !cells().length">
+        <b>02</b><span i18n>Reconhecer itens</span>
+      </li>
+      <li [class.current]="cells().length"><b>03</b><span i18n>Revisar e sincronizar</span></li>
+    </ol>
+    <section hlmCard class="panel capture-destination" aria-label="Preparar destino da captura">
+      <h2>Destino das novas capturas</h2>
+      <div class="action-row">
+        <label for="capture-type"
+          >O que está na imagem?
+          <select appBdoSelect id="capture-type" [(ngModel)]="captureMode" [disabled]="locked()">
+            <option value="storage">Armazém</option>
+            <option value="inventory">Inventário do personagem</option>
+            <option value="gear">Equipamentos do personagem</option>
+          </select>
+        </label>
+        @if (captureMode === 'storage') {
+          <label
+            >Cidade ou armazém<input
+              hlmInput
+              [(ngModel)]="captureLocation"
+              maxlength="120"
+              [disabled]="locked()"
+          /></label>
+        } @else {
+          <label
+            >Personagem de destino<select
+              appBdoSelect
+              [(ngModel)]="captureProfileId"
+              [disabled]="locked()"
+            >
+              <option value="">Selecione ou crie um personagem abaixo</option>
+              @for (profile of profiles(); track profile.id) {
+                <option [value]="profile.id">{{ profile.name }}</option>
+              }
+            </select></label
+          >
+        }
+      </div>
+      <p class="help">
+        Escolha o destino antes de enviar. Cada captura pode ter seu próprio destino. Recorte
+        somente uma janela e confira a grade antes de iniciar a leitura.
+      </p>
+      @if (captureMode === 'gear') {
+        <p class="help">
+          Use a janela com os ícones dos equipamentos. A ficha de atributos sozinha não contém os
+          itens. Nível e Caphras precisam ser conferidos separadamente.
+        </p>
+      }
+    </section>
+  }
   @if (captureMode === 'gear' || captureMode === 'inventory') {
     <details class="panel" [open]="!profiles().length">
       <summary i18n>Adicionar personagem sem sair da importação</summary>
@@ -86,69 +88,70 @@
       </div>
     </details>
   }
-  <section hlmCard class="panel">
-    <h2 i18n>1. Escolha a captura</h2>
-    <details>
-      <summary i18n>Como preparar uma boa captura</summary>
-      <ol>
-        <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
-        <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
-        <li i18n>
-          Você pode usar a janela inteira: tentaremos localizar a grade de itens. Revise cada
-          captura; imagens sobrepostas não são somadas automaticamente.
-        </li>
-      </ol>
-    </details>
-    <div
-      class="capture-drop"
-      tabindex="0"
-      role="group"
-      aria-label="Área para colar ou arrastar uma captura do jogo"
-      i18n-aria-label
-      (paste)="paste($event)"
-      (dragover)="dragOver($event)"
-      (drop)="drop($event)"
-    >
-      <strong i18n>Cole ou arraste seu print aqui</strong>
-      <p i18n>
-        No Windows, capture com Win + Shift + S. Depois, clique nesta área ou chegue até ela com Tab
-        e pressione Ctrl + V.
-      </p>
-      <p class="help" i18n>
-        Até oito capturas por lote. PNG, JPG ou WebP, até 10 MB e 12 megapixels por imagem.
-      </p>
-    </div>
-    <label for="print-file" i18n>Escolher imagem PNG, JPG ou WebP — até 10 MB</label
-    ><input
-      id="print-file"
-      type="file"
-      multiple
-      accept="image/png,image/jpeg,image/webp"
-      (change)="file($event)"
-      [disabled]="locked()"
-    />
-    <p i18n>
-      A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A
-      leitura pode confundir itens e números.
-    </p>
-    <label
+  <details class="upload-tools" [open]="!jobs().length">
+    <summary>Adicionar capturas ao lote</summary>
+    <section hlmCard class="panel">
+      <h2 i18n>1. Escolha a captura</h2>
+      <details>
+        <summary i18n>Como preparar uma boa captura</summary>
+        <ol>
+          <li i18n>Abra o armazém, inventário ou a ficha do personagem no jogo.</li>
+          <li i18n>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</li>
+          <li i18n>
+            Você pode usar a janela inteira: tentaremos localizar a grade de itens. Revise cada
+            captura; imagens sobrepostas não são somadas automaticamente.
+          </li>
+        </ol>
+      </details>
+      <div
+        class="capture-drop"
+        tabindex="0"
+        role="group"
+        aria-label="Área para colar ou arrastar uma captura do jogo"
+        i18n-aria-label
+        (paste)="paste($event)"
+        (dragover)="dragOver($event)"
+        (drop)="drop($event)"
+      >
+        <strong i18n>Cole ou arraste seu print aqui</strong>
+        <p i18n>
+          No Windows, capture com Win + Shift + S. Depois, clique nesta área ou chegue até ela com
+          Tab e pressione Ctrl + V.
+        </p>
+        <p class="help" i18n>
+          Até oito capturas por lote. PNG, JPG ou WebP, até 10 MB e 12 megapixels por imagem.
+        </p>
+      </div>
+      <label for="print-file" i18n>Escolher imagem PNG, JPG ou WebP — até 10 MB</label
       ><input
-        type="checkbox"
-        [ngModel]="autoRead()"
-        (ngModelChange)="autoRead.set($event)"
-      /><ng-container i18n
-        >Analisar automaticamente quando a área de leitura estiver clara</ng-container
-      ></label
-    >
-  </section>
-  @if (jobs().length) {
-    <section hlmCard class="panel batch-panel" aria-labelledby="batch-title">
-      <h2 id="batch-title" i18n>Capturas do lote · {{ jobs().length }} / 8</h2>
+        id="print-file"
+        type="file"
+        multiple
+        accept="image/png,image/jpeg,image/webp"
+        (change)="file($event)"
+        [disabled]="locked()"
+      />
       <p i18n>
-        Defina o destino de cada imagem. Quando houver duas janelas na captura, abra a imagem e
-        escolha a grade correta antes de analisar.
+        A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A
+        leitura pode confundir itens e números.
       </p>
-      <details class="capture-list" [open]="!jobs().some(hasResults)">
+      <label
+        ><input
+          type="checkbox"
+          [ngModel]="autoRead()"
+          (ngModelChange)="autoRead.set($event)"
+        /><ng-container i18n
+          >Analisar automaticamente quando a área de leitura estiver clara</ng-container
+        ></label
+      >
+    </section>
+  </details>
+  @if (jobs().length) {
+    <section hlmCard class="panel batch-panel" aria-label="Capturas do lote">
+      @if (jobs().length > 1) {
+        <h2 id="batch-title" i18n>Capturas do lote · {{ jobs().length }} / 8</h2>
+      }
+      <details class="capture-list">
         <summary i18n>Imagens e destinos · {{ jobs().length }} capturas</summary>
         <div class="batch-jobs">
           @for (job of jobs(); track job.id; let i = $index) {
@@ -246,33 +249,37 @@
           }
         </div>
       </details>
-      <nav class="capture-tabs" aria-label="Revisar capturas" i18n-aria-label>
-        @for (job of jobs(); track job.id; let i = $index) {
-          <button
-            hlmBtn
-            variant="outline"
-            type="button"
-            (click)="activateJob(job.id)"
-            [disabled]="locked()"
-            [attr.aria-pressed]="activeJobId() === job.id"
-            i18n
-          >
-            Captura {{ i + 1 }} · {{ job.cells.length }} itens
-          </button>
-        }
-      </nav>
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        class="btn"
-        (click)="readBatch()"
-        [disabled]="locked()"
-        i18n
-      >
-        Analisar lote
-      </button>
-      @if (batchElapsedMs() && !batchRunning()) {
+      @if (jobs().length > 1) {
+        <nav class="capture-tabs" aria-label="Revisar capturas" i18n-aria-label>
+          @for (job of jobs(); track job.id; let i = $index) {
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="activateJob(job.id)"
+              [disabled]="locked()"
+              [attr.aria-pressed]="activeJobId() === job.id"
+              i18n
+            >
+              Captura {{ i + 1 }} · {{ job.cells.length }} itens
+            </button>
+          }
+        </nav>
+      }
+      @if (jobs().length > 1) {
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn"
+          (click)="readBatch()"
+          [disabled]="locked()"
+          i18n
+        >
+          Analisar lote
+        </button>
+      }
+      @if (jobs().length > 1 && batchElapsedMs() && !batchRunning()) {
         <p i18n>
           Última análise do lote: {{ (batchElapsedMs() / 1000).toFixed(1) }} segundos. O tempo
           depende dos recortes e da qualidade das imagens.
@@ -287,211 +294,217 @@
     </section>
   }
   @if (preview(); as image) {
-    <section hlmCard class="panel">
-      <h2 i18n>2. Confira a área de leitura</h2>
-      @if (mode === 'storage' || mode === 'inventory') {
-        <label
-          ><input
-            type="checkbox"
-            [ngModel]="skipLockedSlots()"
-            (ngModelChange)="skipLockedSlots.set($event)"
+    <details class="capture-area" [open]="!cells().length">
+      <summary>Imagem e ajustes da leitura · {{ columns }} × {{ rows }} espaços</summary>
+      <section hlmCard class="panel">
+        @if (mode === 'storage' || mode === 'inventory') {
+          <label
+            ><input
+              type="checkbox"
+              [ngModel]="skipLockedSlots()"
+              (ngModelChange)="skipLockedSlots.set($event)"
+              [disabled]="locked()"
+            />Ignorar espaços com o cadeado conhecido do armazém</label
+          >
+          <p class="help">
+            Se um item não aparecer na revisão, desmarque esta opção e analise novamente. Espaços
+            com aparência incerta continuam para conferência.
+          </p>
+          <p class="grid-summary" i18n>
+            {{ columns }} colunas × {{ rows }} linhas · {{ columns * rows }} espaços. Confira se o
+            contorno cobre todos os itens e deixa os menus de fora.
+          </p>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="suggestGrid()"
             [disabled]="locked()"
-          />Ignorar espaços com o cadeado conhecido do armazém</label
-        >
-        <p class="help">
-          Se um item não aparecer na revisão, desmarque esta opção e analise novamente. Espaços com
-          aparência incerta continuam para conferência.
-        </p>
-        <p class="grid-summary" i18n>
-          {{ columns }} colunas × {{ rows }} linhas · {{ columns * rows }} espaços. Confira se o
-          contorno cobre todos os itens e deixa os menus de fora.
-        </p>
+            i18n
+          >
+            Encontrar grade de itens
+          </button>
+          @if (gridAreas().length > 1) {
+            <div
+              class="grid-area-options"
+              role="group"
+              aria-label="Grades encontradas na captura"
+              i18n-aria-label
+            >
+              @for (area of gridAreas(); track $index) {
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  (click)="useGridArea($index)"
+                  [disabled]="locked()"
+                  [attr.aria-pressed]="gridSuggested() && selectedArea() === $index"
+                  i18n
+                >
+                  Área {{ $index + 1 }} · {{ area.columns }} × {{ area.rows }}
+                </button>
+              }
+            </div>
+            <p class="help" i18n>
+              Há mais de uma grade. Escolha a área do armazém ou inventário que deseja importar.
+            </p>
+          }
+        }
         <button
           hlmBtn
           variant="outline"
           type="button"
-          (click)="suggestGrid()"
+          (click)="picking.set(!picking())"
+          [attr.aria-pressed]="picking()"
           [disabled]="locked()"
           i18n
         >
-          Encontrar grade de itens
+          Selecionar área manualmente
         </button>
-        @if (gridAreas().length > 1) {
+        <p i18n>
+          Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos
+          campos abaixo.
+        </p>
+        <figure>
           <div
-            class="grid-area-options"
-            role="group"
-            aria-label="Grades encontradas na captura"
-            i18n-aria-label
+            class="preview"
+            [style.width.px]="(width / height) * 260"
+            [class.picking]="picking()"
+            (pointerdown)="cropDown($event)"
+            (pointermove)="cropMove($event)"
+            (pointerup)="cropUp($event)"
+            (pointercancel)="cropUp($event)"
           >
-            @for (area of gridAreas(); track $index) {
-              <button
-                hlmBtn
-                variant="outline"
-                type="button"
-                (click)="useGridArea($index)"
-                [disabled]="locked()"
-                [attr.aria-pressed]="gridSuggested() && selectedArea() === $index"
-                i18n
-              >
-                Área {{ $index + 1 }} · {{ area.columns }} × {{ area.rows }}
-              </button>
-            }
+            <img
+              [src]="image"
+              [width]="width"
+              [height]="height"
+              [draggable]="false"
+              alt="Captura selecionada para revisão"
+              i18n-alt
+            />
+            <div
+              class="crop"
+              [style.left.%]="(bounds.left / width) * 100"
+              [style.top.%]="(bounds.top / height) * 100"
+              [style.width.%]="(bounds.width / width) * 100"
+              [style.height.%]="(bounds.height / height) * 100"
+              [class.grid-crop]="mode !== 'number'"
+              [style.background-size]="100 / columns + '% ' + 100 / rows + '%'"
+              aria-hidden="true"
+            ></div>
           </div>
-          <p class="help" i18n>
-            Há mais de uma grade. Escolha a área do armazém ou inventário que deseja importar.
-          </p>
-        }
-      }
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        (click)="picking.set(!picking())"
-        [attr.aria-pressed]="picking()"
-        [disabled]="locked()"
-        i18n
-      >
-        Selecionar área manualmente
-      </button>
-      <p i18n>
-        Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos
-        campos abaixo.
-      </p>
-      <figure>
-        <div
-          class="preview"
-          [class.picking]="picking()"
-          (pointerdown)="cropDown($event)"
-          (pointermove)="cropMove($event)"
-          (pointerup)="cropUp($event)"
-          (pointercancel)="cropUp($event)"
-        >
-          <img
-            [src]="image"
-            [width]="width"
-            [height]="height"
-            [draggable]="false"
-            alt="Captura selecionada para revisão"
-            i18n-alt
-          />
-          <div
-            class="crop"
-            [style.left.%]="(bounds.left / width) * 100"
-            [style.top.%]="(bounds.top / height) * 100"
-            [style.width.%]="(bounds.width / width) * 100"
-            [style.height.%]="(bounds.height / height) * 100"
-            [class.grid-crop]="mode !== 'number'"
-            [style.background-size]="100 / columns + '% ' + 100 / rows + '%'"
-            aria-hidden="true"
-          ></div>
-        </div>
-        <figcaption>
-          {{ width }} × {{ height }}
-          <ng-container i18n>pixels. O contorno mostra a área que será lida.</ng-container>
-        </figcaption>
-      </figure>
-      <fieldset [disabled]="locked()">
-        <legend i18n>Preparar leitura</legend>
-        <details class="crop-adjustments" [open]="!gridSuggested()">
-          <summary i18n>Ajustar área e tamanho da grade</summary>
-          <div class="form-grid">
-            <label i18n
-              >Distância da esquerda<input
-                hlmInput
-                type="number"
-                [(ngModel)]="bounds.left"
-                (ngModelChange)="invalidateCrop()"
-                min="0"
-                [max]="width" /></label
-            ><label i18n
-              >Distância do topo<input
-                hlmInput
-                type="number"
-                [(ngModel)]="bounds.top"
-                (ngModelChange)="invalidateCrop()"
-                min="0"
-                [max]="height" /></label
-            ><label i18n
-              >Largura<input
-                hlmInput
-                type="number"
-                [(ngModel)]="bounds.width"
-                (ngModelChange)="invalidateCrop()"
-                min="9"
-                [max]="width" /></label
-            ><label i18n
-              >Altura<input
-                hlmInput
-                type="number"
-                [(ngModel)]="bounds.height"
-                (ngModelChange)="invalidateCrop()"
-                min="8"
-                [max]="height"
-            /></label>
-          </div>
-          @if (mode !== 'number') {
-            @if (mode === 'gear') {
-              <p i18n>
-                Tentaremos detectar molduras de equipamentos na área selecionada. Se não funcionar,
-                recorte um ícone e use uma linha e uma coluna. Posições e símbolos de aprimoramento
-                são sugestões para revisar. Caphras precisa ser informado no jogo.
-              </p>
-            }
-            @if (mode !== 'gear') {
+          <figcaption>
+            {{ width }} × {{ height }}
+            <ng-container i18n>pixels. O contorno mostra a área que será lida.</ng-container>
+          </figcaption>
+        </figure>
+        <fieldset [disabled]="locked()">
+          <legend i18n>Preparar leitura</legend>
+          <details class="crop-adjustments" [open]="!gridSuggested()">
+            <summary i18n>Ajustar área e tamanho da grade</summary>
+            <div class="form-grid">
               <label i18n
-                >Colunas da grade<input
+                >Distância da esquerda<input
                   hlmInput
                   type="number"
-                  [(ngModel)]="columns"
+                  [(ngModel)]="bounds.left"
                   (ngModelChange)="invalidateCrop()"
-                  min="1"
-                  max="100" /></label
+                  min="0"
+                  [max]="width" /></label
               ><label i18n
-                >Linhas da grade<input
+                >Distância do topo<input
                   hlmInput
                   type="number"
-                  [(ngModel)]="rows"
+                  [(ngModel)]="bounds.top"
                   (ngModelChange)="invalidateCrop()"
-                  min="1"
-                  max="100"
+                  min="0"
+                  [max]="height" /></label
+              ><label i18n
+                >Largura<input
+                  hlmInput
+                  type="number"
+                  [(ngModel)]="bounds.width"
+                  (ngModelChange)="invalidateCrop()"
+                  min="9"
+                  [max]="width" /></label
+              ><label i18n
+                >Altura<input
+                  hlmInput
+                  type="number"
+                  [(ngModel)]="bounds.height"
+                  (ngModelChange)="invalidateCrop()"
+                  min="8"
+                  [max]="height"
               /></label>
+            </div>
+            @if (mode !== 'number') {
+              @if (mode === 'gear') {
+                <p i18n>
+                  Tentaremos detectar molduras de equipamentos na área selecionada. Se não
+                  funcionar, recorte um ícone e use uma linha e uma coluna. Posições e símbolos de
+                  aprimoramento são sugestões para revisar. Caphras precisa ser informado no jogo.
+                </p>
+              }
+              @if (mode !== 'gear') {
+                <label i18n
+                  >Colunas da grade<input
+                    hlmInput
+                    type="number"
+                    [(ngModel)]="columns"
+                    (ngModelChange)="invalidateCrop()"
+                    min="1"
+                    max="100" /></label
+                ><label i18n
+                  >Linhas da grade<input
+                    hlmInput
+                    type="number"
+                    [(ngModel)]="rows"
+                    (ngModelChange)="invalidateCrop()"
+                    min="1"
+                    max="100"
+                /></label>
+                <p i18n>
+                  O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais.
+                  Máximo de 400 espaços por leitura.
+                </p>
+              }
+            } @else {
               <p i18n>
-                O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais.
-                Máximo de 400 espaços por leitura.
+                Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados,
+                como “1,2 M”, precisam ser digitados por completo.
               </p>
             }
-          } @else {
-            <p i18n>
-              Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como
-              “1,2 M”, precisam ser digitados por completo.
-            </p>
-          }
-        </details>
-        <label for="scan-mode" i18n>O que deseja ler?</label
-        ><select appBdoSelect id="scan-mode" [(ngModel)]="mode" (ngModelChange)="changeMode()">
-          <option value="storage" i18n>Itens do armazém</option>
-          <option value="inventory" i18n>Itens do inventário do personagem</option>
-          @if (!screenshotMvp) {
-            <option value="number" i18n>Um número do personagem</option>
-          }
-          <option value="gear" i18n>Equipamento do personagem</option>
-        </select>
-        <button
-          hlmBtn
-          variant="outline"
-          type="button"
-          (click)="read()"
-          [disabled]="!validCrop()"
-          i18n
-        >
-          Ler itens e valores
-        </button>
-      </fieldset>
-      @if (busy()) {
-        <p role="status">{{ progress() }}</p>
-        <button hlmBtn variant="outline" (click)="cancel()" i18n>Cancelar leitura</button>
-      }
-    </section>
+          </details>
+          <details class="reading-kind">
+            <summary>Corrigir tipo da captura</summary>
+            <label for="scan-mode" i18n>O que deseja ler?</label
+            ><select appBdoSelect id="scan-mode" [(ngModel)]="mode" (ngModelChange)="changeMode()">
+              <option value="storage" i18n>Itens do armazém</option>
+              <option value="inventory" i18n>Itens do inventário do personagem</option>
+              @if (!screenshotMvp) {
+                <option value="number" i18n>Um número do personagem</option>
+              }
+              <option value="gear" i18n>Equipamento do personagem</option>
+            </select>
+          </details>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="read()"
+            [disabled]="!validCrop()"
+            i18n
+          >
+            Ler itens e valores
+          </button>
+        </fieldset>
+        @if (busy()) {
+          <p role="status">{{ progress() }}</p>
+          <button hlmBtn variant="outline" (click)="cancel()" i18n>Cancelar leitura</button>
+        }
+      </section>
+    </details>
   }
   @if (message()) {
     <p class="scan-feedback" role="status" animate.enter="scan-feedback-enter">{{ message() }}</p>
@@ -534,12 +547,9 @@
         </button>
       </section>
     } @else if (cells().length) {
-      <section hlmCard class="panel">
-        <h2 id="scan-review-title" i18n>3. Corrigir resultados</h2>
-        <p i18n>
-          As sugestões são comparações visuais. Itens com a mesma imagem podem ter nomes e
-          aprimoramentos diferentes. Escolha o item correto ou busque pelo nome.
-        </p>
+      <section hlmCard class="panel scan-review">
+        <h2 id="scan-review-title" i18n>Revisar itens</h2>
+        <p i18n>Compare com a captura, corrija as dúvidas e inclua os itens conferidos.</p>
         <div class="scan-summary" aria-live="polite">
           <span i18n
             ><strong>{{ cells().length }}</strong> espaços</span
@@ -558,10 +568,10 @@
         </div>
         <div class="batch-master-bar">
           <div class="master-bar-info">
-            <h3 i18n>Importação Direta ao Armazém</h3>
+            <h3 i18n>Salvar itens conferidos</h3>
             <p i18n>
               <strong>{{ totalIdentifiedCount() }}</strong> itens identificados no lote. Você pode
-              salvar todos imediatamente ou corrigir os espaços abaixo.
+              corrigir as dúvidas abaixo antes de salvar.
             </p>
           </div>
           <div class="master-bar-actions">
@@ -764,7 +774,7 @@
                 <div class="slot-column">
                   <span class="slot-label" i18n>No catálogo</span>
                   <div class="slot-wrapper">
-                    @if (cell.item ?? cell.options[0]; as item) {
+                    @if (cell.item; as item) {
                       <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
                     } @else {
                       <div class="slot-placeholder">?</div>
@@ -772,13 +782,10 @@
                   </div>
                 </div>
                 <div class="slot-meta">
-                  <strong
-                    class="item-name"
-                    [title]="cell.item?.name || cell.options[0]?.name || 'Não identificado'"
-                  >
-                    {{ cell.item?.name || cell.options[0]?.name || 'Não identificado' }}
+                  <strong class="item-name" [title]="cell.item?.name || 'Selecione o item'">
+                    {{ cell.item?.name || 'Selecione o item' }}
                   </strong>
-                  @if (cell.item || cell.options[0]; as itm) {
+                  @if (cell.item; as itm) {
                     <span class="item-id">#{{ itm.id }}</span>
                   }
                 </div>
@@ -798,25 +805,26 @@
                 <p class="help">Quantidade lida: {{ cell.quantityText || 'Não identificada' }}</p>
               </details>
 
-              <div class="cell-form-row">
-                <label [for]="'scan-item-' + cell.id" i18n>Item</label>
-                <select
-                  appBdoSelect
-                  [id]="'scan-item-' + cell.id"
-                  [ngModel]="cell.item?.id ?? ''"
-                  (ngModelChange)="choose(cell, $event)"
-                >
-                  <option value="" i18n>Escolha o item correto</option>
-                  @for (group of groupItemOptions(cell.options); track group.label) {
-                    <optgroup [label]="group.label">
-                      @for (option of group.items; track option.id) {
-                        <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
-                      }
-                    </optgroup>
-                  }
-                </select>
-              </div>
-
+              @if (cell.options.length) {
+                <div class="cell-form-row">
+                  <label [for]="'scan-item-' + cell.id" i18n>Item</label>
+                  <select
+                    appBdoSelect
+                    [id]="'scan-item-' + cell.id"
+                    [ngModel]="cell.item?.id ?? ''"
+                    (ngModelChange)="choose(cell, $event)"
+                  >
+                    <option value="" i18n>Escolha o item correto</option>
+                    @for (group of groupItemOptions(cell.options); track group.label) {
+                      <optgroup [label]="group.label">
+                        @for (option of group.items; track option.id) {
+                          <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
+                        }
+                      </optgroup>
+                    }
+                  </select>
+                </div>
+              }
               <details class="manual-item" [open]="!cell.options.length">
                 <summary i18n>Buscar outro item pelo nome</summary>
                 <app-catalog-item-picker
@@ -838,7 +846,7 @@
                       (ngModelChange)="edited(cell)"
                       inputmode="numeric"
                       maxlength="15"
-                      placeholder="1"
+                      placeholder="Não lida"
                     />
                     @if (
                       cell.quantityEstimate !== null && cell.quantity !== cell.quantityEstimate
@@ -1016,137 +1024,141 @@
 </div>
 
 @if (jobs().some(hasResults)) {
-  <section hlmCard class="panel" aria-labelledby="consolidation-title">
-    <h2 id="consolidation-title" i18n>Confirmar importação</h2>
-    <p i18n>
-      {{ importableCount() }} itens prontos para salvar em {{ jobs().length }} capturas. Os
-      reconhecimentos confiáveis serão incluídos na confirmação. Resultados duvidosos ficam fora até
-      você corrigir e incluir.
-    </p>
-    @if (pendingBatchCount()) {
-      <p class="quantity-caution" i18n>
-        {{ pendingBatchCount() }} resultados pendentes ficarão fora desta importação. Você pode
-        corrigir e incluir os que desejar antes de confirmar.
+  <details class="batch-options">
+    <summary>Resumo e opções da importação</summary>
+    <section hlmCard class="panel" aria-labelledby="consolidation-title">
+      <h2 id="consolidation-title" i18n>Confirmar importação</h2>
+      <p i18n>
+        {{ importableCount() }} itens prontos para salvar em {{ jobs().length }} capturas. Os
+        reconhecimentos confiáveis serão incluídos na confirmação. Resultados duvidosos ficam fora
+        até você corrigir e incluir.
       </p>
-    }
-    @if (reliableBatchCount()) {
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        (click)="confirmReliableBatch()"
-        [disabled]="locked()"
-        i18n
-      >
-        Incluir {{ reliableBatchCount() }} itens identificados de todo o lote
-      </button>
-    }
-    @for (group of duplicateGroups(); track group[0]) {
-      <fieldset>
-        <legend>
-          {{ group[1][0].name }} · {{ group[1][0].location }} · {{ group[1].length }} aparições
-        </legend>
-        <p i18n>
-          Podem ser capturas sobrepostas ou pilhas separadas. Não somaremos sem sua escolha.
+      @if (pendingBatchCount()) {
+        <p class="quantity-caution" i18n>
+          {{ pendingBatchCount() }} resultados pendentes ficarão fora desta importação. Você pode
+          corrigir e incluir os que desejar antes de confirmar.
         </p>
-        <ul>
-          @for (row of group[1]; track $index) {
-            <li i18n>
-              Captura {{ row.source.capture }} · espaço {{ row.source.slot + 1 }} ·
-              {{ row.quantity }} unidades
-            </li>
-          }
-        </ul>
-        <label
-          ><span i18n>Tratamento do item repetido</span
-          ><select
-            appBdoSelect
-            [ngModel]="duplicateChoices()[group[0]] ?? 'unresolved'"
-            (ngModelChange)="chooseDuplicate(group[0], $event)"
-          >
-            <option value="unresolved" i18n>Escolha após conferir</option>
-            <option value="latest" i18n>Usar o valor da última captura no lote</option>
-            <option value="maximum" i18n>Manter a maior quantidade observada</option>
-            <option value="distinct-stacks" i18n>
-              São pilhas distintas: somar uma vez cada espaço
-            </option>
-          </select></label
+      }
+      @if (reliableBatchCount()) {
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          (click)="confirmReliableBatch()"
+          [disabled]="locked()"
+          i18n
         >
-      </fieldset>
-    }
-    <label
-      ><span i18n>Como atualizar o estoque?</span
-      ><select
-        appBdoSelect
-        [ngModel]="updateMode()"
-        (ngModelChange)="
-          updateMode.set($event); batchConfirmed.set(false); fullLocationConfirmed.set(false)
-        "
+          Incluir {{ reliableBatchCount() }} itens identificados de todo o lote
+        </button>
+      }
+      @for (group of duplicateGroups(); track group[0]) {
+        <fieldset>
+          <legend>
+            {{ group[1][0].name }} · {{ group[1][0].location }} · {{ group[1].length }} aparições
+          </legend>
+          <p i18n>
+            Podem ser capturas sobrepostas ou pilhas separadas. Não somaremos sem sua escolha.
+          </p>
+          <ul>
+            @for (row of group[1]; track $index) {
+              <li i18n>
+                Captura {{ row.source.capture }} · espaço {{ row.source.slot + 1 }} ·
+                {{ row.quantity }} unidades
+              </li>
+            }
+          </ul>
+          <label
+            ><span i18n>Tratamento do item repetido</span
+            ><select
+              appBdoSelect
+              [ngModel]="duplicateChoices()[group[0]] ?? 'unresolved'"
+              (ngModelChange)="chooseDuplicate(group[0], $event)"
+            >
+              <option value="unresolved" i18n>Escolha após conferir</option>
+              <option value="latest" i18n>Usar o valor da última captura no lote</option>
+              <option value="maximum" i18n>Manter a maior quantidade observada</option>
+              <option value="distinct-stacks" i18n>
+                São pilhas distintas: somar uma vez cada espaço
+              </option>
+            </select></label
+          >
+        </fieldset>
+      }
+      <label
+        ><span i18n>Como atualizar o estoque?</span
+        ><select
+          appBdoSelect
+          [ngModel]="updateMode()"
+          (ngModelChange)="
+            updateMode.set($event); batchConfirmed.set(false); fullLocationConfirmed.set(false)
+          "
+        >
+          <option value="reviewed" i18n>Atualizar apenas os itens incluídos</option>
+          <option value="merge" i18n>Acrescentar itens novos, manter quantidades existentes</option>
+          <option value="replace" i18n>Substituir os locais completos enviados</option>
+        </select></label
       >
-        <option value="reviewed" i18n>Atualizar apenas os itens incluídos</option>
-        <option value="merge" i18n>Acrescentar itens novos, manter quantidades existentes</option>
-        <option value="replace" i18n>Substituir os locais completos enviados</option>
-      </select></label
-    >
-    @if (updateMode() === 'replace') {
-      <p class="quantity-caution" i18n>
-        Itens ausentes serão removidos somente dos locais importados. Não use com capturas parciais.
-        Planos que reservam esses itens podem impedir a substituição.
-      </p>
+      @if (updateMode() === 'replace') {
+        <p class="quantity-caution" i18n>
+          Itens ausentes serão removidos somente dos locais importados. Não use com capturas
+          parciais. Planos que reservam esses itens podem impedir a substituição.
+        </p>
+        <label
+          ><input
+            type="checkbox"
+            [ngModel]="fullLocationConfirmed()"
+            (ngModelChange)="fullLocationConfirmed.set($event); batchConfirmed.set(false)"
+          /><span i18n
+            >Enviei todos os itens desses locais, incluindo os que exigiram mais de uma
+            captura.</span
+          ></label
+        >
+      } @else {
+        <p i18n>
+          Itens que não aparecem nas capturas serão mantidos. Equipamentos atualizam apenas as
+          posições conferidas.
+        </p>
+      }
       <label
         ><input
           type="checkbox"
-          [ngModel]="fullLocationConfirmed()"
-          (ngModelChange)="fullLocationConfirmed.set($event); batchConfirmed.set(false)"
+          [ngModel]="batchConfirmed()"
+          (ngModelChange)="batchConfirmed.set($event)"
+          [disabled]="locked()"
         /><span i18n
-          >Enviei todos os itens desses locais, incluindo os que exigiram mais de uma captura.</span
+          >Quero salvar os itens prontos nos destinos indicados, incluindo os reconhecimentos
+          confiáveis.</span
         ></label
       >
-    } @else {
-      <p i18n>
-        Itens que não aparecem nas capturas serão mantidos. Equipamentos atualizam apenas as
-        posições conferidas.
-      </p>
-    }
-    <label
-      ><input
-        type="checkbox"
-        [ngModel]="batchConfirmed()"
-        (ngModelChange)="batchConfirmed.set($event)"
-        [disabled]="locked()"
-      /><span i18n
-        >Quero salvar os itens prontos nos destinos indicados, incluindo os reconhecimentos
-        confiáveis.</span
-      ></label
-    >
-    <div class="consolidation-actions">
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        class="btn btn-save-master"
-        (click)="confirmAndSaveAll()"
-        [disabled]="locked() || !canSaveDirectly()"
-        i18n
-      >
-        {{ saveBatchLabel() }}
-      </button>
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        class="btn subtle"
-        (click)="saveBatch()"
-        [disabled]="locked() || !batchConfirmed() || !importableCount()"
-        i18n
-      >
-        Salvar apenas {{ importableCount() }} revisados
-      </button>
-    </div>
-    <nav class="action-row" aria-label="Consultar itens salvos" i18n-aria-label>
-      <a routerLink="/storage" i18n>Ver armazéns</a
-      ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventários</a
-      ><a routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n>Ver equipamentos</a>
-    </nav>
-  </section>
+      <div class="consolidation-actions">
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn btn-save-master"
+          (click)="confirmAndSaveAll()"
+          [disabled]="locked() || !canSaveDirectly()"
+          i18n
+        >
+          {{ saveBatchLabel() }}
+        </button>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          (click)="saveBatch()"
+          [disabled]="locked() || !batchConfirmed() || !importableCount()"
+          i18n
+        >
+          Salvar apenas {{ importableCount() }} revisados
+        </button>
+      </div>
+      <nav class="action-row" aria-label="Consultar itens salvos" i18n-aria-label>
+        <a routerLink="/storage" i18n>Ver armazéns</a
+        ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventários</a
+        ><a routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n>Ver equipamentos</a>
+      </nav>
+    </section>
+  </details>
 }

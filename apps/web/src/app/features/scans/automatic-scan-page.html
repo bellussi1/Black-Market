@@ -32,15 +32,21 @@
     </section>
   } @else {
     <div class="review-toolbar">
+      <h1>Revisar captura</h1>
       <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
         Importar outra tela
       </button>
-      <span>Confira os dados reconhecidos antes de confirmar.</span>
     </div>
   }
 
-  <section class="capture-guide" aria-labelledby="capture-guide-title">
-    <h2 id="capture-guide-title">Como preparar uma boa captura</h2>
+  <section
+    class="capture-guide"
+    [attr.aria-labelledby]="kind() ? null : 'capture-guide-title'"
+    [attr.aria-label]="kind() ? 'Ajuda para revisão' : null"
+  >
+    @if (!kind()) {
+      <h2 id="capture-guide-title">Como preparar uma boa captura</h2>
+    }
     @if (!kind()) {
       <p class="guide-intro">
         Prefira o recorte original do Windows, somente da janela que deseja analisar. Mantenha os

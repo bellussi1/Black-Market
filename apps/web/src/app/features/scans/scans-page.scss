@@ -652,3 +652,102 @@ figure {
   border-color: var(--bm-accent);
   color: var(--bm-accent);
 }
+
+.upload-tools,
+.capture-area,
+.batch-options {
+  margin-block: 10px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.upload-tools > summary,
+.capture-area > summary,
+.batch-options > summary,
+.reading-kind > summary {
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.upload-tools > .panel,
+.capture-area > .panel,
+.batch-options > .panel {
+  margin: 0;
+  border: 0;
+  padding: 12px;
+}
+
+.batch-panel,
+.scan-review {
+  padding: 14px;
+  margin-block: 10px;
+}
+
+.batch-panel h2,
+.scan-review h2 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.scan-review .scan-summary {
+  gap: 6px 12px;
+  margin-block: 8px;
+}
+
+.scan-review .scan-summary > span {
+  border: 0;
+  padding: 0;
+}
+
+.scan-review .batch-master-bar {
+  padding: 10px 12px;
+  gap: 8px;
+  margin-block: 12px;
+  box-shadow: none;
+}
+
+.scan-review .scan-cells {
+  gap: 10px;
+}
+
+.scan-review .scan-cell {
+  padding: 12px;
+  gap: 8px;
+  border-radius: 0;
+}
+
+.scan-review .cell-form-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.scan-review .cell-form-row > label {
+  margin: 0;
+  font-size: 13px;
+}
+
+.scan-review .slot-label,
+.scan-review .scan-status {
+  font-size: 12px;
+}
+
+.scan-review .scan-status {
+  border-radius: 2px;
+}
+
+.scan-review .scan-icon-comparison {
+  grid-template-columns: 48px 48px minmax(0, 1fr);
+  gap: 8px;
+  padding-block: 0;
+}
+
+.scan-review .item-name {
+  display: block;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: unset;
+}

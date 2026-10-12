@@ -1,6 +1,12 @@
 :host {
   display: block;
 }
+
+.reviewing .capture-guide {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
 .scan-workspace {
   width: min(100%, 1200px);
   margin-inline: auto;
@@ -220,4 +226,10 @@ summary {
     flex-direction: column;
     gap: 12px;
   }
+}
+
+.review-toolbar h1 {
+  margin: 0;
+  font-size: 20px;
+  flex: 1;
 }

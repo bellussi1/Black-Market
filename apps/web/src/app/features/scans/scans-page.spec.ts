@@ -12,6 +12,46 @@ import { ScansPage } from './scans-page';
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('prioritizes review after upload and keeps setup in collapsed contextual sections', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: { files: [new File(['capture'], 'storage.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.page-heading')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.capture-destination')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.upload-tools').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.capture-list').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(true);
+    expect(fixture.nativeElement.querySelector('.batch-options')).toBeNull();
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: null,
+      itemUncertain: true,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      quantityConfidence: 0,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+    page.jobs.update((jobs) => jobs.map((job) => ({ ...job, status: 'ready', cells: [cell] })));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.batch-options').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.scan-review')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#scan-item-0')).toBeNull();
+  });
   it('lets the user choose a destination before uploading and requires an explicit first analysis', async () => {
     const fixture = await renderComponent(ScansPage);
     expect(fixture.componentInstance.autoRead()).toBe(false);
