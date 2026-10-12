@@ -36,6 +36,66 @@
   display: block;
   min-width: 0;
 }
+
+/* The two decision boxes share a row; the recipe workspace spans both columns. */
+:host(:not(.summary-only)) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  > .production-settings {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  > .economic-dashboard {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  > .production-settings .production-configuration {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  > .production-settings .production-method {
+    grid-column: 1 / -1;
+  }
+
+  > .economic-dashboard .economic-summary-header {
+    align-items: flex-start;
+  }
+
+  > .economic-dashboard .economic-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  > .economic-dashboard .metric-card:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--bm-border);
+  }
+
+  > .economic-dashboard .metric-card:nth-child(2) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  :host(:not(.summary-only)) {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .production-settings,
+    > .economic-dashboard {
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
+}
 .production-settings {
   border: 1px solid var(--bm-border);
 }
@@ -1725,6 +1785,16 @@
 
 .economic-summary-header .btn-optimizer {
   min-height: 36px;
+}
+
+.economic-summary-header .optimize-action {
+  border-color: var(--bm-accent);
+  color: var(--bm-accent);
+}
+
+.economic-summary-header .optimize-action[aria-pressed='true'] {
+  background: var(--bm-accent);
+  color: var(--bm-input);
 }
 
 .economic-dashboard .economic-metrics-grid {
