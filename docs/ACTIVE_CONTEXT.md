@@ -537,3 +537,7 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Benchmark da avaliação: grid F1 1, 606 quantidades, 46 exatas (7,59%), 196 incorretas e 364 não lidas. Benchmark usa OCR textual geral, não NumberReader completo/refinador de ícones. Não alegar melhora de acurácia ou reconhecimento de IDs medido. Roman não aplicável (zero amostras).
 - /scans abre AutomaticScanPage: upload único, leitura local, detecção de painel e encaminhamento ao revisor de itens ou perfil. Revisores manuais preservados. Perfil reutiliza as linhas reconhecidas para evitar OCR duplicado. Screenshot de maestria autorizada detectada no Playwright.
 - Próximo agente: concluir calibração de quantidade-pixels/glyphs e benchmark do motor real (NumberReader + IconRefiner), com avaliação independente real autorizada. Refinar rotas de imagens ambíguas/múltiplos painéis, lotes mistos e esconder configurações manuais de área até correção solicitada. Não chamar esta etapa de retreinamento concluído.
+
+## 39. Botão de detalhes no canto do node (12/10/2026)
+
+- Botão de informação posicionado no canto superior direito, com 6px de distância. Cabeçalho reserva 40px à direita para evitar sobreposição com nome/ícone. Abertura exclusiva pelo botão e fechamento externo preservados.
