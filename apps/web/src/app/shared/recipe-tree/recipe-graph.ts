@@ -249,10 +249,8 @@ export class RecipeGraph {
     this.locationSelected.emit({ path: itemPath, source });
   }
   activate(node: RecipeNode) {
+    this.localSelection.set({ path: node.path, ownerPath: node.path });
     this.focusNode(node.path);
-    if (!node.loading && !node.expanded) {
-      this.emit(node.path, 'expand');
-    }
   }
   private zoomAt(next: number, x: number, y: number) {
     const zoom = Math.max(0.005, Math.min(1.75, next));

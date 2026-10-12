@@ -509,7 +509,7 @@ export class RecipeTree {
 
   selectMaterial(itemId: number): void {
     const path = this.allocationPath(itemId);
-    this.action({ path, action: 'source' });
+    this.selectedPath.set(path);
     this.graph()?.center(path);
   }
 
@@ -1557,7 +1557,6 @@ export class RecipeTree {
     if (this.origins().get(node.part.itemId)?.length) {
       this.patch(node.path, (n) => ({ ...n, expanded: true }));
       this.selectedPath.set(node.path);
-      this.showContext(this.find(node.path)!);
       return;
     }
     if (node.loading) return;
@@ -1614,8 +1613,6 @@ export class RecipeTree {
             return families.length === 1 && preferred ? withRecipe(ready, preferred) : ready;
           });
           this.selectedPath.set(node.path);
-          if (this.view() !== 'tree' || !this.find(node.path)?.recipe)
-            this.showContext(this.find(node.path)!);
         },
         error: () => {
           if (revision === this.revision && this.expansions.get(node.path) === request) {

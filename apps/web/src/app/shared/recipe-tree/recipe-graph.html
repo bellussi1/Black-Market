@@ -15,8 +15,9 @@
 </div>
 <p class="help" i18n>
   Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços
-  entre níveis. A roda amplia a árvore. Arraste para navegar. Clique em um item para abrir ou
-  recolher suas dependências. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+  entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os
+  botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a
+  árvore.
 </p>
 @if (layout().truncated) {
   <p role="status" i18n>
@@ -71,8 +72,7 @@
           class="node-select"
           [attr.aria-pressed]="selection() === entry.node.path"
           (focus)="focusNode(entry.node.path)"
-          [attr.aria-label]="'Explorar ' + entry.node.part.name"
-          [attr.aria-expanded]="entry.node.expanded"
+          [attr.aria-label]="'Selecionar ' + entry.node.part.name"
           (click)="activate(entry.node)"
         >
           <app-item-icon

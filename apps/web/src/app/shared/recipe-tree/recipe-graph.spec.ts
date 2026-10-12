@@ -80,6 +80,7 @@ describe('Accessible graph controls', () => {
       'true',
     );
     expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'source' });
+    expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'expand' });
     fixture.nativeElement.querySelector('.node-details').click();
     expect(selected).toHaveBeenCalledWith({ path: 'root', action: 'source' });
     graph.scale(100);
@@ -291,6 +292,8 @@ describe('Accessible graph controls', () => {
     graph.start(event(100, 100));
     graph.end();
     card.click();
+    expect(actions).toEqual([]);
+    fixture.nativeElement.querySelector('.expand-node').click();
     expect(actions).toContainEqual({ path: 'root', action: 'expand' });
   });
   it('prevents a growing card from overlapping descendants of a different branch', () => {
