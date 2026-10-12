@@ -13,7 +13,7 @@
   margin-top: 24px;
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
-  align-items: start;
+  align-items: stretch;
   gap: 16px;
 }
 .scan-workspace.reviewing {
@@ -21,8 +21,18 @@
 }
 .capture-panel,
 .capture-guide {
+  height: 100%;
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
+}
+
+.capture-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.capture-panel .review-notice {
+  margin-top: auto;
 }
 .capture-panel header {
   padding: 24px 28px 18px;

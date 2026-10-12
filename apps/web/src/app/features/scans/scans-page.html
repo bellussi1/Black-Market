@@ -286,15 +286,20 @@
         </p>
       }
       @if (batchRunning() || busy()) {
-        <p role="status">{{ batchProgress() }} · {{ progress() }}</p>
-        <button hlmBtn variant="outline" type="button" (click)="cancel()" i18n>
-          Cancelar análise
-        </button>
+        <div class="analysis-progress">
+          <div>
+            <strong>Analisando captura</strong>
+            <p role="status">{{ batchProgress() }} · {{ progress() }}</p>
+          </div>
+          <button hlmBtn variant="outline" type="button" (click)="cancel()" i18n>
+            Cancelar análise
+          </button>
+        </div>
       }
     </section>
   }
   @if (preview(); as image) {
-    <details class="capture-area" [open]="!cells().length">
+    <details class="capture-area" [open]="!cells().length && !locked()">
       <summary>Imagem e ajustes da leitura · {{ columns }} × {{ rows }} espaços</summary>
       <section hlmCard class="panel">
         @if (mode === 'storage' || mode === 'inventory') {
@@ -499,10 +504,6 @@
             Ler itens e valores
           </button>
         </fieldset>
-        @if (busy()) {
-          <p role="status">{{ progress() }}</p>
-          <button hlmBtn variant="outline" (click)="cancel()" i18n>Cancelar leitura</button>
-        }
       </section>
     </details>
   }

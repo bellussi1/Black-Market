@@ -661,6 +661,29 @@ figure {
   background: var(--bm-surface);
 }
 
+.analysis-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface-raised);
+  font-size: 14px;
+}
+
+.analysis-progress p {
+  margin: 6px 0 0;
+  color: var(--bm-muted);
+}
+
+.capture-area > .panel {
+  display: grid;
+  gap: 12px;
+}
+
 .upload-tools > summary,
 .capture-area > summary,
 .batch-options > summary,
