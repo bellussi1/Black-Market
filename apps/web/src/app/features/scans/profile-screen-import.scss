@@ -223,3 +223,22 @@
     grid-column: auto;
   }
 }
+
+.profile-capture-tools {
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+.profile-capture-tools > summary {
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.profile-capture-tools > .panel {
+  margin: 0;
+  padding: 12px;
+  border: 0;
+}
+.profile-capture-tools .capture-preview img {
+  max-height: 260px;
+  object-fit: contain;
+}

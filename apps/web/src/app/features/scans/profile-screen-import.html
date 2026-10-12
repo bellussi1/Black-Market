@@ -1,160 +1,170 @@
 <main class="tool-page guided-page profile-screen-import">
-  <header class="page-heading">
-    <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
-    <h1 i18n>Importar dados do personagem</h1>
-    <p i18n>
-      Leia armazém, inventário, peso, maestrias e ficha do personagem. O OCR roda neste navegador;
-      escolha um personagem existente e confirme cada campo antes de salvar.
-    </p>
-    <a routerLink="/scans" class="text-link" i18n>Voltar à importação de itens</a>
-  </header>
-
-  <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
-    <li [class.current]="!imageUrl()"><b>01</b><span i18n>Escolher captura</span></li>
-    <li [class.current]="imageUrl() && !candidates().length">
-      <b>02</b><span i18n>Reconhecer e revisar</span>
-    </li>
-    <li [class.current]="selectedFields().length > 0"><b>03</b><span i18n>Aplicar campos</span></li>
-  </ol>
-
-  <section hlmCard class="panel">
-    <h2 i18n>1. Escolha uma captura</h2>
-    <p class="help" i18n>
-      Envie uma tela nítida. Chat, HUD e diálogos não são usados. A captura permanece na memória
-      desta página e não é salva no backup.
-    </p>
-    <label for="profile-screen-file" i18n
-      >Imagem PNG, JPG ou WebP — até 10 MB e 12 megapixels</label
-    >
-    <input
-      id="profile-screen-file"
-      type="file"
-      accept="image/png,image/jpeg,image/webp"
-      (change)="chooseFile($event)"
-      [disabled]="reading()"
-    />
-
-    @if (message() && !imageUrl()) {
-      <p class="notice" role="status" aria-live="polite">{{ message() }}</p>
-    }
-
-    @if (imageUrl()) {
-      <div class="capture-preview">
-        <img [src]="imageUrl()" [alt]="'Prévia local: ' + imageName()" />
-        <p>{{ imageName() }} · {{ imageSize().width }} × {{ imageSize().height }}</p>
-      </div>
-    }
-  </section>
-
-  @if (imageUrl()) {
-    <section hlmCard class="panel">
-      <h2 i18n>2. Confira a tela e a área</h2>
-      <p class="help" i18n>
-        A detecção usa títulos reconhecidos e posição do texto. Se houver mais de uma janela,
-        escolha o painel certo. Quando a detecção falhar, ajuste os limites e selecione o tipo
-        manualmente.
+  @if (!imageUrl()) {
+    <header class="page-heading">
+      <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+      <h1 i18n>Importar dados do personagem</h1>
+      <p i18n>
+        Leia armazém, inventário, peso, maestrias e ficha do personagem. O OCR roda neste navegador;
+        escolha um personagem existente e confirme cada campo antes de salvar.
       </p>
+      <a routerLink="/scans" class="text-link" i18n>Voltar à importação de itens</a>
+    </header>
 
-      @if (panes().length > 1) {
-        <label for="profile-pane" i18n>Painel detectado</label>
-        <select
-          appBdoSelect
-          id="profile-pane"
-          [ngModel]="paneIndex()"
-          (ngModelChange)="paneChanged($event)"
-        >
-          @for (pane of panes(); track $index) {
-            <option [value]="$index">{{ kindLabel(pane.kind) }} · {{ $index + 1 }}</option>
-          }
-        </select>
+    <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
+      <li [class.current]="!imageUrl()"><b>01</b><span i18n>Escolher captura</span></li>
+      <li [class.current]="imageUrl() && !candidates().length">
+        <b>02</b><span i18n>Reconhecer e revisar</span>
+      </li>
+      <li [class.current]="selectedFields().length > 0">
+        <b>03</b><span i18n>Aplicar campos</span>
+      </li>
+    </ol>
+  }
+
+  <details class="profile-capture-tools" [open]="!imageUrl()">
+    <summary>Captura original e substituição</summary>
+    <section hlmCard class="panel">
+      <h2 i18n>1. Escolha uma captura</h2>
+      <p class="help" i18n>
+        Envie uma tela nítida. Chat, HUD e diálogos não são usados. A captura permanece na memória
+        desta página e não é salva no backup.
+      </p>
+      <label for="profile-screen-file" i18n
+        >Imagem PNG, JPG ou WebP — até 10 MB e 12 megapixels</label
+      >
+      <input
+        id="profile-screen-file"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        (change)="chooseFile($event)"
+        [disabled]="reading()"
+      />
+
+      @if (message() && !imageUrl()) {
+        <p class="notice" role="status" aria-live="polite">{{ message() }}</p>
       }
 
-      <div class="review-controls">
-        <label for="profile-screen-kind" i18n
-          >Tipo de tela
-          <select
-            appBdoSelect
-            id="profile-screen-kind"
-            [ngModel]="selectedKind()"
-            (ngModelChange)="setKind($event)"
-          >
-            @for (kind of kindOptions; track kind) {
-              <option [value]="kind">{{ kindLabel(kind) }}</option>
-            }
-          </select>
-        </label>
-        <div class="bounds-grid" aria-label="Limites do painel" i18n-aria-label>
-          <label i18n
-            >Esquerda
-            <input
-              hlmInput
-              type="number"
-              min="0"
-              [max]="imageSize().width"
-              [ngModel]="paneBounds().left"
-              (ngModelChange)="setBound('left', $event)"
-            />
-          </label>
-          <label i18n
-            >Topo
-            <input
-              hlmInput
-              type="number"
-              min="0"
-              [max]="imageSize().height"
-              [ngModel]="paneBounds().top"
-              (ngModelChange)="setBound('top', $event)"
-            />
-          </label>
-          <label i18n
-            >Largura
-            <input
-              hlmInput
-              type="number"
-              min="1"
-              [max]="imageSize().width"
-              [ngModel]="paneBounds().width"
-              (ngModelChange)="setBound('width', $event)"
-            />
-          </label>
-          <label i18n
-            >Altura
-            <input
-              hlmInput
-              type="number"
-              min="1"
-              [max]="imageSize().height"
-              [ngModel]="paneBounds().height"
-              (ngModelChange)="setBound('height', $event)"
-            />
-          </label>
+      @if (imageUrl()) {
+        <div class="capture-preview">
+          <img [src]="imageUrl()" [alt]="'Prévia local: ' + imageName()" />
+          <p>{{ imageName() }} · {{ imageSize().width }} × {{ imageSize().height }}</p>
         </div>
-      </div>
-
-      @if (reading()) {
-        <div class="ocr-progress" role="status" aria-live="polite">
-          <span i18n>Lendo texto localmente…</span>
-          <progress [value]="progress()" max="1"></progress>
-          <button
-            hlmBtn
-            variant="outline"
-            type="button"
-            class="btn subtle"
-            (click)="cancelReading()"
-            i18n
-          >
-            Cancelar leitura
-          </button>
-        </div>
-      } @else {
-        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="retry()" i18n>
-          Ler novamente
-        </button>
       }
     </section>
+  </details>
+
+  @if (imageUrl()) {
+    <details class="profile-capture-tools" [open]="!candidates().length">
+      <summary>Tipo de tela e ajustes da leitura</summary>
+      <section hlmCard class="panel">
+        <h2 i18n>2. Confira a tela e a área</h2>
+        <p class="help" i18n>
+          A detecção usa títulos reconhecidos e posição do texto. Se houver mais de uma janela,
+          escolha o painel certo. Quando a detecção falhar, ajuste os limites e selecione o tipo
+          manualmente.
+        </p>
+
+        @if (panes().length > 1) {
+          <label for="profile-pane" i18n>Painel detectado</label>
+          <select
+            appBdoSelect
+            id="profile-pane"
+            [ngModel]="paneIndex()"
+            (ngModelChange)="paneChanged($event)"
+          >
+            @for (pane of panes(); track $index) {
+              <option [value]="$index">{{ kindLabel(pane.kind) }} · {{ $index + 1 }}</option>
+            }
+          </select>
+        }
+
+        <div class="review-controls">
+          <label for="profile-screen-kind" i18n
+            >Tipo de tela
+            <select
+              appBdoSelect
+              id="profile-screen-kind"
+              [ngModel]="selectedKind()"
+              (ngModelChange)="setKind($event)"
+            >
+              @for (kind of kindOptions; track kind) {
+                <option [value]="kind">{{ kindLabel(kind) }}</option>
+              }
+            </select>
+          </label>
+          <div class="bounds-grid" aria-label="Limites do painel" i18n-aria-label>
+            <label i18n
+              >Esquerda
+              <input
+                hlmInput
+                type="number"
+                min="0"
+                [max]="imageSize().width"
+                [ngModel]="paneBounds().left"
+                (ngModelChange)="setBound('left', $event)"
+              />
+            </label>
+            <label i18n
+              >Topo
+              <input
+                hlmInput
+                type="number"
+                min="0"
+                [max]="imageSize().height"
+                [ngModel]="paneBounds().top"
+                (ngModelChange)="setBound('top', $event)"
+              />
+            </label>
+            <label i18n
+              >Largura
+              <input
+                hlmInput
+                type="number"
+                min="1"
+                [max]="imageSize().width"
+                [ngModel]="paneBounds().width"
+                (ngModelChange)="setBound('width', $event)"
+              />
+            </label>
+            <label i18n
+              >Altura
+              <input
+                hlmInput
+                type="number"
+                min="1"
+                [max]="imageSize().height"
+                [ngModel]="paneBounds().height"
+                (ngModelChange)="setBound('height', $event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        @if (reading()) {
+          <div class="ocr-progress" role="status" aria-live="polite">
+            <span i18n>Lendo texto localmente…</span>
+            <progress [value]="progress()" max="1"></progress>
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              class="btn subtle"
+              (click)="cancelReading()"
+              i18n
+            >
+              Cancelar leitura
+            </button>
+          </div>
+        } @else {
+          <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="retry()" i18n>
+            Ler novamente
+          </button>
+        }
+      </section>
+    </details>
 
     <section hlmCard class="panel">
-      <h2 i18n>3. Escolha o personagem e revise os campos</h2>
+      <h2 i18n>Revisar dados do personagem</h2>
       @if (characters().length) {
         <label for="profile-target" i18n>Personagem existente</label>
         <select
