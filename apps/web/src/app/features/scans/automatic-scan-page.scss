@@ -2,13 +2,16 @@
   display: block;
 }
 .scan-workspace {
-  width: min(100%, 880px);
+  width: min(100%, 1200px);
   margin-inline: auto;
+  margin-top: 24px;
   display: grid;
-  gap: 20px;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
+  align-items: start;
+  gap: 16px;
 }
 .scan-workspace.reviewing {
-  width: min(100%, 1200px);
+  grid-template-columns: minmax(0, 1fr);
 }
 .capture-panel,
 .capture-guide {
@@ -48,16 +51,19 @@ li {
 .upload-area p {
   color: var(--bm-muted);
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .capture-status {
   min-height: 21px;
 }
+.capture-status:empty {
+  display: none;
+}
 .review-notice {
   border-top: 1px solid var(--bm-border);
   padding: 14px 24px;
-  font-size: 13px;
-  color: var(--bm-muted);
+  font-size: 14px;
+  color: var(--bm-text);
   background: var(--bm-surface-raised);
   line-height: 1.6;
 }
@@ -65,7 +71,7 @@ li {
   color: var(--bm-text);
 }
 .capture-guide {
-  padding: 20px 24px;
+  padding: 16px 20px;
 }
 h2 {
   font-size: 18px;
@@ -74,7 +80,7 @@ h2 {
 .guide-intro {
   color: var(--bm-muted);
   font-size: 14px;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 }
 .capture-steps {
   padding: 0;
@@ -89,21 +95,21 @@ h2 {
   gap: 10px;
 }
 .step-number {
-  flex: 0 0 26px;
-  height: 26px;
+  flex: 0 0 28px;
+  height: 28px;
   border: 1px solid var(--bm-border);
   display: grid;
   place-items: center;
   color: var(--bm-accent);
 }
 h3 {
-  font-size: 14px;
+  font-size: 15px;
   margin: 0 0 8px;
 }
 .capture-steps p {
   margin: 0;
-  font-size: 13px;
-  color: var(--bm-muted);
+  font-size: 14px;
+  color: var(--bm-text);
 }
 kbd {
   display: inline-block;
@@ -114,10 +120,10 @@ kbd {
   color: var(--bm-text);
 }
 .crop-example {
-  margin: 20px 0;
+  margin: 16px 0;
 }
 .example-desktop {
-  min-height: 158px;
+  min-height: 138px;
   background: var(--bm-input);
   padding: 16px;
   display: flex;
@@ -159,11 +165,11 @@ kbd {
 }
 .crop-label {
   color: var(--bm-accent);
-  font-size: 13px;
+  font-size: 14px;
 }
 figcaption {
   color: var(--bm-muted);
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 8px;
 }
 .correction-guide {
@@ -177,8 +183,8 @@ summary {
 }
 .correction-guide ol {
   padding-left: 20px;
-  font-size: 13px;
-  color: var(--bm-muted);
+  font-size: 14px;
+  color: var(--bm-text);
   display: grid;
   gap: 10px;
   margin-bottom: 0;
@@ -195,6 +201,11 @@ summary {
 .review-toolbar span {
   color: var(--bm-muted);
   font-size: 13px;
+}
+@media (max-width: 1000px) {
+  .scan-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 @media (max-width: 700px) {
   .capture-steps {
