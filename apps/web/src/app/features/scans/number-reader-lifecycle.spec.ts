@@ -19,6 +19,8 @@ describe('Numeric reader lifecycle', () => {
       setParameters: vi.fn().mockResolvedValue(undefined),
       recognize: vi.fn().mockResolvedValue({
         data: {
+          text: '72',
+          confidence: 95,
           blocks: [
             {
               paragraphs: [
@@ -37,8 +39,13 @@ describe('Numeric reader lifecycle', () => {
     const result = await reader.readQuantities({} as CanvasImageSource, [
       { left: 0, top: 0, width: 40, height: 20 },
     ]);
-    expect(worker.recognize).toHaveBeenCalledOnce();
-    expect(result[0]).toMatchObject({ value: '72', confidence: 95, approximate: false });
+    expect(worker.recognize).toHaveBeenCalledTimes(2);
+    expect(result[0]).toMatchObject({
+      value: '72',
+      confidence: 84,
+      approximate: false,
+      evidence: 'conflict',
+    });
     await reader.close();
   });
   it('cancels a pending worker recognition without waiting for an OCR response', async () => {

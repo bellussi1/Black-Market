@@ -6,6 +6,7 @@ import { reconcileQuantity } from './quantity-reconciliation';
 import { parseVisibleQuantity } from './visible-quantity';
 
 export interface QuantityReading {
+  evidence?: 'single' | 'agreement' | 'conflict';
   text: string;
   value: string | null;
   approximate: boolean;
@@ -454,13 +455,11 @@ export class NumberReader {
         canvas.height,
       );
       const parsed = reading && parseVisibleQuantity(reading.text);
-      return reading && parsed ? { ...parsed, confidence: reading.confidence } : null;
+      return reading && parsed
+        ? { ...parsed, confidence: Math.min(84, reading.confidence), evidence: 'single' }
+        : null;
     });
-    const unresolved = crops.map((_, i) => i).filter((i) => !local[i] || local[i]!.confidence < 85);
-    if (!unresolved.length) {
-      onProgress?.(1);
-      return local as QuantityReading[];
-    }
+    const unresolved = crops.map((_, i) => i);
     const pendingCrops = unresolved.map((i) => crops[i]);
     const scale = Math.min(4, 192 / Math.max(...crops.map((crop) => crop.width)));
     const padding = 12;
@@ -539,7 +538,7 @@ export class NumberReader {
     } catch {
       if (epoch !== this.epoch) throw new Error('Leitura cancelada.');
       void this.close();
-      // An unavailable fallback must not discard the exact local readings.
+      // Preserve uncorroborated suggestions for review when fallback is unavailable.
       return local.map(
         (reading) => reading ?? { text: '', value: null, approximate: false, confidence: 0 },
       );

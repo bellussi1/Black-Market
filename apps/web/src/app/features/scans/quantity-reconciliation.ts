@@ -5,16 +5,19 @@ export function reconcileQuantity(
   local: QuantityReading | null,
   fallback: QuantityReading,
 ): QuantityReading {
-  if (!local?.value) return fallback;
-  if (!fallback.value) return local;
-  if (local.value === fallback.value && local.approximate === fallback.approximate)
-    return fallback.confidence > local.confidence ? fallback : local;
-  if (local.confidence >= 85 && fallback.confidence >= 85)
-    return {
-      value: null,
-      text: `${local.text} / ${fallback.text}`,
-      confidence: 0,
-      approximate: false,
-    };
-  return fallback.confidence >= 85 && local.confidence < 85 ? fallback : local;
+  const single = (reading: QuantityReading): QuantityReading => ({
+    ...reading,
+    confidence: Math.min(84, reading.confidence),
+    evidence: local?.evidence === 'conflict' ? 'conflict' : 'single',
+  });
+  if (!local?.value) return single(fallback);
+  if (!fallback.value) return local.evidence === 'agreement' ? local : single(local);
+  if (local.value === fallback.value && local.approximate === fallback.approximate) {
+    const best = fallback.confidence > local.confidence ? fallback : local;
+    if (local.evidence === 'conflict') return { ...single(best), evidence: 'conflict' };
+    if (Math.min(local.confidence, fallback.confidence) < 70) return single(best);
+    return { ...best, evidence: 'agreement' };
+  }
+  const best = fallback.confidence > local.confidence ? fallback : local;
+  return { ...single(best), evidence: 'conflict' };
 }
