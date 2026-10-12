@@ -1,0 +1,131 @@
+<main class="scan-workspace" [class.reviewing]="kind()">
+  @if (!kind()) {
+    <section class="capture-panel" aria-labelledby="capture-title">
+      <header>
+        <p class="eyebrow">IMPORTAR CAPTURAS</p>
+        <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
+        <p>
+          Envie uma imagem do armazém, inventário ou informações do personagem. A tela é
+          identificada automaticamente.
+        </p>
+      </header>
+      <div class="upload-area">
+        <button hlmBtn type="button" [disabled]="reading()" (click)="fileInput.click()">
+          {{ reading() ? 'Identificando a tela…' : 'Escolher captura' }}
+        </button>
+        <input
+          #fileInput
+          hidden
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          [disabled]="reading()"
+          (change)="choose($event)"
+        />
+        <p>PNG, JPG ou WebP · até 10 MB</p>
+        <p class="capture-status" role="status" aria-live="polite">{{ message() }}</p>
+      </div>
+      <aside class="review-notice" aria-label="Aviso sobre reconhecimento">
+        <strong>Revise antes de importar.</strong>
+        O OCR pode confundir itens, quantidades e maestrias. O reconhecimento ainda está em
+        calibração; confira a captura e corrija os dados antes de confirmar.
+      </aside>
+    </section>
+  } @else {
+    <div class="review-toolbar">
+      <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
+        Importar outra tela
+      </button>
+      <span>Confira os dados reconhecidos antes de confirmar.</span>
+    </div>
+  }
+
+  <section class="capture-guide" aria-labelledby="capture-guide-title">
+    <h2 id="capture-guide-title">Como preparar uma boa captura</h2>
+    @if (!kind()) {
+      <p class="guide-intro">
+        Prefira o recorte original do Windows, somente da janela que deseja analisar. Mantenha os
+        números legíveis e evite fotos da tela ou imagens comprimidas por aplicativos de mensagem.
+      </p>
+      <ol class="capture-steps">
+        <li>
+          <span class="step-number" aria-hidden="true">1</span>
+          <div>
+            <h3>Abra uma janela do jogo</h3>
+            <p>
+              Armazém, Inventário ou Minhas Informações. Feche tooltips e deixe todos os campos que
+              quer importar visíveis.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">2</span>
+          <div>
+            <h3>Recorte com o Windows</h3>
+            <p>
+              Pressione <kbd>Windows</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>, escolha o recorte
+              retangular e arraste do canto superior esquerdo ao inferior direito da janela. Inclua
+              o título e os números, sem cortar a grade.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">3</span>
+          <div>
+            <h3>Salve e envie</h3>
+            <p>
+              Abra a notificação da Ferramenta de Captura, salve como PNG e use “Escolher captura”.
+              Envie uma janela por imagem, na resolução original.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <figure class="crop-example">
+        <div class="example-desktop">
+          <div class="example-window">
+            <span class="example-title">Armazém de Velia</span>
+            <div class="example-grid" aria-hidden="true">
+              <span>139.1k</span><span>319.9k</span><span>1.3M</span><span>250</span>
+            </div>
+            <span class="example-caption">Inclua título, grade e quantidades</span>
+          </div>
+          <span class="crop-label">Recorte somente esta janela</span>
+        </div>
+        <figcaption>
+          Exemplo ilustrativo de enquadramento. Evite incluir chat, cenário ou outras janelas do
+          jogo.
+        </figcaption>
+      </figure>
+    }
+    <details class="correction-guide" [open]="!kind()">
+      <summary>Como corrigir dados reconhecidos incorretamente</summary>
+      <ol>
+        <li>
+          <strong>Confira a imagem e o destino.</strong> No armazém, confira a cidade; no inventário
+          ou perfil, escolha o personagem correto.
+        </li>
+        <li>
+          <strong>Corrija item e quantidade.</strong> Escolha o item correto nas opções. Se ele não
+          aparecer, abra “Buscar outro item pelo nome”. Compare a quantidade com o número da
+          captura.
+        </li>
+        <li>
+          <strong>Revise os campos do personagem.</strong> Para maestria, peso e atributos, ajuste
+          os valores reconhecidos e confirme os campos que deseja importar.
+        </li>
+        <li>
+          <strong>Inclua e confirme.</strong> Nos itens, use “Incluir item” após revisar. Confira o
+          resumo da importação antes de confirmar. Se a leitura estiver muito diferente, faça um
+          recorte mais nítido e tente novamente.
+        </li>
+      </ol>
+    </details>
+  </section>
+
+  @if (kind()) {
+    @if (profile()) {
+      <app-profile-screen-import />
+    } @else {
+      <app-scans-page />
+    }
+  }
+</main>

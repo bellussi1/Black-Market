@@ -10,43 +10,8 @@ import { ScreenTextReader } from './screen-text-reader';
   selector: 'app-automatic-scan-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ScansPage, ProfileScreenImportComponent, HlmButton],
-  template: `
-    @if (!kind()) {
-      <section class="panel">
-        <h1>Importar captura</h1>
-        <p>
-          Envie a imagem. Detectamos a tela automaticamente; você revisa e corrige antes de salvar.
-        </p>
-        <button
-          hlmBtn
-          variant="outline"
-          type="button"
-          [disabled]="reading()"
-          (click)="fileInput.click()"
-        >
-          Escolher imagem
-        </button>
-        <input
-          #fileInput
-          hidden
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          [disabled]="reading()"
-          (change)="choose($event)"
-        />
-        <p role="status">{{ message() }}</p>
-      </section>
-    } @else {
-      <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
-        Importar outra tela
-      </button>
-      @if (profile()) {
-        <app-profile-screen-import />
-      } @else {
-        <app-scans-page />
-      }
-    }
-  `,
+  templateUrl: './automatic-scan-page.html',
+  styleUrl: './automatic-scan-page.scss',
 })
 export class AutomaticScanPage {
   readonly kind = signal<ScreenKind | null>(null);
