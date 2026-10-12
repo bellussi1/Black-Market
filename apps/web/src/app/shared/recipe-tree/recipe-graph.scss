@@ -286,3 +286,17 @@ button:focus-visible {
     min-height: 44px;
   }
 }
+
+.node-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 4px 8px;
+  padding: 0;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+  color: var(--bm-accent);
+  cursor: pointer;
+}

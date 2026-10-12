@@ -79,6 +79,8 @@ describe('Accessible graph controls', () => {
     expect(fixture.nativeElement.querySelector('.node-select').getAttribute('aria-pressed')).toBe(
       'true',
     );
+    expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'source' });
+    fixture.nativeElement.querySelector('.node-details').click();
     expect(selected).toHaveBeenCalledWith({ path: 'root', action: 'source' });
     graph.scale(100);
     expect(graph.zoom()).toBe(1.75);
@@ -111,14 +113,10 @@ describe('Accessible graph controls', () => {
     const graph = fixture.componentInstance;
     const viewport: HTMLElement = fixture.nativeElement.querySelector('.graph-viewport');
     graph.pan.set({ x: 20, y: 30 });
-    const scroll = new WheelEvent('wheel', { deltaY: 120, bubbles: true, cancelable: true });
-    viewport.dispatchEvent(scroll);
-    expect(scroll.defaultPrevented).toBe(false);
     const wheel = new WheelEvent('wheel', {
       clientX: 180,
       clientY: 150,
       deltaY: -120,
-      ctrlKey: true,
       bubbles: true,
       cancelable: true,
     });

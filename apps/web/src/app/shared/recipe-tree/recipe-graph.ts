@@ -249,7 +249,7 @@ export class RecipeGraph {
     this.locationSelected.emit({ path: itemPath, source });
   }
   activate(node: RecipeNode) {
-    this.emit(node.path, 'source');
+    this.focusNode(node.path);
     if (!node.loading && !node.expanded) {
       this.emit(node.path, 'expand');
     }
@@ -274,7 +274,6 @@ export class RecipeGraph {
     );
   }
   private wheel = (event: WheelEvent) => {
-    if (!event.ctrlKey && !event.metaKey) return;
     if ((event.target as HTMLElement).closest('input,select,textarea,[data-scrollable]')) return;
     event.preventDefault();
     this.initialFitPending = false;

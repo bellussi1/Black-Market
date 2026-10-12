@@ -1390,6 +1390,15 @@
    BANDEJA INFERIOR DE DETALHES (100% de Largura, 4 Colunas no Desktop)
    ========================================================================== */
 
+.details-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .bottom-details-tray.context-panel {
   width: 100%;
   max-height: none;
@@ -1883,8 +1892,8 @@
   z-index: 50;
   top: 72px;
   right: 20px;
-  width: min(980px, calc(100vw - 280px));
-  max-height: calc(100vh - 92px);
+  width: min(780px, calc(100vw - 280px));
+  max-height: min(680px, calc(100vh - 92px));
   margin: 0;
   overflow-y: auto;
   overscroll-behavior: contain;

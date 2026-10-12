@@ -632,6 +632,12 @@
 
       <!-- BANDEJA HORIZONTAL INFERIOR DE DETALHES (100% de largura, abaixo do Canvas e Sidebar) -->
       @if (detailsOpen()) {
+        <button
+          type="button"
+          class="details-backdrop"
+          aria-label="Fechar detalhes do item"
+          (click)="closeDetails()"
+        ></button>
         <aside
           class="context-panel panel bottom-details-tray"
           aria-label="Detalhes do item selecionado"
