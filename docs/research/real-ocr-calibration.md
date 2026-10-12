@@ -59,3 +59,26 @@ O limiar de quantidade exata foi elevado de 50 para 85, mas confiança não gara
 ## Continuidade
 
 Preservar esta sessão de avaliação sem ajustá-la para obter resultados favoráveis. Caso seus erros sejam usados para calibrar uma nova versão, registrar sua promoção para diagnóstico e reservar uma nova sessão independente. Priorizar segmentação e escala de texto em slots pequenos e cobertura do candidato correto no índice, antes de alterar thresholds para aceitar mais resultados. Completar rótulos reais de inventário e IDs com evidência; medir pares corretos antes de liberar qualquer confirmação automática.
+
+## Revisão de evidências de quantidade (12/10/2026)
+
+O leitor agora exige concordância entre duas leituras para admitir confiança acima do limiar de revisão. Uma leitura isolada é limitada a 84; divergência permanece marcada durante tentativas posteriores. Duas leituras da mesma quantidade só confirmam quando ambas têm confiança ao menos 70. Isso é concordância entre métodos/configurações, não independência estatística: os passes do Tesseract compartilham modelo e podem repetir o mesmo erro.
+
+Todas as leituras locais passam pelo fallback, incluindo as que anteriormente eram aceitas sem comparação. O retry de linha única continua limitado a oito segundos por lote e respeita cancelamento. O benchmark foi corrigido para usar o mesmo inset horizontal de 3% e largura de 94% do Scan. Essa correção impede comparação direta de todas as métricas anteriores como se fossem o mesmo protocolo.
+
+Reexecução da sessão velia-20261010, sem gerar novos templates usando seus rótulos:
+
+| Métrica                             | Resultado |
+| ----------------------------------- | --------: |
+| Slots associados                    |     90/90 |
+| Rótulos visíveis corretos           |     33/90 |
+| Quantidades aceitas corretas        |       2/2 |
+| Quantidades aceitas erradas         |         0 |
+| Pares item/quantidade aceitos       |         0 |
+| Slots enviados para revisão         |     90/90 |
+| Leitor de caracteres isolado        |      0/90 |
+| Tesseract isolado                   |     33/90 |
+| Referências de ícone nos candidatos |       0/2 |
+| Tempo completo                      |    22,46s |
+
+Resultado local: tmp/ocr-dataset/consensus-report.json. Zero erros em duas quantidades aceitas não demonstra segurança geral. Esta sessão já foi avaliada repetidamente; uma nova sessão de inventário com IDs confirmados é necessária para ampliar evidência independente. Não reduzir revisão nem anunciar OCR pronto. A maior duração e a baixa cobertura continuam pendências; priorizar segmentação do leitor específico e recuperação dos ícones corretos sem relaxar aceitação.

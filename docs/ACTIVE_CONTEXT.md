@@ -628,3 +628,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Arquivos: recipe-tree.ts/html/scss/spec.ts. Próximo agente: preservar prévia fora do fluxo, tamanho do botão e espaço de feedback; não voltar a inserir cancelar ou proposta acima da árvore.
 - Medição com página estabilizada: filhos do painel mantiveram y/altura ao abrir e fechar dialog; cálculo preservou y168 e altura565,67. Primeira medição durante carregamento mostrou variação residual, portanto não equivale a estabilidade de toda a carga inicial. Screenshots optimization-stable-dialog.png e optimization-stable-mobile.png conferidos. pnpm test passou com 623 testes.
 - pnpm check final passou; git diff --check sem erros.
+
+## 51. Evidência de quantidades e estado de análise (12/10/2026)
+
+- Quantidades isoladas ficam com confiança no máximo84; concordância requer ambas >=70. Conflitos persistem mesmo com tentativa posterior coincidente; valores continuam revisáveis. Todas as leituras locais passam pelo fallback, sem bypass por confiança alta. Não é treinamento de pesos.
+- Benchmark usa exatamente inset3%/largura94% do Scan. Reexecução sem templates de avaliação: 90/90slots,33/90rótulos,2/2quantidades aceitas corretas,0erradas,90/90revisão,22,46s; glyph0/90 e ícones0/2. Protocolo de recorte corrigido e execução mais lenta limitam comparação anterior. Relatório e limitações em docs/research/real-ocr-calibration.md.
+- UI: painéis iniciais esticam à mesma altura; análise tem status e uma ação cancelar no mesmo bloco, sem cancelamento duplicado. Recorte recolhido durante análise e ajustes com espaçamento. Capturas de QA em output/playwright/scan-equal-panels.png e scan-analysis-clear-actions.png.
+- Próximo agente: completar sessão nova de inventário e IDs confirmados; melhorar segmentação e candidatos, medir duração. Não baixar limiares para aumentar cobertura aparente nem usar esta sessão repetida como garantia de acurácia geral.
+- QA visual: ambos os painéis mediram554,625px; durante análise havia um único botão Cancelar análise e recorte recolhido. Screenshots conferidos, sem salvar importação.
+- pnpm check e pnpm test passaram (625 testes). git diff --check sem erros. Warning pt-BR usa fallback pt, já existente.
