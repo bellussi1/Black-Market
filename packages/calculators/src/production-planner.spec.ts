@@ -68,6 +68,64 @@ const row = (input: ProductionPlannerInput, scenario: string) =>
   )!;
 
 describe('production planner', () => {
+  it('changes hourly profit through intermediate craft time without changing total profit', () => {
+    const input = fixture();
+    const first = row(input, 'produce-all');
+    input.estimates.middle.craftSeconds = 60;
+    const slower = row(input, 'produce-all');
+    expect(first.seconds).toBe(120);
+    expect(slower.seconds).toBe(180);
+    expect(slower.profit).toBe(first.profit);
+    expect(first.profitPerHour).toBe('2700');
+    expect(slower.profitPerHour).toBe('1800');
+  });
+  it('keeps purchasing capacity separate from sold-out acquisition policy', () => {
+    const input = fixture();
+    input.enforcePurchaseLimits = false;
+    input.quotes[2].available = 0;
+    input.candidates = [{ recipeId: 'final', crafts: 1, optimizeCrafts: 1 }];
+    input.marketAcquisition = 'preorder';
+    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('buy');
+    input.marketAcquisition = 'produce-sold-out';
+    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('produce');
+    expect(row(input, 'buy-all').issues.some((issue) => issue.code === 'market-stock')).toBe(true);
+    input.quotes[2].source = 'npc';
+    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('buy');
+  });
+
+  it('reproduces the observed Workshop buy-all arithmetic without importing live EU prices', () => {
+    const input = fixture();
+    input.enforcePurchaseLimits = false;
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Workshop reference',
+        method: 'simple-alchemy',
+        output: { itemId: 1408, quantity: 10 },
+        ingredients: [
+          { itemId: 1, quantity: 60 },
+          { itemId: 2, quantity: 10 },
+          { itemId: 4986, quantity: 1 },
+        ],
+      },
+    ];
+    input.estimates = { final: { source: 'fixed', craftSeconds: 6 } };
+    input.quotes = {
+      1: { unitPrice: '16200000', available: 0, observedAt: now, source: 'market' },
+      2: { unitPrice: '20500000', available: 0, observedAt: now, source: 'market' },
+      4986: { unitPrice: '10000', available: null, observedAt: now, source: 'npc' },
+      1408: { unitPrice: '187000000', available: 0, observedAt: now, source: 'market' },
+    };
+    input.tax.valuePack = true;
+    input.candidates = [{ recipeId: 'final', crafts: 1000 }];
+    const result = row(input, 'buy-all');
+    expect(result.output).toBe(10000);
+    expect(result.seconds).toBe(6000);
+    expect(result.netRevenue).toBe('1580150000000');
+    expect(result.cashCost).toBe('1177010000000');
+    expect(result.profit).toBe('403140000000');
+    expect(result.profitPerHour).toBe('241884000000');
+  });
   it('finds the fastest profitable hybrid of buying and producing intermediates', () => {
     const input = fixture();
     input.recipes = [

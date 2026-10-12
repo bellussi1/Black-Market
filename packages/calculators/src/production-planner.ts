@@ -61,6 +61,8 @@ export interface ProductionPlannerInput {
   useOwnedInProduction?: boolean;
   /** False for economic simulations independent of current purchasing capacity. Defaults to true. */
   enforcePurchaseLimits?: boolean;
+  /** Independent of wallet/time limits. Preorder waiting time is not modeled. */
+  marketAcquisition?: 'preorder' | 'produce-sold-out';
   byproductValues?: Record<
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
@@ -198,6 +200,10 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       'Receita de venda usa o imposto e os bônus informados; a cotação não garante venda imediata.',
       'Tempos e rendimentos são premissas explícitas, sem extrapolar fórmulas de maestria.',
     ]);
+    if (input.marketAcquisition === 'preorder')
+      assumptions.add(
+        'Pré-ordens permitidas: tempo de espera e transporte não incluídos no lucro por hora.',
+      );
     const owned = new Map<number, bigint>();
     for (const entry of input.inventory) {
       const available = Math.max(0, entry.quantity - (entry.reserved ?? 0));
@@ -261,6 +267,25 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
 
     function purchase(id: number, quantity: bigint) {
       const row = material(id);
+      const availability = input.quotes[id];
+      if (
+        quantity > 0n &&
+        input.marketAcquisition === 'produce-sold-out' &&
+        availability?.source === 'market'
+      ) {
+        if (availability.available === 0)
+          issue(
+            'market-stock',
+            'Item esgotado: esta política exige produzir ou usar estoque próprio.',
+            { itemId: id },
+          );
+        else if (availability.available === null)
+          issue(
+            'unknown-availability',
+            'Disponibilidade desconhecida para a política de itens esgotados.',
+            { itemId: id },
+          );
+      }
       row.bought += quantity;
       const price = quote(id, true);
       if (price === null) costsKnown = false;
