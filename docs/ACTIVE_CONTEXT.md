@@ -521,3 +521,19 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - A pedido do usuário, roda volta a ampliar/reduzir o canvas sem Ctrl/Command, preservando scroll em controles internos. Ajuda e teste atualizados.
 - Ícone/nome do node seleciona/expande sem abrir detalhes. Botão único de informação SVG abre o painel. Painel reduzido de 980 para 780px, altura máxima 680px e backdrop transparente fecha ao clicar fora.
 - Playwright confirmou clique comum sem painel, abertura via ícone com largura 780px e fechamento ao clicar fora. Próximo agente: preservar esta nova decisão de zoom (substitui orientação antiga de Ctrl+roda).
+
+## 37. Comparação com BDO Workshop e causa das 115 pendências (12/10/2026)
+
+- Página pública https://bdoworkshop.com/crafting-workshop/plan/1408 consultada no navegador: maestrias Alchemy/Processing 0, cálculo imediato com materiais comprados, tempo e imposto predefinidos. Exibe essência de Ibellab a 10.000 vendida por NPC. Região visível EU; valores não servem como cotação SA. Página se declara em construção.
+- BDOLytics respondeu 403/Cloudflare; suas regras internas não foram verificadas.
+- Anexo contém pedidos de rendimento/tempo de coleta repetidos, ciclos e preço ausente. Causa direta: RecipeTree.makeChoice retorna gather para todo item sem produtor. Isso não comprova coleta; com personagem ativo, adaptador não adiciona defaults e os pedidos se multiplicam.
+- Correção estrutural pendente: insumos base devem usar compra de mercado/NPC por padrão; coleta apenas com origem/modelo verificados. Resolver fornecedores NPC com proveniência em vez de pedir preço de Mercado de item não comercializável. Selecionar fórmulas acíclicas ou interromper expansão em aquisição válida. Deduplicar mensagens por item/código, sem esconder falha de custo.
+- Manter worker. Não atribuir custo zero a insumo coletado sem valorar aquisição/tempo. Não prometer tabela exata de maestria usando aproximação atual.
+
+## 38. OCR de life skills e entrada automática (12/10/2026)
+
+- Gerador versão 2 filtra catálogo publicado por ingredientes/produtos de tipos de receitas de culinária, alquimia e processamento (COOK/ALCHEMY/HEAT/GRIND/SHAKE/FIREWOOD/THINNING/DRY). Não põe numerais romanos em materiais. Itens sem evidência nessas receitas não entram; cobertura completa de caça/coleta ainda requer classificação de origens.
+- Novos lotes locais: tmp/ocr-dataset/lifeskills-calibration (72, seed 20261013) e lifeskills-evaluation (18, seed 20261012). Antigo synthetic-evaluation preservado. Geração não equivale a treinamento de pesos do Tesseract.
+- Benchmark da avaliação: grid F1 1, 606 quantidades, 46 exatas (7,59%), 196 incorretas e 364 não lidas. Benchmark usa OCR textual geral, não NumberReader completo/refinador de ícones. Não alegar melhora de acurácia ou reconhecimento de IDs medido. Roman não aplicável (zero amostras).
+- /scans abre AutomaticScanPage: upload único, leitura local, detecção de painel e encaminhamento ao revisor de itens ou perfil. Revisores manuais preservados. Perfil reutiliza as linhas reconhecidas para evitar OCR duplicado. Screenshot de maestria autorizada detectada no Playwright.
+- Próximo agente: concluir calibração de quantidade-pixels/glyphs e benchmark do motor real (NumberReader + IconRefiner), com avaliação independente real autorizada. Refinar rotas de imagens ambíguas/múltiplos painéis, lotes mistos e esconder configurações manuais de área até correção solicitada. Não chamar esta etapa de retreinamento concluído.
