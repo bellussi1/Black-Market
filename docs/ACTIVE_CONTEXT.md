@@ -571,3 +571,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - .graph-node reserva 2px internos para preservar a moldura de seleção; .expand-node usa margin-top auto e flex-shrink 0 para permanecer na base do card. Mensagens passam antes da ação, garantindo botão como último elemento do card de item.
 - Playwright em 1407: cinco botões medidos com distância uniforme de aproximadamente 1,426px da moldura embaixo e nas duas laterais no zoom de 48%; screenshot output/playwright/card-footer-visible.png conferido, incluindo cards com seletor e sem seletor. Mantidas alturas guiadas pelo conteúdo; não forçar alturas fixas que cortem nomes.
 - Próximo agente: preservar margem da moldura e ações no rodapé ao incluir novos avisos ou controles no card.
+
+## 44. Importação centralizada e tutorial de captura (12/10/2026)
+
+- AutomaticScanPage usa template e SCSS próprios. Entrada centralizada em 880px; revisão em até 1200px. Mantido upload/detecção automática e encaminhamento aos revisores existentes.
+- Tutorial de três passos: abrir uma janela do jogo, Windows + Shift + S com recorte retangular incluindo título/grade/números, salvar PNG pela Ferramenta de Captura e enviar. Exemplo esquemático de enquadramento, identificado como ilustração; recomenda resolução original e evitar compressão/foto/tooltips.
+- Aviso explícito de OCR em calibração e revisão obrigatória. Guia de correção corresponde aos controles reais: destino/personagem, item/opções/busca por nome, quantidade, revisão dos campos de perfil, Incluir item e resumo antes de confirmar. Durante revisão, explicação fica recolhida e acessível no mesmo contexto.
+- Playwright e screenshots desktop/mobile conferidos em output/playwright/scan-guide-desktop.png e scan-guide-mobile.png. Conteúdo desktop de 880px; mobile 390px com scrollWidth 390, três passos e tipos PNG/JPEG/WebP preservados. Próximo agente: preservar detecção automática e instruções de revisão; não afirmar reconhecimento confiável sem avaliação independente.
+- pnpm check e pnpm test passaram (611 testes). Esta alteração é de interface e instruções; não comprova aumento da acurácia do OCR.
