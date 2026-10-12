@@ -20,7 +20,7 @@ const variants = [1920, 2560, 3840].flatMap((width) => {
   );
 });
 
-export const GENERATOR_VERSION = 1;
+export const GENERATOR_VERSION = 2;
 
 function usage() {
   return [
@@ -116,10 +116,32 @@ export async function readPublishedIconCatalog(catalogDir) {
     throw new Error('Catalog asset_redirects.json must contain an object of published aliases.');
 
   const root = await realpath(path.dirname(manifestPath));
+  const recipePath = path.join(root, 'recipes.json');
+  let focusedIds = null;
+  try {
+    const recipes = JSON.parse(await readFile(recipePath, 'utf8'));
+    focusedIds = new Set();
+    for (const recipe of recipes) {
+      if (
+        !/ALCHEMY|COOK|PROCESS|HEAT|GRIND|FIREWOOD|THINNING|CHOP|DRY|FILTER|SHAK|HUNT|GATHER/i.test(
+          recipe.type ?? '',
+        )
+      )
+        continue;
+      for (const urn of [recipe.output, ...(recipe.inputs ?? []).map((part) => part.item)]) {
+        const match = /^urn::item:(\d+)$/.exec(urn ?? '');
+        if (match) focusedIds.add(match[1]);
+      }
+    }
+    if (!focusedIds.size) throw new Error('No life skill recipe items found in recipes.json.');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const uniquePaths = new Map();
   for (const [alias, rawRelativePath] of Object.entries(redirects)) {
     const match = /^urn::item:(\d+)$/.exec(alias);
     if (!match) continue;
+    if (focusedIds && !focusedIds.has(match[1])) continue;
     if (typeof rawRelativePath !== 'string' || !rawRelativePath.trim())
       throw new Error(`Published item alias ${alias} has no icon path.`);
     const normalized = rawRelativePath.replaceAll('\\', '/');
@@ -316,7 +338,7 @@ function makeLabelsSvg({ width, height, slots }) {
 
 function chooseSlotContent({ slot, slotIndex, sampleIndex, panelType, random, catalog }) {
   const sequence = sampleIndex * 54 + slotIndex;
-  const enhancement = panelType === 'inventory' && sequence % 9 === 8;
+  const enhancement = false;
   const occupied = slotIndex < 4 || enhancement || random() < 0.72;
   if (!occupied)
     return { ...slot, itemId: undefined, labelKind: undefined, displayedText: undefined };
