@@ -541,3 +541,9 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 ## 39. Botão de detalhes no canto do node (12/10/2026)
 
 - Botão de informação posicionado no canto superior direito, com 6px de distância. Cabeçalho reserva 40px à direita para evitar sobreposição com nome/ícone. Abertura exclusiva pelo botão e fechamento externo preservados.
+
+## 40. Ações independentes no card de item (12/10/2026)
+
+- Corpo do card apenas seleciona, sem emitir expand/source. Expansão de item com origens ou sem receita não chama showContext implicitamente. Lista lateral também apenas seleciona ao clicar no nome; ícones de detalhes preservados.
+- Playwright: clique no corpo manteve 6 nodes e zero modais; ícone abriu 1 painel; botão de recolher reduziu árvore para 1 node sem modal. Card revisado na captura ignorada output/playwright/item-card-explicit.png: nome/ícone e ação de informação separados, sem sobreposição.
+- Testes atualizados para exigir expansão pelo botão; seleção local preservada explicitamente. Próximo agente: não reintroduzir aberturas de detalhes em caminhos de expansão ou seleção; manter botões específicos.

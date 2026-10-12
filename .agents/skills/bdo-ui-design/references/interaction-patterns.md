@@ -29,3 +29,5 @@ Ações clicáveis habilitadas usam cursor pointer. Otimizar lucro/hora precisa 
 Busca de otimização de receita longa deve rodar em Web Worker, com cancelamento e status. Não executar solver exato em computed da thread principal. Manter o cenário anterior visível durante cálculo e invalidar respostas quando entradas mudarem.
 
 Atualização 12/10/2026: usuário pediu novamente zoom pela roda sem modificador dentro do canvas. Ícone/nome do node não abre detalhes; usar botão único de informação. Painel de detalhes fecha com clique fora e tem largura desktop máxima 780px.
+
+Card do grafo: corpo apenas seleciona. Expandir/recolher somente no botão específico; abrir detalhes apenas no ícone. Expansão com origens/sem receita não abre detalhes automaticamente.
