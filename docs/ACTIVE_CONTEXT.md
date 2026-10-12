@@ -637,3 +637,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Próximo agente: completar sessão nova de inventário e IDs confirmados; melhorar segmentação e candidatos, medir duração. Não baixar limiares para aumentar cobertura aparente nem usar esta sessão repetida como garantia de acurácia geral.
 - QA visual: ambos os painéis mediram554,625px; durante análise havia um único botão Cancelar análise e recorte recolhido. Screenshots conferidos, sem salvar importação.
 - pnpm check e pnpm test passaram (625 testes). git diff --check sem erros. Warning pt-BR usa fallback pt, já existente.
+
+## 52. Inventário real e preservação dos dígitos (12/10/2026)
+
+- Corpus ampliado para192 quantidades:180 de armazém e12 números visíveis do inventário da captura3b5639390052. Slots sem número visível não recebem quantidade1. Inventário tem cobertura parcial e região manual registrada; não é prova de detecção automática. Mantido o mesmo split da sessão10/10. IDs seguem não confirmados.
+- Diagnóstico visual do recorte ampliado mostrou dígitos de inventário iniciando acima do corte0,57 do slot. Inventário passa a usar top0,45/height0,5; armazém mantém0,57/0,37. Ampliar fallback não suaviza os pixels. Calibrador agora usa o mesmo inset3%/largura94% e arredondamento do Scan. Regerados273 templates somente da calibração; diagnóstico local calibração31/90 permanece31/90, sem alegar ganho do glyph.
+- Harness aceita região manual para diagnóstico, sem passar quantidades ou IDs ao leitor. Scorer de rótulos parciais reporta slots não avaliados e falsePositiveSlots=null, evitando penalizar slots sem transcrição. Teste específico dessa semântica adicionado.
+- Esta imagem foi usada para diagnosticar geometria: resultados posteriores são diagnóstico, não avaliação independente. Próximo agente: reservar nova sessão antes de medir generalização e completar IDs com evidência. Equipamentos e imagens de comunidade ainda não têm ground truth completo neste corpus.
+- Diagnóstico inventário:0/12 antes e0/12 depois,nenhuma aceitação; região manual associou12 rótulos,12slots não avaliados. Releitura3,73s exclui processamento inicial da outra janela. Correção de recorte não demonstrou ganho de acurácia. pnpm test passou com626 testes.
+- pnpm check final passou e git diff --check sem erros. Templates/imagens locais permanecem fora do versionamento de dados; scripts e máscaras de caracteres são versionados.

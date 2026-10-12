@@ -82,3 +82,11 @@ Reexecução da sessão velia-20261010, sem gerar novos templates usando seus r�
 | Tempo completo                      |    22,46s |
 
 Resultado local: tmp/ocr-dataset/consensus-report.json. Zero erros em duas quantidades aceitas não demonstra segurança geral. Esta sessão já foi avaliada repetidamente; uma nova sessão de inventário com IDs confirmados é necessária para ampliar evidência independente. Não reduzir revisão nem anunciar OCR pronto. A maior duração e a baixa cobertura continuam pendências; priorizar segmentação do leitor específico e recuperação dos ícones corretos sem relaxar aceitação.
+
+## Inventário real: diagnóstico de recorte (12/10/2026)
+
+Foram transcritos12 rótulos visíveis da captura de inventário3b5639390052. Itens sem número visível ficaram sem rótulo; não se presumiu1. Corpus total192 quantidades, com o inventário no mesmo split da sessão10/10. A captura foi usada para diagnosticar geometria; não é uma nova avaliação independente. A região8x3 é configurada manualmente no harness; portanto não mede detecção automática.
+
+Recorte anterior:0/12 rótulos corretos. Após preservar a região superior dos números de inventário (top45%,height50% em vez de57%/37%):0/12, nenhuma quantidade aceita,12/12 revisão,3,73s para a releitura da região. Esses tempos excluem a identificação e leitura inicial da outra janela na imagem. Os12 slots sem transcrição na região não são falsos positivos: unscoredSlots=12 e falsePositiveSlots=null.
+
+O fallback ampliado passa a desativar suavização. Calibrador usa inset/arredondamento do Scan, com273 templates gerados somente da calibração. Diagnóstico de glyph em calibração permaneceu31/90; não há ganho comprovado. Relatórios locais inventory-real-report.json e inventory-real-after-report.json em tmp/ocr-dataset. Próximo trabalho: segmentar os rótulos sem incorporar detalhes do ícone e calibrar contraste em dados de calibração; reservar sessão nova para avaliação, completar IDs reais e equipamentos. Não reduzir revisão com esses resultados.
