@@ -49,6 +49,7 @@ export class AutomaticScanPage {
           if (!scans) return;
           scans.captureMode =
             kind === 'inventory' ? 'inventory' : kind === 'equipment' ? 'gear' : 'storage';
+          scans.autoRead.set(true);
           void scans.file(forwarded);
         }
       }, 0);

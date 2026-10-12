@@ -11,8 +11,9 @@ export async function benchmarkScanPage(page, imagePath) {
   return page.evaluate(async () => {
     const component = globalThis.ng.getComponent(document.querySelector('app-scans-page'));
     const started = performance.now();
-    await component.read();
-    const durationMs = performance.now() - started;
+    while (component.locked()) await new Promise((resolve) => setTimeout(resolve, 20));
+    if (!component.cells().length) await component.read();
+    const durationMs = component.activeJob()?.elapsedMs || performance.now() - started;
     const cells = component.cells().map((cell) => ({
       rect: cell.sourceRect,
       item: cell.item?.id ?? null,
