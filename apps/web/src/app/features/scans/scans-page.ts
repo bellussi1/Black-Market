@@ -1156,9 +1156,9 @@ export class ScansPage implements OnDestroy {
           this.progress.set(`Lendo quantidades de ${drafts.length} espaços…`);
           const crops = positions.map(({ cell }) => ({
             left: cell.left + cell.width * 0.03,
-            top: cell.top + cell.height * 0.57,
+            top: cell.top + cell.height * (mode === 'inventory' ? 0.45 : 0.57),
             width: cell.width * 0.94,
-            height: cell.height * 0.37,
+            height: cell.height * (mode === 'inventory' ? 0.5 : 0.37),
           }));
           const quantities: QuantityReading[] = [];
           // Bounded contact sheets avoid very tall canvases on wide warehouses.

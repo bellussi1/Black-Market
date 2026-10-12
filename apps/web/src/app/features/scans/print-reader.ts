@@ -326,6 +326,8 @@ export function cropCanvas(image: CanvasImageSource, crop: Crop, scale = 3) {
   canvas.height = Math.ceil(crop.height * scale);
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Leitura de imagens indisponível.');
+  // Keep the game's small outlined glyphs intact while enlarging the fallback crop.
+  context.imageSmoothingEnabled = false;
   context.drawImage(
     image,
     crop.left,

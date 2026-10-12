@@ -11,10 +11,10 @@ for (const sample of manifest.samples.filter((s) => s.split === 'calibration')) 
   for (const slot of sample.slots) {
     const b = slot.bounds;
     const rect = {
-      left: b.left,
-      top: b.top + Math.floor(b.height * 0.57),
-      width: b.width,
-      height: Math.floor(b.height * 0.37),
+      left: Math.round(b.left + b.width * 0.03),
+      top: Math.round(b.top + b.height * 0.57),
+      width: Math.round(b.width * 0.94),
+      height: Math.round(b.height * 0.37),
     };
     const { data, info } = await sharp(sample.imagePath)
       .extract(rect)
