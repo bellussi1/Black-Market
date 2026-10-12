@@ -601,6 +601,11 @@ describe('Interactive recipe tree', () => {
 
     expect(tree.currentProductionPlan()?.scenario).not.toBe('optimized');
     expect(tree.previewPlan()?.sourceChoices).toEqual({ 8001: 'buy', 9001: 'produce' });
+    fixture.detectChanges();
+    const previewDialog = fixture.nativeElement.querySelector('dialog.optimization-dialog');
+    expect(previewDialog).not.toBeNull();
+    expect(previewDialog.querySelector('.optimization-preview')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.optimization-status')).not.toBeNull();
     tree.applyOptimizationPreview();
     expect(tree.currentProductionPlan()?.scenario).toBe('optimized');
     expect(tree.currentProductionPlan()?.sourceChoices).toEqual({ 8001: 'buy', 9001: 'produce' });

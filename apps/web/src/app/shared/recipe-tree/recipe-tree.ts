@@ -1,9 +1,11 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
   effect,
+  type ElementRef,
   inject,
   input,
   output,
@@ -686,6 +688,7 @@ export class RecipeTree {
   readonly view = signal<'graph' | 'tree' | 'list'>('graph');
   readonly selectedPath = signal('root');
   readonly graph = viewChild(RecipeGraph);
+  readonly optimizationDialog = viewChild<ElementRef<HTMLDialogElement>>('optimizationDialog');
   readonly excludedLocations = signal<string[]>([]);
   readonly livePrices = signal(new Map<number, string>());
   readonly history = signal<MarketHistoryPoint[]>([]);
@@ -1198,6 +1201,12 @@ export class RecipeTree {
   }
 
   constructor() {
+    afterRenderEffect(() => {
+      const dialog = this.optimizationDialog()?.nativeElement;
+      if (!dialog) return;
+      if (this.previewPlan() && !dialog.open) dialog.showModal?.();
+      else if (!this.previewPlan() && dialog.open) dialog.close?.();
+    });
     effect(() => {
       const context = this.optimizationContext();
       if (!this.optimizationSnapshot || context === this.optimizationSnapshot) return;

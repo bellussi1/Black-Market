@@ -1845,6 +1845,43 @@
   border: 1px solid var(--bm-accent);
 }
 
+.optimize-action {
+  width: 190px;
+  min-width: 190px;
+  flex-shrink: 0;
+}
+
+.optimization-status {
+  height: 40px;
+  margin: 0;
+  padding: 4px 14px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.optimization-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  padding: 0;
+  border: 1px solid var(--bm-accent);
+  background: var(--bm-surface);
+  color: var(--bm-text);
+}
+
+.optimization-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.optimization-dialog .optimization-preview {
+  margin: 0;
+  border: 0;
+}
+
 .preview-heading {
   display: flex;
   align-items: center;
@@ -1899,6 +1936,9 @@
 
 .economic-summary-footer {
   border-top: 1px solid var(--bm-border);
+  height: 84px;
+  overflow: auto;
+  align-content: start;
 }
 
 .economic-dashboard .tax-config-panel {

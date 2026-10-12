@@ -276,17 +276,11 @@
               type="button"
               variant="outline"
               class="optimize-action"
-              [disabled]="optimizing()"
               [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
-              (click)="optimizeAcquisition()"
+              (click)="optimizing() ? cancelOptimization(true) : optimizeAcquisition()"
             >
-              Otimizar lucro por hora
+              {{ optimizing() ? 'Cancelar cálculo' : 'Otimizar lucro por hora' }}
             </button>
-            @if (optimizing()) {
-              <button hlmBtn variant="outline" type="button" (click)="cancelOptimization(true)">
-                Cancelar cálculo
-              </button>
-            }
           </div>
         </div>
 
@@ -302,64 +296,75 @@
           >
         </label>
 
-        @if (previewPlan(); as preview) {
-          <section class="optimization-preview" aria-label="Prévia da combinação otimizada">
-            <div class="preview-heading">
-              <strong>Combinação proposta · {{ requestedOperations() }} receitas</strong>
-              <div class="flex flex-wrap gap-2">
-                <button hlmBtn type="button" size="sm" (click)="applyOptimizationPreview()">
-                  Aplicar combinação
-                </button>
-                <button
-                  hlmBtn
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  (click)="discardOptimizationPreview()"
-                >
-                  Fechar prévia
-                </button>
+        <dialog
+          #optimizationDialog
+          class="optimization-dialog"
+          tabindex="-1"
+          (keydown.escape)="discardOptimizationPreview()"
+          aria-label="Prévia da combinação otimizada"
+          (cancel)="discardOptimizationPreview()"
+          (click)="$event.target === optimizationDialog && discardOptimizationPreview()"
+        >
+          @if (previewPlan(); as preview) {
+            <section class="optimization-preview" aria-label="Prévia da combinação otimizada">
+              <div class="preview-heading">
+                <strong>Combinação proposta · {{ requestedOperations() }} receitas</strong>
+                <div class="flex flex-wrap gap-2">
+                  <button hlmBtn type="button" size="sm" (click)="applyOptimizationPreview()">
+                    Aplicar combinação
+                  </button>
+                  <button
+                    hlmBtn
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    (click)="discardOptimizationPreview()"
+                  >
+                    Fechar prévia
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="economic-metrics-grid">
-              <div class="metric-card">
-                <span class="metric-label">Lucro/hora</span
-                ><strong class="metric-value">{{ silver(preview.profitPerHour) }}</strong>
+              <div class="economic-metrics-grid">
+                <div class="metric-card">
+                  <span class="metric-label">Lucro/hora</span
+                  ><strong class="metric-value">{{ silver(preview.profitPerHour) }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">Lucro total</span
+                  ><strong class="metric-value">{{ silver(preview.profit) }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">Materiais</span
+                  ><strong class="metric-value">{{ silver(preview.economicCost) }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">Tempo de produção</span
+                  ><strong class="metric-value">{{ productionTimeLabel(preview.seconds) }}</strong>
+                </div>
               </div>
-              <div class="metric-card">
-                <span class="metric-label">Lucro total</span
-                ><strong class="metric-value">{{ silver(preview.profit) }}</strong>
-              </div>
-              <div class="metric-card">
-                <span class="metric-label">Materiais</span
-                ><strong class="metric-value">{{ silver(preview.economicCost) }}</strong>
-              </div>
-              <div class="metric-card">
-                <span class="metric-label">Tempo de produção</span
-                ><strong class="metric-value">{{ productionTimeLabel(preview.seconds) }}</strong>
-              </div>
-            </div>
-            <details class="preview-decisions">
-              <summary>Ver escolhas por item e etapas de produção</summary>
-              <ul>
-                @for (material of preview.materials; track material.itemId) {
-                  <li>
-                    {{ productionMaterialName(material.itemId) }} · comprar {{ material.bought }} ·
-                    fazer {{ material.produced }} · estoque {{ material.owned }}
-                  </li>
-                }
-              </ul>
-              <ul>
-                @for (step of preview.steps; track $index) {
-                  <li>
-                    {{ productionStepName(step.recipeId) }} · {{ step.crafts }} operações ·
-                    {{ productionTimeLabel(step.seconds) }}
-                  </li>
-                }
-              </ul>
-            </details>
-          </section>
-        }
+              <details class="preview-decisions">
+                <summary>Ver escolhas por item e etapas de produção</summary>
+                <ul>
+                  @for (material of preview.materials; track material.itemId) {
+                    <li>
+                      {{ productionMaterialName(material.itemId) }} · comprar
+                      {{ material.bought }} · fazer {{ material.produced }} · estoque
+                      {{ material.owned }}
+                    </li>
+                  }
+                </ul>
+                <ul>
+                  @for (step of preview.steps; track $index) {
+                    <li>
+                      {{ productionStepName(step.recipeId) }} · {{ step.crafts }} operações ·
+                      {{ productionTimeLabel(step.seconds) }}
+                    </li>
+                  }
+                </ul>
+              </details>
+            </section>
+          }
+        </dialog>
 
         <div class="economic-metrics-grid">
           <div class="metric-card highlight-metric">
@@ -440,10 +445,10 @@
           @if (treeMarketMessage().startsWith('Não')) {
             <span role="status">{{ treeMarketMessage() }}</span>
           }
-          @if (optimizationMessage()) {
-            <span role="status">{{ optimizationMessage() }}</span>
-          }
         </div>
+        <p class="optimization-status" role="status" aria-live="polite">
+          {{ optimizationMessage() }}
+        </p>
 
         <details class="tax-config-panel">
           <summary i18n>Opções de impostos e buffs do mercado</summary>
