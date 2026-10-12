@@ -515,3 +515,9 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Cotações que mudam durante a busca cancelam o cálculo, conforme snapshot. Dados ausentes e limite de busca continuam explícitos. Próximo agente: otimizar solver e resolver cobertura real de dados sem retornar à thread principal.
 - Validação adicional: Worker concluiu 1409 e devolveu plano inconclusivo por cotações ausentes, sem travar UI. Cache/contexto usa fingerprint de valores, evitando invalidar resposta apenas por reconstrução de Map. Contagem da mensagem otimizada ainda se refere ao plano da busca, enquanto painel conserva cenário anterior; não declarar essa divergência resolvida.
 - 607 testes completos passaram após integração; 363 testes web repetidos após revisão do fingerprint. Check completo e build de desenvolvimento passam conforme logs desta execução. A disponibilidade de cotações externas continua fora desta correção.
+
+## 36. Zoom pela roda e detalhes explícitos dos nodes (12/10/2026)
+
+- A pedido do usuário, roda volta a ampliar/reduzir o canvas sem Ctrl/Command, preservando scroll em controles internos. Ajuda e teste atualizados.
+- Ícone/nome do node seleciona/expande sem abrir detalhes. Botão único de informação SVG abre o painel. Painel reduzido de 980 para 780px, altura máxima 680px e backdrop transparente fecha ao clicar fora.
+- Playwright confirmou clique comum sem painel, abertura via ícone com largura 780px e fechamento ao clicar fora. Próximo agente: preservar esta nova decisão de zoom (substitui orientação antiga de Ctrl+roda).

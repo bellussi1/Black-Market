@@ -27,3 +27,5 @@ Desktop da oficina: produto/configurações e resultado ficam em dois boxes lado
 Ações clicáveis habilitadas usam cursor pointer. Otimizar lucro/hora precisa de aparência explícita de botão (fundo carvão, borda dourada), inclusive sobre cabeçalho bronze.
 
 Busca de otimização de receita longa deve rodar em Web Worker, com cancelamento e status. Não executar solver exato em computed da thread principal. Manter o cenário anterior visível durante cálculo e invalidar respostas quando entradas mudarem.
+
+Atualização 12/10/2026: usuário pediu novamente zoom pela roda sem modificador dentro do canvas. Ícone/nome do node não abre detalhes; usar botão único de informação. Painel de detalhes fecha com clique fora e tem largura desktop máxima 780px.
