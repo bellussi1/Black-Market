@@ -80,7 +80,7 @@ export const routes: Routes = [
         data: { private: true },
 
         loadComponent: () =>
-          import('./features/scans/scans-page').then((module) => module.ScansPage),
+          import('./features/scans/automatic-scan-page').then((module) => module.AutomaticScanPage),
       },
 
       {

@@ -206,7 +206,7 @@ export class ProfileScreenImportComponent implements OnDestroy {
     return this.characters().find((character) => character.id === this.targetId()) ?? null;
   }
 
-  async chooseFile(event: Event): Promise<void> {
+  async chooseFile(event: Event, recognizedLines?: OcrTextLine[]): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -234,21 +234,23 @@ export class ProfileScreenImportComponent implements OnDestroy {
       this.imageName.set(file.name);
       this.imageSize.set({ width: bitmap.width, height: bitmap.height });
       this.message.set('Imagem pronta. Leia a tela para revisar os campos encontrados.');
-      await this.readImage(generation);
+      await this.readImage(generation, recognizedLines);
     } catch {
       if (generation === this.generation) this.message.set('Não foi possível abrir esta imagem.');
     }
   }
 
-  private async readImage(generation: number): Promise<void> {
+  private async readImage(generation: number, recognizedLines?: OcrTextLine[]): Promise<void> {
     if (!this.bitmap) return;
     this.reading.set(true);
     this.progress.set(0);
     this.message.set('Lendo texto localmente…');
     try {
-      const lines = await this.reader.read(this.bitmap, (value) => {
-        if (generation === this.generation) this.progress.set(value);
-      });
+      const lines =
+        recognizedLines ??
+        (await this.reader.read(this.bitmap, (value) => {
+          if (generation === this.generation) this.progress.set(value);
+        }));
       if (generation !== this.generation) return;
       this.lines.set(lines);
       const panes = detectScreenPanes(lines, this.imageSize().width, this.imageSize().height);
