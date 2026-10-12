@@ -1195,10 +1195,10 @@ export class ScansPage implements OnDestroy {
                 qty = '';
                 uncertain = true;
               } else if (draft.item && hasNoText) {
-                // In BDO, inventory/storage slots with an item and no number text overlay represent 1 unit.
+                // Missing OCR text is not proof that the visible stack contains one unit.
                 qty = '1';
-                uncertain = false;
-                confidence = 85;
+                uncertain = true;
+                confidence = 0;
               }
 
               return {

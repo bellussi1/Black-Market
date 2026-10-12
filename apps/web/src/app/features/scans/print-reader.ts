@@ -515,6 +515,24 @@ export class NumberReader {
       const fallback = mapQuantityLines(lines, pendingCrops.length, stride);
       for (const [i, original] of unresolved.entries())
         local[original] = reconcileQuantity(local[original], fallback[i]);
+      // Sparse-text segmentation can miss isolated short stacks in contact sheets.
+      // Retry only unread crops as single lines, reusing the same local worker.
+      await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_LINE });
+      const retryStartedAt = performance.now();
+      for (const original of unresolved) {
+        if (performance.now() - retryStartedAt > 8000) break;
+        if (epoch !== this.epoch) throw new Error('Leitura cancelada.');
+        if (local[original]?.value && local[original]!.confidence >= 85) continue;
+        const single = await this.cancellable(
+          worker.recognize(cropCanvas(image, crops[original], 4), {}, { text: true }),
+        );
+        const parsed = parseVisibleQuantity(single.data.text.trim());
+        if (parsed)
+          local[original] = reconcileQuantity(local[original], {
+            ...parsed,
+            confidence: single.data.confidence,
+          });
+      }
       return local as QuantityReading[];
     } catch {
       if (epoch !== this.epoch) throw new Error('Leitura cancelada.');
