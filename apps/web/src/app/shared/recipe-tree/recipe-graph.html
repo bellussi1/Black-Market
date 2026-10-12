@@ -191,6 +191,9 @@
             </select>
           </label>
         }
+        @if (entry.node.message) {
+          <span class="node-message" role="status">{{ entry.node.message }}</span>
+        }
         <button
           type="button"
           class="expand-node"
@@ -209,9 +212,6 @@
                   : '+ Explorar produção'
           }}
         </button>
-        @if (entry.node.message) {
-          <span class="node-message" role="status">{{ entry.node.message }}</span>
-        }
       </article>
     }
     @for (entry of layout().sources; track entry.path) {
