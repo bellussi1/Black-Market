@@ -1,5 +1,5 @@
 /** Playwright harness for the development app. Labels never enter the browser reader. */
-export async function benchmarkScanPage(page, imagePath) {
+export async function benchmarkScanPage(page, imagePath, scanRegion = null) {
   await page.goto('http://localhost:4200/scans');
   await page.locator('input[type=file]').first().setInputFiles(imagePath);
   await page.locator('app-scans-page').waitFor({ timeout: 90000 });
@@ -8,10 +8,17 @@ export async function benchmarkScanPage(page, imagePath) {
     undefined,
     { timeout: 90000 },
   );
-  return page.evaluate(async () => {
+  return page.evaluate(async (region) => {
     const component = globalThis.ng.getComponent(document.querySelector('app-scans-page'));
     const started = performance.now();
     while (component.locked()) await new Promise((resolve) => setTimeout(resolve, 20));
+    if (region) {
+      component.bounds = { ...region.bounds };
+      component.columns = region.columns;
+      component.rows = region.rows;
+      component.mode = region.mode;
+      component.invalidateCrop();
+    }
     if (!component.cells().length) await component.read();
     const durationMs = component.activeJob()?.elapsedMs || performance.now() - started;
     const cells = component.cells().map((cell) => ({
@@ -26,9 +33,9 @@ export async function benchmarkScanPage(page, imagePath) {
     }));
     const crops = cells.map(({ rect }) => ({
       left: rect.left + rect.width * 0.03,
-      top: rect.top + rect.height * 0.57,
+      top: rect.top + rect.height * (component.mode === 'inventory' ? 0.45 : 0.57),
       width: rect.width * 0.94,
-      height: rect.height * 0.37,
+      height: rect.height * (component.mode === 'inventory' ? 0.5 : 0.37),
     }));
     const glyphStarted = performance.now();
     const glyphs = crops.map((crop) => {
@@ -81,5 +88,5 @@ export async function benchmarkScanPage(page, imagePath) {
         },
       },
     };
-  });
+  }, scanRegion);
 }

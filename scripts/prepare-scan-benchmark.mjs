@@ -14,6 +14,6 @@ const output = `tmp/ocr-dataset/${sampleId}-browser.js`;
 await mkdir('tmp/ocr-dataset', { recursive: true });
 await writeFile(
   output,
-  `async (page) => { const benchmark = ${benchmarkScanPage.toString()}; return benchmark(page, ${JSON.stringify(sample.imagePath)}); }\n`,
+  `async (page) => { const benchmark = ${benchmarkScanPage.toString()}; return benchmark(page, ${JSON.stringify(sample.imagePath)}, ${JSON.stringify(sample.scanRegion ?? null)}); }\n`,
 );
 process.stdout.write(output + '\n');

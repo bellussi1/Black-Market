@@ -78,7 +78,8 @@ export function scoreScanOutput(sample, output) {
     sampleId: sample.id,
     expectedOccupiedSlots: expected.length,
     matchedSlots: matched.size,
-    falsePositiveSlots,
+    falsePositiveSlots: sample.quantityLabelsOnly ? null : falsePositiveSlots,
+    unscoredSlots: sample.quantityLabelsOnly ? falsePositiveSlots : 0,
     itemTop1: {
       labeled: expectedItems,
       exact: itemsExact,

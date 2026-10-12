@@ -7,6 +7,21 @@ import { validateRealSamples } from './real-ocr-corpus.mjs';
 // Manually transcribed visible labels from user-provided captures. Never use model predictions as truth.
 const definitions = [
   {
+    id: 'inventory-20261010',
+    captureId: 'capture-3b5639390052',
+    grid: [1289, 236, 37.5, 37.5, 30],
+    columns: 8,
+    quantityLabelsOnly: true,
+    scanRegion: {
+      bounds: { left: 1286, top: 233, width: 300, height: 112.5 },
+      columns: 8,
+      rows: 3,
+      mode: 'inventory',
+    },
+    quantities: ['? 19 55 3 293 29 ? 8', '? ? ? 77 19 ? ? ?', '? 39 24 114 49'],
+    items: {},
+  },
+  {
     id: 'velia-20261008',
     captureId: 'capture-ffdcee2fbd24',
     grid: [0, 0, 56.5, 56.4, 56],
@@ -76,21 +91,29 @@ export async function buildRealSlotCorpus(
       throw new Error('Capture hash mismatch');
     const [left, top, pitchX, pitchY, size] = definition.grid;
     const slots = definition.quantities.flatMap((row, y) =>
-      row.split(' ').map((displayedText, x) => ({
-        bounds: {
-          left: Math.round(left + x * pitchX),
-          top: Math.round(top + y * pitchY),
-          width: size,
-          height: size,
-        },
-        displayedText,
-        normalizedValue: visibleValue(displayedText),
-        approximate: /[kKmM]/.test(displayedText),
-        // An icon alone cannot prove which catalog alias the player owns.
-        itemId: null,
-        iconReferenceId: definition.items[y * 9 + x] ?? null,
-        itemStatus: definition.items[y * 9 + x] ? 'icon-family-reference' : 'unlabeled',
-      })),
+      row.split(' ').flatMap((displayedText, x) =>
+        displayedText === '?'
+          ? []
+          : [
+              {
+                bounds: {
+                  left: Math.round(left + x * pitchX),
+                  top: Math.round(top + y * pitchY),
+                  width: size,
+                  height: size,
+                },
+                displayedText,
+                normalizedValue: visibleValue(displayedText),
+                approximate: /[kKmM]/.test(displayedText),
+                // An icon alone cannot prove which catalog alias the player owns.
+                itemId: null,
+                iconReferenceId: definition.items[y * (definition.columns ?? 9) + x] ?? null,
+                itemStatus: definition.items[y * (definition.columns ?? 9) + x]
+                  ? 'icon-family-reference'
+                  : 'unlabeled',
+              },
+            ],
+      ),
     );
     samples.push({
       id: definition.id,
@@ -103,6 +126,8 @@ export async function buildRealSlotCorpus(
       width: capture.width,
       height: capture.height,
       slots,
+      quantityLabelsOnly: definition.quantityLabelsOnly ?? false,
+      ...(definition.scanRegion ? { scanRegion: definition.scanRegion } : {}),
     });
   }
   const result = {

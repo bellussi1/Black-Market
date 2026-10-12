@@ -59,3 +59,23 @@ test('reports a wrong automatically accepted pair and does not divide by zero', 
     null,
   );
 });
+
+test('does not count unlabeled inventory slots as false detections', () => {
+  const bounds = { left: 0, top: 0, width: 40, height: 40 };
+  const result = scoreScanOutput(
+    {
+      id: 'partial',
+      quantityLabelsOnly: true,
+      slots: [{ bounds, itemId: null, normalizedValue: '19' }],
+    },
+    {
+      cells: [
+        { rect: bounds, text: '19', quantity: '', uncertain: true },
+        { rect: { ...bounds, left: 80 }, text: '', quantity: '', uncertain: true },
+      ],
+    },
+  );
+  assert.equal(result.matchedSlots, 1);
+  assert.equal(result.falsePositiveSlots, null);
+  assert.equal(result.unscoredSlots, 1);
+});
