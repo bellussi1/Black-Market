@@ -98,7 +98,7 @@ describe('recipe production planner adapter', () => {
     expect(result.candidates).toEqual([{ recipeId: 'root', crafts: 4, optimizeCrafts: 4 }]);
     expect(result.maxOptimizationStates).toBe(250_000);
     expect(result.estimates).toMatchObject({
-      root: { expectedYield: 2.5, craftSeconds: 12, source: 'calibrated' },
+      root: { expectedYield: 2.829, craftSeconds: 12, source: 'calibrated' },
       producer: { expectedYield: 1, craftSeconds: 8, source: 'calibrated' },
     });
     expect(result.quotes[100]).toMatchObject({ unitPrice: '100', source: 'market' });
@@ -226,7 +226,7 @@ describe('recipe production planner adapter', () => {
       now,
     );
 
-    expect(result.estimates['root']).toMatchObject({ expectedYield: 2.5, source: 'informed' });
+    expect(result.estimates['root']).toMatchObject({ expectedYield: 2.767, source: 'informed' });
   });
 
   it('maps an explicit gathering estimate and leaves unknown inputs absent', () => {

@@ -1,6 +1,7 @@
 import type { CatalogRecipe } from '@bdo/shared';
 
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import { standardProductYield } from './recipe-mastery';
 
 /**
  * Maps a catalog recipe type to the corresponding life skill key.
@@ -24,7 +25,7 @@ export function lifeSkillForRecipe(recipeType: string): string | null {
  * 1. Fixed recipes (Draughts, Harmony, Edania) use their verified game yields.
  * 2. Explicit output quantity in the catalog is preserved.
  * 3. Cooking and Alchemy recipes default to standard 2.50 units average,
- *    scaled up by user mastery level (up to ~3.00 at 2000 mastery).
+ *    adjusted by the maximum-product proc chance of the mastery bracket.
  * 4. Processing recipes default to 2.50 units.
  * 5. Other recipes default to 1.0 unit.
  */
@@ -49,9 +50,7 @@ export function resolveDefaultYield(
 
   // 3. Cooking & Alchemy average yields
   if (recipe.type === 'COOKING' || recipe.type === 'ALCHEMY') {
-    const validMastery = Number.isFinite(mastery) && mastery > 0 ? Math.min(mastery, 2000) : 0;
-    const masteryBonus = validMastery * 0.00025; // 0 at 0, +0.25 at 1000, +0.50 at 2000
-    return Number((2.5 + masteryBonus).toFixed(2));
+    return standardProductYield(recipe.type === 'COOKING' ? 'cooking' : 'alchemy', mastery);
   }
 
   // 4. Processing averages

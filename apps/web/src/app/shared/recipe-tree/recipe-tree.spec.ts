@@ -1064,7 +1064,7 @@ describe('Interactive recipe tree', () => {
       ),
       tree = fixture.componentInstance;
     expect(tree.root()?.yield).toBeNull();
-    expect(tree.effectiveYield()).toBe(2.5);
+    expect(tree.effectiveYield()).toBeCloseTo(2.829);
     expect(tree.plan()?.value).not.toBeNull();
     tree.recipeGraph.set({
       rootRecipe: recipe,
@@ -1264,7 +1264,7 @@ describe('Interactive recipe tree', () => {
       tree = fixture.componentInstance;
 
     expect(tree.root()?.yield).toBeNull();
-    expect(tree.effectiveYield()).toBe(2.5);
+    expect(tree.effectiveYield()).toBeCloseTo(2.829);
     expect(tree.plan()?.value).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
   });

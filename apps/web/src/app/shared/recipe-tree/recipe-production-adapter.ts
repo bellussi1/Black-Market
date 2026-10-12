@@ -96,8 +96,14 @@ export function buildRecipeProductionInput(
       options.masteryOverride !== null &&
       options.masteryOverride !== undefined
     )
-      return Math.max(0, Math.min(5000, Math.floor(options.masteryOverride)));
-    return activeCharacter?.mastery[skill as keyof typeof activeCharacter.mastery] ?? 0;
+      return Math.max(0, Math.min(3000, Math.floor(options.masteryOverride)));
+    return Math.max(
+      0,
+      Math.min(
+        3000,
+        activeCharacter?.mastery[skill as keyof typeof activeCharacter.mastery] ?? 1000,
+      ),
+    );
   };
 
   const allRecipes = [graph.rootRecipe, ...graph.producerRecipes];

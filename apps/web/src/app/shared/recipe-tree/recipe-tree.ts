@@ -200,9 +200,11 @@ export class RecipeTree {
     const skill = this.masterySkill();
     if (!skill) return 0;
     const activeChar = this.store.activeCharacter();
-    if (!activeChar) return 0;
+    if (!activeChar) return 1000;
     const val = activeChar?.mastery?.[skill as (typeof lifeSkills)[number]];
-    return typeof val === 'number' && Number.isFinite(val) ? val : 0;
+    return typeof val === 'number' && Number.isFinite(val)
+      ? Math.max(0, Math.min(3000, val))
+      : 1000;
   });
 
   readonly canAdjustRootYield = computed(() => {
@@ -548,7 +550,7 @@ export class RecipeTree {
       return;
     }
     const parsed = Number(value);
-    if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 5000) return;
+    if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 3000) return;
     this.masteryInput.set(parsed);
     this.masteryChanges$.next(parsed);
   }
@@ -1341,7 +1343,13 @@ export class RecipeTree {
       fixedRecipeYield(recipe, node.part.itemId) === null &&
       !(Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) > 0);
     const profileMastery = skill
-      ? (this.store.activeCharacter()?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 0)
+      ? Math.max(
+          0,
+          Math.min(
+            3000,
+            this.store.activeCharacter()?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 1000,
+          ),
+        )
       : 0;
     const mastery =
       skill && variableYield && skill === rootSkill

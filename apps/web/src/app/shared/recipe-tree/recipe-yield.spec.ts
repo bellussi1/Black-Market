@@ -48,8 +48,16 @@ describe('Recipe default yield resolution', () => {
       outputs: [{ itemId: 9001, name: 'Cerveja', quantity: null }],
     };
     expect(resolveDefaultYield(cookingRecipe, 9001, 0)).toBe(2.5);
-    expect(resolveDefaultYield(cookingRecipe, 9001, 1000)).toBe(2.75);
-    expect(resolveDefaultYield(cookingRecipe, 9001, 2000)).toBe(3.0);
+    expect(resolveDefaultYield(cookingRecipe, 9001, 1000)).toBeCloseTo(2.767);
+    expect(resolveDefaultYield(cookingRecipe, 9001, 2000)).toBeCloseTo(3.417);
+    expect(resolveDefaultYield(cookingRecipe, 9001, 3000)).toBeCloseTo(3.647);
+    expect(resolveDefaultYield(cookingRecipe, 9001, 1049)).toBeCloseTo(2.767);
+    expect(resolveDefaultYield({ ...cookingRecipe, type: 'ALCHEMY' }, 9001, 1000)).toBeCloseTo(
+      2.829,
+    );
+    expect(resolveDefaultYield({ ...cookingRecipe, type: 'ALCHEMY' }, 9001, 3000)).toBeCloseTo(
+      3.438,
+    );
   });
 
   it('defaults processing to 2.5 and generic crafting to 1.0', () => {
