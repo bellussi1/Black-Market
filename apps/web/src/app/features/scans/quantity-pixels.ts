@@ -1,4 +1,5 @@
 import { quantityGlyphs } from './quantity-glyphs';
+import { realQuantityGlyphs } from './quantity-real-glyphs';
 
 interface Mask {
   width: number;
@@ -30,7 +31,7 @@ function trim(mask: Mask): Mask | null {
     ),
   };
 }
-const templates = quantityGlyphs.map(({ character, rows }) => ({
+const templates = [...quantityGlyphs, ...realQuantityGlyphs].map(({ character, rows }) => ({
   character,
   mask: trim({
     width: rows[0].length,
@@ -111,7 +112,11 @@ export function readQuantityPixels(
             min = Math.min(min, y);
             max = Math.max(max, y);
           }
-      return max - min + 1 >= height * 0.35;
+      const glyphHeight = max - min + 1;
+      return (
+        glyphHeight >= height * 0.35 ||
+        (glyphHeight <= 3 && run.right - run.left <= 2 && max >= bottom - 2)
+      );
     });
     const last = letterRuns.at(-1);
     if (!last || last.right < width * 0.72) continue;
@@ -133,6 +138,10 @@ export function readQuantityPixels(
           (_, i) => pixels[(top + Math.floor(i / w)) * width + run.left + (i % w)],
         ),
       });
+      if (mask && mask.height <= 3 && mask.width <= 3) {
+        text += mask.height > mask.width + 1 ? ',' : '.';
+        continue;
+      }
       if (!mask || mask.height < height * 0.35) {
         text = '';
         break;
@@ -142,8 +151,14 @@ export function readQuantityPixels(
         text = '';
         break;
       }
-      const ranked = templates
-        .map((t) => ({ character: t.character, score: similarity(mask, t.mask) }))
+      const byCharacter = new Map<string, number>();
+      for (const t of templates)
+        byCharacter.set(
+          t.character,
+          Math.max(byCharacter.get(t.character) ?? -Infinity, similarity(mask, t.mask)),
+        );
+      const ranked = [...byCharacter]
+        .map(([character, score]) => ({ character, score }))
         .sort((a, b) => b.score - a.score);
       if (ranked[0].score < 0.74 || ranked[0].score - ranked[1].score < 0.05) {
         text = '';
