@@ -19,6 +19,7 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - Posições, seleção, expansão e viewport são estados separados. Expandir não significa recentralizar.
 - Mercado: ler primeiro a resposta da mesma chave de consulta; exibir cache vencido com idade enquanto revalida e mantê-lo em caso de erro. Não apresentar cache de outro filtro como resultado atual. Busca textual usa debounce de 250 ms.
 - Crafting orientado à venda: separar estoque do produto da receita de venda. Rendimento estimado é aplicado sem confirmação; ajustes permanecem opcionais. Uma combinação incompleta nunca recebe lucro/hora definitivo.
+- Na comparação de cenários, preservar lucro total e lucro/hora como métricas distintas. A prévia do otimizador mantém o cenário atual até aplicar; cotação, quantidade ou política alteradas invalidam a proposta. Pré-ordem não inclui espera no tempo de produção, e produzir esgotados não garante disponibilidade do lote inteiro.
 
 ## Referências por tarefa
 
