@@ -19,14 +19,15 @@ export async function benchmarkScanPage(page, imagePath) {
       item: cell.item?.id ?? null,
       quantity: cell.quantity,
       uncertain: cell.quantityUncertain,
+      confidence: cell.quantityConfidence ?? 0,
       itemUncertain: cell.itemUncertain,
       text: cell.quantityText,
       options: cell.options.map((item) => item.id),
     }));
     const crops = cells.map(({ rect }) => ({
-      left: rect.left,
+      left: rect.left + rect.width * 0.03,
       top: rect.top + rect.height * 0.57,
-      width: rect.width,
+      width: rect.width * 0.94,
       height: rect.height * 0.37,
     }));
     const glyphStarted = performance.now();
