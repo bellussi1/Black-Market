@@ -15,6 +15,7 @@ export interface ProductionEstimate {
   craftSeconds?: number;
   source: 'informed' | 'calibrated' | 'fixed';
   contextHash?: string;
+  origin?: 'user-confirmed';
 }
 export type ProductionChoice = 'buy' | 'produce' | 'gather' | 'stock';
 export type ProductionScenario = 'buy-all' | 'produce-all' | 'custom' | 'optimized';
@@ -33,6 +34,7 @@ export interface ProductionPlannerInput {
       available: number | null;
       observedAt: string;
       source: 'market' | 'npc' | 'manual';
+      sourceUrl?: string;
     }
   >;
   inventory: { itemId: number; quantity: number; reserved?: number }[];
@@ -184,7 +186,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       if (
         !issues.some(
           (row) =>
-            row.code === code && row.itemId === details.itemId && row.recipeId === details.recipeId,
+            row.code === code &&
+            row.itemId === details.itemId &&
+            (details.itemId !== undefined || row.recipeId === details.recipeId),
         )
       )
         issues.push({ code, message, ...details });

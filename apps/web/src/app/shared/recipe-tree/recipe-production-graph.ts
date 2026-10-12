@@ -123,9 +123,11 @@ export function resolveRecipeProductionGraph(
 
       const cycles = new Set<number>();
       const completed = new Set<number>();
-      const visit = (itemId: number, active: Set<number>) => {
+      const excludedRecipes = new Set<string>();
+      const visit = (itemId: number, active: Set<number>, parent?: CatalogRecipe) => {
         if (active.has(itemId)) {
           cycles.add(itemId);
+          if (parent && parent.key !== root.key) excludedRecipes.add(parent.key);
           return;
         }
         if (completed.has(itemId)) return;
@@ -133,7 +135,7 @@ export function resolveRecipeProductionGraph(
         if (!producer) return;
 
         active.add(itemId);
-        for (const input of producer.inputs) visit(input.itemId, active);
+        for (const input of producer.inputs) visit(input.itemId, active, producer);
         active.delete(itemId);
         completed.add(itemId);
       };
@@ -155,7 +157,9 @@ export function resolveRecipeProductionGraph(
 
       const producerRecipes = [
         ...new Map(
-          [...state.recipesByItemId.values()].map((recipe) => [recipe.key, recipe]),
+          [...state.recipesByItemId.values()]
+            .filter((recipe) => !excludedRecipes.has(recipe.key))
+            .map((recipe) => [recipe.key, recipe]),
         ).values(),
       ].sort(compareRecipeKeys);
 

@@ -656,7 +656,7 @@ describe('Interactive recipe tree', () => {
     expect(sourceCheckbox.checked).toBe(false);
     sourceCheckbox.click();
     fixture.detectChanges();
-    expect(tree.materialSource(9001)).toBe('gather');
+    expect(tree.materialSource(9001)).toBe('buy');
     fixture.destroy();
   });
 
@@ -1291,13 +1291,13 @@ describe('Interactive recipe tree', () => {
     const buyProfit = tree.profit();
     expect(buyProfit).not.toBeNull();
 
-    // Without a profile, an explicit gather scenario uses editable informed defaults.
+    // Base materials remain purchases until gathering is explicitly calibrated.
     tree.setAcquisitionStrategy('gather_all');
     fixture.detectChanges();
-    expect(tree.materialSource(9001)).toBe('gather');
-    expect(tree.effectiveMaterialCost()).toBe('0');
-    expect(tree.profit()).toBe(tree.netRevenue());
+    expect(tree.materialSource(9001)).toBe('buy');
+    expect(tree.effectiveMaterialCost()).toBe(baseCost);
     tree.setGatherEstimate(9001, 200, 10);
+    tree.setAcquisitionStrategy('gather_all');
     fixture.detectChanges();
     expect(tree.effectiveMaterialCost()).toBe('0');
     expect(tree.profit()).toBe(tree.netRevenue());

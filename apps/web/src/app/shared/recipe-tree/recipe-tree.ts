@@ -400,7 +400,13 @@ export class RecipeTree {
       recipe.outputs.some((output) => output.itemId === itemId),
     );
     if (producer) return 'produce';
-    return 'gather';
+    const estimate = this.gatherEstimates().get(itemId);
+    return estimate?.origin === 'user-confirmed' &&
+      estimate.source === 'calibrated' &&
+      (estimate.expectedYield ?? 0) > 0 &&
+      (estimate.craftSeconds ?? 0) > 0
+      ? 'gather'
+      : 'buy';
   }
 
   productionMaterialName(itemId: number): string {
@@ -458,7 +464,9 @@ export class RecipeTree {
     };
     worker.postMessage({
       ...input,
-      gatheringEstimates: Object.fromEntries(this.gatherEstimates()),
+      gatheringEstimates: Object.fromEntries(
+        [...this.gatherEstimates()].filter(([itemId]) => this.makeChoice(itemId) === 'gather'),
+      ),
       candidates: input.candidates.map((candidate) => ({
         ...candidate,
         optimizeCrafts: candidate.crafts,
@@ -574,7 +582,12 @@ export class RecipeTree {
       Number.isFinite(craftSeconds) &&
       craftSeconds > 0
     )
-      estimates.set(itemId, { expectedYield, craftSeconds, source: 'calibrated' });
+      estimates.set(itemId, {
+        expectedYield,
+        craftSeconds,
+        source: 'calibrated',
+        origin: 'user-confirmed',
+      });
     else return;
     this.gatherEstimates.set(estimates);
     this.gatherEstimateDrafts.update((drafts) => {
@@ -757,6 +770,23 @@ export class RecipeTree {
   readonly bestProductionPlan = computed(
     () => this.productionResult()?.ranked.find((plan) => plan.scenario === 'optimized') ?? null,
   );
+  readonly productionIssueGroups = computed(() => {
+    const groups = new Map<string, { key: string; name: string; messages: string[] }>();
+    for (const issue of this.currentProductionPlan()?.issues ?? []) {
+      const key =
+        issue.itemId !== undefined
+          ? `item:${issue.itemId}`
+          : `recipe:${issue.recipeId ?? issue.code}`;
+      const group = groups.get(key) ?? {
+        key,
+        name: issue.itemId !== undefined ? this.productionMaterialName(issue.itemId) : 'Produção',
+        messages: [],
+      };
+      if (!group.messages.includes(issue.message)) group.messages.push(issue.message);
+      groups.set(key, group);
+    }
+    return [...groups.values()];
+  });
   readonly bestCombinationSummary = computed(() => {
     const choices = this.bestProductionPlan()?.sourceChoices;
     if (!choices) return null;

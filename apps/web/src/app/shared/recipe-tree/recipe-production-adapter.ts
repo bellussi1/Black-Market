@@ -7,6 +7,7 @@ import {
 import type { Workspace } from '@bdo/calculators/workspace';
 import type { CatalogRecipe, CatalogRecipePart, MarketItemQuote } from '@bdo/shared';
 
+import { npcPurchasePrices } from './npc-purchase-prices';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { stockLocationKey } from './recipe-tree-model';
@@ -168,21 +169,26 @@ export function buildRecipeProductionInput(
   const character = activeCharacter;
   const quoteObservedAt = new Map(options.quoteObservedAt ?? []);
   const mappedQuotes = quoteRecord(quotes, quoteObservedAt);
-  const gatheringEstimates = Object.fromEntries(gatherEstimates);
-  if (!activeCharacter && options.useGatheringDefaults) {
-    const producedIds = new Set(plannerRecipes.map((recipe) => recipe.output.itemId));
-    for (const recipe of plannerRecipes) {
-      for (const ingredient of recipe.ingredients) {
-        if (!producedIds.has(ingredient.itemId) && !gatheringEstimates[ingredient.itemId]) {
-          gatheringEstimates[ingredient.itemId] = {
-            expectedYield: 1,
-            craftSeconds: 4,
-            source: 'informed',
-          };
-        }
-      }
-    }
+  for (const itemId of graph.itemIds) {
+    const npc = npcPurchasePrices.get(itemId);
+    if (!npc) continue;
+    mappedQuotes[itemId] = {
+      unitPrice: npc.unitPrice,
+      available: null,
+      observedAt: npc.verifiedAt,
+      source: 'npc',
+      sourceUrl: npc.sourceUrl,
+    };
   }
+  const gatheringEstimates = Object.fromEntries(
+    [...gatherEstimates].filter(
+      ([, estimate]) =>
+        estimate.origin === 'user-confirmed' &&
+        estimate.source === 'calibrated' &&
+        (estimate.expectedYield ?? 0) > 0 &&
+        (estimate.craftSeconds ?? 0) > 0,
+    ),
+  );
   const customChoices = Object.fromEntries(sourceOverrides);
 
   return {

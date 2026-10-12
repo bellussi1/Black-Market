@@ -128,8 +128,8 @@
           <summary>Configurações de produção</summary>
           @if (!store.data().characters.length) {
             <p class="help">
-              Sem personagem: a simulação de coleta usa 1 unidade em 4 segundos. Ajuste abaixo; essa
-              hipótese não comprova que o material seja coletável.
+              Insumos sem receita são comprados por padrão. Coleta exige rendimento e tempo
+              calibrados abaixo.
             </p>
           }
           @if (canAdjustRootYield()) {
@@ -342,12 +342,15 @@
           @if (currentProductionPlan()?.issues?.length) {
             <details class="production-issues-notice">
               <summary>
-                Resultado incompleto · {{ currentProductionPlan()!.issues.length }} dados a
-                confirmar
+                Resultado incompleto · {{ productionIssueGroups().length }} itens ou etapas a
+                conferir
               </summary>
               <ul class="production-issues">
-                @for (issue of currentProductionPlan()!.issues; track $index) {
-                  <li>{{ issue.message }}</li>
+                @for (group of productionIssueGroups(); track group.key) {
+                  <li>
+                    <strong>{{ group.name }}</strong
+                    >: {{ group.messages.join(' ') }}
+                  </li>
                 }
               </ul>
             </details>

@@ -50,6 +50,21 @@ function quote(itemId: number, price = '100'): MarketItemQuote {
 }
 
 describe('recipe production planner adapter', () => {
+  it('uses the sourced NPC purchase price for Ibellab instead of requiring market stock', () => {
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),
+      1,
+      emptyWorkspace(),
+      new Map(),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+    );
+    expect(result.quotes[4986]).toMatchObject({ unitPrice: '10000', source: 'npc' });
+    expect(result.quotes[4986].sourceUrl).toContain('pearlabyss.com');
+    expect(result.gatheringEstimates).toEqual({});
+  });
   it('maps the selected root and reachable producers with explicit method times', () => {
     const root = recipe('root', 100, [{ itemId: 2, quantity: '3' }], null);
     const producer = recipe('producer', 2, [{ itemId: 3, quantity: '2' }], '1', 'PROCESSING');
@@ -215,7 +230,12 @@ describe('recipe production planner adapter', () => {
   });
 
   it('maps an explicit gathering estimate and leaves unknown inputs absent', () => {
-    const estimate = { expectedYield: 4, craftSeconds: 20, source: 'calibrated' as const };
+    const estimate = {
+      expectedYield: 4,
+      craftSeconds: 20,
+      source: 'calibrated' as const,
+      origin: 'user-confirmed' as const,
+    };
     const result = buildRecipeProductionInput(
       graph(recipe('root', 100, [{ itemId: 2, quantity: '1' }], null)),
       1,

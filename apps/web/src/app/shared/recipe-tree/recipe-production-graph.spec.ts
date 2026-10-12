@@ -114,6 +114,7 @@ describe('resolveRecipeProductionGraph', () => {
         { itemId: 100, code: 'cycle' },
         { itemId: 999, code: 'missing-producer' },
       ],
+      producerRecipes: [],
     });
   });
 
