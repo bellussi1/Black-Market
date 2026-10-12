@@ -579,3 +579,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Aviso explícito de OCR em calibração e revisão obrigatória. Guia de correção corresponde aos controles reais: destino/personagem, item/opções/busca por nome, quantidade, revisão dos campos de perfil, Incluir item e resumo antes de confirmar. Durante revisão, explicação fica recolhida e acessível no mesmo contexto.
 - Playwright e screenshots desktop/mobile conferidos em output/playwright/scan-guide-desktop.png e scan-guide-mobile.png. Conteúdo desktop de 880px; mobile 390px com scrollWidth 390, três passos e tipos PNG/JPEG/WebP preservados. Próximo agente: preservar detecção automática e instruções de revisão; não afirmar reconhecimento confiável sem avaliação independente.
 - pnpm check e pnpm test passaram (611 testes). Esta alteração é de interface e instruções; não comprova aumento da acurácia do OCR.
+
+## 45. Inspeção de cálculo BDO Workshop em 1408 (12/10/2026)
+
+- Navegador do app usado para Buy all, Craft all, Best profit/hour, Manage crafts, maestria e tempo. Evidências completas em docs/research/bdo-workshop-plan-1408-observations.md; EU, 1000 operações de fórmula x10, sem estoque. Não usar cotações como SA.
+- Otimizador abre prévia com política de item esgotado e exige Apply to plan; não era botão inoperante. Permitindo pré-ordem coincide com Buy all; exigindo produção retorna cadeia mista com taxa maior apesar de lucro total menor que Craft all. Soma das operações e tempos conferida.
+- Maestria 1000 gera aproximadamente 14143 reagentes por 5000 operações, compatível com modelo de proc padrão. Dobrar segundos de alquimia preserva lucro e reduz taxa; tempo de alquimia simples permanece separado. Não foi inspecionado código interno nem comprovado ótimo global do site.
+- Apenas documentação alterada, sem executar testes de código nesta inspeção. Próximo agente: usar os exemplos verificados para normalizar lote, produto, NPC, subprodutos, políticas de aquisição e todos os tempos; manter ressalvas sobre pré-ordens e fontes regionais.
