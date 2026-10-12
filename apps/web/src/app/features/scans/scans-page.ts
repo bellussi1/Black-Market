@@ -1106,7 +1106,7 @@ export class ScansPage implements OnDestroy {
             sourceRect: { ...cell },
             preview: canvas.toDataURL(),
             options,
-            item: uniqueSuggestion ? (items.get(best.id) ?? null) : (options[0] ?? null),
+            item: uniqueSuggestion ? (items.get(best.id) ?? null) : null,
             itemUncertain: !uniqueSuggestion,
             quantity: '',
             quantityText: '',
@@ -1179,7 +1179,7 @@ export class ScansPage implements OnDestroy {
             drafts.map((draft, i) => {
               const reading = quantities[i];
               const hasExactReading = Boolean(
-                reading?.value && !reading.approximate && reading.confidence >= 50,
+                reading?.value && !reading.approximate && reading.confidence >= 85,
               );
               const isApproximate = Boolean(reading?.approximate);
               const hasNoText = !reading?.text || reading.text.trim() === '';

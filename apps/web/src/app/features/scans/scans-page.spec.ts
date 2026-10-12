@@ -567,7 +567,7 @@ describe('Screenshot entry', () => {
     expect(page.cells()).toHaveLength(2);
     expect(page.cells()[0].options.map((item) => item.id)).toEqual([6201, 6202]);
     expect(page.cells()[0]).toMatchObject({
-      item: items[1],
+      item: null,
       itemUncertain: true,
       quantity: '',
       quantityEstimate: '264800',
