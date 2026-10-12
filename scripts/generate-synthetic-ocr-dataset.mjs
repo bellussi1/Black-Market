@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { measuredQuantityLabel } from './measured-quantity-label.mjs';
 
 const requireApi = createRequire(new URL('../apps/api/package.json', import.meta.url));
 const sharp = requireApi('sharp');
@@ -31,6 +32,7 @@ function usage() {
     '  --seed <n>           Deterministic seed (default: 4102026)',
     '  --split <name>        calibration or evaluation (default: calibration)',
     '  --catalog <path>      Published catalog directory containing asset_redirects.json',
+    '  --quantity-profile <path> Measured calibration glyphs (optional)',
     '  --output <path>       Output directory (default: tmp/ocr-dataset/synthetic)',
     '  --overwrite           Replace files from a marked synthetic dataset only',
     '  --help                Show this help',
@@ -52,6 +54,7 @@ export function parseGeneratorArgs(argv) {
     ['--split', 'split'],
     ['--catalog', 'catalogDir'],
     ['--output', 'outputDir'],
+    ['--quantity-profile', 'quantityProfilePath'],
   ]);
 
   for (let index = 0; index < argv.length; index++) {
@@ -70,8 +73,8 @@ export function parseGeneratorArgs(argv) {
       options[key] = Number(value);
     } else if (key === 'split') {
       options.split = value;
-    } else if (key === 'catalogDir') {
-      options.catalogDir = path.resolve(value);
+    } else if (key === 'catalogDir' || key === 'quantityProfilePath') {
+      options[key] = path.resolve(value);
     } else {
       options.outputDir = path.resolve(value);
     }
@@ -323,11 +326,24 @@ function makeBackgroundSvg({ width, height, panelType, grid, slots, noiseLevel, 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><linearGradient id="bg" x2="0" y2="1"><stop stop-color="#282723"/><stop offset="1" stop-color="#121210"/></linearGradient><linearGradient id="panel" x2="0" y2="1"><stop stop-color="#4a453b"/><stop offset="1" stop-color="#282724"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#bg)"/>${speckles.join('')}<rect x="${panelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="5" fill="url(#panel)" stroke="#9b8357" stroke-width="3"/><rect x="${panelX + 3}" y="${panelY + 3}" width="${panelWidth - 6}" height="42" fill="#766142"/><path d="M${panelX + 3} ${panelY + 45}H${panelX + panelWidth - 3}" stroke="#c6aa71" stroke-width="1"/><text x="${panelX + 22}" y="${panelY + 31}" fill="#e3d8c0" font-family="Arial,sans-serif" font-size="${Math.max(18, Math.round(pitch * 0.3))}" font-weight="bold">${escapeXml(title)}</text>${slotFrames}</svg>`;
 }
 
-function makeLabelsSvg({ width, height, slots }) {
+function makeLabelsSvg({ width, height, slots, quantityProfile }) {
   const labels = slots
     .filter((slot) => slot.labelKind)
     .map((slot) => {
       const { fontSize, right, baseline, labelBounds } = slot.textLayout;
+      if (quantityProfile && slot.labelKind === 'quantity') {
+        const label = measuredQuantityLabel(
+          slot.displayedText,
+          quantityProfile.glyphs,
+          slot.textLayout,
+          slot.labelStrokeWidth,
+        );
+        if (label) {
+          slot.labelBounds = label.bounds;
+          slot.labelRenderer = 'measured-calibration-glyphs';
+          return label.svg;
+        }
+      }
       return `<text x="${right}" y="${baseline}" text-anchor="end" fill="#f3eee3" stroke="#050505" stroke-width="${slot.labelStrokeWidth}" stroke-linejoin="round" paint-order="stroke fill" font-family="Arial,sans-serif" font-size="${fontSize}" font-weight="bold">${escapeXml(slot.displayedText)}</text>`;
     })
     .join('');
@@ -376,6 +392,7 @@ export async function buildSyntheticSample({
   noiseLevel,
   jpegQuality,
   catalog,
+  quantityProfile,
 }) {
   if (
     !sampleId ||
@@ -426,7 +443,7 @@ export async function buildSyntheticSample({
   }
   const base = await sharp(Buffer.from(baseSvg)).composite(icons).png().toBuffer();
   const image = await sharp(base)
-    .composite([{ input: makeLabelsSvg({ width, height, slots }) }])
+    .composite([{ input: makeLabelsSvg({ width, height, slots, quantityProfile }) }])
     .jpeg({ quality: jpegQuality, chromaSubsampling: '4:4:4', mozjpeg: true })
     .toBuffer();
   const hash = createHash('sha256').update(image).digest('hex');
@@ -512,6 +529,7 @@ export async function generateSyntheticDataset({
   outputDir = defaultOutputDir,
   catalogDir,
   overwrite = false,
+  quantityProfilePath,
 }) {
   if (!Number.isSafeInteger(count) || count < 1 || count > 10_000)
     throw new Error('Count must be an integer between 1 and 10000.');
@@ -520,6 +538,17 @@ export async function generateSyntheticDataset({
   if (!['calibration', 'evaluation'].includes(split))
     throw new Error('Split must be calibration or evaluation.');
   const catalog = await readPublishedIconCatalog(catalogDir);
+  const quantityProfile = quantityProfilePath
+    ? JSON.parse(await readFile(quantityProfilePath, 'utf8'))
+    : undefined;
+  if (
+    quantityProfile &&
+    (quantityProfile.schemaVersion !== 1 ||
+      !quantityProfile.glyphs?.length ||
+      !quantityProfile.sources?.length ||
+      quantityProfile.sources.some((source) => source.split !== 'calibration'))
+  )
+    throw new Error('Quantity profile must originate only from calibration sessions');
   const absoluteOutput = await prepareOutputDirectory(outputDir, overwrite);
   const imageDirectory = path.join(absoluteOutput, 'images');
   await mkdir(imageDirectory, { recursive: true });
@@ -539,6 +568,7 @@ export async function generateSyntheticDataset({
       noiseLevel,
       jpegQuality,
       catalog,
+      quantityProfile,
     });
     result.sample.split = split;
     await writeFile(path.join(absoluteOutput, result.sample.path), result.image);
@@ -552,6 +582,7 @@ export async function generateSyntheticDataset({
     seed,
     split,
     count,
+    quantityProfileSources: quantityProfile?.sources ?? [],
     samples,
   };
   const manifestPath = path.join(absoluteOutput, 'ground-truth.json');

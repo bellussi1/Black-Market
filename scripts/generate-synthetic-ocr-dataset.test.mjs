@@ -19,6 +19,17 @@ const requireApi = createRequire(new URL('../apps/api/package.json', import.meta
 const sharp = requireApi('sharp');
 const temporaryDirectories = [];
 
+test('accepts a measured profile without changing the output directory', () => {
+  const parsed = parseGeneratorArgs([
+    '--quantity-profile',
+    'tmp/profile.json',
+    '--output',
+    'tmp/samples',
+  ]);
+  assert.equal(parsed.quantityProfilePath, path.resolve('tmp/profile.json'));
+  assert.equal(parsed.outputDir, path.resolve('tmp/samples'));
+});
+
 async function makeCatalog(redirects = { 'urn::item:100': 'icons/100.webp' }) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'bdo-ocr-catalog-'));
   temporaryDirectories.push(directory);
