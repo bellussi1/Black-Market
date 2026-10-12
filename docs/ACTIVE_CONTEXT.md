@@ -492,3 +492,26 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Próximo agente: preservar esta composição em dois boxes solicitada explicitamente, sem retornar a barras de largura inteira no desktop.
 - Validação móvel: 390px sem overflow horizontal; boxes com x=18 e largura=354, empilhados. Botão de otimização verificado como BUTTON, cursor pointer, borda 1px e fundo carvão com texto dourado. Cursor pointer compartilhado para links, botões, summaries, selects, tabs e controles de escolha habilitados. Estilo de botão outline aplicado à otimização para distingui-la do fundo bronze.
 - Após ajustes de cursor/botão, `pnpm test` passou novamente (607 testes). Check completo desta etapa registrado no resultado final.
+
+## 33. QA de receitas longas no navegador (12/10/2026)
+
+- Testadas 1408, 1407 e 1409 com 10 operações e maestria 3000 usando controles reais. Evidência em tmp/large-recipes-results.log; versão inclui alterações locais preexistentes não commitadas.
+- 1408 e 1407 inconclusivas por dados da cadeia; otimização levou 12,6s e 14,3s respectivamente. 1407 exibiu contagem divergente: 4 pendências no resultado versus 2 na mensagem da busca.
+- 1409 retornou prejuízo otimizado de 4.075.279 e -30.795.559/h, contra prejuízo de 5.735.000 na compra. Conferência aritmética: 9.087.000 - 13.162.279 = -4.075.279. Não comprova tabela de proc/tempos. Cenários devem ser relidos após estabilização reativa antes de comparar produzir/comprar.
+- Próximo agente: investigar bloqueio síncrono da busca longa, reconciliar contagem de pendências e aguardar cache/cenário estabilizar em QA. Não afirmar melhor lucro real para 1407/1408 sem completar dados. Alterações existentes foram preservadas.
+
+## 34. Investigação de busca longa (12/10/2026)
+
+- Compra sem cotação não pode produzir plano econômico conclusivo: busca agora elimina essa alternativa antes de enumerar combinações, mantendo caminhos produtores/coleta modelados. 54 testes do calculador passaram após a poda.
+- Limite de tempo ativo do perfil também não deve invalidar simulação econômica; permanece obrigatório no planejador de execução por padrão. Oficina informa duração calculada.
+- Reprodução 1408 com maestria 3000 e 10 operações: clique excedeu 30s. Resultado de compra posteriormente estabilizou com receita líquida 1.794.000.000 e custo 2.525.000.000, prejuízo 731.000.000; mensagem da busca permanece inconclusiva. Não há certificação de ótimo, nem validação da tabela de maestria.
+- Próximo agente: separar solver da thread principal via Worker, manter status/cancelamento/versionamento e reconciliar mensagens ao retornar ao cenário anterior. Completar diagnóstico de cada issue do plano otimizado antes de alterar gates. Não esconder preços/tempos desconhecidos nem declarar solução parcial ótima. Alterações locais preexistentes preservadas.
+
+## 35. Otimização em Web Worker (12/10/2026)
+
+- Busca exata removida do computed síncrono da interface. Novo production-planner.worker.ts executa planProduction; componente mantém cenário atual enquanto processa, mostra status e cancelar, aplica apenas resposta do worker vigente.
+- Alterações de quantidade, maestria, grafo, cotações, tempos, coleta, estoque ou perfil invalidam snapshot e terminam worker. Troca de cenário/checkbox também cancela. Destroy termina worker. Sem fallback síncrono em navegador sem Worker.
+- Playwright em 1408/1407/1409 com maestria 3000: clique em 37/51/45ms; próximo frame em 3,5/6/1,1ms. Cancelamento confirmado nas três. Não confundir responsividade com redução do tempo total ou validação de proc/preços.
+- Cotações que mudam durante a busca cancelam o cálculo, conforme snapshot. Dados ausentes e limite de busca continuam explícitos. Próximo agente: otimizar solver e resolver cobertura real de dados sem retornar à thread principal.
+- Validação adicional: Worker concluiu 1409 e devolveu plano inconclusivo por cotações ausentes, sem travar UI. Cache/contexto usa fingerprint de valores, evitando invalidar resposta apenas por reconstrução de Map. Contagem da mensagem otimizada ainda se refere ao plano da busca, enquanto painel conserva cenário anterior; não declarar essa divergência resolvida.
+- 607 testes completos passaram após integração; 363 testes web repetidos após revisão do fingerprint. Check completo e build de desenvolvimento passam conforme logs desta execução. A disponibilidade de cotações externas continua fora desta correção.

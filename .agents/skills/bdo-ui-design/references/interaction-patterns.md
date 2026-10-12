@@ -25,3 +25,5 @@ Oficina compacta: ajuste fino de rendimento e hipóteses sem perfil ficam nas co
 Desktop da oficina: produto/configurações e resultado ficam em dois boxes lado a lado; a árvore ocupa a largura abaixo. Empilhar os boxes apenas em telas estreitas. O resumo do Mercado mantém sua composição própria.
 
 Ações clicáveis habilitadas usam cursor pointer. Otimizar lucro/hora precisa de aparência explícita de botão (fundo carvão, borda dourada), inclusive sobre cabeçalho bronze.
+
+Busca de otimização de receita longa deve rodar em Web Worker, com cancelamento e status. Não executar solver exato em computed da thread principal. Manter o cenário anterior visível durante cálculo e invalidar respostas quando entradas mudarem.
