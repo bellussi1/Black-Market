@@ -274,6 +274,7 @@ export class RecipeGraph {
     );
   }
   private wheel = (event: WheelEvent) => {
+    if (!event.ctrlKey && !event.metaKey) return;
     if ((event.target as HTMLElement).closest('input,select,textarea,[data-scrollable]')) return;
     event.preventDefault();
     this.initialFitPending = false;
