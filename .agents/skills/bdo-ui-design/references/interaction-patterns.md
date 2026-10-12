@@ -17,3 +17,5 @@ No Mercado, alinhar ícone e nome à esquerda. A linha inteira é um botão nati
 Se a quantidade de um insumo ativo não existe no catálogo, mantenha sua linha visível com “Quantidade pendente”; nunca mostre zero como se fosse medido. Habilite maestria somente se alterar de fato um rendimento de fórmula ativa no cálculo. Ao consultar preços em lotes, preserve os lotes concluídos mesmo quando outro falhar.
 
 Categorias do Mercado devem quebrar nomes longos e crescer em altura, sem rolagem horizontal. Ordenação explícita da lista fica nos cabeçalhos da tabela; não duplicar com um seletor “Ordenar por” na toolbar.
+
+Roda normal sobre a árvore rola a página; Ctrl/Command + roda controla zoom. Importação de perfil deve permitir criar um destino sem sair da revisão e selecionar explicitamente os campos válidos, sem aceitar ambiguidades automaticamente. Hipóteses iniciais de coleta são estimativas informadas/editáveis; não provam origem coletável e não devem virar plano otimizado conclusivo sem validação da origem e do rendimento.
