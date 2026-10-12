@@ -207,6 +207,9 @@ svg.source-symbol {
   overflow-wrap: anywhere;
 }
 .node-details {
+  position: absolute;
+  top: 6px;
+  right: 6px;
   margin: auto 12px 6px;
   text-align: left;
   min-height: 32px;
@@ -293,10 +296,14 @@ button:focus-visible {
   justify-content: center;
   width: 28px;
   height: 28px;
-  margin: 4px 8px;
+  margin: 0;
   padding: 0;
   border: 1px solid var(--bm-border);
   background: var(--bm-input);
   color: var(--bm-accent);
   cursor: pointer;
+}
+
+.graph-node .node-select {
+  padding-right: 40px;
 }
