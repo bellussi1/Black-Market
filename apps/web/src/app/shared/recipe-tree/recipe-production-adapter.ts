@@ -17,6 +17,7 @@ export interface RecipeProductionAdapterOptions {
   masteryOverride?: number | null;
   masterySkill?: string | null;
   useGatheringDefaults?: boolean;
+  optimize?: boolean;
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
 }
@@ -190,7 +191,11 @@ export function buildRecipeProductionInput(
     inventory: [...inventory].map(([itemId, quantity]) => ({ itemId, quantity, reserved: 0 })),
     estimates,
     candidates: [
-      { recipeId: graph.rootRecipe.key, crafts: operations, optimizeCrafts: operations },
+      {
+        recipeId: graph.rootRecipe.key,
+        crafts: operations,
+        ...(options.optimize !== false ? { optimizeCrafts: operations } : {}),
+      },
     ],
     // The selected Edania graph needs more than the planner's conservative 100k default.
     // Keep the planner's 1M hard cap; it reports an inconclusive result if exceeded.

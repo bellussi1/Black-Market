@@ -270,6 +270,7 @@ export class RecipeTree {
       this.optimizeAcquisition();
       return;
     }
+    this.cancelOptimization();
     const sources = new Map<number, ProductionChoice>();
     const ids = this.materialItemIds();
     for (const itemId of ids)
@@ -280,6 +281,7 @@ export class RecipeTree {
   }
 
   toggleMaterialSource(itemId: number) {
+    this.cancelOptimization();
     const effectiveCurrent = this.materialSource(itemId);
     const nextChoice = effectiveCurrent === 'buy' ? this.makeChoice(itemId) : 'buy';
     const updated = new Map(this.customMaterialSource());
@@ -427,21 +429,79 @@ export class RecipeTree {
 
   optimizeAcquisition(): void {
     this.applyDefaultMethodTimes();
-    const previousStrategy = this.acquisitionStrategy();
-    // Evaluate optimization without hypothetical gathering defaults.
-    this.acquisitionStrategy.set('optimized');
-    const result = this.productionResult();
+    this.cancelOptimization();
+    const input = this.productionInput();
+    if (!input) return;
+    this.optimizationSnapshot = this.optimizationContext();
+    if (typeof Worker === 'undefined') {
+      this.optimizationMessage.set('A otimização requer um navegador com suporte a Web Worker.');
+      return;
+    }
+    const worker = new Worker(new URL('./production-planner.worker', import.meta.url), {
+      type: 'module',
+    });
+    this.optimizationWorker = worker;
+    this.optimizing.set(true);
+    this.optimizationMessage.set('Calculando a melhor combinação…');
+    worker.onmessage = ({ data }) => {
+      if (this.optimizationWorker !== worker) return;
+      this.cancelOptimization();
+      if (!data.result) {
+        this.optimizationMessage.set(data.error ?? 'Falha na otimização.');
+        return;
+      }
+      this.applyOptimizationResult(data.result);
+    };
+    worker.onerror = () => {
+      this.cancelOptimization();
+      this.optimizationMessage.set('Falha na otimização. Tente novamente.');
+    };
+    worker.postMessage({
+      ...input,
+      gatheringEstimates: Object.fromEntries(this.gatherEstimates()),
+      candidates: input.candidates.map((candidate) => ({
+        ...candidate,
+        optimizeCrafts: candidate.crafts,
+      })),
+    });
+  }
+
+  readonly optimizing = signal(false);
+  private optimizationWorker: Worker | null = null;
+  private optimizationSnapshot: string | null = null;
+  private readonly optimizationContext = computed(() =>
+    JSON.stringify([
+      this.masteryOverride(),
+      this.craftCount(),
+      this.recipeGraph(),
+      [...this.marketQuotes()],
+      [...this.effectiveMethodTimes()],
+      [...this.gatherEstimates()],
+      this.excludedLocations(),
+      this.store.data(),
+    ]),
+  );
+  private readonly optimizedResult = signal<ReturnType<typeof planProduction> | null>(null);
+
+  cancelOptimization(announce = false): void {
+    this.optimizationWorker?.terminate();
+    this.optimizationWorker = null;
+    this.optimizing.set(false);
+    if (announce) this.optimizationMessage.set('Cálculo cancelado.');
+  }
+
+  private applyOptimizationResult(result: ReturnType<typeof planProduction>): void {
     const best = result?.ranked.find((plan) => plan.scenario === 'optimized');
     if (best && !best.issues.length && best.sourceChoices) {
       const sources = new Map<number, ProductionChoice>();
       for (const itemId of this.materialItemIds())
         sources.set(itemId, best.sourceChoices[itemId] ?? 'buy');
       this.customMaterialSource.set(sources);
+      this.optimizedResult.set(result);
       this.acquisitionStrategy.set('optimized');
       this.optimizationMessage.set('Melhor combinação por lucro aplicada com sucesso.');
       return;
     }
-    this.acquisitionStrategy.set(previousStrategy);
     this.optimizationMessage.set(
       `Não há combinação conclusiva: ${result?.incomplete.find((plan) => plan.scenario === 'optimized')?.issues.length ?? 1} dados da cadeia precisam ser confirmados.`,
     );
@@ -645,34 +705,39 @@ export class RecipeTree {
   readonly requestedOperations = computed(() =>
     Math.max(1, Math.min(1_000_000, Math.floor(this.craftCount() || 1))),
   );
-  readonly productionResult = computed(() => {
+  readonly productionInput = computed(() => {
     const graph = this.recipeGraph();
     if (!graph) return null;
     const root = this.root();
     const yieldOverrides = new Map<number, number>();
     if (root?.yield !== null && root?.yield !== undefined && root.yield > 0)
       yieldOverrides.set(root.part.itemId, root.yield);
-    return planProduction(
-      buildRecipeProductionInput(
-        graph,
-        this.requestedOperations(),
-        this.store.data(),
-        this.marketQuotes(),
-        this.effectiveMethodTimes(),
-        this.gatherEstimates(),
-        this.customMaterialSource(),
-        new Date(),
-        {
-          quoteObservedAt: this.quoteObservedAt(),
-          masteryOverride: this.masteryOverride(),
-          masterySkill: this.masterySkill(),
-          useGatheringDefaults:
-            this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
-          yieldOverrides,
-          excludedLocations: this.excludedLocations(),
-        },
-      ),
+    return buildRecipeProductionInput(
+      graph,
+      this.requestedOperations(),
+      this.store.data(),
+      this.marketQuotes(),
+      this.effectiveMethodTimes(),
+      this.gatherEstimates(),
+      this.customMaterialSource(),
+      new Date(),
+      {
+        quoteObservedAt: this.quoteObservedAt(),
+        masteryOverride: this.masteryOverride(),
+        masterySkill: this.masterySkill(),
+        optimize: false,
+        useGatheringDefaults:
+          this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
+        yieldOverrides,
+        excludedLocations: this.excludedLocations(),
+      },
     );
+  });
+  readonly productionResult = computed(() => {
+    if (this.acquisitionStrategy() === 'optimized' && this.optimizedResult())
+      return this.optimizedResult();
+    const input = this.productionInput();
+    return input ? planProduction(input) : null;
   });
   readonly currentProductionPlan = computed<ProductionPlan | null>(() => {
     const result = this.productionResult();
@@ -1059,7 +1124,18 @@ export class RecipeTree {
   }
 
   constructor() {
+    effect(() => {
+      const context = this.optimizationContext();
+      if (!this.optimizationSnapshot || context === this.optimizationSnapshot) return;
+      untracked(() => {
+        this.cancelOptimization();
+        this.optimizedResult.set(null);
+        this.optimizationMessage.set('');
+        if (this.acquisitionStrategy() === 'optimized') this.acquisitionStrategy.set('custom');
+      });
+    });
     this.destroyRef.onDestroy(() => {
+      this.cancelOptimization();
       this.stopExpansion();
       this.stopRecipeQuoteRefresh();
     });

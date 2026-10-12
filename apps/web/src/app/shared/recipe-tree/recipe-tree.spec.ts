@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { characterSchema } from '@bdo/calculators';
+import { characterSchema, planProduction, type ProductionPlannerInput } from '@bdo/calculators';
 import type {
   CatalogItemDetail,
   CatalogRecipe,
@@ -7,7 +7,7 @@ import type {
   MarketItemQuote,
 } from '@bdo/shared';
 import { of, Subject } from 'rxjs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { type CachedQuoteEntry, MarketCacheService } from '../../core/market-cache.service';
@@ -16,6 +16,19 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { RecipeTree } from './recipe-tree';
+beforeEach(() => {
+  vi.stubGlobal(
+    'Worker',
+    class {
+      onmessage?: (event: { data: { result: ReturnType<typeof planProduction> } }) => void;
+      terminate() {}
+      postMessage(input: ProductionPlannerInput) {
+        this.onmessage?.({ data: { result: planProduction(input) } });
+      }
+    },
+  );
+});
+afterEach(() => vi.unstubAllGlobals());
 const item = {
   id: 5301,
   name: 'Reagente Líquido Limpo',
@@ -578,6 +591,12 @@ describe('Interactive recipe tree', () => {
     tree.setMethodTime('ALCHEMY', 10);
     tree.setMethodTime('PROCESSING', 0.5);
 
+    expect(tree.productionResult()?.ranked.some((plan) => plan.scenario === 'optimized')).toBe(
+      false,
+    );
+    expect(tree.productionResult()?.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(
+      false,
+    );
     tree.optimizeAcquisition();
 
     expect(tree.currentProductionPlan()?.scenario).toBe('optimized');

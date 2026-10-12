@@ -272,11 +272,17 @@
               type="button"
               variant="outline"
               class="optimize-action"
+              [disabled]="optimizing()"
               [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
               (click)="optimizeAcquisition()"
             >
               Otimizar lucro por hora
             </button>
+            @if (optimizing()) {
+              <button hlmBtn variant="outline" type="button" (click)="cancelOptimization(true)">
+                Cancelar cálculo
+              </button>
+            }
           </div>
         </div>
 
