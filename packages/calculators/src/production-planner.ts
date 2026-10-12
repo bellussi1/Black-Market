@@ -513,7 +513,11 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       cash > BigInt(input.profile.budget)
     )
       issue('budget', 'A prata disponível não cobre as compras do lote.');
-    if (timesKnown && unscaled(totalMilliseconds * 1000n) > input.profile.activeMinutes * 60)
+    if (
+      input.enforcePurchaseLimits !== false &&
+      timesKnown &&
+      unscaled(totalMilliseconds * 1000n) > input.profile.activeMinutes * 60
+    )
       issue('time', 'A cadeia excede o tempo ativo disponível.');
 
     let peakWeight: number | null = null;
@@ -762,9 +766,24 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           visitedStates++;
           const nextItemId = nextOptimizationDecision(candidate.recipeId, choices);
           if (nextItemId !== null) {
-            const options: ProductionChoice[] = ['buy'];
+            // A purchase without a price can never yield a complete economic plan.
+            // Exclude that branch before enumerating its downstream combinations.
+            const purchaseQuote = input.quotes[nextItemId];
+            const options: ProductionChoice[] =
+              purchaseQuote && money(purchaseQuote.unitPrice) && purchaseQuote.unitPrice !== '0'
+                ? ['buy']
+                : [];
             if (producers.has(nextItemId)) options.push('produce');
             if (input.gatheringEstimates?.[nextItemId]) options.push('gather');
+            if (!options.length) {
+              const blocked = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized', {
+                ...choiceRecord,
+                [nextItemId]: 'buy',
+              });
+              if (bestPending === null || blocked.issues.length < bestPending.issues.length)
+                bestPending = blocked;
+              continue;
+            }
             for (const option of options.reverse()) {
               const nextChoices = new Map(choices);
               nextChoices.set(nextItemId, option);
