@@ -274,6 +274,7 @@ export class RecipeTree {
     }
     this.cancelOptimization();
     const sources = new Map<number, ProductionChoice>();
+    this.optimizationPreview.set(null);
     const ids = this.materialItemIds();
     for (const itemId of ids)
       sources.set(itemId, strategy === 'buy_all' ? 'buy' : this.makeChoice(itemId));
@@ -284,6 +285,7 @@ export class RecipeTree {
 
   toggleMaterialSource(itemId: number) {
     this.cancelOptimization();
+    this.optimizationPreview.set(null);
     const effectiveCurrent = this.materialSource(itemId);
     const nextChoice = effectiveCurrent === 'buy' ? this.makeChoice(itemId) : 'buy';
     const updated = new Map(this.customMaterialSource());
@@ -294,6 +296,8 @@ export class RecipeTree {
   }
 
   setMaterialSource(itemId: number, choice: ProductionChoice): void {
+    this.cancelOptimization();
+    this.optimizationPreview.set(null);
     const updated = new Map(this.customMaterialSource());
     updated.set(itemId, choice);
     this.customMaterialSource.set(updated);
@@ -422,6 +426,15 @@ export class RecipeTree {
     return `Item ${itemId}`;
   }
 
+  productionStepName(recipeId: string): string {
+    const graph = this.recipeGraph();
+    return (
+      [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])].find(
+        (recipe) => recipe?.key === recipeId,
+      )?.outputs[0]?.name ?? recipeId
+    );
+  }
+
   materialSourceLabel(itemId: number): string {
     const choice = this.materialSource(itemId);
     return choice === 'buy' ? 'Comprar' : choice === 'gather' ? 'Coletar' : 'Fazer';
@@ -436,6 +449,7 @@ export class RecipeTree {
   }
 
   optimizeAcquisition(): void {
+    this.optimizationPreview.set(null);
     this.applyDefaultMethodTimes();
     this.cancelOptimization();
     const input = this.productionInput();
@@ -458,9 +472,14 @@ export class RecipeTree {
         this.optimizationMessage.set(data.error ?? 'Falha na otimização.');
         return;
       }
-      this.applyOptimizationResult(data.result);
+      const best = data.result.ranked.find((plan: ProductionPlan) => plan.scenario === 'optimized');
+      if (best && !best.issues.length && best.sourceChoices) {
+        this.optimizationPreview.set(data.result);
+        this.optimizationMessage.set('Combinação calculada. Confira a prévia antes de aplicar.');
+      } else this.applyOptimizationResult(data.result);
     };
     worker.onerror = () => {
+      if (this.optimizationWorker !== worker) return;
       this.cancelOptimization();
       this.optimizationMessage.set('Falha na otimização. Tente novamente.');
     };
@@ -477,11 +496,29 @@ export class RecipeTree {
   }
 
   readonly optimizing = signal(false);
+  readonly marketAcquisition = signal<'preorder' | 'produce-sold-out'>('preorder');
+  readonly optimizationPreview = signal<ReturnType<typeof planProduction> | null>(null);
+  readonly previewPlan = computed(
+    () => this.optimizationPreview()?.ranked.find((plan) => plan.scenario === 'optimized') ?? null,
+  );
+
+  applyOptimizationPreview(): void {
+    const result = this.optimizationPreview();
+    if (!result || this.optimizationSnapshot !== this.optimizationContext()) return;
+    this.applyOptimizationResult(result);
+    this.optimizationPreview.set(null);
+  }
+
+  discardOptimizationPreview(): void {
+    this.optimizationPreview.set(null);
+    this.optimizationMessage.set('');
+  }
   private optimizationWorker: Worker | null = null;
   private optimizationSnapshot: string | null = null;
   private readonly optimizationContext = computed(() =>
     JSON.stringify([
       this.masteryOverride(),
+      this.marketAcquisition(),
       this.craftCount(),
       this.recipeGraph(),
       [...this.marketQuotes()],
@@ -745,6 +782,7 @@ export class RecipeTree {
           this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
         yieldOverrides,
         excludedLocations: this.excludedLocations(),
+        marketAcquisition: this.marketAcquisition(),
       },
     );
   });
@@ -1004,6 +1042,10 @@ export class RecipeTree {
 
   readonly formattedCraftTime = computed(() => {
     const seconds = this.totalCraftTimeSeconds();
+    return this.productionTimeLabel(seconds);
+  });
+
+  productionTimeLabel(seconds: number | null): string {
     if (seconds === null || !Number.isFinite(seconds) || seconds <= 0) return '—';
     if (seconds < 60) return `${seconds.toFixed(1)}s`;
     const mins = Math.floor(seconds / 60);
@@ -1014,7 +1056,7 @@ export class RecipeTree {
     const hours = Math.floor(seconds / 3600);
     const remainingMins = Math.floor((seconds % 3600) / 60);
     return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
-  });
+  }
 
   readonly profitPerHour = computed(() => {
     const plan = this.currentProductionPlan();
@@ -1162,6 +1204,7 @@ export class RecipeTree {
       untracked(() => {
         this.cancelOptimization();
         this.optimizedResult.set(null);
+        this.optimizationPreview.set(null);
         this.optimizationMessage.set('');
         if (this.acquisitionStrategy() === 'optimized') this.acquisitionStrategy.set('custom');
       });

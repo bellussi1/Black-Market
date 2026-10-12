@@ -1813,6 +1813,64 @@
   max-width: none;
 }
 
+.economic-dashboard .production-policy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bm-border);
+  font-size: 13px;
+  text-align: left;
+}
+
+.production-policy select {
+  min-height: 34px;
+  max-width: 100%;
+  padding: 4px 8px;
+  color: var(--bm-text);
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  cursor: pointer;
+}
+
+.production-policy small {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.optimization-preview {
+  margin: 12px;
+  border: 1px solid var(--bm-accent);
+}
+
+.preview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.preview-decisions {
+  padding: 10px 14px;
+  border-top: 1px solid var(--bm-border);
+  font-size: 13px;
+}
+
+.preview-decisions summary {
+  cursor: pointer;
+}
+
+.preview-decisions ul {
+  margin: 8px 0;
+  padding-left: 16px;
+  line-height: 1.6;
+}
+
 .economic-dashboard .metric-card {
   min-height: 68px;
   padding: 8px 14px;

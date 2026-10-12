@@ -21,6 +21,7 @@ export interface RecipeProductionAdapterOptions {
   optimize?: boolean;
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
+  marketAcquisition?: ProductionPlannerInput['marketAcquisition'];
 }
 
 function positiveNumber(value: string | number | null | undefined): number | undefined {
@@ -226,5 +227,6 @@ export function buildRecipeProductionInput(
     customChoices,
     useOwnedInProduction: true,
     enforcePurchaseLimits: false,
+    marketAcquisition: options.marketAcquisition ?? 'preorder',
   };
 }

@@ -599,6 +599,9 @@ describe('Interactive recipe tree', () => {
     );
     tree.optimizeAcquisition();
 
+    expect(tree.currentProductionPlan()?.scenario).not.toBe('optimized');
+    expect(tree.previewPlan()?.sourceChoices).toEqual({ 8001: 'buy', 9001: 'produce' });
+    tree.applyOptimizationPreview();
     expect(tree.currentProductionPlan()?.scenario).toBe('optimized');
     expect(tree.currentProductionPlan()?.sourceChoices).toEqual({ 8001: 'buy', 9001: 'produce' });
     expect(tree.materialSource(9001)).toBe('produce');
