@@ -15,6 +15,8 @@ import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 export interface RecipeProductionAdapterOptions {
   quoteObservedAt?: ReadonlyMap<number, string>;
   masteryOverride?: number | null;
+  masterySkill?: string | null;
+  useGatheringDefaults?: boolean;
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
 }
@@ -88,7 +90,7 @@ export function buildRecipeProductionInput(
     const skill = lifeSkillForRecipe(recipe.type);
     if (!skill) return 0;
     if (
-      skill === rootSkill &&
+      skill === (options.masterySkill ?? rootSkill) &&
       options.masteryOverride !== null &&
       options.masteryOverride !== undefined
     )
@@ -166,6 +168,20 @@ export function buildRecipeProductionInput(
   const quoteObservedAt = new Map(options.quoteObservedAt ?? []);
   const mappedQuotes = quoteRecord(quotes, quoteObservedAt);
   const gatheringEstimates = Object.fromEntries(gatherEstimates);
+  if (!activeCharacter && options.useGatheringDefaults) {
+    const producedIds = new Set(plannerRecipes.map((recipe) => recipe.output.itemId));
+    for (const recipe of plannerRecipes) {
+      for (const ingredient of recipe.ingredients) {
+        if (!producedIds.has(ingredient.itemId) && !gatheringEstimates[ingredient.itemId]) {
+          gatheringEstimates[ingredient.itemId] = {
+            expectedYield: 1,
+            craftSeconds: 4,
+            source: 'informed',
+          };
+        }
+      }
+    }
+  }
   const customChoices = Object.fromEntries(sourceOverrides);
 
   return {

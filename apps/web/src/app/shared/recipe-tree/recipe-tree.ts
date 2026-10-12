@@ -197,7 +197,7 @@ export class RecipeTree {
   readonly userMasteryForCurrentRecipe = computed(() => {
     const root = this.root();
     if (!root?.recipe) return 0;
-    const skill = lifeSkillForRecipe(root.recipe.type);
+    const skill = this.masterySkill();
     if (!skill) return 0;
     const activeChar = this.store.activeCharacter();
     if (!activeChar) return 0;
@@ -427,6 +427,9 @@ export class RecipeTree {
 
   optimizeAcquisition(): void {
     this.applyDefaultMethodTimes();
+    const previousStrategy = this.acquisitionStrategy();
+    // Evaluate optimization without hypothetical gathering defaults.
+    this.acquisitionStrategy.set('optimized');
     const result = this.productionResult();
     const best = result?.ranked.find((plan) => plan.scenario === 'optimized');
     if (best && !best.issues.length && best.sourceChoices) {
@@ -438,6 +441,7 @@ export class RecipeTree {
       this.optimizationMessage.set('Melhor combinação por lucro aplicada com sucesso.');
       return;
     }
+    this.acquisitionStrategy.set(previousStrategy);
     this.optimizationMessage.set(
       `Não há combinação conclusiva: ${result?.incomplete.find((plan) => plan.scenario === 'optimized')?.issues.length ?? 1} dados da cadeia precisam ser confirmados.`,
     );
@@ -661,6 +665,9 @@ export class RecipeTree {
         {
           quoteObservedAt: this.quoteObservedAt(),
           masteryOverride: this.masteryOverride(),
+          masterySkill: this.masterySkill(),
+          useGatheringDefaults:
+            this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
           yieldOverrides,
           excludedLocations: this.excludedLocations(),
         },
@@ -809,15 +816,26 @@ export class RecipeTree {
   });
 
   readonly primaryMethod = computed(() => this.root()?.recipe?.type ?? '');
+  readonly masterySkill = computed(() => {
+    const rootRecipe = this.root()?.recipe;
+    const rootSkill = rootRecipe ? lifeSkillForRecipe(rootRecipe.type) : null;
+    if (rootSkill) return rootSkill;
+    return (
+      this.recipeGraph()
+        ?.producerRecipes.map((recipe) => lifeSkillForRecipe(recipe.type))
+        .find((skill) => skill === 'alchemy' || skill === 'cooking') ?? null
+    );
+  });
   readonly masteryApplies = computed(() => {
     const graph = this.recipeGraph();
     const root = this.root();
-    const rootSkill = root?.recipe ? lifeSkillForRecipe(root.recipe.type) : null;
+    const rootSkill = this.masterySkill();
     if ((rootSkill !== 'cooking' && rootSkill !== 'alchemy') || !root?.recipe) return false;
     const activeRecipes = new Set(this.currentProductionPlan()?.steps.map((step) => step.recipeId));
     const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
     return recipes.some((recipe) => {
-      if (graph && !activeRecipes.has(recipe.key)) return false;
+      if (graph && lifeSkillForRecipe(root.recipe!.type) && !activeRecipes.has(recipe.key))
+        return false;
       if (lifeSkillForRecipe(recipe.type) !== rootSkill) return false;
       const output = recipe.outputs[0];
       if (!output || fixedRecipeYield(recipe, output.itemId) !== null) return false;
@@ -829,7 +847,7 @@ export class RecipeTree {
   readonly primarySkillLabel = computed(() => {
     const root = this.root();
     if (!root?.recipe) return 'Profissão';
-    const skill = lifeSkillForRecipe(root.recipe.type);
+    const skill = this.masterySkill();
     if (skill === 'cooking') return 'Culinária';
     if (skill === 'alchemy') return 'Alquimia';
     if (skill === 'processing') return 'Processamento';
@@ -1211,8 +1229,7 @@ export class RecipeTree {
   private withEstimatedYields(node: RecipeNode): RecipeNode {
     const recipe = node.recipe;
     const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
-    const rootRecipe = this.root()?.recipe;
-    const rootSkill = rootRecipe ? lifeSkillForRecipe(rootRecipe.type) : null;
+    const rootSkill = this.masterySkill();
     const variableYield =
       recipe !== null &&
       fixedRecipeYield(recipe, node.part.itemId) === null &&

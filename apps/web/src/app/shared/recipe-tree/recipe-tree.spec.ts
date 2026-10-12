@@ -1272,12 +1272,12 @@ describe('Interactive recipe tree', () => {
     const buyProfit = tree.profit();
     expect(buyProfit).not.toBeNull();
 
-    // A gather choice needs an explicit yield and time before it can be ranked.
+    // Without a profile, an explicit gather scenario uses editable informed defaults.
     tree.setAcquisitionStrategy('gather_all');
     fixture.detectChanges();
     expect(tree.materialSource(9001)).toBe('gather');
-    expect(tree.effectiveMaterialCost()).toBeNull();
-    expect(tree.profit()).toBeNull();
+    expect(tree.effectiveMaterialCost()).toBe('0');
+    expect(tree.profit()).toBe(tree.netRevenue());
     tree.setGatherEstimate(9001, 200, 10);
     fixture.detectChanges();
     expect(tree.effectiveMaterialCost()).toBe('0');

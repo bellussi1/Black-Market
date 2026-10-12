@@ -1,5 +1,12 @@
 @if (root(); as product) {
   <section class="production-settings panel">
+    @if (!store.data().characters.length) {
+      <p class="notice">
+        Simulação sem personagem: materiais sem receita usam a hipótese de 1 unidade por obtenção em
+        4 segundos. Ajuste o rendimento e o tempo nas configurações de produção. Essa hipótese não
+        comprova que o material seja coletável.
+      </p>
+    }
     <div class="panel-heading production-heading">
       <div class="product-identity">
         <app-item-icon
@@ -96,6 +103,12 @@
                 <span class="yield-badge">{{ yieldDescription() }}</span>
                 @if (!masteryApplies()) {
                   <span i18n>Maestria sem efeito nesta fórmula</span>
+                }
+                @if (masteryApplies() && product.recipe?.type === 'SIMPLE_ALCHEMY') {
+                  <span
+                    >Aplicada às subreceitas de {{ primarySkillLabel() }} produzidas; a etapa final
+                    mantém seu rendimento fixo.</span
+                  >
                 }
               </div>
             </div>
