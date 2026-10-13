@@ -198,7 +198,7 @@ describe('Interactive recipe tree', () => {
     );
   });
 
-  it('loads catalog names and puts random alchemy outputs in a collapsed, editable group', async () => {
+  it('loads catalog names and shows every return in one editable list', async () => {
     const dependencies = providers();
     const ids = [
       4076, 4481, 4684, 4924, 4998, 5019, 5301, 5302, 5304, 5306, 5964, 6183, 6601, 6602, 6603,
@@ -224,13 +224,17 @@ describe('Interactive recipe tree', () => {
     expect(tree.returnedProductRows().find((row) => row.itemId === 5302)?.name).toBe(
       'Catálogo 5302',
     );
-    const bonusGroup = fixture.nativeElement.querySelector(
-      '.alchemy-bonus-group',
-    ) as HTMLDetailsElement;
-    expect(bonusGroup).toBeTruthy();
-    expect(bonusGroup.open).toBe(false);
-    expect(bonusGroup.querySelectorAll('.returned-product-row')).toHaveLength(27);
-    expect(bonusGroup.querySelectorAll('.returned-product-choice input')).toHaveLength(27);
+    const materialsPanel = fixture.nativeElement.querySelector('.workspace-materials-sidebar');
+    expect(materialsPanel.querySelector('.returned-product-panel')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.economic-dashboard .returned-product-panel')).toBe(
+      null,
+    );
+    expect(fixture.nativeElement.querySelectorAll('.returned-product-list')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('.returned-product-row')).toHaveLength(28);
+    expect(fixture.nativeElement.querySelectorAll('.returned-product-choice input')).toHaveLength(
+      28,
+    );
+    expect(fixture.nativeElement.querySelector('.alchemy-bonus-group')).toBeNull();
     fixture.destroy();
   });
 

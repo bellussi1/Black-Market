@@ -1,3 +1,36 @@
+<ng-template #returnedProductRow let-returned="returned">
+  <div class="returned-product-row">
+    <app-item-icon class="returned-product-icon" [name]="returned.name" [url]="returned.iconUrl" />
+    <div class="returned-product-details">
+      <strong>{{ returned.name }}</strong>
+      <small>
+        <ng-container i18n>Quantidade esperada no lote:</ng-container>
+        {{ quantityLabel(returned.quantity) }}
+      </small>
+      @if (returned.unitPrice !== null) {
+        <small
+          ><ng-container i18n>Preço un.:</ng-container> {{ silver(returned.unitPrice) }} ·
+          {{ returned.quote.label }}</small
+        >
+      } @else {
+        <small i18n>Sem cotação de mercado; venda não incluída.</small>
+      }
+    </div>
+    <label class="returned-product-choice">
+      <input
+        type="checkbox"
+        [checked]="returned.sell"
+        (change)="setReturnProductSale(returned.itemId, $any($event.target).checked)"
+      />
+      @if (returned.sell) {
+        <span i18n>Vender</span>
+      } @else {
+        <span i18n>Guardar</span>
+      }
+    </label>
+  </div>
+</ng-template>
+
 @if (root(); as product) {
   <section class="production-settings panel">
     <div class="panel-heading production-heading">
@@ -425,79 +458,6 @@
           </div>
         </div>
 
-        <ng-template #returnedProductRow let-returned="returned">
-          <div class="returned-product-row">
-            <app-item-icon
-              class="returned-product-icon"
-              [name]="returned.name"
-              [url]="returned.iconUrl"
-            />
-            <div class="returned-product-details">
-              <strong>{{ returned.name }}</strong>
-              <small>
-                <ng-container i18n>Quantidade esperada no lote:</ng-container>
-                {{ quantityLabel(returned.quantity) }}
-              </small>
-              @if (returned.unitPrice !== null) {
-                <small
-                  ><ng-container i18n>Preço un.:</ng-container> {{ silver(returned.unitPrice) }} ·
-                  {{ returned.quote.label }}</small
-                >
-              } @else {
-                <small i18n>Sem cotação de mercado; venda não incluída.</small>
-              }
-            </div>
-            <label class="returned-product-choice">
-              <input
-                type="checkbox"
-                [checked]="returned.sell"
-                (change)="setReturnProductSale(returned.itemId, $any($event.target).checked)"
-              />
-              @if (returned.sell) {
-                <span i18n>Vender</span>
-              } @else {
-                <span i18n>Guardar</span>
-              }
-            </label>
-          </div>
-        </ng-template>
-
-        @if (returnedProductRows().length) {
-          <section class="returned-product-panel" aria-label="Produtos retornados" i18n-aria-label>
-            <div class="returned-product-intro">
-              <h3 i18n>Retornos previstos</h3>
-              <p i18n>
-                Marque os itens que pretende vender. Itens guardados ficam fora do faturamento.
-              </p>
-            </div>
-            <div class="returned-product-list">
-              @for (returned of regularReturnRows(); track returned.itemId) {
-                <ng-container
-                  [ngTemplateOutlet]="returnedProductRow"
-                  [ngTemplateOutletContext]="{ returned: returned }"
-                />
-              }
-            </div>
-            @if (alchemyBonusRows().length) {
-              <details class="alchemy-bonus-group">
-                <summary>
-                  <span i18n>Bônus aleatórios da alquimia</span>
-                  <span class="alchemy-bonus-count">{{ alchemyBonusRows().length }}</span>
-                </summary>
-                <p i18n>Rendimentos esperados por operação; abra para revisar cada item.</p>
-                <div class="returned-product-list">
-                  @for (returned of alchemyBonusRows(); track returned.itemId) {
-                    <ng-container
-                      [ngTemplateOutlet]="returnedProductRow"
-                      [ngTemplateOutletContext]="{ returned: returned }"
-                    />
-                  }
-                </div>
-              </details>
-            }
-          </section>
-        }
-
         <div class="economic-summary-footer">
           <span
             >{{ requestedOperations() }} receitas · tempo total: {{ formattedCraftTime() }} · inclui
@@ -713,13 +673,25 @@
         </div>
 
         <!-- Coluna da Direita: Sidebar de Insumos da Receita (30%) -->
-        <aside class="workspace-materials-sidebar panel" aria-label="Insumos e origens da receita">
+        <aside
+          class="workspace-materials-sidebar panel"
+          aria-label="Plano da receita"
+          i18n-aria-label
+        >
           <div class="sidebar-header">
             <div class="sidebar-title-row">
-              <h3 i18n>Materiais da receita</h3>
-              <span class="sidebar-item-count-badge">{{ materialDecisions().length }} itens</span>
+              <h3 i18n>Plano da receita</h3>
+              <span class="sidebar-item-count-badge"
+                >{{ materialDecisions().length }} insumos ·
+                {{ returnedProductRows().length }} retornos</span
+              >
             </div>
-            <p class="sidebar-hint" i18n>Marque para fazer ou coletar. Desmarque para comprar.</p>
+            <p class="sidebar-hint" i18n>Escolha o que fazer, comprar, vender ou guardar.</p>
+          </div>
+
+          <div class="sidebar-section-heading">
+            <h4 i18n>Materiais da receita</h4>
+            <span>{{ materialDecisions().length }}</span>
           </div>
 
           <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
@@ -818,6 +790,26 @@
               <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
             }
           </div>
+
+          @if (returnedProductRows().length) {
+            <section class="returned-product-panel" aria-label="Retornos previstos" i18n-aria-label>
+              <div class="sidebar-section-heading returned-product-intro">
+                <h4 i18n>Retornos previstos</h4>
+                <span>{{ returnedProductRows().length }}</span>
+              </div>
+              <p class="sidebar-hint" i18n>
+                Venda marcada entra no faturamento; itens guardados ficam fora.
+              </p>
+              <div class="returned-product-list">
+                @for (returned of returnedProductRows(); track returned.itemId) {
+                  <ng-container
+                    [ngTemplateOutlet]="returnedProductRow"
+                    [ngTemplateOutletContext]="{ returned: returned }"
+                  />
+                }
+              </div>
+            </section>
+          }
 
           <div class="sidebar-footer">
             <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>

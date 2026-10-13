@@ -1828,12 +1828,12 @@
   border-top: 1px solid var(--bm-border);
 }
 
-.returned-product-intro h3,
+.returned-product-intro h4,
 .returned-product-intro p {
   margin: 0;
 }
 
-.returned-product-intro h3 {
+.returned-product-intro h4 {
   color: var(--bm-text);
   font-size: 13px;
 }
@@ -1902,54 +1902,28 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 8px;
-}
-
-.alchemy-bonus-group {
-  padding: 10px 12px;
-  border: 1px solid var(--bm-border);
-  border-radius: 2px;
-  background: var(--bm-surface);
-
-  summary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 36px;
-    color: var(--bm-text);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  p {
-    margin: 4px 0 10px;
-    color: var(--bm-muted);
-    font-size: 11px;
-  }
-}
-
-.alchemy-bonus-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  padding: 0 6px;
-  color: var(--bm-accent);
-  border: 1px solid var(--bm-border);
-  border-radius: 2px;
-  font-variant-numeric: tabular-nums;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 @media (max-width: 620px) {
-  .returned-product-row,
+  .returned-product-list {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: 420px;
+  }
+
+  .returned-product-row {
+    align-items: flex-start;
+  }
+
   .returned-product-details {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .returned-product-choice {
-    flex-direction: row;
+    align-self: center;
   }
 }
 
@@ -2107,6 +2081,27 @@
   padding: 10px 12px;
 }
 
+.workspace-materials-sidebar .sidebar-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px 5px;
+  color: var(--bm-accent);
+
+  h4 {
+    margin: 0;
+    color: var(--bm-text);
+    font: 600 12px/1.3 var(--bm-font-body);
+  }
+
+  > span {
+    color: var(--bm-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 .workspace-materials-sidebar .sidebar-title-row {
   margin-bottom: 0;
 }
@@ -2123,6 +2118,24 @@
 
 .workspace-materials-sidebar .sidebar-materials-list {
   max-height: 560px;
+}
+
+.workspace-materials-sidebar .returned-product-panel {
+  gap: 7px;
+  padding: 10px 0 12px;
+}
+
+.workspace-materials-sidebar .returned-product-intro {
+  padding: 0 12px;
+}
+
+.workspace-materials-sidebar .returned-product-panel > .sidebar-hint {
+  padding: 0 12px;
+}
+
+.workspace-materials-sidebar .returned-product-list {
+  max-height: 300px;
+  padding: 0 8px 0 12px;
 }
 
 .bottom-details-tray.context-panel {

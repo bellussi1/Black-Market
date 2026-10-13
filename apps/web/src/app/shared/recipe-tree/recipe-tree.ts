@@ -103,8 +103,6 @@ import {
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
 
-const ALCHEMY_RANDOM_ITEM_IDS = new Set(ALCHEMY_EXTRA_ITEM_IDS.filter((itemId) => itemId !== 5301));
-
 function hasOnlyOptimizationLimit(plan: ProductionPlan | null): boolean {
   return (
     !!plan &&
@@ -1052,20 +1050,11 @@ export class RecipeTree {
         this.marketQuotes().get(product.itemId)?.name ??
         `Item ${product.itemId}`,
       iconUrl: this.returnProductIconUrl(product.itemId),
-      isAlchemyBonus: ALCHEMY_RANDOM_ITEM_IDS.has(product.itemId),
       unitPrice: this.price(product.itemId),
       quote: this.quoteFreshness(product.itemId),
       sell: this.returnProductSales().get(product.itemId) ?? product.sell,
     }));
   });
-
-  readonly regularReturnRows = computed(() =>
-    this.returnedProductRows().filter((product) => !product.isAlchemyBonus),
-  );
-
-  readonly alchemyBonusRows = computed(() =>
-    this.returnedProductRows().filter((product) => product.isAlchemyBonus),
-  );
 
   private returnProductIconUrl(itemId: number): string | null {
     const item = this.returnCatalogItems().get(itemId);
