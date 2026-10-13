@@ -10115,5 +10115,21 @@
         <source>Bônus sobre a coleta após imposto.</source>
       </segment>
     </unit>
+    <unit id="3383907643333341583">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:841,842</note>
+      </notes>
+      <segment>
+        <source>Mostrar menos</source>
+      </segment>
+    </unit>
+    <unit id="8596648948059760377">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:843,844</note>
+      </notes>
+      <segment>
+        <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returnedProductRows().length - 2 }}"/>)</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

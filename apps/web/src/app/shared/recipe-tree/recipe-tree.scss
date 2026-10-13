@@ -1919,6 +1919,74 @@
   padding-right: 4px;
 }
 
+.returned-product-toggle {
+  display: inline-flex;
+  min-height: 36px;
+  width: calc(100% - 16px);
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  justify-self: center;
+  padding: 6px 12px;
+  color: var(--bm-accent);
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.returned-product-toggle:hover {
+  background: var(--bm-surface);
+  border-color: var(--bm-accent);
+}
+
+.returned-product-toggle:focus-visible {
+  outline: 2px solid var(--bm-accent);
+  outline-offset: 2px;
+}
+
+.returned-product-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 180ms ease;
+}
+
+.returned-product-toggle[aria-expanded='true'] .returned-product-chevron {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.returned-product-enter {
+  animation: returned-product-enter 220ms ease-out both;
+}
+
+@keyframes returned-product-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .returned-product-toggle,
+  .returned-product-chevron {
+    transition: none;
+  }
+
+  .returned-product-enter {
+    animation: none;
+  }
+}
+
 @media (max-width: 620px) {
   .returned-product-list {
     grid-template-columns: minmax(0, 1fr);

@@ -221,6 +221,7 @@ export class RecipeTree {
   readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
   readonly customItemPrices = signal(new Map<number, string>());
   readonly returnProductSales = signal(new Map<number, boolean>());
+  readonly showAllReturnedProducts = signal(false);
   readonly returnCatalogItems = signal(new Map<number, CatalogItem>());
   readonly returnCatalogDataset = signal<ActiveDatasetSummary | null>(null);
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
@@ -1058,6 +1059,15 @@ export class RecipeTree {
       sell: this.returnProductSales().get(product.itemId) ?? product.sell,
     }));
   });
+
+  readonly visibleReturnedProductRows = computed(() => {
+    const rows = this.returnedProductRows();
+    return this.showAllReturnedProducts() ? rows : rows.slice(0, 2);
+  });
+
+  toggleReturnedProducts(): void {
+    this.showAllReturnedProducts.update((expanded) => !expanded);
+  }
 
   private returnProductIconUrl(itemId: number): string | null {
     const item = this.returnCatalogItems().get(itemId);

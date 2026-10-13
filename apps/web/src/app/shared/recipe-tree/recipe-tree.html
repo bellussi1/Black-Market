@@ -1,5 +1,5 @@
 <ng-template #returnedProductRow let-returned="returned">
-  <div class="returned-product-row">
+  <div class="returned-product-row" animate.enter="returned-product-enter">
     <app-item-icon class="returned-product-icon" [name]="returned.name" [url]="returned.iconUrl" />
     <div class="returned-product-details">
       <strong>{{ returned.name }}</strong>
@@ -821,14 +821,30 @@
               <p class="sidebar-hint" i18n>
                 Venda marcada entra no faturamento; itens guardados ficam fora.
               </p>
-              <div class="returned-product-list">
-                @for (returned of returnedProductRows(); track returned.itemId) {
+              <div class="returned-product-list" id="returned-product-list">
+                @for (returned of visibleReturnedProductRows(); track returned.itemId) {
                   <ng-container
                     [ngTemplateOutlet]="returnedProductRow"
                     [ngTemplateOutletContext]="{ returned: returned }"
                   />
                 }
               </div>
+              @if (returnedProductRows().length > 2) {
+                <button
+                  type="button"
+                  class="returned-product-toggle"
+                  (click)="toggleReturnedProducts()"
+                  [attr.aria-expanded]="showAllReturnedProducts()"
+                  aria-controls="returned-product-list"
+                >
+                  @if (showAllReturnedProducts()) {
+                    <span i18n>Mostrar menos</span>
+                  } @else {
+                    <span i18n>Mostrar mais ({{ returnedProductRows().length - 2 }})</span>
+                  }
+                  <span class="returned-product-chevron" aria-hidden="true"></span>
+                </button>
+              }
             </section>
           }
 

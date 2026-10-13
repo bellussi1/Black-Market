@@ -198,7 +198,7 @@ describe('Interactive recipe tree', () => {
     );
   });
 
-  it('loads catalog names and shows every return in one editable list', async () => {
+  it('shows two returns first and lets the user expand and collapse the editable list', async () => {
     const dependencies = providers();
     const ids = [
       4076, 4481, 4684, 4924, 4998, 5019, 5301, 5302, 5304, 5306, 5964, 6183, 6601, 6602, 6603,
@@ -230,10 +230,26 @@ describe('Interactive recipe tree', () => {
       null,
     );
     expect(fixture.nativeElement.querySelectorAll('.returned-product-list')).toHaveLength(1);
-    expect(fixture.nativeElement.querySelectorAll('.returned-product-row')).toHaveLength(28);
-    expect(fixture.nativeElement.querySelectorAll('.returned-product-choice input')).toHaveLength(
-      28,
-    );
+    const list = fixture.nativeElement.querySelector('.returned-product-list') as HTMLElement;
+    const toggle = fixture.nativeElement.querySelector(
+      '.returned-product-toggle',
+    ) as HTMLButtonElement;
+    expect(list.querySelectorAll('.returned-product-row')).toHaveLength(2);
+    expect(list.querySelectorAll('.returned-product-choice input')).toHaveLength(2);
+    expect(toggle.textContent).toContain('Mostrar mais');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(list.querySelectorAll('.returned-product-row')).toHaveLength(28);
+    expect(list.querySelectorAll('.returned-product-choice input')).toHaveLength(28);
+    expect(toggle.textContent).toContain('Mostrar menos');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(list.querySelectorAll('.returned-product-row')).toHaveLength(2);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(fixture.nativeElement.querySelector('.alchemy-bonus-group')).toBeNull();
     fixture.destroy();
   });
