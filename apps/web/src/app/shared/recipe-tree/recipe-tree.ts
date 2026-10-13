@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
@@ -27,6 +28,8 @@ import {
   type TaxOptions,
 } from '@bdo/calculators';
 import type {
+  ActiveDatasetSummary,
+  CatalogItem,
   CatalogItemDetail,
   CatalogRecipe,
   CatalogRecipePart,
@@ -42,6 +45,7 @@ import {
   EMPTY,
   firstValueFrom,
   forkJoin,
+  map,
   type Observable,
   of,
   Subject,
@@ -58,8 +62,15 @@ import { date, silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import { TaxOptionsComponent } from '../tax-options';
+import { ALCHEMY_EXTRA_ITEM_IDS } from './recipe-alchemy-extra-items';
+import {
+  COOKING_MILK_BYPRODUCT_ITEM_ID,
+  recipeBonusProductItemIds,
+  recipeBonusProducts,
+  recipeReturnProductItemIds,
+} from './recipe-bonus-products';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
-import { recipeFamilies } from './recipe-equivalents';
+import { recipeFamilies, verifiedIngredientSubstitutionItemIds } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
@@ -68,6 +79,7 @@ import { processingBatchCount } from './recipe-mastery';
 import {
   buildRecipeProductionInput,
   defaultRecipeMethodSeconds,
+  type RecipeMasterySkill,
 } from './recipe-production-adapter';
 import {
   type RecipeProductionGraph,
@@ -85,10 +97,13 @@ import {
 import {
   lifeSkillForRecipe,
   recipeMasteryCanChangeOutput,
+  recipeOutputQuantityWithoutMastery,
   resolveDefaultYield,
 } from './recipe-yield';
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
+
+const ALCHEMY_RANDOM_ITEM_IDS = new Set(ALCHEMY_EXTRA_ITEM_IDS.filter((itemId) => itemId !== 5301));
 
 function hasOnlyOptimizationLimit(plan: ProductionPlan | null): boolean {
   return (
@@ -122,6 +137,7 @@ function usableOptimizedPlan(
   imports: [
     FormsModule,
     RouterLink,
+    NgTemplateOutlet,
     RecipeBranch,
     RecipeGraph,
     ItemIcon,
@@ -206,6 +222,9 @@ export class RecipeTree {
   readonly optimizationMessage = signal('');
   readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
   readonly customItemPrices = signal(new Map<number, string>());
+  readonly returnProductSales = signal(new Map<number, boolean>());
+  readonly returnCatalogItems = signal(new Map<number, CatalogItem>());
+  readonly returnCatalogDataset = signal<ActiveDatasetSummary | null>(null);
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
   readonly npcPurchasePrices = signal(new Map<number, NpcPurchasePrice>());
   readonly quoteObservedAt = signal(new Map<number, string>());
@@ -216,7 +235,9 @@ export class RecipeTree {
   );
   readonly masteryOverride = signal<number | null>(null);
   readonly masteryInput = signal<number | null>(null);
-  private readonly masteryChanges$ = new Subject<number | null>();
+  readonly masteryOverrides = signal<Partial<Record<RecipeMasterySkill, number>>>({});
+  readonly masteryInputsBySkill = signal<Partial<Record<RecipeMasterySkill, number | null>>>({});
+  private readonly legacyMasteryChanges$ = new Subject<number | null>();
   readonly displayedMastery = computed(
     () => this.masteryInput() ?? this.userMasteryForCurrentRecipe(),
   );
@@ -244,39 +265,54 @@ export class RecipeTree {
       : 1000;
   });
 
+  masterySkillLabel(skill: RecipeMasterySkill): string {
+    if (skill === 'cooking') return 'Culinária';
+    if (skill === 'alchemy') return 'Alquimia';
+    return 'Processamento';
+  }
+
+  private profileMasteryForSkill(skill: RecipeMasterySkill): number {
+    const value = this.store.activeCharacter()?.mastery?.[skill];
+    return typeof value === 'number' && Number.isFinite(value)
+      ? Math.max(0, Math.min(3000, value))
+      : 1000;
+  }
+
+  simulationMasteryForSkill(skill: RecipeMasterySkill): number {
+    const override = this.masteryOverrides()[skill];
+    if (override !== undefined) return override;
+    if (skill === this.masterySkill() && this.masteryOverride() !== null)
+      return this.masteryOverride()!;
+    return this.profileMasteryForSkill(skill);
+  }
+
+  displayedMasteryForSkill(skill: RecipeMasterySkill): number {
+    return this.masteryInputsBySkill()[skill] ?? this.simulationMasteryForSkill(skill);
+  }
+
   readonly canAdjustRootYield = computed(() => {
     const root = this.root();
     if (!root?.recipe) return false;
-    if (lifeSkillForRecipe(root.recipe.type) === 'processing')
-      return fixedRecipeYield(root.recipe, root.part.itemId) === null;
-    return (
-      fixedRecipeYield(root.recipe, root.part.itemId) === null &&
-      !(
-        Number(root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity) >
-        0
-      )
-    );
+    return recipeMasteryCanChangeOutput(root.recipe, root.part.itemId);
   });
 
   readonly effectiveYield = computed(() => {
     const root = this.root();
     if (!root) return 1;
-    const skill = root.recipe ? lifeSkillForRecipe(root.recipe.type) : null;
     const fixed = root.recipe
       ? (fixedRecipeYield(root.recipe, root.part.itemId) ??
-        (skill === 'processing'
-          ? null
-          : Number(
-              root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
-            ) || null))
+        recipeOutputQuantityWithoutMastery(root.recipe, root.part.itemId))
       : null;
     if (fixed !== null) return fixed;
     if (root.yield !== null && root.yield > 0) return root.yield;
     if (!root.recipe) return 1;
+    const skill = lifeSkillForRecipe(root.recipe.type);
     return resolveDefaultYield(
       root.recipe,
       root.part.itemId,
-      this.masteryOverride() ?? this.userMasteryForCurrentRecipe(),
+      skill === 'cooking' || skill === 'alchemy' || skill === 'processing'
+        ? this.simulationMasteryForSkill(skill)
+        : 0,
     );
   });
 
@@ -285,16 +321,17 @@ export class RecipeTree {
     if (!root?.recipe) return 'Item sem receita direta';
     const fixed = fixedRecipeYield(root.recipe, root.part.itemId);
     if (fixed !== null) return `Rendimento fixo verificado: ${fixed} un / receita`;
-    const catalogQuantity = Number(
-      root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
-    );
+    const catalogQuantity = recipeOutputQuantityWithoutMastery(root.recipe, root.part.itemId);
     const skill = lifeSkillForRecipe(root.recipe.type);
-    if (catalogQuantity > 0 && skill !== 'processing')
+    if (catalogQuantity !== null)
       return `Saída do catálogo: ${catalogQuantity} un / receita; proc adicional não modelado`;
     if (root.yield !== null && root.yield > 0) {
       return `Rendimento ajustado: ${root.yield} un / receita`;
     }
-    const mastery = this.masteryOverride() ?? this.userMasteryForCurrentRecipe();
+    const mastery =
+      skill === 'cooking' || skill === 'alchemy' || skill === 'processing'
+        ? this.simulationMasteryForSkill(skill)
+        : 0;
     if (skill === 'processing')
       return `Lote de processamento · maestria ${mastery} · média ${this.effectiveYield().toFixed(2)} un/ação`;
     if (mastery > 0 && skill) {
@@ -568,6 +605,7 @@ export class RecipeTree {
   private readonly optimizationContext = computed(() =>
     JSON.stringify([
       this.masteryOverride(),
+      this.masteryOverrides(),
       this.craftCount(),
       this.recipeGraph(),
       [...this.marketQuotes()],
@@ -636,13 +674,24 @@ export class RecipeTree {
   setMasteryOverride(value: number | string | null): void {
     if (value === null || value === '') {
       this.masteryInput.set(null);
-      this.masteryChanges$.next(null);
+      this.legacyMasteryChanges$.next(null);
       return;
     }
     const parsed = Number(value);
     if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 3000) return;
     this.masteryInput.set(parsed);
-    this.masteryChanges$.next(parsed);
+    this.legacyMasteryChanges$.next(parsed);
+  }
+
+  setMasteryForSkill(skill: RecipeMasterySkill, value: number | string | null): void {
+    const parsed = value === null || value === '' ? null : Number(value);
+    if (parsed !== null && (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 3000)) return;
+    const inputs = { ...this.masteryInputsBySkill(), [skill]: parsed };
+    this.masteryInputsBySkill.set(inputs);
+    const overrides = { ...this.masteryOverrides() };
+    if (parsed === null) delete overrides[skill];
+    else overrides[skill] = parsed;
+    this.masteryOverrides.set(overrides);
   }
 
   setMethodTime(method: string, value: number | string | null): void {
@@ -831,12 +880,14 @@ export class RecipeTree {
         quoteObservedAt: this.quoteObservedAt(),
         masteryOverride: this.masteryOverride(),
         masterySkill: this.masterySkill(),
+        masteryOverrides: this.masteryOverrides(),
         optimize: false,
         useGatheringDefaults:
           this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
         yieldOverrides,
         excludedLocations: this.excludedLocations(),
         npcPurchasePrices: this.npcPurchasePrices(),
+        byproductSales: this.returnProductSales(),
       },
     );
   });
@@ -968,6 +1019,63 @@ export class RecipeTree {
     return root ? this.price(root.part.itemId) : null;
   });
 
+  readonly returnedProductRows = computed(() => {
+    const plan = this.currentProductionPlan();
+    if (!plan) return [];
+    const names = new Map<number, string>();
+    for (const recipe of [
+      ...(this.recipeGraph()?.rootRecipe ? [this.recipeGraph()!.rootRecipe] : []),
+      ...(this.recipeGraph()?.producerRecipes ?? []),
+      ...(this.recipeGraph()?.returnRecipes ?? []),
+    ]) {
+      for (const part of [...recipe.outputs, ...recipe.inputs])
+        if (!names.has(part.itemId)) names.set(part.itemId, part.name);
+      for (const product of recipeBonusProducts(recipe))
+        if (!names.has(product.itemId)) names.set(product.itemId, product.name);
+      if (recipe.type === 'COOK' && !names.has(COOKING_MILK_BYPRODUCT_ITEM_ID))
+        names.set(COOKING_MILK_BYPRODUCT_ITEM_ID, 'Leite');
+    }
+    return plan.returns.map((product) => ({
+      ...product,
+      name:
+        this.returnCatalogItems().get(product.itemId)?.name ??
+        names.get(product.itemId) ??
+        this.marketQuotes().get(product.itemId)?.name ??
+        `Item ${product.itemId}`,
+      iconUrl: this.returnProductIconUrl(product.itemId),
+      isAlchemyBonus: ALCHEMY_RANDOM_ITEM_IDS.has(product.itemId),
+      unitPrice: this.price(product.itemId),
+      quote: this.quoteFreshness(product.itemId),
+      sell: this.returnProductSales().get(product.itemId) ?? product.sell,
+    }));
+  });
+
+  readonly regularReturnRows = computed(() =>
+    this.returnedProductRows().filter((product) => !product.isAlchemyBonus),
+  );
+
+  readonly alchemyBonusRows = computed(() =>
+    this.returnedProductRows().filter((product) => product.isAlchemyBonus),
+  );
+
+  private returnProductIconUrl(itemId: number): string | null {
+    const item = this.returnCatalogItems().get(itemId);
+    if (!item) return null;
+    return (
+      this.catalog.resolveIconUrl(item) ??
+      this.catalog.itemIconUrl?.(itemId, this.returnCatalogDataset()) ??
+      null
+    );
+  }
+
+  setReturnProductSale(itemId: number, sell: boolean): void {
+    this.returnProductSales.update((current) => new Map(current).set(itemId, sell));
+  }
+
+  quantityLabel(value: number): string {
+    return value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  }
+
   readonly grossRevenue = computed(() => {
     return this.currentProductionPlan()?.grossRevenue ?? null;
   });
@@ -1018,6 +1126,28 @@ export class RecipeTree {
         .find((skill) => skill === 'alchemy' || skill === 'cooking' || skill === 'processing') ??
       null
     );
+  });
+  readonly masterySkills = computed<RecipeMasterySkill[]>(() => {
+    const root = this.root();
+    if (!root?.recipe) return [];
+    const graph = this.recipeGraph();
+    const activeRecipes = this.currentProductionPlan()?.steps.map((step) => step.recipeId);
+    const activeIds = activeRecipes ? new Set(activeRecipes) : null;
+    const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
+    const skills = new Set<RecipeMasterySkill>();
+
+    for (const recipe of recipes) {
+      if (activeIds && !activeIds.has(recipe.key)) continue;
+      if (recipe.key === root.recipe.key && root.yield !== null && root.yield > 0) continue;
+      const skill = lifeSkillForRecipe(recipe.type);
+      if (skill !== 'cooking' && skill !== 'alchemy' && skill !== 'processing') continue;
+      const outputId =
+        recipe.key === root.recipe.key ? root.part.itemId : recipe.outputs[0]?.itemId;
+      if (outputId === undefined || !recipeMasteryCanChangeOutput(recipe, outputId)) continue;
+      skills.add(skill);
+    }
+
+    return (['cooking', 'alchemy', 'processing'] as const).filter((skill) => skills.has(skill));
   });
   readonly masteryApplies = computed(() => {
     const graph = this.recipeGraph();
@@ -1131,9 +1261,9 @@ export class RecipeTree {
       : null;
   });
 
-  consultAllTreePrices() {
+  consultAllTreePrices(force = false) {
     const now = Date.now();
-    if (now - this.lastConsultTime < 500) return;
+    if (!force && now - this.lastConsultTime < 500) return;
     this.lastConsultTime = now;
     if (this.treeMarketLoading() && this.quoteSubscription && !this.quoteSubscription.closed)
       return;
@@ -1174,40 +1304,94 @@ export class RecipeTree {
         switchMap((graph) => {
           if (revision !== this.quoteRevision) return EMPTY;
           let itemIds: number[];
+          const graphRecipes = graph
+            ? [graph.rootRecipe, ...graph.producerRecipes]
+            : root.recipe
+              ? [root.recipe]
+              : [];
           if (graph) {
             if (graph.issues.some((issue) => issue.code === 'dataset-mismatch'))
               throw new Error('O catálogo mudou durante a consulta da receita.');
             this.recipeGraph.set(graph);
-            itemIds = graph.itemIds;
+            itemIds = [
+              ...new Set([
+                ...graph.itemIds,
+                ...recipeReturnProductItemIds(graphRecipes),
+                ...verifiedIngredientSubstitutionItemIds(this.recipes()),
+              ]),
+            ].sort((left, right) => left - right);
             this.quoteObservedAt.update((current) => {
               const next = new Map(current);
-              for (const itemId of graph.itemIds) {
+              for (const itemId of itemIds) {
                 const entry = this.marketCache.getCachedQuoteEntry(itemId, region);
                 if (entry) next.set(itemId, new Date(entry.fetchedAt).toISOString());
               }
               return next;
             });
           } else {
-            itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
-              (left, right) => left - right,
-            );
+            itemIds = [
+              ...new Set([
+                root.part.itemId,
+                ...this.parts().keys(),
+                ...(root.recipe ? recipeReturnProductItemIds([root.recipe]) : []),
+                ...verifiedIngredientSubstitutionItemIds(this.recipes()),
+              ]),
+            ].sort((left, right) => left - right);
           }
           const quotes$ = (
             this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
           ).call(this.marketCache, itemIds, region);
           const npcPrices$ =
             this.catalog
-              .getNpcPurchasePrices?.(itemIds, graph?.datasetVersion ?? this.datasetVersion())
+              .getNpcPurchasePrices?.(
+                graph?.itemIds ?? itemIds,
+                graph?.datasetVersion ?? this.datasetVersion(),
+              )
               .pipe(catchError(() => of(new Map<number, NpcPurchasePrice>()))) ??
             of(this.npcPurchasePrices());
-          return combineLatest({ quotes: quotes$, npcPrices: npcPrices$ });
+          const returnItemIds = [
+            ...new Set([
+              ...(graph?.returnRecipes?.flatMap((recipe) =>
+                recipe.outputs.map((output) => output.itemId),
+              ) ?? []),
+              ...recipeReturnProductItemIds(graph?.returnRecipes ?? []),
+              ...(graphRecipes.some((recipe) => recipe.type === 'ALCHEMY')
+                ? ALCHEMY_EXTRA_ITEM_IDS
+                : []),
+              ...recipeBonusProductItemIds(graphRecipes),
+              ...(graphRecipes.some((recipe) => recipe.type === 'COOK')
+                ? [COOKING_MILK_BYPRODUCT_ITEM_ID]
+                : []),
+            ]),
+          ];
+          const returnCatalogItems$ = returnItemIds.length
+            ? this.catalog.getItems({ ids: returnItemIds, page: 1, pageSize: 100 }).pipe(
+                map((page) => ({
+                  items: new Map(page.items.map((item) => [item.id, item])),
+                  dataset: page.dataset,
+                })),
+                catchError(() =>
+                  of({
+                    items: new Map<number, CatalogItem>(),
+                    dataset: null,
+                  }),
+                ),
+              )
+            : of({ items: new Map<number, CatalogItem>(), dataset: null });
+          return combineLatest({
+            quotes: quotes$,
+            npcPrices: npcPrices$,
+            returnCatalogItems: returnCatalogItems$,
+          });
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ quotes: quotesMap, npcPrices }) => {
+        next: ({ quotes: quotesMap, npcPrices, returnCatalogItems }) => {
           if (revision !== this.quoteRevision) return;
           this.npcPurchasePrices.set(npcPrices);
+          this.returnCatalogItems.set(returnCatalogItems.items);
+          this.returnCatalogDataset.set(returnCatalogItems.dataset);
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
           const observed = new Map(this.quoteObservedAt());
@@ -1280,6 +1464,22 @@ export class RecipeTree {
       else if (!this.previewPlan() && dialog.open) dialog.close?.();
     });
     effect(() => {
+      if (this.acquisitionStrategy() !== 'gather_all') return;
+      const graph = this.recipeGraph();
+      if (!graph) return;
+
+      const next = new Map(
+        this.materialItemIds().map((itemId) => [itemId, this.makeChoice(itemId)]),
+      );
+      const current = this.customMaterialSource();
+      if (
+        current.size === next.size &&
+        [...next].every(([itemId, choice]) => current.get(itemId) === choice)
+      )
+        return;
+      this.customMaterialSource.set(next);
+    });
+    effect(() => {
       const context = this.optimizationContext();
       if (!this.optimizationSnapshot || context === this.optimizationSnapshot) return;
       untracked(() => {
@@ -1298,7 +1498,7 @@ export class RecipeTree {
     this.autoMarket$.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.consultAllTreePrices();
     });
-    this.masteryChanges$
+    this.legacyMasteryChanges$
       .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => this.masteryOverride.set(value));
 
@@ -1342,6 +1542,8 @@ export class RecipeTree {
       if (nextSessionKey !== this.sessionKey) {
         this.masteryInput.set(null);
         this.masteryOverride.set(null);
+        this.masteryOverrides.set({});
+        this.masteryInputsBySkill.set({});
       }
       this.sessionKey = nextSessionKey;
       this.selectedPath.set('root');
@@ -1394,6 +1596,7 @@ export class RecipeTree {
         );
         this.masteryInput.set(session.masteryOverride ?? null);
         this.masteryOverride.set(session.masteryOverride ?? null);
+        this.masteryOverrides.set(session.masteryOverrides ?? {});
         if (session.sourceOverrides && Object.keys(session.sourceOverrides).length)
           this.acquisitionStrategy.set('custom');
       }
@@ -1408,7 +1611,8 @@ export class RecipeTree {
         methodTimes = this.methodTimes(),
         gatherEstimates = this.gatherEstimates(),
         sourceOverrides = this.customMaterialSource(),
-        masteryOverride = this.masteryOverride();
+        masteryOverride = this.masteryOverride(),
+        masteryOverrides = this.masteryOverrides();
       if (root && this.sessionKey)
         this.sessions.save(this.sessionKey, {
           root,
@@ -1420,6 +1624,7 @@ export class RecipeTree {
           gatherEstimates: Object.fromEntries(gatherEstimates),
           sourceOverrides: Object.fromEntries(sourceOverrides),
           ...(masteryOverride === null ? {} : { masteryOverride }),
+          ...(Object.keys(masteryOverrides).length === 0 ? {} : { masteryOverrides }),
         });
     });
   }
@@ -1461,7 +1666,6 @@ export class RecipeTree {
   private withEstimatedYields(node: RecipeNode): RecipeNode {
     const recipe = node.recipe;
     const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
-    const rootSkill = this.masterySkill();
     const variableYield = recipe !== null && recipeMasteryCanChangeOutput(recipe, node.part.itemId);
     const profileMastery = skill
       ? Math.max(
@@ -1473,17 +1677,14 @@ export class RecipeTree {
         )
       : 0;
     const mastery =
-      skill && variableYield && skill === rootSkill
-        ? (this.masteryOverride() ?? profileMastery)
+      skill && variableYield
+        ? this.simulationMasteryForSkill(skill as RecipeMasterySkill)
         : profileMastery;
     const processingBatch =
       skill === 'processing' && variableYield ? processingBatchCount(mastery) : 1;
     const fixed = recipe
       ? (fixedRecipeYield(recipe, node.part.itemId) ??
-        (skill === 'processing'
-          ? null
-          : Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) ||
-            null))
+        recipeOutputQuantityWithoutMastery(recipe, node.part.itemId))
       : null;
     return {
       ...node,
@@ -1716,7 +1917,10 @@ export class RecipeTree {
         if (!this.canChoose(node, recipe)) return;
         this.cancelExpansions(node.path);
         this.patch(node.path, (n) => withRecipe({ ...n, loading: false }, recipe));
-        if (node.path === 'root') this.rootMethod.emit(recipe);
+        if (node.path === 'root') {
+          this.rootMethod.emit(recipe);
+          this.consultAllTreePrices(true);
+        }
       }
       return;
     }

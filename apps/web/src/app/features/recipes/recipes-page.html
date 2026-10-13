@@ -57,6 +57,21 @@
               }
             </select>
           </section>
+          @if (rootBatchOptions().length > 1) {
+            <section class="recipe-methods recipe-batch-size">
+              <label for="root-recipe-batch" i18n>Produção por operação</label>
+              <select appBdoSelect id="root-recipe-batch" (change)="chooseBatch($event)">
+                @for (batch of rootBatchOptions(); track batch.recipe.key) {
+                  <option
+                    [value]="batch.recipe.key"
+                    [selected]="batch.recipe.key === recipe()?.key"
+                  >
+                    {{ batch.quantity }} unidades por operação
+                  </option>
+                }
+              </select>
+            </section>
+          }
         } @else {
           <p class="notice" i18n>
             Não há receita vinculada a este item na extração disponível. Explore a descrição e as

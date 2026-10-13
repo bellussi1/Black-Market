@@ -12,6 +12,7 @@ export interface RecipeSession {
   gatherEstimates?: Record<number, ProductionEstimate>;
   sourceOverrides?: Record<number, ProductionChoice>;
   masteryOverride?: number;
+  masteryOverrides?: Partial<Record<'alchemy' | 'cooking' | 'processing', number>>;
 }
 @Injectable({ providedIn: 'root' })
 export class RecipeSessions {

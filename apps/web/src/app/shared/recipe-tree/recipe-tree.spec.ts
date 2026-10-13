@@ -14,6 +14,7 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { type CachedQuoteEntry, MarketCacheService } from '../../core/market-cache.service';
 import { MarketApi } from '../../features/market/market-api';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { withVerifiedIngredientSubstitutions } from './recipe-equivalents';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { RecipeTree } from './recipe-tree';
@@ -67,11 +68,38 @@ function providers() {
   };
   const catalog = {
     resolveIconUrl: vi.fn(() => null),
+    getItems: vi.fn((params: { ids?: readonly number[] }) =>
+      of({
+        items: (params.ids ?? []).map((id) => ({
+          id,
+          name: `Catálogo ${id}`,
+          description: null,
+          grade: null,
+          weight: null,
+          category: null,
+          icon: null,
+          iconUrl: null,
+          categories: [],
+        })),
+        total: params.ids?.length ?? 0,
+        page: 1,
+        pageSize: 100,
+        dataset: null,
+      }),
+    ),
     getNpcPurchasePrices: vi.fn((_itemIds: number[], _datasetVersion: string) =>
       of(new Map<number, NpcPurchasePrice>()),
     ),
     getItemRecipes: vi.fn((_itemId: number, _direction: 'produces' | 'uses') =>
       of({ recipes: [], total: 0, direction: 'produces', dataset: null } as CatalogRecipesResponse),
+    ),
+    getByproductRecipes: vi.fn((_itemIds: readonly number[], _datasetVersion: string) =>
+      of({
+        recipes: [],
+        total: 0,
+        direction: 'byproducts',
+        dataset: null,
+      } as CatalogRecipesResponse),
     ),
   };
   const quotesMap = signal(new Map<string, CachedQuoteEntry>());
@@ -160,7 +188,124 @@ describe('Interactive recipe tree', () => {
 
     expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(9001, 'produces');
     expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(8001, 'produces');
-    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith([5301, 8001, 9001], 'sa');
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith(
+      [
+        4076, 4481, 4684, 4924, 4998, 5019, 5301, 5302, 5304, 5306, 5964, 6183, 6601, 6602, 6603,
+        6604, 6605, 8001, 9001, 16001, 16080, 44195, 44336, 45216, 45248, 45280, 721002, 721003,
+        766107, 820910,
+      ],
+      'sa',
+    );
+  });
+
+  it('loads catalog names and puts random alchemy outputs in a collapsed, editable group', async () => {
+    const dependencies = providers();
+    const ids = [
+      4076, 4481, 4684, 4924, 4998, 5019, 5301, 5302, 5304, 5306, 5964, 6183, 6601, 6602, 6603,
+      6604, 6605, 16001, 16080, 44195, 44336, 45216, 45248, 45280, 721002, 721003, 766107, 820910,
+    ];
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '100' });
+    tree.masteryOverride.set(3000);
+    tree.masteryInput.set(3000);
+    tree.setCraftCount(100);
+    fixture.detectChanges();
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    fixture.detectChanges();
+
+    expect(dependencies.catalog.getItems).toHaveBeenCalledWith({ ids, page: 1, pageSize: 100 });
+    expect(tree.returnedProductRows()).toHaveLength(28);
+    expect(tree.returnedProductRows().find((row) => row.itemId === 5302)?.name).toBe(
+      'Catálogo 5302',
+    );
+    const bonusGroup = fixture.nativeElement.querySelector(
+      '.alchemy-bonus-group',
+    ) as HTMLDetailsElement;
+    expect(bonusGroup).toBeTruthy();
+    expect(bonusGroup.open).toBe(false);
+    expect(bonusGroup.querySelectorAll('.returned-product-row')).toHaveLength(27);
+    expect(bonusGroup.querySelectorAll('.returned-product-choice input')).toHaveLength(27);
+    fixture.destroy();
+  });
+
+  it('loads catalog metadata for byproduct recipe outputs', async () => {
+    const dependencies = providers();
+    const byproduct: CatalogRecipe = {
+      key: 'clear-reagent-byproduct',
+      type: 'ALCHEMY',
+      station: null,
+      byproductOfItemId: 5301,
+      inputs: [],
+      outputs: [{ itemId: 750, name: 'Elixir secundário', quantity: null }],
+    };
+    dependencies.catalog.getByproductRecipes.mockReturnValue(
+      of({
+        recipes: [byproduct],
+        total: 1,
+        direction: 'byproducts',
+        dataset: null,
+      } as CatalogRecipesResponse),
+    );
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    tree.consultAllTreePrices();
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(dependencies.catalog.getItems).toHaveBeenCalledWith(
+      expect.objectContaining({ ids: expect.arrayContaining([750]) }),
+    );
+    expect(tree.returnedProductRows().find((row) => row.itemId === 750)?.name).toBe('Catálogo 750');
+    fixture.destroy();
+  });
+
+  it('refreshes the production graph and market quotes after a root ingredient substitution', async () => {
+    const organicFeed: CatalogRecipe = {
+      key: 'organic-feed',
+      type: 'COOK',
+      station: null,
+      inputs: [
+        { itemId: 9261, name: 'Aveia', quantity: '2' },
+        { itemId: 7905, name: 'Carne de Porco', quantity: '5' },
+        { itemId: 8201, name: 'Gobião', quantity: '1' },
+        { itemId: 7921, name: 'Frango', quantity: '4' },
+      ],
+      outputs: [{ itemId: 54018, name: 'Ração Orgânica', quantity: null }],
+    };
+    const alternatives = withVerifiedIngredientSubstitutions([organicFeed]);
+    const substituted = alternatives.find((candidate) => candidate.key.includes('fish-8501'))!;
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      {
+        recipe: organicFeed,
+        recipes: alternatives,
+        selectedItem: { ...item, id: 54018, name: 'Ração Orgânica' },
+      },
+      dependencies.list,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    fixture.componentInstance.action({ path: 'root', action: 'choose', value: substituted.key });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(fixture.componentInstance.root()?.recipe?.inputs[2]?.itemId).toBe(8501);
+    expect(dependencies.catalog.getItemRecipes).toHaveBeenCalledWith(8501, 'produces');
+    expect(dependencies.marketCache.resolveQuotesBatch).toHaveBeenCalledWith(
+      expect.arrayContaining([8501]),
+      'sa',
+    );
+    fixture.destroy();
   });
 
   it('loads database NPC prices for every item in the resolved recipe graph', async () => {
@@ -456,9 +601,10 @@ describe('Interactive recipe tree', () => {
     vi.useRealTimers();
   });
 
-  it('explains when catalog output has no supported mastery proc model', async () => {
+  it('explains when an unsupported recipe type has no mastery proc model', async () => {
     const catalogYield: CatalogRecipe = {
       ...recipe,
+      type: 'OTHER',
       outputs: [{ itemId: 5301, name: item.name, quantity: '1' }],
     };
     const fixture = await renderComponent(
@@ -600,11 +746,109 @@ describe('Interactive recipe tree', () => {
     expect(
       (
         fixture.nativeElement.querySelector(
-          'input[aria-label="Maestria da profissão"]',
+          'input[aria-label="Maestria de Processamento"]',
         ) as HTMLInputElement
       ).disabled,
     ).toBe(false);
     fixture.destroy();
+  });
+
+  it('renders separate simulation mastery inputs for every active profession', async () => {
+    const simpleRoot: CatalogRecipe = {
+      ...recipe,
+      key: 'simple-mixed-root',
+      type: 'SIMPLE_ALCHEMY',
+      inputs: [1389, 1388].map((itemId) => ({
+        itemId,
+        name: `Material ${itemId}`,
+        quantity: '1',
+      })),
+      outputs: [{ itemId: 1399, name: 'Produto simples', quantity: '10' }],
+    };
+    const alchemy: CatalogRecipe = {
+      ...recipe,
+      key: 'alchemy-intermediate',
+      inputs: [{ itemId: 9001, name: 'Reagente', quantity: '1' }],
+      outputs: [{ itemId: 1389, name: 'Elixir', quantity: null }],
+    };
+    const processing: CatalogRecipe = {
+      ...recipe,
+      key: 'processing-intermediate',
+      type: 'PROCESSING',
+      inputs: [{ itemId: 9002, name: 'Minério', quantity: '1' }],
+      outputs: [{ itemId: 1388, name: 'Lingote', quantity: null }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: simpleRoot, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.store.update((workspace) => ({
+      ...workspace,
+      activeCharacterId: 'one',
+      characters: [
+        characterSchema.parse({
+          id: 'one',
+          name: 'Aventureiro',
+          region: 'sa',
+          mastery: {
+            gathering: 0,
+            cooking: 700,
+            alchemy: 800,
+            processing: 500,
+            fishing: 0,
+            hunting: 0,
+            training: 0,
+            trading: 0,
+            farming: 0,
+            sailing: 0,
+            barter: 0,
+          },
+        }),
+      ],
+    }));
+    tree.recipeGraph.set({
+      rootRecipe: simpleRoot,
+      producerRecipes: [alchemy, processing],
+      itemIds: [1399, 1389, 1388, 9001, 9002],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    tree.customMaterialSource.set(
+      new Map([
+        [1389, 'produce'],
+        [1388, 'produce'],
+      ]),
+    );
+    tree.acquisitionStrategy.set('custom');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      fixture.nativeElement.querySelector('input[aria-label="Maestria de Alquimia"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('input[aria-label="Maestria de Processamento"]'),
+    ).not.toBeNull();
+
+    vi.useFakeTimers();
+    tree.setMasteryForSkill('alchemy', 3000);
+    tree.setMasteryForSkill('processing', 0);
+    await vi.advanceTimersByTimeAsync(250);
+    fixture.detectChanges();
+
+    expect(tree.masteryOverrides()).toEqual({ alchemy: 3000, processing: 0 });
+    expect(tree.productionInput()?.estimates['simple-mixed-root']?.expectedYield).toBe(10);
+    expect(tree.productionInput()?.estimates['alchemy-intermediate']?.expectedYield).toBe(3.438);
+    expect(tree.productionInput()?.estimates['processing-intermediate']?.expectedYield).toBe(2.5);
+    expect(tree.store.activeCharacter()?.mastery).toMatchObject({
+      alchemy: 800,
+      processing: 500,
+      cooking: 700,
+    });
+    fixture.destroy();
+    vi.useRealTimers();
   });
 
   it('keeps mastery available when an active intermediate recipe has variable yield', async () => {
@@ -1360,7 +1604,7 @@ describe('Interactive recipe tree', () => {
     expect(tree.formattedCraftTime()).toBe('1m 15s');
 
     expect(tree.productPrice()).toBe('1000');
-    expect(tree.grossRevenue()).toBe('100000');
+    expect(Number(tree.grossRevenue())).toBeGreaterThan(100_000);
     expect(tree.netRevenue()).not.toBeNull();
     expect(tree.profit()).not.toBeNull();
     expect(tree.profitPerHour()).not.toBeNull();
@@ -1388,13 +1632,75 @@ describe('Interactive recipe tree', () => {
     tree.setCraftCount(50);
     tree.setMethodTime('ALCHEMY', 1.5);
     fixture.detectChanges();
-    expect(tree.grossRevenue()).toBe('100000');
+    expect(Number(tree.grossRevenue())).toBeGreaterThan(100_000);
     expect(tree.profitPerHour()).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-recipe-graph')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('.metric-card')).toHaveLength(4);
     expect(fixture.nativeElement.querySelectorAll('.economic-summary-header button')).toHaveLength(
       3,
     );
+  });
+
+  it('shows alchemy returns as sell-or-keep controls and recalculates revenue', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '100' });
+    const sideProduct: CatalogRecipe = {
+      key: 'special-elixir',
+      type: 'ALCHEMY',
+      station: null,
+      byproductOfItemId: 5301,
+      inputs: [],
+      outputs: [{ itemId: 750, name: 'Elixir especial', quantity: null }],
+    };
+    tree.recipeGraph.update((graph) => ({
+      ...graph!,
+      returnRecipes: [sideProduct],
+      itemIds: [...graph!.itemIds, 750],
+    }));
+    const sideQuote: MarketItemQuote = {
+      itemId: 750,
+      subId: 0,
+      name: 'Elixir especial',
+      price: '2000',
+      stock: 1000,
+      totalTrades: '100',
+      minPrice: '2000',
+      maxPrice: '2000',
+      lastSoldPrice: '2000',
+      lastSoldAt: new Date().toISOString(),
+    };
+    tree.marketQuotes.update((quotes) => new Map(quotes).set(750, sideQuote));
+    tree.livePrices.update((prices) => new Map(prices).set(750, '2000'));
+    tree.quoteObservedAt.update((observed) => new Map(observed).set(750, new Date().toISOString()));
+    tree.masteryOverride.set(3000);
+    tree.masteryInput.set(3000);
+    tree.setCraftCount(100);
+    fixture.detectChanges();
+
+    const row = tree.returnedProductRows().find((product) => product.itemId === 750);
+    expect(row).toMatchObject({
+      name: 'Elixir especial',
+      quantity: 30,
+      sell: true,
+    });
+    expect(fixture.nativeElement.textContent).toContain('Retornos previstos');
+    const beforeKeep = Number(tree.netRevenue());
+    const checkbox = fixture.nativeElement.querySelector(
+      '.returned-product-choice input',
+    ) as HTMLInputElement;
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(tree.returnedProductRows().find((product) => product.itemId === 750)?.sell).toBe(false);
+    expect(Number(tree.netRevenue())).toBeLessThan(beforeKeep);
+    expect(fixture.nativeElement.textContent).toContain('Guardar');
+    fixture.destroy();
   });
 
   it('does not present partial material prices as definitive profit or an optimal combination', async () => {
@@ -1540,6 +1846,42 @@ describe('Interactive recipe tree', () => {
     tree.toggleMaterialSource(9001);
     expect(tree.materialSource(9001)).toBe('buy');
     expect(tree.effectiveMaterialCost()).toBe(baseCost);
+  });
+
+  it('re-evaluates bulk production choices when the recipe graph finishes loading', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+
+    // This is what happens when the user clicks "Fazer / coletar tudo" while
+    // the page is still loading the reachable recipes.
+    tree.recipeGraph.set(null);
+    tree.setAcquisitionStrategy('gather_all');
+    expect(tree.materialSource(9001)).toBe('buy');
+
+    const producer: CatalogRecipe = {
+      key: 'salt-producer',
+      type: 'COOK',
+      station: null,
+      inputs: [{ itemId: 9002, name: 'Sal bruto', quantity: '1' }],
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+    };
+    tree.recipeGraph.set({
+      rootRecipe: recipe,
+      producerRecipes: [producer],
+      itemIds: [5301, 9001, 9002],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    fixture.detectChanges();
+
+    expect(tree.materialSource(9001)).toBe('produce');
+    expect(tree.materialSource(9002)).toBe('buy');
+    fixture.destroy();
   });
 
   it('keeps sale profitability independent from final product market stock', async () => {

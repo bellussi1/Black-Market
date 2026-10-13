@@ -37,7 +37,11 @@ import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
-import { recipeFamilies } from '../../shared/recipe-tree/recipe-equivalents';
+import {
+  batchAlternatives,
+  recipeFamilies,
+  withVerifiedIngredientSubstitutions,
+} from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
@@ -66,6 +70,14 @@ export class RecipesPage {
       this.methodFamilies().find((family) => family.some((r) => r.key === this.recipe()?.key))?.[0]
         ?.key ?? '',
   );
+  readonly rootBatchOptions = computed(() => {
+    const selected = this.recipe();
+    if (!selected) return [];
+    const family = this.methodFamilies().find((recipes) =>
+      recipes.some((candidate) => candidate.key === selected.key),
+    );
+    return batchAlternatives(selected, family ?? [selected]);
+  });
   readonly dataset = signal<ActiveDatasetSummary | null>(null);
   readonly loading = signal(true);
   readonly message = signal('');
@@ -170,13 +182,12 @@ export class RecipesPage {
         }
         this.item.set(data.item.item);
         this.dataset.set(data.item.dataset);
-        this.alternatives.set(data.recipes.recipes);
+        const alternatives = withVerifiedIngredientSubstitutions(data.recipes.recipes);
+        this.alternatives.set(alternatives);
         this.recipe.set(
           data.selectedKey === 'external'
             ? null
-            : (data.recipes.recipes.find((r) => r.key === data.selectedKey) ??
-                this.methods()[0] ??
-                null),
+            : (alternatives.find((r) => r.key === data.selectedKey) ?? this.methods()[0] ?? null),
         );
         this.seo.describe(
           data.item.item.name + ' · Receitas e obtenção',
@@ -192,6 +203,12 @@ export class RecipesPage {
   choose(event: Event) {
     const key = (event.target as HTMLSelectElement).value;
     this.setMethod(this.alternatives().find((r) => r.key === key) ?? null);
+  }
+  chooseBatch(event: Event) {
+    const key = (event.target as HTMLSelectElement).value;
+    this.setMethod(
+      this.rootBatchOptions().find((batch) => batch.recipe.key === key)?.recipe ?? null,
+    );
   }
   setMethod(recipe: CatalogRecipe | null) {
     this.recipe.set(recipe);

@@ -68,6 +68,62 @@ describe('Universal recipe explorer', () => {
     expect(fixture.nativeElement.querySelector('.mode-toggle')).toBeNull();
     http.verify();
   });
+  it('starts with the largest verified recipe batch and keeps smaller batches selectable', async () => {
+    const fixture = await renderComponent(RecipesPage, {}, [route('1407')]);
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne((r) => r.url.endsWith('/items/1407'))
+      .flush({
+        item: {
+          id: 1407,
+          name: 'Edania',
+          categories: [],
+          iconUrl: null,
+          sourceData: {},
+        },
+        dataset,
+      });
+    const makeBatch = (
+      key: string,
+      scale: number,
+      catalystId: number,
+      catalystQuantity: number,
+    ) => ({
+      key,
+      type: 'SIMPLE_ALCHEMY',
+      station: null,
+      inputs: [
+        { itemId: 1399, name: 'Harmonia', quantity: String(scale) },
+        { itemId: 702, name: 'Vontade', quantity: String(scale * 3) },
+        { itemId: 1409, name: 'Elixir', quantity: String(scale * 3) },
+        { itemId: catalystId, name: 'Catalisador', quantity: String(catalystQuantity) },
+      ],
+      outputs: [{ itemId: 1407, name: 'Edania', quantity: null }],
+    });
+    const batches = [
+      makeBatch('1'.repeat(64), 1, 820936, 1),
+      makeBatch('2'.repeat(64), 10, 821372, 1),
+    ];
+    http
+      .expectOne((r) => r.url.endsWith('/items/1407/recipes'))
+      .flush({ recipes: batches, total: batches.length, dataset, direction: 'produces' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.recipe()?.key).toBe(batches[1].key);
+    expect(fixture.componentInstance.rootBatchOptions().map((batch) => batch.quantity)).toEqual([
+      1, 10,
+    ]);
+    const batchSelector = fixture.nativeElement.querySelector(
+      '#root-recipe-batch',
+    ) as HTMLSelectElement;
+    expect(batchSelector.value).toBe(batches[1].key);
+    fixture.componentInstance.chooseBatch({
+      target: { value: batches[0].key },
+    } as unknown as Event);
+    expect(fixture.componentInstance.recipe()?.key).toBe(batches[0].key);
+    http.verify();
+  });
   it('rejects invalid catalog IDs without making requests', async () => {
     const fixture = await renderComponent(RecipesPage, {}, [route('-1')]);
     expect(fixture.componentInstance.message()).toContain('não encontrado');

@@ -79,29 +79,51 @@
               </div>
             </div>
 
-            <!-- Coluna 2: Maestria da Profissão (SEMPRE VISÍVEL) -->
-            <div class="craft-param-col">
-              <label class="craft-count-control">
-                <span class="control-label-text"> Maestria ({{ primarySkillLabel() }}) </span>
-                <div class="craft-input-box">
-                  <input
-                    type="number"
-                    min="0"
-                    max="3000"
-                    step="10"
-                    class="craft-count-input"
-                    placeholder="Ex: 1250"
-                    aria-label="Maestria da profissão"
-                    [disabled]="!masteryApplies()"
-                    [ngModel]="displayedMastery()"
-                    (ngModelChange)="setMasteryOverride($event)"
-                  />
-                  <span class="craft-count-unit">pts</span>
+            @for (skill of masterySkills(); track skill) {
+              <div class="craft-param-col">
+                <label class="craft-count-control">
+                  <span class="control-label-text">
+                    Maestria ({{ masterySkillLabel(skill) }})
+                  </span>
+                  <div class="craft-input-box">
+                    <input
+                      type="number"
+                      min="0"
+                      max="3000"
+                      step="10"
+                      class="craft-count-input"
+                      placeholder="Ex: 1250"
+                      [attr.aria-label]="'Maestria de ' + masterySkillLabel(skill)"
+                      [ngModel]="displayedMasteryForSkill(skill)"
+                      (ngModelChange)="setMasteryForSkill(skill, $event)"
+                    />
+                    <span class="craft-count-unit">pts</span>
+                  </div>
+                </label>
+                <div class="craft-param-hint" i18n>
+                  Aplicada às etapas de {{ masterySkillLabel(skill) }} feitas nesta simulação.
                 </div>
-              </label>
-              <div class="craft-param-hint">
-                <span class="yield-badge">{{ yieldDescription() }}</span>
-                @if (!masteryApplies()) {
+              </div>
+            } @empty {
+              <div class="craft-param-col">
+                <label class="craft-count-control">
+                  <span class="control-label-text">Maestria ({{ primarySkillLabel() }})</span>
+                  <div class="craft-input-box">
+                    <input
+                      type="number"
+                      min="0"
+                      max="3000"
+                      step="10"
+                      class="craft-count-input"
+                      placeholder="Ex: 1250"
+                      aria-label="Maestria da profissão"
+                      disabled
+                      [ngModel]="displayedMastery()"
+                    />
+                    <span class="craft-count-unit">pts</span>
+                  </div>
+                </label>
+                <div class="craft-param-hint">
                   @if (
                     product.recipe?.type === 'SIMPLE_ALCHEMY' && masteryAvailableInSubrecipes()
                   ) {
@@ -112,13 +134,12 @@
                   } @else {
                     <span i18n>Maestria sem efeito nesta fórmula</span>
                   }
-                }
-                @if (masteryApplies() && product.recipe?.type === 'SIMPLE_ALCHEMY') {
-                  <span
-                    >Aplicada às subreceitas de {{ primarySkillLabel() }} produzidas; a etapa final
-                    mantém seu rendimento fixo.</span
-                  >
-                }
+                </div>
+              </div>
+            }
+            <div class="craft-param-col">
+              <div class="craft-param-hint">
+                <span class="yield-badge">{{ yieldDescription() }}</span>
               </div>
             </div>
           </div>
@@ -147,7 +168,7 @@
                 type="number"
                 min=".001"
                 max="1000000"
-                step=".001"
+                step=".0001"
                 [ngModel]="effectiveYield()"
                 (ngModelChange)="setRootYield($event)"
             /></label>
@@ -411,6 +432,79 @@
             }
           </div>
         </div>
+
+        <ng-template #returnedProductRow let-returned="returned">
+          <div class="returned-product-row">
+            <app-item-icon
+              class="returned-product-icon"
+              [name]="returned.name"
+              [url]="returned.iconUrl"
+            />
+            <div class="returned-product-details">
+              <strong>{{ returned.name }}</strong>
+              <small>
+                <ng-container i18n>Quantidade esperada no lote:</ng-container>
+                {{ quantityLabel(returned.quantity) }}
+              </small>
+              @if (returned.unitPrice !== null) {
+                <small
+                  ><ng-container i18n>Preço un.:</ng-container> {{ silver(returned.unitPrice) }} ·
+                  {{ returned.quote.label }}</small
+                >
+              } @else {
+                <small i18n>Sem cotação de mercado; venda não incluída.</small>
+              }
+            </div>
+            <label class="returned-product-choice">
+              <input
+                type="checkbox"
+                [checked]="returned.sell"
+                (change)="setReturnProductSale(returned.itemId, $any($event.target).checked)"
+              />
+              @if (returned.sell) {
+                <span i18n>Vender</span>
+              } @else {
+                <span i18n>Guardar</span>
+              }
+            </label>
+          </div>
+        </ng-template>
+
+        @if (returnedProductRows().length) {
+          <section class="returned-product-panel" aria-label="Produtos retornados" i18n-aria-label>
+            <div class="returned-product-intro">
+              <h3 i18n>Retornos previstos</h3>
+              <p i18n>
+                Marque os itens que pretende vender. Itens guardados ficam fora do faturamento.
+              </p>
+            </div>
+            <div class="returned-product-list">
+              @for (returned of regularReturnRows(); track returned.itemId) {
+                <ng-container
+                  [ngTemplateOutlet]="returnedProductRow"
+                  [ngTemplateOutletContext]="{ returned: returned }"
+                />
+              }
+            </div>
+            @if (alchemyBonusRows().length) {
+              <details class="alchemy-bonus-group">
+                <summary>
+                  <span i18n>Bônus aleatórios da alquimia</span>
+                  <span class="alchemy-bonus-count">{{ alchemyBonusRows().length }}</span>
+                </summary>
+                <p i18n>Rendimentos esperados por operação; abra para revisar cada item.</p>
+                <div class="returned-product-list">
+                  @for (returned of alchemyBonusRows(); track returned.itemId) {
+                    <ng-container
+                      [ngTemplateOutlet]="returnedProductRow"
+                      [ngTemplateOutletContext]="{ returned: returned }"
+                    />
+                  }
+                </div>
+              </details>
+            }
+          </section>
+        }
 
         <div class="economic-summary-footer">
           <span
@@ -839,7 +933,7 @@
                         type="number"
                         min=".001"
                         max="1000000"
-                        step=".001"
+                        step=".0001"
                         [ngModel]="current.yield"
                         (ngModelChange)="
                           action({ path: current.path, action: 'yield', value: $event })

@@ -42,6 +42,24 @@ describe('Recipe exploration sessions', () => {
     expect(sessions.get(key)?.methodTimes).toEqual({});
   });
 
+  it('keeps per-profession mastery values in the in-memory recipe session', () => {
+    const sessions = new RecipeSessions();
+    const key = 'sa/v1/1/recipe';
+    sessions.save(key, {
+      root: nodeFor({ itemId: 1, name: 'Produto', quantity: null }, 'root'),
+      target: 1,
+      view: 'tree',
+      excludedLocations: [],
+      masteryOverrides: { cooking: 3000, alchemy: 2500, processing: 1000 },
+    });
+
+    expect(sessions.get(key)?.masteryOverrides).toEqual({
+      cooking: 3000,
+      alchemy: 2500,
+      processing: 1000,
+    });
+  });
+
   it('round trips an explicit gathering yield and time', () => {
     const sessions = new RecipeSessions();
     const key = 'sa/v1/1/recipe';

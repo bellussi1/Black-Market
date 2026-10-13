@@ -19,7 +19,7 @@ const recipe = (
   yieldValue: string | null = '1',
 ): CatalogRecipe => ({
   key,
-  type: 'ALCHEMY',
+  type: 'OTHER',
   station: null,
   outputs: [{ ...part(output), quantity: yieldValue }],
   inputs: inputs.map(([id, q]) => part(id, q)),
@@ -114,6 +114,11 @@ describe('Recipe graph planning', () => {
     expect(
       withRecipe(nodeFor(part(5301), 'root'), recipe('ordinary', 5301, [[4, '1']], null)).yield,
     ).toBeNull();
+  });
+  it('does not treat the catalog base output of ordinary alchemy as fixed', () => {
+    const baseOutput = { ...recipe('ordinary-alchemy', 5301, [[4, '2']], '1'), type: 'ALCHEMY' };
+
+    expect(withRecipe(nodeFor(part(5301), 'root'), baseOutput).yield).toBeNull();
   });
   it('reuses shared stock only once across branches and consolidates the shortfall', () => {
     const state = emptyWorkspace();
