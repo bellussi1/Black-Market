@@ -834,3 +834,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Commits atômicos: `ba7dab9 fix(recipes): preserve best feasible optimization rate`; `9ef1900 refactor(recipes): unify production and return controls`.
 - Arquivos: `packages/calculators/src/production-planner.ts` e teste; `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`, `.html`, `.scss` e teste.
 - Próximo agente: manter a comparação pela taxa exata de lucro por hora e os três candidatos-piso no mesmo lote. Se a busca alcançar o teto, preservar o aviso de que o ótimo global não foi certificado. Manter todas as decisões de aquisição e venda no mesmo painel do plano.
+
+## 73. Busca exata mais rápida para a cadeia Edania (13/10/2026)
+
+- Na receita `[Grupo] Imortalidade: Fármaco da Harmonia - Edania` (item 1408), a busca anterior visitava 10.000 estados e ainda não certificava o ótimo. O grafo carregado tinha 60 receitas, 145 cotações, 824 subprodutos marcados para venda e 58 excedentes com venda habilitada; não havia coleta nem proc raro selecionados.
+- A poda agora calcula, por estado, um teto de receita dos ramos ainda alcançáveis e um piso de custo dos materiais necessários. O teto inclui as vendas do produto, os subprodutos e um limite conservador para excedentes de lotes. Escolhas que criariam ciclos são retiradas da busca porque não podem formar um plano válido. O limite continua desativado quando há coleta configurada ou proc raro ativo, onde esse teto não certifica as receitas.
+- O próximo item indeciso é escolhido pela quantidade de subreceitas alcançáveis e pelo tempo estimado desse ramo, para que a poda encontre ramos sem potencial mais cedo. O limite rígido continua em 10.000; nenhum aviso de ótimo não certificado é removido.
+- Regressões: venda de subprodutos com poda, comparação contra oráculo exaustivo com subprodutos e excedentes vendáveis, rejeição de escolhas cíclicas e snapshot da topologia Edania com retornos em todas as receitas. O snapshot agora fecha abaixo de 10.000 estados.
+- Reprodução local no item 1408, usando cotações e escolhas atuais: cálculo concluído em 156 ms, 40 estados visitados, 37 podados e nenhum aviso de limite. A melhor combinação apresentou lucro de 156.314.842.909 e lucro/hora de 178.918.171.967.
+- Validação final: `pnpm check` passou; calculadoras 65/65, API 138/138, web 460/460 e scripts OCR 73/73 passaram quando executados em sequência separada. A primeira execução agregada de `pnpm test` teve três timeouts de 5 s no web sob carga paralela; a suíte web completa passou na execução isolada. Permanece o aviso conhecido de locale `pt-BR` usando fallback `pt`.
+- Arquivos desta iteração: `packages/calculators/src/production-planner.ts`, seu teste e este documento.
+- Próximo agente: manter os limites de receita/custo conservadores e a ressalva de busca sem certificado quando coleta ou proc raro estiver ativo. Não elevar o teto de estados para compensar uma nova regressão.

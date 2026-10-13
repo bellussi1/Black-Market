@@ -332,19 +332,63 @@ describe('production planner', () => {
     );
   });
 
-  it('does not apply the revenue bound when sellable byproducts can increase revenue', () => {
+  it('uses a branch-specific bound to prune when byproducts are sellable', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
-    input.recipes[0].byproducts = [{ itemId: 4, quantity: null }];
+    input.quotes[3].unitPrice = '1000';
+    input.quotes[4] = { unitPrice: '100', available: 100, observedAt: now, source: 'market' };
+    input.recipes[1].byproducts = [{ itemId: 4, quantity: 1 }];
     input.byproductValues = {
-      final: [{ itemId: 4, expectedQuantity: 1, unitPrice: '100000', sell: true }],
+      middle: [{ itemId: 4, expectedQuantity: 1, unitPrice: '100', sell: true }],
     };
+    input.estimates.middle.craftSeconds = 600;
 
-    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+    const result = planProduction(input);
+    const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
 
+    expect(optimized?.profitPerHour).toBe('35400');
     expect(optimized?.assumptions.join(' ')).toContain(
-      '0 estados podados pelo limite superior seguro',
+      '1 estados podados pelo limite superior seguro',
     );
+    expect(result.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(false);
+  });
+
+  it('skips cyclic production choices before expanding the optimization search', () => {
+    const input = fixture();
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'cook',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [{ itemId: 2, quantity: 1 }],
+      },
+      {
+        id: 'middle',
+        name: 'Middle',
+        method: 'process',
+        output: { itemId: 2, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+      },
+      {
+        id: 'cyclic',
+        name: 'Cyclic',
+        method: 'process',
+        output: { itemId: 1, quantity: 1 },
+        ingredients: [{ itemId: 2, quantity: 1 }],
+      },
+    ];
+    input.quotes[1] = { unitPrice: '10', available: 100, observedAt: now, source: 'market' };
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+
+    const result = planProduction(input);
+    const optimized = result.ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized).toBeDefined();
+    expect(optimized?.assumptions.join(' ')).toContain(
+      'escolhas de produção que criariam ciclos foram descartadas',
+    );
+    expect(result.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(false);
   });
 
   it('keeps the exact best result when profit is negative', () => {
@@ -365,7 +409,7 @@ describe('production planner', () => {
     );
   });
 
-  it('matches an exhaustive oracle for a small buy-produce graph', () => {
+  it('matches an exhaustive oracle when byproducts and surplus can be sold', () => {
     const input = fixture();
     input.recipes = [
       {
@@ -377,6 +421,7 @@ describe('production planner', () => {
           { itemId: 2, quantity: 1 },
           { itemId: 4, quantity: 1 },
         ],
+        byproducts: [{ itemId: 6, quantity: 1 }],
       },
       {
         id: 'middle-a',
@@ -384,6 +429,7 @@ describe('production planner', () => {
         method: 'processing',
         output: { itemId: 2, quantity: 1 },
         ingredients: [{ itemId: 1, quantity: 2 }],
+        byproducts: [{ itemId: 7, quantity: 1 }],
       },
       {
         id: 'middle-b',
@@ -391,23 +437,30 @@ describe('production planner', () => {
         method: 'processing',
         output: { itemId: 4, quantity: 1 },
         ingredients: [{ itemId: 5, quantity: 1 }],
+        byproducts: [{ itemId: 8, quantity: 1 }],
       },
     ];
     input.quotes = Object.fromEntries(
-      [1, 2, 3, 4, 5].map((itemId) => [
+      [1, 2, 3, 4, 5, 6, 7, 8].map((itemId) => [
         itemId,
         {
-          unitPrice: String(itemId === 3 ? 1000 : itemId * 10),
+          unitPrice: String(itemId === 3 ? 1000 : itemId >= 6 ? itemId * 100 : itemId * 10),
           available: 100,
           observedAt: now,
           source: 'market',
         },
       ]),
     );
+    input.byproductValues = {
+      final: [{ itemId: 6, expectedQuantity: 1, unitPrice: '600', sell: true }],
+      'middle-a': [{ itemId: 7, expectedQuantity: 1, unitPrice: '700', sell: true }],
+      'middle-b': [{ itemId: 8, expectedQuantity: 1, unitPrice: '800', sell: true }],
+    };
+    input.surplusSales = { 2: true, 4: true };
     input.estimates = {
       final: { craftSeconds: 5, source: 'fixed' },
-      'middle-a': { craftSeconds: 12, source: 'fixed' },
-      'middle-b': { craftSeconds: 2, source: 'fixed' },
+      'middle-a': { expectedYield: 1.5, craftSeconds: 12, source: 'fixed' },
+      'middle-b': { expectedYield: 1.5, craftSeconds: 2, source: 'fixed' },
     };
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
     const automatic = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized')!;
@@ -429,6 +482,7 @@ describe('production planner', () => {
     expect(automatic.profit).toBe(oracle.profit);
     expect(automatic.profitPerHour).toBe(oracle.profitPerHour);
     expect(automatic.materials).toEqual(oracle.materials);
+    expect(automatic.returns).toEqual(oracle.returns);
   });
 
   it('optimizes a 38-producer Edania chain without enumerating irrelevant descendants', () => {
@@ -493,7 +547,16 @@ describe('production planner', () => {
       output: { itemId: producer.outputItemId, quantity: 1 },
       ingredients: producer.ingredientItemIds.map((itemId) => ({ itemId, quantity: 1 })),
     }));
-    const recipes = [root, ...producers];
+    const recipes = [root, ...producers].map((recipe, index) => ({
+      ...recipe,
+      byproducts: [{ itemId: 900_000 + index, quantity: 1 }],
+    }));
+    const byproductValues = Object.fromEntries(
+      recipes.map((recipe, index) => [
+        recipe.id,
+        [{ itemId: 900_000 + index, expectedQuantity: 1, unitPrice: '1', sell: true }],
+      ]),
+    );
     const itemIds = new Set([
       topology.outputItemId,
       ...topology.rootIngredientItemIds,
@@ -505,7 +568,7 @@ describe('production planner', () => {
     const input = fixture();
     input.recipes = recipes;
     input.quotes = Object.fromEntries(
-      [...itemIds].map((itemId) => [
+      [...itemIds, ...recipes.map((_, index) => 900_000 + index)].map((itemId) => [
         itemId,
         {
           unitPrice: String(itemId === topology.outputItemId ? 100_000 : 100),
@@ -515,11 +578,12 @@ describe('production planner', () => {
         },
       ]),
     );
+    input.byproductValues = byproductValues;
     input.estimates = Object.fromEntries(
       recipes.map((recipe) => [recipe.id, { expectedYield: 1, craftSeconds: 1, source: 'fixed' }]),
     );
     input.candidates = [{ recipeId: topology.rootRecipeKey, optimizeCrafts: 1 }];
-    input.maxOptimizationStates = 250_000;
+    input.maxOptimizationStates = 10_000;
     input.profile.activeMinutes = 100_000;
 
     const result = planProduction(input);
@@ -536,7 +600,7 @@ describe('production planner', () => {
     });
     expect(optimized?.profitPerHour).not.toBeNull();
     expect(optimized?.assumptions.join(' ')).toMatch(
-      /\d+ estados podados pelo limite superior seguro/,
+      /\d+ visitados, [1-9]\d* estados podados pelo limite superior seguro/,
     );
     expect(result.incomplete.some((plan) => plan.scenario === 'optimized')).toBe(false);
   });
