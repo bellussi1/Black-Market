@@ -1017,7 +1017,8 @@ export class ScansPage implements OnDestroy {
             this.emptySlots.update((n) => n + 1);
             continue;
           }
-          positions.push({ cell, matches: rankCandidates(image, cell, index) });
+          const matches = rankCandidates(image, cell, index);
+          positions.push({ cell, matches });
         }
         this.refiner?.close();
         const refiner = new IconRefiner();
@@ -1061,8 +1062,12 @@ export class ScansPage implements OnDestroy {
             .map((match) => items.get(match.id))
             .filter((item): item is CatalogItem => Boolean(item))
             .sort((a, b) => {
-              const da = matches.find((m) => m.id === a.id)!.distance;
-              const db = matches.find((m) => m.id === b.id)!.distance;
+              const da =
+                matches.find((m) => m.id === a.id)!.rankScore ??
+                matches.find((m) => m.id === a.id)!.distance;
+              const db =
+                matches.find((m) => m.id === b.id)!.rankScore ??
+                matches.find((m) => m.id === b.id)!.distance;
               // Identical icons also occur on retired event and placeholder records.
               // Prefer a categorized, ordinary item in the visual tie; never confirm it.
               if (
@@ -1078,11 +1083,17 @@ export class ScansPage implements OnDestroy {
               return da - db;
             });
           const best = matches[0];
+          const shapeMargin =
+            matches[1] && best?.rankScore !== undefined && matches[1].rankScore !== undefined
+              ? matches[1].rankScore - best.rankScore
+              : Infinity;
           const uniqueSuggestion =
             best &&
             !best.sharedIcon &&
+            best.colorRank === 1 &&
+            (best.colorGap ?? 0) >= 2 &&
             best.distance <= 24 &&
-            (!matches[1] || matches[1].distance - best.distance >= 2);
+            shapeMargin >= 0.04;
           const canvas = document.createElement('canvas');
           const previewScale = 64 / Math.max(cell.width, cell.height);
           canvas.width = Math.max(1, Math.round(cell.width * previewScale));

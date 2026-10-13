@@ -6,6 +6,23 @@ interface Mask {
   height: number;
   pixels: Uint8Array;
 }
+export function binarizeQuantityPixels(
+  data: ArrayLike<number>,
+  threshold = 120,
+): Uint8ClampedArray {
+  const output = new Uint8ClampedArray(data.length);
+  for (let i = 0; i + 3 < data.length; i += 4) {
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
+    const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    const ink = luminance >= threshold && Math.max(r, g, b) - Math.min(r, g, b) < 85;
+    const value = ink ? 0 : 255;
+    output[i] = output[i + 1] = output[i + 2] = value;
+    output[i + 3] = 255;
+  }
+  return output;
+}
 function trim(mask: Mask): Mask | null {
   let left = mask.width,
     top = mask.height,

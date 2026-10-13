@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { readQuantityPixels } from './quantity-pixels';
+import { binarizeQuantityPixels, readQuantityPixels } from './quantity-pixels';
 // Binarized crops retain digit placement and icon clutter, without retaining the image.
 const fixtures = [
   {
@@ -155,6 +155,15 @@ const fixtures = [
   },
 ];
 describe('Local storage digit recognition', () => {
+  it('separates bright low-chroma glyph strokes from the background', () => {
+    const input = Uint8ClampedArray.from([
+      200, 200, 200, 255, 119, 119, 119, 255, 190, 100, 100, 255, 160, 160, 160, 255,
+    ]);
+
+    expect([...binarizeQuantityPixels(input, 120)]).toEqual([
+      0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+    ]);
+  });
   it('does not interpret a bright slot frame as the digit one', () => {
     const rgb = new Uint8Array(50 * 20 * 3);
     for (let y = 3; y < 16; y++)
