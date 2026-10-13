@@ -279,6 +279,44 @@ describe('production planner', () => {
     expect(partial?.issues).toContainEqual(expect.objectContaining({ code: 'optimization-limit' }));
   });
 
+  it('never returns a limited optimization below the feasible all-produced baseline', () => {
+    const input = fixture();
+    input.quotes[2].unitPrice = '100';
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.maxOptimizationStates = 1;
+
+    const result = planProduction(input);
+    const optimized = result.incomplete.find((plan) => plan.scenario === 'optimized');
+    const allProduced = row(input, 'produce-all');
+
+    expect(Number(optimized?.profitPerHour)).toBeGreaterThanOrEqual(
+      Number(allProduced.profitPerHour),
+    );
+    expect(optimized?.sourceChoices).toMatchObject({ 2: 'produce' });
+  });
+
+  it('keeps the current valid source combination as a floor when optimization is limited', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.maxOptimizationStates = 1;
+    input.customChoices = { 2: 'gather' };
+    input.gatheringEstimates = {
+      2: {
+        expectedYield: 2,
+        craftSeconds: 1,
+        source: 'calibrated',
+        origin: 'user-confirmed',
+      },
+    };
+
+    const result = planProduction(input);
+    const optimized = result.incomplete.find((plan) => plan.scenario === 'optimized');
+    const current = row(input, 'custom');
+
+    expect(Number(optimized?.profitPerHour)).toBeGreaterThanOrEqual(Number(current.profitPerHour));
+    expect(optimized?.sourceChoices).toMatchObject({ 2: 'gather' });
+  });
+
   it('prunes only when the best complete rate beats a safe profit and time upper bound', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];

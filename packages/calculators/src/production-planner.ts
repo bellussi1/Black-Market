@@ -890,13 +890,29 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         if (result.profitPerHour === null) incomplete.push(result);
         else ranked.push(result);
       } else {
-        const baseline = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
-        let best: ProductionPlan | null = baseline.profitPerHour === null ? null : baseline;
-        let bestPending: ProductionPlan | null = baseline.profitPerHour === null ? baseline : null;
+        let best: ProductionPlan | null = null;
+        let bestPending: ProductionPlan | null = null;
         let visitedStates = 0;
         let boundPrunedStates = 0;
         let duplicateStates = 0;
         let complete = true;
+        const betterThanCurrent = (plan: ProductionPlan, current: ProductionPlan) =>
+          compareRate(plan, current) > 0 ||
+          (compareRate(plan, current) === 0 &&
+            BigInt(plan.cashCost ?? '0') < BigInt(current.cashCost ?? '0'));
+        const allProducedChoices = Object.fromEntries(
+          [...producers.keys()].map((itemId) => [itemId, 'produce' as const]),
+        );
+        // Seed the search with complete plans already represented by the UI.
+        // A state limit must never discard a known better rate than the partial search found.
+        for (const choices of [{}, allProducedChoices, input.customChoices ?? {}]) {
+          const plan = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized', choices);
+          if (plan.profitPerHour !== null) {
+            if (best === null || betterThanCurrent(plan, best)) best = plan;
+          } else if (bestPending === null || plan.issues.length < bestPending.issues.length) {
+            bestPending = plan;
+          }
+        }
         const initialChoices = new Map<number, ProductionChoice>();
         const pending: Map<number, ProductionChoice>[] = [initialChoices];
         const visited = new Set<string>();
@@ -980,13 +996,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             choiceRecord,
           );
           if (result.profitPerHour !== null) {
-            if (
-              best === null ||
-              compareRate(result, best) > 0 ||
-              (compareRate(result, best) === 0 &&
-                BigInt(result.cashCost ?? '0') < BigInt(best.cashCost ?? '0'))
-            )
-              best = result;
+            if (best === null || betterThanCurrent(result, best)) best = result;
           } else if (bestPending === null || result.issues.length < bestPending.issues.length) {
             bestPending = result;
           }
