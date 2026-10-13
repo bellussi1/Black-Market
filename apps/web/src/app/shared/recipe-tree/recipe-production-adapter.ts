@@ -5,10 +5,16 @@ import {
   type ProductionPlannerInput,
 } from '@bdo/calculators';
 import type { Workspace } from '@bdo/calculators/workspace';
-import type { CatalogRecipe, CatalogRecipePart, MarketItemQuote } from '@bdo/shared';
+import type {
+  CatalogRecipe,
+  CatalogRecipePart,
+  MarketItemQuote,
+  NpcPurchasePrice,
+} from '@bdo/shared';
 
-import { npcPurchasePrices } from './npc-purchase-prices';
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import { recipeMarketPrice } from './recipe-market-price';
+import { processingBatchCount } from './recipe-mastery';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { stockLocationKey } from './recipe-tree-model';
 import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
@@ -21,7 +27,7 @@ export interface RecipeProductionAdapterOptions {
   optimize?: boolean;
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
-  marketAcquisition?: ProductionPlannerInput['marketAcquisition'];
+  npcPurchasePrices?: ReadonlyMap<number, NpcPurchasePrice>;
 }
 
 function positiveNumber(value: string | number | null | undefined): number | undefined {
@@ -56,11 +62,12 @@ function quoteRecord(
 ): ProductionPlannerInput['quotes'] {
   const result: ProductionPlannerInput['quotes'] = {};
   for (const [itemId, quote] of quotes) {
-    if (!quote.price || !/^\d{1,24}$/.test(quote.price)) continue;
+    const selectedPrice = recipeMarketPrice(quote);
+    if (!selectedPrice) continue;
     const timestamp = observedAt.get(itemId);
     if (!timestamp || !Number.isFinite(Date.parse(timestamp))) continue;
     result[itemId] = {
-      unitPrice: quote.price,
+      unitPrice: selectedPrice.price,
       available: Number.isFinite(quote.stock) && quote.stock >= 0 ? quote.stock : null,
       observedAt: timestamp,
       source: 'market',
@@ -115,12 +122,22 @@ export function buildRecipeProductionInput(
         : recipe.outputs[0];
     if (!primary) return [];
     const itemId = primary.itemId;
+    const skill = lifeSkillForRecipe(recipe.type);
+    const mastery = masteryFor(recipe);
+    const processingBatch =
+      skill === 'processing' &&
+      recipe.inputs.length > 0 &&
+      recipe.inputs.every((input) => positiveNumber(input.quantity) !== undefined)
+        ? processingBatchCount(mastery)
+        : 1;
     const fixedOrCatalogYield = outputQuantity(recipe, itemId);
     const overrideYield = options.yieldOverrides?.get(itemId);
     const expectedYield =
-      fixedOrCatalogYield ??
+      (skill === 'processing' && fixedRecipeYield(recipe, itemId) === null
+        ? null
+        : fixedOrCatalogYield) ??
       overrideYield ??
-      resolveDefaultYield(recipe, itemId, masteryFor(recipe));
+      resolveDefaultYield(recipe, itemId, mastery);
     const time = methodTimes.get(recipe.type);
     const estimateSource: ProductionEstimate['source'] =
       fixedRecipeYield(recipe, itemId) !== null
@@ -137,7 +154,9 @@ export function buildRecipeProductionInput(
       ...(estimateSource === 'calibrated' ? { contextHash } : {}),
     };
     const numericOutput =
-      positiveNumber(primary.quantity) ?? fixedRecipeYield(recipe, itemId) ?? null;
+      skill === 'processing' && fixedRecipeYield(recipe, itemId) === null
+        ? expectedYield
+        : (positiveNumber(primary.quantity) ?? fixedRecipeYield(recipe, itemId) ?? null);
     return [
       {
         id: recipe.key,
@@ -146,13 +165,19 @@ export function buildRecipeProductionInput(
         output: { itemId, quantity: numericOutput },
         ingredients: recipe.inputs.map((part) => ({
           itemId: part.itemId,
-          quantity: positiveNumber(part.quantity) ?? null,
+          quantity:
+            positiveNumber(part.quantity) === undefined
+              ? null
+              : positiveNumber(part.quantity)! * processingBatch,
         })),
         byproducts: recipe.outputs
           .filter((part) => part.itemId !== itemId)
           .map((part) => ({
             itemId: part.itemId,
-            quantity: positiveNumber(part.quantity) ?? null,
+            quantity:
+              positiveNumber(part.quantity) === undefined
+                ? null
+                : positiveNumber(part.quantity)! * processingBatch,
           })),
         estimate,
       },
@@ -177,14 +202,13 @@ export function buildRecipeProductionInput(
   const quoteObservedAt = new Map(options.quoteObservedAt ?? []);
   const mappedQuotes = quoteRecord(quotes, quoteObservedAt);
   for (const itemId of graph.itemIds) {
-    const npc = npcPurchasePrices.get(itemId);
-    if (!npc) continue;
+    const npc = options.npcPurchasePrices?.get(itemId);
+    if (!npc || mappedQuotes[itemId]) continue;
     mappedQuotes[itemId] = {
       unitPrice: npc.unitPrice,
       available: null,
       observedAt: npc.verifiedAt,
       source: 'npc',
-      sourceUrl: npc.sourceUrl,
     };
   }
   const gatheringEstimates = Object.fromEntries(
@@ -210,9 +234,8 @@ export function buildRecipeProductionInput(
         ...(options.optimize !== false ? { optimizeCrafts: operations } : {}),
       },
     ],
-    // The selected Edania graph needs more than the planner's conservative 100k default.
-    // Keep the planner's 1M hard cap; it reports an inconclusive result if exceeded.
-    maxOptimizationStates: 250_000,
+    // Cap expensive exact searches; the planner keeps the best candidate found at this limit.
+    maxOptimizationStates: 10_000,
     profile: {
       budget: character?.silver ?? workspace.familySilver,
       activeMinutes: character?.activeMinutes ?? 60,
@@ -227,6 +250,5 @@ export function buildRecipeProductionInput(
     customChoices,
     useOwnedInProduction: true,
     enforcePurchaseLimits: false,
-    marketAcquisition: options.marketAcquisition ?? 'preorder',
   };
 }

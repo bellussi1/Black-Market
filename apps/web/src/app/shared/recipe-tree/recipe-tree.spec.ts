@@ -5,6 +5,7 @@ import type {
   CatalogRecipe,
   CatalogRecipesResponse,
   MarketItemQuote,
+  NpcPurchasePrice,
 } from '@bdo/shared';
 import { of, Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -66,6 +67,9 @@ function providers() {
   };
   const catalog = {
     resolveIconUrl: vi.fn(() => null),
+    getNpcPurchasePrices: vi.fn((_itemIds: number[], _datasetVersion: string) =>
+      of(new Map<number, NpcPurchasePrice>()),
+    ),
     getItemRecipes: vi.fn((_itemId: number, _direction: 'produces' | 'uses') =>
       of({ recipes: [], total: 0, direction: 'produces', dataset: null } as CatalogRecipesResponse),
     ),
@@ -157,6 +161,128 @@ describe('Interactive recipe tree', () => {
     expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(9001, 'produces');
     expect(mocks.catalog.getItemRecipes).toHaveBeenCalledWith(8001, 'produces');
     expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith([5301, 8001, 9001], 'sa');
+  });
+
+  it('loads database NPC prices for every item in the resolved recipe graph', async () => {
+    const mocks = providers();
+    const saltRecipe: CatalogRecipe = {
+      key: 'salt-byproduct',
+      type: 'PROCESSING',
+      station: null,
+      inputs: [],
+      outputs: [
+        { itemId: 9001, name: 'Sal', quantity: '1' },
+        { itemId: 7313, name: 'Maçã', quantity: '1' },
+      ],
+    };
+    const npcPrice: NpcPurchasePrice = {
+      itemId: 7313,
+      unitPrice: '1000',
+      vendor: 'Vendedor NPC listado no catálogo',
+      verifiedAt: '2026-10-10T12:22:17.854Z',
+    };
+    mocks.catalog.getNpcPurchasePrices.mockReturnValue(of(new Map([[7313, npcPrice]])));
+    mocks.catalog.getItemRecipes.mockReturnValue(
+      of({
+        recipes: [saltRecipe],
+        total: 1,
+        direction: 'produces',
+        dataset: {
+          version: 'dataset-v1',
+          region: 'sa',
+          locale: 'pt',
+          checksum: null,
+          itemCount: 2,
+          recipeCount: 1,
+          importedAt: '2026-10-10T12:00:00Z',
+        },
+      } as CatalogRecipesResponse),
+    );
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item, datasetVersion: 'dataset-v1' },
+      mocks.list,
+    );
+    const tree = fixture.componentInstance;
+
+    tree.consultAllTreePrices();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(mocks.catalog.getNpcPurchasePrices).toHaveBeenCalledWith(
+      [5301, 7313, 9001],
+      'dataset-v1',
+    );
+    expect(tree.productionInput()?.quotes[7313]).toMatchObject({
+      unitPrice: '1000',
+      source: 'npc',
+      observedAt: npcPrice.verifiedAt,
+    });
+    fixture.destroy();
+  });
+
+  it('shows NPC purchase prices in material costs when the market has no quote', async () => {
+    const sugarRecipe: CatalogRecipe = {
+      ...recipe,
+      inputs: [{ itemId: 9002, name: 'Açúcar', quantity: '2' }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: sugarRecipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.recipeGraph.set({
+      rootRecipe: sugarRecipe,
+      producerRecipes: [],
+      itemIds: [5301, 9002],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    tree.marketQuotes.set(
+      new Map([
+        [
+          5301,
+          {
+            itemId: 5301,
+            subId: 0,
+            name: item.name,
+            price: '100',
+            stock: 10,
+            totalTrades: '1',
+            minPrice: '100',
+            maxPrice: '100',
+            lastSoldPrice: '100',
+            lastSoldAt: new Date().toISOString(),
+          },
+        ],
+      ]),
+    );
+    tree.quoteObservedAt.set(new Map([[5301, new Date().toISOString()]]));
+    tree.npcPurchasePrices.set(
+      new Map([
+        [
+          9002,
+          {
+            itemId: 9002,
+            unitPrice: '20',
+            vendor: 'Vendedor NPC listado no catálogo',
+            verifiedAt: '2026-10-10T12:22:17.854Z',
+          },
+        ],
+      ]),
+    );
+    fixture.detectChanges();
+
+    expect(tree.materialPurchaseValue(9002, 2)).toBe('40');
+    expect(tree.materialDecisions().find((row) => row.itemId === 9002)?.unitPrice).toBe('20');
+    const row = fixture.nativeElement.querySelector(
+      '.sidebar-material-row[data-item-id="9002"]',
+    ) as HTMLElement | null;
+    expect(row?.textContent).toContain('NPC');
+    expect(row?.textContent).toContain('20');
+    expect(row?.textContent).not.toContain('Sem cotação');
+    fixture.destroy();
   });
 
   it('refreshes the active recipe quotes after five minutes and stops after destroy', async () => {
@@ -414,21 +540,70 @@ describe('Interactive recipe tree', () => {
     fixture.destroy();
   });
 
-  it('does not offer a mastery override when processing yield ignores mastery', async () => {
+  it('does not claim mastery changes the fixed final yield when all intermediates are bought', async () => {
+    const harmonyItem = {
+      ...item,
+      id: 1399,
+      name: 'Fármaco da Harmonia',
+    } as CatalogItemDetail;
+    const simpleRoot: CatalogRecipe = {
+      ...recipe,
+      key: 'harmony',
+      type: 'SIMPLE_ALCHEMY',
+      inputs: [1389, 1391, 1393, 1395, 1397].map((itemId) => ({
+        itemId,
+        name: `Elixir ${itemId}`,
+        quantity: '10',
+      })),
+      outputs: [{ itemId: 1399, name: harmonyItem.name, quantity: null }],
+    };
+    const intermediate: CatalogRecipe = {
+      ...recipe,
+      key: 'make-harmony-component',
+      inputs: [{ itemId: 9002, name: 'Açúcar', quantity: '1' }],
+      outputs: [{ itemId: 1389, name: 'Elixir 1389', quantity: null }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: simpleRoot, selectedItem: harmonyItem },
+      providers().list,
+    );
+    fixture.componentInstance.recipeGraph.set({
+      rootRecipe: simpleRoot,
+      producerRecipes: [intermediate],
+      itemIds: [1399, 1389, 1391, 1393, 1395, 1397, 9002],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    fixture.detectChanges();
+
+    expect(
+      fixture.componentInstance.currentProductionPlan()?.steps.map((step) => step.recipeId),
+    ).not.toContain('make-harmony-component');
+    expect(fixture.componentInstance.effectiveYield()).toBe(10);
+    expect(fixture.componentInstance.masteryApplies()).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Para aplicar maestria às subreceitas, selecione Fazer / coletar tudo',
+    );
+    fixture.destroy();
+  });
+
+  it('offers a processing mastery override for a recipe with known materials', async () => {
     const processingRecipe: CatalogRecipe = { ...recipe, type: 'PROCESSING' };
     const fixture = await renderComponent(
       RecipeTree,
       { recipe: processingRecipe, selectedItem: item },
       providers().list,
     );
-    expect(fixture.componentInstance.masteryApplies()).toBe(false);
+    expect(fixture.componentInstance.masteryApplies()).toBe(true);
+    expect(fixture.componentInstance.effectiveYield()).toBe(212.5);
     expect(
       (
         fixture.nativeElement.querySelector(
           'input[aria-label="Maestria da profissão"]',
         ) as HTMLInputElement
       ).disabled,
-    ).toBe(true);
+    ).toBe(false);
     fixture.destroy();
   });
 
@@ -642,9 +817,29 @@ describe('Interactive recipe tree', () => {
             lastSoldAt: null,
           },
         ],
+        [
+          9001,
+          {
+            itemId: 9001,
+            subId: 0,
+            name: 'Sal',
+            price: '50',
+            stock: 0,
+            totalTrades: '0',
+            minPrice: '40',
+            maxPrice: '60',
+            lastSoldPrice: '50',
+            lastSoldAt: null,
+          },
+        ],
       ]),
     );
-    tree.quoteObservedAt.set(new Map([[5301, observedAt]]));
+    tree.quoteObservedAt.set(
+      new Map([
+        [5301, observedAt],
+        [9001, observedAt],
+      ]),
+    );
     fixture.detectChanges();
 
     const buttons = [...fixture.nativeElement.querySelectorAll('button')]
@@ -655,8 +850,14 @@ describe('Interactive recipe tree', () => {
     expect(buttons).not.toContain('Personalizado');
     expect(text).not.toContain('ESTOQUE ZERADO NO MERCADO');
     expect(text).not.toContain('única forma de obtenção');
+    expect(fixture.nativeElement.querySelector('.production-policy')).toBeNull();
+    expect(text).not.toContain('Pré-ordens');
+    expect(tree.materialPrice(5301)).toEqual({ price: '1100', source: 'maximum' });
+    expect(tree.materialPrice(9001)).toEqual({ price: '60', source: 'maximum' });
+    expect(tree.productionInput()?.enforcePurchaseLimits).toBe(false);
     tree.view.set('list');
     fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sidebar-price')?.textContent).toContain('Máxima');
     const sourceCheckbox = fixture.nativeElement.querySelector(
       '.material-source-checkbox input[type="checkbox"]',
     ) as HTMLInputElement;
@@ -1275,6 +1476,30 @@ describe('Interactive recipe tree', () => {
     expect(tree.effectiveYield()).toBeCloseTo(2.829);
     expect(tree.plan()?.value).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
+  });
+
+  it('recalculates gross revenue and profit when cooking mastery changes', async () => {
+    const cookingRecipe: CatalogRecipe = { ...recipe, type: 'COOK' };
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: cookingRecipe, selectedItem: item },
+      dependencies.list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '100' });
+    tree.setCraftCount(100);
+    tree.masteryOverride.set(0);
+    fixture.detectChanges();
+    const initialRevenue = BigInt(tree.grossRevenue() ?? '0');
+    const initialProfit = BigInt(tree.profit() ?? '0');
+
+    tree.masteryOverride.set(3000);
+    fixture.detectChanges();
+
+    expect(BigInt(tree.grossRevenue() ?? '0')).toBeGreaterThan(initialRevenue);
+    expect(BigInt(tree.profit() ?? '0')).toBeGreaterThan(initialProfit);
+    fixture.destroy();
   });
 
   it('supports bulk material sources and per-item checkbox edits without free gathering assumptions', async () => {

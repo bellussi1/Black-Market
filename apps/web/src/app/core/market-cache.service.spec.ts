@@ -251,7 +251,81 @@ describe('MarketCacheService', () => {
     expect(service.cachedQuotesCount()).toBe(117);
   });
 
-  it('keeps cached quotes without individual retries when the market provider is unavailable', () => {
+  it('fetches the detailed quote when a zero-stock bulk quote omits maxPrice', () => {
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
+
+    httpTesting
+      .expectOne((request) => request.url.includes('/production-quotes'))
+      .flush({
+        ...mockLookupResponse,
+        items: [
+          {
+            ...mockLookupResponse.items[0]!,
+            price: '51',
+            stock: 0,
+            maxPrice: null,
+          },
+        ],
+      });
+
+    httpTesting
+      .expectOne((request) => request.url.includes('/market/items/1408'))
+      .flush({
+        ...mockLookupResponse,
+        items: [
+          {
+            ...mockLookupResponse.items[0]!,
+            price: '51',
+            stock: 0,
+            maxPrice: '90',
+          },
+        ],
+      });
+
+    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBe('90');
+    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBe('90');
+    expect(service.isSyncing()).toBe(false);
+  });
+
+  it('enriches a fresh cached zero-stock quote that has no maximum price', () => {
+    service.cacheLookupResponse(
+      {
+        ...mockLookupResponse,
+        items: [
+          {
+            ...mockLookupResponse.items[0]!,
+            price: '51',
+            stock: 0,
+            maxPrice: null,
+          },
+        ],
+      },
+      'sa',
+    );
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
+
+    httpTesting
+      .expectOne((request) => request.url.includes('/market/items/1408'))
+      .flush({
+        ...mockLookupResponse,
+        items: [
+          {
+            ...mockLookupResponse.items[0]!,
+            price: '51',
+            stock: 0,
+            maxPrice: '90',
+          },
+        ],
+      });
+
+    httpTesting.expectNone((request) => request.url.includes('/production-quotes'));
+    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBe('90');
+    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBe('90');
+  });
+
+  it('falls back to individual market quotes when the bulk provider is unavailable', () => {
     service.cacheLookupResponse(mockLookupResponse, 'sa');
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service
@@ -262,13 +336,17 @@ describe('MarketCacheService', () => {
       .expectOne((request) => request.url.includes('/production-quotes'))
       .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
 
-    httpTesting.expectNone((request) => request.url.includes('/market/items/9001'));
+    const fallback = httpTesting.expectOne((request) => request.url.includes('/market/items/9001'));
+    fallback.flush({
+      ...mockLookupResponse,
+      items: [{ ...mockLookupResponse.items[0]!, itemId: 9001, name: 'Ingrediente' }],
+    });
     expect(emissions.at(-1)?.get(1408)).toEqual(mockLookupResponse.items[0]);
-    expect(emissions.at(-1)?.has(9001)).toBe(false);
+    expect(emissions.at(-1)?.get(9001)?.price).toBe(mockLookupResponse.items[0]?.price);
     expect(service.isSyncing()).toBe(false);
   });
 
-  it('returns successful bulk quotes when a later batch is unavailable', () => {
+  it('falls back for every item in a later unavailable bulk batch', () => {
     const itemIds = Array.from({ length: 117 }, (_, index) => index + 1);
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes(itemIds, 'sa').subscribe((result) => emissions.push(result));
@@ -284,9 +362,22 @@ describe('MarketCacheService', () => {
     });
     second.flush('Unavailable', { status: 503, statusText: 'Unavailable' });
 
-    expect(emissions.at(-1)?.size).toBe(100);
-    expect(emissions.at(-1)?.has(101)).toBe(false);
-    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
+    let resolved = 0;
+    while (resolved < 17) {
+      const fallbacks = httpTesting.match((request) => request.url.includes('/market/items/'));
+      expect(fallbacks.length).toBeGreaterThan(0);
+      resolved += fallbacks.length;
+      for (const fallback of fallbacks) {
+        const itemId = Number(fallback.request.url.split('/').at(-1));
+        fallback.flush({
+          ...mockLookupResponse,
+          items: [{ ...mockLookupResponse.items[0]!, itemId, name: `Item ${itemId}` }],
+        });
+      }
+    }
+
+    expect(emissions.at(-1)?.size).toBe(117);
+    expect(emissions.at(-1)?.has(117)).toBe(true);
     expect(service.isSyncing()).toBe(false);
   });
 

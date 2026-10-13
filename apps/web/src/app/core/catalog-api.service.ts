@@ -10,9 +10,11 @@ import type {
   CatalogRecipe,
   CatalogRecipesResponse,
   LifeSkillRecipeGroup,
+  NpcPurchasePrice,
+  NpcPurchasePricesResponse,
   RecipeListResponse,
 } from '@bdo/shared';
-import { EMPTY, expand, map, reduce } from 'rxjs';
+import { EMPTY, expand, forkJoin, map, of, reduce } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { preferredDataLocale } from './locale';
@@ -139,6 +141,41 @@ export class CatalogApiService {
       {
         params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
       },
+    );
+  }
+
+  getNpcPurchasePrices(itemIds: readonly number[], expectedDatasetVersion: string) {
+    const uniqueIds = [...new Set(itemIds.filter((id) => Number.isSafeInteger(id) && id > 0))];
+    if (!uniqueIds.length) return of(new Map<number, NpcPurchasePrice>());
+
+    const batches = Array.from({ length: Math.ceil(uniqueIds.length / 100) }, (_, index) =>
+      uniqueIds.slice(index * 100, (index + 1) * 100),
+    );
+    const requests = batches.map((ids) =>
+      this.http.get<NpcPurchasePricesResponse>(`${this.baseUrl}/npc-purchase-prices`, {
+        params: {
+          ids: ids.join(','),
+          region: this.preferences.region(),
+          preferredLocale: preferredDataLocale(),
+        },
+      }),
+    );
+    return forkJoin(requests).pipe(
+      map((responses) => {
+        const versions = responses
+          .map((response) => response.dataset?.version)
+          .filter((version): version is string => Boolean(version));
+        if (
+          versions.some((version) => version !== expectedDatasetVersion) ||
+          versions.some((version) => version !== versions[0])
+        )
+          throw new Error('O catálogo mudou durante a consulta dos preços NPC.');
+        return new Map(
+          responses.flatMap((response) =>
+            response.prices.map((price) => [price.itemId, price] as const),
+          ),
+        );
+      }),
     );
   }
 }

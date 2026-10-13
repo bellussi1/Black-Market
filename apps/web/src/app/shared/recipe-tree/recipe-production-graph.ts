@@ -96,6 +96,7 @@ export function resolveRecipeProductionGraph(
             }
 
             recipesByItemId.set(itemId, selected);
+            for (const output of selected.outputs) itemIds.add(output.itemId);
             for (const input of selected.inputs) {
               itemIds.add(input.itemId);
               if (!visitedItemIds.has(input.itemId)) pendingItemIds.push(input.itemId);

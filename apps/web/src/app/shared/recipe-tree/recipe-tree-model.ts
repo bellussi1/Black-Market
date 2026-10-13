@@ -6,6 +6,7 @@ import type { Workspace } from '../../core/workspace-models';
 import { validationMessage } from '../calculation-feedback';
 import { ingredientAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import { lifeSkillForRecipe } from './recipe-yield';
 export interface RecipeNode {
   path: string;
   part: CatalogRecipePart;
@@ -41,12 +42,14 @@ export function withRecipe(
 ): RecipeNode {
   const out = recipe.outputs.find((p) => p.itemId === node.part.itemId);
   const sourceYield =
-    out?.quantity && Number(out.quantity) > 0
+    lifeSkillForRecipe(recipe.type) !== 'processing' && out?.quantity && Number(out.quantity) > 0
       ? Number(out.quantity)
       : fixedRecipeYield(recipe, node.part.itemId);
   const previousOut = node.recipe?.outputs.find((p) => p.itemId === node.part.itemId);
   const previousYield =
-    previousOut?.quantity && Number(previousOut.quantity) > 0
+    lifeSkillForRecipe(node.recipe?.type ?? '') !== 'processing' &&
+    previousOut?.quantity &&
+    Number(previousOut.quantity) > 0
       ? Number(previousOut.quantity)
       : node.recipe
         ? fixedRecipeYield(node.recipe, node.part.itemId)

@@ -79,18 +79,16 @@ describe('production planner', () => {
     expect(first.profitPerHour).toBe('2700');
     expect(slower.profitPerHour).toBe('1800');
   });
-  it('keeps purchasing capacity separate from sold-out acquisition policy', () => {
+  it('calculates a zero-stock purchase from the supplied maximum price without stock gating', () => {
     const input = fixture();
     input.enforcePurchaseLimits = false;
     input.quotes[2].available = 0;
-    input.candidates = [{ recipeId: 'final', crafts: 1, optimizeCrafts: 1 }];
-    input.marketAcquisition = 'preorder';
-    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('buy');
-    input.marketAcquisition = 'produce-sold-out';
-    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('produce');
-    expect(row(input, 'buy-all').issues.some((issue) => issue.code === 'market-stock')).toBe(true);
-    input.quotes[2].source = 'npc';
-    expect(row(input, 'optimized').sourceChoices?.[2]).toBe('buy');
+    input.quotes[2].unitPrice = '90';
+
+    const buyAll = row(input, 'buy-all');
+
+    expect(buyAll.cashCost).toBe('180');
+    expect(buyAll.issues.some((issue) => issue.code === 'market-stock')).toBe(false);
   });
 
   it('reproduces the observed Workshop buy-all arithmetic without importing live EU prices', () => {
@@ -264,17 +262,21 @@ describe('production planner', () => {
     expect(input.inventory[0].quantity).toBe(2);
   });
 
-  it('returns an explicit pending result when the route search exceeds its state limit', () => {
+  it('returns the best found candidate with its metrics when the route search reaches its limit', () => {
     const input = fixture();
     input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
     input.maxOptimizationStates = 1;
 
     const result = planProduction(input);
 
-    expect(result.ranked.some((plan) => plan.scenario === 'optimized')).toBe(false);
-    expect(result.incomplete.find((plan) => plan.scenario === 'optimized')?.issues).toContainEqual(
-      expect.objectContaining({ code: 'optimization-limit' }),
-    );
+    const partial = result.incomplete.find((plan) => plan.scenario === 'optimized');
+
+    expect(partial).toMatchObject({
+      profit: expect.any(String),
+      profitPerHour: expect.any(String),
+      sourceChoices: expect.any(Object),
+    });
+    expect(partial?.issues).toContainEqual(expect.objectContaining({ code: 'optimization-limit' }));
   });
 
   it('prunes only when the best complete rate beats a safe profit and time upper bound', () => {

@@ -52,7 +52,7 @@ export interface ProductionPlannerInput {
   maxQuoteAgeMinutes?: number;
   /** Automatic rate optimization checks every feasible batch up to this bound, capped at 10,000. */
   maxCrafts?: number;
-  /** Maximum exact decision states for a focused candidate, capped at 1,000,000. Defaults to 100,000. */
+  /** Maximum exact decision states for a focused candidate, capped at 10,000. Defaults to 10,000. */
   maxOptimizationStates?: number;
   gatheringEstimates?: Record<number, ProductionEstimate>;
   itemWeights?: Record<number, number>;
@@ -61,8 +61,6 @@ export interface ProductionPlannerInput {
   useOwnedInProduction?: boolean;
   /** False for economic simulations independent of current purchasing capacity. Defaults to true. */
   enforcePurchaseLimits?: boolean;
-  /** Independent of wallet/time limits. Preorder waiting time is not modeled. */
-  marketAcquisition?: 'preorder' | 'produce-sold-out';
   byproductValues?: Record<
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
@@ -200,10 +198,6 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       'Receita de venda usa o imposto e os bônus informados; a cotação não garante venda imediata.',
       'Tempos e rendimentos são premissas explícitas, sem extrapolar fórmulas de maestria.',
     ]);
-    if (input.marketAcquisition === 'preorder')
-      assumptions.add(
-        'Pré-ordens permitidas: tempo de espera e transporte não incluídos no lucro por hora.',
-      );
     const owned = new Map<number, bigint>();
     for (const entry of input.inventory) {
       const available = Math.max(0, entry.quantity - (entry.reserved ?? 0));
@@ -267,25 +261,6 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
 
     function purchase(id: number, quantity: bigint) {
       const row = material(id);
-      const availability = input.quotes[id];
-      if (
-        quantity > 0n &&
-        input.marketAcquisition === 'produce-sold-out' &&
-        availability?.source === 'market'
-      ) {
-        if (availability.available === 0)
-          issue(
-            'market-stock',
-            'Item esgotado: esta política exige produzir ou usar estoque próprio.',
-            { itemId: id },
-          );
-        else if (availability.available === null)
-          issue(
-            'unknown-availability',
-            'Disponibilidade desconhecida para a política de itens esgotados.',
-            { itemId: id },
-          );
-      }
       row.bought += quantity;
       const price = quote(id, true);
       if (price === null) costsKnown = false;
@@ -726,9 +701,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       else ranked.push(result);
     }
     if (candidate.optimizeCrafts !== undefined) {
-      const rawLimit = input.maxOptimizationStates ?? 100_000;
+      const rawLimit = input.maxOptimizationStates ?? 10_000;
       const stateLimit =
-        Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 1_000_000) : 100_000;
+        Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 10_000) : 10_000;
       if (
         !Number.isSafeInteger(candidate.optimizeCrafts) ||
         candidate.optimizeCrafts <= 0 ||
@@ -738,8 +713,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         if (result.profitPerHour === null) incomplete.push(result);
         else ranked.push(result);
       } else {
-        let best: ProductionPlan | null = null;
-        let bestPending: ProductionPlan | null = null;
+        const baseline = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
+        let best: ProductionPlan | null = baseline.profitPerHour === null ? null : baseline;
+        let bestPending: ProductionPlan | null = baseline.profitPerHour === null ? baseline : null;
         let visitedStates = 0;
         let boundPrunedStates = 0;
         let duplicateStates = 0;
@@ -852,10 +828,8 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             message: `A busca excedeu o limite de ${stateLimit} estados; não há combinação ótima certificada.`,
             recipeId: candidate.recipeId,
           });
-          result.profit = null;
-          result.profitPerHour = null;
           result.assumptions.push(
-            'O limite de segurança foi alcançado. Nenhum candidato parcial entra no ranking.',
+            'O limite de segurança foi alcançado. As métricas mostram o melhor candidato encontrado; a busca não certifica que seja o ótimo global.',
           );
           incomplete.push(result);
         } else {

@@ -102,7 +102,16 @@
               <div class="craft-param-hint">
                 <span class="yield-badge">{{ yieldDescription() }}</span>
                 @if (!masteryApplies()) {
-                  <span i18n>Maestria sem efeito nesta fórmula</span>
+                  @if (
+                    product.recipe?.type === 'SIMPLE_ALCHEMY' && masteryAvailableInSubrecipes()
+                  ) {
+                    <span i18n
+                      >Para aplicar maestria às subreceitas, selecione Fazer / coletar tudo; o
+                      rendimento final permanece fixo.</span
+                    >
+                  } @else {
+                    <span i18n>Maestria sem efeito nesta fórmula</span>
+                  }
                 }
                 @if (masteryApplies() && product.recipe?.type === 'SIMPLE_ALCHEMY') {
                   <span
@@ -242,14 +251,10 @@
             <h3 i18n>Resultado da receita</h3>
             <p
               class="help"
-              title="Não limitada pela prata do perfil ou pelo estoque disponível para compra imediata."
+              title="Usa o preço corrente do mercado; sem oferta, considera o preço máximo anunciado."
               i18n
             >
-              {{
-                marketAcquisition() === 'preorder'
-                  ? 'Pré-ordens permitidas · espera não incluída no lucro/hora'
-                  : 'Produzir esgotados · oferta parcial pode exigir pré-ordem'
-              }}
+              Preço atual do mercado · sem estoque, usa o preço máximo
             </p>
           </div>
           <div class="flex flex-wrap gap-2" role="group" aria-label="Cenário de produção">
@@ -284,18 +289,6 @@
           </div>
         </div>
 
-        <label class="production-policy">
-          <span>Itens esgotados</span>
-          <select [ngModel]="marketAcquisition()" (ngModelChange)="marketAcquisition.set($event)">
-            <option value="preorder">Permitir pré-ordens</option>
-            <option value="produce-sold-out">Produzir esgotados</option>
-          </select>
-          <small
-            >NPC e estoque próprio continuam disponíveis. A política não limita a prata do
-            perfil.</small
-          >
-        </label>
-
         <dialog
           #optimizationDialog
           class="optimization-dialog"
@@ -308,7 +301,14 @@
           @if (previewPlan(); as preview) {
             <section class="optimization-preview" aria-label="Prévia da combinação otimizada">
               <div class="preview-heading">
-                <strong>Combinação proposta · {{ requestedOperations() }} receitas</strong>
+                <strong>
+                  {{
+                    previewSearchLimited()
+                      ? 'Melhor combinação encontrada · busca limitada'
+                      : 'Combinação proposta'
+                  }}
+                  · {{ requestedOperations() }} receitas
+                </strong>
                 <div class="flex flex-wrap gap-2">
                   <button hlmBtn type="button" size="sm" (click)="applyOptimizationPreview()">
                     Aplicar combinação
@@ -324,6 +324,12 @@
                   </button>
                 </div>
               </div>
+              @if (previewSearchLimited()) {
+                <p class="notice" role="status">
+                  Este é o melhor resultado encontrado dentro do limite de busca. O ótimo global
+                  ainda não está certificado.
+                </p>
+              }
               <div class="economic-metrics-grid">
                 <div class="metric-card">
                   <span class="metric-label">Lucro/hora</span
@@ -429,8 +435,12 @@
           @if (currentProductionPlan()?.issues?.length) {
             <details class="production-issues-notice">
               <summary>
-                Resultado incompleto · {{ productionIssueGroups().length }} itens ou etapas a
-                conferir
+                @if (optimizationSearchLimited() && !productionIssueGroups().length) {
+                  Busca limitada · melhor resultado não certificado
+                } @else {
+                  Resultado incompleto · {{ productionIssueGroups().length }} itens ou etapas a
+                  conferir
+                }
               </summary>
               <ul class="production-issues">
                 @for (group of productionIssueGroups(); track group.key) {
@@ -676,7 +686,15 @@
                     </span>
                     <span class="sidebar-item-price-line">
                       @if (item.unitPrice !== null) {
-                        <span class="sidebar-price">{{ silver(item.unitPrice) }}</span>
+                        <span class="sidebar-price"
+                          >{{
+                            item.unitPriceSource === 'npc'
+                              ? 'NPC · '
+                              : item.unitPriceSource === 'maximum'
+                                ? 'Máxima · '
+                                : ''
+                          }}{{ silver(item.unitPrice) }}</span
+                        >
                         @if (item.stock !== null) {
                           <span class="sidebar-stock"
                             >· Est: {{ item.stock.toLocaleString('pt-BR') }}</span

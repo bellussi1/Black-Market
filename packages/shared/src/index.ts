@@ -107,6 +107,19 @@ export interface RecipeListResponse {
   dataset: ActiveDatasetSummary | null;
 }
 
+/** NPC purchase prices extracted from the active catalog item data. */
+export interface NpcPurchasePrice {
+  itemId: number;
+  unitPrice: string;
+  vendor: string;
+  verifiedAt: string;
+}
+
+export interface NpcPurchasePricesResponse {
+  prices: NpcPurchasePrice[];
+  dataset: ActiveDatasetSummary | null;
+}
+
 export interface ApiProblem {
   statusCode: number;
   code: string;

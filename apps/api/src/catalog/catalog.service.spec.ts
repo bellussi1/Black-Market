@@ -84,6 +84,43 @@ describe('Paginated item recipes', () => {
   });
 });
 
+describe('NPC purchase price lookup', () => {
+  it('returns only catalog entries with both a positive buy price and listed vendors', async () => {
+    const rowsQuery = query([
+      { itemId: 4986, sourceData: { buyPrice: 10000, vendors: { urns: ['urn::npc:43513'] } } },
+      { itemId: 7313, sourceData: { buyPrice: 1000, vendors: { urns: ['urn::npc:47045'] } } },
+      { itemId: 8211, sourceData: { buyPrice: 0, vendors: { urns: ['urn::npc:1'] } } },
+      { itemId: 9403, sourceData: { buyPrice: 1000 } },
+    ]);
+    const instance = new CatalogService(
+      { db: { select: vi.fn(() => rowsQuery) } } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      recipeCount: 1,
+      itemCount: 4,
+      finishedAt: new Date('2026-10-10T12:22:17.854Z'),
+    } as never);
+
+    const result = await instance.npcPurchasePrices({
+      ids: '4986,7313,8211,9403',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(result.prices.map(({ itemId, unitPrice }) => [itemId, unitPrice])).toEqual([
+      [4986, '10000'],
+      [7313, '1000'],
+    ]);
+    expect(result.dataset?.version).toBe('same');
+  });
+});
+
 describe('Life skill discovery', () => {
   function discovery(items = false) {
     const countQuery = query([{ total: 0 }]);

@@ -169,6 +169,14 @@ export class CatalogController {
     return this.catalog.getItemRecipes(id, query, direction);
   }
 
+  @Get('npc-purchase-prices')
+  @Header('Cache-Control', 'public, max-age=300')
+  @ApiOperation({ summary: 'Lê preços de compra NPC registrados no catálogo ativo' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Até 100 IDs separados por vírgula' })
+  npcPurchasePrices(@Query() query: Record<string, unknown>) {
+    return this.catalog.npcPurchasePrices(query);
+  }
+
   @Get('items/:id')
   @ApiOperation({ summary: 'Retorna um item do dataset ativo' })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })

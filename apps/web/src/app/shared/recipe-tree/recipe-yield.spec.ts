@@ -6,6 +6,7 @@ import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
 describe('Recipe default yield resolution', () => {
   it('maps recipe types to life skills correctly', () => {
     expect(lifeSkillForRecipe('COOKING')).toBe('cooking');
+    expect(lifeSkillForRecipe('COOK')).toBe('cooking');
     expect(lifeSkillForRecipe('ALCHEMY')).toBe('alchemy');
     expect(lifeSkillForRecipe('PROCESSING')).toBe('processing');
     expect(lifeSkillForRecipe('MANUFACTURE')).toBe('processing');
@@ -60,15 +61,18 @@ describe('Recipe default yield resolution', () => {
     );
   });
 
-  it('defaults processing to 2.5 and generic crafting to 1.0', () => {
+  it('applies processing material-count brackets to known-input recipes', () => {
     const procRecipe: CatalogRecipe = {
       key: 'flour',
       type: 'PROCESSING',
       station: null,
-      inputs: [],
+      inputs: [{ itemId: 9001, name: 'Trigo', quantity: '1' }],
       outputs: [{ itemId: 1, name: 'Farinha', quantity: null }],
     };
     expect(resolveDefaultYield(procRecipe, 1)).toBe(2.5);
+    expect(resolveDefaultYield(procRecipe, 1, 1000)).toBe(212.5);
+    expect(resolveDefaultYield(procRecipe, 1, 3000)).toBe(787.5);
+    expect(resolveDefaultYield({ ...procRecipe, inputs: [] }, 1, 3000)).toBe(2.5);
 
     const genericRecipe: CatalogRecipe = {
       key: 'craft',

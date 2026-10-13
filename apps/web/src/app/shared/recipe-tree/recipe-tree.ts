@@ -31,11 +31,13 @@ import type {
   CatalogRecipe,
   CatalogRecipePart,
   MarketItemQuote,
+  NpcPurchasePrice,
 } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import type { Subscription } from 'rxjs';
 import {
   catchError,
+  combineLatest,
   debounceTime,
   EMPTY,
   firstValueFrom,
@@ -61,6 +63,8 @@ import { recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
+import { recipeMarketPrice } from './recipe-market-price';
+import { processingBatchCount } from './recipe-mastery';
 import {
   buildRecipeProductionInput,
   defaultRecipeMethodSeconds,
@@ -78,9 +82,39 @@ import {
   stockLocationKey,
   withRecipe,
 } from './recipe-tree-model';
-import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
+import {
+  lifeSkillForRecipe,
+  recipeMasteryCanChangeOutput,
+  resolveDefaultYield,
+} from './recipe-yield';
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
+
+function hasOnlyOptimizationLimit(plan: ProductionPlan | null): boolean {
+  return (
+    !!plan &&
+    plan.profit !== null &&
+    plan.profitPerHour !== null &&
+    plan.issues.length > 0 &&
+    plan.issues.every((issue) => issue.code === 'optimization-limit')
+  );
+}
+
+function usableOptimizedPlan(
+  result: ReturnType<typeof planProduction> | null,
+): ProductionPlan | null {
+  if (!result) return null;
+  const complete = result.ranked.find(
+    (plan) => plan.scenario === 'optimized' && !plan.issues.length && plan.sourceChoices,
+  );
+  if (complete) return complete;
+  return (
+    result.incomplete.find(
+      (plan) =>
+        plan.scenario === 'optimized' && hasOnlyOptimizationLimit(plan) && plan.sourceChoices,
+    ) ?? null
+  );
+}
 
 @Component({
   selector: 'app-recipe-tree',
@@ -173,6 +207,7 @@ export class RecipeTree {
   readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
   readonly customItemPrices = signal(new Map<number, string>());
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
+  readonly npcPurchasePrices = signal(new Map<number, NpcPurchasePrice>());
   readonly quoteObservedAt = signal(new Map<number, string>());
   readonly methodTimes = signal(new Map<string, number>());
   readonly gatherEstimates = signal(new Map<number, ProductionEstimate>());
@@ -212,6 +247,8 @@ export class RecipeTree {
   readonly canAdjustRootYield = computed(() => {
     const root = this.root();
     if (!root?.recipe) return false;
+    if (lifeSkillForRecipe(root.recipe.type) === 'processing')
+      return fixedRecipeYield(root.recipe, root.part.itemId) === null;
     return (
       fixedRecipeYield(root.recipe, root.part.itemId) === null &&
       !(
@@ -224,12 +261,14 @@ export class RecipeTree {
   readonly effectiveYield = computed(() => {
     const root = this.root();
     if (!root) return 1;
+    const skill = root.recipe ? lifeSkillForRecipe(root.recipe.type) : null;
     const fixed = root.recipe
       ? (fixedRecipeYield(root.recipe, root.part.itemId) ??
-        (Number(
-          root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
-        ) ||
-          null))
+        (skill === 'processing'
+          ? null
+          : Number(
+              root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
+            ) || null))
       : null;
     if (fixed !== null) return fixed;
     if (root.yield !== null && root.yield > 0) return root.yield;
@@ -249,13 +288,15 @@ export class RecipeTree {
     const catalogQuantity = Number(
       root.recipe.outputs.find((output) => output.itemId === root.part.itemId)?.quantity,
     );
-    if (catalogQuantity > 0)
+    const skill = lifeSkillForRecipe(root.recipe.type);
+    if (catalogQuantity > 0 && skill !== 'processing')
       return `Saída do catálogo: ${catalogQuantity} un / receita; proc adicional não modelado`;
     if (root.yield !== null && root.yield > 0) {
       return `Rendimento ajustado: ${root.yield} un / receita`;
     }
     const mastery = this.masteryOverride() ?? this.userMasteryForCurrentRecipe();
-    const skill = lifeSkillForRecipe(root.recipe.type);
+    if (skill === 'processing')
+      return `Lote de processamento · maestria ${mastery} · média ${this.effectiveYield().toFixed(2)} un/ação`;
     if (mastery > 0 && skill) {
       return `Média estimada: ${this.effectiveYield().toFixed(2)} un / receita (${skill} maestria: ${mastery})`;
     }
@@ -360,9 +401,10 @@ export class RecipeTree {
         const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
         const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
         const fromStock = plannerRow?.owned ?? 0;
-        const unitPrice = this.price(itemId);
-        const totalMarketCost = this.materialPurchaseValue(itemId, required);
-        const liveQuote = quotes.get(itemId);
+        const materialPrice = this.materialPrice(itemId);
+        const unitPrice = materialPrice?.price ?? null;
+        const totalPurchaseCost = this.materialPurchaseValue(itemId, required);
+        const liveQuote = materialPrice?.source !== 'npc' ? quotes.get(itemId) : undefined;
         const stock = liveQuote?.stock ?? null;
         const totalTrades = liveQuote?.totalTrades ?? null;
 
@@ -379,7 +421,8 @@ export class RecipeTree {
           sourceLabel,
           canProduce,
           unitPrice,
-          totalMarketCost,
+          unitPriceSource: materialPrice?.source ?? null,
+          totalPurchaseCost,
           stock,
           totalTrades,
         };
@@ -444,7 +487,7 @@ export class RecipeTree {
 
   materialPurchaseValue(itemId: number, quantity: number): string {
     if (quantity <= 0) return '—';
-    const price = this.price(itemId);
+    const price = this.materialPrice(itemId)?.price ?? null;
     if (price === null || !/^\d{1,24}$/.test(price)) return 'Sem cotação';
     const amount = BigInt(Math.ceil(quantity));
     return this.silver(String(BigInt(price) * amount));
@@ -474,10 +517,14 @@ export class RecipeTree {
         this.optimizationMessage.set(data.error ?? 'Falha na otimização.');
         return;
       }
-      const best = data.result.ranked.find((plan: ProductionPlan) => plan.scenario === 'optimized');
-      if (best && !best.issues.length && best.sourceChoices) {
+      const best = usableOptimizedPlan(data.result);
+      if (best) {
         this.optimizationPreview.set(data.result);
-        this.optimizationMessage.set('Combinação calculada. Confira a prévia antes de aplicar.');
+        this.optimizationMessage.set(
+          hasOnlyOptimizationLimit(best)
+            ? 'Melhor combinação encontrada. A busca atingiu o limite e o ótimo global não está certificado. Confira a prévia.'
+            : 'Combinação calculada. Confira a prévia antes de aplicar.',
+        );
       } else this.applyOptimizationResult(data.result);
     };
     worker.onerror = () => {
@@ -498,10 +545,11 @@ export class RecipeTree {
   }
 
   readonly optimizing = signal(false);
-  readonly marketAcquisition = signal<'preorder' | 'produce-sold-out'>('preorder');
   readonly optimizationPreview = signal<ReturnType<typeof planProduction> | null>(null);
-  readonly previewPlan = computed(
-    () => this.optimizationPreview()?.ranked.find((plan) => plan.scenario === 'optimized') ?? null,
+  readonly previewPlan = computed(() => usableOptimizedPlan(this.optimizationPreview()));
+  readonly previewSearchLimited = computed(() => hasOnlyOptimizationLimit(this.previewPlan()));
+  readonly optimizationSearchLimited = computed(() =>
+    hasOnlyOptimizationLimit(this.currentProductionPlan()),
   );
 
   applyOptimizationPreview(): void {
@@ -520,7 +568,6 @@ export class RecipeTree {
   private readonly optimizationContext = computed(() =>
     JSON.stringify([
       this.masteryOverride(),
-      this.marketAcquisition(),
       this.craftCount(),
       this.recipeGraph(),
       [...this.marketQuotes()],
@@ -540,15 +587,19 @@ export class RecipeTree {
   }
 
   private applyOptimizationResult(result: ReturnType<typeof planProduction>): void {
-    const best = result?.ranked.find((plan) => plan.scenario === 'optimized');
-    if (best && !best.issues.length && best.sourceChoices) {
+    const best = usableOptimizedPlan(result);
+    if (best?.sourceChoices) {
       const sources = new Map<number, ProductionChoice>();
       for (const itemId of this.materialItemIds())
         sources.set(itemId, best.sourceChoices[itemId] ?? 'buy');
       this.customMaterialSource.set(sources);
       this.optimizedResult.set(result);
       this.acquisitionStrategy.set('optimized');
-      this.optimizationMessage.set('Melhor combinação por lucro aplicada com sucesso.');
+      this.optimizationMessage.set(
+        hasOnlyOptimizationLimit(best)
+          ? 'Melhor combinação encontrada aplicada. A busca atingiu o limite; o ótimo global não está certificado.'
+          : 'Melhor combinação por lucro aplicada com sucesso.',
+      );
       return;
     }
     this.optimizationMessage.set(
@@ -785,7 +836,7 @@ export class RecipeTree {
           this.acquisitionStrategy() === 'gather_all' || this.acquisitionStrategy() === 'custom',
         yieldOverrides,
         excludedLocations: this.excludedLocations(),
-        marketAcquisition: this.marketAcquisition(),
+        npcPurchasePrices: this.npcPurchasePrices(),
       },
     );
   });
@@ -810,12 +861,11 @@ export class RecipeTree {
       null
     );
   });
-  readonly bestProductionPlan = computed(
-    () => this.productionResult()?.ranked.find((plan) => plan.scenario === 'optimized') ?? null,
-  );
+  readonly bestProductionPlan = computed(() => usableOptimizedPlan(this.productionResult()));
   readonly productionIssueGroups = computed(() => {
     const groups = new Map<string, { key: string; name: string; messages: string[] }>();
     for (const issue of this.currentProductionPlan()?.issues ?? []) {
+      if (issue.code === 'optimization-limit') continue;
       const key =
         issue.itemId !== undefined
           ? `item:${issue.itemId}`
@@ -908,7 +958,9 @@ export class RecipeTree {
 
   readonly effectiveMaterialCost = computed(() => {
     const plan = this.currentProductionPlan();
-    return plan && plan.issues.length === 0 ? plan.economicCost : null;
+    return plan && (plan.issues.length === 0 || hasOnlyOptimizationLimit(plan))
+      ? plan.economicCost
+      : null;
   });
 
   readonly productPrice = computed(() => {
@@ -926,7 +978,9 @@ export class RecipeTree {
 
   readonly profit = computed(() => {
     const plan = this.currentProductionPlan();
-    return plan && plan.issues.length === 0 ? plan.profit : null;
+    return plan && (plan.issues.length === 0 || hasOnlyOptimizationLimit(plan))
+      ? plan.profit
+      : null;
   });
 
   readonly isPositiveProfit = computed(() => {
@@ -961,24 +1015,33 @@ export class RecipeTree {
     return (
       this.recipeGraph()
         ?.producerRecipes.map((recipe) => lifeSkillForRecipe(recipe.type))
-        .find((skill) => skill === 'alchemy' || skill === 'cooking') ?? null
+        .find((skill) => skill === 'alchemy' || skill === 'cooking' || skill === 'processing') ??
+      null
     );
   });
   readonly masteryApplies = computed(() => {
     const graph = this.recipeGraph();
     const root = this.root();
-    const rootSkill = this.masterySkill();
-    if ((rootSkill !== 'cooking' && rootSkill !== 'alchemy') || !root?.recipe) return false;
+    const selectedSkill = this.masterySkill();
+    if (!selectedSkill || !root?.recipe) return false;
     const activeRecipes = new Set(this.currentProductionPlan()?.steps.map((step) => step.recipeId));
     const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
     return recipes.some((recipe) => {
-      if (graph && lifeSkillForRecipe(root.recipe!.type) && !activeRecipes.has(recipe.key))
-        return false;
-      if (lifeSkillForRecipe(recipe.type) !== rootSkill) return false;
+      if (lifeSkillForRecipe(recipe.type) !== selectedSkill) return false;
+      if (graph && !activeRecipes.has(recipe.key)) return false;
       const output = recipe.outputs[0];
-      if (!output || fixedRecipeYield(recipe, output.itemId) !== null) return false;
-      if (Number(output.quantity) > 0) return false;
+      if (!output || !recipeMasteryCanChangeOutput(recipe, output.itemId)) return false;
       return recipe.key !== root.recipe?.key || !(root.yield !== null && root.yield > 0);
+    });
+  });
+  readonly masteryAvailableInSubrecipes = computed(() => {
+    const graph = this.recipeGraph();
+    const selectedSkill = this.masterySkill();
+    if (!graph || !selectedSkill) return false;
+    return graph.producerRecipes.some((recipe) => {
+      if (lifeSkillForRecipe(recipe.type) !== selectedSkill) return false;
+      const output = recipe.outputs[0];
+      return !!output && recipeMasteryCanChangeOutput(recipe, output.itemId);
     });
   });
 
@@ -1063,7 +1126,9 @@ export class RecipeTree {
 
   readonly profitPerHour = computed(() => {
     const plan = this.currentProductionPlan();
-    return plan && plan.issues.length === 0 ? plan.profitPerHour : null;
+    return plan && (plan.issues.length === 0 || hasOnlyOptimizationLimit(plan))
+      ? plan.profitPerHour
+      : null;
   });
 
   consultAllTreePrices() {
@@ -1108,10 +1173,12 @@ export class RecipeTree {
       .pipe(
         switchMap((graph) => {
           if (revision !== this.quoteRevision) return EMPTY;
+          let itemIds: number[];
           if (graph) {
             if (graph.issues.some((issue) => issue.code === 'dataset-mismatch'))
               throw new Error('O catálogo mudou durante a consulta da receita.');
             this.recipeGraph.set(graph);
+            itemIds = graph.itemIds;
             this.quoteObservedAt.update((current) => {
               const next = new Map(current);
               for (const itemId of graph.itemIds) {
@@ -1120,22 +1187,27 @@ export class RecipeTree {
               }
               return next;
             });
-            return (
-              this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
-            ).call(this.marketCache, graph.itemIds, region);
+          } else {
+            itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
+              (left, right) => left - right,
+            );
           }
-          const itemIds = [...new Set([root.part.itemId, ...this.parts().keys()])].sort(
-            (left, right) => left - right,
-          );
-          return (
+          const quotes$ = (
             this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
           ).call(this.marketCache, itemIds, region);
+          const npcPrices$ =
+            this.catalog
+              .getNpcPurchasePrices?.(itemIds, graph?.datasetVersion ?? this.datasetVersion())
+              .pipe(catchError(() => of(new Map<number, NpcPurchasePrice>()))) ??
+            of(this.npcPurchasePrices());
+          return combineLatest({ quotes: quotes$, npcPrices: npcPrices$ });
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (quotesMap) => {
+        next: ({ quotes: quotesMap, npcPrices }) => {
           if (revision !== this.quoteRevision) return;
+          this.npcPurchasePrices.set(npcPrices);
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
           const observed = new Map(this.quoteObservedAt());
@@ -1390,10 +1462,7 @@ export class RecipeTree {
     const recipe = node.recipe;
     const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
     const rootSkill = this.masterySkill();
-    const variableYield =
-      recipe !== null &&
-      fixedRecipeYield(recipe, node.part.itemId) === null &&
-      !(Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) > 0);
+    const variableYield = recipe !== null && recipeMasteryCanChangeOutput(recipe, node.part.itemId);
     const profileMastery = skill
       ? Math.max(
           0,
@@ -1407,10 +1476,14 @@ export class RecipeTree {
       skill && variableYield && skill === rootSkill
         ? (this.masteryOverride() ?? profileMastery)
         : profileMastery;
+    const processingBatch =
+      skill === 'processing' && variableYield ? processingBatchCount(mastery) : 1;
     const fixed = recipe
       ? (fixedRecipeYield(recipe, node.part.itemId) ??
-        (Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) ||
-          null))
+        (skill === 'processing'
+          ? null
+          : Number(recipe.outputs.find((output) => output.itemId === node.part.itemId)?.quantity) ||
+            null))
       : null;
     return {
       ...node,
@@ -1418,7 +1491,14 @@ export class RecipeTree {
         fixed ??
         node.yield ??
         (recipe ? resolveDefaultYield(recipe, node.part.itemId, mastery) : node.yield),
-      children: node.children.map((child) => this.withEstimatedYields(child)),
+      children: node.children.map((child) => {
+        if (processingBatch === 1) return this.withEstimatedYields(child);
+        const quantity = Number(child.part.quantity);
+        const batched = Number.isFinite(quantity)
+          ? { ...child, part: { ...child.part, quantity: String(quantity * processingBatch) } }
+          : child;
+        return this.withEstimatedYields(batched);
+      }),
     };
   }
   setTax(value: TaxOptions) {
@@ -1855,7 +1935,17 @@ export class RecipeTree {
       });
   }
   price(id: number) {
-    return this.marketQuotes().get(id)?.price ?? null;
+    const quote = this.marketQuotes().get(id);
+    return quote ? (recipeMarketPrice(quote)?.price ?? null) : null;
+  }
+  materialPrice(id: number): { price: string; source: 'market' | 'maximum' | 'npc' } | null {
+    const quote = this.marketQuotes().get(id);
+    const marketPrice = quote ? recipeMarketPrice(quote) : null;
+    if (marketPrice) return marketPrice;
+    const npcPrice = this.npcPurchasePrices().get(id)?.unitPrice;
+    return npcPrice && /^\d{1,24}$/.test(npcPrice) && BigInt(npcPrice) > 0n
+      ? { price: npcPrice, source: 'npc' }
+      : null;
   }
   quote(id: number) {
     return (

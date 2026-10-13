@@ -20,6 +20,7 @@ import type {
   CatalogPage,
   CatalogRecipe,
   CatalogRecipesResponse,
+  NpcPurchasePricesResponse,
   ProductionCatalogResponse,
 } from '@bdo/shared';
 import {
@@ -34,6 +35,7 @@ import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 import { DatabaseService } from '../database/database.service';
 import { CatalogAssetsService } from './catalog-assets.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
+import { npcPurchasePriceFromCatalog } from './npc-purchase-price';
 
 @Injectable()
 export class CatalogService {
@@ -262,6 +264,28 @@ export class CatalogService {
     };
     const [inputs, outputs] = await Promise.all([parts(recipeIngredients), parts(recipeOutputs)]);
     return { recipe: { ...row, inputs, outputs }, dataset: this.toSummary(dataset) };
+  }
+
+  async npcPurchasePrices(rawQuery: Record<string, unknown>): Promise<NpcPurchasePricesResponse> {
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset || !query.ids?.length)
+      return { prices: [], dataset: dataset ? this.toSummary(dataset) : null };
+
+    const rows = await this.database.db
+      .select({ itemId: itemVersions.itemId, sourceData: itemVersions.sourceData })
+      .from(itemVersions)
+      .where(
+        and(eq(itemVersions.datasetVersionId, dataset.id), inArray(itemVersions.itemId, query.ids)),
+      );
+    const verifiedAt = dataset.finishedAt?.toISOString() ?? new Date().toISOString();
+    return {
+      prices: rows.flatMap((row) => {
+        const price = npcPurchasePriceFromCatalog(row.itemId, row.sourceData, verifiedAt);
+        return price ? [price] : [];
+      }),
+      dataset: this.toSummary(dataset),
+    };
   }
 
   async listItems(rawQuery: Record<string, unknown>): Promise<CatalogPage> {

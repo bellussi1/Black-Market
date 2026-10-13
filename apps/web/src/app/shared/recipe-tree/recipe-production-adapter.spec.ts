@@ -60,10 +60,99 @@ describe('recipe production planner adapter', () => {
       new Map(),
       new Map(),
       now,
+      {
+        npcPurchasePrices: new Map([
+          [
+            4986,
+            {
+              itemId: 4986,
+              unitPrice: '10000',
+              vendor: 'Vendedor NPC listado no catálogo',
+              verifiedAt: '2026-10-10T12:22:17.854Z',
+            },
+          ],
+        ]),
+      },
     );
     expect(result.quotes[4986]).toMatchObject({ unitPrice: '10000', source: 'npc' });
-    expect(result.quotes[4986].sourceUrl).toContain('pearlabyss.com');
     expect(result.gatheringEstimates).toEqual({});
+  });
+  it('keeps the live market price when an item also has a catalog NPC price', () => {
+    const observedAt = now.toISOString();
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),
+      1,
+      emptyWorkspace(),
+      new Map([[4986, { ...quote(4986, '900'), maxPrice: '1500' }]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      {
+        quoteObservedAt: new Map([[4986, observedAt]]),
+        npcPurchasePrices: new Map([
+          [
+            4986,
+            {
+              itemId: 4986,
+              unitPrice: '10000',
+              vendor: 'Vendedor NPC listado no catálogo',
+              verifiedAt: observedAt,
+            },
+          ],
+        ]),
+      },
+    );
+
+    expect(result.quotes[4986]).toMatchObject({ unitPrice: '900', source: 'market' });
+  });
+  it('uses the maximum market price when the item has no stock', () => {
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),
+      1,
+      emptyWorkspace(),
+      new Map([[4986, { ...quote(4986, '900'), stock: 0, maxPrice: '1500' }]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      { quoteObservedAt: new Map([[4986, now.toISOString()]]) },
+    );
+
+    expect(result.quotes[4986]).toMatchObject({
+      unitPrice: '1500',
+      available: 0,
+      source: 'market',
+    });
+    expect(result.enforcePurchaseLimits).toBe(false);
+  });
+  it('falls back to the catalog NPC price when the market quote has no positive price', () => {
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),
+      1,
+      emptyWorkspace(),
+      new Map([[4986, quote(4986, '0')]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      {
+        quoteObservedAt: new Map([[4986, now.toISOString()]]),
+        npcPurchasePrices: new Map([
+          [
+            4986,
+            {
+              itemId: 4986,
+              unitPrice: '10000',
+              vendor: 'Vendedor NPC listado no catálogo',
+              verifiedAt: now.toISOString(),
+            },
+          ],
+        ]),
+      },
+    );
+
+    expect(result.quotes[4986]).toMatchObject({ unitPrice: '10000', source: 'npc' });
   });
   it('maps the selected root and reachable producers with explicit method times', () => {
     const root = recipe('root', 100, [{ itemId: 2, quantity: '3' }], null);
@@ -96,12 +185,31 @@ describe('recipe production planner adapter', () => {
 
     expect(result.recipes.map((entry) => entry.id)).toEqual(['root', 'producer']);
     expect(result.candidates).toEqual([{ recipeId: 'root', crafts: 4, optimizeCrafts: 4 }]);
-    expect(result.maxOptimizationStates).toBe(250_000);
+    expect(result.maxOptimizationStates).toBe(10_000);
     expect(result.estimates).toMatchObject({
       root: { expectedYield: 2.829, craftSeconds: 12, source: 'calibrated' },
-      producer: { expectedYield: 1, craftSeconds: 8, source: 'calibrated' },
+      producer: { expectedYield: 85, craftSeconds: 8, source: 'calibrated' },
     });
+    expect(result.recipes[1]?.ingredients).toEqual([{ itemId: 3, quantity: 170 }]);
     expect(result.quotes[100]).toMatchObject({ unitPrice: '100', source: 'market' });
+  });
+
+  it('scales processing output and required materials by the mastery material count', () => {
+    const root = recipe('grind-wheat', 304, [{ itemId: 201, quantity: '1' }], null, 'PROCESSING');
+    const result = buildRecipeProductionInput(
+      graph(root),
+      1,
+      emptyWorkspace(),
+      new Map(),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      { masteryOverride: 1000, masterySkill: 'processing' },
+    );
+
+    expect(result.estimates['grind-wheat']?.expectedYield).toBe(212.5);
+    expect(result.recipes[0]?.ingredients).toEqual([{ itemId: 201, quantity: 85 }]);
   });
 
   it('excludes stock reserved by active personal plans', () => {

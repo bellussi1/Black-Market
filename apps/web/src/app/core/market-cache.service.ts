@@ -1,5 +1,4 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import type { MarketBoardResponse, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
@@ -12,6 +11,7 @@ import {
   mergeMap,
   type Observable,
   of,
+  takeLast,
   tap,
   toArray,
 } from 'rxjs';
@@ -39,6 +39,14 @@ export const DEFAULT_MARKET_CACHE_TTL_MS = 5 * 60 * 1000;
 /** Background polling interval: 6 minutes */
 export const MARKET_BACKGROUND_POLL_MS = 6 * 60 * 1000;
 export const MARKET_STORAGE_KEY_PREFIX = 'bm_market_cache_';
+
+function hasPositivePrice(value: string | null | undefined): boolean {
+  return !!value && /^\d{1,24}$/.test(value) && BigInt(value) > 0n;
+}
+
+function needsMaximumPrice(quote: MarketItemQuote | undefined): boolean {
+  return quote?.stock === 0 && !hasPositivePrice(quote.maxPrice);
+}
 
 @Injectable({ providedIn: 'root' })
 export class MarketCacheService implements OnDestroy {
@@ -208,8 +216,8 @@ export class MarketCacheService implements OnDestroy {
 
   /**
    * Resolves quotes for crafting/production materials using the bulk production-quotes endpoint.
-   * Uses requests of at most 100 materials, caching all returned quotes and falling back to
-   * resolveQuotesBatch only for items omitted by the bulk endpoint.
+   * Uses requests of at most 100 materials, caches all returned quotes, and enriches zero-stock
+   * summaries with the individual endpoint when it omitted the maximum market price.
    */
   resolveProductionQuotes(
     itemIds: (number | string)[],
@@ -236,7 +244,9 @@ export class MarketCacheService implements OnDestroy {
     }
 
     if (!missingOrExpired.length) {
-      return of(cachedMap);
+      const missingMaximum = uniqueIds.filter((id) => needsMaximumPrice(cachedMap.get(id)));
+      if (!missingMaximum.length) return of(cachedMap);
+      return this.resolveQuotesBatch(missingMaximum, region, true).pipe(takeLast(1));
     }
 
     this.isSyncing.set(true);
@@ -258,25 +268,55 @@ export class MarketCacheService implements OnDestroy {
       toArray(),
       mergeMap(() => {
         const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
-        if (!remaining.length) {
-          return of(refreshedMap);
-        }
-        return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
-          map((fallbacks) => {
-            for (const [id, quote] of fallbacks) {
-              refreshedMap.set(id, quote);
-            }
-            return refreshedMap;
+        const fillOmitted$ = remaining.length
+          ? this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+              takeLast(1),
+              tap((fallbacks) => {
+                for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
+              }),
+            )
+          : of(refreshedMap);
+        return fillOmitted$.pipe(
+          mergeMap(() => {
+            const missingMaximum = missingOrExpired.filter((id) => {
+              const quote = refreshedMap.get(id);
+              return resolvedIds.has(id) && needsMaximumPrice(quote);
+            });
+            if (!missingMaximum.length) return of(refreshedMap);
+            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
+              takeLast(1),
+              map((details) => {
+                for (const [id, quote] of details) refreshedMap.set(id, quote);
+                return refreshedMap;
+              }),
+            );
           }),
         );
       }),
-      catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse && error.status === 503) return of(refreshedMap);
+      catchError(() => {
         const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
+        // Arsha's bulk search can be unavailable while its per-item endpoint still works.
+        // Resolve omitted items through the bounded individual lookup path instead of
+        // leaving the entire recipe tree without current quotes.
         return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+          takeLast(1),
           map((fallbacks) => {
             for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
             return refreshedMap;
+          }),
+          mergeMap(() => {
+            const missingMaximum = missingOrExpired.filter((id) => {
+              const quote = refreshedMap.get(id);
+              return resolvedIds.has(id) && needsMaximumPrice(quote);
+            });
+            if (!missingMaximum.length) return of(refreshedMap);
+            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
+              takeLast(1),
+              map((details) => {
+                for (const [id, quote] of details) refreshedMap.set(id, quote);
+                return refreshedMap;
+              }),
+            );
           }),
         );
       }),

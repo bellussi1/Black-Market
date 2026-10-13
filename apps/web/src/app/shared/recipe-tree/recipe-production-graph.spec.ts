@@ -68,6 +68,24 @@ describe('resolveRecipeProductionGraph', () => {
     expect(api.getItemRecipes).toHaveBeenCalledWith(3, 'produces');
   });
 
+  it('includes every nested recipe output in the market quote scope', () => {
+    const byproductRecipe: CatalogRecipe = {
+      ...recipe('producer-with-byproduct', 1, [2]),
+      outputs: [
+        { itemId: 1, name: 'Produto principal', quantity: '1' },
+        { itemId: 5, name: 'Subproduto', quantity: '1' },
+      ],
+    };
+    const api = apiFor(new Map([[1, [byproductRecipe]]]));
+    let graph: unknown;
+
+    resolveRecipeProductionGraph(recipe('root', 100, [1]), api, new Map(), 'dataset-v1').subscribe(
+      (value) => (graph = value),
+    );
+
+    expect(graph).toMatchObject({ itemIds: [1, 2, 5, 100] });
+  });
+
   it('reuses the visible selected nested method', () => {
     const api = apiFor(new Map([[1, [recipe('a-default', 1, [8]), recipe('z-selected', 1, [9])]]]));
 
