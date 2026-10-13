@@ -1040,6 +1040,21 @@ describe('Interactive recipe tree', () => {
     const previewDialog = fixture.nativeElement.querySelector('dialog.optimization-dialog');
     expect(previewDialog).not.toBeNull();
     expect(previewDialog.querySelector('.optimization-preview')).not.toBeNull();
+    const previewMaterials = Array.from(
+      previewDialog.querySelectorAll('.preview-material-row'),
+    ) as HTMLElement[];
+    expect(previewMaterials.length).toBeGreaterThan(0);
+    const rawMaterialRow = previewMaterials.find((row) =>
+      row.textContent?.includes('Matéria-prima'),
+    );
+    expect(rawMaterialRow?.querySelector('app-item-icon')?.getAttribute('title')).toContain(
+      'Matéria-prima',
+    );
+    const previewSteps = previewDialog.querySelectorAll(
+      '.preview-step-row',
+    ) as NodeListOf<HTMLElement>;
+    expect(previewSteps.length).toBeGreaterThan(0);
+    expect(previewSteps[0].querySelector('app-item-icon')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.optimization-status')).not.toBeNull();
     tree.applyOptimizationPreview();
     expect(tree.currentProductionPlan()?.scenario).toBe('optimized');
@@ -1049,6 +1064,24 @@ describe('Interactive recipe tree', () => {
     expect(tree.materialSource(9001)).toBe('buy');
     expect(tree.acquisitionStrategy()).toBe('custom');
     fixture.destroy();
+  });
+
+  it('shows an item icon beside each material in gathering calibration', async () => {
+    const mocks = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.recipeGraph.set({
+      rootRecipe: recipe,
+      producerRecipes: [],
+      itemIds: [5301, 9001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    } satisfies RecipeProductionGraph);
+    fixture.detectChanges();
+
+    const calibration = fixture.nativeElement.querySelector('.gather-calibration-row');
+    expect(calibration.textContent).toContain('Sal');
+    expect(calibration.querySelector('app-item-icon')?.getAttribute('title')).toContain('Sal');
   });
 
   it('removes the global Personalizado button and zero-stock production message', async () => {

@@ -1035,6 +1035,18 @@
   border-top: 1px solid var(--bm-border);
 }
 
+.gather-calibration-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gather-calibration-item app-item-icon {
+  --item-icon-size: 44px;
+}
+
 .material-source-checkbox {
   display: inline-flex;
   min-height: 36px;
@@ -2020,6 +2032,26 @@
   margin: 8px 0;
   padding-left: 16px;
   line-height: 1.6;
+}
+
+.preview-material-row,
+.preview-step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-block: 6px;
+}
+
+.preview-material-row app-item-icon,
+.preview-step-row app-item-icon {
+  --item-icon-size: 44px;
+}
+
+.preview-material-row > span,
+.preview-step-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .economic-dashboard .metric-card {

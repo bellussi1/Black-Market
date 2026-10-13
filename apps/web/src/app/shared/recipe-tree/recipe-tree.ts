@@ -509,12 +509,14 @@ export class RecipeTree {
   }
 
   productionStepName(recipeId: string): string {
+    return this.productionStepPart(recipeId)?.name ?? recipeId;
+  }
+
+  productionStepPart(recipeId: string): CatalogRecipePart | undefined {
     const graph = this.recipeGraph();
-    return (
-      [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])].find(
-        (recipe) => recipe?.key === recipeId,
-      )?.outputs[0]?.name ?? recipeId
-    );
+    return [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])].find(
+      (recipe) => recipe?.key === recipeId,
+    )?.outputs[0];
   }
 
   materialSourceLabel(itemId: number): string {
@@ -977,6 +979,7 @@ export class RecipeTree {
         return {
           itemId,
           name: part?.name ?? `Item ${itemId}`,
+          iconUrl: this.catalog.resolveIconUrl(part ?? { iconUrl: null }),
           expectedYield: draft?.expectedYield ?? estimate?.expectedYield ?? null,
           craftSeconds: draft?.craftSeconds ?? estimate?.craftSeconds ?? null,
         };

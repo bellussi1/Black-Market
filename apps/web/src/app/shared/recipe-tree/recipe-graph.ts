@@ -23,13 +23,14 @@ import type { BranchAction } from './recipe-branch';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
+import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
 import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
 
 @Component({
   selector: 'app-recipe-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemIcon],
+  imports: [ItemIcon, RecipeIngredientAlternatives],
   templateUrl: './recipe-graph.html',
   styleUrl: './recipe-graph.scss',
 })

@@ -85,19 +85,12 @@
           <p>Origem escolhida: {{ node().acquisition?.label }}</p>
         }
         @if ((node().substitutions?.length ?? 0) > 1) {
-          <label
-            >Substituir ingrediente<select
-              [ngModel]="substitutionKey()"
-              (ngModelChange)="substitute($event)"
-            >
-              @for (choice of node().substitutions; track choice.recipeKey) {
-                <option [value]="choice.recipeKey">
-                  {{ choice.part.name }} ×
-                  {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
-                </option>
-              }
-            </select></label
-          >
+          <app-recipe-ingredient-alternatives
+            [choices]="node().substitutions ?? []"
+            [selectedKey]="substitutionKey()"
+            [groupName]="'ingredient-alternative-' + node().path"
+            (choiceSelected)="substitute($event)"
+          />
         }
         @if (batches().length > 1) {
           <label

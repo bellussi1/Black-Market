@@ -9,6 +9,7 @@ import { ItemIcon } from '../item-icon/item-icon';
 import { recipeBonusProducts } from './recipe-bonus-products';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
 import type { RecipeNode } from './recipe-tree-model';
 export interface BranchAction {
   path: string;
@@ -18,7 +19,7 @@ export interface BranchAction {
 @Component({
   selector: 'app-recipe-branch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ItemIcon],
+  imports: [FormsModule, ItemIcon, RecipeIngredientAlternatives],
   templateUrl: './recipe-branch.html',
   styleUrl: './recipe-branch.scss',
 })

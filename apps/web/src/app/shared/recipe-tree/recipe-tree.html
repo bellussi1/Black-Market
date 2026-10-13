@@ -217,7 +217,10 @@
             <summary i18n>Calibrar rendimento e tempo de coleta</summary>
             @for (row of gatheringCalibrationRows(); track row.itemId) {
               <div class="gather-calibration-row">
-                <span>{{ row.name }}</span>
+                <span class="gather-calibration-item">
+                  <app-item-icon [url]="row.iconUrl" [name]="row.name" />
+                  <strong>{{ row.name }}</strong>
+                </span>
                 <label>
                   <span i18n>Unidades por coleta</span>
                   <input
@@ -395,21 +398,39 @@
                 <summary>Ver escolhas por item e etapas de produção</summary>
                 <ul>
                   @for (material of preview.materials; track material.itemId) {
-                    <li>
-                      {{ productionMaterialName(material.itemId) }} · comprar
-                      {{ material.bought }} · fazer {{ material.produced }} · estoque
-                      {{ material.owned }}
-                      @if (material.substituted > 0) {
-                        · {{ material.substituted }} equivalentes via procs raros
-                      }
+                    <li class="preview-material-row">
+                      <app-item-icon
+                        [url]="
+                          catalog.resolveIconUrl(parts().get(material.itemId) ?? { iconUrl: null })
+                        "
+                        [name]="productionMaterialName(material.itemId)"
+                      />
+                      <span>
+                        <strong>{{ productionMaterialName(material.itemId) }}</strong> · comprar
+                        {{ material.bought }} · fazer {{ material.produced }} · estoque
+                        {{ material.owned }}
+                        @if (material.substituted > 0) {
+                          · {{ material.substituted }} equivalentes via procs raros
+                        }
+                      </span>
                     </li>
                   }
                 </ul>
                 <ul>
                   @for (step of preview.steps; track $index) {
-                    <li>
-                      {{ productionStepName(step.recipeId) }} · {{ step.crafts }} operações ·
-                      {{ productionTimeLabel(step.seconds) }}
+                    <li class="preview-step-row">
+                      <app-item-icon
+                        [url]="
+                          catalog.resolveIconUrl(
+                            productionStepPart(step.recipeId) ?? { iconUrl: null }
+                          )
+                        "
+                        [name]="productionStepName(step.recipeId)"
+                      />
+                      <span>
+                        <strong>{{ productionStepName(step.recipeId) }}</strong> ·
+                        {{ step.crafts }} operações · {{ productionTimeLabel(step.seconds) }}
+                      </span>
                     </li>
                   }
                 </ul>

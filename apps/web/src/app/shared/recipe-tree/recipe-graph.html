@@ -150,27 +150,13 @@
           </label>
         }
         @if ((entry.node.substitutions?.length ?? 0) > 1) {
-          <label class="node-variant"
-            >Ingrediente equivalente
-            <select
-              [attr.aria-label]="'Substituir ' + entry.node.part.name"
-              [value]="substitutionKey(entry.node)"
-              (change)="
-                chooseRecipe(
-                  parentPath(entry.node.path),
-                  $any($event.target).value,
-                  entry.node.path
-                )
-              "
-            >
-              @for (choice of entry.node.substitutions; track choice.recipeKey) {
-                <option [value]="choice.recipeKey">
-                  {{ choice.part.name }} ×
-                  {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
-                </option>
-              }
-            </select>
-          </label>
+          <app-recipe-ingredient-alternatives
+            class="node-variant"
+            [choices]="entry.node.substitutions ?? []"
+            [selectedKey]="substitutionKey(entry.node)"
+            [groupName]="'ingredient-alternative-' + entry.node.path"
+            (choiceSelected)="chooseRecipe(parentPath(entry.node.path), $event, entry.node.path)"
+          />
         }
         @if (batches(entry.node).length > 1) {
           <label class="node-variant"
