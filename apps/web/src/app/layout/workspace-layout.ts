@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideBookOpenText,
@@ -25,8 +27,6 @@ import {
   lucideWarehouse,
   lucideX,
 } from '@ng-icons/lucide';
-import type { CatalogItem } from '@bdo/shared';
-import { HlmButton } from '@bdo/ui/button';
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
