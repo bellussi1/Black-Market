@@ -1140,13 +1140,10 @@ export class RecipeTree {
     const root = this.root();
     if (!root?.recipe) return [];
     const graph = this.recipeGraph();
-    const activeRecipes = this.currentProductionPlan()?.steps.map((step) => step.recipeId);
-    const activeIds = activeRecipes ? new Set(activeRecipes) : null;
     const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
     const skills = new Set<RecipeMasterySkill>();
 
     for (const recipe of recipes) {
-      if (activeIds && !activeIds.has(recipe.key)) continue;
       if (recipe.key === root.recipe.key && root.yield !== null && root.yield > 0) continue;
       const skill = lifeSkillForRecipe(recipe.type);
       if (skill !== 'cooking' && skill !== 'alchemy' && skill !== 'processing') continue;
@@ -1163,24 +1160,14 @@ export class RecipeTree {
     const root = this.root();
     const selectedSkill = this.masterySkill();
     if (!selectedSkill || !root?.recipe) return false;
-    const activeRecipes = new Set(this.currentProductionPlan()?.steps.map((step) => step.recipeId));
     const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
     return recipes.some((recipe) => {
       if (lifeSkillForRecipe(recipe.type) !== selectedSkill) return false;
-      if (graph && !activeRecipes.has(recipe.key)) return false;
-      const output = recipe.outputs[0];
-      if (!output || !recipeMasteryCanChangeOutput(recipe, output.itemId)) return false;
-      return recipe.key !== root.recipe?.key || !(root.yield !== null && root.yield > 0);
-    });
-  });
-  readonly masteryAvailableInSubrecipes = computed(() => {
-    const graph = this.recipeGraph();
-    const selectedSkill = this.masterySkill();
-    if (!graph || !selectedSkill) return false;
-    return graph.producerRecipes.some((recipe) => {
-      if (lifeSkillForRecipe(recipe.type) !== selectedSkill) return false;
-      const output = recipe.outputs[0];
-      return !!output && recipeMasteryCanChangeOutput(recipe, output.itemId);
+      if (recipe.key === root.recipe?.key && root.yield !== null && root.yield > 0) return false;
+      const outputId =
+        recipe.key === root.recipe?.key ? root.part.itemId : recipe.outputs[0]?.itemId;
+      if (outputId === undefined || !recipeMasteryCanChangeOutput(recipe, outputId)) return false;
+      return true;
     });
   });
 

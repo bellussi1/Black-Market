@@ -686,7 +686,7 @@ describe('Interactive recipe tree', () => {
     fixture.destroy();
   });
 
-  it('does not claim mastery changes the fixed final yield when all intermediates are bought', async () => {
+  it('keeps mastery available for production alternatives when all intermediates are bought', async () => {
     const harmonyItem = {
       ...item,
       id: 1399,
@@ -727,11 +727,23 @@ describe('Interactive recipe tree', () => {
       fixture.componentInstance.currentProductionPlan()?.steps.map((step) => step.recipeId),
     ).not.toContain('make-harmony-component');
     expect(fixture.componentInstance.effectiveYield()).toBe(10);
-    expect(fixture.componentInstance.masteryApplies()).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain(
-      'Para aplicar maestria às subreceitas, selecione Fazer / coletar tudo',
-    );
+    expect(fixture.componentInstance.masteryApplies()).toBe(true);
+    const masteryInput = fixture.nativeElement.querySelector(
+      'input[aria-label="Maestria de Alquimia"]',
+    ) as HTMLInputElement | null;
+    expect(masteryInput).not.toBeNull();
+    expect(masteryInput?.disabled).toBe(false);
+
+    vi.useFakeTimers();
+    fixture.componentInstance.setMasteryForSkill('alchemy', 3000);
+    await vi.advanceTimersByTimeAsync(250);
+    fixture.detectChanges();
+    expect(
+      fixture.componentInstance.productionInput()?.estimates['make-harmony-component']
+        ?.expectedYield,
+    ).toBe(3.438);
     fixture.destroy();
+    vi.useRealTimers();
   });
 
   it('offers a processing mastery override for a recipe with known materials', async () => {

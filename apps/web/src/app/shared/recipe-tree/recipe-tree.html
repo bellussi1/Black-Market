@@ -101,7 +101,7 @@
                   </div>
                 </label>
                 <div class="craft-param-hint" i18n>
-                  Aplicada às etapas de {{ masterySkillLabel(skill) }} feitas nesta simulação.
+                  Usada no rendimento das receitas produzidas e nas alternativas do otimizador.
                 </div>
               </div>
             } @empty {
@@ -123,18 +123,7 @@
                     <span class="craft-count-unit">pts</span>
                   </div>
                 </label>
-                <div class="craft-param-hint">
-                  @if (
-                    product.recipe?.type === 'SIMPLE_ALCHEMY' && masteryAvailableInSubrecipes()
-                  ) {
-                    <span i18n
-                      >Para aplicar maestria às subreceitas, selecione Fazer / coletar tudo; o
-                      rendimento final permanece fixo.</span
-                    >
-                  } @else {
-                    <span i18n>Maestria sem efeito nesta fórmula</span>
-                  }
-                </div>
+                <div class="craft-param-hint" i18n>Maestria sem efeito nesta fórmula</div>
               </div>
             }
             <div class="craft-param-col">
