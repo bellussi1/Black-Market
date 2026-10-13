@@ -823,3 +823,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Validação: teste direcionado da árvore, 52/52; `pnpm check` passou; `pnpm test` passou com 62 testes de calculadoras, 138 de API, 460 web e 73 de scripts/OCR; `git diff --check` passou. Continua apenas o aviso conhecido de locale `pt-BR` usando fallback `pt`.
 - Arquivos desta iteração: `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`, `.html`, `.spec.ts` e este contexto.
 - Próximo agente: manter os campos de maestria visíveis para qualquer profissão com receita compatível no grafo, independentemente da estratégia atual. Não atribuir proc de maestria a itens que a simulação decidiu comprar, nem escalar o rendimento fixo da Alquimia Simples.
+
+## 72. Otimizador sem regressão e plano da receita unificado (13/10/2026)
+
+- A busca limitada por estados agora começa comparando três alternativas completas no mesmo lote: comprar tudo, produzir tudo e as escolhas de origem atuais. O resultado escolhido usa a mesma taxa econômica de lucro por hora; se o limite de estados for atingido, uma exploração parcial não pode substituir uma dessas alternativas válidas por outra de taxa menor. O aviso de ótimo global não certificado permanece quando a busca atinge o limite de 10.000 estados.
+- Regressões em `production-planner.spec.ts` reproduzem o caso em que a busca retorna −4.200/h embora produzir tudo renda +2.700/h e verificam que uma escolha atual de coleta calibrada também vira piso da busca.
+- A lista de retornos saiu do painel financeiro e foi movida para o painel lateral “Plano da receita”, junto das escolhas de fazer/comprar. Todos os retornos, inclusive bônus aleatórios de alquimia, aparecem numa lista única com um controle vender/guardar por ID. A seção financeira fica focada nos resultados; contagens e rótulos separam insumos e retornos.
+- Verificação local de `/recipes/items/9609`: painel revisado em 1280×720 e 390×844, sem overflow horizontal observado. A regressão confirma lista única no painel de materiais e um controle por retorno.
+- Validação: `pnpm check` passou; `pnpm test` passou com 64 calculadoras, 138 API, 460 testes web e 73 testes OCR/scripts. A execução completa continua mostrando o aviso conhecido de locale `pt-BR` com fallback para `pt`.
+- Commits atômicos: `ba7dab9 fix(recipes): preserve best feasible optimization rate`; `9ef1900 refactor(recipes): unify production and return controls`.
+- Arquivos: `packages/calculators/src/production-planner.ts` e teste; `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`, `.html`, `.scss` e teste.
+- Próximo agente: manter a comparação pela taxa exata de lucro por hora e os três candidatos-piso no mesmo lote. Se a busca alcançar o teto, preservar o aviso de que o ótimo global não foi certificado. Manter todas as decisões de aquisição e venda no mesmo painel do plano.
