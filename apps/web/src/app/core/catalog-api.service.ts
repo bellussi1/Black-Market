@@ -14,7 +14,7 @@ import type {
   NpcPurchasePricesResponse,
   RecipeListResponse,
 } from '@bdo/shared';
-import { EMPTY, expand, forkJoin, map, of, reduce } from 'rxjs';
+import { EMPTY, expand, forkJoin, map, type Observable, of, reduce } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { preferredDataLocale } from './locale';
@@ -118,6 +118,50 @@ export class CatalogApiService {
         if (unique.length !== response.total)
           throw new Error('Consulta de receitas incompleta. Tente novamente.');
         return { ...response, recipes: unique };
+      }),
+    );
+  }
+
+  getByproductRecipes(
+    baseItemIds: readonly number[],
+    expectedDatasetVersion: string,
+  ): Observable<CatalogRecipesResponse> {
+    const uniqueIds = [...new Set(baseItemIds.filter((id) => Number.isSafeInteger(id) && id > 0))];
+    if (!uniqueIds.length)
+      return of<CatalogRecipesResponse>({
+        recipes: [],
+        total: 0,
+        direction: 'byproducts',
+        dataset: null,
+      });
+    const batches = Array.from({ length: Math.ceil(uniqueIds.length / 100) }, (_, index) =>
+      uniqueIds.slice(index * 100, (index + 1) * 100),
+    );
+    return forkJoin(
+      batches.map((ids) =>
+        this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/recipes/byproducts`, {
+          params: {
+            ids: ids.join(','),
+            region: this.preferences.region(),
+            preferredLocale: preferredDataLocale(),
+          },
+        }),
+      ),
+    ).pipe(
+      map((responses) => {
+        if (responses.some((response) => response.dataset?.version !== expectedDatasetVersion))
+          throw new Error('O catálogo mudou durante a consulta dos subprodutos.');
+        const byRecipeKey = new Map(
+          responses.flatMap((response) =>
+            response.recipes.map((recipe) => [recipe.key, recipe] as const),
+          ),
+        );
+        const recipes = [...byRecipeKey.values()].sort((left, right) =>
+          left.key < right.key ? -1 : left.key > right.key ? 1 : 0,
+        );
+        if (responses.some((response) => response.recipes.length !== response.total))
+          throw new Error('Consulta de subprodutos incompleta. Atualize e tente novamente.');
+        return { ...responses[0]!, recipes, total: recipes.length };
       }),
     );
   }

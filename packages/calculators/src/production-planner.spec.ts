@@ -657,6 +657,24 @@ describe('production planner', () => {
     expect(row(input, 'buy-all').netRevenue).toBe('162');
   });
 
+  it('values leftover intermediate output only when its item is marked to sell', () => {
+    const input = fixture();
+    input.estimates.middle.expectedYield = 3;
+    input.surplusSales = { 2: true };
+
+    const sold = row(input, 'produce-all');
+
+    expect(sold.returns).toEqual([{ itemId: 2, quantity: 1, sell: true }]);
+    expect(sold.grossRevenue).toBe('230');
+    expect(sold.netRevenue).toBe('149');
+
+    input.surplusSales[2] = false;
+    const kept = row(input, 'produce-all');
+    expect(kept.returns).toEqual([{ itemId: 2, quantity: 1, sell: false }]);
+    expect(kept.grossRevenue).toBe('200');
+    expect(kept.netRevenue).toBe('130');
+  });
+
   it('reuses intermediate surplus and limits initial material weight', () => {
     const input = fixture();
     input.recipes[0].ingredients = [

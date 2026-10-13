@@ -2,6 +2,7 @@ import type { CatalogRecipe } from '@bdo/shared';
 import { EMPTY, expand, filter, from, map, mergeMap, of, take, toArray } from 'rxjs';
 
 import type { CatalogApiService } from '../../core/catalog-api.service';
+import { isCookingRareProductItemId } from './recipe-bonus-products';
 
 export interface RecipeProductionGraphIssue {
   itemId: number;
@@ -11,6 +12,7 @@ export interface RecipeProductionGraphIssue {
 export interface RecipeProductionGraph {
   rootRecipe: CatalogRecipe;
   producerRecipes: CatalogRecipe[];
+  returnRecipes?: CatalogRecipe[];
   itemIds: number[];
   issues: RecipeProductionGraphIssue[];
   datasetVersion: string;
@@ -27,6 +29,10 @@ interface GraphSearchState {
 
 const compareRecipeKeys = (left: CatalogRecipe, right: CatalogRecipe) =>
   left.key < right.key ? -1 : left.key > right.key ? 1 : 0;
+const compareRecipeCandidates = (left: CatalogRecipe, right: CatalogRecipe) =>
+  left.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length -
+    right.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length ||
+  compareRecipeKeys(left, right);
 
 /** Resolves one stable producer per reachable ingredient and preserves visible method choices. */
 export function resolveRecipeProductionGraph(
@@ -74,6 +80,10 @@ export function resolveRecipeProductionGraph(
           let datasetVersion = state.datasetVersion;
 
           for (const { itemId, response } of results) {
+            if (isCookingRareProductItemId(itemId)) {
+              issues.push({ itemId, code: 'missing-producer' });
+              continue;
+            }
             const responseVersion = response.dataset?.version ?? '';
             if (
               (expectedDatasetVersion && responseVersion !== expectedDatasetVersion) ||
@@ -84,7 +94,7 @@ export function resolveRecipeProductionGraph(
             }
             if (!datasetVersion && responseVersion) datasetVersion = responseVersion;
 
-            const sorted = [...response.recipes].sort(compareRecipeKeys);
+            const sorted = [...response.recipes].sort(compareRecipeCandidates);
             const selectedKey = selectedMethods.get(itemId);
             const selected = selectedKey
               ? sorted.find((candidate) => candidate.key === selectedKey)
@@ -167,10 +177,46 @@ export function resolveRecipeProductionGraph(
       return {
         rootRecipe: root,
         producerRecipes,
+        returnRecipes: [],
         itemIds: [...state.itemIds].sort((left, right) => left - right),
         issues,
         datasetVersion: state.datasetVersion,
       } satisfies RecipeProductionGraph;
+    }),
+    mergeMap((graph) => {
+      const baseItemIds = [
+        ...new Set(
+          [graph.rootRecipe, ...graph.producerRecipes]
+            .map((recipe) => recipe.outputs[0]?.itemId)
+            .filter((itemId): itemId is number => Number.isSafeInteger(itemId)),
+        ),
+      ].sort((left, right) => left - right);
+      if (typeof api.getByproductRecipes !== 'function') return of(graph);
+      return api.getByproductRecipes(baseItemIds, graph.datasetVersion).pipe(
+        map((response) => {
+          const baseIds = new Set(baseItemIds);
+          const returnRecipes = [
+            ...new Map(
+              response.recipes
+                .filter(
+                  (recipe) =>
+                    recipe.byproductOfItemId !== null &&
+                    recipe.byproductOfItemId !== undefined &&
+                    baseIds.has(recipe.byproductOfItemId),
+                )
+                .map((recipe) => [recipe.key, recipe]),
+            ).values(),
+          ].sort(compareRecipeKeys);
+          const itemIds = new Set(graph.itemIds);
+          for (const recipe of returnRecipes)
+            for (const output of recipe.outputs) itemIds.add(output.itemId);
+          return {
+            ...graph,
+            returnRecipes,
+            itemIds: [...itemIds].sort((left, right) => left - right),
+          };
+        }),
+      );
     }),
   );
 }

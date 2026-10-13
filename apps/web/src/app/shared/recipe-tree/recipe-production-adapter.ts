@@ -12,23 +12,46 @@ import type {
   NpcPurchasePrice,
 } from '@bdo/shared';
 
+import {
+  ALCHEMY_BYPRODUCT_ITEM_ID,
+  alchemyByproductExpectedQuantity,
+  alchemyExtraItemExpectedProducts,
+} from './recipe-alchemy-extra-items';
+import {
+  COOKING_MILK_BYPRODUCT_ITEM_ID,
+  COOKING_MILK_BYPRODUCT_PER_CRAFT,
+  recipeBonusProducts,
+} from './recipe-bonus-products';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { recipeMarketPrice } from './recipe-market-price';
-import { processingBatchCount } from './recipe-mastery';
+import {
+  alchemySpecialProductExpectedYield,
+  cookingMassProduceRate,
+  cookingRareProductExpectedYield,
+  processingBatchCount,
+} from './recipe-mastery';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 import { stockLocationKey } from './recipe-tree-model';
-import { lifeSkillForRecipe, resolveDefaultYield } from './recipe-yield';
+import {
+  lifeSkillForRecipe,
+  recipeOutputQuantityWithoutMastery,
+  resolveDefaultYield,
+} from './recipe-yield';
 
 export interface RecipeProductionAdapterOptions {
   quoteObservedAt?: ReadonlyMap<number, string>;
   masteryOverride?: number | null;
   masterySkill?: string | null;
+  masteryOverrides?: Readonly<Partial<Record<RecipeMasterySkill, number>>>;
   useGatheringDefaults?: boolean;
   optimize?: boolean;
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
   npcPurchasePrices?: ReadonlyMap<number, NpcPurchasePrice>;
+  byproductSales?: ReadonlyMap<number, boolean>;
 }
+
+export type RecipeMasterySkill = 'alchemy' | 'cooking' | 'processing';
 
 function positiveNumber(value: string | number | null | undefined): number | undefined {
   const parsed = typeof value === 'number' ? value : value === null ? NaN : Number(value);
@@ -38,7 +61,7 @@ function positiveNumber(value: string | number | null | undefined): number | und
 /** Standard BDO craft durations per method (in seconds), aligned with game equipment & buffs. */
 export function defaultRecipeMethodSeconds(type: string): number {
   const norm = (type || '').toLowerCase();
-  if (norm.includes('cooking') || norm.includes('culinaria')) return 1.2;
+  if (norm === 'cook' || norm.includes('cooking') || norm.includes('culinaria')) return 1.2;
   if (norm.includes('alchemy') || norm.includes('alquimia')) {
     if (norm.includes('simple') || norm.includes('simples')) return 6.0;
     return 1.2;
@@ -48,8 +71,7 @@ export function defaultRecipeMethodSeconds(type: string): number {
 }
 
 function outputQuantity(recipe: CatalogRecipe, itemId: number): number | null {
-  const part = recipe.outputs.find((output) => output.itemId === itemId);
-  return positiveNumber(part?.quantity) ?? fixedRecipeYield(recipe, itemId);
+  return fixedRecipeYield(recipe, itemId) ?? recipeOutputQuantityWithoutMastery(recipe, itemId);
 }
 
 function outputPart(recipe: CatalogRecipe, itemId: number): CatalogRecipePart | undefined {
@@ -99,6 +121,8 @@ export function buildRecipeProductionInput(
   const masteryFor = (recipe: CatalogRecipe): number => {
     const skill = lifeSkillForRecipe(recipe.type);
     if (!skill) return 0;
+    const skillOverride = options.masteryOverrides?.[skill as RecipeMasterySkill];
+    if (skillOverride !== undefined) return Math.max(0, Math.min(3000, Math.floor(skillOverride)));
     if (
       skill === (options.masterySkill ?? rootSkill) &&
       options.masteryOverride !== null &&
@@ -115,6 +139,7 @@ export function buildRecipeProductionInput(
   };
 
   const allRecipes = [graph.rootRecipe, ...graph.producerRecipes];
+  const byproductValues: NonNullable<ProductionPlannerInput['byproductValues']> = {};
   const recipes = allRecipes.flatMap((recipe) => {
     const primary =
       recipe === graph.rootRecipe
@@ -138,7 +163,11 @@ export function buildRecipeProductionInput(
         : fixedOrCatalogYield) ??
       overrideYield ??
       resolveDefaultYield(recipe, itemId, mastery);
-    const time = methodTimes.get(recipe.type);
+    const baseTime = methodTimes.get(recipe.type);
+    const time =
+      baseTime !== undefined && Number.isFinite(baseTime) && baseTime > 0
+        ? baseTime / (skill === 'cooking' ? cookingMassProduceRate(mastery) : 1)
+        : undefined;
     const estimateSource: ProductionEstimate['source'] =
       fixedRecipeYield(recipe, itemId) !== null
         ? 'fixed'
@@ -156,7 +185,83 @@ export function buildRecipeProductionInput(
     const numericOutput =
       skill === 'processing' && fixedRecipeYield(recipe, itemId) === null
         ? expectedYield
-        : (positiveNumber(primary.quantity) ?? fixedRecipeYield(recipe, itemId) ?? null);
+        : outputQuantity(recipe, itemId);
+    const bonusProducts = recipeBonusProducts(recipe);
+    const catalogReturns = recipe.outputs
+      .filter((part) => part.itemId !== itemId && positiveNumber(part.quantity) !== undefined)
+      .map((part) => ({
+        itemId: part.itemId,
+        expectedQuantity: positiveNumber(part.quantity)! * processingBatch,
+      }));
+    const attachedReturns = (graph.returnRecipes ?? [])
+      .filter((returnRecipe) => returnRecipe.byproductOfItemId === itemId)
+      .flatMap((returnRecipe) =>
+        returnRecipe.outputs.map((part) => ({
+          itemId: part.itemId,
+          expectedQuantity:
+            returnRecipe.type === 'ALCHEMY'
+              ? alchemySpecialProductExpectedYield(mastery)
+              : (positiveNumber(part.quantity) ?? 0),
+        })),
+      )
+      .filter((product) => product.expectedQuantity > 0);
+    const explicitReturns = [
+      ...catalogReturns,
+      ...attachedReturns,
+      ...bonusProducts.map((product) => ({
+        itemId: product.itemId,
+        expectedQuantity: cookingRareProductExpectedYield(mastery),
+      })),
+      ...(skill === 'cooking'
+        ? [
+            {
+              itemId: COOKING_MILK_BYPRODUCT_ITEM_ID,
+              expectedQuantity: COOKING_MILK_BYPRODUCT_PER_CRAFT,
+            },
+          ]
+        : []),
+      ...(skill === 'alchemy'
+        ? [
+            {
+              itemId: ALCHEMY_BYPRODUCT_ITEM_ID,
+              expectedQuantity: alchemyByproductExpectedQuantity(),
+            },
+            ...alchemyExtraItemExpectedProducts(mastery),
+          ]
+        : []),
+    ];
+    const aggregatedReturns = new Map<number, number>();
+    for (const product of explicitReturns)
+      aggregatedReturns.set(
+        product.itemId,
+        (aggregatedReturns.get(product.itemId) ?? 0) + product.expectedQuantity,
+      );
+    if (explicitReturns.length) {
+      byproductValues[recipe.key] = [...aggregatedReturns]
+        .sort(([left], [right]) => left - right)
+        .map(([itemId, expectedQuantity]) => ({
+          itemId,
+          expectedQuantity,
+          unitPrice: quotes.has(itemId)
+            ? (recipeMarketPrice(quotes.get(itemId)!)?.price ?? '')
+            : '',
+          sell:
+            options.byproductSales?.get(itemId) ??
+            Boolean(quotes.has(itemId) && recipeMarketPrice(quotes.get(itemId)!)),
+        }));
+    }
+    const plannerByproducts = new Map<number, number | null>(
+      recipe.outputs
+        .filter((part) => part.itemId !== itemId)
+        .map((part) => [
+          part.itemId,
+          positiveNumber(part.quantity) === undefined
+            ? null
+            : positiveNumber(part.quantity)! * processingBatch,
+        ]),
+    );
+    for (const [returnItemId] of aggregatedReturns)
+      if (!plannerByproducts.has(returnItemId)) plannerByproducts.set(returnItemId, null);
     return [
       {
         id: recipe.key,
@@ -170,15 +275,10 @@ export function buildRecipeProductionInput(
               ? null
               : positiveNumber(part.quantity)! * processingBatch,
         })),
-        byproducts: recipe.outputs
-          .filter((part) => part.itemId !== itemId)
-          .map((part) => ({
-            itemId: part.itemId,
-            quantity:
-              positiveNumber(part.quantity) === undefined
-                ? null
-                : positiveNumber(part.quantity)! * processingBatch,
-          })),
+        byproducts: [...plannerByproducts].map(([returnItemId, quantity]) => ({
+          itemId: returnItemId,
+          quantity,
+        })),
         estimate,
       },
     ];
@@ -186,6 +286,17 @@ export function buildRecipeProductionInput(
 
   const estimates = Object.fromEntries(recipes.map((recipe) => [recipe.id, recipe.estimate]));
   const plannerRecipes = recipes.map(({ estimate: _estimate, ...recipe }) => recipe);
+  const surplusSales = Object.fromEntries(
+    [
+      ...new Set(
+        graph.producerRecipes.flatMap((recipe) => recipe.outputs.map((output) => output.itemId)),
+      ),
+    ].map((itemId) => [
+      itemId,
+      options.byproductSales?.get(itemId) ??
+        Boolean(quotes.has(itemId) && recipeMarketPrice(quotes.get(itemId)!)),
+    ]),
+  );
   const excluded = new Set(options.excludedLocations ?? []);
   const freeInventory = availableInventory(
     workspace.personalPlans,
@@ -248,6 +359,8 @@ export function buildRecipeProductionInput(
     now: now.toISOString(),
     gatheringEstimates,
     customChoices,
+    byproductValues,
+    surplusSales,
     useOwnedInProduction: true,
     enforcePurchaseLimits: false,
   };

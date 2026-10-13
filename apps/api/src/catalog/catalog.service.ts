@@ -537,7 +537,64 @@ export class CatalogService {
       .from(recipes)
       .where(and(eq(recipes.datasetVersionId, dataset.id), inArray(recipes.recipeKey, keys)))
       .orderBy(asc(recipes.recipeType), asc(recipes.recipeKey));
+    const recipeDetails = await this.loadRecipeDetails(dataset, recipeRows);
+    return {
+      recipes: recipeDetails,
+      total: Number(relatedCount?.total ?? 0),
+      direction,
+      dataset: this.toSummary(dataset),
+      page: query.page,
+      pageSize: query.pageSize,
+    };
+  }
 
+  async getByproductRecipes(rawQuery: Record<string, unknown>): Promise<CatalogRecipesResponse> {
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    if (!query.ids?.length)
+      throw new BadRequestException({
+        code: 'MISSING_BYPRODUCT_ITEMS',
+        message: 'Informe de 1 a 100 IDs de produtos-base.',
+        field: 'ids',
+      });
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset) return { recipes: [], total: 0, direction: 'byproducts', dataset: null };
+
+    const recipeRows = await this.database.db
+      .select({
+        key: recipes.recipeKey,
+        type: recipes.recipeType,
+        station: recipes.station,
+        byproductOfItemId: recipes.byproductOfItemId,
+      })
+      .from(recipes)
+      .where(
+        and(
+          eq(recipes.datasetVersionId, dataset.id),
+          inArray(recipes.byproductOfItemId, query.ids),
+          inArray(recipes.recipeType, LIFE_SKILL_RECIPE_TYPES),
+        ),
+      )
+      .orderBy(asc(recipes.byproductOfItemId), asc(recipes.recipeKey));
+    const recipeDetails = await this.loadRecipeDetails(dataset, recipeRows);
+    return {
+      recipes: recipeDetails,
+      total: recipeDetails.length,
+      direction: 'byproducts',
+      dataset: this.toSummary(dataset),
+    };
+  }
+
+  private async loadRecipeDetails(
+    dataset: DatasetVersion,
+    recipeRows: {
+      key: string;
+      type: string;
+      station: string | null;
+      byproductOfItemId: number | null;
+    }[],
+  ): Promise<CatalogRecipe[]> {
+    const keys = [...new Set(recipeRows.map((recipe) => recipe.key))];
+    if (!keys.length) return [];
     const [inputRows, outputRows] = await Promise.all([
       this.database.db
         .select({
@@ -586,7 +643,6 @@ export class CatalogService {
         )
         .orderBy(asc(recipeOutputs.recipeKey), asc(recipeOutputs.position)),
     ]);
-
     const inputsByRecipe = new Map<string, CatalogRecipe['inputs']>();
     const outputsByRecipe = new Map<string, CatalogRecipe['outputs']>();
     const icons = new Map(
@@ -618,19 +674,11 @@ export class CatalogService {
         },
       ]);
     }
-
-    return {
-      recipes: recipeRows.map((recipe) => ({
-        ...recipe,
-        inputs: inputsByRecipe.get(recipe.key) ?? [],
-        outputs: outputsByRecipe.get(recipe.key) ?? [],
-      })),
-      total: Number(relatedCount?.total ?? 0),
-      direction,
-      dataset: this.toSummary(dataset),
-      page: query.page,
-      pageSize: query.pageSize,
-    };
+    return recipeRows.map((recipe) => ({
+      ...recipe,
+      inputs: inputsByRecipe.get(recipe.key) ?? [],
+      outputs: outputsByRecipe.get(recipe.key) ?? [],
+    }));
   }
 
   private itemFilters(query: CatalogQuery, datasetVersionId: string): SQL[] {

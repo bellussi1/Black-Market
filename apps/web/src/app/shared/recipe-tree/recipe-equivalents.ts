@@ -1,5 +1,6 @@
 import type { CatalogRecipe, CatalogRecipePart } from '@bdo/shared';
 
+import { isCookingRareProductItemId } from './recipe-bonus-products';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 
 const yieldOf = (recipe: CatalogRecipe) => {
@@ -18,6 +19,71 @@ const context = (recipe: CatalogRecipe) =>
     recipe.byproductOfItemId ?? null,
     recipe.outputs.map((p) => p.itemId).sort(),
   ]);
+
+const ORGANIC_FEED_SUBSTITUTIONS = [
+  {
+    itemId: 7905,
+    substituteItemId: 7901,
+    name: 'Carne de Veado',
+    label: 'meat',
+  },
+  {
+    itemId: 8201,
+    substituteItemId: 8501,
+    name: 'Gobião Desidratado',
+    label: 'fish',
+  },
+] as const;
+
+/** Adds the 1:1 meat and fish substitutes used in the checked Organic Feed comparison. */
+export function withVerifiedIngredientSubstitutions(recipes: CatalogRecipe[]): CatalogRecipe[] {
+  return recipes.flatMap((recipe) => {
+    const isOrganicFeed =
+      recipe.type === 'COOK' && recipe.outputs.some((output) => output.itemId === 54018);
+    const applicable = ORGANIC_FEED_SUBSTITUTIONS.filter((substitution) =>
+      recipe.inputs.some((part) => part.itemId === substitution.itemId),
+    );
+    if (!isOrganicFeed || applicable.length === 0) return [recipe];
+
+    const variants = [recipe];
+    for (let mask = 1; mask < 1 << applicable.length; mask++) {
+      const selected = applicable.filter((_, index) => mask & (1 << index));
+      const suffix = selected.map(
+        (substitution) => `${substitution.label}-${substitution.substituteItemId}`,
+      );
+      variants.push({
+        ...recipe,
+        key: `${recipe.key}~verified-${suffix.join('-')}`,
+        inputs: recipe.inputs.map((part) => {
+          const substitution = selected.find((entry) => entry.itemId === part.itemId);
+          return substitution
+            ? {
+                ...part,
+                itemId: substitution.substituteItemId,
+                name: substitution.name,
+                iconUrl: undefined,
+              }
+            : part;
+        }),
+      });
+    }
+    return variants;
+  });
+}
+
+export function verifiedIngredientSubstitutionItemIds(recipes: CatalogRecipe[]): number[] {
+  return [
+    ...new Set(
+      recipes.flatMap((recipe) => {
+        if (recipe.type !== 'COOK' || !recipe.outputs.some((output) => output.itemId === 54018))
+          return [];
+        return ORGANIC_FEED_SUBSTITUTIONS.filter((substitution) =>
+          recipe.inputs.some((part) => part.itemId === substitution.itemId),
+        ).map((substitution) => substitution.substituteItemId);
+      }),
+    ),
+  ];
+}
 
 // Connect actual catalog formulas that differ in one ingredient slot. This
 // recognizes meat/blood/elixir substitutions without guessing from their names
@@ -52,7 +118,9 @@ export function recipeFamilies(recipes: CatalogRecipe[]): CatalogRecipe[][] {
   return [...families.values()].map((family) =>
     family.sort(
       (a, b) =>
-        yieldOf(a) - yieldOf(b) ||
+        a.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length -
+          b.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length ||
+        yieldOf(b) - yieldOf(a) ||
         a.inputs.filter((p) => p.name.startsWith('[Evento]')).length -
           b.inputs.filter((p) => p.name.startsWith('[Evento]')).length ||
         b.inputs.reduce((sum, p) => sum + Number(p.quantity), 0) -

@@ -64,6 +64,13 @@ export class CatalogController {
   productionCatalog(@Query() query: Record<string, unknown>) {
     return this.catalog.productionCatalog(query);
   }
+  @Get('recipes/byproducts')
+  @Header('Cache-Control', 'public, max-age=300')
+  @ApiOperation({ summary: 'Lista receitas de subproduto ligadas a vários produtos-base' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Até 100 IDs separados por vírgula' })
+  getByproductRecipes(@Query() query: Record<string, unknown>) {
+    return this.catalog.getByproductRecipes(query);
+  }
   @Get('recipes/:key')
   @ApiOperation({ summary: 'Receita com materiais, resultados e imagens' })
   recipe(@Param('key') key: string, @Query() query: Record<string, unknown>) {

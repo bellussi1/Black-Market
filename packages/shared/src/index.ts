@@ -79,7 +79,7 @@ export interface CatalogRecipe {
 export interface CatalogRecipesResponse {
   recipes: CatalogRecipe[];
   total: number;
-  direction: 'produces' | 'uses';
+  direction: 'produces' | 'uses' | 'byproducts';
   dataset: ActiveDatasetSummary | null;
   page?: number;
   pageSize?: number;

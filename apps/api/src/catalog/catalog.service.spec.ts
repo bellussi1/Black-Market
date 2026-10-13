@@ -84,6 +84,74 @@ describe('Paginated item recipes', () => {
   });
 });
 
+describe('Alchemy byproduct recipe lookup', () => {
+  it('returns recipes attached to base outputs in one dataset-bound query', async () => {
+    const recipeRows = query([
+      { key: 'special-elixir', type: 'ALCHEMY', station: null, byproductOfItemId: 749 },
+    ]);
+    const inputRows = query([
+      { recipeKey: 'special-elixir', itemId: 6355, name: 'Sangue', quantity: '1.0000' },
+    ]);
+    const outputRows = query([
+      { recipeKey: 'special-elixir', itemId: 750, name: 'Elixir especial', quantity: null },
+    ]);
+    const db = {
+      select: vi
+        .fn()
+        .mockReturnValueOnce(recipeRows)
+        .mockReturnValueOnce(inputRows)
+        .mockReturnValueOnce(outputRows),
+    };
+    const assets = { getIconUrl: vi.fn(() => null) };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      assets as unknown as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      finishedAt: new Date(),
+    } as never);
+
+    const result = await instance.getByproductRecipes({
+      ids: '749,690',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(recipeRows.where).toHaveBeenCalledOnce();
+    const compiled = new PgDialect().sqlToQuery(recipeRows.where.mock.calls[0][0] as SQL);
+    expect(compiled.params).toContain('dataset');
+    expect(compiled.params).toContain(749);
+    expect(compiled.params).toContain(690);
+    expect(result).toMatchObject({
+      direction: 'byproducts',
+      total: 1,
+      recipes: [
+        {
+          key: 'special-elixir',
+          byproductOfItemId: 749,
+          inputs: [{ itemId: 6355, name: 'Sangue', quantity: '1.0000' }],
+          outputs: [{ itemId: 750, name: 'Elixir especial', quantity: null }],
+        },
+      ],
+    });
+  });
+
+  it('requires a bounded list of base item IDs', async () => {
+    const db = { select: vi.fn() };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    await expect(instance.getByproductRecipes({ region: 'sa' })).rejects.toThrow();
+    expect(db.select).not.toHaveBeenCalled();
+  });
+});
+
 describe('NPC purchase price lookup', () => {
   it('returns only catalog entries with both a positive buy price and listed vendors', async () => {
     const rowsQuery = query([

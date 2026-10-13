@@ -2,6 +2,12 @@ import { emptyWorkspace } from '@bdo/calculators/workspace';
 import type { CatalogRecipe } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
+import {
+  alchemySpecialProductExpectedYield,
+  cookingMassProduceRate,
+  cookingRareProductExpectedYield,
+  valenciaSpecialMealExpectedYield,
+} from './recipe-mastery';
 import { buildRecipeProductionInput } from './recipe-production-adapter';
 import type { RecipeProductionGraph } from './recipe-production-graph';
 
@@ -114,5 +120,29 @@ describe('mastery coverage on real catalog recipes', () => {
     expect(zero).toBe(2.5);
     expect(maximum).toBe(sample.skill === 'cooking' ? 3.647 : 3.438);
     expect(maximum).toBeGreaterThan(zero!);
+  });
+
+  it('matches the special Valencia meal bonus quantity at common mastery brackets', () => {
+    expect(valenciaSpecialMealExpectedYield(0)).toBeCloseTo(0.3);
+    expect(valenciaSpecialMealExpectedYield(1000)).toBeCloseTo(0.409339);
+    expect(valenciaSpecialMealExpectedYield(3000)).toBeCloseTo(0.831955);
+  });
+
+  it('matches BDOlytics rare cooking output at 0, 1000, and 3000 mastery', () => {
+    expect(cookingRareProductExpectedYield(0)).toBeCloseTo(0.3);
+    expect(cookingRareProductExpectedYield(1000)).toBeCloseTo(0.409339);
+    expect(cookingRareProductExpectedYield(3000)).toBeCloseTo(0.831955);
+  });
+
+  it('uses the mastery mass-production rate for cooking action time', () => {
+    expect(cookingMassProduceRate(0)).toBe(1);
+    expect(cookingMassProduceRate(1000)).toBeCloseTo(4.059001);
+    expect(cookingMassProduceRate(3000)).toBe(10);
+  });
+
+  it('matches the alchemy special-item yield at 0, 1000, and 3000 mastery', () => {
+    expect(alchemySpecialProductExpectedYield(0)).toBeCloseTo(0.3);
+    expect(alchemySpecialProductExpectedYield(1000)).toBeCloseTo(0.3);
+    expect(alchemySpecialProductExpectedYield(3000)).toBeCloseTo(0.3);
   });
 });

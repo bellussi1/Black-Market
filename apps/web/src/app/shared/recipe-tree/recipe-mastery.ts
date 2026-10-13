@@ -11,6 +11,23 @@ const cookingMaximumProc = [
   64.21, 64.98, 65.74, 66.51, 67.27, 68.04, 68.8, 69.57, 70.33, 71.09, 71.86, 72.62, 73.39, 74.15,
   74.92, 75.68, 76.45,
 ];
+// Cooking's rare-product amount increase, in percent, at 50-mastery brackets.
+// Snapshot 2026-10-13: https://garmoth.com/mastery-brackets/cooking
+const cookingRareProductIncrease = [
+  0, 0.25, 0.36, 0.49, 0.64, 0.81, 1, 1.21, 1.44, 1.69, 1.96, 2.25, 2.56, 2.89, 3.24, 3.61, 4, 4.41,
+  4.84, 5.29, 5.76, 6.25, 6.76, 7.29, 7.84, 8.41, 9, 9.61, 10.24, 10.89, 11.56, 12.25, 12.96, 13.69,
+  14.44, 15.21, 16, 16.81, 17.64, 18.49, 19.36, 19.6, 19.84, 20.09, 20.33, 20.57, 20.81, 21.05,
+  21.3, 21.54, 21.78, 22.02, 22.26, 22.51, 22.75, 22.99, 23.23, 23.47, 23.72, 23.96, 24.2,
+];
+// Cooking mastery brackets reported by the BDOlytics cooking mastery endpoint.
+// These percentages shorten cooking action time; product yields are modeled separately.
+const cookingMassProduceChance = [
+  0, 0.1089, 0.117649, 0.126736, 0.136161, 0.145924, 0.156025, 0.166464, 0.177241, 0.188356,
+  0.199809, 0.2116, 0.223729, 0.236196, 0.249001, 0.262144, 0.275625, 0.289444, 0.305809, 0.322624,
+  0.339889, 0.357604, 0.375769, 0.394384, 0.413449, 0.442225, 0.471969, 0.502681, 0.534361,
+  0.567009, 0.600625, 0.635209, 0.670761, 0.707281, 0.744769, 0.783225, 0.822649, 0.863041,
+  0.904401, 0.995, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+];
 const alchemyMaximumProc = [
   0, 5.76, 6.35, 6.97, 7.62, 8.29, 9, 9.73, 10.5, 11.29, 12.11, 12.96, 13.84, 14.75, 15.68, 16.65,
   17.64, 18.66, 19.71, 20.79, 21.9, 23.04, 24.21, 25.4, 26.63, 27.88, 29.16, 30.47, 31.81, 33.18,
@@ -18,7 +35,6 @@ const alchemyMaximumProc = [
   53.13, 53.75, 54.38, 55, 55.63, 56.25, 56.88, 57.5, 58.13, 58.75, 59.38, 60, 60.63, 61.25, 61.88,
   62.5,
 ];
-
 /** Processing mastery brackets from https://garmoth.com/mastery-brackets/processing. */
 const processingMaterialCounts = [
   [2, 10],
@@ -108,11 +124,48 @@ export function normalizeRecipeMastery(value: number): number {
     : DEFAULT_RECIPE_MASTERY;
 }
 
-export function standardProductYield(skill: 'cooking' | 'alchemy', mastery: number): number {
+/** Maximum-product proc chance as a fraction for the selected mastery bracket. */
+export function maximumProductProcChance(skill: 'cooking' | 'alchemy', mastery: number): number {
   const table = skill === 'cooking' ? cookingMaximumProc : alchemyMaximumProc;
-  const chance = table[Math.floor(normalizeRecipeMastery(mastery) / 50)]! / 100;
+  return table[Math.floor(normalizeRecipeMastery(mastery) / 50)]! / 100;
+}
+
+export function standardProductYield(skill: 'cooking' | 'alchemy', mastery: number): number {
+  const chance = maximumProductProcChance(skill, mastery);
   // Recipe quantity contracts use thousandths; preserve the same precision in both planners.
   return Number((2.5 + 1.5 * chance).toFixed(3));
+}
+
+/** Cooking actions per second multiplier, capped at ten actions per base craft time. */
+export function cookingMassProduceRate(mastery: number): number {
+  const bracket = Math.floor(normalizeRecipeMastery(mastery) / 50);
+  const chance = cookingMassProduceChance[bracket] ?? (bracket >= 40 ? 1 : 0);
+  return Number((1 + 9 * chance).toFixed(6));
+}
+
+/** Expected cooking rare-proc output per craft, including mastery amount increase. */
+export function cookingRareProductExpectedYield(mastery: number, minProc = 1, maxProc = 2): number {
+  const bracket = Math.floor(normalizeRecipeMastery(mastery) / 50);
+  const maximumProductChance = cookingMaximumProc[bracket]! / 100;
+  const rareProductAmountIncrease = cookingRareProductIncrease[bracket]! / 100;
+  const averageProc = (minProc + maxProc) / 2;
+  return Number(
+    (
+      (averageProc + (maxProc - averageProc) * maximumProductChance) *
+      (0.2 + rareProductAmountIncrease)
+    ).toFixed(6),
+  );
+}
+
+/** Expected special Valencia meal quantity per Valencia Meal craft. */
+export function valenciaSpecialMealExpectedYield(mastery: number): number {
+  // Valencia Meal rare proc has the same 1–2 output range as other cooking rares.
+  return cookingRareProductExpectedYield(mastery, 1, 2);
+}
+
+/** Expected rare-product yield for an alchemy byproduct recipe (mean proc × 20% chance). */
+export function alchemySpecialProductExpectedYield(_mastery: number): number {
+  return 0.3;
 }
 
 /** Number of normal processing batches that one mass-processing action can handle. */

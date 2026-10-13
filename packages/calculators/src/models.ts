@@ -19,6 +19,14 @@ const decimal = z
     (v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 0.00001,
     'Use até três casas decimais.',
   );
+const expectedYield = z
+  .number()
+  .min(0)
+  .max(1_000_000)
+  .refine(
+    (value) => Math.abs(value * 10_000 - Math.round(value * 10_000)) < 0.00001,
+    'Use até quatro casas decimais.',
+  );
 export const taxShape = {
   taxPercent: percent,
   valuePack: z.boolean(),
@@ -173,7 +181,7 @@ export const recipeSchema = z.object({
   itemId: z.number().int().positive().optional(),
   id: z.string().min(1).max(64),
   name: labelSchema,
-  yield: decimal.positive().max(1_000_000),
+  yield: expectedYield.positive().max(1_000_000),
   ingredients: z
     .array(
       z.object({

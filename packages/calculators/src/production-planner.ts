@@ -65,6 +65,8 @@ export interface ProductionPlannerInput {
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
   >;
+  /** Explicit market-sale choices for leftover outputs of intermediate recipes. */
+  surplusSales?: Record<number, boolean>;
 }
 export interface ProductionIssue {
   code:
@@ -114,6 +116,7 @@ export interface ProductionPlan {
     owned: number;
     produced: number;
   }[];
+  returns: { itemId: number; quantity: number; sell: boolean }[];
   /** Exact source decisions certified by the optimized scenario. */
   sourceChoices?: Record<number, ProductionChoice>;
   steps: { recipeId: string; crafts: number; output: number; seconds: number | null }[];
@@ -219,6 +222,14 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       return row;
     };
     const steps: ProductionPlan['steps'] = [];
+    const returns = new Map<number, { quantity: bigint; sell: boolean }>();
+    const addReturn = (itemId: number, quantity: bigint, sell: boolean) => {
+      if (quantity <= 0n) return;
+      const current = returns.get(itemId) ?? { quantity: 0n, sell };
+      current.quantity += quantity;
+      current.sell ||= sell;
+      returns.set(itemId, current);
+    };
     const weightSteps: {
       ingredients: { itemId: number; quantity: bigint }[];
       outputs: { itemId: number; quantity: bigint | null }[];
@@ -231,6 +242,8 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     let output: bigint | null = null;
     let byproductGross = 0n;
     let byproductNet = 0n;
+    let surplusGross = 0n;
+    let surplusNet = 0n;
 
     function quote(id: number, buying = false): bigint | null {
       const value = input.quotes[id];
@@ -492,6 +505,14 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           `${recipe.name}: subproduto ${byproduct.itemId} valorizado pelo rendimento e preço explicitamente informados.`,
         );
       }
+      for (const byproduct of recipe.byproducts ?? []) {
+        const configured = input.byproductValues?.[recipe.id]?.find(
+          (value) => value.itemId === byproduct.itemId,
+        );
+        const quantity = configured?.expectedQuantity ?? exactQuantity(byproduct.quantity);
+        if (positive(quantity))
+          addReturn(byproduct.itemId, scaled(quantity) * BigInt(count), configured?.sell ?? false);
+      }
       return result;
     }
 
@@ -576,10 +597,30 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         'Peso simula a compra dos materiais do lote antes da cadeia; peso atual deve excluir os materiais próprios alocados ao lote.',
       );
     }
+    for (const [itemId, quantity] of surplus) {
+      if (quantity <= 0n) continue;
+      const sell = input.surplusSales?.[itemId] ?? false;
+      addReturn(itemId, quantity, sell);
+      if (!sell) continue;
+      const saleQuote = input.quotes[itemId];
+      if (saleQuote?.source !== 'market') {
+        issue('missing-quote', 'Informe uma cotação de mercado para vender o excedente.', {
+          itemId,
+        });
+        continue;
+      }
+      const unitPrice = quote(itemId);
+      if (unitPrice === null) continue;
+      const gross = (quantity * unitPrice) / QUANTITY_SCALE;
+      surplusGross += gross;
+      surplusNet += net(gross);
+      assumptions.add(`Excedente do item ${itemId} valorizado pelo preço de mercado informado.`);
+    }
+
     const salePrice = root && output !== null ? quote(root.output.itemId) : null;
     const gross =
       output !== null && salePrice !== null ? (output * salePrice) / QUANTITY_SCALE : null;
-    const revenue = gross === null ? null : net(gross) + byproductNet;
+    const revenue = gross === null ? null : net(gross) + byproductNet + surplusNet;
     const profit =
       issues.length === 0 && revenue !== null && economic !== null ? revenue - economic : null;
     const perHour =
@@ -596,7 +637,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       durationMilliseconds: timesKnown ? String(totalMilliseconds) : null,
       cashCost: cash === null ? null : String(cash),
       economicCost: economic === null ? null : String(economic),
-      grossRevenue: gross === null ? null : String(gross + byproductGross),
+      grossRevenue: gross === null ? null : String(gross + byproductGross + surplusGross),
       netRevenue: revenue === null ? null : String(revenue),
       profit: profit === null ? null : String(profit),
       profitPerHour: perHour === null ? null : String(perHour),
@@ -609,6 +650,11 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         bought: unscaled(part.bought),
         owned: unscaled(part.owned),
         produced: unscaled(part.produced),
+      })),
+      returns: [...returns].map(([itemId, value]) => ({
+        itemId,
+        quantity: unscaled(value.quantity),
+        sell: value.sell,
       })),
       ...(scenario === 'optimized'
         ? {
@@ -656,9 +702,10 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
 
   const ranked: ProductionPlan[] = [];
   const incomplete: ProductionPlan[] = [];
-  const hasSellableByproducts = Object.values(input.byproductValues ?? {}).some((entries) =>
-    entries.some((entry) => entry.sell),
-  );
+  const hasSellableReturns =
+    Object.values(input.byproductValues ?? {}).some((entries) =>
+      entries.some((entry) => entry.sell),
+    ) || Object.values(input.surplusSales ?? {}).some(Boolean);
   const boundIssues = new Set<ProductionIssue['code']>([
     'budget',
     'time',
@@ -735,7 +782,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           }
 
           const choiceRecord = Object.fromEntries(choices) as Record<number, ProductionChoice>;
-          if (best && !hasSellableByproducts) {
+          if (best && !hasSellableReturns) {
             const optimistic = evaluate(
               candidate.recipeId,
               candidate.optimizeCrafts,
