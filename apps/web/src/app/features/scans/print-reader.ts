@@ -15,7 +15,9 @@ export interface QuantityReading {
 export interface IconMatch {
   id: number;
   distance: number;
+  pixelDistance?: number;
   sharedIcon: boolean;
+  refined?: boolean;
   sourceId?: number;
   colorRank?: number;
   colorGap?: number;
@@ -181,6 +183,10 @@ export interface Crop {
   width: number;
   height: number;
 }
+export interface IconColorSampleProfile {
+  crop: Crop;
+  heightRatio: number;
+}
 export function iconColorSampleCrops(crop: Crop): Crop[] {
   const centered = [0, 0.04, 0.07, 0.1, 0.13].map((inset) => ({
     left: crop.left + crop.width * inset,
@@ -202,8 +208,80 @@ export function iconColorSampleCrops(crop: Crop): Crop[] {
   }));
   return [...centered, ...horizontalFrame, ...insetFrame];
 }
+export function iconColorSampleProfiles(crop: Crop): IconColorSampleProfile[] {
+  const profiles = iconColorSampleCrops(crop).map((window) => ({
+    crop: window,
+    heightRatio: 0.8,
+  }));
+  const inset = 0.13;
+  return [
+    ...profiles,
+    {
+      crop: {
+        left: crop.left + crop.width * inset + Math.max(1, Math.round(crop.width * 0.02)),
+        top: crop.top + crop.height * inset,
+        width: crop.width * (1 - inset * 2),
+        height: crop.height * (1 - inset * 2),
+      },
+      heightRatio: 0.85,
+    },
+  ];
+}
 export function iconDetailSampleCrops(crop: Crop): Crop[] {
   return iconColorSampleCrops(crop);
+}
+
+/** Compare a catalog icon at plausible BDO slot offsets, excluding the quantity label. */
+export function alignedIconPixelDistance(
+  screen: ArrayLike<number>,
+  screenWidth: number,
+  screenHeight: number,
+  template: ArrayLike<number>,
+  templateWidth: number,
+  templateHeight: number,
+): number {
+  if (
+    screen.length !== screenWidth * screenHeight * 4 ||
+    template.length !== templateWidth * templateHeight * 4 ||
+    templateWidth > screenWidth ||
+    templateHeight > screenHeight
+  )
+    return Infinity;
+
+  const visibleBottom = Math.floor(screenHeight * 0.8);
+  const firstX = Math.round(screenWidth * 0.08);
+  const firstY = Math.round(screenHeight * 0.08);
+  const lastX = Math.min(screenWidth - templateWidth, Math.round(screenWidth * 0.22));
+  const lastY = Math.min(screenHeight - templateHeight, Math.round(screenHeight * 0.22));
+  const minX = lastX < firstX ? 0 : firstX;
+  const minY = lastY < firstY ? 0 : firstY;
+  const maxX = lastX < firstX ? screenWidth - templateWidth : lastX;
+  const maxY = lastY < firstY ? screenHeight - templateHeight : lastY;
+  let best = Infinity;
+
+  for (let offsetY = minY; offsetY <= maxY; offsetY++)
+    for (let offsetX = minX; offsetX <= maxX; offsetX++) {
+      let sum = 0;
+      let compared = 0;
+      for (let y = 0; y < templateHeight; y++) {
+        const screenY = offsetY + y;
+        if (screenY < 2 || screenY >= visibleBottom) continue;
+        for (let x = 0; x < templateWidth; x++) {
+          const screenX = offsetX + x;
+          if (screenX < 2 || screenX >= screenWidth - 2) continue;
+          const screenIndex = (screenY * screenWidth + screenX) * 4;
+          const templateIndex = (y * templateWidth + x) * 4;
+          if (template[templateIndex + 3] < 16) continue;
+          sum +=
+            Math.abs(screen[screenIndex] - template[templateIndex]) +
+            Math.abs(screen[screenIndex + 1] - template[templateIndex + 1]) +
+            Math.abs(screen[screenIndex + 2] - template[templateIndex + 2]);
+          compared += 3;
+        }
+      }
+      if (compared) best = Math.min(best, sum / compared);
+    }
+  return best;
 }
 export function mapQuantityLines(
   lines: readonly Pick<Line, 'text' | 'bbox' | 'confidence'>[],
@@ -234,6 +312,21 @@ function popcount(value: number) {
   value = (value & 0x33333333) + ((value >>> 2) & 0x33333333);
   return (((value + (value >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24;
 }
+
+function keepColorCandidates(refined: readonly IconMatch[], color: readonly IconMatch[]) {
+  const refinedMatches = refined.map((match) => ({ ...match, refined: true }));
+  const refinedIds = new Set(refinedMatches.map((match) => match.id));
+  const colorFallbacks = color
+    .filter((match) => !refinedIds.has(match.id))
+    .map((match) => ({
+      ...match,
+      colorRank: undefined,
+      rankScore: Math.max(1, match.rankScore ?? 1),
+      refined: false,
+    }));
+  return [...refinedMatches, ...colorFallbacks];
+}
+
 export function rankCandidates(
   image: CanvasImageSource,
   crop: Crop,
@@ -248,7 +341,7 @@ export function rankCandidates(
     context.imageSmoothingQuality = 'high';
     const samples: Uint8Array[] = [];
     // Grid borders, screenshot scaling, and quantity text change the visible icon area.
-    for (const window of iconColorSampleCrops(crop)) {
+    for (const { crop: window, heightRatio } of iconColorSampleProfiles(crop)) {
       context.fillStyle = '#000';
       context.fillRect(0, 0, 64, 64);
       context.drawImage(
@@ -256,7 +349,7 @@ export function rankCandidates(
         window.left,
         window.top,
         window.width,
-        Math.max(1, Math.floor(window.height * 0.8)),
+        Math.max(1, Math.floor(window.height * heightRatio)),
         0,
         0,
         64,
@@ -390,7 +483,31 @@ export class IconRefiner {
     const sources = [...new Set(matches.map((m) => m.sourceId ?? m.id))];
     const distances = new Map<number, number>();
     const shapeScores = new Map<number, number>();
-    for (const id of sources) {
+    const pixelScores = new Map<number, number>();
+    const frameWidth = Math.min(128, Math.max(1, Math.round(crop.width)));
+    const frameHeight = Math.min(128, Math.max(1, Math.round(crop.height)));
+    const frameCanvas = document.createElement('canvas');
+    frameCanvas.width = frameWidth;
+    frameCanvas.height = frameHeight;
+    const frameContext = frameCanvas.getContext('2d', { willReadFrequently: true });
+    if (!frameContext) return matches;
+    frameContext.imageSmoothingQuality = 'high';
+    frameContext.drawImage(
+      image,
+      crop.left,
+      crop.top,
+      crop.width,
+      crop.height,
+      0,
+      0,
+      frameWidth,
+      frameHeight,
+    );
+    const framePixels = frameContext.getImageData(0, 0, frameWidth, frameHeight).data;
+    const templateCanvas = document.createElement('canvas');
+    const templateScales = [0.72, 0.76, 0.82, 0.88, 0.94];
+
+    for (const id of sources.slice(0, 40)) {
       if (this.closed) return [];
       const icon = await this.load(url(id));
       if (!icon) continue;
@@ -402,6 +519,30 @@ export class IconRefiner {
         }),
       );
       shapeScores.set(id, shapeDistance);
+      let pixelDistance = Infinity;
+      for (const scale of templateScales) {
+        const size = Math.max(1, Math.round(Math.min(frameWidth, frameHeight) * scale));
+        if (size > frameWidth || size > frameHeight) continue;
+        templateCanvas.width = size;
+        templateCanvas.height = size;
+        const templateContext = templateCanvas.getContext('2d', { willReadFrequently: true });
+        if (!templateContext) continue;
+        templateContext.imageSmoothingEnabled = true;
+        templateContext.imageSmoothingQuality = 'high';
+        templateContext.drawImage(icon, 0, 0, icon.width, icon.height, 0, 0, size, size);
+        pixelDistance = Math.min(
+          pixelDistance,
+          alignedIconPixelDistance(
+            framePixels,
+            frameWidth,
+            frameHeight,
+            templateContext.getImageData(0, 0, size, size).data,
+            size,
+            size,
+          ),
+        );
+      }
+      pixelScores.set(id, pixelDistance);
       distances.set(
         id,
         Math.min(
@@ -423,19 +564,31 @@ export class IconRefiner {
           : [{ ...m, distance, rankScore, shapeDistance: rankScore }];
       })
       .sort((a, b) => a.rankScore! - b.rankScore!);
+    const pixelRanked = shaped
+      .flatMap((match) => {
+        const pixelDistance = pixelScores.get(match.sourceId ?? match.id);
+        return pixelDistance === undefined || !Number.isFinite(pixelDistance)
+          ? []
+          : [{ ...match, rankScore: pixelDistance, pixelDistance }];
+      })
+      .sort((a, b) => a.rankScore! - b.rankScore!);
+    const aligned = pixelRanked.filter((match) => match.pixelDistance! <= 60);
+    if (aligned.length) return keepColorCandidates(aligned, matches);
+
     const shapeBest = shaped[0]?.rankScore;
     const shapeRanked = shaped.filter(
       (m) => m.rankScore! <= 0.75 && m.rankScore! <= (shapeBest ?? 0) + 0.04,
     );
-    if (shapeRanked.length) return shapeRanked;
+    if (shapeRanked.length) return keepColorCandidates(shapeRanked, matches);
     // Keep a color-only fallback for catalog icons whose shape cannot be compared.
     const ranked = matches
       .map((m) => ({ ...m, distance: distances.get(m.sourceId ?? m.id) ?? 100 }))
       .filter((m) => m.distance <= 36)
       .sort((a, b) => a.distance - b.distance);
-    return ranked
+    const colorRanked = ranked
       .filter((m) => m.distance <= (ranked[0]?.distance ?? 0) + 6)
       .map((m) => ({ ...m, rankScore: m.distance }));
+    return keepColorCandidates(colorRanked, matches);
   }
   close() {
     this.closed = true;

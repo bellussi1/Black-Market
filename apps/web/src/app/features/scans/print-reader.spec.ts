@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  alignedIconPixelDistance,
   averageRgb,
   colorDistance,
   type ColorIconIndex,
   cropCanvas,
   iconColorSampleCrops,
+  iconColorSampleProfiles,
   iconDetailDistance,
   iconDetailSampleCrops,
   IconRefiner,
@@ -22,6 +24,45 @@ const entry = (pixels: Uint8Array, ids: number[]) => ({
 });
 
 describe('Color icon comparison', () => {
+  it('adds a shifted lower icon profile to tolerate grid-edge detection drift', () => {
+    const [profile] = iconColorSampleProfiles({ left: 10, top: 20, width: 56, height: 56 }).slice(
+      -1,
+    );
+
+    expect(profile.heightRatio).toBe(0.85);
+    expect(profile.crop.left).toBeCloseTo(10 + 56 * 0.13 + 1);
+    expect(profile.crop.top).toBeCloseTo(20 + 56 * 0.13);
+    expect(profile.crop.width).toBeCloseTo(56 * 0.74);
+    expect(profile.crop.height).toBeCloseTo(56 * 0.74);
+  });
+  it('matches a scaled catalog icon inside the slot while ignoring the quantity overlay', () => {
+    const width = 12;
+    const height = 12;
+    const screen = new Uint8Array(width * height * 4);
+    const icon = new Uint8Array(6 * 6 * 4);
+    const wrongIcon = new Uint8Array(6 * 6 * 4);
+    for (let pixel = 0; pixel < width * height; pixel++) {
+      screen.set([20, 20, 20, 255], pixel * 4);
+    }
+    for (let pixel = 0; pixel < 6 * 6; pixel++) {
+      icon.set([pixel * 5, 80, 200 - pixel * 3, 255], pixel * 4);
+      wrongIcon.set([200 - pixel * 3, 200, pixel * 5, 255], pixel * 4);
+    }
+    for (let y = 0; y < 6; y++) {
+      for (let x = 0; x < 6; x++) {
+        screen.set(
+          icon.subarray((y * 6 + x) * 4, (y * 6 + x + 1) * 4),
+          ((y + 3) * width + x + 3) * 4,
+        );
+      }
+    }
+    for (let y = 9; y < height; y++) {
+      for (let x = 0; x < width; x++) screen.set([255, 255, 255, 255], (y * width + x) * 4);
+    }
+
+    expect(alignedIconPixelDistance(screen, width, height, icon, 6, 6)).toBe(0);
+    expect(alignedIconPixelDistance(screen, width, height, wrongIcon, 6, 6)).toBeGreaterThan(0);
+  });
   it('samples asymmetric grid insets as well as the centered icon area', () => {
     const crops = iconColorSampleCrops({ left: 10, top: 20, width: 100, height: 50 });
 
@@ -74,7 +115,7 @@ describe('Color icon comparison', () => {
     await Promise.resolve();
     expect(bitmap.close).toHaveBeenCalledOnce();
   });
-  it('keeps failed public icon downloads out of confident suggestions', async () => {
+  it('keeps color candidates available when public icon downloads fail', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
       fillRect: vi.fn(),
@@ -82,14 +123,15 @@ describe('Color icon comparison', () => {
       getImageData: () => ({ data: new Uint8Array(64 * 64 * 4) }),
     } as unknown as CanvasRenderingContext2D);
     const refiner = new IconRefiner();
+    const matches = [{ id: 1, distance: 1, sharedIcon: false, colorRank: 1, rankScore: 0.1 }];
     expect(
       await refiner.refine(
         {} as CanvasImageSource,
         { left: 0, top: 0, width: 48, height: 48 },
-        [{ id: 1, distance: 1, sharedIcon: false }],
+        matches,
         () => '/unavailable',
       ),
-    ).toEqual([]);
+    ).toEqual([{ ...matches[0], colorRank: undefined, rankScore: 1, refined: false }]);
     refiner.close();
   });
   it('averages a whole pixel area instead of choosing one aliased thumbnail pixel', () => {

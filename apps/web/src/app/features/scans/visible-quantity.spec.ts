@@ -6,6 +6,7 @@ import { parseVisibleQuantity } from './visible-quantity';
 describe('Visible game quantities', () => {
   it.each([
     ['264.8k', '264800'],
+    ['370.3k', '370300'],
     ['264,8 K', '264800'],
     ['1.3M', '1300000'],
     ['455k', '455000'],

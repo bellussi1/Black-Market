@@ -34,6 +34,40 @@ export interface DetectedScreenPane {
   confidence: number;
 }
 
+export type GridCaptureKind = Extract<ScreenKind, 'storage' | 'inventory'>;
+
+/** Keeps the quantity-reading mode aligned with the grid when a neighboring pane title is missed. */
+export function selectGridCaptureKind(
+  fallbackKind: GridCaptureKind,
+  panes: readonly DetectedScreenPane[],
+  gridBounds: Crop | undefined,
+): GridCaptureKind {
+  if (!gridBounds) return fallbackKind;
+
+  const gridCenterX = gridBounds.left + gridBounds.width / 2;
+  const itemPanes = panes.filter(
+    (pane): pane is DetectedScreenPane & { kind: GridCaptureKind } =>
+      pane.kind === 'storage' || pane.kind === 'inventory',
+  );
+  const matchingPane = itemPanes
+    .filter(
+      (pane) =>
+        gridCenterX >= pane.bounds.left && gridCenterX <= pane.bounds.left + pane.bounds.width,
+    )
+    .sort((left, right) => right.confidence - left.confidence)[0];
+  if (matchingPane) return matchingPane.kind;
+
+  const inventoryPanes = itemPanes.filter((pane) => pane.kind === 'inventory');
+  if (
+    inventoryPanes.length &&
+    gridBounds.left + gridBounds.width <=
+      Math.min(...inventoryPanes.map((pane) => pane.bounds.left))
+  )
+    return 'storage';
+
+  return fallbackKind;
+}
+
 const skillAliases: Record<string, (typeof lifeSkills)[number]> = {
   coleta: 'gathering',
   gathering: 'gathering',

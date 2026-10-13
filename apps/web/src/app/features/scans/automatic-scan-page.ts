@@ -47,6 +47,7 @@ export class AutomaticScanPage {
         else {
           const scans = this.scans();
           if (!scans) return;
+          scans.detectedScreenPanes = panes;
           scans.captureMode =
             kind === 'inventory' ? 'inventory' : kind === 'equipment' ? 'gear' : 'storage';
           scans.autoRead.set(true);

@@ -39,6 +39,7 @@ import { groupItemOptions } from './item-option-groups';
 import {
   type Crop,
   type IconIndex,
+  type IconMatch,
   IconRefiner,
   NumberReader,
   type QuantityReading,
@@ -53,6 +54,7 @@ import {
   stockMatches,
   type StockUpdateMode,
 } from './scan-consolidation';
+import { type DetectedScreenPane, selectGridCaptureKind } from './screen-recognition';
 import { isDefinitelyEmptySlot, isKnownLockedSlot } from './slot-visibility';
 import { detectStorageGrids, type GridDetection } from './storage-grid';
 import { parseVisibleQuantity } from './visible-quantity';
@@ -108,6 +110,66 @@ interface ScanJob {
   elapsedMs: number;
   emptySlots: number;
 }
+
+export function rankIconSuggestions(
+  items: CatalogItem[],
+  matches: readonly IconMatch[],
+): CatalogItem[] {
+  const byId = new Map(matches.map((match) => [match.id, match]));
+  return [...items].sort((a, b) => {
+    const left = byId.get(a.id);
+    const right = byId.get(b.id);
+    if (!left || !right) return Number(!left) - Number(!right) || a.id - b.id;
+
+    // A refined match and a coarse color fallback have different score scales.
+    if (left.refined !== right.refined) return Number(right.refined) - Number(left.refined);
+    const leftScore = left.rankScore ?? left.distance;
+    const rightScore = right.rankScore ?? right.distance;
+    if (leftScore !== rightScore) return leftScore - rightScore;
+
+    // Prefer ordinary catalog records only when they share the same visual asset.
+    if (
+      left.sharedIcon &&
+      right.sharedIcon &&
+      (left.sourceId ?? left.id) === (right.sourceId ?? right.id)
+    ) {
+      return (
+        Number(Boolean(b.category)) - Number(Boolean(a.category)) ||
+        Number(/^[\[★]/.test(a.name)) - Number(/^[\[★]/.test(b.name)) ||
+        a.id - b.id
+      );
+    }
+    return a.id - b.id;
+  });
+}
+
+export function hasConfidentIconMatch(
+  best: IconMatch | undefined,
+  matches: readonly IconMatch[],
+): boolean {
+  if (
+    !best ||
+    !best.refined ||
+    best.sharedIcon ||
+    best.colorRank !== 1 ||
+    best.pixelDistance === undefined ||
+    best.pixelDistance > 44
+  )
+    return false;
+
+  const sourceId = best.sourceId ?? best.id;
+  const alternativePixelDistance = matches
+    .filter(
+      (match) => (match.sourceId ?? match.id) !== sourceId && match.pixelDistance !== undefined,
+    )
+    .reduce<
+      number | undefined
+    >((closest, match) => Math.min(closest ?? Infinity, match.pixelDistance!), undefined);
+  return (
+    alternativePixelDistance !== undefined && alternativePixelDistance - best.pixelDistance >= 4.5
+  );
+}
+
 @Component({
   selector: 'app-scans-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -145,7 +207,9 @@ export class ScansPage implements OnDestroy {
   readonly fullLocationConfirmed = signal(false);
   readonly allReviewed = computed(() =>
     this.jobs().flatMap((job) =>
-      job.cells.filter((cell) => cell.include && cell.reviewed).map((cell) => ({ job, cell })),
+      job.cells
+        .filter((cell) => this.isValidatedForImport(cell, job.mode))
+        .map((cell) => ({ job, cell })),
     ),
   );
   readonly duplicateGroups = computed(() =>
@@ -163,7 +227,10 @@ export class ScansPage implements OnDestroy {
       (count, job) =>
         count +
         job.cells.filter(
-          (cell) => !cell.reviewed && !cell.ignored && !this.reliable(cell, job.mode),
+          (cell) =>
+            !this.isValidatedForImport(cell, job.mode) &&
+            !cell.ignored &&
+            !this.reliable(cell, job.mode),
         ).length,
       0,
     ),
@@ -179,17 +246,18 @@ export class ScansPage implements OnDestroy {
       0,
     ),
   );
-  readonly canSaveDirectly = computed(() => this.totalIdentifiedCount() > 0);
+  readonly canSaveDirectly = computed(() => this.importableCount() > 0);
   readonly saveBatchLabel = computed(() => {
-    const count = this.totalIdentifiedCount();
+    const count = this.importableCount();
+    const itemLabel = count === 1 ? 'item' : 'itens';
     const modes = new Set(this.jobs().map((j) => j.mode));
     if (modes.size === 1) {
       const mode = [...modes][0];
-      if (mode === 'storage') return `Confirmar e salvar no armazém (${count} itens)`;
-      if (mode === 'inventory') return `Confirmar e salvar no inventário (${count} itens)`;
-      if (mode === 'gear') return `Confirmar e salvar equipamentos (${count} itens)`;
+      if (mode === 'storage') return `Salvar ${count} ${itemLabel} no armazém`;
+      if (mode === 'inventory') return `Salvar ${count} ${itemLabel} no inventário`;
+      if (mode === 'gear') return `Salvar ${count} ${itemLabel} de equipamento`;
     }
-    return `Confirmar e salvar lote (${count} itens)`;
+    return `Salvar ${count} ${itemLabel} do lote`;
   });
   readonly batchConfirmed = signal(false);
   private batchCancelled = false;
@@ -227,7 +295,9 @@ export class ScansPage implements OnDestroy {
   readonly skipLockedSlots = signal(true);
   readonly reviewCells = computed(() =>
     this.reviewFilter() === 'pending'
-      ? this.cells().filter((cell) => !cell.reviewed && !cell.ignored && !this.reliable(cell))
+      ? this.cells().filter(
+          (cell) => !this.isValidatedForImport(cell) && !cell.ignored && !this.reliable(cell),
+        )
       : this.cells(),
   );
   readonly reliableCount = computed(
@@ -239,7 +309,9 @@ export class ScansPage implements OnDestroy {
       (this.reviewPage() + 1) * this.reviewPageSize,
     ),
   );
-  readonly includedCount = computed(() => this.cells().filter((cell) => cell.include).length);
+  readonly includedCount = computed(
+    () => this.cells().filter((cell) => this.isValidatedForImport(cell)).length,
+  );
   readonly suggestionCount = computed(
     () => this.cells().filter((cell) => cell.options.length).length,
   );
@@ -250,6 +322,7 @@ export class ScansPage implements OnDestroy {
   readonly gridAreas = signal<GridDetection[]>([]);
   readonly selectedArea = signal(0);
   readonly groupItemOptions = groupItemOptions;
+  detectedScreenPanes: readonly DetectedScreenPane[] = [];
   readonly busy = signal(false);
   readonly progress = signal('');
   readonly message = signal('');
@@ -397,7 +470,9 @@ export class ScansPage implements OnDestroy {
     if (cell.reviewed || cell.ignored || cell.autoExcluded || !cell.item) return false;
     if (mode === 'number') return false;
     if (mode === 'gear') {
-      return Boolean(cell.slot) && (cell.score === undefined || cell.score <= 18);
+      return (
+        !cell.itemUncertain && Boolean(cell.slot) && (cell.score === undefined || cell.score <= 18)
+      );
     }
     return (
       !cell.itemUncertain &&
@@ -408,6 +483,16 @@ export class ScansPage implements OnDestroy {
       (cell.quantityConfidence ?? 0) >= 70 &&
       this.integer(cell.quantity) !== null
     );
+  }
+  isValidatedForImport(cell: CellDraft, mode: ScanMode = this.mode) {
+    if (!cell.include || !cell.reviewed || cell.ignored || cell.itemUncertain || !cell.item)
+      return false;
+    if (mode === 'gear') return this.slots.includes(cell.slot as (typeof gearSlots)[number]);
+    if (mode === 'storage' || mode === 'inventory') {
+      const quantity = this.integer(cell.quantity);
+      return !cell.quantityUncertain && quantity !== null && quantity > 0;
+    }
+    return false;
   }
   confirmReliable() {
     for (const cell of this.cells())
@@ -446,57 +531,25 @@ export class ScansPage implements OnDestroy {
     if (!cell.quantityEstimate) return;
     cell.quantity = cell.quantityEstimate;
     this.edited(cell);
-    this.review(cell, true);
   }
   useDefaultQuantity(cell: CellDraft, qty = '1') {
     cell.quantity = qty;
     this.edited(cell);
-    this.review(cell, true);
   }
-  toggleIgnore(cell: CellDraft) {
-    cell.ignored = !cell.ignored;
-    if (cell.ignored) {
-      cell.include = false;
-      cell.reviewed = false;
-      this.message.set(`Espaço ${cell.id + 1} ignorado. Não será importado.`);
-    } else {
-      this.message.set(`Espaço ${cell.id + 1} restaurado.`);
-    }
+  removeCell(cell: CellDraft) {
+    if (cell.ignored) return;
+    cell.ignored = true;
+    cell.include = false;
+    cell.reviewed = false;
+    cell.autoExcluded = true;
+    this.message.set(`Espaço ${cell.id + 1} removido da importação.`);
     this.cells.set([...this.cells()]);
     this.saveActiveJob();
     this.batchConfirmed.set(false);
   }
-  async confirmAndSaveAll() {
-    if (this.locked()) return;
+  async saveReadyBatch() {
+    if (this.locked() || !this.canSaveDirectly()) return;
     this.saveActiveJob();
-    this.jobs.update((jobs) =>
-      jobs.map((job) => ({
-        ...job,
-        cells: job.cells.map((cell) => {
-          if (cell.ignored || !cell.item) return cell;
-          if (job.mode === 'storage' || job.mode === 'inventory') {
-            const qty = this.integer(cell.quantity);
-            const resolvedQty =
-              qty !== null && qty > 0 ? cell.quantity : (cell.quantityEstimate ?? '1');
-            return {
-              ...cell,
-              quantity: resolvedQty,
-              quantityUncertain: false,
-              include: true,
-              reviewed: true,
-              autoExcluded: false,
-            };
-          } else if (job.mode === 'gear') {
-            if (cell.slot) {
-              return { ...cell, include: true, reviewed: true, autoExcluded: false };
-            }
-          }
-          return cell;
-        }),
-      })),
-    );
-    const active = this.activeJob();
-    if (active) this.cells.set(active.cells);
     this.batchConfirmed.set(true);
     await this.saveBatch();
   }
@@ -554,6 +607,8 @@ export class ScansPage implements OnDestroy {
   }
   private async openFiles(files: File[], replacementId?: string) {
     if (this.locked() || !files.length) return;
+    const detectedScreenPanes = this.detectedScreenPanes;
+    this.detectedScreenPanes = [];
     if (this.jobs().length + files.length - (replacementId ? 1 : 0) > 8) {
       this.message.set('O lote aceita até 8 capturas. Remova uma imagem antes de adicionar outra.');
       return;
@@ -613,8 +668,13 @@ export class ScansPage implements OnDestroy {
               /* manual crop remains available */
             }
           const first = areas[0];
+          const requestedMode = this.captureMode;
+          const captureMode =
+            requestedMode === 'storage' || requestedMode === 'inventory'
+              ? selectGridCaptureKind(requestedMode, detectedScreenPanes, first?.bounds)
+              : requestedMode;
           let autoArea = areas.length === 1;
-          if (this.captureMode === 'gear') {
+          if (captureMode === 'gear') {
             try {
               autoArea =
                 detectEquipmentFrames(image, {
@@ -637,12 +697,12 @@ export class ScansPage implements OnDestroy {
             fingerprint,
             width: image.width,
             height: image.height,
-            mode: this.captureMode,
+            mode: captureMode,
             location: this.captureLocation,
             profileId: this.captureProfileId,
             bounds: first?.bounds ?? { left: 0, top: 0, width: image.width, height: image.height },
-            columns: first?.columns ?? (this.captureMode === 'gear' ? 1 : 8),
-            rows: first?.rows ?? (this.captureMode === 'gear' ? 1 : 4),
+            columns: first?.columns ?? (captureMode === 'gear' ? 1 : 8),
+            rows: first?.rows ?? (captureMode === 'gear' ? 1 : 4),
             areas,
             cells: [],
             status: exact ? 'duplicate' : 'queued',
@@ -1058,42 +1118,15 @@ export class ScansPage implements OnDestroy {
         }
         if (generation !== this.generation) return;
         const drafts: CellDraft[] = positions.map(({ cell, matches }, id) => {
-          const options = matches
-            .map((match) => items.get(match.id))
-            .filter((item): item is CatalogItem => Boolean(item))
-            .sort((a, b) => {
-              const da =
-                matches.find((m) => m.id === a.id)!.rankScore ??
-                matches.find((m) => m.id === a.id)!.distance;
-              const db =
-                matches.find((m) => m.id === b.id)!.rankScore ??
-                matches.find((m) => m.id === b.id)!.distance;
-              // Identical icons also occur on retired event and placeholder records.
-              // Prefer a categorized, ordinary item in the visual tie; never confirm it.
-              if (
-                da <= (matches[0]?.distance ?? 0) + 0.25 &&
-                db <= (matches[0]?.distance ?? 0) + 0.25
-              ) {
-                return (
-                  Number(Boolean(b.category)) - Number(Boolean(a.category)) ||
-                  Number(/^[\[★]/.test(a.name)) - Number(/^[\[★]/.test(b.name)) ||
-                  a.id - b.id
-                );
-              }
-              return da - db;
-            });
-          const best = matches[0];
-          const shapeMargin =
-            matches[1] && best?.rankScore !== undefined && matches[1].rankScore !== undefined
-              ? matches[1].rankScore - best.rankScore
-              : Infinity;
-          const uniqueSuggestion =
-            best &&
-            !best.sharedIcon &&
-            best.colorRank === 1 &&
-            (best.colorGap ?? 0) >= 2 &&
-            best.distance <= 24 &&
-            shapeMargin >= 0.04;
+          const options = rankIconSuggestions(
+            matches
+              .map((match) => items.get(match.id))
+              .filter((item): item is CatalogItem => Boolean(item)),
+            matches,
+          );
+          const suggestedItem = options[0] ?? null;
+          const best = matches.find((match) => match.id === suggestedItem?.id) ?? matches[0];
+          const uniqueSuggestion = hasConfidentIconMatch(best, matches);
           const canvas = document.createElement('canvas');
           const previewScale = 64 / Math.max(cell.width, cell.height);
           canvas.width = Math.max(1, Math.round(cell.width * previewScale));
@@ -1117,7 +1150,7 @@ export class ScansPage implements OnDestroy {
             sourceRect: { ...cell },
             preview: canvas.toDataURL(),
             options,
-            item: uniqueSuggestion ? (items.get(best.id) ?? null) : null,
+            item: suggestedItem,
             itemUncertain: !uniqueSuggestion,
             quantity: '',
             quantityText: '',
@@ -1202,8 +1235,10 @@ export class ScansPage implements OnDestroy {
               if (hasExactReading && reading?.value) {
                 qty = reading.value;
                 uncertain = false;
-              } else if (isApproximate) {
-                qty = '';
+              } else if (isApproximate && reading?.value) {
+                // The abbreviated stack is rounded by the game; apply that visible estimate,
+                // while keeping it marked for review before it can be batch-confirmed.
+                qty = reading.value;
                 uncertain = true;
               } else if (draft.item && hasNoText) {
                 // Missing OCR text is not proof that the visible stack contains one unit.
@@ -1321,6 +1356,7 @@ export class ScansPage implements OnDestroy {
     }
     cell.item = item;
     cell.itemUncertain = false;
+    cell.ignored = false;
     cell.autoExcluded = true;
     if (this.mode === 'gear') {
       cell.levelConfirmed = false;
@@ -1344,6 +1380,7 @@ export class ScansPage implements OnDestroy {
   edited(cell: CellDraft) {
     // Keep a correction in the editor until explicit inclusion, even between keystrokes.
     cell.autoExcluded = true;
+    cell.ignored = false;
     if (this.mode === 'storage' || this.mode === 'inventory') {
       cell.quantityUncertain = this.integer(cell.quantity) === null;
       cell.quantityEstimate = null;
@@ -1386,6 +1423,22 @@ export class ScansPage implements OnDestroy {
   slotEdited(cell: CellDraft) {
     cell.levelConfirmed = false;
     this.edited(cell);
+  }
+  canValidate(cell: CellDraft, mode: ScanMode = this.mode) {
+    if (!cell.item) return false;
+    if (mode === 'gear') return this.slots.includes(cell.slot as (typeof gearSlots)[number]);
+    if (mode === 'storage' || mode === 'inventory') {
+      const quantity = this.integer(cell.quantity);
+      return quantity !== null && quantity > 0;
+    }
+    return false;
+  }
+  validateCell(cell: CellDraft) {
+    if (!this.canValidate(cell)) return;
+    cell.itemUncertain = false;
+    cell.quantityUncertain = false;
+    this.review(cell, true);
+    this.message.set(`${cell.item?.name} validado e incluído no lote.`);
   }
   review(cell: CellDraft, checked: boolean) {
     if (
@@ -1440,7 +1493,7 @@ export class ScansPage implements OnDestroy {
   applyStock() {
     if (!this.confirmStock || this.readingRegion !== this.store.data().region || this.busy())
       return;
-    const entries = this.cells().filter((cell) => cell.include);
+    const entries = this.cells().filter((cell) => this.isValidatedForImport(cell, this.mode));
     const seen = new Set<number>();
     if (
       !this.location.trim() ||
@@ -1534,7 +1587,7 @@ export class ScansPage implements OnDestroy {
     if (!this.confirmStock || this.busy() || this.readingRegion !== this.store.data().region)
       return;
     const profile = this.profiles().find((row) => row.id === this.profileId);
-    const entries = this.cells().filter((cell) => cell.include);
+    const entries = this.cells().filter((cell) => this.isValidatedForImport(cell, 'gear'));
     if (
       !profile ||
       !entries.length ||
@@ -1588,7 +1641,9 @@ export class ScansPage implements OnDestroy {
     return this.jobs()
       .flatMap((job) =>
         job.cells
-          .filter((cell) => (cell.include && cell.reviewed) || this.reliable(cell, job.mode))
+          .filter(
+            (cell) => this.isValidatedForImport(cell, job.mode) || this.reliable(cell, job.mode),
+          )
           .map((cell) => ({ job, cell })),
       )
       .filter(({ job }) => job.mode === 'storage' || job.mode === 'inventory')
@@ -1689,7 +1744,13 @@ export class ScansPage implements OnDestroy {
           this.jobs().some(
             (job) =>
               job.status !== 'duplicate' &&
-              (job.status !== 'ready' || job.cells.some((cell) => !cell.include && !cell.ignored)),
+              (job.status !== 'ready' ||
+                job.cells.some(
+                  (cell) =>
+                    !cell.ignored &&
+                    !this.isValidatedForImport(cell, job.mode) &&
+                    !this.reliable(cell, job.mode),
+                )),
           ))
       )
         throw new Error(

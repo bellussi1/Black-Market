@@ -6,6 +6,13 @@ export interface GridDetection {
   rows: number;
 }
 
+const maxGridAnalysisDimension = 1100;
+
+/** Normalize sampling so detected slot and quantity crops stay aligned across resolutions. */
+export function storageGridAnalysisScale(width: number, height: number): number {
+  return Math.min(1, maxGridAnalysisDimension / Math.max(width, height));
+}
+
 interface PixelFrame {
   data: ArrayLike<number>;
   width: number;
@@ -267,7 +274,7 @@ export function detectGridPixels(frame: PixelFrame): GridDetection | null {
 }
 
 export function detectStorageGrids(image: CanvasImageSource, width: number, height: number) {
-  const scale = Math.min(1, 1100 / Math.max(width, height));
+  const scale = storageGridAnalysisScale(width, height);
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(width * scale);
   canvas.height = Math.round(height * scale);

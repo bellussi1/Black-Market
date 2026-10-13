@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectGridAreas, detectGridPixels } from './storage-grid';
+import { detectGridAreas, detectGridPixels, storageGridAnalysisScale } from './storage-grid';
 
 function sample(pitch: number, cropped = false, columns = 9, rows = 10) {
   const left = cropped ? 0 : Math.round(pitch * 4.5);
@@ -34,6 +34,13 @@ function sample(pitch: number, cropped = false, columns = 9, rows = 10) {
 }
 
 describe('Storage grid detection', () => {
+  it('normalizes screenshots to the 1100px analysis limit', () => {
+    expect(storageGridAnalysisScale(800, 600)).toBe(1);
+    expect(storageGridAnalysisScale(1265, 935)).toBeCloseTo(1100 / 1265);
+    expect(storageGridAnalysisScale(1600, 900)).toBeCloseTo(1100 / 1600);
+    expect(storageGridAnalysisScale(3200, 1800)).toBeCloseTo(1100 / 3200);
+  });
+
   it('covers a wide warehouse with more than 100 slots without dropping its last columns', () => {
     const frame = sample(41, false, 19, 10);
     const grid = detectGridPixels(frame);

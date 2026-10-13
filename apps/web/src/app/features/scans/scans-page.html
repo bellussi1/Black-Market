@@ -571,8 +571,8 @@
           <div class="master-bar-info">
             <h3 i18n>Salvar itens conferidos</h3>
             <p i18n>
-              <strong>{{ totalIdentifiedCount() }}</strong> itens identificados no lote. Você pode
-              corrigir as dúvidas abaixo antes de salvar.
+              <strong>{{ importableCount() }}</strong> itens prontos ou validados podem ser salvos.
+              <strong>{{ pendingBatchCount() }}</strong> pendentes ficam fora até a validação.
             </p>
           </div>
           <div class="master-bar-actions">
@@ -581,7 +581,7 @@
               variant="outline"
               type="button"
               class="btn btn-save-master"
-              (click)="confirmAndSaveAll()"
+              (click)="saveReadyBatch()"
               [disabled]="locked() || !canSaveDirectly()"
               i18n
             >
@@ -741,7 +741,7 @@
                   [class.badge-ignored]="cell.ignored"
                   >{{
                     cell.ignored
-                      ? 'Ignorado'
+                      ? 'Removido'
                       : cell.reviewed
                         ? 'Incluído'
                         : reliable(cell)
@@ -792,41 +792,31 @@
                 </div>
               </div>
 
-              <details class="scan-evidence">
-                <summary i18n>Ver leitura original</summary>
-                @if (cell.score !== undefined) {
-                  <p class="help" i18n>
-                    Distância visual {{ cell.score.toFixed(1) }} · menor é mais semelhante. Não é
-                    uma probabilidade.
-                  </p>
-                }
-                <p class="help" i18n>
-                  Origem: captura {{ activeCaptureNumber() }} · espaço {{ cell.id + 1 }}
-                </p>
-                <p class="help">Quantidade lida: {{ cell.quantityText || 'Não identificada' }}</p>
-              </details>
-
               @if (cell.options.length) {
                 <div class="cell-form-row">
                   <label [for]="'scan-item-' + cell.id" i18n>Item</label>
-                  <select
-                    appBdoSelect
-                    [id]="'scan-item-' + cell.id"
-                    [ngModel]="cell.item?.id ?? ''"
-                    (ngModelChange)="choose(cell, $event)"
-                  >
-                    <option value="" i18n>Escolha o item correto</option>
-                    @for (group of groupItemOptions(cell.options); track group.label) {
-                      <optgroup [label]="group.label">
-                        @for (option of group.items; track option.id) {
-                          <option [value]="option.id">{{ option.name }} · #{{ option.id }}</option>
-                        }
-                      </optgroup>
-                    }
-                  </select>
+                  <div class="cell-item-control">
+                    <select
+                      appBdoSelect
+                      [id]="'scan-item-' + cell.id"
+                      [ngModel]="cell.item?.id ?? ''"
+                      (ngModelChange)="choose(cell, $event)"
+                    >
+                      <option value="" i18n>Escolha o item correto</option>
+                      @for (group of groupItemOptions(cell.options); track group.label) {
+                        <optgroup [label]="group.label">
+                          @for (option of group.items; track option.id) {
+                            <option [value]="option.id">
+                              {{ option.name }} · #{{ option.id }}
+                            </option>
+                          }
+                        </optgroup>
+                      }
+                    </select>
+                  </div>
                 </div>
               }
-              <details class="manual-item" [open]="!cell.options.length">
+              <details class="manual-item" [open]="!cell.item || !cell.options.length">
                 <summary i18n>Buscar outro item pelo nome</summary>
                 <app-catalog-item-picker
                   label="Buscar outro item"
@@ -886,7 +876,7 @@
                 </div>
                 @if (cell.quantityEstimate !== null) {
                   <p class="quantity-note" i18n>
-                    Lido na captura: <code>{{ cell.quantityText }}</code> (convertido para
+                    Lido na captura: <code>{{ cell.quantityText }}</code> (estimativa aplicada:
                     {{ cell.quantityEstimate }}).
                   </p>
                 } @else if (cell.quantityUncertain && !cell.quantity) {
@@ -958,33 +948,42 @@
                   /></label>
                 </div>
               }
+              <details class="scan-evidence">
+                <summary i18n>Ver leitura original</summary>
+                @if (cell.score !== undefined) {
+                  <p class="help" i18n>
+                    Distância visual {{ cell.score.toFixed(1) }} · menor é mais semelhante. Não é
+                    uma probabilidade.
+                  </p>
+                }
+                <p class="help" i18n>
+                  Origem: captura {{ activeCaptureNumber() }} · espaço {{ cell.id + 1 }}
+                </p>
+                <p class="help">Quantidade lida: {{ cell.quantityText || 'Não identificada' }}</p>
+              </details>
               <div class="scan-cell-actions">
                 <button
                   hlmBtn
-                  variant="outline"
                   type="button"
-                  class="btn-cell-confirm"
+                  class="btn-cell-validate"
                   [class.active]="cell.reviewed"
                   [attr.aria-pressed]="cell.reviewed"
-                  (click)="review(cell, !cell.reviewed)"
-                  [disabled]="
-                    !cell.item ||
-                    (mode === 'gear' && !cell.slot) ||
-                    ((mode === 'storage' || mode === 'inventory') &&
-                      integer(cell.quantity) === null)
-                  "
+                  (click)="validateCell(cell)"
+                  [disabled]="cell.reviewed || !canValidate(cell)"
                 >
-                  {{ cell.reviewed ? 'Incluído · desfazer' : 'Incluir item' }}
+                  <span i18n>Validar</span>
                 </button>
                 <button
                   hlmBtn
                   variant="outline"
                   type="button"
-                  class="btn-cell-ignore"
-                  [class.is-ignored]="cell.ignored"
-                  (click)="toggleIgnore(cell)"
+                  class="btn-cell-remove"
+                  [class.is-removed]="cell.ignored"
+                  (click)="removeCell(cell)"
+                  [disabled]="cell.ignored"
+                  i18n
                 >
-                  {{ cell.ignored ? 'Restaurar' : 'Ignorar' }}
+                  Remover
                 </button>
               </div>
             </article>
@@ -1137,7 +1136,7 @@
           variant="outline"
           type="button"
           class="btn btn-save-master"
-          (click)="confirmAndSaveAll()"
+          (click)="saveReadyBatch()"
           [disabled]="locked() || !canSaveDirectly()"
           i18n
         >
