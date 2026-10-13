@@ -54,7 +54,7 @@ describe('MarketPage', () => {
       iconUrl: null,
     } as unknown as CatalogItem);
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('http://localhost:3000/api/v1/market/items/676?region=sa&locale=pt').flush({
+    http.expectOne('http://localhost:3001/api/v1/market/items/676?region=sa&locale=pt').flush({
       source: 'arsha',
       region: 'sa',
       fetchedAt: new Date().toISOString(),
@@ -76,7 +76,7 @@ describe('MarketPage', () => {
     page.lookup();
     const http = TestBed.inject(HttpTestingController);
     const request = http.expectOne(
-      'http://localhost:3000/api/v1/market/items/676?region=sa&locale=pt',
+      'http://localhost:3001/api/v1/market/items/676?region=sa&locale=pt',
     );
     const item = {
       itemId: 676,
