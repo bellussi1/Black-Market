@@ -49,6 +49,7 @@ export interface RecipeProductionAdapterOptions {
   excludedLocations?: readonly string[];
   npcPurchasePrices?: ReadonlyMap<number, NpcPurchasePrice>;
   byproductSales?: ReadonlyMap<number, boolean>;
+  useRareProcs?: ReadonlySet<string>;
 }
 
 export type RecipeMasterySkill = 'alchemy' | 'cooking' | 'processing';
@@ -279,6 +280,9 @@ export function buildRecipeProductionInput(
           itemId: returnItemId,
           quantity,
         })),
+        ...(bonusProducts[0]
+          ? { rareSubstitution: { itemId: bonusProducts[0].itemId, ratio: 3 } }
+          : {}),
         estimate,
       },
     ];
@@ -361,6 +365,9 @@ export function buildRecipeProductionInput(
     customChoices,
     byproductValues,
     surplusSales,
+    useRareProcs: Object.fromEntries(
+      [...(options.useRareProcs ?? [])].map((recipeId) => [recipeId, true]),
+    ),
     useOwnedInProduction: true,
     enforcePurchaseLimits: false,
   };

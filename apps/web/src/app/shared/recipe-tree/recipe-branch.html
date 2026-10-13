@@ -59,6 +59,16 @@
   </button>
   <div class="step-tools">
     <button type="button" class="step-source" (click)="emit('source')">Detalhes e origem</button>
+    @if (supportsRareProcs()) {
+      <label class="rare-proc-toggle">
+        <input
+          type="checkbox"
+          [ngModel]="node().useRareProcs"
+          (ngModelChange)="emit('rare-procs', $event)"
+        />
+        <span>Usar procs raros <small>Até 3 por operação, limitado pela receita</small></span>
+      </label>
+    }
     <details class="step-settings">
       <summary>Ajustes</summary>
       <div class="settings-content">

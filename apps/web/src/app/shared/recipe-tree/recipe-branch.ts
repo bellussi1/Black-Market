@@ -6,13 +6,14 @@ import type { calculateProduction } from '@bdo/calculators';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { recipeBonusProducts } from './recipe-bonus-products';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import type { RecipeNode } from './recipe-tree-model';
 export interface BranchAction {
   path: string;
-  action: 'expand' | 'collapse' | 'buy' | 'choose' | 'yield' | 'quantity' | 'source';
-  value?: string | number | null;
+  action: 'expand' | 'collapse' | 'buy' | 'choose' | 'yield' | 'quantity' | 'source' | 'rare-procs';
+  value?: string | number | boolean | null;
 }
 @Component({
   selector: 'app-recipe-branch',
@@ -27,6 +28,10 @@ export class RecipeBranch {
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly action = output<BranchAction>();
   readonly typeLabel = recipeTypeLabel;
+  readonly supportsRareProcs = computed(() => {
+    const node = this.node();
+    return node.path !== 'root' && !!node.recipe && recipeBonusProducts(node.recipe).length > 0;
+  });
   readonly methods = computed(() => recipeFamilies(this.node().options).map((family) => family[0]));
   readonly methodKey = computed(
     () =>

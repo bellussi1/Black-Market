@@ -9,6 +9,8 @@ export interface ProductionRecipe {
   output: { itemId: number; quantity: ProductionQuantity };
   ingredients: { itemId: number; quantity: ProductionQuantity }[];
   byproducts?: { itemId: number; quantity: ProductionQuantity }[];
+  /** Maximum number of primary-item units one rare output can satisfy when selected. */
+  rareSubstitution?: { itemId: number; ratio: number };
 }
 export interface ProductionEstimate {
   expectedYield?: number;
@@ -67,6 +69,8 @@ export interface ProductionPlannerInput {
   >;
   /** Explicit market-sale choices for leftover outputs of intermediate recipes. */
   surplusSales?: Record<number, boolean>;
+  /** Selected intermediate recipes whose rare output can replace ordinary dishes. */
+  useRareProcs?: Record<string, boolean>;
 }
 export interface ProductionIssue {
   code:
@@ -115,6 +119,8 @@ export interface ProductionPlan {
     bought: number;
     owned: number;
     produced: number;
+    /** Base-item equivalent fulfilled with selected rare outputs. */
+    substituted: number;
   }[];
   returns: { itemId: number; quantity: number; sell: boolean }[];
   /** Exact source decisions certified by the optimized scenario. */
@@ -211,12 +217,19 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const surplus = new Map<number, bigint>();
     const materials = new Map<
       number,
-      { itemId: number; required: bigint; bought: bigint; owned: bigint; produced: bigint }
+      {
+        itemId: number;
+        required: bigint;
+        bought: bigint;
+        owned: bigint;
+        produced: bigint;
+        substituted: bigint;
+      }
     >();
     const material = (id: number) => {
       let row = materials.get(id);
       if (!row) {
-        row = { itemId: id, required: 0n, bought: 0n, owned: 0n, produced: 0n };
+        row = { itemId: id, required: 0n, bought: 0n, owned: 0n, produced: 0n, substituted: 0n };
         materials.set(id, row);
       }
       return row;
@@ -307,7 +320,12 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       return needed - used;
     }
 
-    function satisfy(id: number, quantity: bigint, path: Set<string>) {
+    function satisfy(
+      id: number,
+      quantity: bigint,
+      path: Set<string>,
+      maxRareSubstitutionPerOperation = 3,
+    ) {
       const row = material(id);
       row.required += quantity;
       const choice: ProductionChoice =
@@ -388,17 +406,25 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         else purchase(id, missing);
         return;
       }
-      const yieldValue = recipeYield(producer);
+      const rareRatio =
+        input.useRareProcs?.[producer.id] && producer.rareSubstitution
+          ? Math.min(
+              3,
+              producer.rareSubstitution.ratio,
+              Math.max(1, Math.ceil(maxRareSubstitutionPerOperation)),
+            )
+          : 0;
+      const yieldValue = recipeYieldForDemand(producer, rareRatio);
       if (yieldValue === null) return;
       const count = ceilDivide(missing, yieldValue);
       if (count > 1_000_000_000n) {
         issue('invalid-input', 'A cadeia excede o limite de operações.', { recipeId: producer.id });
         return;
       }
-      const produced = produce(producer, Number(count), path);
+      const produced = produce(producer, Number(count), path, missing, rareRatio);
       if (produced !== null) {
         row.produced += produced;
-        surplus.set(id, (surplus.get(id) ?? 0n) + produced - missing);
+        surplus.set(id, (surplus.get(id) ?? 0n) + (produced > missing ? produced - missing : 0n));
       }
     }
 
@@ -428,7 +454,55 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       return scaled(value);
     }
 
-    function produce(recipe: ProductionRecipe, count: number, path: Set<string>): bigint | null {
+    function rareSubstitutionYield(recipe: ProductionRecipe, ratio: number): bigint {
+      if (!input.useRareProcs?.[recipe.id] || ratio === 0) return 0n;
+      const substitution = recipe.rareSubstitution;
+      const byproduct = substitution
+        ? recipe.byproducts?.find((part) => part.itemId === substitution.itemId)
+        : undefined;
+      if (
+        !substitution ||
+        !byproduct ||
+        !Number.isSafeInteger(substitution.itemId) ||
+        substitution.itemId < 1 ||
+        !Number.isSafeInteger(substitution.ratio) ||
+        substitution.ratio < 1 ||
+        substitution.ratio > 3
+      ) {
+        issue('invalid-input', 'A substituição por procs raros está mal configurada.', {
+          recipeId: recipe.id,
+        });
+        return 0n;
+      }
+      const expected = input.byproductValues?.[recipe.id]?.find(
+        (value) => value.itemId === substitution.itemId,
+      )?.expectedQuantity;
+      const quantity = expected ?? exactQuantity(byproduct.quantity);
+      if (!positive(quantity)) {
+        issue('missing-yield', 'Informe o rendimento esperado do proc raro.', {
+          recipeId: recipe.id,
+          itemId: substitution.itemId,
+        });
+        return 0n;
+      }
+      return scaled(quantity) * BigInt(ratio);
+    }
+
+    function recipeYieldForDemand(
+      recipe: ProductionRecipe,
+      substitutionRatio: number,
+    ): bigint | null {
+      const primary = recipeYield(recipe);
+      return primary === null ? null : primary + rareSubstitutionYield(recipe, substitutionRatio);
+    }
+
+    function produce(
+      recipe: ProductionRecipe,
+      count: number,
+      path: Set<string>,
+      requiredQuantity?: bigint,
+      substitutionRatio = 0,
+    ): bigint | null {
       if (path.has(recipe.id)) {
         issue('cycle', 'A cadeia de ingredientes contém um ciclo.', { recipeId: recipe.id });
         costsKnown = false;
@@ -451,7 +525,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         }
         const total = scaled(quantity) * BigInt(count);
         ingredients.push({ itemId: part.itemId, quantity: total });
-        satisfy(part.itemId, total, next);
+        satisfy(part.itemId, total, next, quantity);
       }
       const seconds = input.estimates[recipe.id]?.craftSeconds;
       if (!positive(seconds) || Math.round(seconds * 1000) === 0) {
@@ -459,6 +533,45 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         timesKnown = false;
       } else totalMilliseconds += BigInt(Math.round(seconds * 1000)) * BigInt(count);
       const result = yieldValue * BigInt(count);
+      const substitution =
+        substitutionRatio > 0 && input.useRareProcs?.[recipe.id]
+          ? recipe.rareSubstitution
+          : undefined;
+      const substitutionPart = substitution
+        ? recipe.byproducts?.find((part) => part.itemId === substitution.itemId)
+        : undefined;
+      const substitutionQuantity =
+        substitution && substitutionPart
+          ? (input.byproductValues?.[recipe.id]?.find(
+              (value) => value.itemId === substitution.itemId,
+            )?.expectedQuantity ?? exactQuantity(substitutionPart.quantity))
+          : undefined;
+      const substitutionTotal = positive(substitutionQuantity)
+        ? scaled(substitutionQuantity) * BigInt(count)
+        : 0n;
+      const requiredBeyondPrimary =
+        requiredQuantity !== undefined && requiredQuantity > result
+          ? requiredQuantity - result
+          : 0n;
+      const consumedSubstitution =
+        substitution &&
+        substitutionPart &&
+        Number.isSafeInteger(substitution.ratio) &&
+        substitutionRatio > 0 &&
+        substitutionTotal > 0n &&
+        requiredBeyondPrimary > 0n
+          ? (() => {
+              const requiredUnits = ceilDivide(requiredBeyondPrimary, BigInt(substitutionRatio));
+              return requiredUnits < substitutionTotal ? requiredUnits : substitutionTotal;
+            })()
+          : 0n;
+      if (consumedSubstitution > 0n)
+        assumptions.add(
+          `${recipe.name}: ${unscaled(consumedSubstitution)} unidade(s) de procs raros usadas como ${unscaled(consumedSubstitution * BigInt(substitutionRatio))} unidade(s) do prato normal.`,
+        );
+      if (consumedSubstitution > 0n)
+        material(recipe.output.itemId).substituted +=
+          consumedSubstitution * BigInt(substitutionRatio);
       steps.push({
         recipeId: recipe.id,
         crafts: count,
@@ -473,15 +586,26 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             const expected =
               input.byproductValues?.[recipe.id]?.find((value) => value.itemId === part.itemId)
                 ?.expectedQuantity ?? exactQuantity(part.quantity);
+            const total = positive(expected) ? scaled(expected) * BigInt(count) : null;
             return {
               itemId: part.itemId,
-              quantity: positive(expected) ? scaled(expected) * BigInt(count) : null,
+              quantity:
+                total === null
+                  ? null
+                  : part.itemId === substitution?.itemId
+                    ? total - consumedSubstitution
+                    : total,
             };
           }),
         ],
       });
       for (const byproduct of input.byproductValues?.[recipe.id] ?? []) {
-        if (!byproduct.sell) continue;
+        const total = positive(byproduct.expectedQuantity)
+          ? scaled(byproduct.expectedQuantity) * BigInt(count)
+          : 0n;
+        const consumed = byproduct.itemId === substitution?.itemId ? consumedSubstitution : 0n;
+        const remaining = total > consumed ? total - consumed : 0n;
+        if (!byproduct.sell || remaining === 0n) continue;
         if (!positive(byproduct.expectedQuantity) || !money(byproduct.unitPrice)) {
           issue('invalid-input', 'A valoração de subproduto é inválida.', {
             recipeId: recipe.id,
@@ -496,9 +620,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           });
           continue;
         }
-        const gross =
-          (scaled(byproduct.expectedQuantity) * BigInt(count) * BigInt(byproduct.unitPrice)) /
-          QUANTITY_SCALE;
+        const gross = (remaining * BigInt(byproduct.unitPrice)) / QUANTITY_SCALE;
         byproductGross += gross;
         byproductNet += net(gross);
         assumptions.add(
@@ -510,8 +632,15 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           (value) => value.itemId === byproduct.itemId,
         );
         const quantity = configured?.expectedQuantity ?? exactQuantity(byproduct.quantity);
-        if (positive(quantity))
-          addReturn(byproduct.itemId, scaled(quantity) * BigInt(count), configured?.sell ?? false);
+        if (positive(quantity)) {
+          const total = scaled(quantity) * BigInt(count);
+          const consumed = byproduct.itemId === substitution?.itemId ? consumedSubstitution : 0n;
+          addReturn(
+            byproduct.itemId,
+            total > consumed ? total - consumed : 0n,
+            configured?.sell ?? false,
+          );
+        }
       }
       return result;
     }
@@ -650,6 +779,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         bought: unscaled(part.bought),
         owned: unscaled(part.owned),
         produced: unscaled(part.produced),
+        substituted: unscaled(part.substituted),
       })),
       returns: [...returns].map(([itemId, value]) => ({
         itemId,

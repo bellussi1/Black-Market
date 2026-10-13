@@ -637,6 +637,37 @@ describe('recipe production planner adapter', () => {
     });
   });
 
+  it('adapts cooking rare products as optional three-to-one recipe substitutes', () => {
+    const root = recipe('final', 100, [{ itemId: 9216, quantity: '4' }], '1', 'ALCHEMY');
+    const figPie = recipe('fig-pie', 9216, [], null, 'COOK');
+    const result = buildRecipeProductionInput(
+      graph(root, [figPie]),
+      1,
+      emptyWorkspace(),
+      new Map([[9301, quote(9301, '10000')]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      {
+        masteryOverrides: { cooking: 3000 },
+        quoteObservedAt: new Map([[9301, now.toISOString()]]),
+        useRareProcs: new Set(['fig-pie']),
+      },
+    );
+
+    expect(result.recipes.find((row) => row.id === 'fig-pie')).toMatchObject({
+      rareSubstitution: { itemId: 9301, ratio: 3 },
+    });
+    expect(result.useRareProcs).toEqual({ 'fig-pie': true });
+    expect(result.byproductValues?.['fig-pie']).toContainEqual(
+      expect.objectContaining({
+        itemId: 9301,
+        expectedQuantity: cookingRareProductExpectedYield(3000),
+      }),
+    );
+  });
+
   it('accounts for the Oatmeal rare proc that returns Refined Oatmeal', () => {
     const oatmeal = recipe('oatmeal', 9261, [], null, 'COOK');
     const result = buildRecipeProductionInput(

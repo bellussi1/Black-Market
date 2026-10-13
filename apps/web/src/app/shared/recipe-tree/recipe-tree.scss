@@ -1054,6 +1054,13 @@
 .material-source-checkbox:has(input:checked) span {
   color: var(--bm-accent);
 }
+.material-substitution-note {
+  display: block;
+  color: var(--bm-accent);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
 
 .production-issues {
   display: grid;

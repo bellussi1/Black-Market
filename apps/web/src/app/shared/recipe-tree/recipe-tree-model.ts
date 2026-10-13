@@ -13,6 +13,7 @@ export interface RecipeNode {
   recipe: CatalogRecipe | null;
   yield: number | null;
   expanded: boolean;
+  useRareProcs: boolean;
   children: RecipeNode[];
   options: CatalogRecipe[];
   loading: boolean;
@@ -28,6 +29,7 @@ export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
     recipe: null,
     yield: null,
     expanded: false,
+    useRareProcs: false,
     children: [],
     options: [],
     loading: false,
@@ -54,6 +56,7 @@ export function withRecipe(
   return {
     ...node,
     recipe,
+    useRareProcs: node.recipe?.key === recipe.key ? node.useRareProcs : false,
     acquisition: undefined,
     yield: yieldOverride ?? (preserveYield ? (node.yield ?? sourceYield) : sourceYield),
     expanded: true,

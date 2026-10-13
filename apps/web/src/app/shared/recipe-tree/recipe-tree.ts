@@ -434,6 +434,7 @@ export class RecipeTree {
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
         const required = plannerRow?.required ?? 0;
+        const substituted = plannerRow?.substituted ?? 0;
         const quantityPending = pendingQuantityIds.has(itemId);
         const bought = plannerRow?.bought ?? (source === 'buy' ? required : 0);
         const produced = plannerRow?.produced ?? (source !== 'buy' ? required : 0);
@@ -450,6 +451,7 @@ export class RecipeTree {
           name,
           iconUrl,
           required,
+          substituted,
           quantityPending,
           bought,
           produced,
@@ -867,6 +869,12 @@ export class RecipeTree {
     const yieldOverrides = new Map<number, number>();
     if (root?.yield !== null && root?.yield !== undefined && root.yield > 0)
       yieldOverrides.set(root.part.itemId, root.yield);
+    const useRareProcs = new Set<string>();
+    const collectRareProcChoices = (node: RecipeNode) => {
+      if (node.useRareProcs && node.recipe) useRareProcs.add(node.recipe.key);
+      node.children.forEach(collectRareProcChoices);
+    };
+    if (root) collectRareProcChoices(root);
     return buildRecipeProductionInput(
       graph,
       this.requestedOperations(),
@@ -888,6 +896,7 @@ export class RecipeTree {
         excludedLocations: this.excludedLocations(),
         npcPurchasePrices: this.npcPurchasePrices(),
         byproductSales: this.returnProductSales(),
+        useRareProcs,
       },
     );
   });
@@ -1892,6 +1901,10 @@ export class RecipeTree {
         ...n,
         yield: event.value === null ? null : Number(event.value),
       }));
+      return;
+    }
+    if (event.action === 'rare-procs') {
+      this.patch(node.path, (n) => ({ ...n, useRareProcs: event.value === true }));
       return;
     }
     if (event.action === 'quantity') {

@@ -377,6 +377,9 @@
                       {{ productionMaterialName(material.itemId) }} · comprar
                       {{ material.bought }} · fazer {{ material.produced }} · estoque
                       {{ material.owned }}
+                      @if (material.substituted > 0) {
+                        · {{ material.substituted }} equivalentes via procs raros
+                      }
                     </li>
                   }
                 </ul>
@@ -691,7 +694,14 @@
                           <td>{{ row.required.toLocaleString('pt-BR') }}</td>
                           <td>{{ row.owned.toLocaleString('pt-BR') }}</td>
                           <td>{{ row.bought.toLocaleString('pt-BR') }}</td>
-                          <td>{{ row.produced.toLocaleString('pt-BR') }}</td>
+                          <td>
+                            {{ row.produced.toLocaleString('pt-BR') }}
+                            @if (row.substituted > 0) {
+                              <small class="material-substitution-note">
+                                + {{ row.substituted.toLocaleString('pt-BR') }} via procs raros
+                              </small>
+                            }
+                          </td>
                           <td>{{ materialPurchaseValue(row.itemId, row.bought) }}</td>
                         </tr>
                       } @empty {

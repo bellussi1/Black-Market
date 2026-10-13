@@ -175,9 +175,9 @@ describe('production planner', () => {
       seconds: 61,
     });
     expect(optimized?.materials).toEqual([
-      { itemId: 2, required: 1, bought: 1, owned: 0, produced: 0 },
-      { itemId: 4, required: 1, bought: 0, owned: 0, produced: 1 },
-      { itemId: 5, required: 1, bought: 1, owned: 0, produced: 0 },
+      { itemId: 2, required: 1, bought: 1, owned: 0, produced: 0, substituted: 0 },
+      { itemId: 4, required: 1, bought: 0, owned: 0, produced: 1, substituted: 0 },
+      { itemId: 5, required: 1, bought: 1, owned: 0, produced: 0, substituted: 0 },
     ]);
     expect(optimized?.sourceChoices).toEqual({ 2: 'buy', 4: 'produce', 5: 'buy' });
   });
@@ -552,7 +552,7 @@ describe('production planner', () => {
     expect(row(input, 'buy-all')).toMatchObject({ cashCost: '40', economicCost: '40' });
     expect(row(input, 'produce-all')).toMatchObject({ cashCost: '10', economicCost: '40' });
     expect(row(input, 'produce-all').materials).toEqual([
-      { itemId: 1, bought: 1, owned: 3, produced: 0, required: 4 },
+      { itemId: 1, bought: 1, owned: 3, produced: 0, required: 4, substituted: 0 },
     ]);
   });
 
@@ -655,6 +655,85 @@ describe('production planner', () => {
       final: [{ itemId: 4, expectedQuantity: 0.5, unitPrice: '100', sell: true }],
     };
     expect(row(input, 'buy-all').netRevenue).toBe('162');
+  });
+
+  it('uses selected rare cooking procs as three base-item equivalents and does not sell consumed procs', () => {
+    const input = fixture();
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'cook',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [{ itemId: 2, quantity: 4 }],
+      },
+      {
+        id: 'middle',
+        name: 'Middle',
+        method: 'cook',
+        output: { itemId: 2, quantity: 2 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+        byproducts: [{ itemId: 9, quantity: null }],
+        rareSubstitution: { itemId: 9, ratio: 3 },
+      },
+    ];
+    input.estimates = {
+      final: { craftSeconds: 60, source: 'fixed' },
+      middle: { expectedYield: 2, craftSeconds: 1, source: 'informed' },
+    };
+    input.byproductValues = {
+      middle: [{ itemId: 9, expectedQuantity: 1, unitPrice: '1000', sell: true }],
+    };
+
+    const withoutRareProcs = row(input, 'produce-all');
+    input.useRareProcs = { middle: true };
+    const withRareProcs = row(input, 'produce-all');
+
+    expect(withoutRareProcs.steps.find((step) => step.recipeId === 'middle')?.crafts).toBe(2);
+    expect(withoutRareProcs.seconds).toBe(62);
+    expect(withRareProcs.steps.find((step) => step.recipeId === 'middle')?.crafts).toBe(1);
+    expect(withRareProcs.returns).toContainEqual({ itemId: 9, quantity: 0.333333, sell: true });
+    expect(withRareProcs.materials.find((material) => material.itemId === 2)?.substituted).toBe(
+      2.000001,
+    );
+    expect(BigInt(withRareProcs.profit!)).toBeLessThan(BigInt(withRareProcs.netRevenue!));
+    expect(withRareProcs.seconds).toBe(61);
+  });
+
+  it('limits each rare proc to the number of matching dishes required by one recipe action', () => {
+    const input = fixture();
+    input.recipes = [
+      {
+        id: 'final',
+        name: 'Final',
+        method: 'cook',
+        output: { itemId: 3, quantity: 1 },
+        ingredients: [{ itemId: 2, quantity: 2 }],
+      },
+      {
+        id: 'middle',
+        name: 'Middle',
+        method: 'cook',
+        output: { itemId: 2, quantity: 1 },
+        ingredients: [{ itemId: 1, quantity: 1 }],
+        byproducts: [{ itemId: 9, quantity: null }],
+        rareSubstitution: { itemId: 9, ratio: 3 },
+      },
+    ];
+    input.estimates = {
+      final: { craftSeconds: 60, source: 'fixed' },
+      middle: { expectedYield: 1, craftSeconds: 1, source: 'informed' },
+    };
+    input.byproductValues = {
+      middle: [{ itemId: 9, expectedQuantity: 1, unitPrice: '1000', sell: true }],
+    };
+    input.useRareProcs = { middle: true };
+
+    const plan = row(input, 'produce-all');
+
+    expect(plan.steps.find((step) => step.recipeId === 'middle')?.crafts).toBe(1);
+    expect(plan.returns).toContainEqual({ itemId: 9, quantity: 0.5, sell: true });
+    expect(plan.materials.find((material) => material.itemId === 2)?.substituted).toBe(1);
   });
 
   it('values leftover intermediate output only when its item is marked to sell', () => {

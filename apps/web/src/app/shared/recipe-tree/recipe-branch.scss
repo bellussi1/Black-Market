@@ -117,6 +117,31 @@ summary:focus-visible,
 .step-settings[open] {
   flex: 1 1 100%;
 }
+.rare-proc-toggle {
+  display: flex !important;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 8px !important;
+  min-height: 36px;
+  color: var(--bm-text);
+  cursor: pointer;
+}
+.rare-proc-toggle input {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--bm-accent);
+}
+.rare-proc-toggle span {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+.rare-proc-toggle small {
+  color: var(--bm-muted);
+  font-size: 11px;
+}
 .settings-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
