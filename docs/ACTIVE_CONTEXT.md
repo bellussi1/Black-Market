@@ -803,3 +803,13 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Validação: 62 testes das calculadoras passaram; 84 testes focados de `recipe-branch`, adaptador e árvore passaram; `pnpm check` passou integralmente. `git diff --check` passou. O build segue reportando apenas o aviso conhecido de locale `pt-BR` usando fallback `pt`.
 - Arquivos desta iteração: `packages/calculators/src/production-planner.ts` e teste; `apps/web/src/app/shared/recipe-tree/recipe-branch.ts/html/scss` e teste; adaptador e teste; modelo, componente, template e estilos da árvore.
 - Próximo agente: preservar esta opção por ramo e os limites derivados da quantidade de ingrediente. Ao comparar o planner com sites externos, alinhar maestria, região, quantidade, preços e política de venda/guarda; a captura acima valida a conversão de 2:1, não todos os valores de tempo e cotação.
+
+## 70. Favicon restaurado e wordmark próprio da lateral (13/10/2026)
+
+- O favicon voltou ao SVG original circular com losango. A marca da lateral agora aponta para `public/brand-mark.svg`, um monograma M geométrico dentro de losango e placa carvão, separado do favicon.
+- A assinatura `BLACK / MARKET` usa hierarquia em duas linhas no desktop e em uma linha no mobile, com a Barlow Semi Condensed já auto-hospedada no projeto. A placa da marca passou de bronze sólido a carvão com filete de acento; rotas, links e controle do menu móvel não mudaram.
+- Verificação visual local: desktop (1628×917) e mobile (390×844). O wordmark e emblema cabem na lateral, o documento não tem overflow horizontal, `/favicon.svg` responde 200 com o desenho antigo e o console não reporta erros após reload.
+- Validação: teste de layout 2/2; `pnpm check` passou; `pnpm test` passou com 62 calculadoras, 138 API, 460 web e 73 testes OCR. Permanece o aviso conhecido de locale `pt-BR` usando fallback `pt`.
+- Capturas: `output/playwright/sidebar-brand-after-desktop-2.png` e `output/playwright/sidebar-brand-after-mobile.png` (ignoradas pelo Git).
+- Arquivos: `apps/web/public/favicon.svg`, `apps/web/public/brand-mark.svg`, `apps/web/src/app/layout/workspace-layout.html`, `.scss`, `workspace-layout.spec.ts` e este contexto.
+- Próximo agente: manter `/favicon.svg` independente da marca da lateral. Não substituir a fonte ou remover o filete sem alinhar com a preferência atual do usuário.
