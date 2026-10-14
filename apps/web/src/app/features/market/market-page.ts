@@ -48,12 +48,7 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
-import {
-  type HistoryMetric,
-  historyObservations,
-  liquidityEstimate,
-  marketChart,
-} from './market-history';
+import { type HistoryMetric, historyObservations, marketChart } from './market-history';
 import { MarketProduction } from './market-production';
 import { MarketRefresh } from './market-refresh';
 
@@ -183,7 +178,7 @@ export class MarketPage implements OnDestroy {
       case 'stock':
         return $localize`Estoque disponível`;
       case 'volume':
-        return $localize`Volume observado por intervalo`;
+        return $localize`Negociações registradas por intervalo`;
     }
   });
   readonly historySeries = computed(() => {
@@ -218,7 +213,6 @@ export class MarketPage implements OnDestroy {
       max: chart.max === null ? '—' : this.historyValueLabel(chart.max),
     };
   });
-  readonly liquidity = computed(() => liquidityEstimate(this.history(), Date.now()));
   readonly historyValueLabel = (value: bigint): string =>
     new Intl.NumberFormat(uiLocale()).format(value);
   readonly intervalLabel = (minutes: number | undefined): string =>

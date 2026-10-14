@@ -72,10 +72,6 @@
   background: var(--bm-input);
   border: 1px solid var(--bm-border);
 }
-.market-history-panel .history-liquidity > span {
-  color: var(--bm-muted);
-}
-
 .auto-sync-row {
   display: flex;
   align-items: center;
@@ -123,30 +119,4 @@
 .btn-refresh-quote {
   min-height: 36px;
   padding: 6px 14px;
-}
-
-.history-liquidity {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem 1rem;
-  padding: 1rem;
-  background: var(--surface-raised, #242321);
-  border: 1px solid var(--border, #4c443a);
-  border-left: 3px solid var(--accent, #d6a577);
-  strong {
-    font-size: 0.875rem;
-  }
-  > span {
-    color: var(--accent, #d6a577);
-    font-variant-numeric: tabular-nums;
-  }
-  p {
-    grid-column: 1 / -1;
-    margin: 0;
-  }
-}
-@media (max-width: 480px) {
-  .history-liquidity {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

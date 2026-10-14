@@ -74,36 +74,6 @@ export function historyObservations(
   });
 }
 
-export function liquidityEstimate(
-  points: MarketHistoryPoint[],
-  now: number,
-): { days: number; volume: bigint; stock: bigint; fetchedAt: string } | null {
-  const samples = ordered(points).filter((point) => Date.parse(point.fetchedAt) <= now);
-  const latest = samples.at(-1);
-  if (!latest || now - Date.parse(latest.fetchedAt) > MAX_OBSERVATION_GAP_MS) return null;
-  const cutoff = Date.parse(latest.fetchedAt) - 24 * 60 * 60_000;
-  let baselineIndex = -1;
-  samples.forEach((point, index) => {
-    if (Date.parse(point.fetchedAt) <= cutoff) baselineIndex = index;
-  });
-  if (
-    baselineIndex < 0 ||
-    cutoff - Date.parse(samples[baselineIndex].fetchedAt) > MAX_OBSERVATION_GAP_MS
-  )
-    return null;
-  const daily = samples.slice(baselineIndex);
-  const observations = historyObservations(daily, 'volume').slice(1);
-  if (observations.some((point) => point.value === null)) return null;
-  const volume = observations.reduce((total, point) => total + point.value!, 0n);
-  const stock = integer(latest.stock);
-  if (volume <= 0n || stock === null) return null;
-  // Normalize the covered interval (up to 16 minutes beyond 24h) to one day.
-  const elapsedDays =
-    (Date.parse(latest.fetchedAt) - Date.parse(daily[0].fetchedAt)) / (24 * 60 * 60_000);
-  const days = (Number(stock) / Number(volume)) * elapsedDays;
-  return Number.isFinite(days) ? { days, volume, stock, fetchedAt: latest.fetchedAt } : null;
-}
-
 export function marketChart(observations: HistoryObservation[], zeroBaseline = false) {
   const valid = observations.filter(
     (point): point is HistoryObservation & { value: bigint } => point.value !== null,

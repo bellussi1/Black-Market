@@ -228,14 +228,14 @@
       <div
         class="board-table-scroll"
         role="region"
-        aria-label="Itens, preços e volumes do mercado"
+        aria-label="Itens, preços, estoque e atividade do mercado"
         tabindex="0"
         [attr.aria-busy]="loading()"
       >
         <table class="market-board-table">
           <caption class="visually-hidden">
-            Itens do mercado: preços em prata por unidade e volumes em unidades negociadas. Clique
-            no cabeçalho das colunas para ordenar.
+            Itens do mercado: preços em prata por unidade, estoque observado e contagem acumulada de
+            negociações registrada. Clique no cabeçalho das colunas para ordenar.
           </caption>
           <thead>
             <tr>
@@ -330,7 +330,7 @@
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume24h')"
                 >
-                  <span>Volume 24h</span>
+                  <span>Registros 24h</span>
                   <span class="sort-arrow" [class.active]="sortColumn() === 'volume24h'">
                     {{
                       sortColumn() === 'volume24h' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
@@ -356,7 +356,7 @@
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume15d')"
                 >
-                  <span>Volume 15d</span>
+                  <span>Registros 15d</span>
                   <span class="sort-arrow" [class.active]="sortColumn() === 'volume15d'">
                     {{
                       sortColumn() === 'volume15d' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
@@ -382,7 +382,7 @@
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume30d')"
                 >
-                  <span>Volume 30d</span>
+                  <span>Registros 30d</span>
                   <span class="sort-arrow" [class.active]="sortColumn() === 'volume30d'">
                     {{
                       sortColumn() === 'volume30d' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
@@ -450,7 +450,7 @@
                       [attr.title]="
                         item.volume24h === null
                           ? 'Histórico insuficiente para 24 horas'
-                          : 'Unidades negociadas em 24 horas'
+                          : 'Diferença do contador total de negociações em 24 horas; unidade não confirmada'
                       "
                     >
                       {{ silver(item.volume24h) }}
@@ -460,7 +460,7 @@
                       [attr.title]="
                         item.volume15d === null
                           ? 'Histórico insuficiente para 15 dias'
-                          : 'Unidades negociadas em 15 dias'
+                          : 'Diferença do contador total de negociações em 15 dias; unidade não confirmada'
                       "
                     >
                       {{ silver(item.volume15d) }}
@@ -470,7 +470,7 @@
                       [attr.title]="
                         item.volume30d === null
                           ? 'Histórico insuficiente para 30 dias'
-                          : 'Unidades negociadas em 30 dias'
+                          : 'Diferença do contador total de negociações em 30 dias; unidade não confirmada'
                       "
                     >
                       {{ silver(item.volume30d) }}
@@ -535,7 +535,7 @@
         visualização. A fonte mantém cache de até
         {{ result()?.upstreamCacheMinutes ?? 30 }} minutos. Resumos agregam variantes; selecione um
         item para suas cotações individuais. Preços médios em prata por unidade. Média de cotações
-        observadas em 30 dias; volumes exigem histórico completo do período.
+        observadas em 30 dias; contagens de negociações exigem histórico completo do período.
         <strong>—</strong> indica dado ainda indisponível.
       </p>
     </div>

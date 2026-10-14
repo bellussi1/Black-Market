@@ -4,8 +4,8 @@
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
     <p>
       <ng-container i18n
-        >Busque itens do catálogo, acompanhe preços, volumes e estoque. Selecione um item para
-        consultar suas variantes ou calcular o valor recebido depois das taxas.
+        >Busque itens do catálogo, acompanhe preços, atividade do mercado e estoque. Selecione um
+        item para consultar suas variantes ou calcular o valor recebido depois das taxas.
       </ng-container>
     </p>
   </header>
@@ -244,7 +244,7 @@
         aria-label="Gráfico e detalhes do item"
       >
         <details [open]="!!lookupId()">
-          <summary i18n>Preços, volume e liquidez observados</summary>
+          <summary i18n>Preços, estoque e negociações observadas</summary>
           <label class="field"
             ><span i18n>Variante do item selecionado</span
             ><select
@@ -342,28 +342,14 @@
                 (click)="historyMetric.set('volume')"
                 i18n
               >
-                Volume por intervalo
+                Negociações por intervalo
               </button>
             </div>
-            <div class="history-liquidity" aria-live="polite">
-              <strong i18n>Liquidez · giro estimado do estoque</strong>
-              @if (liquidity(); as estimate) {
-                <span>{{ number(estimate.days, 2) }} dias</span>
-                <p class="help" i18n>
-                  Estoque observado dividido pelo ritmo de unidades negociadas nas últimas 24 horas:
-                  {{ historyValueLabel(estimate.stock) }} em estoque ·
-                  {{ historyValueLabel(estimate.volume) }} negociadas. É uma estimativa de giro; a
-                  posição das ofertas e a demanda podem mudar.
-                </p>
-              } @else {
-                <span i18n>— Histórico insuficiente</span>
-                <p class="help" i18n>
-                  A estimativa exige 24 horas completas, estoque conhecido e transações observadas
-                  sem lacunas ou reinícios do contador. Compare estoque e volume por intervalo
-                  enquanto o histórico se forma.
-                </p>
-              }
-            </div>
+            <p class="help" i18n>
+              O gráfico mostra a diferença do contador total de negociações entre consultas
+              consecutivas. A fonte não confirma quantas unidades cada registro representa; use como
+              atividade observada, não como unidades vendidas nem como estimativa de giro.
+            </p>
             @if (historyChart().samples >= 1) {
               <div class="min-w-0" aria-live="polite">
                 <svg
@@ -407,7 +393,7 @@
                         {{ date(point.fetchedAt) }} · {{ historyValueLabel(point.value)
                         }}{{
                           historyMetric() === 'volume'
-                            ? ' unidades em ' + intervalLabel(point.intervalMinutes)
+                            ? ' registros em ' + intervalLabel(point.intervalMinutes)
                             : ''
                         }}
                       </title>
@@ -426,21 +412,21 @@
               </div>
             } @else {
               <p class="notice" role="status" i18n>
-                Ainda não há observações válidas neste período para desenhar o gráfico. O volume
-                exige duas consultas consecutivas válidas. As consultas começam a formar histórico
-                depois que são registradas.
+                Ainda não há observações válidas neste período para desenhar o gráfico. O histórico
+                de negociações exige duas consultas consecutivas válidas. As consultas começam a
+                formar histórico depois que são registradas.
               </p>
             }
           </div>
           <details class="mt-4">
             <summary>Como ler estes dados</summary>
             <p class="help" i18n>
-              Preço e estoque são observações no horário da consulta. Volume é a diferença do
-              contador entre consultas, em unidades por intervalo; passe o cursor sobre um ponto
-              para ver sua duração. Lacunas acima de 16 minutos, dados ausentes e reinícios do
-              contador interrompem o gráfico. As estimativas de liquidez são calculadas apenas
-              quando há cobertura suficiente do período. A média de cotações não representa uma
-              média ponderada das vendas.
+              Preço e estoque são observações no horário da consulta. A série de negociações é a
+              diferença do contador total entre consultas, com duração indicada ao passar o cursor.
+              A fonte não confirma que esses registros correspondam a unidades vendidas; por isso,
+              não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados
+              ausentes e reinícios do contador interrompem o gráfico. A média de cotações não
+              representa uma média ponderada das vendas.
             </p>
           </details>
           @if (history().length) {

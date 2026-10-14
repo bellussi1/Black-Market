@@ -136,6 +136,25 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
 
+  it('labels market counter differences as registered trades, not item units', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.items[0].volume24h = '35';
+    takeRequest().flush(data);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('caption')?.textContent).toContain(
+      'contagem acumulada de negociações',
+    );
+    expect(element.querySelector('thead')?.textContent).toContain('Registros 24h');
+    expect(
+      element.querySelector('[title*="contador total de negociações"]')?.textContent,
+    ).toContain('35');
+    expect(element.textContent).not.toContain('unidades negociadas');
+    TestBed.inject(HttpTestingController).verify();
+  });
+
   it('filters the complete list before pagination and discards a pending older query', async () => {
     const fixture = await renderComponent(MarketBoard);
     const initial = takeRequest();

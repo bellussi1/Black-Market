@@ -161,7 +161,7 @@ describe('MarketPage', () => {
     expect(page.form().quantity).toBe(3);
   });
 
-  it('charts only stored market observations and does not infer daily sale volume', async () => {
+  it('charts stored market observations without presenting trade counts as sold units or liquidity', async () => {
     const fixture = await render(MarketPage);
     const page = fixture.componentInstance;
     const now = Date.now();
@@ -186,15 +186,20 @@ describe('MarketPage', () => {
 
     expect(page.historyChart().samples).toBe(2);
     expect(page.historyChart().segments).toHaveLength(2);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'calculadas apenas quando há cobertura suficiente do período',
-    );
+    expect(page.historyMetricLabel()).toBe('Preço de venda');
 
     page.historyRange.set('day');
     page.historyMetric.set('volume');
     fixture.detectChanges();
     expect(page.historyChart().samples).toBe(0);
     expect(page.historyChart().segments).toEqual([]);
+    expect(page.historyMetricLabel()).toBe('Negociações registradas por intervalo');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain(
+      'unidades por intervalo',
+    );
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain(
+      'giro estimado do estoque',
+    );
   });
 
   it('loads the selected enhancement history and resolves summary rows to an actual variant', async () => {
