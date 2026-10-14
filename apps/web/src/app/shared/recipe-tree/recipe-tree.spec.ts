@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { characterSchema, planProduction, type ProductionPlannerInput } from '@bdo/calculators';
 import type {
+  CatalogItem,
   CatalogItemDetail,
   CatalogRecipe,
   CatalogRecipesResponse,
@@ -85,6 +86,27 @@ function providers() {
         total: params.ids?.length ?? 0,
         page: 1,
         pageSize: 100,
+        dataset: null,
+      }),
+    ),
+    getItemsByIds: vi.fn((itemIds: readonly number[]) =>
+      of({
+        items: new Map(
+          itemIds.map((id) => [
+            id,
+            {
+              id,
+              name: `Catálogo ${id}`,
+              description: null,
+              grade: null,
+              weight: null,
+              category: null,
+              icon: null,
+              iconUrl: null,
+              categories: [],
+            } as CatalogItem,
+          ]),
+        ),
         dataset: null,
       }),
     ),
@@ -346,7 +368,10 @@ describe('Interactive recipe tree', () => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     fixture.detectChanges();
 
-    expect(dependencies.catalog.getItems).toHaveBeenCalledWith({ ids, page: 1, pageSize: 100 });
+    expect(dependencies.catalog.getItemsByIds).toHaveBeenCalledWith(
+      expect.arrayContaining(ids),
+      '',
+    );
     expect(tree.returnedProductRows()).toHaveLength(28);
     expect(tree.returnedProductRows().find((row) => row.itemId === 5302)?.name).toBe(
       'Catálogo 5302',
@@ -409,8 +434,9 @@ describe('Interactive recipe tree', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(dependencies.catalog.getItems).toHaveBeenCalledWith(
-      expect.objectContaining({ ids: expect.arrayContaining([750]) }),
+    expect(dependencies.catalog.getItemsByIds).toHaveBeenCalledWith(
+      expect.arrayContaining([750]),
+      '',
     );
     expect(tree.returnedProductRows().find((row) => row.itemId === 750)?.name).toBe('Catálogo 750');
     fixture.destroy();
