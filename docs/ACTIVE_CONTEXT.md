@@ -895,3 +895,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - Verificação local: `/roadmap` e `GET /api/v1/roadmap` responderam HTTP 200; o JSON da API contém os sete registros do seed local. A migração foi aplicada somente ao banco local.
 - Limites: a consulta é sob demanda para os itens das receitas elegíveis; não existe coleta persistente de todo o mercado. NPCs sem preço demonstrável continuam sem valor. A ordenação de catálogo ainda não é prova de máximo global quando preços, tempos, estoques ou rendimento faltam.
 - Arquivos da rodada: migração/schema/cliente API e páginas públicas/admin do roadmap; identidade e navegação; leitor e revisão de scan; serviço de cache e cliente de catálogo; recomendações, demo e testes; planejador de produção e testes; tradução pt-BR. Separar commits por Roadmap, OCR, recomendações/cálculo e documentação.
+
+## 79. Marca da navegação lateral (Codex, 14/10/2026)
+
+- **Pedido**: voltar a usar a sacolinha como símbolo da marca no menu lateral, preservando o favicon atual.
+- **Concluído**: `brand-mark.svg` agora usa um ícone de sacola em bronze e creme. O wordmark `BLACK / MARKET` e `favicon.svg` não foram alterados.
+- **Verificação**: inspeção visual da navegação em `/market` no navegador local; o ícone da sacola aparece corretamente no menu.
+- **Arquivos alterados**: `apps/web/public/brand-mark.svg` e este contexto.
+- **Próxima ação independente**: a proposta de atualizar páginas legais e persistir consentimento/identificador de analytics em cookies próprios aguarda confirmação do usuário; nenhuma alteração desse escopo foi feita.
