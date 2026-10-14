@@ -13,6 +13,8 @@ import type {
   NpcPurchasePrice,
   NpcPurchasePricesResponse,
   RecipeListResponse,
+  RecipeMarketEquivalent,
+  RecipeMarketEquivalentsResponse,
 } from '@bdo/shared';
 import { EMPTY, expand, forkJoin, map, type Observable, of, reduce } from 'rxjs';
 
@@ -218,6 +220,44 @@ export class CatalogApiService {
           responses.flatMap((response) =>
             response.prices.map((price) => [price.itemId, price] as const),
           ),
+        );
+      }),
+    );
+  }
+
+  getRecipeMarketEquivalents(
+    itemIds: readonly number[],
+    expectedDatasetVersion: string,
+  ): Observable<RecipeMarketEquivalent[]> {
+    const uniqueIds = [...new Set(itemIds.filter((id) => Number.isSafeInteger(id) && id > 0))];
+    if (!uniqueIds.length) return of([]);
+
+    const batches = Array.from({ length: Math.ceil(uniqueIds.length / 100) }, (_, index) =>
+      uniqueIds.slice(index * 100, (index + 1) * 100),
+    );
+    return forkJoin(
+      batches.map((ids) =>
+        this.http.get<RecipeMarketEquivalentsResponse>(
+          `${this.baseUrl}/recipe-market-equivalents`,
+          {
+            params: {
+              ids: ids.join(','),
+              region: this.preferences.region(),
+              preferredLocale: preferredDataLocale(),
+            },
+          },
+        ),
+      ),
+    ).pipe(
+      map((responses) => {
+        if (responses.some((response) => response.dataset?.version !== expectedDatasetVersion))
+          throw new Error('O catálogo mudou durante a consulta dos equivalentes de mercado.');
+        const equivalents = new Map<string, RecipeMarketEquivalent>();
+        for (const response of responses)
+          for (const equivalent of response.equivalents)
+            equivalents.set(`${equivalent.sourceItemId}:${equivalent.itemId}`, equivalent);
+        return [...equivalents.values()].sort(
+          (left, right) => left.sourceItemId - right.sourceItemId || left.itemId - right.itemId,
         );
       }),
     );

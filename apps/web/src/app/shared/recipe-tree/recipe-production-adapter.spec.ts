@@ -155,6 +155,30 @@ describe('recipe production planner adapter', () => {
     });
     expect(result.enforcePurchaseLimits).toBe(false);
   });
+  it('prices unmarketable fish through its marketable dried form when stock is empty', () => {
+    const result = buildRecipeProductionInput(
+      graph(recipe('fish-recipe', 100, [{ itemId: 8211, quantity: '1' }], null, 'COOK')),
+      1,
+      emptyWorkspace(),
+      new Map([[8511, { ...quote(8511, '900'), stock: 0, maxPrice: '1500' }]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      {
+        quoteObservedAt: new Map([[8511, now.toISOString()]]),
+        marketEquivalentInputs: new Map([
+          [8211, [{ itemId: 8511, name: 'Calamar Desidratado', iconUrl: null, quantityRatio: 1 }]],
+        ]),
+      },
+    );
+
+    expect(result.quotes[8211]).toMatchObject({
+      unitPrice: '1500',
+      available: null,
+      source: 'market',
+    });
+  });
   it('falls back to the catalog NPC price when the market quote has no positive price', () => {
     const result = buildRecipeProductionInput(
       graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),

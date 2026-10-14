@@ -122,3 +122,44 @@ describe('Batch byproduct recipe lookup', () => {
     expect(message).toContain('catálogo mudou');
   });
 });
+
+describe('Batch recipe market equivalent lookup', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
+  );
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    TestBed.resetTestingModule();
+  });
+
+  it('resolves marketable fish forms and checks the active dataset version', () => {
+    let equivalents: Array<{ sourceItemId: number; itemId: number }> = [];
+    TestBed.inject(CatalogApiService)
+      .getRecipeMarketEquivalents([8211, 8211], 'same')
+      .subscribe((result) => (equivalents = result));
+
+    const request = TestBed.inject(HttpTestingController).expectOne((r) =>
+      r.url.endsWith('/recipe-market-equivalents'),
+    );
+    expect(request.request.params.get('ids')).toBe('8211');
+    request.flush({
+      equivalents: [{ sourceItemId: 8211, itemId: 8511, quantityRatio: 1 }],
+      dataset: { version: 'same' },
+    });
+    expect(equivalents).toEqual([{ sourceItemId: 8211, itemId: 8511, quantityRatio: 1 }]);
+  });
+
+  it('rejects equivalent data from another catalog version', () => {
+    let message = '';
+    TestBed.inject(CatalogApiService)
+      .getRecipeMarketEquivalents([8211], 'same')
+      .subscribe({ error: (error: Error) => (message = error.message) });
+
+    TestBed.inject(HttpTestingController)
+      .expectOne((r) => r.url.endsWith('/recipe-market-equivalents'))
+      .flush({ equivalents: [], dataset: { version: 'new' } });
+    expect(message).toContain('catálogo mudou');
+  });
+});

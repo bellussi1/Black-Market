@@ -22,6 +22,7 @@ import type {
   CatalogRecipesResponse,
   NpcPurchasePricesResponse,
   ProductionCatalogResponse,
+  RecipeMarketEquivalentsResponse,
 } from '@bdo/shared';
 import {
   CATALOG_FALLBACK_LOCALE,
@@ -36,6 +37,7 @@ import { DatabaseService } from '../database/database.service';
 import { CatalogAssetsService } from './catalog-assets.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
 import { npcPurchasePriceFromCatalog } from './npc-purchase-price';
+import { deriveRecipeMarketEquivalents } from './recipe-market-equivalents';
 
 @Injectable()
 export class CatalogService {
@@ -286,6 +288,133 @@ export class CatalogService {
       }),
       dataset: this.toSummary(dataset),
     };
+  }
+
+  async recipeMarketEquivalents(
+    rawQuery: Record<string, unknown>,
+  ): Promise<RecipeMarketEquivalentsResponse> {
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    if (!query.ids?.length)
+      throw new BadRequestException({
+        code: 'MISSING_RECIPE_MATERIALS',
+        message: 'Informe os IDs dos materiais da receita.',
+        field: 'ids',
+      });
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset) return { equivalents: [], dataset: null };
+
+    const sourceItems = await this.database.db
+      .select({
+        id: itemVersions.itemId,
+        category: itemVersions.category,
+        sourceData: itemVersions.sourceData,
+      })
+      .from(itemVersions)
+      .where(
+        and(eq(itemVersions.datasetVersionId, dataset.id), inArray(itemVersions.itemId, query.ids)),
+      );
+    const eligibleSourceIds = sourceItems
+      .filter(
+        (item) =>
+          item.category === 'Fish' &&
+          item.sourceData?.['forTrade'] === true &&
+          item.sourceData?.['marketable'] !== true,
+      )
+      .map((item) => item.id);
+    if (!eligibleSourceIds.length) return { equivalents: [], dataset: this.toSummary(dataset) };
+
+    const dryRows = await this.database.db
+      .select({
+        type: recipes.recipeType,
+        recipeKey: recipes.recipeKey,
+        sourceItemId: recipeIngredients.itemId,
+        inputPosition: recipeIngredients.position,
+        inputQuantity: recipeIngredients.quantity,
+        itemId: recipeOutputs.itemId,
+        outputPosition: recipeOutputs.position,
+        outputQuantity: recipeOutputs.quantity,
+      })
+      .from(recipes)
+      .innerJoin(
+        recipeIngredients,
+        and(
+          eq(recipeIngredients.datasetVersionId, recipes.datasetVersionId),
+          eq(recipeIngredients.recipeKey, recipes.recipeKey),
+        ),
+      )
+      .innerJoin(
+        recipeOutputs,
+        and(
+          eq(recipeOutputs.datasetVersionId, recipes.datasetVersionId),
+          eq(recipeOutputs.recipeKey, recipes.recipeKey),
+        ),
+      )
+      .where(
+        and(
+          eq(recipes.datasetVersionId, dataset.id),
+          eq(recipes.recipeType, 'DRY'),
+          inArray(recipeIngredients.itemId, eligibleSourceIds),
+        ),
+      )
+      .orderBy(asc(recipeIngredients.itemId), asc(recipeOutputs.itemId));
+    const outputIds = [...new Set(dryRows.map((row) => row.itemId))];
+    if (!outputIds.length) return { equivalents: [], dataset: this.toSummary(dataset) };
+
+    const outputItems = await this.database.db
+      .select({
+        id: itemVersions.itemId,
+        name: itemTranslations.name,
+        category: itemVersions.category,
+        sourceData: itemVersions.sourceData,
+      })
+      .from(itemVersions)
+      .innerJoin(
+        itemTranslations,
+        and(
+          eq(itemTranslations.datasetVersionId, itemVersions.datasetVersionId),
+          eq(itemTranslations.itemId, itemVersions.itemId),
+          eq(itemTranslations.language, dataset.locale),
+        ),
+      )
+      .where(
+        and(eq(itemVersions.datasetVersionId, dataset.id), inArray(itemVersions.itemId, outputIds)),
+      );
+    const iconUrls = new Map(
+      await Promise.all(
+        outputItems.map(
+          async (item) =>
+            [item.id, await this.assets.getIconUrl(item.id, dataset.checksum)] as const,
+        ),
+      ),
+    );
+    const recipesByKey = new Map<
+      string,
+      {
+        type: string;
+        inputs: Map<number, { itemId: number }>;
+        outputs: Map<number, { itemId: number }>;
+      }
+    >();
+    for (const row of dryRows) {
+      const recipe = recipesByKey.get(row.recipeKey) ?? {
+        type: row.type,
+        inputs: new Map<number, { itemId: number }>(),
+        outputs: new Map<number, { itemId: number }>(),
+      };
+      recipe.inputs.set(row.inputPosition, { itemId: row.sourceItemId });
+      recipe.outputs.set(row.outputPosition, { itemId: row.itemId });
+      recipesByKey.set(row.recipeKey, recipe);
+    }
+    const equivalents = deriveRecipeMarketEquivalents(
+      sourceItems,
+      [...recipesByKey.values()].map((recipe) => ({
+        type: recipe.type,
+        inputs: [...recipe.inputs.values()],
+        outputs: [...recipe.outputs.values()],
+      })),
+      outputItems.map((item) => ({ ...item, iconUrl: iconUrls.get(item.id) ?? null })),
+    );
+    return { equivalents, dataset: this.toSummary(dataset) };
   }
 
   async listItems(rawQuery: Record<string, unknown>): Promise<CatalogPage> {

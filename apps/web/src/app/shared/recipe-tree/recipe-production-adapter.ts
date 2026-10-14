@@ -23,6 +23,10 @@ import {
   recipeBonusProducts,
 } from './recipe-bonus-products';
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import {
+  type RecipeMarketEquivalent as RecipeMarketEquivalentPriceInput,
+  resolveRecipeMaterialPrice,
+} from './recipe-market-equivalent-price';
 import { recipeMarketPrice } from './recipe-market-price';
 import {
   alchemySpecialProductExpectedYield,
@@ -48,6 +52,7 @@ export interface RecipeProductionAdapterOptions {
   yieldOverrides?: ReadonlyMap<number, number>;
   excludedLocations?: readonly string[];
   npcPurchasePrices?: ReadonlyMap<number, NpcPurchasePrice>;
+  marketEquivalentInputs?: ReadonlyMap<number, readonly RecipeMarketEquivalentPriceInput[]>;
   byproductSales?: ReadonlyMap<number, boolean>;
   useRareProcs?: ReadonlySet<string>;
 }
@@ -324,6 +329,24 @@ export function buildRecipeProductionInput(
       available: null,
       observedAt: npc.verifiedAt,
       source: 'npc',
+    };
+  }
+  for (const itemId of graph.itemIds) {
+    if (mappedQuotes[itemId]) continue;
+    const resolved = resolveRecipeMaterialPrice(
+      itemId,
+      quotes,
+      options.npcPurchasePrices ?? new Map(),
+      options.marketEquivalentInputs ?? new Map(),
+    );
+    if (resolved?.source !== 'equivalent' || !resolved.equivalentItem) continue;
+    const observedAt = quoteObservedAt.get(resolved.equivalentItem.itemId);
+    if (!observedAt || !Number.isFinite(Date.parse(observedAt))) continue;
+    mappedQuotes[itemId] = {
+      unitPrice: resolved.price,
+      available: null,
+      observedAt,
+      source: 'market',
     };
   }
   const gatheringEstimates = Object.fromEntries(

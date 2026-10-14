@@ -120,6 +120,21 @@ export interface NpcPurchasePricesResponse {
   dataset: ActiveDatasetSummary | null;
 }
 
+/** A data-derived marketable form for a recipe material that cannot be bought directly. */
+export interface RecipeMarketEquivalent {
+  sourceItemId: number;
+  itemId: number;
+  name: string;
+  iconUrl: string | null;
+  /** Number of equivalent market units required for one unit of the recipe material. */
+  quantityRatio: number;
+}
+
+export interface RecipeMarketEquivalentsResponse {
+  equivalents: RecipeMarketEquivalent[];
+  dataset: ActiveDatasetSummary | null;
+}
+
 export interface ApiProblem {
   statusCode: number;
   code: string;

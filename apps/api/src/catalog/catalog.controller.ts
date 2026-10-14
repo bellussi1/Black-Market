@@ -184,6 +184,14 @@ export class CatalogController {
     return this.catalog.npcPurchasePrices(query);
   }
 
+  @Get('recipe-market-equivalents')
+  @Header('Cache-Control', 'public, max-age=300')
+  @ApiOperation({ summary: 'Deriva equivalentes compráveis de materiais pelo catálogo ativo' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Até 100 IDs separados por vírgula' })
+  recipeMarketEquivalents(@Query() query: Record<string, unknown>) {
+    return this.catalog.recipeMarketEquivalents(query);
+  }
+
   @Get('items/:id')
   @ApiOperation({ summary: 'Retorna um item do dataset ativo' })
   @ApiQuery({ name: 'region', required: false, example: 'sa' })

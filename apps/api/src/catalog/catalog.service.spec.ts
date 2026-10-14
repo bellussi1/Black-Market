@@ -189,6 +189,101 @@ describe('NPC purchase price lookup', () => {
   });
 });
 
+describe('recipe market equivalents', () => {
+  it('returns only marketable dried fish linked by the active dataset DRY recipe', async () => {
+    const sourceRows = query([
+      { id: 8211, category: 'Fish', sourceData: { forTrade: true } },
+      { id: 9001, category: 'Etc', sourceData: { forTrade: true } },
+    ]);
+    const dryRows = query([
+      {
+        type: 'DRY',
+        recipeKey: 'squid-dry',
+        sourceItemId: 8211,
+        inputPosition: 0,
+        inputQuantity: '1.0000',
+        itemId: 8511,
+        outputPosition: 0,
+        outputQuantity: null,
+      },
+      {
+        type: 'DRY',
+        recipeKey: 'not-fish-dry',
+        sourceItemId: 9001,
+        inputPosition: 0,
+        inputQuantity: '1.0000',
+        itemId: 9901,
+        outputPosition: 0,
+        outputQuantity: null,
+      },
+    ]);
+    const outputRows = query([
+      {
+        id: 8511,
+        name: 'Calamar Desidratado',
+        category: 'Fish',
+        sourceData: { marketable: true },
+      },
+      {
+        id: 9901,
+        name: 'Material Desidratado',
+        category: 'Fish',
+        sourceData: { marketable: true },
+      },
+    ]);
+    const db = {
+      select: vi
+        .fn()
+        .mockReturnValueOnce(sourceRows)
+        .mockReturnValueOnce(dryRows)
+        .mockReturnValueOnce(outputRows),
+    };
+    const assets = { getIconUrl: vi.fn((id: number) => Promise.resolve(`/items/${id}.webp`)) };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      assets as unknown as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: 'checksum',
+      finishedAt: new Date('2026-10-13T12:00:00.000Z'),
+    } as never);
+
+    const response = await instance.recipeMarketEquivalents({
+      ids: '8211,9001',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(response.equivalents).toEqual([
+      {
+        sourceItemId: 8211,
+        itemId: 8511,
+        name: 'Calamar Desidratado',
+        iconUrl: '/items/8511.webp',
+        quantityRatio: 1,
+      },
+    ]);
+    expect(new PgDialect().sqlToQuery(dryRows.where.mock.calls[0][0] as SQL).params).toContain(
+      'DRY',
+    );
+  });
+
+  it('requires item IDs before querying the active dataset', async () => {
+    const instance = new CatalogService(
+      { db: { select: vi.fn() } } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    const getDataset = vi.spyOn(instance, 'getActiveDataset');
+
+    await expect(instance.recipeMarketEquivalents({ region: 'sa' })).rejects.toThrow();
+    expect(getDataset).not.toHaveBeenCalled();
+  });
+});
+
 describe('Life skill discovery', () => {
   function discovery(items = false) {
     const countQuery = query([{ total: 0 }]);

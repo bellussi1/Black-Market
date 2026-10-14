@@ -35,6 +35,7 @@ import type {
   CatalogRecipePart,
   MarketItemQuote,
   NpcPurchasePrice,
+  RecipeMarketEquivalent,
 } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import type { Subscription } from 'rxjs';
@@ -74,6 +75,7 @@ import { recipeFamilies, verifiedIngredientSubstitutionItemIds } from './recipe-
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
+import { resolveRecipeMaterialPrice } from './recipe-market-equivalent-price';
 import { recipeMarketPrice } from './recipe-market-price';
 import { processingBatchCount } from './recipe-mastery';
 import {
@@ -226,6 +228,7 @@ export class RecipeTree {
   readonly returnCatalogDataset = signal<ActiveDatasetSummary | null>(null);
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
   readonly npcPurchasePrices = signal(new Map<number, NpcPurchasePrice>());
+  readonly marketEquivalentInputs = signal(new Map<number, RecipeMarketEquivalent[]>());
   readonly quoteObservedAt = signal(new Map<number, string>());
   readonly methodTimes = signal(new Map<string, number>());
   readonly gatherEstimates = signal(new Map<number, ProductionEstimate>());
@@ -441,7 +444,10 @@ export class RecipeTree {
         const materialPrice = this.materialPrice(itemId);
         const unitPrice = materialPrice?.price ?? null;
         const totalPurchaseCost = this.materialPurchaseValue(itemId, required);
-        const liveQuote = materialPrice?.source !== 'npc' ? quotes.get(itemId) : undefined;
+        const liveQuote =
+          materialPrice?.source === 'market' || materialPrice?.source === 'maximum'
+            ? quotes.get(itemId)
+            : undefined;
         const stock = liveQuote?.stock ?? null;
         const totalTrades = liveQuote?.totalTrades ?? null;
 
@@ -460,6 +466,12 @@ export class RecipeTree {
           canProduce,
           unitPrice,
           unitPriceSource: materialPrice?.source ?? null,
+          equivalentPriceSource:
+            materialPrice?.source === 'equivalent'
+              ? (materialPrice.equivalentPriceSource ?? null)
+              : null,
+          equivalentItem:
+            materialPrice?.source === 'equivalent' ? (materialPrice.equivalentItem ?? null) : null,
           totalPurchaseCost,
           stock,
           totalTrades,
@@ -896,6 +908,7 @@ export class RecipeTree {
         yieldOverrides,
         excludedLocations: this.excludedLocations(),
         npcPurchasePrices: this.npcPurchasePrices(),
+        marketEquivalentInputs: this.marketEquivalentInputs(),
         byproductSales: this.returnProductSales(),
         useRareProcs,
       },
@@ -1280,7 +1293,10 @@ export class RecipeTree {
       root.recipe?.key ?? 'external',
       ...selectedMethodIdentity,
     ].join('/');
-    if (graphIdentity !== this.recipeGraphIdentity) this.recipeGraph.set(null);
+    if (graphIdentity !== this.recipeGraphIdentity) {
+      this.recipeGraph.set(null);
+      this.marketEquivalentInputs.set(new Map());
+    }
     this.recipeGraphIdentity = graphIdentity;
     const cachedGraph = this.recipeGraph();
     const graph$: Observable<RecipeProductionGraph | null> = cachedGraph
@@ -1318,14 +1334,6 @@ export class RecipeTree {
                 ...verifiedIngredientSubstitutionItemIds(this.recipes()),
               ]),
             ].sort((left, right) => left - right);
-            this.quoteObservedAt.update((current) => {
-              const next = new Map(current);
-              for (const itemId of itemIds) {
-                const entry = this.marketCache.getCachedQuoteEntry(itemId, region);
-                if (entry) next.set(itemId, new Date(entry.fetchedAt).toISOString());
-              }
-              return next;
-            });
           } else {
             itemIds = [
               ...new Set([
@@ -1336,17 +1344,6 @@ export class RecipeTree {
               ]),
             ].sort((left, right) => left - right);
           }
-          const quotes$ = (
-            this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
-          ).call(this.marketCache, itemIds, region);
-          const npcPrices$ =
-            this.catalog
-              .getNpcPurchasePrices?.(
-                graph?.itemIds ?? itemIds,
-                graph?.datasetVersion ?? this.datasetVersion(),
-              )
-              .pipe(catchError(() => of(new Map<number, NpcPurchasePrice>()))) ??
-            of(this.npcPurchasePrices());
           const returnItemIds = [
             ...new Set([
               ...(graph?.returnRecipes?.flatMap((recipe) =>
@@ -1376,18 +1373,57 @@ export class RecipeTree {
                 ),
               )
             : of({ items: new Map<number, CatalogItem>(), dataset: null });
-          return combineLatest({
-            quotes: quotes$,
-            npcPrices: npcPrices$,
-            returnCatalogItems: returnCatalogItems$,
-          });
+          const marketEquivalents$ = graph
+            ? this.catalog
+                .getRecipeMarketEquivalents(graph.itemIds, graph.datasetVersion)
+                .pipe(catchError(() => of<RecipeMarketEquivalent[]>([])))
+            : of<RecipeMarketEquivalent[]>([]);
+          return marketEquivalents$.pipe(
+            switchMap((marketEquivalents) => {
+              const equivalentInputs = new Map<number, RecipeMarketEquivalent[]>();
+              for (const equivalent of marketEquivalents) {
+                const inputs = equivalentInputs.get(equivalent.sourceItemId) ?? [];
+                inputs.push(equivalent);
+                equivalentInputs.set(equivalent.sourceItemId, inputs);
+              }
+              const quoteItemIds = [
+                ...new Set([...itemIds, ...marketEquivalents.map((item) => item.itemId)]),
+              ].sort((left, right) => left - right);
+              this.quoteObservedAt.update((current) => {
+                const next = new Map(current);
+                for (const itemId of quoteItemIds) {
+                  const entry = this.marketCache.getCachedQuoteEntry(itemId, region);
+                  if (entry) next.set(itemId, new Date(entry.fetchedAt).toISOString());
+                }
+                return next;
+              });
+              const quotes$ = (
+                this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
+              ).call(this.marketCache, quoteItemIds, region);
+              const npcPrices$ =
+                this.catalog
+                  .getNpcPurchasePrices?.(
+                    graph?.itemIds ?? itemIds,
+                    graph?.datasetVersion ?? this.datasetVersion(),
+                  )
+                  .pipe(catchError(() => of(new Map<number, NpcPurchasePrice>()))) ??
+                of(this.npcPurchasePrices());
+              return combineLatest({
+                quotes: quotes$,
+                npcPrices: npcPrices$,
+                returnCatalogItems: returnCatalogItems$,
+                marketEquivalents: of(marketEquivalents),
+              }).pipe(map((result) => ({ ...result, marketEquivalentInputs: equivalentInputs })));
+            }),
+          );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ quotes: quotesMap, npcPrices, returnCatalogItems }) => {
+        next: ({ quotes: quotesMap, npcPrices, returnCatalogItems, marketEquivalentInputs }) => {
           if (revision !== this.quoteRevision) return;
           this.npcPurchasePrices.set(npcPrices);
+          this.marketEquivalentInputs.set(marketEquivalentInputs);
           this.returnCatalogItems.set(returnCatalogItems.items);
           this.returnCatalogDataset.set(returnCatalogItems.dataset);
           const newPrices = new Map(this.livePrices());
@@ -2144,14 +2180,13 @@ export class RecipeTree {
     const quote = this.marketQuotes().get(id);
     return quote ? (recipeMarketPrice(quote)?.price ?? null) : null;
   }
-  materialPrice(id: number): { price: string; source: 'market' | 'maximum' | 'npc' } | null {
-    const quote = this.marketQuotes().get(id);
-    const marketPrice = quote ? recipeMarketPrice(quote) : null;
-    if (marketPrice) return marketPrice;
-    const npcPrice = this.npcPurchasePrices().get(id)?.unitPrice;
-    return npcPrice && /^\d{1,24}$/.test(npcPrice) && BigInt(npcPrice) > 0n
-      ? { price: npcPrice, source: 'npc' }
-      : null;
+  materialPrice(id: number) {
+    return resolveRecipeMaterialPrice(
+      id,
+      this.marketQuotes(),
+      this.npcPurchasePrices(),
+      this.marketEquivalentInputs(),
+    );
   }
   quote(id: number) {
     return (

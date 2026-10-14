@@ -6,6 +6,7 @@ import type {
   CatalogRecipesResponse,
   MarketItemQuote,
   NpcPurchasePrice,
+  RecipeMarketEquivalent,
 } from '@bdo/shared';
 import { of, Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -89,6 +90,9 @@ function providers() {
     ),
     getNpcPurchasePrices: vi.fn((_itemIds: number[], _datasetVersion: string) =>
       of(new Map<number, NpcPurchasePrice>()),
+    ),
+    getRecipeMarketEquivalents: vi.fn((_itemIds: number[], _datasetVersion: string) =>
+      of<RecipeMarketEquivalent[]>([]),
     ),
     getItemRecipes: vi.fn((_itemId: number, _direction: 'produces' | 'uses') =>
       of({ recipes: [], total: 0, direction: 'produces', dataset: null } as CatalogRecipesResponse),
@@ -196,6 +200,129 @@ describe('Interactive recipe tree', () => {
       ],
       'sa',
     );
+  });
+
+  it('loads market equivalents and prices a fresh fish using its dried market quote', async () => {
+    const mocks = providers();
+    const fishRecipe: CatalogRecipe = {
+      key: 'fish-cooking',
+      type: 'COOK',
+      station: null,
+      inputs: [{ itemId: 8211, name: 'Lula', quantity: '1' }],
+      outputs: [{ itemId: 9601, name: 'Refeição de Balenos', quantity: null }],
+    };
+    const equivalent: RecipeMarketEquivalent = {
+      sourceItemId: 8211,
+      itemId: 8511,
+      name: 'Calamar Desidratado',
+      iconUrl: '/api/v1/items/8511/icon?dataset=checksum',
+      quantityRatio: 1,
+    };
+    const driedQuote: MarketItemQuote = {
+      itemId: 8511,
+      subId: 0,
+      name: equivalent.name,
+      price: '16000',
+      stock: 0,
+      totalTrades: '0',
+      minPrice: '12000',
+      maxPrice: '24000',
+      lastSoldPrice: '16000',
+      lastSoldAt: null,
+    };
+    mocks.catalog.getRecipeMarketEquivalents.mockReturnValue(of([equivalent]));
+    mocks.catalog.getItemRecipes.mockReturnValue(
+      of({
+        recipes: [],
+        total: 0,
+        direction: 'produces',
+        dataset: {
+          version: 'dataset-v1',
+          region: 'sa',
+          locale: 'pt',
+          checksum: null,
+          itemCount: 0,
+          recipeCount: 0,
+          importedAt: '2026-10-13T00:00:00.000Z',
+        },
+      } as CatalogRecipesResponse),
+    );
+    mocks.marketCache.resolveQuotesBatch.mockImplementation(() => {
+      mocks.marketCache.quotesMap.set(
+        new Map([
+          [
+            'sa:8511:0',
+            {
+              quote: driedQuote,
+              region: 'sa',
+              fetchedAt: Date.now(),
+              expiresAt: Date.now() + 60_000,
+            },
+          ],
+        ]),
+      );
+      const unavailableFreshQuote: MarketItemQuote = {
+        itemId: 8211,
+        subId: 0,
+        name: 'Lula',
+        price: '0',
+        stock: 0,
+        totalTrades: '0',
+        minPrice: '0',
+        maxPrice: '0',
+        lastSoldPrice: '0',
+        lastSoldAt: null,
+      };
+      return of(
+        new Map([
+          [8211, unavailableFreshQuote],
+          [8511, driedQuote],
+        ]),
+      );
+    });
+    const fixture = await renderComponent(
+      RecipeTree,
+      {
+        recipe: fishRecipe,
+        selectedItem: { ...item, id: 9601, name: 'Refeição de Balenos' },
+        datasetVersion: 'dataset-v1',
+      },
+      mocks.list,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(fixture.componentInstance.root()).not.toBeNull();
+    fixture.componentInstance.consultAllTreePrices(true);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    fixture.detectChanges();
+
+    const tree = fixture.componentInstance;
+    expect(mocks.catalog.getRecipeMarketEquivalents).toHaveBeenCalledWith(
+      expect.arrayContaining([8211]),
+      'dataset-v1',
+    );
+    expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith(
+      expect.arrayContaining([8511]),
+      'sa',
+    );
+    expect(tree.materialPrice(8211)).toMatchObject({
+      price: '24000',
+      source: 'equivalent',
+      equivalentPriceSource: 'maximum',
+      equivalentItem: { name: 'Calamar Desidratado' },
+    });
+    expect(tree.productionInput()?.quotes[8211]).toMatchObject({
+      unitPrice: '24000',
+      source: 'market',
+      available: null,
+    });
+    const material = fixture.nativeElement.querySelector(
+      '.sidebar-material-row[data-item-id="8211"]',
+    ) as HTMLElement | null;
+    expect(material?.textContent).toContain('Equivalente');
+    expect(material?.textContent).toContain('Máxima');
+    expect(material?.textContent).toContain('Calamar Desidratado');
+    expect(material?.textContent).not.toContain('Est: 0');
+    fixture.destroy();
   });
 
   it('shows two returns first and lets the user expand and collapse the editable list', async () => {

@@ -776,9 +776,14 @@
                           >{{
                             item.unitPriceSource === 'npc'
                               ? 'NPC · '
-                              : item.unitPriceSource === 'maximum'
-                                ? 'Máxima · '
-                                : ''
+                              : item.unitPriceSource === 'equivalent'
+                                ? 'Equivalente' +
+                                  (item.equivalentPriceSource === 'maximum'
+                                    ? ' · Máxima · '
+                                    : ' · ')
+                                : item.unitPriceSource === 'maximum'
+                                  ? 'Máxima · '
+                                  : ''
                           }}{{ silver(item.unitPrice) }}</span
                         >
                         @if (item.stock !== null) {
@@ -790,6 +795,22 @@
                         <span class="sidebar-unlisted" i18n>Sem cotação</span>
                       }
                     </span>
+                    @if (item.equivalentItem; as equivalent) {
+                      <span
+                        class="sidebar-equivalent"
+                        [title]="'Preço de referência: ' + equivalent.name"
+                      >
+                        <app-item-icon
+                          style="--item-icon-size: 20px"
+                          [url]="catalog.resolveIconUrl(equivalent)"
+                          [name]="equivalent.name"
+                        />
+                        <span>
+                          {{ equivalent.quantityRatio.toLocaleString('pt-BR') }} un. de
+                          {{ equivalent.name }} por unidade
+                        </span>
+                      </span>
+                    }
                   </span>
                 </button>
 
