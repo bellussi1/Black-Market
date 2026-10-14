@@ -61,6 +61,7 @@ export function requestControls(logger: LoggerService, environment: string, webO
       else if (!['/health', '/ready'].includes(req.path)) logger.log(event);
     });
     const workspace = isWorkspacePath(req.path);
+    const identity = req.path.startsWith('/api/v1/identity/');
     const market = req.path.startsWith('/api/v1/market/');
     const telemetry = req.path === '/api/v1/telemetry/errors';
     const calculate = req.path.startsWith('/api/v1/calculators/');
@@ -72,21 +73,31 @@ export function requestControls(logger: LoggerService, environment: string, webO
       req.path.startsWith('/api/v1/') && !/^\/api\/v1\/items\/[1-9]\d*\/icon$/.test(req.path);
     const group = workspace
       ? 'workspace'
-      : market
-        ? 'market'
-        : telemetry
-          ? 'telemetry'
-          : calculate
-            ? 'calculate'
-            : crafting
-              ? 'crafting'
-              : 'public';
+      : identity
+        ? 'identity'
+        : market
+          ? 'market'
+          : telemetry
+            ? 'telemetry'
+            : calculate
+              ? 'calculate'
+              : crafting
+                ? 'crafting'
+                : 'public';
     if (
       publicRequest &&
       req.method !== 'OPTIONS' &&
       !limiter.take(
         (req.ip ?? 'unknown') + ':' + group,
-        telemetry ? 10 : workspace || calculate ? 30 : market ? 300 : crafting ? 600 : 240,
+        telemetry
+          ? 10
+          : workspace || identity || calculate
+            ? 30
+            : market
+              ? 300
+              : crafting
+                ? 600
+                : 240,
       )
     ) {
       res.setHeader('Retry-After', '60');

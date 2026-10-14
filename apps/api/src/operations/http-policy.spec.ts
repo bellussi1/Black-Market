@@ -6,7 +6,7 @@ import { apiCorsOptions, isWorkspacePath, jsonRequest } from './http-policy';
 import { requestControls } from './request-controls';
 
 describe('Native HTTP policy', () => {
-  it('allows only the configured browser origin without credential cookies', () => {
+  it('allows credentialed browser requests only from the configured origin', () => {
     const policy = apiCorsOptions('https://platform.example'),
       callback = vi.fn();
     policy.origin('https://evil.test', callback);
@@ -15,7 +15,7 @@ describe('Native HTTP policy', () => {
     expect(callback).toHaveBeenLastCalledWith(null, true);
     policy.origin(undefined, callback);
     expect(callback).toHaveBeenLastCalledWith(null, true);
-    expect(policy.credentials).toBe(false);
+    expect(policy.credentials).toBe(true);
   });
   it('selects exactly one parser and excludes similarly named routes', () => {
     for (const path of ['/api/v1/workspace', '/api/v1/workspace/copy?x=1']) {
@@ -66,6 +66,26 @@ describe('Native HTTP policy', () => {
     for (let i = 0; i < 30; i++)
       expect(invoke('/api/v1/calculators/market', 'POST').next).toHaveBeenCalledOnce();
     expect(invoke('/api/v1/calculators/market', 'POST').res.status).toHaveBeenCalledWith(429);
+  });
+  it('applies the account write limit to social identity endpoints', () => {
+    const middleware = requestControls(logger, 'production', 'https://platform.example');
+    const invoke = () => {
+      const res = response(),
+        next = vi.fn();
+      middleware(
+        {
+          path: '/api/v1/identity/steam/start',
+          method: 'GET',
+          ip: 'auth-fixture',
+          headers: {},
+        } as never,
+        res as never,
+        next,
+      );
+      return { res, next };
+    };
+    for (let i = 0; i < 30; i++) expect(invoke().next).toHaveBeenCalledOnce();
+    expect(invoke().res.status).toHaveBeenCalledWith(429);
   });
   it('blocks cross-site personal writes even without Origin and sends HSTS for HTTPS', () => {
     const res = response(),

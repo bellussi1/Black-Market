@@ -14,6 +14,19 @@ import { FirebaseAuthService } from './firebase-auth.service';
 
 type VerifiedIdentity = { firebaseUid: string; ownerId: string };
 
+export function assertGoogleLinkAvailable(
+  ownerId: string,
+  googleOwnerId: string | undefined,
+  currentGoogleSubject: string | undefined,
+  googleSubject: string,
+): 'attach' | 'already-linked' {
+  if (googleOwnerId && googleOwnerId !== ownerId)
+    throw new ConflictException('Esta conta Google já está vinculada a outra conta.');
+  if (currentGoogleSubject && currentGoogleSubject !== googleSubject)
+    throw new ConflictException('Outra conta Google já está vinculada a este usuário.');
+  return googleOwnerId ? 'already-linked' : 'attach';
+}
+
 @Injectable()
 export class IdentityService {
   constructor(
@@ -37,6 +50,66 @@ export class IdentityService {
 
   async owner(authorization: string | undefined): Promise<string> {
     return (await this.verifiedIdentity(authorization)).ownerId;
+  }
+
+  async firebaseUid(authorization: string | undefined): Promise<string> {
+    return (await this.verifiedIdentity(authorization)).firebaseUid;
+  }
+
+  async linkGoogle(authorization: string | undefined): Promise<{ linked: true }> {
+    const current = await this.verifiedIdentity(authorization);
+    const providerUser = await this.firebase.getUser(current.firebaseUid);
+    const googleIdentity = providerUser.providerData.find(
+      (provider) => provider.providerId === 'google.com' && provider.uid,
+    );
+    if (!googleIdentity)
+      throw new UnauthorizedException('Conclua a autenticação Google antes de vincular a conta.');
+
+    return this.database.db.transaction(async (transaction) => {
+      const [identityForGoogleSubject] = await transaction
+        .select()
+        .from(authIdentities)
+        .where(
+          and(
+            eq(authIdentities.provider, 'google'),
+            eq(authIdentities.subject, googleIdentity.uid),
+          ),
+        )
+        .limit(1);
+      const [identityForUser] = await transaction
+        .select()
+        .from(authIdentities)
+        .where(
+          and(eq(authIdentities.userId, current.ownerId), eq(authIdentities.provider, 'google')),
+        )
+        .limit(1);
+      const action = assertGoogleLinkAvailable(
+        current.ownerId,
+        identityForGoogleSubject?.userId,
+        identityForUser?.subject,
+        googleIdentity.uid,
+      );
+
+      if (action === 'attach')
+        await transaction
+          .insert(authIdentities)
+          .values({ userId: current.ownerId, provider: 'google', subject: googleIdentity.uid })
+          .onConflictDoNothing();
+
+      const [linked] = await transaction
+        .select()
+        .from(authIdentities)
+        .where(
+          and(
+            eq(authIdentities.provider, 'google'),
+            eq(authIdentities.subject, googleIdentity.uid),
+          ),
+        )
+        .limit(1);
+      if (!linked || linked.userId !== current.ownerId)
+        throw new ConflictException('Esta conta Google já está vinculada a outra conta.');
+      return { linked: true };
+    });
   }
 
   async me(authorization: string | undefined) {

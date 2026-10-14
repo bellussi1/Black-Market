@@ -2,7 +2,7 @@ import { authUsers } from '@bdo/database/schema';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { IdentityService } from './identity.service';
+import { assertGoogleLinkAvailable, IdentityService } from './identity.service';
 
 const ownerId = '00000000-0000-4000-8000-000000000101';
 const anotherOwnerId = '00000000-0000-4000-8000-000000000102';
@@ -121,6 +121,98 @@ describe('Identity boundary', () => {
     await expect(identity.owner('Bearer steam-token')).resolves.toBe(ownerId);
   });
 
+  it('returns the verified Firebase UID for provider linking', async () => {
+    const auth = firebaseAuth();
+    const identity = new IdentityService(
+      new ConfigService(),
+      fakeDatabase() as never,
+      auth as never,
+    );
+    await expect(identity.firebaseUid('Bearer credential')).resolves.toBe('firebase-google-uid');
+  });
+
+  it('links a verified Google identity to the current Steam account', async () => {
+    const auth = firebaseAuth('steam:76561198000000000');
+    auth.verifyIdToken.mockResolvedValue({
+      uid: 'steam:76561198000000000',
+      firebase: { sign_in_provider: 'custom' },
+    });
+    auth.getUser.mockResolvedValue({
+      uid: 'steam:76561198000000000',
+      providerData: [{ providerId: 'google.com', uid: 'google-subject-1' }],
+    });
+    const database = fakeDatabase({
+      users: [{ id: ownerId, firebaseUid: 'steam:76561198000000000' }],
+      identities: [{ userId: ownerId, provider: 'steam', subject: '76561198000000000' }],
+    });
+    const identities = database.records.identities;
+    database.db.transaction = async <T>(operation: (tx: never) => Promise<T>) => {
+      let reads = 0;
+      const tx = {
+        select: () => ({
+          from: () => ({
+            where: () => ({
+              limit: () => {
+                reads++;
+                return Promise.resolve(
+                  reads <= 2
+                    ? []
+                    : identities.filter(
+                        (row) => row.provider === 'google' && row.userId === ownerId,
+                      ),
+                );
+              },
+            }),
+          }),
+        }),
+        insert: () => ({
+          values: (value: Record<string, unknown>) => ({
+            onConflictDoNothing: () => {
+              identities.push(value as unknown as FakeIdentity);
+              return Promise.resolve();
+            },
+          }),
+        }),
+      };
+      return operation(tx as never);
+    };
+    const identity = new IdentityService(new ConfigService(), database as never, auth as never);
+    const linked = await identity.linkGoogle('Bearer steam-token').then(
+      (value) => ({ value }),
+      (error: unknown) => ({ error }),
+    );
+    expect(auth.verifyIdToken).toHaveBeenCalledWith('steam-token');
+    expect(auth.getUser).toHaveBeenCalledWith('steam:76561198000000000');
+    expect(linked).toEqual({ value: { linked: true } });
+    expect(identities).toContainEqual({
+      userId: ownerId,
+      provider: 'google',
+      subject: 'google-subject-1',
+    });
+  });
+
+  it('rejects Google linking when Firebase does not prove a Google provider', async () => {
+    const auth = firebaseAuth('steam:76561198000000000');
+    auth.verifyIdToken.mockResolvedValue({
+      uid: 'steam:76561198000000000',
+      firebase: { sign_in_provider: 'custom' },
+    });
+    auth.getUser.mockResolvedValue({
+      uid: 'steam:76561198000000000',
+      email: 'same-email@example.test',
+      providerData: [],
+    });
+    const identity = new IdentityService(
+      new ConfigService(),
+      fakeDatabase({
+        users: [{ id: ownerId, firebaseUid: 'steam:76561198000000000' }],
+        identities: [{ userId: ownerId, provider: 'steam', subject: '76561198000000000' }],
+      }) as never,
+      auth as never,
+    );
+    await expect(identity.linkGoogle('Bearer steam-token')).rejects.toThrow('Google');
+  });
+
   it('rejects an unmapped custom-token UID', async () => {
     const auth = firebaseAuth('steam:76561198000000000');
     auth.verifyIdToken.mockResolvedValue({
@@ -221,5 +313,17 @@ describe('Identity boundary', () => {
     });
     expect(identity.publicConfig()).not.toHaveProperty('adminCredentials');
     expect(JSON.stringify(identity.publicConfig())).not.toContain('server-only-secret');
+  });
+
+  it('rejects linking a Google subject already assigned to another owner', () => {
+    expect(() =>
+      assertGoogleLinkAvailable('owner-a', 'owner-b', undefined, 'google-subject-1'),
+    ).toThrow('outra conta');
+  });
+
+  it('rejects replacing the Google identity already linked to this owner', () => {
+    expect(() =>
+      assertGoogleLinkAvailable('owner-a', 'owner-a', 'google-subject-1', 'google-subject-2'),
+    ).toThrow('Outra conta Google');
   });
 });

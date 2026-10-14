@@ -1013,18 +1013,18 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Detalhe de segurança incorporado no plano**: state Steam fica vinculado a cookie HttpOnly/SameSite e a troca do código de login usa PKCE S256 de uso único; isso evita reaproveitar o retorno em outro navegador sem afetar a arquitetura aprovada.
 - **Verificação do estado**: Minha Conta ainda exibe login por link de e-mail e Google via Supabase; API valida Supabase. Não há Steam. O banco de staging é isolado e exclui `user_workspaces` no seed. O fixture sintético de personagem/família `AuroraVale` / `ValeDourado` existe em `production-demo.ts`, mas não pertence a uma conta persistida.
 - **Staging**: Docker local e Quick Tunnel temporário já existentes; `pnpm test:staging` passou. O túnel muda de URL e depende do computador do mantenedor. O desenho conserva allowlist de até dez e-mails, Firebase e banco próprios de staging, dados de teste e analytics/coletores desligados. Para disponibilidade contínua será necessário domínio/túnel nomeado ou hospedagem.
-- **Artefato**: `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` documenta fluxos, modelo de identidade, segurança, seed idempotente e critérios de aceitação. Revisão própria concluída; ainda aguarda revisão explícita do usuário antes do plano de implementação, conforme a skill de brainstorming.
+- **Artefato**: `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` documenta fluxos, modelo de identidade, segurança, seed idempotente e critérios de aceitação. A aprovação do usuário para o plano e a implementação foi recebida na sequência.
 - **Limites externos**: Firebase staging/produção, credencial Admin, domínio HTTPS/retornos, e-mails dos testers e a identificação da conta designada ainda precisam ser configurados; não enviar segredos pelo chat. Não há evidência sobre workspaces de eventual projeto Supabase externo, então não remover dados de lá sem inventário.
-- **Próximo passo**: após a revisão da especificação pelo usuário, criar o plano e implementar em commits atômicos; só validar login real e semear a conta quando a configuração externa e a identidade designada estiverem disponíveis.
+- **Próximo passo**: implementar as cinco tarefas do plano em commits atômicos. Login real e seed da conta designada dependem da configuração externa e da identidade autorizada.
 
 ## 91. Plano aprovado para autenticação social e staging (Codex, 14/10/2026)
 
 - **Aprovação**: o usuário aprovou a especificação e pediu para seguir com plano e implementação.
 - **Plano**: `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md` decompõe o trabalho em esquema/configuração, Firebase API, Steam OpenID, UI Google/Steam e seed/ops do staging. Cada tarefa tem casos de teste, verificação e commit próprio.
 - **Refinamento de segurança**: a especificação agora registra vínculo do state por cookie de navegador e PKCE S256 no código de troca Steam; não altera os provedores nem o modelo de sessão aprovados.
-- **Isolamento**: criado worktree gerenciado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; antes de executar o plano, o commit documental será incorporado a esse checkout.
+- **Isolamento**: worktree gerenciado criado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; os commits de especificação e plano foram incorporados antes da implementação.
 - **Restrições externas**: login real ainda depende dos projetos Firebase, segredo Admin, callback HTTPS/domínio autorizado, conta de teste e lista de e-mails allowlisted. Não usar credenciais reais do usuário no repositório nem afirmar login funcional sem E2E real.
-- **Próximo passo**: a primeira fatia está implementada no worktree; seguir para verificação Firebase no servidor e atualizar este contexto após cada commit de tarefa.
+- **Próximo passo**: Task 1 e Task 2 foram commitadas; a implementação segue pela Task 3 (Steam OpenID, PKCE e vinculação), atualizando este contexto após cada commit.
 
 ## 92. Esquema de identidade e configuração Firebase (Codex, 14/10/2026)
 
@@ -1046,4 +1046,16 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Verificação**: a suíte direcionada (schema de ambiente + Firebase Admin + identidade) passou 25/25; `pnpm --filter @bdo/api lint` e `pnpm --filter @bdo/api typecheck` passaram. O typecheck inicial usou um `tsconfig.tsbuildinfo` obsoleto após a instalação; removi apenas esse artefato ignorado e rodei novamente, com saída zero.
 - **Limites**: ainda não há projeto Firebase nem credenciais; testes mockam Admin SDK e não representam login real Google/Steam. O callback Steam e a UI Firebase chegam nas Tasks 3 e 4.
 - **Arquivos**: `apps/api/src/workspace/firebase-auth.service.ts` e teste, `identity.service.ts` e teste, controller e módulos Workspace/Roadmap, `apps/api/package.json`, `pnpm-lock.yaml`, plano e este contexto.
-- **Próximo passo**: fechar o commit atômico `feat(auth): verify Firebase sessions and map accounts`; então implementar o verificador Steam OpenID e vinculação explícita.
+- **Commit**: `4ff82d6 feat(auth): verify Firebase sessions and map accounts`.
+- **Próximo passo**: finalizar o verificador Steam OpenID, a troca PKCE de uso único e a vinculação explícita na Task 3.
+
+## 94. Steam OpenID e vinculação explícita (Codex, 14/10/2026)
+
+- **Login Steam**: API cria estado aleatório armazenado somente como hash e vinculado a cookie HttpOnly/SameSite; a callback confere o cookie, o retorno exato, a resposta assinada e a validação `check_authentication` da Steam. O SteamID64 precisa ser canônico de conta individual.
+- **Troca e sessão**: código de troca também é armazenado como hash, expira em cinco minutos e só pode ser consumido uma vez. O cliente deve provar PKCE S256 antes de a API emitir o Firebase custom token.
+- **Vinculação de contas**: Steam e Google são ligados somente à sessão autenticada e sem conflito; e-mail não é usado para mesclar contas. O início da vinculação Steam reutiliza o cookie protegido e callback retorna para fragmento local fixo.
+- **Proteções HTTP**: CORS com credenciais limitado à origem web configurada; rotas de identidade usam limite específico; resposta callback é `no-store`/`no-referrer` e limpa cookie em sucesso ou erro.
+- **Verificação**: 54 testes API direcionados passaram; `pnpm --filter @bdo/api lint`, `pnpm --filter @bdo/api typecheck`, `pnpm --filter @bdo/database db:check`, Prettier e `git diff --check` passaram. O primeiro lint sinalizou import sort em um spec; foi corrigido antes da repetição.
+- **Limite externo**: sem projeto/credenciais Firebase configurados, os testes validam as integrações mockadas e não comprovam autenticação real Steam/Google.
+- **Arquivos**: serviços OpenID, autenticação e storage Steam, controller de identidade e testes; migração/schema de tentativas; política CORS e limitador; serviço de identidade; plano e contexto.
+- **Próximo passo**: registrar o commit atômico `feat(auth): add verified Steam OpenID login`; depois continuar a UI da conta Firebase no Task 4.

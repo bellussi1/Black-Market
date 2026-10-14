@@ -94,7 +94,7 @@ describe('HTTP security through the native Nest adapter', () => {
       headers: { Origin: 'https://platform.example', 'Access-Control-Request-Method': 'POST' },
     });
     expect(allowed.headers.get('access-control-allow-origin')).toBe('https://platform.example');
-    expect(allowed.headers.get('access-control-allow-credentials')).toBeNull();
+    expect(allowed.headers.get('access-control-allow-credentials')).toBe('true');
     const foreign = await fetch(url + '/api/v1/workspace', {
       method: 'POST',
       headers: { Origin: 'https://evil.test', 'content-type': 'application/json' },
@@ -102,6 +102,7 @@ describe('HTTP security through the native Nest adapter', () => {
     });
     expect(foreign.status).toBe(403);
     expect(foreign.headers.get('access-control-allow-origin')).toBeNull();
+    expect(foreign.headers.get('access-control-allow-credentials')).toBeNull();
   });
   it('returns safe JSON errors and security headers', async () => {
     const response = await fetch(url + '/api/v1/calculators/fixture', {

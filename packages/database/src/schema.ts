@@ -50,7 +50,7 @@ export const steamAuthAttempts = pgTable(
   'steam_auth_attempts',
   {
     stateHash: varchar('state_hash', { length: 64 }).primaryKey(),
-    codeChallenge: varchar('code_challenge', { length: 43 }).notNull(),
+    codeChallenge: varchar('code_challenge', { length: 43 }),
     firebaseUid: varchar('firebase_uid', { length: 128 }).references(() => authUsers.firebaseUid, {
       onDelete: 'cascade',
     }),

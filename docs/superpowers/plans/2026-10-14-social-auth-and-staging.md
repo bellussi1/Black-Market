@@ -58,7 +58,7 @@
 - [x] Generate and review the migration and add environment validation. The public identity config response moves to Task 2, where Firebase verification and runtime configuration are introduced together.
 - [x] Pass Firebase public config and Admin credentials only to the API container in local, staging and production Compose. Set `APP_ENV` explicitly in staging and production; leave secrets blank in `.env.example`.
 - [x] Run `pnpm --filter @bdo/database db:check` and `pnpm --filter @bdo/api typecheck`; confirm the migration is ordered and all schema types compile.
-- [ ] Commit as `feat(auth): add Firebase identity schema and config`.
+- [x] Commit as `feat(auth): add Firebase identity schema and config` (`3f22e47`).
 
 ### Task 2: Firebase token verification and canonical account mapping
 
@@ -86,7 +86,7 @@
 - [x] Derive roadmap administration from the server-side Firebase UID allowlist; ignore client claims and e-mail.
 - [x] Add `/identity/me` and migrate workspace plus Roadmap authorization to the Firebase identity boundary. Removing Supabase dependencies and configuration remains in Task 5 after all consumers migrate.
 - [x] Run focused API tests, lint and typecheck.
-- [ ] Commit as `feat(auth): verify Firebase sessions and map accounts`.
+- [x] Commit as `feat(auth): verify Firebase sessions and map accounts` (`4ff82d6`).
 
 ### Task 3: Steam OpenID, one-time exchange and explicit linking
 
@@ -107,15 +107,15 @@
 - `SteamAuthService.exchange(code: string, verifier: string): Promise<string>` atomically consumes one-time code, verifies PKCE S256, and returns a Firebase custom token.
 - Routes: `GET /identity/steam/start?code_challenge=...`, `GET /identity/steam/callback`, `POST /identity/steam/exchange`, `POST /identity/steam/link/start`, and `POST /identity/google/link`.
 
-- [ ] Write `SteamOpenIdService` cases `builds a login URL with the configured callback and realm`, `rejects a different return URL`, `rejects missing signed fields`, `rejects Steam check_authentication is_valid false`, and `rejects a noncanonical claimed ID`; write `SteamAuthService` cases `consumes state only once`, `rejects a callback without the matching browser cookie`, `rejects expired state`, `rejects a mismatched PKCE verifier`, `consumes an exchange only once`, `logs into an existing linked Steam identity`, `links Steam to the authenticated Firebase UID`, and `rejects an identity already owned by another account`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/steam-openid.service.spec.ts src/workspace/steam-auth.service.spec.ts` and confirm callback/replay/link-conflict cases fail before implementation.
-- [ ] Implement OpenID request construction and bounded `check_authentication` POST; do not use Steam API keys or trust browser-submitted Steam IDs.
-- [ ] Persist only hashes for random state and exchange code; consume them transactionally and expire attempts/codes after five minutes.
-- [ ] Set state cookie `HttpOnly; SameSite=Lax; Path=/api/v1/identity/steam; Max-Age=300`, add `Secure` for HTTPS, clear it on every callback, and enable credentialed CORS only for the configured `WEB_ORIGIN` so Steam-link startup can set the cookie.
-- [ ] On login, issue a custom token only after proof; on link, preserve the existing Firebase UID and reject identities owned by another account.
-- [ ] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
-- [ ] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
-- [ ] Run focused API tests, lint and typecheck.
+- [x] Write `SteamOpenIdService` cases `builds a login URL with the configured callback and realm`, `rejects a different return URL`, `rejects missing signed fields`, `rejects Steam check_authentication is_valid false`, and `rejects a noncanonical claimed ID`; write `SteamAuthService` cases `consumes state only once`, `rejects a callback without the matching browser cookie`, `rejects expired state`, `rejects a mismatched PKCE verifier`, `consumes an exchange only once`, `logs into an existing linked Steam identity`, `links Steam to the authenticated Firebase UID`, and `rejects an identity already owned by another account`.
+- [x] Run focused tests first and observe failures before implementation; added controller/link cases and protocol edge cases during implementation.
+- [x] Implement OpenID request construction and bounded `check_authentication` POST; do not use Steam API keys or trust browser-submitted Steam IDs.
+- [x] Persist only hashes for random state and exchange code; consume them transactionally and expire attempts/codes after five minutes.
+- [x] Set state cookie `HttpOnly; SameSite=Lax; Path=/api/v1/identity/steam; Max-Age=300`, add `Secure` for HTTPS, clear it on every callback, and enable credentialed CORS only for the configured `WEB_ORIGIN` so Steam-link startup can set the cookie.
+- [x] On login, issue a custom token only after proof; on link, preserve the existing Firebase UID and reject identities owned by another account.
+- [x] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
+- [x] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
+- [x] Run focused API tests (54/54), lint, typecheck, Drizzle check and `git diff --check`.
 - [ ] Commit as `feat(auth): add verified Steam OpenID login`.
 
 ### Task 4: Google/Steam account UI and Firebase browser session

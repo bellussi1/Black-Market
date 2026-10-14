@@ -18,7 +18,7 @@ export function apiCorsOptions(webOrigin: string) {
       origin: string | undefined,
       callback: (error: Error | null, allowed: boolean) => void,
     ) => callback(null, !origin || origin === webOrigin),
-    credentials: false,
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['X-Request-ID', 'Retry-After'],
