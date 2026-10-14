@@ -66,7 +66,8 @@
         ><span>{{ silver(player.silver) }} prata</span
         ><span>{{ player.carriedWeight }} / {{ player.weightLimit }} LT</span>
         <span>Alquimia: {{ player.mastery.alchemy }} de maestria</span
-        ><span>Culinária: {{ player.mastery.cooking }}</span>
+        ><span>Culinária: {{ player.mastery.cooking }} de maestria</span
+        ><span>Processamento: {{ player.mastery.processing }} de maestria</span>
       </div>
       <p>
         Equipamento:
@@ -78,8 +79,10 @@
         }
       </p>
       <p>
-        Maestria, trajes e cristais servem de contexto para medir seu rendimento. Não há
-        multiplicadores automáticos. Se mudar o conjunto, confira as medições abaixo.
+        A maestria do personagem estima automaticamente o rendimento de culinária e alquimia e os
+        lotes de processamento em todas as receitas e subreceitas. Em culinária, ela também ajusta o
+        tempo médio pelo cozimento em massa. Trajes e cristais não são inferidos: informe o tempo
+        observado com seu conjunto ativo.
       </p>
       <div class="action-row">
         <label
@@ -103,9 +106,11 @@
     <section hlmCard class="panel">
       <h2>Tempo e rendimento medidos</h2>
       <p>
-        Segundos por operação incluem seu conjunto ativo. Alquimia e culinária exigem rendimento
-        médio informado; saídas variáveis de processamento permanecem pendentes. Não contamos
-        subprodutos sem uma medição específica.
+        O rendimento vem da maestria escolhida e das regras da receita; não é necessário informar
+        uma média genérica que seria aplicada a receitas diferentes. Se tiver uma medição própria,
+        informe-a na receita selecionada para substituir apenas aquela estimativa. Informe os
+        segundos por operação com o conjunto ativo; a maestria de culinária ajusta a taxa de
+        operações em massa. Não contamos subprodutos sem uma medição específica.
       </p>
       <div class="calibration-grid">
         @for (type of methods(); track type) {
@@ -121,18 +126,6 @@
                 [ngModel]="calibration[type].seconds"
                 (ngModelChange)="calibration[type].seconds = $event; plans.set(null)"
             /></label>
-            @if (type === 'ALCHEMY' || type === 'COOK') {
-              <label class="field"
-                ><span>Unidades médias por operação</span
-                ><input
-                  hlmInput
-                  type="number"
-                  min="0.001"
-                  step="0.1"
-                  [ngModel]="calibration[type].yield"
-                  (ngModelChange)="calibration[type].yield = $event; plans.set(null)"
-              /></label>
-            }
           </fieldset>
         }
       </div>
@@ -158,8 +151,9 @@
       <p>
         Consultas em lotes de 100 itens. A fonte usa cache de até 30 minutos; os dados consultados
         ficam válidos por 30 minutos nesta comparação. Preços manuais são premissas e não confirmam
-        oferta. Materiais sem cotação ou peso impedem um resultado completo. Equipamentos com
-        aprimoramento não usam preços agregados: informe o preço da variante desejada manualmente.
+        oferta. O preço atual usa a oferta disponível; sem estoque, usa a máxima do mercado.
+        Materiais sem preço ou peso impedem um resultado completo. Equipamentos com aprimoramento
+        não usam preços agregados: informe o preço da variante desejada manualmente.
       </p>
       @if (progress().total) {
         <p role="status">{{ progress().done }} / {{ progress().total }} itens consultados</p>
@@ -197,19 +191,13 @@
                     hlmInput
                     [attr.aria-label]="'Preço de ' + item.name"
                     inputmode="numeric"
-                    [ngModel]="quotes()[item.id]?.unitPrice ?? ''"
+                    [ngModel]="quoteFor(item.id)?.unitPrice ?? ''"
                     (ngModelChange)="manualPrice(item.id, $event)"
                     placeholder="Sem preço"
                   />
                 </td>
                 <td>
-                  {{
-                    quotes()[item.id]?.source === 'market'
-                      ? 'Mercado · ' + quotes()[item.id].available
-                      : quotes()[item.id]
-                        ? 'Premissa manual'
-                        : 'Pendente'
-                  }}
+                  {{ quoteOrigin(item.id) }}
                 </td>
               </tr>
             }
@@ -316,8 +304,8 @@
           /></label>
         </div>
         <p>
-          Em branco, usa a medição da atividade ou a saída exata do catálogo. Valores preenchidos
-          são premissas específicas desta fórmula, incluindo processamento e produção em lote.
+          Em branco, usa a saída do catálogo ajustada pela maestria do personagem. Um valor
+          preenchido substitui o rendimento calculado somente para esta fórmula.
         </p>
         <div class="custom-materials">
           @for (part of recipe.ingredients; track $index) {

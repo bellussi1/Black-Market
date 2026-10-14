@@ -368,6 +368,8 @@ export class MarketCacheService implements OnDestroy {
   cacheLookupResponse(response: MarketLookupResponse, region: Region): void {
     const now = Date.now();
     const expiresAt = now + DEFAULT_MARKET_CACHE_TTL_MS;
+    const responseFetchedAt = Date.parse(response.fetchedAt);
+    const fetchedAt = Number.isFinite(responseFetchedAt) ? responseFetchedAt : now;
     const current = new Map(this.quotesMap());
 
     for (const item of response.items) {
@@ -375,7 +377,7 @@ export class MarketCacheService implements OnDestroy {
       current.set(key, {
         quote: item,
         region,
-        fetchedAt: now,
+        fetchedAt,
         expiresAt,
       });
     }

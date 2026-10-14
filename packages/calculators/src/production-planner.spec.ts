@@ -703,6 +703,20 @@ describe('production planner', () => {
     expect(row(input, 'buy-all').issues.map((i) => i.code)).toContain('budget');
   });
 
+  it('can value a maximum market price without disabling budget or time limits', () => {
+    const input = fixture();
+    input.quotes[2].available = 0;
+    input.enforceMarketAvailability = false;
+    input.profile.budget = '0';
+    input.profile.activeMinutes = 0;
+
+    const plan = row(input, 'buy-all');
+
+    expect(plan.issues.map((issue) => issue.code)).not.toContain('market-stock');
+    expect(plan.issues.map((issue) => issue.code)).toContain('budget');
+    expect(plan.issues.map((issue) => issue.code)).toContain('time');
+  });
+
   it('compares economic plans without requiring current market stock or imported silver', () => {
     const input = fixture();
     input.profile.budget = '0';

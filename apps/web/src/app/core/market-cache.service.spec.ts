@@ -106,6 +106,22 @@ describe('MarketCacheService', () => {
     expect(service.lastSyncAt()).not.toBeNull();
   });
 
+  it('preserves the upstream observation time while starting a fresh local cache TTL', () => {
+    const observedAt = Date.now() - 60 * 60 * 1000;
+    service.cacheLookupResponse(
+      {
+        ...mockLookupResponse,
+        fetchedAt: new Date(observedAt).toISOString(),
+        cacheStatus: 'stale',
+      },
+      'sa',
+    );
+
+    const entry = service.getCachedQuoteEntry(1408, 'sa');
+    expect(entry?.fetchedAt).toBe(observedAt);
+    expect(entry?.expiresAt).toBeGreaterThan(Date.now());
+  });
+
   it('serves quote from memory cache without making an HTTP request when fresh', () => {
     service.cacheLookupResponse(mockLookupResponse, 'sa');
     expect(service.cachedQuotesCount()).toBe(1);

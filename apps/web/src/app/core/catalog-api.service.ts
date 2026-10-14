@@ -20,7 +20,7 @@ import { EMPTY, expand, forkJoin, map, type Observable, of, reduce } from 'rxjs'
 
 import { environment } from '../../environments/environment';
 import { preferredDataLocale } from './locale';
-import { RegionPreferences } from './region-preferences';
+import { type Region, RegionPreferences } from './region-preferences';
 
 export interface CatalogSearchParams {
   ids?: readonly number[];
@@ -190,7 +190,11 @@ export class CatalogApiService {
     );
   }
 
-  getNpcPurchasePrices(itemIds: readonly number[], expectedDatasetVersion: string) {
+  getNpcPurchasePrices(
+    itemIds: readonly number[],
+    expectedDatasetVersion: string,
+    region: Region = this.preferences.region(),
+  ) {
     const uniqueIds = [...new Set(itemIds.filter((id) => Number.isSafeInteger(id) && id > 0))];
     if (!uniqueIds.length) return of(new Map<number, NpcPurchasePrice>());
 
@@ -201,7 +205,7 @@ export class CatalogApiService {
       this.http.get<NpcPurchasePricesResponse>(`${this.baseUrl}/npc-purchase-prices`, {
         params: {
           ids: ids.join(','),
-          region: this.preferences.region(),
+          region,
           preferredLocale: preferredDataLocale(),
         },
       }),

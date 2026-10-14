@@ -63,6 +63,8 @@ export interface ProductionPlannerInput {
   useOwnedInProduction?: boolean;
   /** False for economic simulations independent of current purchasing capacity. Defaults to true. */
   enforcePurchaseLimits?: boolean;
+  /** False when market prices are used as valuation references regardless of current stock. */
+  enforceMarketAvailability?: boolean;
   byproductValues?: Record<
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
@@ -205,7 +207,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const assumptions = new Set<string>([
       'Materiais próprios são avaliados pelo preço de reposição informado; não são gratuitos.',
       'Receita de venda usa o imposto e os bônus informados; a cotação não garante venda imediata.',
-      'Tempos e rendimentos são premissas explícitas, sem extrapolar fórmulas de maestria.',
+      'Tempos calibrados e rendimentos seguem estimativas ou medições informadas; a maestria só é aplicada quando há regra catalogada.',
     ]);
     const owned = new Map<number, bigint>();
     for (const entry of input.inventory) {
@@ -276,6 +278,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         if (
           buying &&
           input.enforcePurchaseLimits !== false &&
+          input.enforceMarketAvailability !== false &&
           (value.available === null || !Number.isFinite(value.available) || value.available < 0)
         )
           issue('unknown-availability', 'Informe a quantidade disponível no mercado.', {
@@ -297,6 +300,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       const value = input.quotes[id];
       if (
         input.enforcePurchaseLimits !== false &&
+        input.enforceMarketAvailability !== false &&
         value?.source === 'market' &&
         value.available !== null &&
         Number.isFinite(value.available) &&

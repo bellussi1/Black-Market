@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   availableInventory,
+  type CharacterProfile,
   compareProductionPlans,
   planProduction,
   type ProductionChoice,
@@ -20,13 +21,20 @@ import {
   type ProductionQuantity,
   type ProductionRecipe,
 } from '@bdo/calculators';
-import type { CatalogItemDetail, CatalogRecipe, ProductionCatalogResponse } from '@bdo/shared';
+import type {
+  CatalogItemDetail,
+  CatalogRecipe,
+  MarketItemQuote,
+  NpcPurchasePrice,
+  ProductionCatalogResponse,
+} from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, takeLast } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { MarketCacheService } from '../../core/market-cache.service';
 import { ProductionApi } from '../../core/production-api';
 import {
   createProductionDemoWorkspace,
@@ -34,11 +42,39 @@ import {
   productionDemoExplanation,
   productionDemoItemIds,
 } from '../../core/production-demo';
+import type { Region } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
+import { fixedRecipeYield } from '../../shared/recipe-tree/recipe-fixed-yields';
+import { recipeMarketPrice } from '../../shared/recipe-tree/recipe-market-price';
+import {
+  cookingMassProduceRate,
+  DEFAULT_RECIPE_MASTERY,
+  processingBatchCount,
+} from '../../shared/recipe-tree/recipe-mastery';
+import {
+  lifeSkillForRecipe,
+  recipeMasteryCanChangeOutput,
+  resolveDefaultYield,
+} from '../../shared/recipe-tree/recipe-yield';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
-type Quotes = ProductionPlannerInput['quotes'];
+type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
+  basis?: 'market' | 'maximum' | 'manual' | 'npc';
+};
+type Quotes = Record<number, RecommendationQuote>;
+export function hasNpcPurchaseEvidence(item: Pick<CatalogItemDetail, 'sourceData'>): boolean {
+  const rawPrice = item.sourceData['buyPrice'];
+  const validPrice =
+    (typeof rawPrice === 'number' && Number.isSafeInteger(rawPrice) && rawPrice > 0) ||
+    (typeof rawPrice === 'string' && /^\d{1,24}$/.test(rawPrice) && BigInt(rawPrice) > 0n);
+  const vendors = item.sourceData['vendors'];
+  const urns =
+    vendors && typeof vendors === 'object' && 'urns' in vendors
+      ? (vendors as { urns?: unknown }).urns
+      : null;
+  return validPrice && Array.isArray(urns) && urns.length > 0;
+}
 /** Provider summaries merge enhancement variants. Only known plain materials are safe here. */
 export function canRequestProductionQuote(item: CatalogItemDetail): boolean {
   const enhancement = item.sourceData['maxEnhance'];
@@ -69,25 +105,88 @@ export function productionQuantity(value: string | null): ProductionQuantity {
     ? { min: Number(range[1]), max: Number(range[2]) }
     : null;
 }
-export function productionRecipes(rows: CatalogRecipe[]): ProductionRecipe[] {
+function scaleProductionQuantity(quantity: ProductionQuantity, scale: number): ProductionQuantity {
+  if (typeof quantity === 'number') return quantity * scale;
+  if (quantity) return { min: quantity.min * scale, max: quantity.max * scale };
+  return null;
+}
+export function productionMastery(
+  recipeType: string,
+  mastery?: Partial<CharacterProfile['mastery']>,
+): number {
+  const skill = lifeSkillForRecipe(recipeType);
+  if (skill === 'cooking' || skill === 'alchemy' || skill === 'processing')
+    return mastery?.[skill] ?? DEFAULT_RECIPE_MASTERY;
+  return 0;
+}
+export function productionCraftSeconds(
+  recipeType: string,
+  baseSeconds: number | null | undefined,
+  mastery?: Partial<CharacterProfile['mastery']>,
+): number | undefined {
+  if (baseSeconds === null || baseSeconds === undefined || !Number.isFinite(baseSeconds))
+    return undefined;
+  const rate =
+    lifeSkillForRecipe(recipeType) === 'cooking'
+      ? cookingMassProduceRate(productionMastery(recipeType, mastery))
+      : 1;
+  return baseSeconds / rate;
+}
+export function recommendationMarketQuote(
+  quote: MarketItemQuote,
+  observedAt: string | null,
+): RecommendationQuote | null {
+  const effective = recipeMarketPrice(quote);
+  if (!effective || !observedAt || !Number.isFinite(Date.parse(observedAt))) return null;
+  return {
+    unitPrice: effective.price,
+    available: quote.stock,
+    observedAt,
+    source: 'market',
+    basis: effective.source,
+  };
+}
+export function productionRecipes(
+  rows: CatalogRecipe[],
+  mastery?: Partial<CharacterProfile['mastery']>,
+): ProductionRecipe[] {
   return rows
     .filter((row) => !row.byproductOfItemId && row.inputs.length && row.outputs.length)
-    .map((row) => ({
-      id: row.key,
-      name: row.outputs[0].name,
-      method: row.type,
-      output: {
-        itemId: row.outputs[0].itemId,
-        quantity: productionQuantity(row.outputs[0].quantity),
-      },
-      ingredients: row.inputs.map((part) => ({
-        itemId: part.itemId,
-        quantity: productionQuantity(part.quantity),
-      })),
-      byproducts: row.outputs
-        .slice(1)
-        .map((part) => ({ itemId: part.itemId, quantity: productionQuantity(part.quantity) })),
-    }));
+    .map((row) => {
+      const primary = row.outputs[0];
+      const skill = lifeSkillForRecipe(row.type);
+      const level = productionMastery(row.type, mastery);
+      const knownProcessingInputs = row.inputs.every((part) => {
+        const quantity = productionQuantity(part.quantity);
+        return typeof quantity === 'number' && quantity > 0;
+      });
+      const batch =
+        skill === 'processing' && knownProcessingInputs ? processingBatchCount(level) : 1;
+      const hasFixedYield = fixedRecipeYield(row, primary.itemId) !== null;
+      const masteryYield =
+        !hasFixedYield && recipeMasteryCanChangeOutput(row, primary.itemId)
+          ? resolveDefaultYield(row, primary.itemId, level)
+          : null;
+      const baseOutput = productionQuantity(primary.quantity);
+
+      return {
+        id: row.key,
+        name: primary.name,
+        method: row.type,
+        output: {
+          itemId: primary.itemId,
+          quantity: masteryYield ?? scaleProductionQuantity(baseOutput, hasFixedYield ? 1 : batch),
+        },
+        ingredients: row.inputs.map((part) => ({
+          itemId: part.itemId,
+          quantity: scaleProductionQuantity(productionQuantity(part.quantity), batch),
+        })),
+        byproducts: row.outputs.slice(1).map((part) => ({
+          itemId: part.itemId,
+          quantity: scaleProductionQuantity(productionQuantity(part.quantity), batch),
+        })),
+      };
+    });
 }
 @Component({
   selector: 'app-recommendations-page',
@@ -100,11 +199,13 @@ export class RecommendationsPage implements OnDestroy {
   readonly store = inject(WorkspaceStore);
   readonly api = inject(ProductionApi);
   readonly catalogApi = inject(CatalogApiService);
+  private readonly marketCache = inject(MarketCacheService);
   readonly snapshot = signal<ProductionCatalogResponse | null>(null);
   readonly selected = signal('');
   readonly message = signal('');
   readonly busy = signal(false);
   readonly quotes = signal<Quotes>({});
+  readonly npcPrices = signal(new Map<number, NpcPurchasePrice>());
   readonly plans = signal<{ ranked: ProductionPlan[]; incomplete: ProductionPlan[] } | null>(null);
   readonly progress = signal({ done: 0, total: 0 });
   readonly page = signal(1);
@@ -127,7 +228,9 @@ export class RecommendationsPage implements OnDestroy {
   readonly profile = computed(
     () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter(),
   );
-  readonly recipes = computed(() => productionRecipes(this.snapshot()?.recipes ?? []));
+  readonly recipes = computed(() =>
+    productionRecipes(this.snapshot()?.recipes ?? [], this.profile()?.mastery),
+  );
   readonly methods = computed(() => [...new Set(this.recipes().map((row) => row.method))].sort());
   readonly candidates = computed(() =>
     this.recipes().filter(
@@ -165,6 +268,7 @@ export class RecommendationsPage implements OnDestroy {
       this.recipes().flatMap((row) => [
         row.output.itemId,
         ...row.ingredients.map((part) => part.itemId),
+        ...(row.byproducts ?? []).map((part) => part.itemId),
       ]),
     );
     return (this.snapshot()?.items ?? []).filter((item) => ids.has(item.id));
@@ -190,7 +294,7 @@ export class RecommendationsPage implements OnDestroy {
   readonly resultPages = computed(() =>
     Math.max(1, Math.ceil((this.plans()?.ranked.length ?? 0) / 20)),
   );
-  calibration: Record<string, { seconds: number | null; yield: number | null }> = {};
+  calibration: Record<string, { seconds: number | null }> = {};
   recipeCalibration: Record<string, { seconds: number | null; yield: number | null }> = {};
   choices: Record<number, ProductionChoice> = {};
   customRecipes: Record<number, string> = {};
@@ -210,7 +314,7 @@ export class RecommendationsPage implements OnDestroy {
         this.quotes.set({});
         this.plans.set(null);
         this.calibration = Object.fromEntries(
-          this.methods().map((method) => [method, { seconds: null, yield: null }]),
+          this.methods().map((method) => [method, { seconds: null }]),
         );
         this.choices = {};
         this.customRecipes = {};
@@ -249,13 +353,31 @@ export class RecommendationsPage implements OnDestroy {
       this.loadedRegion = region;
       this.plans.set(null);
       this.quotes.set({});
+      this.npcPrices.set(new Map());
       this.quoteQueue = [];
       this.recipeCalibration = {};
       this.calibration = Object.fromEntries(
-        this.methods().map((method) => [method, { seconds: null, yield: null }]),
+        this.methods().map((method) => [method, { seconds: null }]),
       );
+      if (result.dataset?.version) {
+        const itemIds = this.materialItems()
+          .filter(hasNpcPurchaseEvidence)
+          .map((item) => item.id);
+        try {
+          const prices = await firstValueFrom(
+            this.catalogApi.getNpcPurchasePrices(itemIds, result.dataset.version, region),
+          );
+          if (this.store.data().region !== region) {
+            this.message.set('A região mudou durante a consulta. Carregue o catálogo novamente.');
+            return;
+          }
+          this.npcPrices.set(prices);
+        } catch {
+          // Keep the market and manual quote paths available when NPC data cannot be verified.
+        }
+      }
       this.message.set(
-        `${this.recipes().length} receitas carregadas. Informe tempo e rendimento para comparar.`,
+        `${this.recipes().length} receitas carregadas. A maestria estima rendimentos e lotes; preços NPC do catálogo ficam disponíveis como custo alternativo. Informe o tempo para comparar lucro por hora.`,
       );
     } catch {
       this.message.set('Não foi possível carregar as receitas. Tente novamente.');
@@ -293,12 +415,11 @@ export class RecommendationsPage implements OnDestroy {
             : productionDemoCalibrations.processing;
       this.calibration[method] = {
         seconds: demo.seconds,
-        yield: 'expectedYield' in demo ? demo.expectedYield : null,
       };
     }
     this.search.set('Edania');
     this.message.set(
-      productionDemoExplanation + ' Tempos e rendimentos preenchidos são exemplos ajustáveis.',
+      productionDemoExplanation + ' O tempo preenchido é uma premissa de teste ajustável.',
     );
   }
   async refreshQuotes(resume = false) {
@@ -317,29 +438,30 @@ export class RecommendationsPage implements OnDestroy {
     try {
       while (this.quoteQueue.length) {
         const batch = this.quoteQueue.slice(0, 100);
-        const result = await firstValueFrom(this.api.quotes(this.loadedRegion, batch));
+        const result = await firstValueFrom(
+          this.marketCache
+            .resolveProductionQuotes(batch, this.loadedRegion as Region)
+            .pipe(takeLast(1)),
+        );
         if (this.store.data().region !== this.loadedRegion)
           throw new Error('A região mudou durante a consulta.');
-        if (result.cacheStatus === 'stale')
-          throw new Error('A fonte retornou dados indisponíveis ou antigos.');
         this.quotes.update((previous) => {
           const next = { ...previous };
           for (const id of batch) if (next[id]?.source === 'market') delete next[id];
-          for (const quote of result.items)
-            if (quote.price && quote.price !== '0' && batch.includes(quote.itemId))
-              next[quote.itemId] = {
-                unitPrice: quote.price,
-                available: quote.stock,
-                source: 'market',
-                observedAt: result.fetchedAt,
-              };
+          for (const [id, quote] of result) {
+            if (!batch.includes(id) || next[id]?.source === 'manual') continue;
+            const entry = this.marketCache.getCachedQuoteEntry(id, this.loadedRegion as Region);
+            const observedAt = entry ? new Date(entry.fetchedAt).toISOString() : null;
+            const mapped = recommendationMarketQuote(quote, observedAt);
+            if (mapped) next[id] = mapped;
+          }
           return next;
         });
         this.quoteQueue.splice(0, batch.length);
         this.progress.update((row) => ({ ...row, done: row.done + batch.length }));
       }
       this.message.set(
-        `Consulta concluída: ${Object.keys(this.quotes()).length} preços disponíveis. Itens sem oferta ficam pendentes.`,
+        `Consulta concluída: ${Object.keys(this.quotes()).length} preços de mercado disponíveis. O cache foi reutilizado; itens sem cotação, máxima ou preço NPC permanecem pendentes.`,
       );
     } catch {
       this.message.set(
@@ -361,6 +483,7 @@ export class RecommendationsPage implements OnDestroy {
           unitPrice: value,
           available: null,
           source: 'manual',
+          basis: 'manual',
           observedAt: new Date().toISOString(),
         };
       else delete next[itemId];
@@ -407,13 +530,12 @@ export class RecommendationsPage implements OnDestroy {
     for (const recipe of recipes) {
       const config = this.calibration[recipe.method];
       const specific = this.recipeCalibration[recipe.id];
-      const variable = recipe.method === 'ALCHEMY' || recipe.method === 'COOK';
+      const baseSeconds = specific?.seconds ?? config?.seconds ?? undefined;
       estimates[recipe.id] = {
         source: 'informed',
-        craftSeconds: specific?.seconds ?? config?.seconds ?? undefined,
-        expectedYield: specific?.yield ?? (variable ? (config?.yield ?? undefined) : undefined),
+        craftSeconds: productionCraftSeconds(recipe.method, baseSeconds, player.mastery),
+        expectedYield: specific?.yield ?? undefined,
       };
-      if (variable) recipe.output.quantity = null;
     }
     const weights: Record<number, number> = {};
     for (const item of this.snapshot()!.items)
@@ -428,7 +550,7 @@ export class RecommendationsPage implements OnDestroy {
     const run = ++this.comparisonRun;
     const input: ProductionPlannerInput = {
       recipes,
-      quotes: this.quotes(),
+      quotes: this.comparisonQuotes(),
       estimates,
       inventory: availableInventory(this.store.data().personalPlans, this.store.data().inventory)
         .filter((row) => row.region === player.region && row.itemId)
@@ -447,6 +569,7 @@ export class RecommendationsPage implements OnDestroy {
       tax: { ...this.store.data().taxOptions, valuePack: this.valuePack },
       now: new Date().toISOString(),
       maxCrafts: 10000,
+      enforceMarketAvailability: false,
     };
     const result = { ranked: [] as ProductionPlan[], incomplete: [] as ProductionPlan[] };
     this.busy.set(true);
@@ -483,12 +606,49 @@ export class RecommendationsPage implements OnDestroy {
       if (run === this.comparisonRun) this.busy.set(false);
     }
   }
+  quoteFor(itemId: number): RecommendationQuote | undefined {
+    const quote = this.quotes()[itemId];
+    if (quote) return quote;
+    const npc = this.npcPrices().get(itemId);
+    return npc
+      ? {
+          unitPrice: npc.unitPrice,
+          available: null,
+          observedAt: npc.verifiedAt,
+          source: 'npc',
+          basis: 'npc',
+        }
+      : undefined;
+  }
+  quoteOrigin(itemId: number): string {
+    const quote = this.quoteFor(itemId);
+    if (!quote) return 'Pendente';
+    if (quote.source === 'npc') return 'NPC · preço do catálogo';
+    if (quote.source === 'manual') return 'Premissa manual';
+    if (quote.basis === 'maximum') return 'Máxima do mercado · sem estoque';
+    return `Mercado · ${quote.available ?? 'estoque não informado'}`;
+  }
+  private comparisonQuotes(): Quotes {
+    const quotes = { ...this.quotes() };
+    for (const [itemId, quote] of this.npcPrices()) {
+      if (quotes[itemId]) continue;
+      quotes[itemId] = {
+        unitPrice: quote.unitPrice,
+        available: null,
+        observedAt: quote.verifiedAt,
+        source: 'npc',
+        basis: 'npc',
+      };
+    }
+    return quotes;
+  }
   private comparisonContext() {
     return JSON.stringify({
       workspace: this.store.data(),
       player: this.profile(),
       demo: this.store.demoActive(),
       quotes: this.quotes(),
+      npcPrices: [...this.npcPrices()],
       calibration: this.calibration,
       recipeCalibration: this.recipeCalibration,
       choices: this.choices,
