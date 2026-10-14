@@ -1,9 +1,9 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { BehaviorSubject, of } from 'rxjs';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
@@ -66,6 +66,63 @@ describe('Universal recipe explorer', () => {
     );
     expect(fixture.nativeElement.querySelector('.dataset-provenance')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.mode-toggle')).toBeNull();
+    http.verify();
+  });
+  it('changes the selected recipe from the URL without reloading the item and recipe data', async () => {
+    const firstKey = '1'.repeat(64);
+    const secondKey = '2'.repeat(64);
+    const queryParams = new BehaviorSubject(convertToParamMap({ recipe: firstKey }));
+    const fixture = await renderComponent(RecipesPage, {}, [
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          paramMap: of(convertToParamMap({ id: '5301' })),
+          queryParamMap: queryParams,
+        },
+      },
+    ]);
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne((request) => request.url.endsWith('/items/5301'))
+      .flush({
+        item: {
+          id: 5301,
+          name: 'Reagente Líquido Limpo',
+          categories: [],
+          iconUrl: null,
+          sourceData: {},
+        },
+        dataset,
+      });
+    const recipes = [firstKey, secondKey].map((key, index) => ({
+      key,
+      type: 'ALCHEMY',
+      station: null,
+      inputs: [{ itemId: 5439 + index, name: `Material ${index}`, quantity: '1' }],
+      outputs: [{ itemId: 5301, name: 'Reagente Líquido Limpo', quantity: null }],
+    }));
+    http
+      .expectOne((request) => request.url.endsWith('/items/5301/recipes'))
+      .flush({
+        recipes,
+        total: recipes.length,
+        dataset,
+        direction: 'produces',
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fixture.componentInstance.setMethod(recipes[1]);
+    queryParams.next(convertToParamMap({ recipe: secondKey }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.recipe()?.key).toBe(secondKey);
+    expect(fixture.componentInstance.loading()).toBe(false);
+    queryParams.next(convertToParamMap({ recipe: firstKey }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.recipe()?.key).toBe(firstKey);
+    expect(fixture.componentInstance.loading()).toBe(false);
     http.verify();
   });
   it('starts with the largest verified recipe batch and keeps smaller batches selectable', async () => {
