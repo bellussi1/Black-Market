@@ -20,46 +20,48 @@
         e fazer backup dos seus dados neste navegador.
       </p>
     </section>
-  } @else if (!identity.email()) {
+  } @else if (!identity.authenticated()) {
     <section hlmCard class="panel">
-      <h2 i18n>Entrar sem senha</h2>
-      <label class="field"
-        ><span i18n>Seu e-mail</span
-        ><input
-          hlmInput
-          type="email"
-          name="email"
-          autocomplete="email"
-          spellcheck="false"
-          [(ngModel)]="email"
-      /></label>
+      <h2 i18n>Entre com sua conta social</h2>
+      <p i18n>
+        Use Google ou Steam. O Black Market não cria senha nem pede acesso à sua conta do jogo.
+      </p>
       <div class="action-row">
-        <button
-          hlmBtn
-          variant="outline"
-          class="btn"
-          type="button"
-          (click)="signIn()"
-          [disabled]="loading() || !email"
-          i18n
-        >
-          Receber link de acesso</button
-        ><button
-          hlmBtn
-          variant="outline"
-          class="btn subtle"
-          type="button"
-          (click)="google()"
-          [disabled]="loading()"
-          i18n
-        >
-          Entrar com Google
-        </button>
+        @if (identity.googleEnabled()) {
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn"
+            type="button"
+            (click)="google()"
+            [disabled]="loading()"
+            i18n
+          >
+            Entrar com Google
+          </button>
+        }
+        @if (identity.steamEnabled()) {
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="steam()"
+            [disabled]="loading()"
+            i18n
+          >
+            Entrar com Steam
+          </button>
+        }
       </div>
     </section>
   } @else {
     <section hlmCard class="panel">
-      <h2>{{ identity.email() }}</h2>
+      <h2>{{ identity.displayName() || identity.email() || 'Conta Steam' }}</h2>
+      @if (identity.email()) {
+        <p>{{ identity.email() }}</p>
+      }
+      <p class="help" i18n>Provedores vinculados: {{ linkedProviderLabels() || 'Steam' }}</p>
       <div class="action-row">
         <button
           hlmBtn
@@ -76,12 +78,38 @@
           variant="outline"
           class="btn subtle"
           type="button"
-          (click)="identity.signOut()"
+          (click)="signOut()"
           [disabled]="loading()"
           i18n
         >
           Sair da conta
         </button>
+        @if (identity.googleEnabled() && !identity.providers().includes('google')) {
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="linkGoogle()"
+            [disabled]="loading()"
+            i18n
+          >
+            Vincular Google
+          </button>
+        }
+        @if (identity.steamEnabled() && !identity.providers().includes('steam')) {
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="linkSteam()"
+            [disabled]="loading()"
+            i18n
+          >
+            Vincular Steam
+          </button>
+        }
       </div>
       <p class="help" i18n>
         Entrar não substitui seus dados automaticamente. Consulte a cópia da conta e escolha o que

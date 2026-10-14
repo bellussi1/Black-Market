@@ -141,7 +141,7 @@ app.use((_req, res, next) => {
     for (const [name, value] of Object.entries(
       securityHeaders(
         process.env['PUBLIC_SITE_URL'],
-        process.env['SUPABASE_URL'],
+        process.env['FIREBASE_AUTH_DOMAIN'],
         process.env['CATALOG_ASSETS_PUBLIC_URL'],
       ),
     ))

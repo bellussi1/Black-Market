@@ -89,6 +89,7 @@ services:
     command: ['pnpm', '--filter', '@bdo/web', 'start']
     environment:
       API_BASE_URL: http://api:3000
+      FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-}
       NODE_ENV: development
       NG_ALLOWED_HOSTS: localhost,127.0.0.1
     ports:

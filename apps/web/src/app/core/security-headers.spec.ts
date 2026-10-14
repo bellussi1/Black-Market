@@ -6,7 +6,7 @@ describe('Public page security headers', () => {
   it('restricts scripts, frames and capabilities while allowing requested OCR', () => {
     const headers = securityHeaders(
       'https://platform.example',
-      'https://identity.example',
+      'identity.example.firebaseapp.com',
       'https://assets.example/version',
     );
     const csp = headers['Content-Security-Policy'];
@@ -15,7 +15,8 @@ describe('Public page security headers', () => {
     expect(scripts.split(' ')).not.toContain("'unsafe-eval'");
     expect(scripts).toContain("'wasm-unsafe-eval'");
     expect(csp).toContain("frame-ancestors 'none'");
-    expect(csp).toContain('https://identity.example');
+    expect(csp).toContain('https://identity.example.firebaseapp.com');
+    expect(csp).toContain('https://identitytoolkit.googleapis.com');
     expect(csp).not.toContain('*.supabase.co');
     expect(csp).toContain('https://assets.example');
     expect(headers['X-Content-Type-Options']).toBe('nosniff');

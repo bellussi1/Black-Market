@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -10,7 +11,6 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
-import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -22,12 +22,13 @@ import { WorkspaceStore } from '../../core/workspace-store';
 @Component({
   selector: 'app-account-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, FormsModule],
+  imports: [HlmCard, HlmButton, FormsModule],
   templateUrl: './account-page.html',
 })
 export class AccountPage {
   private readonly analytics = inject(AnalyticsService);
   readonly identity = inject(IdentityService);
+  private readonly document = inject(DOCUMENT);
   readonly store = inject(WorkspaceStore);
   private readonly http = inject(HttpClient);
   readonly loading = signal(false);
@@ -35,7 +36,6 @@ export class AccountPage {
   readonly snapshot = signal<Workspace | null>(null);
   readonly cloudVersion = signal<number | null>(null);
   readonly updatedAt = signal('');
-  email = '';
   confirmDownload = false;
   confirmUpload = false;
   confirmDelete = false;
@@ -50,24 +50,25 @@ export class AccountPage {
         this.confirmDelete = false;
       });
     });
-    void this.identity
-      .initialize()
-      .catch(() =>
-        this.message.set('Não foi possível consultar sua conta. Tente novamente mais tarde.'),
-      );
+    const callback = this.consumeSteamCallback();
+    void this.identity.initialize().then(
+      () => this.finishSteamCallback(callback),
+      () => this.message.set('Não foi possível consultar sua conta. Tente novamente mais tarde.'),
+    );
   }
-  private async perform(action: () => Promise<void>) {
+  private async perform(action: () => Promise<void>, trackSyncFailure = true) {
     if (this.loading()) return;
     this.loading.set(true);
     this.message.set('');
     try {
       await action();
     } catch (error) {
-      this.analytics.capture('journey_failed', {
-        feature: 'account',
-        action: 'sync',
-        status: 'failed',
-      });
+      if (trackSyncFailure)
+        this.analytics.capture('journey_failed', {
+          feature: 'account',
+          action: 'sync',
+          status: 'failed',
+        });
       this.message.set(
         error instanceof HttpErrorResponse
           ? error.status === 409
@@ -79,14 +80,62 @@ export class AccountPage {
       this.loading.set(false);
     }
   }
-  async signIn() {
-    await this.perform(async () => {
-      await this.identity.signIn(this.email);
-      this.message.set('Confira seu e-mail e abra o link de acesso.');
-    });
-  }
   async google() {
-    await this.perform(() => this.identity.google());
+    await this.perform(() => this.identity.google(), false);
+  }
+  async steam() {
+    await this.perform(() => this.identity.steam(), false);
+  }
+  async linkGoogle() {
+    await this.perform(async () => {
+      await this.identity.linkGoogle();
+      this.message.set('Conta Google vinculada.');
+    }, false);
+  }
+  async linkSteam() {
+    await this.perform(() => this.identity.linkSteam(), false);
+  }
+  async signOut() {
+    await this.perform(async () => {
+      await this.identity.signOut();
+      this.message.set('Você saiu da sua conta.');
+    }, false);
+  }
+  private consumeSteamCallback(): { kind: 'code'; code: string } | { kind: string } | null {
+    const browser = this.document.defaultView;
+    if (!browser) return null;
+    const hash = browser.location.hash;
+    if (!hash.startsWith('#steam-')) return null;
+
+    browser.history.replaceState(
+      browser.history.state,
+      '',
+      browser.location.pathname + browser.location.search,
+    );
+    const code = hash.match(/^#steam-code=([A-Za-z0-9_-]{43})$/)?.[1];
+    if (code) return { kind: 'code', code };
+    if (hash === '#steam-linked') return { kind: 'linked' };
+    if (hash === '#steam-conflict') return { kind: 'conflict' };
+    return { kind: 'error' };
+  }
+  private async finishSteamCallback(callback: { kind: string; code?: string } | null) {
+    if (!callback) return;
+    if (callback.kind === 'linked') {
+      this.message.set('Conta Steam vinculada.');
+      return;
+    }
+    if (callback.kind === 'conflict') {
+      this.message.set('Esta conta Steam já está vinculada a outro usuário.');
+      return;
+    }
+    if (callback.kind !== 'code' || !callback.code) {
+      this.message.set('Não foi possível confirmar o acesso Steam. Tente entrar novamente.');
+      return;
+    }
+    await this.perform(async () => {
+      await this.identity.exchangeSteamCode(callback.code!);
+      this.message.set('Login Steam concluído.');
+    }, false);
   }
   async load() {
     await this.perform(async () => {
@@ -176,5 +225,11 @@ export class AccountPage {
       plans: state.personalPlans.length,
       sessions: state.sessions.length,
     };
+  }
+  linkedProviderLabels(): string {
+    return this.identity
+      .providers()
+      .map((provider) => (provider === 'google' ? 'Google' : 'Steam'))
+      .join(' e ');
   }
 }

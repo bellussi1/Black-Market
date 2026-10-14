@@ -116,7 +116,7 @@
 - [x] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
 - [x] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
 - [x] Run focused API tests (54/54), lint, typecheck, Drizzle check and `git diff --check`.
-- [ ] Commit as `feat(auth): add verified Steam OpenID login`.
+- [x] Commit as `feat(auth): add verified Steam OpenID login` (`0a0cdbd`).
 
 ### Task 4: Google/Steam account UI and Firebase browser session
 
@@ -126,23 +126,24 @@
 - Modify: `apps/web/src/app/core/identity.service.ts`
 - Create: `apps/web/src/app/core/identity.service.spec.ts`
 - Modify: `apps/web/src/app/features/account/account-page.ts`, `account-page.html`, styles/specs as needed
-- Modify: `apps/web/src/app/core/security-headers.ts`, `apps/web/src/app/core/security-headers.spec.ts`, `apps/web/src/server.ts`
+- Modify: `apps/web/src/security-headers.ts`, `apps/web/src/security-headers.spec.ts`, `apps/web/src/server.ts`
 - Modify: `apps/web/src/locale/messages.pt-BR.xlf` if extracting translations changes its message catalog
 
 **Interfaces:**
 
 - `IdentityService` exposes `enabled`, `ready`, `authenticated`, `userId`, `email`, `displayName`, `providers` and `canManageRoadmap` signals.
-- `IdentityService.google()` uses Firebase Google popup sign-in; `steam()` creates a random PKCE verifier/challenge, stores the verifier in sessionStorage and navigates to the API; `exchangeSteamCode(code, verifier)` consumes the exchange and calls Firebase `signInWithCustomToken`; `linkGoogle()` and `linkSteam()` prove and attach a provider; `token()` returns Firebase ID token.
+- `IdentityService.google()` uses Firebase Google popup sign-in; `steam()` creates a random PKCE verifier/challenge, stores the verifier in sessionStorage and navigates to the API; `exchangeSteamCode(code)` consumes the one-time exchange with the per-tab verifier and calls Firebase `signInWithCustomToken`; `linkGoogle()` and `linkSteam()` prove and attach a provider; `token()` returns Firebase ID token.
 - Auth initialization is browser-only and uses session persistence to preserve the current per-tab session behavior. No Firebase app or credential is initialized during SSR.
 
-- [ ] Add `identity.service.spec.ts` cases `keeps public browsing enabled when identity is unavailable`, `signs in with Google`, `exchanges a Steam code for a Firebase session`, `restores a session without assuming an email`, `links Steam through the API`, and `links Google to the current Firebase user`; add `account-page.spec.ts` cases `offers only Google and Steam when signed out`, `shows a signed-in Steam user without an email`, and `removes the Steam exchange fragment before exchanging it`.
-- [ ] Run `pnpm --filter @bdo/web exec ng test --watch=false --include=src/app/core/identity.service.spec.ts --include=src/app/features/account/account-page.spec.ts` and confirm the new cases fail before implementation.
-- [ ] Replace the Supabase client with modular Firebase Web SDK initialization from `/identity/config`; keep initialization browser-only and session persistence explicit.
-- [ ] Replace the account form with Google and Steam actions and show linked providers/actions based on `/identity/me`; render authenticated state based on UID, not e-mail presence.
-- [ ] Restore the account session after callback, remove exchange data from the address bar before network calls, display safe success/failure messages, and refresh ID token after provider linking.
-- [ ] Update CSP connect/frame/form origins for Firebase Auth and Google popup flow; remove Supabase origins. Keep CSP sources limited to required Firebase endpoints.
-- [ ] Remove Supabase Web dependency after no consumers remain; update translations.
-- [ ] Run focused Angular tests, Angular development build, lint and typecheck.
+- [x] Add `identity.service.spec.ts` cases `keeps public browsing enabled when identity is unavailable`, `signs in with Google`, `starts Steam sign-in with a per-tab PKCE verifier`, `exchanges a Steam code for a Firebase session`, `restores a session without assuming an email`, `links Steam through the API`, and `links Google to the current Firebase user`; add account-page cases `offers only Google and Steam when signed out`, `shows a signed-in Steam user without requiring an email`, and `removes the Steam exchange fragment before exchanging the code`.
+- [x] Run focused Angular tests before and after implementation; the initial run failed on missing Firebase methods/signals, then all new cases passed.
+- [x] Replace the Supabase client with modular Firebase Web SDK initialization from `/identity/config`; keep initialization browser-only and session persistence explicit.
+- [x] Replace the account form with Google and Steam actions and show linked providers/actions based on `/identity/me`; render authenticated state based on UID, not e-mail presence.
+- [x] Restore the account session after callback, remove exchange data from the address bar before network calls, and display safe success/failure messages. Provider linking confirms through the API and refreshes the profile.
+- [x] Update CSP connect/frame origins for Firebase Auth and Google popup flow; replace the old Supabase-origin dependency with the configured Firebase auth domain.
+- [x] Remove the Supabase Web dependency after confirming there are no remaining Web consumers; extract updated Portuguese translation catalog.
+- [x] Run focused Angular tests (17/17), development build/typecheck, lint and Compose validation for local/staging/production using placeholders for required external variables.
+- [ ] Commit as `feat(auth): add Google and Steam account UI`.
 - [ ] Commit as `feat(auth): add Google and Steam account UI`.
 
 ### Task 5: Staging-only test profile seed and operational handoff

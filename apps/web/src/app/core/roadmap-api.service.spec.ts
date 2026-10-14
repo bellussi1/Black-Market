@@ -26,7 +26,7 @@ describe('RoadmapApiService', () => {
     http.verify();
   });
 
-  it('uses a Supabase bearer token for management requests and saves', async () => {
+  it('uses a verified Firebase bearer token for management requests and saves', async () => {
     const token = vi.fn().mockResolvedValue('verified-session');
     TestBed.configureTestingModule({
       providers: [

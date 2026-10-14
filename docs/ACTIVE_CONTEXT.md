@@ -1058,4 +1058,17 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Verificação**: 54 testes API direcionados passaram; `pnpm --filter @bdo/api lint`, `pnpm --filter @bdo/api typecheck`, `pnpm --filter @bdo/database db:check`, Prettier e `git diff --check` passaram. O primeiro lint sinalizou import sort em um spec; foi corrigido antes da repetição.
 - **Limite externo**: sem projeto/credenciais Firebase configurados, os testes validam as integrações mockadas e não comprovam autenticação real Steam/Google.
 - **Arquivos**: serviços OpenID, autenticação e storage Steam, controller de identidade e testes; migração/schema de tentativas; política CORS e limitador; serviço de identidade; plano e contexto.
-- **Próximo passo**: registrar o commit atômico `feat(auth): add verified Steam OpenID login`; depois continuar a UI da conta Firebase no Task 4.
+- **Commit**: `0a0cdbd feat(auth): add verified Steam OpenID login`.
+- **Próximo passo**: implementar UI Firebase para Google/Steam e vínculo explícito na Task 4.
+
+## 95. Sessão Firebase no navegador e acesso Google/Steam (Codex, 14/10/2026)
+
+- **SDK e sessão**: cliente Web usa Firebase modular, inicializado somente no navegador a partir de `/identity/config`, com persistência limitada à sessão/aba. Visitantes continuam usando as páginas públicas sem inicializar Firebase.
+- **Login**: a página oferece apenas Google e Steam. Google usa popup Firebase; Steam cria verifier PKCE S256 em `sessionStorage`, segue para a API e troca o código de uso único por Firebase custom token. O fragmento com código é removido do histórico antes da chamada de troca.
+- **Contas/vínculos**: estado autenticado é baseado no UID e funciona sem e-mail, inclusive para Steam. Provedores ligados vêm de `/identity/me`; as ações de vincular Google/Steam usam a sessão atual e confirmam o vínculo no backend.
+- **CSP/Compose**: CSP permite os endpoints de Auth do Firebase/Google e o auth domain configurado, sem depender de domínio Supabase. O domínio público `FIREBASE_AUTH_DOMAIN` chega ao servidor Web só para construir CSP; chaves e credenciais Admin permanecem na API.
+- **Dependências e idioma**: adicionado Firebase Web SDK e removido `@supabase/supabase-js` do Web após verificar ausência de consumidores; catálogo `messages.pt-BR.xlf` atualizado.
+- **Verificação**: 17 testes direcionados passaram; `pnpm --filter @bdo/web lint` e `typecheck` passaram; build Angular development passou; Compose local passou e staging/produção passaram com placeholders efêmeros. `git diff --check` e Prettier passaram. A extração de i18n concluiu com 1.452 mensagens.
+- **Limite de build**: `ng build --configuration production` ainda falha nos budgets configurados: bundle inicial 1,05 MB contra erro em 1,00 MB; `recipe-tree.scss` 38,77 KB contra limite de erro de 20 KB. A árvore não foi alterada neste trabalho; a validação para esta tarefa usa o build development aprovado no plano. Não há autenticação real verificada porque Firebase/domínio/credenciais ainda não foram configurados.
+- **Arquivos**: serviço/spec de identidade Web, página e spec de conta, política CSP/servidor, compose local/staging/produção, package/lock, teste do Roadmap, catálogo de tradução e plano/contexto.
+- **Próximo passo**: registrar o commit atômico `feat(auth): add Google and Steam account UI`; depois implementar seed de staging e handoff operacional na Task 5.
