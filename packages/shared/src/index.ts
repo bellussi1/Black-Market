@@ -8,6 +8,7 @@ export * from './life-skills';
 export * from './market-board';
 export * from './markets';
 export * from './platform';
+export * from './roadmap';
 
 export interface CursorPage<T> {
   items: T[];

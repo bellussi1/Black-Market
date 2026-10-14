@@ -1,4 +1,9 @@
-import { Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
@@ -27,6 +32,23 @@ export class IdentityService {
     };
   }
   async owner(authorization: string | undefined): Promise<string> {
+    return (await this.verifiedUser(authorization)).id;
+  }
+  async roadmapAdmin(authorization: string | undefined): Promise<string> {
+    const user = await this.verifiedUser(authorization);
+    const metadataResult = z.record(z.string(), z.unknown()).safeParse(user.app_metadata);
+    const metadata = metadataResult.success ? metadataResult.data : {};
+    const roles = metadata['roles'];
+    const role = metadata['role'];
+    const canEdit =
+      (Array.isArray(roles) &&
+        roles.some((value) => value === 'roadmap_admin' || value === 'admin')) ||
+      role === 'roadmap_admin' ||
+      role === 'admin';
+    if (!canEdit) throw new ForbiddenException('Você não tem permissão para editar o Roadmap.');
+    return user.id;
+  }
+  private async verifiedUser(authorization: string | undefined) {
     if (!this.client)
       throw new ServiceUnavailableException('A sincronização ainda não está disponível.');
     if (!authorization?.startsWith('Bearer ') || authorization.length > 8192)
@@ -35,7 +57,7 @@ export class IdentityService {
       const { data, error } = await this.client.auth.getUser(authorization.slice(7));
       if (error || !data.user || !z.string().uuid().safeParse(data.user.id).success)
         throw new Error('Invalid identity');
-      return data.user.id;
+      return data.user;
     } catch {
       throw new UnauthorizedException('Sua sessão expirou. Entre novamente.');
     }

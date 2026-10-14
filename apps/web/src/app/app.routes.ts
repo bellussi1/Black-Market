@@ -129,6 +129,23 @@ export const routes: Routes = [
       },
 
       {
+        path: 'roadmap/manage',
+        title: $localize`Black Market · Editar Roadmap`,
+        data: { private: true, noindex: true },
+        loadComponent: () =>
+          import('./features/roadmap/roadmap-manage-page').then(
+            (module) => module.RoadmapManagePage,
+          ),
+      },
+
+      {
+        path: 'roadmap',
+        title: $localize`Black Market · Roadmap`,
+        loadComponent: () =>
+          import('./features/roadmap/roadmap-page').then((module) => module.RoadmapPage),
+      },
+
+      {
         path: 'recommendations',
 
         title: $localize`Black Market · O que fazer`,

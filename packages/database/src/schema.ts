@@ -1,5 +1,7 @@
 import { sql, type SQLWrapper } from 'drizzle-orm';
 import {
+  boolean,
+  check,
   foreignKey,
   index,
   integer,
@@ -17,6 +19,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const datasetStatus = pgEnum('dataset_status', ['loading', 'active', 'archived', 'failed']);
+export const roadmapEntryKind = pgEnum('roadmap_entry_kind', ['flow', 'pillar']);
 
 /** Keep the indexed expression identical to the catalog query expression. */
 export function catalogNameExpression(name: SQLWrapper) {
@@ -341,6 +344,30 @@ export const userWorkspaces = pgTable('user_workspaces', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const roadmapEntries = pgTable(
+  'roadmap_entries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 64 }).notNull(),
+    kind: roadmapEntryKind('kind').notNull(),
+    sortOrder: integer('sort_order').notNull(),
+    title: varchar('title', { length: 120 }).notNull(),
+    summary: varchar('summary', { length: 280 }).notNull(),
+    description: text('description').notNull().default(''),
+    statusLabel: varchar('status_label', { length: 60 }),
+    icon: varchar('icon', { length: 64 }).notNull(),
+    featured: boolean('featured').notNull().default(false),
+    links: jsonb('links').$type<Array<{ label: string; path: string }>>().notNull().default([]),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('roadmap_entries_slug_uidx').on(table.slug),
+    uniqueIndex('roadmap_entries_kind_order_uidx').on(table.kind, table.sortOrder),
+    check('roadmap_entries_order_check', sql`${table.sortOrder} >= 0`),
+    check('roadmap_entries_slug_check', sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
+  ],
+);
+
 export const marketSnapshots = pgTable(
   'market_snapshots',
   {
@@ -368,6 +395,7 @@ export const schema = {
   referenceRecords,
   referenceCollections,
   userWorkspaces,
+  roadmapEntries,
   marketSnapshots,
   categories,
   categoryTranslations,
@@ -385,6 +413,7 @@ export const schema = {
 
 export type DatasetVersion = typeof datasetVersions.$inferSelect;
 export type Item = typeof items.$inferSelect;
+export type RoadmapEntryRecord = typeof roadmapEntries.$inferSelect;
 export type ItemVersion = typeof itemVersions.$inferSelect;
 export type ItemTranslation = typeof itemTranslations.$inferSelect;
 export type Recipe = typeof recipes.$inferSelect;

@@ -6,6 +6,9 @@ describe('unified page metadata', () => {
   it('indexes item details under Mercado and keeps family and storage private', () => {
     expect(isPublicSeoPath('/market/items/5301')).toBe(true);
     expect(publicDescription('/market/items/5301')).toContain('Mercado');
+    expect(isPublicSeoPath('/roadmap')).toBe(true);
+    expect(publicDescription('/roadmap')).toContain('Crafting');
+    expect(isPublicSeoPath('/crafting')).toBe(true);
     for (const path of ['/family', '/storage', '/inventory', '/gear', '/settings']) {
       expect(isPublicSeoPath(path)).toBe(false);
     }

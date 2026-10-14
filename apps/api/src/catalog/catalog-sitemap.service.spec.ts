@@ -15,11 +15,12 @@ describe('Screenshot MVP public sitemap', () => {
     const xml = await service().page('public', 1);
     expect(xml).toContain('/market');
     expect(xml).toContain('/recipes');
+    expect(xml).toContain('/crafting');
+    expect(xml).toContain('/roadmap');
     expect(xml).toContain('/privacidade');
     for (const path of [
       '/reference',
       '/world',
-      '/crafting',
       '/gear',
       '/inventory',
       '/storage',

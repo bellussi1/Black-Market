@@ -24,10 +24,14 @@ describe('workspace navigation', () => {
     expect(paths.filter((path) => path === '/storage')).toHaveLength(1);
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/roadmap')).toHaveLength(1);
     for (const path of ['/inventory', '/profile', '/gear', '/database/items', '/settings']) {
       expect(paths).not.toContain(path);
     }
     expect(nav.textContent).toContain('Armazém');
     expect(nav.textContent).toContain('Família');
+    expect(nav.textContent).toContain('Calcular produção');
+    expect(nav.textContent).toContain('Roadmap');
   });
 });

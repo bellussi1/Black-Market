@@ -83,6 +83,7 @@ export class CatalogSitemapService {
         '/',
         '/sobre',
         '/recipes',
+        '/roadmap',
         '/reference/npcs',
         '/reference/quests',
         '/reference/knowledge',

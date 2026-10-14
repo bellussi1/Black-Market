@@ -161,10 +161,12 @@ export class WorkspaceLayout {
         { path: '/scans', label: 'Importar capturas', icon: 'lucideScanLine' },
         { path: '/market', label: 'Mercado', icon: 'lucideStore' },
         { path: '/recipes', label: 'Explorar receitas', icon: 'lucideBookOpenText' },
+        { path: '/crafting', label: 'Calcular produção', icon: 'lucideHammer' },
         { path: '/recommendations', label: 'O que fazer', icon: 'lucideCompass' },
         { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse' },
         { path: '/family', label: 'Família', icon: 'lucideUsersRound' },
         { path: '/shopping', label: 'Lista de materiais', icon: 'lucideListChecks' },
+        { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
       ]
     : [
         { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
@@ -236,6 +238,8 @@ export class WorkspaceLayout {
         { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
 
         { path: '/account', label: $localize`Minha conta`, icon: 'lucideUserRound' },
+
+        { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
       ],
     },
   ]

@@ -30,6 +30,30 @@ describe('Identity boundary', () => {
     getUser.mockResolvedValue({ data: { user: { id: 'attacker' } }, error: null });
     await expect(service().owner('Bearer credential')).rejects.toThrow('sessão expirou');
   });
+  it('allows roadmap edits only for server-verified admin roles', async () => {
+    getUser.mockResolvedValue({
+      data: {
+        user: {
+          id: '00000000-0000-4000-8000-000000000001',
+          app_metadata: { roles: ['roadmap_admin'] },
+        },
+      },
+      error: null,
+    });
+    await expect(service().roadmapAdmin('Bearer credential')).resolves.toBe(
+      '00000000-0000-4000-8000-000000000001',
+    );
+    getUser.mockResolvedValue({
+      data: {
+        user: {
+          id: '00000000-0000-4000-8000-000000000001',
+          app_metadata: { roles: [] },
+        },
+      },
+      error: null,
+    });
+    await expect(service().roadmapAdmin('Bearer credential')).rejects.toThrow('permissão');
+  });
   it('keeps disabled configuration closed', async () => {
     const value = new IdentityService(new ConfigService());
     expect(value.publicConfig()).toEqual({ enabled: false, url: null, publicKey: null });

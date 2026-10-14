@@ -1,0 +1,344 @@
+<section class="tool-page roadmap-admin" aria-labelledby="roadmap-admin-title">
+  <header class="tool-heading roadmap-admin-heading">
+    <div>
+      <p class="tool-kicker" i18n>CONTEÚDO PERSISTIDO</p>
+      <h1 id="roadmap-admin-title" i18n>Editar Roadmap</h1>
+      <p i18n>
+        Edite o fluxo e os pilares exibidos na página pública. Esta tela não inclui prazos.
+      </p>
+    </div>
+    <a class="btn subtle" routerLink="/roadmap" i18n>Ver Roadmap público</a>
+  </header>
+
+  @if (!accessVerified()) {
+    <p class="roadmap-admin-notice" role="status" i18n>Verificando sua permissão…</p>
+  } @else if (!authorized()) {
+    <section class="roadmap-admin-notice roadmap-access-denied" role="alert">
+      @if (error()) {
+        <p>{{ error() }}</p>
+      } @else {
+        <h2 i18n>Acesso restrito</h2>
+        <p i18n>Entre com uma conta que tenha a permissão administrativa do Roadmap.</p>
+        <a class="btn subtle" routerLink="/account" i18n>Ir para minha conta</a>
+      }
+    </section>
+  } @else if (loading()) {
+    <p class="roadmap-admin-notice" role="status" i18n>Carregando conteúdo salvo…</p>
+  } @else {
+    <div class="roadmap-admin-toolbar">
+      <div>
+        @if (hasChanges()) {
+          <p class="roadmap-draft-state" role="status" i18n>Há alterações ainda não salvas.</p>
+        } @else {
+          <p class="roadmap-draft-state" i18n>Conteúdo conectado ao banco de dados.</p>
+        }
+      </div>
+      <div class="roadmap-admin-actions">
+        <button
+          class="btn subtle"
+          type="button"
+          (click)="load()"
+          [disabled]="saving() || hasChanges()"
+          i18n
+        >
+          Recarregar conteúdo
+        </button>
+        <button
+          class="btn roadmap-save"
+          type="button"
+          data-action="save"
+          (click)="save()"
+          [disabled]="saving() || !hasChanges()"
+          i18n
+        >
+          {{ saving() ? 'Salvando…' : 'Salvar alterações' }}
+        </button>
+      </div>
+    </div>
+
+    @if (message()) {
+      <p class="roadmap-admin-notice roadmap-admin-success" role="status">{{ message() }}</p>
+    }
+    @if (error()) {
+      <div class="roadmap-admin-notice roadmap-admin-error" role="alert">
+        <p>{{ error() }}</p>
+        @if (error().includes('alterado por outra pessoa')) {
+          <button
+            class="btn subtle"
+            type="button"
+            data-action="reload-discard"
+            (click)="load()"
+            i18n
+          >
+            Recarregar e descartar alterações
+          </button>
+        }
+      </div>
+    }
+
+    @for (group of editorGroups(); track group.kind) {
+      <section class="roadmap-admin-group" [attr.aria-labelledby]="'group-' + group.kind">
+        <header class="roadmap-admin-group-heading">
+          <div>
+            <p class="tool-kicker">{{ group.kicker }}</p>
+            <h2 [id]="'group-' + group.kind">{{ group.title }}</h2>
+          </div>
+          <button
+            class="btn subtle"
+            type="button"
+            [attr.data-action]="'add-' + group.kind"
+            (click)="addEntry(group.kind)"
+            [disabled]="entries().length >= 32"
+          >
+            {{ group.addLabel }}
+          </button>
+        </header>
+
+        @if (group.entries.length === 0) {
+          <p class="roadmap-admin-empty" i18n>Este grupo ainda não tem conteúdo.</p>
+        }
+
+        <div class="roadmap-editor-list">
+          @for (entry of group.entries; track entry.draftKey; let index = $index) {
+            <article
+              class="roadmap-editor-entry"
+              [attr.data-kind]="entry.kind"
+              [attr.data-entry-key]="entry.draftKey"
+            >
+              <header class="roadmap-editor-entry-heading">
+                <div class="roadmap-entry-heading-title">
+                  <ng-icon [name]="entry.icon" aria-hidden="true" />
+                  <div>
+                    <span class="roadmap-entry-type">{{ group.itemLabel }} {{ index + 1 }}</span>
+                    <h3>{{ entry.title || group.untitledLabel }}</h3>
+                  </div>
+                </div>
+                <div class="roadmap-entry-order" [attr.aria-label]="group.orderLabel">
+                  <button
+                    class="btn icon-button"
+                    type="button"
+                    data-action="move-up"
+                    [attr.aria-label]="
+                      group.moveUpLabel + ': ' + (entry.title || group.untitledLabel)
+                    "
+                    [disabled]="index === 0"
+                    (click)="move(group.kind, entry.draftKey, -1)"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    class="btn icon-button"
+                    type="button"
+                    data-action="move-down"
+                    [attr.aria-label]="
+                      group.moveDownLabel + ': ' + (entry.title || group.untitledLabel)
+                    "
+                    [disabled]="index === group.entries.length - 1"
+                    (click)="move(group.kind, entry.draftKey, 1)"
+                  >
+                    ↓
+                  </button>
+                  @if (pendingRemoval() === entry.draftKey) {
+                    <span class="roadmap-remove-confirm" role="group">
+                      <span i18n>Remover este conteúdo?</span>
+                      <button
+                        class="btn danger"
+                        type="button"
+                        data-action="confirm-remove"
+                        (click)="confirmRemove(entry.draftKey)"
+                        i18n
+                      >
+                        Confirmar remoção
+                      </button>
+                      <button class="btn subtle" type="button" (click)="cancelRemove()" i18n>
+                        Cancelar
+                      </button>
+                    </span>
+                  } @else {
+                    <button
+                      class="btn danger"
+                      type="button"
+                      data-action="remove"
+                      [attr.aria-label]="
+                        group.removeLabel + ': ' + (entry.title || group.untitledLabel)
+                      "
+                      (click)="requestRemove(entry.draftKey)"
+                      i18n
+                    >
+                      Remover
+                    </button>
+                  }
+                </div>
+              </header>
+
+              <div class="roadmap-editor-fields">
+                <label class="roadmap-field roadmap-field-short">
+                  <span i18n>Identificador</span>
+                  <input
+                    [ngModel]="entry.slug"
+                    (ngModelChange)="patch(entry.draftKey, { slug: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="slug"
+                    maxlength="64"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="id-em-minusculas"
+                  />
+                </label>
+                <label class="roadmap-field roadmap-field-short">
+                  <span i18n>Tipo</span>
+                  <select
+                    [ngModel]="entry.kind"
+                    (ngModelChange)="changeKind(entry.draftKey, $event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="kind"
+                  >
+                    <option value="flow" i18n>Etapa do fluxo</option>
+                    <option value="pillar" i18n>Pilar</option>
+                  </select>
+                </label>
+                <label class="roadmap-field roadmap-field-short">
+                  <span i18n>Ícone</span>
+                  <select
+                    [ngModel]="entry.icon"
+                    (ngModelChange)="patch(entry.draftKey, { icon: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="icon"
+                  >
+                    @for (icon of iconOptions; track icon) {
+                      <option [value]="icon">{{ icon }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="roadmap-field roadmap-field-short">
+                  <span i18n>Estado</span>
+                  <input
+                    [ngModel]="entry.statusLabel ?? ''"
+                    (ngModelChange)="patch(entry.draftKey, { statusLabel: $event || null })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="status"
+                    maxlength="60"
+                    i18n-placeholder
+                    placeholder="Opcional"
+                  />
+                </label>
+                <label class="roadmap-field roadmap-field-title">
+                  <span i18n>Título</span>
+                  <input
+                    [ngModel]="entry.title"
+                    (ngModelChange)="patch(entry.draftKey, { title: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="title"
+                    maxlength="120"
+                    required
+                  />
+                </label>
+                <label class="roadmap-field roadmap-field-wide">
+                  <span i18n>Resumo</span>
+                  <textarea
+                    [ngModel]="entry.summary"
+                    (ngModelChange)="patch(entry.draftKey, { summary: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="summary"
+                    maxlength="280"
+                    rows="2"
+                    required
+                  ></textarea>
+                </label>
+                <label class="roadmap-field roadmap-field-wide">
+                  <span i18n>Descrição</span>
+                  <textarea
+                    [ngModel]="entry.description"
+                    (ngModelChange)="patch(entry.draftKey, { description: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="description"
+                    maxlength="1600"
+                    rows="4"
+                  ></textarea>
+                </label>
+                <label class="roadmap-featured-field">
+                  <input
+                    type="checkbox"
+                    [ngModel]="entry.featured"
+                    (ngModelChange)="patch(entry.draftKey, { featured: $event })"
+                    [ngModelOptions]="{ standalone: true }"
+                    data-field="featured"
+                  />
+                  <span i18n>Destacar este conteúdo</span>
+                </label>
+              </div>
+
+              <fieldset class="roadmap-link-editor">
+                <legend i18n>Links internos</legend>
+                @if (entry.links.length === 0) {
+                  <p class="roadmap-field-help" i18n>
+                    Adicione um destino para conectar esta área à aplicação.
+                  </p>
+                }
+                @for (link of entry.links; track $index; let linkIndex = $index) {
+                  <div class="roadmap-editor-link">
+                    <label class="roadmap-field">
+                      <span i18n>Texto do link</span>
+                      <input
+                        [ngModel]="link.label"
+                        (ngModelChange)="patchLink(entry.draftKey, linkIndex, { label: $event })"
+                        [ngModelOptions]="{ standalone: true }"
+                        maxlength="80"
+                        data-field="link-label"
+                      />
+                    </label>
+                    <label class="roadmap-field">
+                      <span i18n>Caminho interno</span>
+                      <input
+                        [ngModel]="link.path"
+                        (ngModelChange)="patchLink(entry.draftKey, linkIndex, { path: $event })"
+                        [ngModelOptions]="{ standalone: true }"
+                        maxlength="180"
+                        data-field="link-path"
+                        placeholder="/mercado"
+                        i18n-placeholder
+                      />
+                    </label>
+                    <button
+                      class="btn subtle"
+                      type="button"
+                      data-action="remove-link"
+                      [attr.aria-label]="'Remover link ' + (link.label || linkIndex + 1)"
+                      (click)="removeLink(entry.draftKey, linkIndex)"
+                      i18n
+                    >
+                      Remover link
+                    </button>
+                  </div>
+                }
+                <button
+                  class="btn subtle roadmap-add-link"
+                  type="button"
+                  data-action="add-link"
+                  (click)="addLink(entry.draftKey)"
+                  [disabled]="entry.links.length >= 8"
+                  i18n
+                >
+                  Adicionar link
+                </button>
+              </fieldset>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <footer class="roadmap-admin-footer">
+      <button
+        class="btn roadmap-save"
+        type="button"
+        data-action="save"
+        (click)="save()"
+        [disabled]="saving() || !hasChanges()"
+        i18n
+      >
+        {{ saving() ? 'Salvando…' : 'Salvar alterações' }}
+      </button>
+    </footer>
+  }
+</section>
