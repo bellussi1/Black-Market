@@ -169,7 +169,7 @@
 - [x] Update the Share script's e-mail limit/validation and explain the exact Firebase authorized-domain step for each temporary Quick Tunnel hostname. Document that stable availability requires a named tunnel/domain or hosting.
 - [x] Document separate Firebase projects, required server-only credentials, provider enablement, disabled password/email-link methods, Steam callback URLs, staging seed and test-user setup. Do not include real secrets or tester e-mails.
 - [x] Run focused seeder/script checks, `pnpm check`, `pnpm test`, and `pnpm test:staging`; the full suite reproduces ten existing `recipe-tree.spec.ts` failures, recorded separately below.
-- [ ] Commit as `feat(staging): seed test account and document social auth setup`.
+- [x] Commit as `feat(staging): seed test account and document social auth setup` (`211a953`).
 
 ## Final completion conditions
 
