@@ -69,6 +69,10 @@
   object-fit: contain;
 }
 
+.brand-symbol--trimmed {
+  clip-path: inset(4% round 24%);
+}
+
 .sidebar-label {
   margin: 26px 10px 10px;
   color: var(--bm-muted);

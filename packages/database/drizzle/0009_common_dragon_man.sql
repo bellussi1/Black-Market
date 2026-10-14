@@ -1,0 +1,1 @@
+ALTER TABLE "steam_auth_attempts" ALTER COLUMN "code_challenge" DROP NOT NULL;

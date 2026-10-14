@@ -14,6 +14,9 @@ describe('workspace navigation', () => {
     expect(brand.querySelector('.brand-symbol')?.getAttribute('src')).toBe('/brand-mark.png');
     expect(brand.querySelector('.brand-symbol')?.getAttribute('alt')).toBe('');
     expect(brand.querySelector('.brand-symbol')?.getAttribute('aria-hidden')).toBe('true');
+    expect(brand.querySelector('.brand-symbol')?.classList.contains('brand-symbol--trimmed')).toBe(
+      true,
+    );
     expect(wordmark.children[0].textContent?.trim()).toBe('BLACK');
     expect(wordmark.children[1].textContent?.trim()).toBe('MARKET');
     expect(brand.querySelector('.brand-market')?.textContent?.trim()).toBe('MARKET');

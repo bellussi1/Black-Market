@@ -1,7 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
-import { isPublicIdentityKey } from '../config/env.schema';
 import { requestControls, WindowLimiter } from './request-controls';
 import { safeProblem } from './safe-exception.filter';
 describe('MVP request controls', () => {
@@ -56,13 +55,6 @@ describe('MVP request controls', () => {
       statusCode: 401,
       message: 'Entre na sua conta para continuar.',
     });
-  });
-  it('rejects private identity keys', () => {
-    const jwt = (role: string) =>
-      'header.' + Buffer.from(JSON.stringify({ role })).toString('base64url') + '.signature';
-    expect(isPublicIdentityKey(jwt('service_role'))).toBe(false);
-    expect(isPublicIdentityKey(jwt('anon'))).toBe(true);
-    expect(isPublicIdentityKey('sb_secret_private')).toBe(false);
   });
   it('logs bounded context, never URL queries or request bodies', () => {
     const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() };

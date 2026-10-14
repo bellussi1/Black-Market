@@ -1,6 +1,6 @@
 # Staging local sem mensalidade de hospedagem
 
-Um único ambiente de teste, ligado sob demanda no computador do mantenedor. Angular SSR compilado, NestJS e PostgreSQL em Docker Compose. Cloudflare Quick Tunnel fornece um link HTTPS temporário, sem domínio. Não exige login dos visitantes por padrão.
+Um único ambiente de teste, ligado sob demanda no computador do mantenedor. Angular SSR compilado, NestJS e PostgreSQL em Docker Compose. Cloudflare Quick Tunnel fornece um link HTTPS temporário, sem domínio. O login Google/Steam fica desativado até configurar um projeto Firebase exclusivo de staging; não use credenciais, usuários nem banco de produção.
 
 ## Preparação
 
@@ -34,15 +34,37 @@ pwsh -File scripts/staging.ps1 Start
 # Link HTTPS aberto a quem tiver o endereço
 pwsh -File scripts/staging.ps1 Share
 
-# Opcional: restringir acesso, se a versão instalada suportar --allowed-mail
-pwsh -File scripts/staging.ps1 Share -AllowedEmail pessoa@example.com
+# Restringir a lista de convite a até dez endereços únicos
+pwsh -File scripts/staging.ps1 Share -AllowedEmail pessoa1@example.com,pessoa2@example.com
 ```
 
-Mantenha o terminal Share aberto. Ctrl+C encerra o túnel. O computador precisa estar ligado, conectado à internet, com Docker em execução e sem suspensão. O endereço muda a cada sessão. Enquanto o túnel inicia/reconfigura a origem, aguarde a mensagem final antes de compartilhar o link. Links permanentes e disponibilidade 24 horas exigem outra solução.
+Mantenha o terminal Share aberto. Ctrl+C encerra o túnel. O computador precisa estar ligado, conectado à internet, com Docker em execução e sem suspensão. O endereço muda a cada sessão. O script roda o smoke HTTP/SSR/catálogo antes de mostrar o link. Links permanentes e disponibilidade 24 horas exigem outra solução.
 
 Quick Tunnel não tem garantia de disponibilidade, aceita até 200 requisições simultâneas e não suporta SSE. Referência: [documentação Cloudflare](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/).
 
-O gateway bloqueia indexação por `robots.txt` e `X-Robots-Tag`; isso não controla acesso. Use somente dados de teste. Configurar contas requer provedor de identidade e validação específica; não faz parte deste staging inicial.
+O gateway bloqueia indexação por `robots.txt` e `X-Robots-Tag`; isso não controla acesso. Use somente dados de teste.
+
+## Contas Google/Steam de staging
+
+Crie um projeto Firebase separado para staging e configure os campos `FIREBASE_PROJECT_ID`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID` e `FIREBASE_ADMIN_CREDENTIALS_BASE64` no `.env.staging` ignorado pelo Git. A credencial Admin fica apenas no container da API. Habilite Google Authentication; mantenha Password, e-mail/link, telefone e login anônimo desativados. Steam é validada pela API via OpenID e troca por custom token Firebase. A UI não oferece outros provedores.
+
+Ao compartilhar por Quick Tunnel, o script atualiza o callback Steam para a origem HTTPS temporária, recria API/web, verifica o staging e informa o hostname a adicionar em Firebase Authentication → Settings → Authorized domains. No cliente OAuth Google, mantenha o redirect handler do Firebase configurado: `https://<FIREBASE_AUTH_DOMAIN>/__/auth/handler`. A documentação do Firebase exige que o domínio do app esteja autorizado e usa o auth domain como redirect de OAuth ([Google sign-in no Firebase](https://firebase.google.com/docs/auth/web/google-signin)). O hostname de Quick Tunnel muda a cada sessão; adicione o novo domínio em cada sessão que exigir Google.
+
+Para disponibilizar o perfil sintético, primeiro entre uma vez com Google ou Steam na aplicação de staging para criar o mapeamento canônico. Copie a UID Firebase dessa conta para `STAGING_TEST_FIREBASE_UID` em `.env.staging`, recrie a API para carregar a variável e então execute:
+
+```powershell
+pwsh -File scripts/staging.ps1 SeedProfile
+```
+
+Se preferir, execute diretamente no serviço já iniciado:
+
+```powershell
+docker compose --env-file .env.staging -f docker-compose.staging.yml exec -T api pnpm --filter @bdo/api workspace:seed-test-profile
+```
+
+Esse comando somente funciona em `APP_ENV=staging` e para a UID explicitamente configurada. Ele acrescenta AuroraVale/ValeDourado se ainda não existirem, sem substituir personagem, família, seleção ou dados já existentes. Repetir o comando não duplica o perfil nem incrementa a versão quando nada muda. O seed não cria conta Firebase e não é um endpoint HTTP.
+
+A lista `Share -AllowedEmail` é independente do login do produto: ela restringe quem pode abrir o túnel e aceita no máximo dez e-mails válidos distintos. Não compartilhe e-mails de testers no Git ou em mensagens do produto. O staging local e o quick tunnel dependem do computador do mantenedor; para disponibilidade persistente, use domínio/túnel nomeado ou hospedagem.
 
 ## Atualização, backup e retorno
 

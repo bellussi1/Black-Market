@@ -32,11 +32,13 @@ Cloudflare fornece a entrada/CDN; esta configuração não executa Nest e Postgr
 
 ## Identidade e sincronização
 
-A implementação inicial usa Supabase Auth. Configure o projeto do mantenedor e informe `SUPABASE_URL` e a **chave pública publicável**, nunca a chave administrativa/service-role. A aplicação valida o token no serviço de identidade, deriva o dono do usuário autenticado e guarda a cópia estruturada no PostgreSQL próprio. O cliente não escolhe um ID de dono.
+A autenticação oferece somente Google e Steam. Firebase Auth cria a sessão de navegador; Google usa o provedor oficial e a API valida Steam OpenID 2.0 antes de emitir custom token. Não existem login por senha, e-mail/OTP, link mágico nem login anônimo. Visitantes continuam usando as páginas públicas sem conta. Projetos Firebase e credenciais ainda precisam ser configurados por ambiente antes de ativar login real.
 
-Configure o endereço público e `/account` como retorno autorizado, o login por e-mail e, se desejado, Google. URL e chave pública são expostas pelo endpoint de configuração; esse comportamento é intencional. Nenhuma credencial do BDO é solicitada. Sem configuração, o visitante continua usando dados locais e a interface informa que entrar na conta não está disponível.
+A API verifica tokens com Firebase Admin e relaciona UID/provedor a um UUID interno. O UUID do dono vem desse mapeamento, nunca do corpo enviado pelo navegador. Contas Google e Steam só se vinculam após prova dos dois provedores; e-mail coincidente não mescla contas. Configuração web pública não inclui credencial Admin.
 
 Em **Minha conta**: carregar a cópia, revisar o resumo e confirmar envio ou aplicação local. Escritas exigem a versão previamente lida; alteração concorrente devolve conflito sem sobrescrever. Excluir a cópia da conta mantém a cópia local. Sair da conta limpa a prévia remota, mas não apaga os dados deste navegador: em computador compartilhado, remova-os em **Dados e backup** após exportar o que deseja manter. Não há fusão automática ou sincronização contínua nesta versão.
+
+Dados de identidades antigas não são associados automaticamente por e-mail e workspaces anteriores não são migrados para a nova UID sem um mapeamento explicitamente verificado. Preserve um backup antes de qualquer migração manual; nenhum dado de usuário deve ser eliminado como parte da configuração de Firebase.
 
 Não armazenar respostas pessoais em cache Cloudflare. `/api/v1/workspace` envia `private,no-store`; o gateway também restringe o ritmo de requisições. Páginas pessoais usam renderização no navegador, `noindex` e cabeçalho equivalente. Isso controla indexação, não substitui a autenticação da persistência remota.
 
@@ -56,8 +58,6 @@ Com `PUBLIC_SITE_URL` definido, `/sitemap.xml` e `/sitemaps/<tipo>/<página>.xml
 
 ## Controles de operação e privacidade
 
-A sessão de identidade usa sessionStorage por aba e PKCE; não é cookie HttpOnly. Configurar SMTP próprio antes de abrir login por e-mail ao público; o serviço padrão do Supabase limita destinatários ao time. Preferências e inventário estão em privacy-inventory.md.
+A sessão de identidade usa `sessionStorage` por aba e PKCE; não é cookie HttpOnly. Configure projetos Firebase separados para staging e produção, autorize os domínios web usados, mantenha senha/e-mail/anonymous desativados e valide Google, Steam, vinculação e encerramento de sessão no navegador antes de abrir contas. Preferências e inventário estão em `privacy-inventory.md`.
 
 Bellussi e enzobellussi3@gmail.com são o responsável e contato informados pelo usuário. Identificação jurídica completa exige revisão. ANALYTICS_ENABLED=false e MARKET_COLLECTOR_ENABLED=false permanecem desligados até validação. Alertas externos e backup offsite ainda não configurados; seguir production-audit.md.
-
-O acesso por e-mail com PKCE e sessionStorage exige abrir o retorno na mesma aba que iniciou o pedido. Se o e-mail abrir outra aba, copiar o endereço do link para a aba inicial. Validar esse fluxo e Google no navegador real antes de abrir contas públicas; OAuth redirecionando a aba inicial evita essa limitação de abas.

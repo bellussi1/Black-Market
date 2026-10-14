@@ -1,5 +1,5 @@
 param(
-  [ValidateSet('Start', 'Update', 'Stop', 'Status', 'Backup', 'Seed', 'Share', 'Rollback', 'ScheduleBackup')]
+  [ValidateSet('Start', 'Update', 'Stop', 'Status', 'Backup', 'Seed', 'SeedProfile', 'Share', 'Rollback', 'ScheduleBackup')]
   [string]$Action = 'Start',
   [string[]]$AllowedEmail = @()
 )
@@ -84,6 +84,8 @@ if (-not (Test-Path -LiteralPath $taskEnv)) {
     "CONTAINER_DATABASE_URL=postgresql://black_market_staging:${owner}@postgres:5432/black_market_staging",
     "RUNTIME_DATABASE_URL=postgresql://black_market_app:${runtime}@postgres:5432/black_market_staging",
     'PUBLIC_SITE_URL=https://localhost:8081', 'APP_IMAGE=black-market:staging', 'ASSET_CHECKSUMS=not-initialized',
+    'FIREBASE_PROJECT_ID=', 'FIREBASE_AUTH_DOMAIN=', 'FIREBASE_API_KEY=', 'FIREBASE_APP_ID=',
+    'FIREBASE_ADMIN_CREDENTIALS_BASE64=', 'STEAM_OPENID_CALLBACK_URL=', 'STAGING_TEST_FIREBASE_UID=',
     'ANALYTICS_ENABLED=false', 'MARKET_COLLECTOR_ENABLED=false', 'MARKET_BOARD_COLLECTOR_ENABLED=false'
   ))
 }
@@ -127,6 +129,11 @@ switch ($Action) {
     Write-Output 'Catálogo copiado para staging. Dados de usuários e histórico de mercado excluídos. Assets locais montados somente para leitura.'
     return
   }
+  'SeedProfile' {
+    Wait-Stage
+    Invoke-Stage @('exec', '-T', 'api', 'pnpm', '--filter', '@bdo/api', 'workspace:seed-test-profile')
+    return
+  }
   'Rollback' {
     if (-not (Test-Path -LiteralPath $taskState)) { throw 'Nenhuma versão anterior registrada.' }
     $state = Get-Content -LiteralPath $taskState -Raw | ConvertFrom-Json
@@ -143,9 +150,16 @@ switch ($Action) {
     return
   }
   'Share' {
-    foreach ($email in $AllowedEmail) {
-      if ($email -notmatch '^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$') { throw 'E-mail autorizado inválido.' }
-    }
+    if ($AllowedEmail.Count -gt 10) { throw 'O staging aceita no máximo dez e-mails de tester.' }
+    $seenAllowedEmails = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $normalizedAllowedEmails = @(
+      foreach ($email in $AllowedEmail) {
+        $normalizedEmail = $email.Trim()
+        if ($normalizedEmail -notmatch '^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$') { throw 'E-mail autorizado inválido.' }
+        if (-not $seenAllowedEmails.Add($normalizedEmail)) { throw 'A lista de testers não pode repetir e-mails.' }
+        $normalizedEmail
+      }
+    )
     $cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
     $cloudflaredPath = $(if ($cloudflared) { $cloudflared.Source } else { Join-Path ${env:ProgramFiles(x86)} 'cloudflared/cloudflared.exe' })
     if (-not (Test-Path -LiteralPath $cloudflaredPath)) { throw 'Instale cloudflared: winget install --id Cloudflare.cloudflared --exact. Depois reabra o terminal.' }
@@ -160,7 +174,7 @@ switch ($Action) {
     $log = Join-Path $taskStateDir 'tunnel.log'
     $errLog = Join-Path $taskStateDir 'tunnel-error.log'
     $argsList = @('tunnel', '--url', 'http://127.0.0.1:8081')
-    foreach ($email in $AllowedEmail) { $argsList += @('--allowed-mail', $email) }
+    foreach ($email in $normalizedAllowedEmails) { $argsList += @('--allowed-mail', $email) }
     $process = Start-Process $cloudflaredPath -ArgumentList $argsList -WindowStyle Hidden -PassThru -RedirectStandardOutput $log -RedirectStandardError $errLog
     @{ pid = $process.Id; started = $process.StartTime.ToUniversalTime().Ticks.ToString() } | ConvertTo-Json | Set-Content -LiteralPath $taskTunnelState
     try {
@@ -174,15 +188,34 @@ switch ($Action) {
       }
       if (-not $url) { throw 'Não foi possível obter o endereço do túnel.' }
       Set-StageValue 'PUBLIC_SITE_URL' $url
+      $firebaseProject = (Get-Content -LiteralPath $taskEnv | Where-Object { $_.StartsWith('FIREBASE_PROJECT_ID=') } | Select-Object -First 1) -replace '^FIREBASE_PROJECT_ID=', ''
+      $authDomain = (Get-Content -LiteralPath $taskEnv | Where-Object { $_.StartsWith('FIREBASE_AUTH_DOMAIN=') } | Select-Object -First 1) -replace '^FIREBASE_AUTH_DOMAIN=', ''
+      if ($firebaseProject) { Set-StageValue 'STEAM_OPENID_CALLBACK_URL' ($url + '/api/v1/identity/steam/callback') }
       Invoke-Stage @('up', '-d', '--no-build', '--no-deps', 'api', 'web')
       Invoke-Stage @('up', '-d', '--no-build', '--no-deps', '--force-recreate', 'gateway')
       Wait-Stage
+      $previousStagingUrl = $env:STAGING_URL
+      try {
+        Remove-Item Env:STAGING_URL -ErrorAction SilentlyContinue
+        & pnpm test:staging
+        if ($LASTEXITCODE -ne 0) { throw 'O smoke test de staging falhou; o endereço não será publicado.' }
+      } finally {
+        if ($null -eq $previousStagingUrl) { Remove-Item Env:STAGING_URL -ErrorAction SilentlyContinue }
+        else { $env:STAGING_URL = $previousStagingUrl }
+      }
       $access = $(if ($AllowedEmail.Count -gt 0) { 'restrito aos e-mails informados' } else { 'acesso aberto a quem receber o link' })
+      if ($firebaseProject) {
+        $hostName = ([uri]$url).Host
+        Write-Output "Firebase Authentication > Settings > Authorized domains: adicione $hostName."
+        if ($authDomain) { Write-Output "Google OAuth redirect URI: https://$authDomain/__/auth/handler (mantenha essa URI autorizada no cliente OAuth)." }
+        Write-Output "Callback Steam usado nesta sessão: $url/api/v1/identity/steam/callback."
+      }
       Write-Output "Staging: $url ($access). Mantenha este terminal aberto; Ctrl+C encerra o acesso."
       while (-not $process.HasExited) { Start-Sleep -Seconds 2 }
     } finally {
       if (-not $process.HasExited) { Stop-Process -Id $process.Id -ErrorAction SilentlyContinue }
       Set-StageValue 'PUBLIC_SITE_URL' 'https://localhost:8081'
+      if ($firebaseProject) { Set-StageValue 'STEAM_OPENID_CALLBACK_URL' 'https://localhost:8081/api/v1/identity/steam/callback' }
     }
     return
   }

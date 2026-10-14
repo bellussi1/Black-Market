@@ -52,13 +52,13 @@
 - Runtime configuration: `APP_ENV`, Firebase Web project/auth domain/API key/app ID, server-only Firebase Admin credential, exact Steam callback URL, optional staging test UID and roadmap-admin Firebase UID allowlist.
 - Exact environment names: `APP_ENV`, `FIREBASE_PROJECT_ID`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_ADMIN_CREDENTIALS_BASE64`, `STEAM_OPENID_CALLBACK_URL`, `STAGING_TEST_FIREBASE_UID`, and `ROADMAP_ADMIN_FIREBASE_UIDS`.
 
-- [ ] Add `env.schema.spec.ts` cases named `keeps optional Firebase auth disabled for local use`, `accepts a complete Firebase configuration`, `rejects partial Firebase configuration`, `requires an HTTPS Steam callback in staging and production`, and `rejects a staging seed UID outside staging`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` and confirm the new cases fail for missing Firebase settings and invalid environment combinations.
-- [ ] Add the Drizzle schema with unique constraints and foreign keys; do not change `user_workspaces.user_id`.
-- [ ] Generate and review the migration; add environment validation and pass only the Firebase Web config to the public identity config response.
-- [ ] Pass Firebase public config and Admin credentials only to the API container in local, staging and production Compose. Set `APP_ENV` explicitly in staging and production; leave secrets blank in `.env.example`.
-- [ ] Run `pnpm --filter @bdo/database db:check` and `pnpm --filter @bdo/api typecheck`; confirm the migration is ordered and all schema types compile.
-- [ ] Commit as `feat(auth): add Firebase identity schema and config`.
+- [x] Add `env.schema.spec.ts` cases named `keeps optional Firebase auth disabled for local use`, `accepts a complete Firebase configuration`, `rejects partial Firebase configuration`, `requires an HTTPS Steam callback in staging and production`, and `rejects a staging seed UID outside staging`.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` and confirm the new cases fail for missing Firebase settings and invalid environment combinations.
+- [x] Add the Drizzle schema with unique constraints and foreign keys; do not change `user_workspaces.user_id`.
+- [x] Generate and review the migration and add environment validation. The public identity config response moves to Task 2, where Firebase verification and runtime configuration are introduced together.
+- [x] Pass Firebase public config and Admin credentials only to the API container in local, staging and production Compose. Set `APP_ENV` explicitly in staging and production; leave secrets blank in `.env.example`.
+- [x] Run `pnpm --filter @bdo/database db:check` and `pnpm --filter @bdo/api typecheck`; confirm the migration is ordered and all schema types compile.
+- [x] Commit as `feat(auth): add Firebase identity schema and config` (`3f22e47`).
 
 ### Task 2: Firebase token verification and canonical account mapping
 
@@ -79,14 +79,14 @@
 - `GET /api/v1/identity/config` returns `{ enabled, googleEnabled, steamEnabled, apiKey, authDomain, projectId, appId }` with `Cache-Control: no-store`.
 - `GET /api/v1/identity/me` returns only verified profile fields and linked provider names.
 
-- [ ] Replace Supabase-mocked identity tests with exact cases `requires a bearer credential`, `provisions a canonical owner for a verified Google user`, `reuses the Google mapping on subsequent requests`, `accepts a known Steam custom-token UID`, `rejects an unmapped custom-token UID`, `rejects expired or revoked Firebase tokens`, `rejects a token for another Firebase project`, and `allows roadmap edits only for a server-allowlisted UID`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/firebase-auth.service.spec.ts src/workspace/identity.service.spec.ts` and confirm the cases fail before implementation.
-- [ ] Install Firebase Admin SDK, implement lazy/disabled-safe server initialization, and keep credentials out of logs and public configuration.
-- [ ] Implement transactional canonical-user/provider mapping. For Google, require verified Firebase provider data `google.com`; for custom tokens, require an existing Steam identity mapping.
-- [ ] Derive roadmap administration from the server-side Firebase UID allowlist; ignore client claims and e-mail.
-- [ ] Add `/identity/me`, close Supabase paths, and migrate workspace plus Roadmap authorization to the new identity boundary.
-- [ ] Run focused API tests, lint and typecheck.
-- [ ] Commit as `feat(auth): verify Firebase sessions and map accounts`.
+- [x] Replace Supabase-mocked identity tests with exact cases `requires a bearer credential`, `provisions a canonical owner for a verified Google user`, `reuses the Google mapping on subsequent requests`, `accepts a known Steam custom-token UID`, `rejects an unmapped custom-token UID`, `rejects expired or revoked Firebase tokens`, `rejects a token for another Firebase project`, and `allows roadmap edits only for a server-allowlisted UID`.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/workspace/firebase-auth.service.spec.ts src/workspace/identity.service.spec.ts` and confirm the cases fail before implementation.
+- [x] Install Firebase Admin SDK, implement lazy/disabled-safe server initialization, and keep credentials out of logs and public configuration.
+- [x] Implement transactional canonical-user/provider mapping. For Google, require verified Firebase provider data `google.com`; for custom tokens, require an existing Steam identity mapping.
+- [x] Derive roadmap administration from the server-side Firebase UID allowlist; ignore client claims and e-mail.
+- [x] Add `/identity/me` and migrate workspace plus Roadmap authorization to the Firebase identity boundary. Removing Supabase dependencies and configuration remains in Task 5 after all consumers migrate.
+- [x] Run focused API tests, lint and typecheck.
+- [x] Commit as `feat(auth): verify Firebase sessions and map accounts` (`4ff82d6`).
 
 ### Task 3: Steam OpenID, one-time exchange and explicit linking
 
@@ -107,16 +107,16 @@
 - `SteamAuthService.exchange(code: string, verifier: string): Promise<string>` atomically consumes one-time code, verifies PKCE S256, and returns a Firebase custom token.
 - Routes: `GET /identity/steam/start?code_challenge=...`, `GET /identity/steam/callback`, `POST /identity/steam/exchange`, `POST /identity/steam/link/start`, and `POST /identity/google/link`.
 
-- [ ] Write `SteamOpenIdService` cases `builds a login URL with the configured callback and realm`, `rejects a different return URL`, `rejects missing signed fields`, `rejects Steam check_authentication is_valid false`, and `rejects a noncanonical claimed ID`; write `SteamAuthService` cases `consumes state only once`, `rejects a callback without the matching browser cookie`, `rejects expired state`, `rejects a mismatched PKCE verifier`, `consumes an exchange only once`, `logs into an existing linked Steam identity`, `links Steam to the authenticated Firebase UID`, and `rejects an identity already owned by another account`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/steam-openid.service.spec.ts src/workspace/steam-auth.service.spec.ts` and confirm callback/replay/link-conflict cases fail before implementation.
-- [ ] Implement OpenID request construction and bounded `check_authentication` POST; do not use Steam API keys or trust browser-submitted Steam IDs.
-- [ ] Persist only hashes for random state and exchange code; consume them transactionally and expire attempts/codes after five minutes.
-- [ ] Set state cookie `HttpOnly; SameSite=Lax; Path=/api/v1/identity/steam; Max-Age=300`, add `Secure` for HTTPS, clear it on every callback, and enable credentialed CORS only for the configured `WEB_ORIGIN` so Steam-link startup can set the cookie.
-- [ ] On login, issue a custom token only after proof; on link, preserve the existing Firebase UID and reject identities owned by another account.
-- [ ] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
-- [ ] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
-- [ ] Run focused API tests, lint and typecheck.
-- [ ] Commit as `feat(auth): add verified Steam OpenID login`.
+- [x] Write `SteamOpenIdService` cases `builds a login URL with the configured callback and realm`, `rejects a different return URL`, `rejects missing signed fields`, `rejects Steam check_authentication is_valid false`, and `rejects a noncanonical claimed ID`; write `SteamAuthService` cases `consumes state only once`, `rejects a callback without the matching browser cookie`, `rejects expired state`, `rejects a mismatched PKCE verifier`, `consumes an exchange only once`, `logs into an existing linked Steam identity`, `links Steam to the authenticated Firebase UID`, and `rejects an identity already owned by another account`.
+- [x] Run focused tests first and observe failures before implementation; added controller/link cases and protocol edge cases during implementation.
+- [x] Implement OpenID request construction and bounded `check_authentication` POST; do not use Steam API keys or trust browser-submitted Steam IDs.
+- [x] Persist only hashes for random state and exchange code; consume them transactionally and expire attempts/codes after five minutes.
+- [x] Set state cookie `HttpOnly; SameSite=Lax; Path=/api/v1/identity/steam; Max-Age=300`, add `Secure` for HTTPS, clear it on every callback, and enable credentialed CORS only for the configured `WEB_ORIGIN` so Steam-link startup can set the cookie.
+- [x] On login, issue a custom token only after proof; on link, preserve the existing Firebase UID and reject identities owned by another account.
+- [x] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
+- [x] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
+- [x] Run focused API tests (54/54), lint, typecheck, Drizzle check and `git diff --check`.
+- [x] Commit as `feat(auth): add verified Steam OpenID login` (`0a0cdbd`).
 
 ### Task 4: Google/Steam account UI and Firebase browser session
 
@@ -126,24 +126,24 @@
 - Modify: `apps/web/src/app/core/identity.service.ts`
 - Create: `apps/web/src/app/core/identity.service.spec.ts`
 - Modify: `apps/web/src/app/features/account/account-page.ts`, `account-page.html`, styles/specs as needed
-- Modify: `apps/web/src/app/core/security-headers.ts`, `apps/web/src/app/core/security-headers.spec.ts`, `apps/web/src/server.ts`
+- Modify: `apps/web/src/security-headers.ts`, `apps/web/src/security-headers.spec.ts`, `apps/web/src/server.ts`
 - Modify: `apps/web/src/locale/messages.pt-BR.xlf` if extracting translations changes its message catalog
 
 **Interfaces:**
 
 - `IdentityService` exposes `enabled`, `ready`, `authenticated`, `userId`, `email`, `displayName`, `providers` and `canManageRoadmap` signals.
-- `IdentityService.google()` uses Firebase Google popup sign-in; `steam()` creates a random PKCE verifier/challenge, stores the verifier in sessionStorage and navigates to the API; `exchangeSteamCode(code, verifier)` consumes the exchange and calls Firebase `signInWithCustomToken`; `linkGoogle()` and `linkSteam()` prove and attach a provider; `token()` returns Firebase ID token.
+- `IdentityService.google()` uses Firebase Google popup sign-in; `steam()` creates a random PKCE verifier/challenge, stores the verifier in sessionStorage and navigates to the API; `exchangeSteamCode(code)` consumes the one-time exchange with the per-tab verifier and calls Firebase `signInWithCustomToken`; `linkGoogle()` and `linkSteam()` prove and attach a provider; `token()` returns Firebase ID token.
 - Auth initialization is browser-only and uses session persistence to preserve the current per-tab session behavior. No Firebase app or credential is initialized during SSR.
 
-- [ ] Add `identity.service.spec.ts` cases `keeps public browsing enabled when identity is unavailable`, `signs in with Google`, `exchanges a Steam code for a Firebase session`, `restores a session without assuming an email`, `links Steam through the API`, and `links Google to the current Firebase user`; add `account-page.spec.ts` cases `offers only Google and Steam when signed out`, `shows a signed-in Steam user without an email`, and `removes the Steam exchange fragment before exchanging it`.
-- [ ] Run `pnpm --filter @bdo/web exec ng test --watch=false --include=src/app/core/identity.service.spec.ts --include=src/app/features/account/account-page.spec.ts` and confirm the new cases fail before implementation.
-- [ ] Replace the Supabase client with modular Firebase Web SDK initialization from `/identity/config`; keep initialization browser-only and session persistence explicit.
-- [ ] Replace the account form with Google and Steam actions and show linked providers/actions based on `/identity/me`; render authenticated state based on UID, not e-mail presence.
-- [ ] Restore the account session after callback, remove exchange data from the address bar before network calls, display safe success/failure messages, and refresh ID token after provider linking.
-- [ ] Update CSP connect/frame/form origins for Firebase Auth and Google popup flow; remove Supabase origins. Keep CSP sources limited to required Firebase endpoints.
-- [ ] Remove Supabase Web dependency after no consumers remain; update translations.
-- [ ] Run focused Angular tests, Angular development build, lint and typecheck.
-- [ ] Commit as `feat(auth): add Google and Steam account UI`.
+- [x] Add `identity.service.spec.ts` cases `keeps public browsing enabled when identity is unavailable`, `signs in with Google`, `starts Steam sign-in with a per-tab PKCE verifier`, `exchanges a Steam code for a Firebase session`, `restores a session without assuming an email`, `links Steam through the API`, and `links Google to the current Firebase user`; add account-page cases `offers only Google and Steam when signed out`, `shows a signed-in Steam user without requiring an email`, and `removes the Steam exchange fragment before exchanging the code`.
+- [x] Run focused Angular tests before and after implementation; the initial run failed on missing Firebase methods/signals, then all new cases passed.
+- [x] Replace the Supabase client with modular Firebase Web SDK initialization from `/identity/config`; keep initialization browser-only and session persistence explicit.
+- [x] Replace the account form with Google and Steam actions and show linked providers/actions based on `/identity/me`; render authenticated state based on UID, not e-mail presence.
+- [x] Restore the account session after callback, remove exchange data from the address bar before network calls, and display safe success/failure messages. Provider linking confirms through the API and refreshes the profile.
+- [x] Update CSP connect/frame origins for Firebase Auth and Google popup flow; replace the old Supabase-origin dependency with the configured Firebase auth domain.
+- [x] Remove the Supabase Web dependency after confirming there are no remaining Web consumers; extract updated Portuguese translation catalog.
+- [x] Run focused Angular tests (17/17), development build/typecheck, lint and Compose validation for local/staging/production using placeholders for required external variables.
+- [x] Commit as `feat(auth): add Google and Steam account UI` (`0ba918d`).
 
 ### Task 5: Staging-only test profile seed and operational handoff
 
@@ -161,15 +161,15 @@
 - CLI `pnpm --filter @bdo/api workspace:seed-test-profile` requires `STAGING_TEST_FIREBASE_UID`; no HTTP seed route exists.
 - `Share -AllowedEmail` supports at most ten unique valid e-mails, runs the existing staging smoke before printing the URL, and prints the Firebase authorized-domain/callback update required for the temporary hostname.
 
-- [ ] Add `test-workspace-seeder.spec.ts` cases `adds the synthetic character and family to an empty workspace`, `does not duplicate the profile on a repeated seed`, `preserves existing workspace values`, `rejects a Firebase UID without a canonical account`, `requires an explicitly configured test UID`, and `refuses to run outside staging`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/test-workspace-seeder.spec.ts` and confirm idempotence/environment guard cases fail before implementation.
-- [ ] Extract the existing synthetic persona values (`AuroraVale` / `ValeDourado`) to a shared fixture consumed by both demo and seed code.
-- [ ] Implement a transactionally locked, schema-validated merge and a CLI that refuses non-staging execution and never overwrites workspace fields.
-- [ ] Remove Supabase Auth config and dependencies from API/Web/Compose/docs only after no code consumers remain. Keep legacy data migration instructions explicit; do not match users by e-mail.
-- [ ] Update the Share script's e-mail limit/validation and explain the exact Firebase authorized-domain step for each temporary Quick Tunnel hostname. Document that stable availability requires a named tunnel/domain or hosting.
-- [ ] Document separate Firebase projects, required server-only credentials, provider enablement, disabled password/email-link methods, Steam callback URLs, staging seed and test-user setup. Do not include real secrets or tester e-mails.
-- [ ] Run focused seeder/script checks, `pnpm check`, `pnpm test`, and `pnpm test:staging`; confirm current known web recipe-tree failures are reported separately if still reproducible.
-- [ ] Commit as `feat(staging): seed test account and document social auth setup`.
+- [x] Add `test-workspace-seeder.spec.ts` cases `adds the synthetic character and family to an empty workspace`, `does not duplicate the profile on a repeated seed`, `preserves existing workspace values`, `rejects a Firebase UID without a canonical account`, `requires an explicitly configured test UID`, and `refuses to run outside staging`; also cover the last schema-allowed character slot.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/workspace/test-workspace-seeder.spec.ts` and verify idempotence/environment guard behavior. The resumed worktree already contained the implementation; no initial behavioral red run was retained. The region typecheck failure was reproduced before its fix and passed afterward.
+- [x] Extract the existing synthetic persona values (`AuroraVale` / `ValeDourado`) to a shared fixture consumed by both demo and seed code.
+- [x] Implement a transactionally locked, schema-validated merge and a CLI that refuses non-staging execution and never overwrites workspace fields.
+- [x] Remove Supabase Auth config and dependencies from API/Web/Compose/docs only after no code consumers remain. Keep legacy data migration instructions explicit; do not match users by e-mail.
+- [x] Update the Share script's e-mail limit/validation and explain the exact Firebase authorized-domain step for each temporary Quick Tunnel hostname. Document that stable availability requires a named tunnel/domain or hosting.
+- [x] Document separate Firebase projects, required server-only credentials, provider enablement, disabled password/email-link methods, Steam callback URLs, staging seed and test-user setup. Do not include real secrets or tester e-mails.
+- [x] Run focused seeder/script checks, `pnpm check`, `pnpm test`, and `pnpm test:staging`; the full suite reproduces ten existing `recipe-tree.spec.ts` failures, recorded separately below.
+- [x] Commit as `feat(staging): seed test account and document social auth setup` (`211a953`).
 
 ## Final completion conditions
 

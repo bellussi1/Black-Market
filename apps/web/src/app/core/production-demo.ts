@@ -1,5 +1,5 @@
-import { characterSchema, lifeSkills } from '@bdo/calculators';
-import type { CatalogItem } from '@bdo/shared';
+import { characterSchema } from '@bdo/calculators';
+import { type CatalogItem, stagingTestCharacter, stagingTestFamily } from '@bdo/shared';
 
 import { emptyWorkspace, workspaceSchema } from './workspace-models';
 
@@ -31,30 +31,9 @@ export function createProductionDemoWorkspace(items: readonly CatalogItem[], reg
     throw new Error('Faltam itens do catálogo para o teste: ' + missing.join(', ') + '.');
   const name = (id: number) => catalog.get(id)!.name;
   const character = characterSchema.parse({
+    ...stagingTestCharacter,
     id: 'production-demo-main',
-    name: 'AuroraVale',
-    familyName: 'ValeDourado',
-    className: 'Guerreiro',
-    specialization: 'succession',
-    level: 62,
-    server: 'Balenos 2',
     region,
-    silver: '2000000000',
-    energy: 320,
-    energyMax: 450,
-    contribution: 360,
-    inventoryCapacity: 192,
-    inventoryUsed: 2,
-    weightLimit: 1500,
-    carriedWeight: 10,
-    activeMinutes: 60,
-    afkMinutes: 240,
-    mastery: Object.fromEntries(
-      lifeSkills.map((skill) => [
-        skill,
-        skill === 'alchemy' ? 1000 : skill === 'cooking' ? 1250 : 0,
-      ]),
-    ),
     gear: [
       { slot: 'clothes', itemId: 705047, name: name(705047), level: 18, caphras: 0 },
       { slot: 'tool', itemId: 16847, name: name(16847), level: 18, caphras: 0 },
@@ -98,15 +77,7 @@ export function createProductionDemoWorkspace(items: readonly CatalogItem[], reg
     characters: [character],
     families: {
       [region]: {
-        name: 'ValeDourado',
-        contribution: 360,
-        energyMax: 450,
-        lifeSkills: {
-          alchemy: { tier: 'Mestre', level: 10, xpPercent: 0 },
-          cooking: { tier: 'Mestre', level: 10, xpPercent: 0 },
-        },
-        pets: [],
-        mounts: [],
+        ...stagingTestFamily,
       },
     },
     quotes: [],

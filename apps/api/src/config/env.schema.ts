@@ -1,17 +1,4 @@
 import { z } from 'zod';
-export function isPublicIdentityKey(value: string): boolean {
-  if (/^sb_publishable_[A-Za-z0-9_-]+$/.test(value)) return true;
-  try {
-    const parts = value.split('.');
-    return (
-      parts.length === 3 &&
-      (JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { role?: string })
-        .role === 'anon'
-    );
-  } catch {
-    return false;
-  }
-}
 
 export const envSchema = z
   .object({
@@ -41,6 +28,7 @@ export const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    APP_ENV: z.enum(['local', 'staging', 'production']).default('local'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     PUBLIC_SITE_URL: z.preprocess(
@@ -51,22 +39,48 @@ export const envSchema = z
         .regex(/^https?:\/\//)
         .optional(),
     ),
-    SUPABASE_URL: z.preprocess(
+    FIREBASE_PROJECT_ID: z.preprocess(
       (value) => (value === '' ? undefined : value),
       z
         .string()
-        .url()
-        .regex(/^https:\/\//)
+        .regex(/^[a-z0-9-]{6,30}$/)
         .optional(),
     ),
-    SUPABASE_PUBLIC_KEY: z.preprocess(
+    FIREBASE_AUTH_DOMAIN: z.preprocess(
       (value) => (value === '' ? undefined : value),
       z
         .string()
-        .min(20)
-        .max(4096)
-        .refine(isPublicIdentityKey, 'Use somente a chave pública de identidade.')
+        .regex(/^[a-z0-9.-]{5,253}$/i)
         .optional(),
+    ),
+    FIREBASE_API_KEY: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(20).max(256).optional(),
+    ),
+    FIREBASE_APP_ID: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(8).max(160).optional(),
+    ),
+    FIREBASE_ADMIN_CREDENTIALS_BASE64: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z
+        .string()
+        .min(40)
+        .max(20000)
+        .regex(/^[A-Za-z0-9+/]+={0,2}$/)
+        .optional(),
+    ),
+    STEAM_OPENID_CALLBACK_URL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().url().optional(),
+    ),
+    STAGING_TEST_FIREBASE_UID: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().trim().min(1).max(128).optional(),
+    ),
+    ROADMAP_ADMIN_FIREBASE_UIDS: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().max(2048).optional(),
     ),
     DATABASE_URL: z
       .string()
@@ -105,7 +119,7 @@ export const envSchema = z
       .default(''),
   })
   .superRefine((value, context) => {
-    for (const name of ['PUBLIC_SITE_URL', 'SUPABASE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
+    for (const name of ['PUBLIC_SITE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
       const raw = value[name];
       if (!raw) continue;
       let url: URL;
@@ -128,11 +142,104 @@ export const envSchema = z
             'Use um endereço sem credenciais, parâmetros ou fragmentos; o endereço público deve conter somente a origem.',
         });
     }
-    if (Boolean(value.SUPABASE_URL) !== Boolean(value.SUPABASE_PUBLIC_KEY))
+    const firebaseFields = [
+      'FIREBASE_PROJECT_ID',
+      'FIREBASE_AUTH_DOMAIN',
+      'FIREBASE_API_KEY',
+      'FIREBASE_APP_ID',
+      'FIREBASE_ADMIN_CREDENTIALS_BASE64',
+    ] as const;
+    const configuredFirebaseFields = firebaseFields.filter((name) => value[name] !== undefined);
+    const firebaseEnabled = configuredFirebaseFields.length === firebaseFields.length;
+    if (configuredFirebaseFields.length > 0 && !firebaseEnabled)
       context.addIssue({
         code: 'custom',
-        path: ['SUPABASE_URL'],
-        message: 'Configure endereço e chave pública juntos.',
+        path: ['FIREBASE_PROJECT_ID'],
+        message: 'Configure todos os campos públicos e a credencial Firebase Admin juntos.',
+      });
+    if (firebaseEnabled) {
+      try {
+        const serviceAccount = JSON.parse(
+          Buffer.from(value.FIREBASE_ADMIN_CREDENTIALS_BASE64!, 'base64').toString('utf8'),
+        ) as { type?: string; project_id?: string; client_email?: string; private_key?: string };
+        if (
+          serviceAccount.type !== 'service_account' ||
+          serviceAccount.project_id !== value.FIREBASE_PROJECT_ID ||
+          !serviceAccount.client_email ||
+          !serviceAccount.private_key
+        )
+          context.addIssue({
+            code: 'custom',
+            path: ['FIREBASE_ADMIN_CREDENTIALS_BASE64'],
+            message: 'A credencial Firebase Admin deve pertencer ao projeto configurado.',
+          });
+      } catch {
+        context.addIssue({
+          code: 'custom',
+          path: ['FIREBASE_ADMIN_CREDENTIALS_BASE64'],
+          message: 'Configure uma credencial Firebase Admin válida em Base64.',
+        });
+      }
+    }
+    if (value.STEAM_OPENID_CALLBACK_URL) {
+      try {
+        const callback = new URL(value.STEAM_OPENID_CALLBACK_URL);
+        if (
+          callback.username ||
+          callback.password ||
+          callback.search ||
+          callback.hash ||
+          callback.pathname !== '/api/v1/identity/steam/callback'
+        )
+          context.addIssue({
+            code: 'custom',
+            path: ['STEAM_OPENID_CALLBACK_URL'],
+            message: 'Use somente a rota fixa de callback Steam, sem credenciais ou parâmetros.',
+          });
+        if (
+          value.APP_ENV !== 'local' &&
+          (!callback.protocol.startsWith('https:') || callback.origin !== value.WEB_ORIGIN)
+        )
+          context.addIssue({
+            code: 'custom',
+            path: ['STEAM_OPENID_CALLBACK_URL'],
+            message: 'Staging e produção exigem callback HTTPS na origem pública configurada.',
+          });
+      } catch {
+        context.addIssue({
+          code: 'custom',
+          path: ['STEAM_OPENID_CALLBACK_URL'],
+          message: 'Configure uma URL de callback Steam válida.',
+        });
+      }
+      if (!firebaseEnabled)
+        context.addIssue({
+          code: 'custom',
+          path: ['STEAM_OPENID_CALLBACK_URL'],
+          message: 'Configure Firebase antes de habilitar o callback Steam.',
+        });
+    } else if (firebaseEnabled && value.APP_ENV !== 'local') {
+      context.addIssue({
+        code: 'custom',
+        path: ['STEAM_OPENID_CALLBACK_URL'],
+        message: 'Staging e produção com Firebase exigem um callback Steam.',
+      });
+    }
+    if (value.STAGING_TEST_FIREBASE_UID && value.APP_ENV !== 'staging')
+      context.addIssue({
+        code: 'custom',
+        path: ['STAGING_TEST_FIREBASE_UID'],
+        message: 'O UID de teste só pode ser configurado em staging.',
+      });
+    if (
+      value.ROADMAP_ADMIN_FIREBASE_UIDS &&
+      new Set(value.ROADMAP_ADMIN_FIREBASE_UIDS.split(',').map((uid) => uid.trim())).size !==
+        value.ROADMAP_ADMIN_FIREBASE_UIDS.split(',').length
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['ROADMAP_ADMIN_FIREBASE_UIDS'],
+        message: 'A lista de UIDs administrativos não pode conter duplicatas.',
       });
     if (value.ANALYTICS_ENABLED && !value.POSTHOG_PUBLIC_KEY)
       context.addIssue({

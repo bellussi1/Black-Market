@@ -20,6 +20,61 @@ import {
 
 export const datasetStatus = pgEnum('dataset_status', ['loading', 'active', 'archived', 'failed']);
 export const roadmapEntryKind = pgEnum('roadmap_entry_kind', ['flow', 'pillar']);
+export const authProvider = pgEnum('auth_provider', ['google', 'steam']);
+
+export const authUsers = pgTable('auth_users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  firebaseUid: varchar('firebase_uid', { length: 128 }).notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const authIdentities = pgTable(
+  'auth_identities',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    provider: authProvider('provider').notNull(),
+    subject: varchar('subject', { length: 160 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('auth_identities_provider_subject_uidx').on(table.provider, table.subject),
+    uniqueIndex('auth_identities_user_provider_uidx').on(table.userId, table.provider),
+  ],
+);
+
+export const steamAuthAttempts = pgTable(
+  'steam_auth_attempts',
+  {
+    stateHash: varchar('state_hash', { length: 64 }).primaryKey(),
+    codeChallenge: varchar('code_challenge', { length: 43 }),
+    firebaseUid: varchar('firebase_uid', { length: 128 }).references(() => authUsers.firebaseUid, {
+      onDelete: 'cascade',
+    }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('steam_auth_attempts_expires_idx').on(table.expiresAt)],
+);
+
+export const steamAuthExchanges = pgTable(
+  'steam_auth_exchanges',
+  {
+    codeHash: varchar('code_hash', { length: 64 }).primaryKey(),
+    codeChallenge: varchar('code_challenge', { length: 43 }).notNull(),
+    firebaseUid: varchar('firebase_uid', { length: 128 })
+      .notNull()
+      .references(() => authUsers.firebaseUid, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('steam_auth_exchanges_expires_idx').on(table.expiresAt)],
+);
 
 /** Keep the indexed expression identical to the catalog query expression. */
 export function catalogNameExpression(name: SQLWrapper) {
@@ -392,6 +447,10 @@ export const marketSnapshots = pgTable(
 );
 
 export const schema = {
+  authUsers,
+  authIdentities,
+  steamAuthAttempts,
+  steamAuthExchanges,
   referenceRecords,
   referenceCollections,
   userWorkspaces,

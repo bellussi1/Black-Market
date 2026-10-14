@@ -1013,15 +1013,83 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Detalhe de segurança incorporado no plano**: state Steam fica vinculado a cookie HttpOnly/SameSite e a troca do código de login usa PKCE S256 de uso único; isso evita reaproveitar o retorno em outro navegador sem afetar a arquitetura aprovada.
 - **Verificação do estado**: Minha Conta ainda exibe login por link de e-mail e Google via Supabase; API valida Supabase. Não há Steam. O banco de staging é isolado e exclui `user_workspaces` no seed. O fixture sintético de personagem/família `AuroraVale` / `ValeDourado` existe em `production-demo.ts`, mas não pertence a uma conta persistida.
 - **Staging**: Docker local e Quick Tunnel temporário já existentes; `pnpm test:staging` passou. O túnel muda de URL e depende do computador do mantenedor. O desenho conserva allowlist de até dez e-mails, Firebase e banco próprios de staging, dados de teste e analytics/coletores desligados. Para disponibilidade contínua será necessário domínio/túnel nomeado ou hospedagem.
-- **Artefato**: `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` documenta fluxos, modelo de identidade, segurança, seed idempotente e critérios de aceitação. Revisão própria concluída; ainda aguarda revisão explícita do usuário antes do plano de implementação, conforme a skill de brainstorming.
+- **Artefato**: `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` documenta fluxos, modelo de identidade, segurança, seed idempotente e critérios de aceitação. A aprovação do usuário para o plano e a implementação foi recebida na sequência.
 - **Limites externos**: Firebase staging/produção, credencial Admin, domínio HTTPS/retornos, e-mails dos testers e a identificação da conta designada ainda precisam ser configurados; não enviar segredos pelo chat. Não há evidência sobre workspaces de eventual projeto Supabase externo, então não remover dados de lá sem inventário.
-- **Próximo passo**: após a revisão da especificação pelo usuário, criar o plano e implementar em commits atômicos; só validar login real e semear a conta quando a configuração externa e a identidade designada estiverem disponíveis.
+- **Próximo passo**: implementar as cinco tarefas do plano em commits atômicos. Login real e seed da conta designada dependem da configuração externa e da identidade autorizada.
 
 ## 91. Plano aprovado para autenticação social e staging (Codex, 14/10/2026)
 
 - **Aprovação**: o usuário aprovou a especificação e pediu para seguir com plano e implementação.
 - **Plano**: `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md` decompõe o trabalho em esquema/configuração, Firebase API, Steam OpenID, UI Google/Steam e seed/ops do staging. Cada tarefa tem casos de teste, verificação e commit próprio.
 - **Refinamento de segurança**: a especificação agora registra vínculo do state por cookie de navegador e PKCE S256 no código de troca Steam; não altera os provedores nem o modelo de sessão aprovados.
-- **Isolamento**: criado worktree gerenciado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; antes de executar o plano, o commit documental será incorporado a esse checkout.
+- **Isolamento**: worktree gerenciado criado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; os commits de especificação e plano foram incorporados antes da implementação.
 - **Restrições externas**: login real ainda depende dos projetos Firebase, segredo Admin, callback HTTPS/domínio autorizado, conta de teste e lista de e-mails allowlisted. Não usar credenciais reais do usuário no repositório nem afirmar login funcional sem E2E real.
-- **Próximo passo**: executar o plano no worktree e atualizar este contexto após cada commit de tarefa.
+- **Próximo passo**: Task 1 e Task 2 foram commitadas; a implementação segue pela Task 3 (Steam OpenID, PKCE e vinculação), atualizando este contexto após cada commit.
+
+## 92. Esquema de identidade e configuração Firebase (Codex, 14/10/2026)
+
+- **Implementação**: incluído `APP_ENV` e validação opcional da configuração Firebase completa, credencial Admin Base64 vinculada ao `project_id`, callback Steam em rota fixa e HTTPS/origem pública fora do local, UID de seed exclusivo do staging e lista de admins validada. `.env.example` mantém credenciais vazias.
+- **Persistência**: criado o enum `auth_provider` e tabelas `auth_users`, `auth_identities`, `steam_auth_attempts` e `steam_auth_exchanges`. O Firebase UID tem constraint `UNIQUE` inline antes das FKs que o referenciam; identidades têm unicidade por provedor/sujeito e por usuário/provedor. O schema de `user_workspaces.user_id` não mudou.
+- **Compose**: os três ambientes encaminham configurações e a credencial Admin somente ao container da API. Staging e produção definem `APP_ENV` explicitamente; o container web não recebe credencial Admin.
+- **Testes/verificações**: `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` — 11/11 passaram; `pnpm --filter @bdo/database db:check` e `pnpm --filter @bdo/api typecheck` passaram. `docker compose config --quiet` local, staging e produção passou; staging/produção usaram somente placeholders temporários para segredos obrigatórios e hash de assets, sem iniciar containers nem guardar segredos.
+- **Limite de tarefa**: a resposta pública `/identity/config` será migrada no Task 2 junto do serviço Firebase, evitando expor configuração ainda sem o runtime que a sustenta.
+- **Arquivos**: `.env.example`, Compose local/staging/produção, schema Drizzle, migração `0008_huge_emma_frost.sql`, testes/schema de ambiente, plano e ledger SDD.
+- **Commit**: `3f22e47 feat(auth): add Firebase identity schema and config`.
+- **Próximo passo**: implementação registrada no commit seguinte; a Task 3 segue com Steam OpenID e troca PKCE de uso único.
+
+## 93. Verificação de sessões Firebase e dono canônico (Codex, 14/10/2026)
+
+- **Firebase Admin**: instalado `firebase-admin@14.5.0` com versão exata; serviço inicializa de forma preguiçosa usando credencial Admin exclusivamente no servidor, verifica ID token com checagem de revogação, consulta provider data e cria custom token somente via serviço interno.
+- **Identidade e workspace**: API aceita apenas ID tokens Firebase de `google.com` ou token custom com UID Steam já mapeado. Login Google comprova `providerData` no Admin e cria/reutiliza UUID canônico em transação, com restrições únicas e sem vincular por e-mail. `user_workspaces.user_id` segue UUID interno.
+- **Roadmap/conta**: autorização de edição usa somente `ROADMAP_ADMIN_FIREBASE_UIDS` no servidor. `GET /identity/me` retorna nome/e-mail/foto quando disponíveis, provedores vinculados e permissão de roadmap sem expor o UUID interno. `/identity/config` retorna somente configuração web pública e usa `no-store`.
+- **Módulos**: workspace e Roadmap passaram a usar o mesmo limite de identidade Firebase; as dependências/campos Supabase antigos ficam temporariamente até Task 5, depois da migração dos demais consumidores.
+- **Verificação**: a suíte direcionada (schema de ambiente + Firebase Admin + identidade) passou 25/25; `pnpm --filter @bdo/api lint` e `pnpm --filter @bdo/api typecheck` passaram. O typecheck inicial usou um `tsconfig.tsbuildinfo` obsoleto após a instalação; removi apenas esse artefato ignorado e rodei novamente, com saída zero.
+- **Limites**: ainda não há projeto Firebase nem credenciais; testes mockam Admin SDK e não representam login real Google/Steam. O callback Steam e a UI Firebase chegam nas Tasks 3 e 4.
+- **Arquivos**: `apps/api/src/workspace/firebase-auth.service.ts` e teste, `identity.service.ts` e teste, controller e módulos Workspace/Roadmap, `apps/api/package.json`, `pnpm-lock.yaml`, plano e este contexto.
+- **Commit**: `4ff82d6 feat(auth): verify Firebase sessions and map accounts`.
+- **Próximo passo**: finalizar o verificador Steam OpenID, a troca PKCE de uso único e a vinculação explícita na Task 3.
+
+## 94. Steam OpenID e vinculação explícita (Codex, 14/10/2026)
+
+- **Login Steam**: API cria estado aleatório armazenado somente como hash e vinculado a cookie HttpOnly/SameSite; a callback confere o cookie, o retorno exato, a resposta assinada e a validação `check_authentication` da Steam. O SteamID64 precisa ser canônico de conta individual.
+- **Troca e sessão**: código de troca também é armazenado como hash, expira em cinco minutos e só pode ser consumido uma vez. O cliente deve provar PKCE S256 antes de a API emitir o Firebase custom token.
+- **Vinculação de contas**: Steam e Google são ligados somente à sessão autenticada e sem conflito; e-mail não é usado para mesclar contas. O início da vinculação Steam reutiliza o cookie protegido e callback retorna para fragmento local fixo.
+- **Proteções HTTP**: CORS com credenciais limitado à origem web configurada; rotas de identidade usam limite específico; resposta callback é `no-store`/`no-referrer` e limpa cookie em sucesso ou erro.
+- **Verificação**: 54 testes API direcionados passaram; `pnpm --filter @bdo/api lint`, `pnpm --filter @bdo/api typecheck`, `pnpm --filter @bdo/database db:check`, Prettier e `git diff --check` passaram. O primeiro lint sinalizou import sort em um spec; foi corrigido antes da repetição.
+- **Limite externo**: sem projeto/credenciais Firebase configurados, os testes validam as integrações mockadas e não comprovam autenticação real Steam/Google.
+- **Arquivos**: serviços OpenID, autenticação e storage Steam, controller de identidade e testes; migração/schema de tentativas; política CORS e limitador; serviço de identidade; plano e contexto.
+- **Commit**: `0a0cdbd feat(auth): add verified Steam OpenID login`.
+- **Próximo passo**: implementar UI Firebase para Google/Steam e vínculo explícito na Task 4.
+
+## 95. Sessão Firebase no navegador e acesso Google/Steam (Codex, 14/10/2026)
+
+- **SDK e sessão**: cliente Web usa Firebase modular, inicializado somente no navegador a partir de `/identity/config`, com persistência limitada à sessão/aba. Visitantes continuam usando as páginas públicas sem inicializar Firebase.
+- **Login**: a página oferece apenas Google e Steam. Google usa popup Firebase; Steam cria verifier PKCE S256 em `sessionStorage`, segue para a API e troca o código de uso único por Firebase custom token. O fragmento com código é removido do histórico antes da chamada de troca.
+- **Contas/vínculos**: estado autenticado é baseado no UID e funciona sem e-mail, inclusive para Steam. Provedores ligados vêm de `/identity/me`; as ações de vincular Google/Steam usam a sessão atual e confirmam o vínculo no backend.
+- **CSP/Compose**: CSP permite os endpoints de Auth do Firebase/Google e o auth domain configurado, sem depender de domínio Supabase. O domínio público `FIREBASE_AUTH_DOMAIN` chega ao servidor Web só para construir CSP; chaves e credenciais Admin permanecem na API.
+- **Dependências e idioma**: adicionado Firebase Web SDK e removido `@supabase/supabase-js` do Web após verificar ausência de consumidores; catálogo `messages.pt-BR.xlf` atualizado.
+- **Verificação**: 17 testes direcionados passaram; `pnpm --filter @bdo/web lint` e `typecheck` passaram; build Angular development passou; Compose local passou e staging/produção passaram com placeholders efêmeros. `git diff --check` e Prettier passaram. A extração de i18n concluiu com 1.452 mensagens.
+- **Limite de build**: `ng build --configuration production` ainda falha nos budgets configurados: bundle inicial 1,05 MB contra erro em 1,00 MB; `recipe-tree.scss` 38,77 KB contra limite de erro de 20 KB. A árvore não foi alterada neste trabalho; a validação para esta tarefa usa o build development aprovado no plano. Não há autenticação real verificada porque Firebase/domínio/credenciais ainda não foram configurados.
+- **Arquivos**: serviço/spec de identidade Web, página e spec de conta, política CSP/servidor, compose local/staging/produção, package/lock, teste do Roadmap, catálogo de tradução e plano/contexto.
+- **Próximo passo**: registrar o commit atômico `feat(auth): add Google and Steam account UI`; depois implementar seed de staging e handoff operacional na Task 5.
+
+## 96. Seed de perfil de teste e rebuild local (Codex, 14/10/2026)
+
+- **Implementação**: fixture `AuroraVale` / `ValeDourado` agora é compartilhada pela demonstração local e pelo seed de staging. `TestWorkspaceSeeder` valida `APP_ENV=staging` e a UID Firebase allowlisted, resolve a conta canônica, bloqueia concorrência com advisory lock, valida/mescla o workspace e não duplica ou sobrescreve valores. O CLI `workspace:seed-test-profile` não cria endpoint HTTP.
+- **Staging e login**: `Share -AllowedEmail` valida até dez e-mails únicos e válidos, aplica a proteção de e-mail do Quick Tunnel, ajusta o callback Steam para a URL temporária e só imprime o link após smoke test. Documentei configuração separada de Firebase, login somente Google/Steam, seed e hostname. Supabase Auth foi removido das dependências e dos envs de runtime após verificar que não restam consumidores de código.
+- **Verificação do código**: 18 testes focados de seeder/configuração passaram; `pnpm check`, `pnpm typecheck`, sintaxe PowerShell e `docker compose config --quiet` local passaram. `pnpm test:staging` passou no gateway existente em `localhost:8081`. A suíte geral ainda tem 10 falhas em `recipe-tree.spec.ts`; 489 outros testes Web, 208 testes API e 66 de calculators passaram. O build mantém o aviso conhecido de fallback `pt-BR` para `pt`.
+- **Rebuild local**: imagem Docker de desenvolvimento criada a partir deste worktree. `localhost:4200/` respondeu HTTP 200, API `localhost:3000/ready` HTTP 200, item de catálogo 1407 e ícone WebP responderam HTTP 200. A API está saudável e o volume PostgreSQL `sitedebdo_postgres_data` foi preservado; os assets continuam montados da pasta de dados local existente.
+- **Limites externos**: Firebase Project/Admin, domínio autorizado, UID da conta de teste e e-mails dos testers não estão configurados neste ambiente. Não executei login real nem seed da conta. O perfil será aplicado apenas depois do primeiro login social da conta designada e da configuração privada da UID no staging. A página local está servida pela branch `codex/social-auth-staging` no worktree gerenciado.
+- **Arquivos**: fixture em `packages/shared/src/staging-test-profile.ts`; seeder/spec/CLI em `apps/api/src/workspace/`; atualização de `scripts/staging.ps1`, Compose, `.env.example`, `pnpm-lock.yaml`, `README.md` e documentação de staging/contas/segurança.
+- **Commits**: formatação isolada de documentos `716c4e0 style(docs): format market research notes`; implementação atômica do seed/staging `211a953 feat(staging): seed test account and document social auth setup`.
+- **Próximo passo**: manter a aplicação local acessível. Depois de configurar o projeto Firebase de staging, domínios autorizados, credencial Admin, UID designada e lista privada de testers, validar login Google/Steam e executar `SeedProfile`.
+
+## 97. Correção de API local e marca sem fundo branco (Codex, 14/10/2026)
+
+- **Causa dos erros**: o navegador usava `http://localhost:3001` em `environment.ts`, mas a API local é publicada na porta 3000. O mercado e os ícones de catálogo/receitas falhavam com `ERR_CONNECTION_REFUSED`.
+- **Correção da API**: base de desenvolvimento e fallbacks SSR/sitemap agora apontam para `localhost:3000`; o mapeamento SSR continua usando `API_BASE_URL` configurado quando disponível. Testes cobrem chamadas do mercado e URL dos ícones.
+- **Logo**: o PNG tem canvas branco fora do emblema arredondado. A navegação aplica `clip-path: inset(4% round 24%)` para cortar apenas o canvas externo, mantendo o arquivo e o desenho originais.
+- **Validação**: os testes direcionados passaram (17/17) e `pnpm check` passou. Playwright confirmou Mercado HTTP 200 com 20 linhas, sem erros no console; Receitas renderizou 24 imagens de itens, sem imagens quebradas nem alertas. Captura visual confirmou o emblema sem o fundo branco.
+- **Servidor local**: web e API permanecem ativos em `http://localhost:4200` e `http://localhost:3000`; o web dev server carrega o código desta worktree.
+- **Arquivos**: `apps/web/src/environments/environment.ts`, `apps/web/src/app/app.config.server.ts`, `apps/web/src/server.ts`, `apps/web/src/app/layout/workspace-layout.html`, `workspace-layout.scss`, specs do layout, mercado e catálogo.
+- **Commit**: `d3a1777 fix(web): correct local API URL and trim logo background`.

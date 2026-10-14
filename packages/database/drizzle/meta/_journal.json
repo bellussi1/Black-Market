@@ -57,6 +57,20 @@
       "when": 1791936624887,
       "tag": "0007_fantastic_vivisector",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791984766242,
+      "tag": "0008_huge_emma_frost",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791986806787,
+      "tag": "0009_common_dragon_man",
+      "breakpoints": true
     }
   ]
 }

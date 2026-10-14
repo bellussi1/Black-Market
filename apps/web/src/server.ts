@@ -141,7 +141,7 @@ app.use((_req, res, next) => {
     for (const [name, value] of Object.entries(
       securityHeaders(
         process.env['PUBLIC_SITE_URL'],
-        process.env['SUPABASE_URL'],
+        process.env['FIREBASE_AUTH_DOMAIN'],
         process.env['CATALOG_ASSETS_PUBLIC_URL'],
       ),
     ))
@@ -257,7 +257,7 @@ app.get('/sobre/index.html', (_req, res) => res.redirect(308, '/sobre'));
 async function sitemapResponse(path: string, res: express.Response) {
   try {
     const response = await fetch(
-      (process.env['API_BASE_URL'] ?? 'http://localhost:3001') + '/api/v1/catalog/' + path,
+      (process.env['API_BASE_URL'] ?? 'http://localhost:3000') + '/api/v1/catalog/' + path,
       { signal: AbortSignal.timeout(8000) },
     );
     if (!response.ok) {

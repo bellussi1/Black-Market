@@ -15,6 +15,19 @@ const recipes = (start: number, count: number): CatalogRecipe[] =>
     outputs: [],
   }));
 describe('Complete item recipe lookup', () => {
+  it('builds item icon URLs on the API port published by the local app', () => {
+    expect(
+      TestBed.inject(CatalogApiService).itemIconUrl(1407, {
+        version: 'dataset',
+        region: 'sa',
+        locale: 'pt',
+        checksum: 'dataset',
+        itemCount: 0,
+        recipeCount: 0,
+        importedAt: '2026-10-14T00:00:00.000Z',
+      }),
+    ).toBe('http://localhost:3000/api/v1/items/1407/icon?dataset=dataset');
+  });
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

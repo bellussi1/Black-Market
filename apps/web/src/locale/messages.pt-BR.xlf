@@ -418,41 +418,49 @@
         <source> A sincronização entre dispositivos ainda não está disponível. Você pode usar as ferramentas e fazer backup dos seus dados neste navegador. </source>
       </segment>
     </unit>
-    <unit id="3541217368259760766">
+    <unit id="4138174036320745181">
       <notes>
         <note category="location">src/app/features/account/account-page.html:25,26</note>
       </notes>
       <segment>
-        <source>Entrar sem senha</source>
+        <source>Entre com sua conta social</source>
       </segment>
     </unit>
-    <unit id="283834009139718223">
+    <unit id="2140763096263428916">
       <notes>
         <note category="location">src/app/features/account/account-page.html:27,28</note>
       </notes>
       <segment>
-        <source>Seu e-mail</source>
-      </segment>
-    </unit>
-    <unit id="7181429091844218278">
-      <notes>
-        <note category="location">src/app/features/account/account-page.html:46</note>
-      </notes>
-      <segment>
-        <source> Receber link de acesso</source>
+        <source> Use Google ou Steam. O Black Market não cria senha nem pede acesso à sua conta do jogo. </source>
       </segment>
     </unit>
     <unit id="7051430702517617099">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:56,57</note>
+        <note category="location">src/app/features/account/account-page.html:40</note>
       </notes>
       <segment>
         <source> Entrar com Google </source>
       </segment>
     </unit>
+    <unit id="7485356506390517744">
+      <notes>
+        <note category="location">src/app/features/account/account-page.html:53</note>
+      </notes>
+      <segment>
+        <source> Entrar com Steam </source>
+      </segment>
+    </unit>
+    <unit id="6301769830539764856">
+      <notes>
+        <note category="location">src/app/features/account/account-page.html:64,65</note>
+      </notes>
+      <segment>
+        <source>Provedores vinculados: <ph id="0" equiv="INTERPOLATION" disp="{{ linkedProviderLabels() || &apos;Steam&apos; }}"/></source>
+      </segment>
+    </unit>
     <unit id="5754668001507238691">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:73</note>
+        <note category="location">src/app/features/account/account-page.html:75</note>
       </notes>
       <segment>
         <source> Consultar meus dados salvos</source>
@@ -460,15 +468,31 @@
     </unit>
     <unit id="6953441796877874011">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:83,84</note>
+        <note category="location">src/app/features/account/account-page.html:85,86</note>
       </notes>
       <segment>
         <source> Sair da conta </source>
       </segment>
     </unit>
+    <unit id="555094529392608420">
+      <notes>
+        <note category="location">src/app/features/account/account-page.html:97</note>
+      </notes>
+      <segment>
+        <source> Vincular Google </source>
+      </segment>
+    </unit>
+    <unit id="8489046910855928740">
+      <notes>
+        <note category="location">src/app/features/account/account-page.html:110</note>
+      </notes>
+      <segment>
+        <source> Vincular Steam </source>
+      </segment>
+    </unit>
     <unit id="3419533389279521353">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:87,88</note>
+        <note category="location">src/app/features/account/account-page.html:115,116</note>
       </notes>
       <segment>
         <source> Entrar não substitui seus dados automaticamente. Consulte a cópia da conta e escolha o que deseja fazer. </source>
@@ -476,7 +500,7 @@
     </unit>
     <unit id="4778444582805146453">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:93,94</note>
+        <note category="location">src/app/features/account/account-page.html:121,122</note>
       </notes>
       <segment>
         <source>Revisar antes de sincronizar</source>
@@ -484,7 +508,7 @@
     </unit>
     <unit id="5004744071940915274">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:95,99</note>
+        <note category="location">src/app/features/account/account-page.html:123,127</note>
       </notes>
       <segment>
         <source> Você tem <ph id="0" equiv="INTERPOLATION" disp="{{ summary(store.data()).materials }}"/> materiais, <ph id="1" equiv="INTERPOLATION_1" disp="{{ summary(store.data()).characters }}"/> personagens e <ph id="2" equiv="INTERPOLATION_2" disp="{{ summary(store.data()).plans }}"/> planos neste navegador. </source>
@@ -492,7 +516,7 @@
     </unit>
     <unit id="4969966508773279386">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:101,105</note>
+        <note category="location">src/app/features/account/account-page.html:129,133</note>
       </notes>
       <segment>
         <source> A conta tem <ph id="0" equiv="INTERPOLATION" disp="{{ summary(saved).materials }}"/> materiais, <ph id="1" equiv="INTERPOLATION_1" disp="{{ summary(saved).characters }}"/> personagens e <ph id="2" equiv="INTERPOLATION_2" disp="{{ summary(saved).plans }}"/> planos. Última atualização: <ph id="3" equiv="INTERPOLATION_3" disp="{{ updatedAt() }}"/>. </source>
@@ -500,7 +524,7 @@
     </unit>
     <unit id="7117615708630042762">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:107,108</note>
+        <note category="location">src/app/features/account/account-page.html:135,136</note>
       </notes>
       <segment>
         <source>Quero substituir a cópia deste navegador pela cópia da conta.</source>
@@ -508,7 +532,7 @@
     </unit>
     <unit id="5811216560936164537">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:118</note>
+        <note category="location">src/app/features/account/account-page.html:146</note>
       </notes>
       <segment>
         <source> Usar dados da conta </source>
@@ -516,7 +540,7 @@
     </unit>
     <unit id="6057433049867687914">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:123,124</note>
+        <note category="location">src/app/features/account/account-page.html:151,152</note>
       </notes>
       <segment>
         <source>Revisei e quero enviar a cópia deste navegador, substituindo a cópia da conta.</source>
@@ -524,7 +548,7 @@
     </unit>
     <unit id="5739709111731821810">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:134,135</note>
+        <note category="location">src/app/features/account/account-page.html:162,163</note>
       </notes>
       <segment>
         <source> Salvar na conta </source>
@@ -532,7 +556,7 @@
     </unit>
     <unit id="8149211726731507637">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:137,138</note>
+        <note category="location">src/app/features/account/account-page.html:165,166</note>
       </notes>
       <segment>
         <source>Excluir cópia da conta</source>
@@ -540,7 +564,7 @@
     </unit>
     <unit id="8374117624204675748">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:140,141</note>
+        <note category="location">src/app/features/account/account-page.html:168,169</note>
       </notes>
       <segment>
         <source>Quero excluir somente os dados salvos na conta. Meu backup neste navegador será mantido.</source>
@@ -548,7 +572,7 @@
     </unit>
     <unit id="1855016776477968014">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:152</note>
+        <note category="location">src/app/features/account/account-page.html:180</note>
       </notes>
       <segment>
         <source> Excluir cópia na conta </source>
@@ -925,7 +949,7 @@
     <unit id="5177990394865145565">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:32,33</note>
-        <note category="location">src/app/layout/workspace-layout.ts:190</note>
+        <note category="location">src/app/layout/workspace-layout.ts:191</note>
       </notes>
       <segment>
         <source>Consultar mercado</source>
@@ -1229,7 +1253,7 @@
     <unit id="7366564846379609598">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:228</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:444,445</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:446,447</note>
       </notes>
       <segment>
         <source>Lucro por hora</source>
@@ -1280,7 +1304,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:254</note>
         <note category="location">src/app/features/crafting/crafting-page.html:481</note>
         <note category="location">src/app/features/storage/storage-page.html:545</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:618,619</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:620,621</note>
       </notes>
       <segment>
         <source>Material</source>
@@ -1289,7 +1313,7 @@
     <unit id="6162001305295829622">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:255</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:620,621</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:622,623</note>
       </notes>
       <segment>
         <source>Necessário</source>
@@ -1309,7 +1333,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:257</note>
         <note category="location">src/app/features/crafting/crafting-page.html:486</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:622,623</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:624,625</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1539,7 +1563,7 @@
     <unit id="2853504753899430284">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:483</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:621,622</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:623,624</note>
       </notes>
       <segment>
         <source>Estoque usado</source>
@@ -2034,7 +2058,7 @@
     <unit id="7468173889571751215">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:124</note>
-        <note category="location">src/app/layout/workspace-layout.ts:205</note>
+        <note category="location">src/app/layout/workspace-layout.ts:206</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos</source>
@@ -2060,7 +2084,7 @@
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:130</note>
         <note category="location">src/app/features/demo/demo-page.html:36,37</note>
-        <note category="location">src/app/layout/workspace-layout.ts:201</note>
+        <note category="location">src/app/layout/workspace-layout.ts:202</note>
       </notes>
       <segment>
         <source>Família</source>
@@ -2109,7 +2133,7 @@
     <unit id="1012592931481663403">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:142</note>
-        <note category="location">src/app/layout/workspace-layout.ts:224</note>
+        <note category="location">src/app/layout/workspace-layout.ts:225</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
@@ -2134,7 +2158,7 @@
     <unit id="3487828683297229196">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:148</note>
-        <note category="location">src/app/layout/workspace-layout.ts:228</note>
+        <note category="location">src/app/layout/workspace-layout.ts:229</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
@@ -2159,7 +2183,7 @@
     <unit id="1066166934309898114">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:154</note>
-        <note category="location">src/app/layout/workspace-layout.ts:211</note>
+        <note category="location">src/app/layout/workspace-layout.ts:212</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -2184,7 +2208,7 @@
     <unit id="7338913928758216034">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:160</note>
-        <note category="location">src/app/layout/workspace-layout.ts:237</note>
+        <note category="location">src/app/layout/workspace-layout.ts:238</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -3164,7 +3188,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:252</note>
+        <note category="location">src/app/layout/workspace-layout.ts:253</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
@@ -3190,33 +3214,17 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:258</note>
+        <note category="location">src/app/layout/workspace-layout.ts:259</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
         <source>Contato e suporte</source>
       </segment>
     </unit>
-    <unit id="5276681313104980336">
-      <notes>
-        <note category="location">src/app/features/legal/legal-page.html:25,26</note>
-      </notes>
-      <segment>
-        <source>Documento em revisão</source>
-      </segment>
-    </unit>
-    <unit id="8912642124474993818">
-      <notes>
-        <note category="location">src/app/features/legal/legal-page.html:27,28</note>
-      </notes>
-      <segment>
-        <source> Este texto descreve o MVP e não foi juridicamente validado. Antes da abertura pública, precisam de revisão: </source>
-      </segment>
-    </unit>
     <unit id="1157019259303417042">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.html:37</note>
-        <note category="location">src/app/features/legal/legal-page.html:38,39</note>
+        <note category="location">src/app/features/legal/legal-page.html:23</note>
+        <note category="location">src/app/features/legal/legal-page.html:24,25</note>
       </notes>
       <segment>
         <source>Nesta página</source>
@@ -3224,8 +3232,8 @@
     </unit>
     <unit id="3921906068819530435">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.html:45,46</note>
-        <note category="location">src/app/features/legal/legal-page.html:57,58</note>
+        <note category="location">src/app/features/legal/legal-page.html:31,32</note>
+        <note category="location">src/app/features/legal/legal-page.html:43,44</note>
       </notes>
       <segment>
         <source>Responsável e contato</source>
@@ -3233,7 +3241,7 @@
     </unit>
     <unit id="7546059765554833653">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.html:61,63</note>
+        <note category="location">src/app/features/legal/legal-page.html:47,49</note>
       </notes>
       <segment>
         <source>Identificação do responsável ainda não publicada.</source>
@@ -3241,7 +3249,7 @@
     </unit>
     <unit id="576665182908142265">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.html:66,68</note>
+        <note category="location">src/app/features/legal/legal-page.html:52,54</note>
       </notes>
       <segment>
         <source>Canal público de contato ainda não configurado.</source>
@@ -3249,7 +3257,7 @@
     </unit>
     <unit id="2552879274211192916">
       <notes>
-        <note category="location">src/app/features/legal/legal-page.html:77,78</note>
+        <note category="location">src/app/features/legal/legal-page.html:63,64</note>
       </notes>
       <segment>
         <source> Alterar preferências de privacidade </source>
@@ -5513,7 +5521,7 @@
     <unit id="6215048040341403789">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-page.html:5,6</note>
-        <note category="location">src/app/layout/workspace-layout.ts:241</note>
+        <note category="location">src/app/layout/workspace-layout.ts:242</note>
       </notes>
       <segment>
         <source>Roadmap</source>
@@ -6119,7 +6127,7 @@
         <note category="location">src/app/features/scans/scans-page.html:191,192</note>
         <note category="location">src/app/features/stock/stock-page.html:4,5</note>
         <note category="location">src/app/features/storage/storage-page.html:23</note>
-        <note category="location">src/app/layout/workspace-layout.ts:220</note>
+        <note category="location">src/app/layout/workspace-layout.ts:221</note>
       </notes>
       <segment>
         <source>Armazém</source>
@@ -8939,7 +8947,7 @@
     </unit>
     <unit id="8237522812427434567">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:171</note>
+        <note category="location">src/app/layout/workspace-layout.ts:172</note>
       </notes>
       <segment>
         <source>Início</source>
@@ -8947,7 +8955,7 @@
     </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:173</note>
+        <note category="location">src/app/layout/workspace-layout.ts:174</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
@@ -8955,7 +8963,7 @@
     </unit>
     <unit id="1453134524041735834">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:184</note>
+        <note category="location">src/app/layout/workspace-layout.ts:185</note>
       </notes>
       <segment>
         <source>Mercado e produção</source>
@@ -8963,7 +8971,7 @@
     </unit>
     <unit id="6914995339590461813">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:188</note>
+        <note category="location">src/app/layout/workspace-layout.ts:189</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -8971,7 +8979,7 @@
     </unit>
     <unit id="6469027931203119221">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:192</note>
+        <note category="location">src/app/layout/workspace-layout.ts:193</note>
       </notes>
       <segment>
         <source>Calcular produção</source>
@@ -8979,7 +8987,7 @@
     </unit>
     <unit id="6004493327033173129">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:197</note>
+        <note category="location">src/app/layout/workspace-layout.ts:198</note>
       </notes>
       <segment>
         <source>Personagem e evolução</source>
@@ -8987,7 +8995,7 @@
     </unit>
     <unit id="3186839719843195748">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:209</note>
+        <note category="location">src/app/layout/workspace-layout.ts:210</note>
       </notes>
       <segment>
         <source>Profissões e rendimento</source>
@@ -8995,7 +9003,7 @@
     </unit>
     <unit id="4384711067175333650">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:216</note>
+        <note category="location">src/app/layout/workspace-layout.ts:217</note>
       </notes>
       <segment>
         <source>Materiais e planejamento</source>
@@ -9003,7 +9011,7 @@
     </unit>
     <unit id="2628946056707873008">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:222</note>
+        <note category="location">src/app/layout/workspace-layout.ts:223</note>
       </notes>
       <segment>
         <source>Importar por captura</source>
@@ -9011,7 +9019,7 @@
     </unit>
     <unit id="3031009167976274068">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:226</note>
+        <note category="location">src/app/layout/workspace-layout.ts:227</note>
       </notes>
       <segment>
         <source>Meus planos</source>
@@ -9019,7 +9027,7 @@
     </unit>
     <unit id="800803655328576309">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:233</note>
+        <note category="location">src/app/layout/workspace-layout.ts:234</note>
       </notes>
       <segment>
         <source>Guias e conta</source>
@@ -9027,7 +9035,7 @@
     </unit>
     <unit id="6030563743846874138">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:239</note>
+        <note category="location">src/app/layout/workspace-layout.ts:240</note>
       </notes>
       <segment>
         <source>Minha conta</source>
@@ -9035,7 +9043,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:254</note>
+        <note category="location">src/app/layout/workspace-layout.ts:255</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
       </notes>
       <segment>
@@ -9044,7 +9052,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:256</note>
+        <note category="location">src/app/layout/workspace-layout.ts:257</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
       </notes>
       <segment>
@@ -9053,7 +9061,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:278</note>
+        <note category="location">src/app/layout/workspace-layout.ts:279</note>
       </notes>
       <segment>
         <source>Black Market</source>
@@ -9483,12 +9491,12 @@
         <source>Ferramentas para a comunidade brasileira de Black Desert Online.</source>
       </segment>
     </unit>
-    <unit id="3395387156013877446">
+    <unit id="2325899627707509324">
       <notes>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:8,9</note>
       </notes>
       <segment>
-        <source>Sobre a plataforma e as fontes</source>
+        <source>Sobre a plataforma</source>
       </segment>
     </unit>
     <unit id="1175025131859267802">
@@ -9723,17 +9731,17 @@
         <source>Sua privacidade</source>
       </segment>
     </unit>
-    <unit id="4206149841715303217">
+    <unit id="1148386270708784549">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:27,29</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:27,30</note>
       </notes>
       <segment>
-        <source> As ferramentas guardam dados neste dispositivo. Se você confirmar a sincronização, uma cópia será enviada à sua conta. Estatísticas são opcionais e não incluem sua conta, estoque nem prints. </source>
+        <source> Cookies necessários guardam sua região e escolha de privacidade. Estatísticas opcionais usam um identificador aleatório em cookie próprio por até 180 dias, somente após seu aceite. Registram áreas visitadas e etapas agregadas, sem dados da conta, armazém, pesquisas, nomes ou IDs de itens ou imagens. Você pode mudar a escolha pelo rodapé. </source>
       </segment>
     </unit>
     <unit id="4233266262566694591">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:31,32</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:32,33</note>
       </notes>
       <segment>
         <source>Como usamos cookies e armazenamento</source>
@@ -9741,7 +9749,7 @@
     </unit>
     <unit id="2236392630766770858">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:33,34</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:34,35</note>
       </notes>
       <segment>
         <source>Necessários: sempre ativos para as funções que você usa.</source>
@@ -9749,7 +9757,7 @@
     </unit>
     <unit id="2290142998288020154">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:35,36</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:36,37</note>
       </notes>
       <segment>
         <source>Aceitar estatísticas</source>
@@ -9757,7 +9765,7 @@
     </unit>
     <unit id="4819481049727269512">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:36,37</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:37,38</note>
       </notes>
       <segment>
         <source>Rejeitar opcionais</source>
@@ -9765,7 +9773,7 @@
     </unit>
     <unit id="8678675799713450261">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:37,38</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:38,39</note>
       </notes>
       <segment>
         <source>Personalizar</source>
@@ -9773,8 +9781,8 @@
     </unit>
     <unit id="7733877625555077778">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:40</note>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:69</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:41</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:70</note>
       </notes>
       <segment>
         <source> Fechar preferências </source>
@@ -9782,7 +9790,7 @@
     </unit>
     <unit id="3720719884536054197">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:45,46</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:46,47</note>
       </notes>
       <segment>
         <source>Necessários: sempre ativos para os recursos solicitados.</source>
@@ -9790,7 +9798,7 @@
     </unit>
     <unit id="2445128555676770148">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:52,53</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:53,54</note>
       </notes>
       <segment>
         <source>Estatísticas de uso opcionais</source>
@@ -9798,23 +9806,23 @@
     </unit>
     <unit id="462322724208633651">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:55</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:56</note>
       </notes>
       <segment>
         <source> Salvar escolhas </source>
       </segment>
     </unit>
-    <unit id="8435487305481921481">
+    <unit id="5234641154373944742">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:60</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:61</note>
       </notes>
       <segment>
-        <source> Estatísticas opcionais estão indisponíveis. Nenhuma ferramenta opcional será iniciada. </source>
+        <source> Estatísticas opcionais estão indisponíveis. Nenhum evento de analytics será enviado. </source>
       </segment>
     </unit>
     <unit id="5301133474069323282">
       <notes>
-        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:64</note>
+        <note category="location">src/app/shared/privacy-controls/privacy-controls.ts:65</note>
       </notes>
       <segment>
         <source> Revogar autorização anterior </source>
@@ -10166,7 +10174,7 @@
     </unit>
     <unit id="2445384171965660751">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:454,455</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:456,457</note>
       </notes>
       <segment>
         <source>Lucro líquido</source>
@@ -10174,7 +10182,7 @@
     </unit>
     <unit id="7628283421798864413">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:463,464</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:465,466</note>
       </notes>
       <segment>
         <source>Custo dos materiais</source>
@@ -10182,7 +10190,7 @@
     </unit>
     <unit id="5254134715645515364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:469,470</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:471,472</note>
       </notes>
       <segment>
         <source>Faturamento líquido</source>
@@ -10190,7 +10198,7 @@
     </unit>
     <unit id="5783330943194905505">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:494,495</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:496,497</note>
       </notes>
       <segment>
         <source>Atualizando cotações</source>
@@ -10198,7 +10206,7 @@
     </unit>
     <unit id="4696046538802796110">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:531,532</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:533,534</note>
       </notes>
       <segment>
         <source>Opções de impostos e buffs do mercado</source>
@@ -10206,7 +10214,7 @@
     </unit>
     <unit id="8638566115687747364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:543</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:545</note>
       </notes>
       <segment>
         <source>Visualização da produção</source>
@@ -10214,7 +10222,7 @@
     </unit>
     <unit id="3423527547728662625">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:550</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:552</note>
       </notes>
       <segment>
         <source> Árvore visual </source>
@@ -10222,7 +10230,7 @@
     </unit>
     <unit id="1596513412557859561">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:558</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:560</note>
       </notes>
       <segment>
         <source> Etapas expansíveis </source>
@@ -10230,7 +10238,7 @@
     </unit>
     <unit id="8239824440455457553">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:566</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:568</note>
       </notes>
       <segment>
         <source> Materiais consolidados </source>
@@ -10238,7 +10246,7 @@
     </unit>
     <unit id="5764736619878600212">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:572</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:574</note>
       </notes>
       <segment>
         <source> Expandir todos </source>
@@ -10246,7 +10254,7 @@
     </unit>
     <unit id="2016013543679738291">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:574,575</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:576,577</note>
       </notes>
       <segment>
         <source>Recolher todos</source>
@@ -10254,7 +10262,7 @@
     </unit>
     <unit id="6761593809530292978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:576,577</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:578,579</note>
       </notes>
       <segment>
         <source>Interromper expansão</source>
@@ -10262,7 +10270,7 @@
     </unit>
     <unit id="7714613758727508668">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:613,614</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:615,616</note>
       </notes>
       <segment>
         <source>Materiais e origem escolhida</source>
@@ -10270,7 +10278,7 @@
     </unit>
     <unit id="5345999946284409583">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:619,620</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:621,622</note>
       </notes>
       <segment>
         <source>Fazer / coletar</source>
@@ -10278,7 +10286,7 @@
     </unit>
     <unit id="4691189097375946424">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:623,624</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:625,626</note>
       </notes>
       <segment>
         <source>Produzir / coletar</source>
@@ -10286,7 +10294,7 @@
     </unit>
     <unit id="1669167189510461266">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:624,625</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:626,627</note>
       </notes>
       <segment>
         <source>Valor comprado</source>
@@ -10294,7 +10302,7 @@
     </unit>
     <unit id="3401818050644490501">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:679,680</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:681,682</note>
       </notes>
       <segment>
         <source>Nenhum material disponível no cenário atual.</source>
@@ -10302,7 +10310,7 @@
     </unit>
     <unit id="4074480377800209581">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:686,687</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:688,689</note>
       </notes>
       <segment>
         <source> A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque próprio é descontado e valorizado conforme as opções do cálculo. </source>
@@ -10310,7 +10318,7 @@
     </unit>
     <unit id="8977059576442042320">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:691,692</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:693,694</note>
       </notes>
       <segment>
         <source>Confira as estimativas e quantidades antes de gerar a lista consolidada.</source>
@@ -10318,8 +10326,8 @@
     </unit>
     <unit id="385550784261308218">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:699,700</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:704,705</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:701,702</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:706,707</note>
       </notes>
       <segment>
         <source>Plano da receita</source>
@@ -10327,7 +10335,7 @@
     </unit>
     <unit id="4119258282286453025">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:710,711</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:712,713</note>
       </notes>
       <segment>
         <source>Escolha o que fazer, comprar, vender ou guardar.</source>
@@ -10335,7 +10343,7 @@
     </unit>
     <unit id="8776558155521885715">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:714,715</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:716,717</note>
       </notes>
       <segment>
         <source>Materiais da receita</source>
@@ -10343,7 +10351,7 @@
     </unit>
     <unit id="1051153516446623837">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:795,796</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:797,798</note>
       </notes>
       <segment>
         <source>Sem cotação</source>
@@ -10351,7 +10359,7 @@
     </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:832,833</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:834,835</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -10359,8 +10367,8 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:837</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:839,840</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:839</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:841,842</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
@@ -10368,7 +10376,7 @@
     </unit>
     <unit id="4229231559712666889">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:843</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:845</note>
       </notes>
       <segment>
         <source> Venda marcada entra no faturamento; itens guardados ficam fora. </source>
@@ -10376,7 +10384,7 @@
     </unit>
     <unit id="3383907643333341583">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:862,863</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:864,865</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -10384,7 +10392,7 @@
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:864,865</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:866,867</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returnedProductRows().length - 2 }}"/>)</source>
@@ -10392,7 +10400,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:874</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:876</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -10400,7 +10408,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:879,880</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:881,882</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>
@@ -10408,7 +10416,7 @@
     </unit>
     <unit id="5636316749648976221">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:894,895</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:896,897</note>
       </notes>
       <segment>
         <source>Detalhes do item selecionado</source>
@@ -10416,7 +10424,7 @@
     </unit>
     <unit id="8451668644841861598">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:901,903</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:903,905</note>
       </notes>
       <segment>
         <source>Informações do item: <ph id="0" equiv="INTERPOLATION" disp="{{ context()?.node?.part?.name ?? selectedNode()?.part?.name }}"/></source>
@@ -10424,7 +10432,7 @@
     </unit>
     <unit id="8665820249974963410">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:906</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:908</note>
       </notes>
       <segment>
         <source> Fechar </source>
@@ -10432,7 +10440,7 @@
     </unit>
     <unit id="2726362362842757739">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:911,912</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:913,914</note>
       </notes>
       <segment>
         <source>Consultando o item e suas fontes…</source>
@@ -10440,7 +10448,7 @@
     </unit>
     <unit id="6576636640036900088">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:918,919</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:920,921</note>
       </notes>
       <segment>
         <source>Identidade &amp; Métodos</source>
@@ -10448,7 +10456,7 @@
     </unit>
     <unit id="8984468290674632772">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:934,936</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:936,938</note>
       </notes>
       <segment>
         <source> Parte das informações não pôde ser carregada. <pc id="0" equivStart="START_TAG_BUTTON" equivEnd="CLOSE_TAG_BUTTON" type="other" dispStart="&lt;button type=&quot;button&quot; (click)=&quot;showContext(info.node)&quot;&gt;" dispEnd="&lt;/button&gt;">Tentar novamente</pc></source>
@@ -10456,7 +10464,7 @@
     </unit>
     <unit id="3987394601103544748">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:940</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:942</note>
       </notes>
       <segment>
         <source> Centralizar no mapa </source>
@@ -10464,7 +10472,7 @@
     </unit>
     <unit id="1581212447771913354">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:943,944</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:945,946</note>
       </notes>
       <segment>
         <source>Explorar como produto →</source>
@@ -10472,7 +10480,7 @@
     </unit>
     <unit id="2871215484953922010">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:950,959</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:952,961</note>
       </notes>
       <segment>
         <source>Unidades por operação<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -10488,7 +10496,7 @@
     </unit>
     <unit id="2131218554816218394">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:961,978</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:963,980</note>
       </notes>
       <segment>
         <source>Método de produção<pc id="0" equivStart="START_TAG_SELECT" equivEnd="CLOSE_TAG_SELECT" type="other" dispStart="&lt;select
@@ -10505,7 +10513,7 @@
     </unit>
     <unit id="4424192984003152503">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:981,991</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:983,993</note>
       </notes>
       <segment>
         <source>Rendimento por operação<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -10522,7 +10530,7 @@
     </unit>
     <unit id="6375705110326689405">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:995,996</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:997,998</note>
       </notes>
       <segment>
         <source>Descrição informada pelo jogo</source>
@@ -10530,7 +10538,7 @@
     </unit>
     <unit id="7452095354869753712">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1004,1005</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1006,1007</note>
       </notes>
       <segment>
         <source>Estoque nos Armazéns</source>
@@ -10538,7 +10546,7 @@
     </unit>
     <unit id="7199749543714490303">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1015,1016</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1017,1018</note>
       </notes>
       <segment>
         <source>Quantidades cadastradas:</source>
@@ -10546,7 +10554,7 @@
     </unit>
     <unit id="2801442376031464209">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1023,1024</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1025,1026</note>
       </notes>
       <segment>
         <source>Sem quantidade nos armazéns selecionados.</source>
@@ -10554,7 +10562,7 @@
     </unit>
     <unit id="2575215593231932102">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1031,1032</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1033,1034</note>
       </notes>
       <segment>
         <source>Mercado Central &amp; Cotação</source>
@@ -10562,7 +10570,7 @@
     </unit>
     <unit id="4388268655824420527">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1047,1048</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1049,1050</note>
       </notes>
       <segment>
         <source>Sem cotação ativa no Mercado Central.</source>
@@ -10570,7 +10578,7 @@
     </unit>
     <unit id="2870534225087162420">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1063</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1065</note>
       </notes>
       <segment>
         <source> Abrir mercado completo → </source>
@@ -10578,7 +10586,7 @@
     </unit>
     <unit id="7481896997243324721">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1067,1068</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1069,1070</note>
       </notes>
       <segment>
         <source>Histórico observado</source>
@@ -10586,7 +10594,7 @@
     </unit>
     <unit id="8886013891594364415">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1068,1069</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1070,1071</note>
       </notes>
       <segment>
         <source>Consultar histórico</source>
@@ -10594,7 +10602,7 @@
     </unit>
     <unit id="2888125710184836550">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1083,1084</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1085,1086</note>
       </notes>
       <segment>
         <source>Obtenção no Mundo</source>
@@ -10602,7 +10610,7 @@
     </unit>
     <unit id="2539810599944761314">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1085,1086</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1087,1088</note>
       </notes>
       <segment>
         <source>Trabalhadores · bases conhecidas:</source>
@@ -10610,7 +10618,7 @@
     </unit>
     <unit id="6870939584309916285">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1100,1101</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1102,1103</note>
       </notes>
       <segment>
         <source>Sem produção de trabalhadores vinculada.</source>
@@ -10618,7 +10626,7 @@
     </unit>
     <unit id="7800952521702015153">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1104,1105</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1106,1107</note>
       </notes>
       <segment>
         <source>Combate convencional · spots de grind:</source>
@@ -10626,7 +10634,7 @@
     </unit>
     <unit id="2391334450447249069">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1136</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:1138</note>
       </notes>
       <segment>
         <source> Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas. </source>
