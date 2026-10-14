@@ -37,7 +37,7 @@ Calculadoras reativas não geram evento a cada tecla, mudança de campo ou recá
 ## Privacidade e operação
 
 - O `AnalyticsService` central tipa eventos/feature/action, valida a lista de nomes e reconstrói propriedades a partir de uma allowlist. Chaves extras, inclusive query, itemId, stock, silver, email ou token, são descartadas.
-- PostHog usa HTTP Capture diretamente; não há SDK JavaScript, cookie PostHog, autocapture, replay ou identificação de conta. Um UUID aleatório local só é criado após escolha positiva e fica em `localStorage`.
+- PostHog usa HTTP Capture diretamente; não há SDK JavaScript, cookie PostHog, autocapture, replay ou identificação de conta. Um UUID aleatório local só é criado após escolha positiva e fica no cookie próprio `black-market-analytics-id` por até 180 dias.
 - A captura só começa em produção, quando `/api/v1/analytics/config` retorna configuração ativa e o usuário autorizou analytics. `.env.example` mantém `ANALYTICS_ENABLED=false`, chave vazia e host regional editável. Desenvolvimento, testes, configuração incompleta ou erro de configuração não enviam eventos.
 - Não chamamos `identify()` e não associamos o id Supabase ao `distinct_id`. Os relatórios contam navegadores consentidos, não todos os visitantes nem pessoas únicas. Rejeitar e revogar param a captura; revogar cancela requisições pendentes e apaga o UUID local. Eventos já recebidos precisam ser tratados no painel do prestador se houver pedido de exclusão.
 - A propriedade `$ip: null` pede ao PostHog para não anexar o IP ao evento; conexão/rede e hosting ainda podem processar endereço IP e metadados. A base legal, região do projeto, contrato e transferência internacional precisam de validação.

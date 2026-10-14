@@ -902,7 +902,7 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Concluído**: `brand-mark.svg` agora usa um ícone de sacola em bronze e creme. O wordmark `BLACK / MARKET` e `favicon.svg` não foram alterados.
 - **Verificação**: inspeção visual da navegação em `/market` no navegador local; o ícone da sacola aparece corretamente no menu.
 - **Arquivos alterados**: `apps/web/public/brand-mark.svg` e este contexto.
-- **Próxima ação independente**: a proposta de atualizar páginas legais e persistir consentimento/identificador de analytics em cookies próprios aguarda confirmação do usuário; nenhuma alteração desse escopo foi feita.
+- **Próxima ação independente**: consentimento/ID de analytics em cookies próprios e atualização das páginas legais foram aprovados e implementados na seção 83, em entrega separada.
 
 ## 80. Revisão comparativa do Mercado (Codex, 14/10/2026)
 
@@ -939,4 +939,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Validação visual**: build de desenvolvimento Angular passou. No navegador, `/recipes/items/1408` mostrou 76 componentes de ícone, todos com URL; nenhum com nome genérico `Item {id}` ou erro de carregamento. `/recipes/items/9609` mostrou 45 componentes, todos com URL, sem placeholders genéricos nem falhas; os retornos Refeição de Valência Especial e Leite e os materiais exibem imagens do catálogo. A captura temporária está em `output/playwright/recipe-icons-after.png`, pasta ignorada pelo Git.
 - **Testes**: não foram executadas suítes unitárias; não houve pedido para rodá-las. `git diff --check` passou. O build mantém o aviso existente de fallback do locale `pt-BR` para `pt`.
 - **Arquivos**: `apps/web/src/app/core/catalog-api.service.ts`, `apps/web/src/app/shared/recipe-tree/recipe-tree.ts`, `recipe-tree.html` e este contexto.
-- **Próximo passo independente**: seguir com a mudança já aprovada de consentimento/ID de analytics em cookies próprios e atualização das páginas legais, em commit separado.
+- **Próximo passo independente**: a mudança já aprovada de consentimento/ID em cookies próprios e páginas legais foi implementada na seção 83, mantendo commit atômico.
+
+## 83. Consentimento em cookies próprios e páginas legais (Codex, 13/10/2026)
+
+- **Pedido aprovado**: guardar consentimento e ID de analytics em cookies próprios, somente após aceite, e atualizar os textos legais sem divulgar fontes de dados do jogo ou fórmulas; explicar categorias, finalidade, retenção e compartilhamento.
+- **Cookies e migração**: consentimento em `black-market-privacy` por até 180 dias; identificador aleatório em `black-market-analytics-id` somente após aceite, também por até 180 dias; região continua no cookie funcional de um ano. Todos usam `SameSite=Lax` e `Secure` em HTTPS. Cookies são definidos no host atual sem `Domain`; consentimento e identificador são legíveis pelo app. Valores antigos em `localStorage` são migrados uma vez quando válidos e removidos; sem consentimento válido a identidade antiga é apagada. Rejeitar/revogar remove o identificador e cancela envios pendentes. Preferências entre abas usam `BroadcastChannel` e são relidas ao voltar à aba.
+- **Analytics**: eventos continuam limitados a área, etapa e resultado agregado, e só são enviados quando há configuração de produção e aceite. A API de configuração continua sendo consultada para exibir a categoria apenas quando disponível; essa consulta same-origin não envia evento ao PostHog. Nenhuma configuração externa ou analytics em produção foi ativada nesta tarefa. A cópia legal informa a retenção anunciada pelo PostHog conforme plano (um ano no Free, sete anos no pago) e deixa claro que o plano ativo não é definido pelo app.
+- **Páginas públicas**: termos, privacidade e cookies agora descrevem dados pessoais por categoria, finalidade, prestadores, armazenamento local/sincronizado, retenção e revogação, sem listar fornecedores de dados do jogo nem regras internas de cálculo. A seção de revisão interna foi removida da UI pública. O link do footer passou a “Sobre a plataforma”; `/sobre/` e seu metadado SSR também deixaram de expor origens de dados e explicações de metodologia.
+- **Verificação**: `pnpm --filter @bdo/web exec ng build --configuration development` passou; mantém o aviso conhecido de fallback de locale `pt-BR` para `pt`. `pnpm check` passou (lint, formatação e typecheck), e `git diff --check` passou. Nenhuma suíte de testes foi executada.
+- **Arquivos**: serviço de privacidade e analytics, painel de consentimento, conteúdo/layout legais, footer, metadados SSR e página Sobre; specs existentes ajustados para o novo contrato; inventário de privacidade, documentação de analytics/páginas legais e este contexto.
+- **Próximo passo**: verificar no painel do serviço qual plano/retention está ativo antes de ativar analytics em produção; o projeto continua com analytics externo não configurado por padrão.

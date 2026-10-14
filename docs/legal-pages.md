@@ -4,20 +4,20 @@
 
 Conteúdo estático em `apps/web/src/app/features/legal/legal-content.ts`, com HTML e SCSS próprios, carregado pelas rotas públicas `/termos`, `/privacidade`, `/cookies` e `/contato`. Não há CMS, novas tabelas, dependências ou cobrança adicional. O contato usa Bellussi e enzobellussi3@gmail.com como valores informados; a configuração pública existente pode atualizar o bloco de contato. O documento continua legível se essa consulta falhar.
 
-O componente `PlatformFooter` é compartilhado por todas as rotas Angular e contém identidade, documentos, contato, backup, fontes, preferências e aviso de independência. A página estática `/sobre/` também tem links legais e acesso à seção de preferências. O ano é calculado em UTC para manter consistência entre servidor e navegador; em `/sobre/`, o servidor atualiza o ano no HTML sem adicionar JavaScript. A cópia estática usada pelo servidor de desenvolvimento mantém o ano editado no arquivo. Cache de cinco minutos pode atrasar a atualização na virada do ano.
+O componente `PlatformFooter` é compartilhado por todas as rotas Angular e contém identidade, documentos, contato, preferências e aviso de independência. A página estática `/sobre/` mantém somente a apresentação geral do produto e links legais; não publica fornecedores de dados nem explicações de cálculo. O ano é calculado em UTC para manter consistência entre servidor e navegador; em `/sobre/`, o servidor atualiza o ano no HTML sem adicionar JavaScript. A cópia estática usada pelo servidor de desenvolvimento mantém o ano editado no arquivo. Cache de cinco minutos pode atrasar a atualização na virada do ano.
 
 A interface preserva a paleta verde, tipografia e controles existentes. Links e botões têm altura mínima de 44px e foco visível. Footer passa de três colunas para uma em até 760px; sumário legal passa para uma coluna em até 600px. Texto e contato longo podem quebrar linhas; não há dimensões horizontais fixas. Cada página tem um h1, seções nomeadas, sumário com âncoras e navegação com `aria-current`. A atualização do documento é explícita em `legalUpdatedOn`, não a data automática do copyright.
 
-Preferências abrem o `PrivacyService` e o painel já existente; a ação funciona também quando analytics não está configurado. Ela não autoriza coleta por si só. O componente só oferece a categoria opcional se o serviço estiver disponível, permite revogar escolha anterior, comunica falha de persistência e devolve foco após fechar por teclado. Não foi adicionada outra solução de consentimento.
+Preferências abrem o `PrivacyService` e o painel já existente; a ação funciona também quando analytics não está configurado. Ela não autoriza coleta por si só. O componente só oferece a categoria opcional se o serviço estiver disponível, permite revogar escolha anterior, comunica falha de persistência e devolve foco após fechar por teclado. A preferência fica em cookie próprio por até 180 dias; o identificador opcional só é gravado em cookie próprio depois do aceite e é removido ao revogar. Preferências entre abas usam `BroadcastChannel` quando disponível. Cookies usam `SameSite=Lax` e `Secure` em HTTPS. Não foi adicionada outra solução de consentimento.
 
 ## Conteúdo conforme funcionalidades reais
 
-- Termos: consultas gratuitas, estimativas sem garantia de lucro, ausência de operações dentro do jogo, conta opcional, revisão de prints, uso permitido, direitos dos titulares e mudanças.
-- Privacidade: dados locais, cópia remota voluntária, identidade opcional, prints em memória do navegador, telemetria mínima, prestadores, transferências, retenção ainda pendente e direitos.
-- Cookies: preferência de mercado, armazenamento local e de sessão, validade das escolhas, analytics opcional e revogação, preservação do backup ao limpar dados.
+- Termos: consultas e estimativas sem garantia de resultado, ausência de operações dentro do jogo, conta, revisão das informações cadastradas, uso permitido, direitos dos titulares e mudanças.
+- Privacidade: categorias de dados, finalidades, sincronização voluntária, processamento local de imagens, analytics consentido, prestadores, retenção e direitos. O conteúdo público não descreve a origem dos dados de jogo nem fórmulas internas.
+- Cookies: cookie de região por até um ano, escolha por até 180 dias, identificador opcional por até 180 dias após consentimento, armazenamento local e revogação.
 - Contato: canal direto, instruções para relatar erros, código de atendimento e minimização de informações enviadas. Não há formulário, promessa de resposta em prazo inventado ou abertura automática de chamados.
 
-Nenhuma razão social, CNPJ, endereço ou afiliação foi inventada. Serviços preparados no código são descritos como condicionais; não presumimos Supabase, PostHog, Better Stack ou Cloudflare já ativados.
+Nenhuma razão social, CNPJ, endereço ou afiliação foi inventada. A seção pública não informa fontes de dados do jogo nem métodos de cálculo. A divulgação de analytics descreve o PostHog Cloud porque é o serviço configurável no código; o envio só ocorre em produção quando configurado e após aceite.
 
 ## Revisão humana antes da publicação
 

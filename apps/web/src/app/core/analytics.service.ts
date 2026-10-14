@@ -131,13 +131,7 @@ export class AnalyticsService {
   }
   private disable() {
     this.revoked.next();
-    if (this.browser) {
-      try {
-        localStorage.removeItem('black-market.analytics.v1');
-      } catch {
-        /* Storage may be unavailable; the in-memory identity is still removed. */
-      }
-    }
+    this.privacy.clearAnalyticsIdentifier();
     this.id = '';
     this.lastPage = '';
     this.lastConsent = false;
@@ -188,17 +182,8 @@ export class AnalyticsService {
     )
       return false;
     if (!this.id) {
-      try {
-        const stored = localStorage.getItem('black-market.analytics.v1');
-        this.id =
-          stored &&
-          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(stored)
-            ? stored
-            : crypto.randomUUID();
-        localStorage.setItem('black-market.analytics.v1', this.id);
-      } catch {
-        this.id = crypto.randomUUID();
-      }
+      this.id = this.privacy.ensureAnalyticsIdentifier() ?? '';
+      if (!this.id) return false;
     }
     this.events++;
     this.http

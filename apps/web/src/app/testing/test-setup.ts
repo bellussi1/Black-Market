@@ -8,7 +8,8 @@ import { afterEach, beforeEach, vi } from 'vitest';
 /** Install fresh storage per test without sharing state between suites. */
 export function useMemoryStorage(): void {
   beforeEach(() => {
-    document.cookie = 'black-market-region=; Max-Age=0; path=/';
+    for (const name of ['black-market-region', 'black-market-privacy', 'black-market-analytics-id'])
+      document.cookie = `${name}=; Max-Age=0; path=/`;
     const values = new Map<string, string>();
     vi.stubGlobal('localStorage', {
       getItem: (key: string) => values.get(key) ?? null,
@@ -18,6 +19,7 @@ export function useMemoryStorage(): void {
   });
   afterEach(() => {
     TestBed.resetTestingModule();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 }

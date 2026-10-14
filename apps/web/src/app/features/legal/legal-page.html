@@ -20,20 +20,6 @@
       >Contato e suporte</a
     >
   </nav>
-  @if (document().reviewPoints; as points) {
-    <aside class="panel legal-review" aria-labelledby="legal-review-title">
-      <h2 id="legal-review-title" i18n>Documento em revisão</h2>
-      <p i18n>
-        Este texto descreve o MVP e não foi juridicamente validado. Antes da abertura pública,
-        precisam de revisão:
-      </p>
-      <ul>
-        @for (point of points; track point) {
-          <li>{{ point }}</li>
-        }
-      </ul>
-    </aside>
-  }
   <nav class="legal-summary" aria-label="Nesta página" i18n-aria-label>
     <p i18n>Nesta página</p>
     <ul>

@@ -2,50 +2,47 @@ export interface LegalDocument {
   title: string;
   intro: string;
   sections: { title: string; paragraphs: string[] }[];
-  reviewPoints?: string[];
 }
-export const legalUpdatedOn = '2026-10-08';
+
+export const legalUpdatedOn = '2026-10-13';
+
 export const legalDocuments: Record<string, LegalDocument> = {
   terms: {
     title: 'Termos de Uso',
-    intro: 'Condições para usar as consultas e ferramentas gratuitas do Black Market.',
-    reviewPoints: [
-      'Identificação completa do responsável.',
-      'Direitos de uso e distribuição dos dados e imagens do jogo.',
-      'Condições de uso, responsabilidades e procedimento para mudanças relevantes.',
-    ],
+    intro: 'Condições para usar as ferramentas gratuitas do Black Market.',
     sections: [
       {
-        title: 'Uma plataforma independente',
+        title: 'Sobre o serviço',
         paragraphs: [
-          'Black Market é uma plataforma independente para a comunidade de Black Desert Online. Não há afiliação com a Pearl Abyss. Consultas e ferramentas deste MVP são gratuitas. Informações do responsável e contato são apresentadas abaixo quando configuradas.',
+          'Black Market é uma plataforma independente para a comunidade de Black Desert Online e não tem afiliação com a Pearl Abyss. As ferramentas disponíveis podem mudar conforme a plataforma evolui.',
+          'O uso das ferramentas não concede acesso ao jogo nem executa ações na sua conta. A plataforma não realiza compras, vendas ou transferências por você.',
         ],
       },
       {
-        title: 'Estimativas e dados do jogo',
+        title: 'Informações e resultados',
         paragraphs: [
-          'Preços têm origem e horário de consulta; podem estar desatualizados. Rendimentos dependem de tempo, energia, maestria, custos, impostos e disponibilidade. Resultados não garantem lucro, obtenção de itens ou sucesso em aprimoramento. Dados ausentes são indicados como indisponíveis.',
-          'A plataforma não realiza compras, vendas, transferências ou ações no jogo. Você toma suas decisões e confere os valores antes de aplicá-los.',
+          'Valores e projeções são informativos e podem estar incompletos ou desatualizados. Confira as informações na tela e avalie se atendem ao seu objetivo antes de tomar uma decisão. Resultados não garantem lucro, disponibilidade de itens ou sucesso no jogo.',
+          'Você é responsável por revisar informações que cadastrar ou importar antes de salvá-las ou usá-las em suas decisões.',
         ],
       },
       {
-        title: 'Conta e materiais informados',
+        title: 'Conta e informações salvas',
         paragraphs: [
-          'Você pode usar as ferramentas sem conta. A sincronização, quando disponível, exige entrar na sua conta e confirmar qual cópia utilizar. Não compartilhe o acesso. A plataforma não solicita sua senha do BDO.',
-          'Informe apenas dados que você tem autorização para usar. Prints são revisados no navegador; confira os itens e números antes de confirmar. Não inclua dados pessoais desnecessários de outras pessoas.',
+          'As ferramentas podem guardar informações neste navegador. Quando a sincronização estiver disponível, uma cópia só será vinculada à conta após você iniciar o acesso e confirmar a operação. Mantenha o acesso à sua conta protegido.',
+          'Não compartilhe credenciais da sua conta de jogo. Informe somente dados que tenha autorização para usar e evite incluir informações pessoais de outras pessoas.',
         ],
       },
       {
         title: 'Uso permitido e direitos',
         paragraphs: [
-          'Não use a plataforma para tentar acessar dados de outras pessoas, comprometer sua operação ou enviar conteúdo ilícito. Imagens e dados do jogo pertencem aos respectivos titulares. A apresentação de referências não transfere direitos sobre esses materiais.',
-          'A disponibilidade e a cobertura dos dados podem mudar. Em caso de erro, preserve seu backup e procure suporte. Os direitos garantidos pela legislação aplicável são preservados.',
+          'Não tente acessar dados de outras pessoas, comprometer a operação ou enviar conteúdo ilícito. Marcas e materiais de Black Desert Online pertencem aos respectivos titulares; estes termos não transferem direitos sobre eles.',
+          'A disponibilidade do serviço pode ser interrompida para manutenção ou por circunstâncias fora do controle da plataforma. Os direitos garantidos pela legislação aplicável permanecem preservados.',
         ],
       },
       {
-        title: 'Mudanças e contato',
+        title: 'Alterações e contato',
         paragraphs: [
-          'Mudanças relevantes nestas condições serão indicadas com nova versão e data. Consulte a Política de Privacidade para entender o tratamento de dados e como exercer seus direitos.',
+          'Alterações relevantes nestes termos serão publicadas nesta página com a data de atualização. Para falar com o responsável, consulte Responsável e contato ou a página Contato e suporte.',
         ],
       },
     ],
@@ -53,53 +50,40 @@ export const legalDocuments: Record<string, LegalDocument> = {
   privacy: {
     title: 'Política de Privacidade',
     intro:
-      'Entenda quais informações são utilizadas, o que fica no seu navegador e como fazer solicitações sobre seus dados.',
-    reviewPoints: [
-      'Identificação jurídica do responsável e canal de atendimento aos titulares.',
-      'Bases legais por finalidade, incluindo segurança e telemetria operacional.',
-      'Prazos de retenção, exclusão de conta e remoção de backups.',
-      'Prestadores, contratos e garantias para transferências internacionais.',
-    ],
+      'Veja quais categorias de informações são tratadas, para que são usadas, por quanto tempo ficam armazenadas e com quem podem ser compartilhadas.',
     sections: [
       {
-        title: 'Quais informações são utilizadas',
+        title: 'Informações tratadas',
         paragraphs: [
-          'Preferências de região e dados que você informa sobre estoque, personagem, prata virtual, maestria, equipamentos, sessões e planos ficam neste navegador. Quando você confirma sincronização, a cópia estruturada é guardada para sua conta.',
-          'Quando o acesso à conta estiver configurado, o serviço de identidade Supabase trata as informações necessárias ao acesso, como e-mail e identificador de conta. O acesso por Google é opcional quando configurado. Não pedimos credenciais do jogo.',
-          'Prints e recortes são processados na memória deste navegador. Não são enviados ao servidor nem incluídos na cópia da conta. A confirmação salva somente os valores estruturados revisados.',
-          'Para investigar falhas, a plataforma registra horário, funcionalidade, status, duração e código de atendimento. Relatos de erro não incluem o conteúdo de formulários, prints, senhas ou sua identidade de conta. Prestadores de conexão podem tratar o endereço de rede para entregar e proteger o serviço.',
+          'As ferramentas podem processar informações que você fornece, como preferências, materiais, personagens, configurações e planejamentos. Esses dados ficam no armazenamento deste navegador até você removê-los. Consultas também processam os critérios necessários para responder ao que você solicitou.',
+          'Se você usar uma conta e confirmar a sincronização, os dados selecionados são associados à identidade da conta para manter sua cópia sincronizada. O provedor de identidade pode tratar os dados necessários para autenticação, como um identificador da conta e, quando fornecido, seu e-mail. A plataforma não solicita credenciais do jogo.',
+          'Imagens enviadas para leitura são processadas no navegador e não são incluídas na cópia sincronizada pela ferramenta de leitura. Revise as informações reconhecidas antes de salvá-las.',
+          'Para operar e proteger o serviço, são tratados registros técnicos como horário, área funcional, tipo de falha, status e identificador da solicitação. Prestadores de conexão e hospedagem podem processar dados técnicos da conexão, como endereço IP, para entregar e proteger o serviço.',
         ],
       },
       {
-        title: 'Finalidades e escolhas',
+        title: 'Finalidades e compartilhamento',
         paragraphs: [
-          'Dados funcionais permitem atender às consultas e ao planejamento que você solicita, manter preferências, sincronizar sua cópia e proteger a operação. As bases legais dessas finalidades precisam ser validadas pelo responsável.',
-          'Estatísticas de uso são opcionais e só enviam eventos quando o recurso está configurado e você autoriza. Os eventos medem áreas visitadas e etapas/resultados agregados de algumas tarefas. Você pode rejeitar ou revogar essa escolha no rodapé. Não incluímos nomes, e-mail, texto pesquisado, IDs de itens, prints, valores do seu estoque ou credenciais nesses eventos. A configuração de analytics e esta política ainda exigem validação antes do lançamento.',
+          'As informações são usadas para oferecer as ferramentas que você solicita, manter suas preferências, sincronizar a cópia que você confirmar, atender solicitações e investigar falhas. Os critérios de uma consulta são processados para produzir a resposta e não são incluídos nos eventos opcionais de analytics.',
+          'Estatísticas de uso são opcionais. Somente após seu aceite, a plataforma pode enviar ao PostHog Cloud um identificador aleatório do navegador e eventos limitados à área visitada, à etapa realizada e a resultados agregados. Esses eventos não incluem sua identidade de conta, e-mail, texto de busca, identificadores ou nomes de itens, conteúdo do armazém, quantidades, valores pessoais, imagens, credenciais ou URL completa. O provedor e os serviços de rede podem processar metadados da conexão necessários à entrega da solicitação.',
+          'Dados sincronizados são compartilhados com os serviços que mantêm a conta e a cópia que você pediu para guardar. Prestadores de hospedagem e segurança podem tratar dados técnicos da conexão. Não usamos estatísticas para publicidade. A operação dos prestadores pode ocorrer fora do Brasil.',
         ],
       },
       {
-        title: 'Serviços envolvidos',
+        title: 'Conservação e exclusão',
         paragraphs: [
-          'A plataforma guarda a cópia sincronizada em seu banco de dados quando você confirma. Supabase Auth fornece identidade quando ativado. Cloudflare pode atender à entrada e proteção; Better Stack pode verificar a disponibilidade pública. PostHog Cloud recebe estatísticas de funcionalidades somente em produção, se estiver configurado e autorizado. A presença destes serviços na política não significa que todos estejam ativados.',
-          'O mecanismo de leitura de prints baixa arquivos técnicos de reconhecimento na primeira utilização, depois de você iniciar a leitura. Isso envolve conexões aos provedores de distribuição dos arquivos; a imagem permanece no navegador. A aplicação também envia relatos operacionais mínimos ao próprio serviço quando ocorre um erro relevante; isso é distinto das estatísticas opcionais e exige avaliação de finalidade e base legal. Prestadores de infraestrutura podem processar dados técnicos de conexão. Não presumimos anonimato só por uma ferramenta não usar cookies.',
-          'Serviços podem tratar dados fora do Brasil. A configuração de regiões, contratos, garantias de transferência e retenção precisa ser validada antes da ativação pública.',
+          'A preferência de região pode permanecer no navegador por até um ano. A escolha de privacidade e o identificador de analytics permanecem por até 180 dias; o identificador de analytics é removido quando você rejeita ou revoga essa categoria. Os prazos e categorias de cookies estão detalhados em Cookies e armazenamento.',
+          'Informações guardadas apenas neste navegador permanecem até você apagá-las ou substituir a cópia. Dados sincronizados permanecem enquanto a cópia estiver ativa ou até você pedir sua remoção. Após excluir uma cópia sincronizada, pode ser mantida uma referência técnica mínima de versão e horário enquanto for necessária para impedir que outro dispositivo restaure uma versão antiga.',
+          'Eventos já recebidos pelo serviço de analytics não são apagados automaticamente quando você revoga o aceite. O PostHog informa retenção de um ano no plano gratuito e sete anos no plano pago; o prazo depende do plano ativo para o projeto e não é definido pelo aplicativo. Registros operacionais são rotacionados por tamanho; o tempo até sua substituição varia conforme o volume de uso.',
+          'Sair da conta não apaga os dados locais deste navegador. Para remover dados sincronizados, use os controles da conta ou o contato indicado nesta página. Cópias de segurança e registros técnicos podem seguir ciclos de retenção próprios da operação.',
         ],
       },
       {
-        title: 'Conservação e remoção',
+        title: 'Suas escolhas e direitos',
         paragraphs: [
-          'Dados locais permanecem até você remover o armazenamento ou substituir a cópia. Preferências de privacidade expiram após 180 dias para solicitar nova escolha. Sair da conta não apaga o estoque deste navegador. Excluir a cópia da conta remove seu conteúdo, mantendo apenas uma referência de identidade, versão e horário para evitar sobrescritas por dispositivos antigos; a retenção dessa referência exige definição pelo responsável.',
-          'Estatísticas opcionais usam um identificador aleatório deste navegador, removido ao rejeitar ou revogar a escolha. A revogação cancela envios pendentes e impede novos eventos; não apaga automaticamente eventos já recebidos pelo prestador. Se o navegador bloquear o armazenamento local, a escolha vale somente enquanto esta página estiver aberta. A retenção de dados remotos, backups e eventos deve ser definida pelo responsável e informada antes da publicação.',
-          'Registros operacionais são substituídos conforme o volume armazenado, sem prazo em dias garantido nesta versão. Excluir a cópia sincronizada não exclui automaticamente a identidade de acesso, os registros operacionais ou todas as cópias de segurança. Solicite orientação pelo contato abaixo.',
-        ],
-      },
-      {
-        title: 'Seus direitos e suporte',
-        paragraphs: [
-          'Você pode exportar seus dados nas ferramentas de backup e excluir a cópia sincronizada em Minha conta. Para solicitações de acesso, correção, informação sobre compartilhamento ou exclusão que não consiga concluir na interface, use o contato informado abaixo.',
-          'Conforme a LGPD e as condições aplicáveis, você pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio ou exclusão, portabilidade, informação sobre compartilhamento e sobre a possibilidade de não consentir, além de revogar consentimento. Solicitações serão avaliadas conforme sua finalidade e os requisitos legais; não prometemos exclusão automática de dados cuja conservação seja legalmente exigida.',
-          'O atendimento pode exigir confirmação mínima de identidade para proteger seus dados. Não envie senha, código de acesso ou documento pessoal por iniciativa própria. Caso seja necessário verificar alguma informação, o responsável deve orientar um procedimento adequado.',
-          'O responsável e o canal de solicitações estão apresentados em Responsável e contato. A identificação jurídica completa e o procedimento de atendimento aos direitos da LGPD devem ser revisados antes do lançamento.',
+          'Você pode aceitar, rejeitar ou personalizar analytics em Preferências de privacidade no rodapé. A escolha pode ser alterada a qualquer momento. Rejeitar analytics não impede o uso das ferramentas.',
+          'Você pode consultar, corrigir, exportar ou solicitar a exclusão de informações ligadas à sua conta conforme os controles disponíveis. Para pedidos de informação sobre tratamento ou compartilhamento, ou para exercer direitos previstos na legislação aplicável, use o canal de contato abaixo.',
+          'Não envie senhas, códigos de acesso ou documentos pessoais sem que o responsável indique um procedimento apropriado. O atendimento pode pedir uma confirmação mínima de identidade para proteger seus dados.',
         ],
       },
     ],
@@ -107,39 +91,28 @@ export const legalDocuments: Record<string, LegalDocument> = {
   cookies: {
     title: 'Cookies e armazenamento',
     intro:
-      'Usamos armazenamento para funções solicitadas e, somente com autorização, estatísticas opcionais. Rejeitar estatísticas não impede o uso das ferramentas.',
-    reviewPoints: [
-      'Classificação de tecnologias necessárias e opcionais.',
-      'Bases legais, duração e tratamento pelos prestadores.',
-      'Nova avaliação antes de ativar publicidade ou outras ferramentas de rastreamento.',
-    ],
+      'Cookies necessários guardam preferências essenciais. Analytics é opcional, fica desligado até seu aceite e pode ser revogado pelo rodapé.',
     sections: [
       {
-        title: 'Funcionalidades necessárias',
+        title: 'Cookies necessários',
         paragraphs: [
-          'A preferência de mercado usa o cookie black-market-region, com duração de até um ano. O estoque, personagem, configurações e demais dados das ferramentas ficam no armazenamento local deste navegador. A escolha de privacidade também fica no armazenamento local por até 180 dias. Quando você inicia o acesso à conta, a sessão e o verificador PKCE usam armazenamento da sessão do navegador; essa sessão não é um cookie HttpOnly. Não são cookies de publicidade.',
-          'Dados locais permanecem até você removê-los pelas ferramentas ou pelo navegador. Se o navegador impedir a gravação da escolha de privacidade, ela vale apenas enquanto a página estiver aberta e o painel informa essa limitação.',
+          'O cookie próprio black-market-region guarda a região selecionada por até um ano. O cookie próprio black-market-privacy registra se você aceitou ou rejeitou analytics e a data dessa escolha por até 180 dias. Esses cookies permitem lembrar preferências e aplicar sua decisão; não medem sua navegação. São cookies próprios, legíveis pela aplicação e enviados apenas ao site que os definiu.',
+          'As ferramentas também usam armazenamento local para os dados que você salva neste navegador. O acesso autenticado pode usar armazenamento de sessão quando você inicia o fluxo de conta. Esses dados funcionais são diferentes dos cookies de analytics.',
         ],
       },
       {
-        title: 'Estatísticas opcionais',
+        title: 'Analytics opcional',
         paragraphs: [
-          'Quando configurado e autorizado, PostHog Cloud recebe eventos de navegação por área e de algumas etapas de tarefas, incluindo resultados agregados de busca. Um identificador aleatório do navegador permite estimar retorno e retenção. Não enviamos sua identidade de conta, texto pesquisado, IDs/nome de item, dados do armazém, números lidos ou imagens. Não há gravação de sessão, captura automática de formulários ou publicidade ativada nesta versão.',
-          'Rejeitar mantém as ferramentas disponíveis. Revogar remove o identificador local, cancela envios que ainda estejam em andamento e interrompe novos eventos. Dados que já chegaram ao prestador não são apagados automaticamente. Preferências podem ser alteradas a qualquer momento pelo rodapé.',
+          'Se você aceitar, o cookie próprio black-market-analytics-id guarda um identificador aleatório por até 180 dias para reconhecer retornos sem associá-los à identidade da sua conta. Enquanto não houver aceite, esse identificador não é criado nem usado e nenhum evento de analytics é enviado.',
+          'Os eventos opcionais registram a área da plataforma, a etapa de uso e resultados agregados de algumas ações. Eles são enviados ao PostHog Cloud somente quando o recurso está configurado e você autorizou. O PostHog informa retenção de um ano no plano gratuito e sete anos no plano pago; o prazo depende do plano ativo para o projeto. O aplicativo não inclui pesquisas, nomes ou IDs de itens, conteúdo do armazém, quantidades, imagens ou dados da conta nos eventos. Não há publicidade, gravação de sessão ou captura automática de formulários.',
+          'O identificador do navegador é um cookie próprio, legível pela aplicação e enviado apenas ao site que o definiu. Os eventos são enviados ao prestador indicado acima, que pode receber metadados técnicos da conexão para entregar a solicitação. A aplicação não instala cookies de terceiros para publicidade ou medição.',
         ],
       },
       {
-        title: 'Como gerenciar suas escolhas',
+        title: 'Aceitar, rejeitar e revogar',
         paragraphs: [
-          'Use Preferências de privacidade no rodapé para aceitar, rejeitar ou personalizar estatísticas. A alteração interrompe novos envios conforme a escolha; dados já enviados não são apagados automaticamente.',
-          'Você também pode apagar cookies e dados deste site pelas configurações do seu navegador. Antes de fazer isso, exporte seu backup em Dados e backup: apagar o armazenamento local remove os dados salvos neste dispositivo e pode encerrar sua sessão.',
-        ],
-      },
-      {
-        title: 'Serviços externos',
-        paragraphs: [
-          'O acesso à conta e a distribuição de arquivos de reconhecimento têm políticas próprias dos respectivos prestadores. Cloudflare pode processar dados técnicos da conexão para segurança. O monitoramento de disponibilidade consulta páginas públicas sem inserir ferramenta de analytics no navegador. A lista de prestadores deve ser conferida na Política de Privacidade.',
-          'O código não carrega GA4, GTM, Clarity, SDK PostHog, replay ou publicidade. O PostHog, quando configurado, recebe eventos por solicitação HTTP somente após autorização. Cloudflare Web Analytics não está incluído pelo código; a configuração no painel de hospedagem não foi verificada e precisa ser conferida antes da publicação para evitar coleta não inventariada.',
+          'O painel oferece opções equivalentes para aceitar ou rejeitar analytics, além de permitir personalizar e salvar a escolha. Você pode reabrir Preferências de privacidade pelo rodapé. Rejeitar ou revogar remove o identificador local, cancela envios pendentes e impede novos eventos. Dados já recebidos pelo prestador não são removidos automaticamente.',
+          'A escolha expira após 180 dias para que você possa decidir novamente. Você também pode apagar os cookies nas configurações do navegador. Apagar o armazenamento local remove dados salvos neste dispositivo e pode encerrar sua sessão; exporte um backup antes se quiser guardar sua cópia.',
         ],
       },
     ],
@@ -147,19 +120,14 @@ export const legalDocuments: Record<string, LegalDocument> = {
   contact: {
     title: 'Contato e suporte',
     intro:
-      'Informe a ferramenta em que ocorreu o problema e o horário aproximado. Nunca envie senhas, códigos de acesso, cookies ou arquivos do cliente do jogo.',
+      'Use o canal indicado em Responsável e contato para dúvidas sobre a plataforma, privacidade ou seus dados.',
     sections: [
       {
         title: 'Como preparar seu pedido',
         paragraphs: [
-          'Descreva os passos e o resultado esperado. Se uma mensagem tiver um código de atendimento, inclua apenas esse código. Remova nome, guilda, chat e outras informações desnecessárias de capturas.',
-          'Você pode exportar um backup para sua própria segurança; não o envie completo ao suporte sem uma necessidade específica e orientação sobre o tratamento.',
-        ],
-      },
-      {
-        title: 'Privacidade',
-        paragraphs: [
-          'Use o canal apresentado em Responsável e contato para dúvidas sobre tratamento de dados ou direitos. Não há formulário de contato ou envio automático nesta versão.',
+          'Descreva a ferramenta, os passos realizados e o resultado esperado. Se houver um código de atendimento, inclua apenas esse código. Remova nomes, conversas e outras informações que não sejam necessárias.',
+          'Você pode exportar um backup para sua própria segurança. Não envie o arquivo completo ao suporte sem uma necessidade específica e orientação sobre o tratamento.',
+          'Nunca envie senhas, códigos de acesso, cookies ou arquivos do cliente do jogo.',
         ],
       },
     ],

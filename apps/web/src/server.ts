@@ -198,7 +198,7 @@ app.get('/sobre/', (_req, res, next) => {
   void readFile(join(browserDistFolder, 'sobre', 'index.html'), 'utf8')
     .then((html) => {
       const description =
-        'Conheça o Black Market: ferramentas de Black Desert para SA, fontes dos dados e importação em português brasileiro.';
+        'Conheça o Black Market: ferramentas de Black Desert para organizar materiais e planejar atividades em português brasileiro.';
       const publicUrl = process.env['PUBLIC_SITE_URL'];
       let metadata =
         `<meta name="description" content="${description}" />` +
