@@ -42,6 +42,36 @@ Não foram acessadas APIs internas não documentadas, rotas administrativas, dad
 - Configurações vistas no planner incluem tempos por profissão, sucesso de processamento, peso disponível, processar do armazém, trocas de subprodutos e parâmetros de maestria. Preços customizados podem substituir a cotação tanto para compras quanto para vendas; deixar em branco mantém a referência de mercado.
 - O Storage Tracker descreve um fluxo de seleção de cidade e scan/revisão de capturas. O login liberou a rota na sessão atual. Esta verificação não abriu o conteúdo pessoal de armazenamento nem alterou qualquer plano.
 
+## Variáveis e relações de cálculo observáveis
+
+| Sistema | Entradas que a interface expõe | Saídas que a interface permite conferir | O que continua não comprovado |
+|---|---|---|---|
+| Garmoth / mercado | Região; período de histórico; subitem/nível quando aplicável. | Preço/estoque atual, variação, série de preço/estoque/vendas, média diária e último negócio. | Fonte de mercado, intervalo de coleta, metodologia de média e unidade exata de cada série. |
+| Garmoth / maestria | Profissão e valor de maestria, pela linha da tabela. | Aumentos percentuais e chances por efeito; Culinária separa produto, secundário, raro, produção em massa e bônus imperial; Alquimia separa produto e chances de produtos extra; Processamento mostra contagem de materiais. | Como cada percentual é aplicado a uma receita, arredondamento, interações com pratos/itens/servidor e relação com o calculador de receita; a tabela sozinha não define um grafo de crafting. |
+| BDOLytics / mercado | Região, item/variante, período do gráfico e navegação por categorias. | Cotação e variação, limites de preço, estoque e séries de preço/volume/estoque; estado de preço relativo. | Janela exata dos agregados “Daily Volume” e “Total Trades” em cada idioma/superfície, proveniência e validade da classificação relativa. |
+| BDOLytics / crafting | Fórmula/alternativa; quantidade; região; preço próprio por item; taxação por entrada; estoque; o que manter; maestria/profissão; tempo/opções de procs. | Quantidade produzida e retornos; custo, receitas, margem, tempo, lucro/hora; custo/tempo e alternativas por ramo. | Algoritmo de seleção de fórmula e ótimo global, convenção de arredondamento em todos os tipos e regras internas completas do preço customizado. |
+| BDO Workshop / crafting | Produto, lote e variante; região; Buy all/Craft all/Best profit per hour; origem por etapa; quantidade/estoque; preços customizados; maestria e tempos por profissão; sucesso de processamento; peso; configurações de subproduto e processo a partir do armazém. | Quantidade e preço de venda, valor após taxa, materiais faltantes, tempo das etapas, custo, lucro total e lucro/hora; efeitos de trocar origens aparecem na prévia. | Prova de ótimo global, granularidade e unidade de vendas/dia na regra de esgotados, retenção do dado do plano e arredondamento completo. A faixa “Work in progress” limita qualquer garantia numérica. |
+
+### Fórmula inferida do plano do Workshop
+
+O snapshot do plano 1408 permite reconstruir a relação econômica observável, sem afirmar que conhecemos o código interno:
+
+```text
+venda líquida = soma(quantidade vendida × preço configurado × fator líquido de taxa)
+custo dos materiais = soma(quantidade a adquirir × preço configurado)
+lucro do plano = venda líquida − custo dos materiais
+tempo total = soma(operações de cada etapa produzida × tempo configurado da operação)
+lucro/hora = lucro do plano ÷ horas totais de produção
+```
+
+No exemplo de 1000 operações da receita final, 10.000 saídas a 187M dão 1.870B bruto; o quadro exibiu 1.580,15B líquido após 15,5% de taxa naquele snapshot. A compra de 60.000 óleos, 10.000 fármacos e 1.000 itens NPC custou 1.177,01B, resultando em lucro de 403,14B. “Buy all” ainda incluía 1000 operações da etapa final e 1h40; portanto, o rótulo significa comprar os intermediários, não pular o crafting do produto selecionado.
+
+Com intermediários produzidos, o lucro total observado pode ser menor e o lucro/hora maior porque menos materiais são comprados e mais horas entram no denominador. Esse caso confirma que taxa/hora e lucro total precisam ser exibidos juntos. Os 15,5% são somente o estado observado para uma combinação regional/configuração do Workshop; não são taxa universal nem valor para fixar no Black Market.
+
+### Normalização necessária para comparar receitas
+
+Antes de comparar uma página entre ferramentas, registrar para cada cálculo: região/idioma, item e variante, fórmula/alternativa, lote de operações, quantidade efetiva esperada, maestria por profissão, tempo por etapa, velocidade/sucesso de processamento, imposto/value pack, quantidade em estoque, política comprar/fazer/coletar, preço usado para cada custo e retorno, saídas secundárias vendidas/guardadas e regra de arredondamento. Se qualquer um desses parâmetros estiver ausente, o resultado deve ser tratado como explicativo, não como reprodução exata.
+
 ## Confronto com Black Market
 
 ### O que já existe
