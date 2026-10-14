@@ -223,19 +223,34 @@ describe('Color icon comparison', () => {
 
     expect(result.map((row) => row.id)).toContain(999);
   });
+  it('keeps nearest items available as uncertain suggestions when color distance is outside the cutoff', () => {
+    const screenshot = Uint8Array.from({ length: 192 }, (_, i) => (i * 37 + 13) % 256);
+    const distantIcon = Uint8Array.from(screenshot, (value) => 255 - value);
+    const result = rankColorSamples([screenshot], {
+      algorithm: 'rgb-top-v2',
+      checksum: 'e'.repeat(64),
+      entries: [entry(distantIcon, [999])],
+    });
+
+    expect(colorDistance(screenshot, distantIcon)).toBeGreaterThan(38);
+    expect(result).toEqual([expect.objectContaining({ id: 999, lowColorEvidence: true })]);
+  });
   it('tolerates a small uniform brightness shift without discarding chromatic differences', () => {
     expect(colorDistance(color(160, 40, 40), color(150, 30, 30))).toBeCloseTo(0, 10);
     expect(colorDistance(color(30, 30, 150), color(150, 30, 30))).toBeGreaterThan(38);
     expect(colorDistance(new Uint8Array(1), color(150, 30, 30))).toBe(Infinity);
   });
-  it('compares alternative crop insets and refuses distant or missing candidates', () => {
+  it('compares alternative crop insets and keeps distant suggestions marked as weak', () => {
     const index: ColorIconIndex = {
       algorithm: 'rgb-top-v2',
       checksum: 'b'.repeat(64),
       entries: [entry(color(150, 30, 30), [6201])],
     };
     expect(rankColorSamples([color(30, 30, 150), color(150, 30, 30)], index)[0].id).toBe(6201);
-    expect(rankColorSamples([color(30, 30, 150)], index)).toEqual([]);
+    expect(rankColorSamples([color(30, 30, 150)], index)[0]).toMatchObject({
+      id: 6201,
+      lowColorEvidence: true,
+    });
     expect(rankColorSamples([], index)).toEqual([]);
   });
 });

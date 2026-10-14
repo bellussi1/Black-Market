@@ -95,6 +95,22 @@ describe('Icon suggestion ranking', () => {
       ]),
     ).toBe(false);
   });
+
+  it('does not auto-select a nearest-color fallback without strong color evidence', () => {
+    const fallback = {
+      id: 5302,
+      distance: 55,
+      pixelDistance: 20,
+      colorRank: 1,
+      refined: true,
+      sharedIcon: false,
+      lowColorEvidence: true,
+    };
+
+    expect(
+      hasConfidentIconMatch(fallback, [fallback, { ...fallback, id: 4802, pixelDistance: 50 }]),
+    ).toBe(false);
+  });
 });
 
 describe('Screenshot entry', () => {
@@ -821,7 +837,11 @@ describe('Screenshot entry', () => {
     expect((fixture.nativeElement.querySelector('.manual-item') as HTMLDetailsElement).open).toBe(
       false,
     );
-    expect(page.cells()[1]).toMatchObject({ item: null, itemUncertain: true, quantity: '123' });
+    expect(page.cells()[1]).toMatchObject({
+      item: { id: 6201 },
+      itemUncertain: true,
+      quantity: '123',
+    });
     expect(page.cells()[2]).toMatchObject({
       quantity: '1300000',
       quantityUncertain: true,

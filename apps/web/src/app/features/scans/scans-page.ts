@@ -150,6 +150,7 @@ export function hasConfidentIconMatch(
   if (
     !best ||
     !best.refined ||
+    best.lowColorEvidence ||
     best.sharedIcon ||
     best.colorRank !== 1 ||
     best.pixelDistance === undefined ||

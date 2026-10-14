@@ -17,6 +17,7 @@ export interface IconMatch {
   distance: number;
   pixelDistance?: number;
   sharedIcon: boolean;
+  lowColorEvidence?: boolean;
   refined?: boolean;
   sourceId?: number;
   colorRank?: number;
@@ -117,6 +118,7 @@ export function rankColorSamples(
   samples: readonly Uint8Array[],
   index: ColorIconIndex,
 ): IconMatch[] {
+  if (!samples.length) return [];
   let decoded = decodedColors.get(index);
   if (!decoded) {
     decoded = index.entries.map((row) => ({
@@ -125,14 +127,16 @@ export function rankColorSamples(
     }));
     decodedColors.set(index, decoded);
   }
-  const ranked = decoded
+  const allRanked = decoded
     .map((row) => ({
       row,
       distance: Math.min(...samples.map((sample) => colorDistance(sample, row.pixels))),
     }))
-    .filter((row) => row.distance <= 38)
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, colorShapePrefilterLimit);
+    .sort((a, b) => a.distance - b.distance);
+  const hasColorEvidence = allRanked[0]?.distance <= 38;
+  const ranked = (
+    hasColorEvidence ? allRanked.filter((row) => row.distance <= 38) : allRanked
+  ).slice(0, colorShapePrefilterLimit);
   if (!ranked.length) return [];
   const shaped = ranked.map((row) => {
     const distances = samples.map((sample) => shapeDistances(sample, row.row.pixels, 8));
@@ -168,6 +172,7 @@ export function rankColorSamples(
           id,
           distance: entry.distance,
           sharedIcon: entry.row.ids.length > 1,
+          lowColorEvidence: !hasColorEvidence,
           sourceId: entry.row.ids[0],
           colorRank: entry.colorRank,
           colorGap,
