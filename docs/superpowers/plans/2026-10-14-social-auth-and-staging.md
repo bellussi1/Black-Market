@@ -143,8 +143,7 @@
 - [x] Update CSP connect/frame origins for Firebase Auth and Google popup flow; replace the old Supabase-origin dependency with the configured Firebase auth domain.
 - [x] Remove the Supabase Web dependency after confirming there are no remaining Web consumers; extract updated Portuguese translation catalog.
 - [x] Run focused Angular tests (17/17), development build/typecheck, lint and Compose validation for local/staging/production using placeholders for required external variables.
-- [ ] Commit as `feat(auth): add Google and Steam account UI`.
-- [ ] Commit as `feat(auth): add Google and Steam account UI`.
+- [x] Commit as `feat(auth): add Google and Steam account UI` (`0ba918d`).
 
 ### Task 5: Staging-only test profile seed and operational handoff
 
@@ -162,14 +161,14 @@
 - CLI `pnpm --filter @bdo/api workspace:seed-test-profile` requires `STAGING_TEST_FIREBASE_UID`; no HTTP seed route exists.
 - `Share -AllowedEmail` supports at most ten unique valid e-mails, runs the existing staging smoke before printing the URL, and prints the Firebase authorized-domain/callback update required for the temporary hostname.
 
-- [ ] Add `test-workspace-seeder.spec.ts` cases `adds the synthetic character and family to an empty workspace`, `does not duplicate the profile on a repeated seed`, `preserves existing workspace values`, `rejects a Firebase UID without a canonical account`, `requires an explicitly configured test UID`, and `refuses to run outside staging`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/test-workspace-seeder.spec.ts` and confirm idempotence/environment guard cases fail before implementation.
-- [ ] Extract the existing synthetic persona values (`AuroraVale` / `ValeDourado`) to a shared fixture consumed by both demo and seed code.
-- [ ] Implement a transactionally locked, schema-validated merge and a CLI that refuses non-staging execution and never overwrites workspace fields.
-- [ ] Remove Supabase Auth config and dependencies from API/Web/Compose/docs only after no code consumers remain. Keep legacy data migration instructions explicit; do not match users by e-mail.
-- [ ] Update the Share script's e-mail limit/validation and explain the exact Firebase authorized-domain step for each temporary Quick Tunnel hostname. Document that stable availability requires a named tunnel/domain or hosting.
-- [ ] Document separate Firebase projects, required server-only credentials, provider enablement, disabled password/email-link methods, Steam callback URLs, staging seed and test-user setup. Do not include real secrets or tester e-mails.
-- [ ] Run focused seeder/script checks, `pnpm check`, `pnpm test`, and `pnpm test:staging`; confirm current known web recipe-tree failures are reported separately if still reproducible.
+- [x] Add `test-workspace-seeder.spec.ts` cases `adds the synthetic character and family to an empty workspace`, `does not duplicate the profile on a repeated seed`, `preserves existing workspace values`, `rejects a Firebase UID without a canonical account`, `requires an explicitly configured test UID`, and `refuses to run outside staging`; also cover the last schema-allowed character slot.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/workspace/test-workspace-seeder.spec.ts` and verify idempotence/environment guard behavior. The resumed worktree already contained the implementation; no initial behavioral red run was retained. The region typecheck failure was reproduced before its fix and passed afterward.
+- [x] Extract the existing synthetic persona values (`AuroraVale` / `ValeDourado`) to a shared fixture consumed by both demo and seed code.
+- [x] Implement a transactionally locked, schema-validated merge and a CLI that refuses non-staging execution and never overwrites workspace fields.
+- [x] Remove Supabase Auth config and dependencies from API/Web/Compose/docs only after no code consumers remain. Keep legacy data migration instructions explicit; do not match users by e-mail.
+- [x] Update the Share script's e-mail limit/validation and explain the exact Firebase authorized-domain step for each temporary Quick Tunnel hostname. Document that stable availability requires a named tunnel/domain or hosting.
+- [x] Document separate Firebase projects, required server-only credentials, provider enablement, disabled password/email-link methods, Steam callback URLs, staging seed and test-user setup. Do not include real secrets or tester e-mails.
+- [x] Run focused seeder/script checks, `pnpm check`, `pnpm test`, and `pnpm test:staging`; the full suite reproduces ten existing `recipe-tree.spec.ts` failures, recorded separately below.
 - [ ] Commit as `feat(staging): seed test account and document social auth setup`.
 
 ## Final completion conditions

@@ -1,0 +1,46 @@
+/** Synthetic BDO profile values shared by the local production demo and staging account seed. */
+export const stagingTestCharacter = {
+  id: 'staging-test-main',
+  name: 'AuroraVale',
+  familyName: 'ValeDourado',
+  className: 'Guerreiro',
+  specialization: 'succession',
+  level: 62,
+  server: 'Balenos 2',
+  region: 'sa',
+  silver: '2000000000',
+  energy: 320,
+  energyMax: 450,
+  contribution: 360,
+  inventoryCapacity: 192,
+  inventoryUsed: 2,
+  weightLimit: 1500,
+  carriedWeight: 10,
+  activeMinutes: 60,
+  afkMinutes: 240,
+  mastery: {
+    gathering: 0,
+    cooking: 1250,
+    alchemy: 1000,
+    processing: 0,
+    fishing: 0,
+    hunting: 0,
+    training: 0,
+    trading: 0,
+    farming: 0,
+    sailing: 0,
+    barter: 0,
+  },
+} as const;
+
+export const stagingTestFamily = {
+  name: stagingTestCharacter.familyName,
+  contribution: stagingTestCharacter.contribution,
+  energyMax: stagingTestCharacter.energyMax,
+  lifeSkills: {
+    alchemy: { tier: 'Mestre', level: 10, xpPercent: 0 },
+    cooking: { tier: 'Mestre', level: 10, xpPercent: 0 },
+  },
+  pets: [],
+  mounts: [],
+} as const;

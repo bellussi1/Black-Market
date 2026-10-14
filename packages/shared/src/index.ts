@@ -9,6 +9,7 @@ export * from './market-board';
 export * from './markets';
 export * from './platform';
 export * from './roadmap';
+export * from './staging-test-profile';
 
 export interface CursorPage<T> {
   items: T[];

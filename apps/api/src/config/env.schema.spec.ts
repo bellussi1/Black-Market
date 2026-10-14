@@ -96,10 +96,7 @@ describe('environment boundaries', () => {
       }).success,
     ).toBe(false);
   });
-  it('requires paired public identity settings and an analytics key for activation', () => {
-    expect(
-      envSchema.safeParse({ ...local, SUPABASE_URL: 'https://example.supabase.co' }).success,
-    ).toBe(false);
+  it('requires an analytics key for activation', () => {
     expect(envSchema.safeParse({ ...local, ANALYTICS_ENABLED: 'true' }).success).toBe(false);
   });
   it('never includes values in configuration failure messages', () => {
@@ -117,13 +114,6 @@ describe('environment boundaries', () => {
       'https://platform.example/path',
     ])
       expect(envSchema.safeParse({ ...local, PUBLIC_SITE_URL }).success).toBe(false);
-    expect(
-      envSchema.safeParse({
-        ...local,
-        SUPABASE_URL: 'https://user:secret@identity.example',
-        SUPABASE_PUBLIC_KEY: 'sb_publishable_example_public_key',
-      }).success,
-    ).toBe(false);
     expect(envSchema.safeParse({ DATABASE_URL: 'https://database.example' }).success).toBe(false);
     expect(() =>
       validateEnvironment({

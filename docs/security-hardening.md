@@ -20,7 +20,7 @@ Entrega de 08/10/2026, após auditoria da revisão `56b073f`. Preserva Angular, 
 
 ## Controles existentes revisados e preservados
 
-- Identidade verificada no Supabase pelo servidor; proprietário nunca vem do corpo da requisição. Sincronização usa parâmetros SQL, lock e controle de versão. Exclusão preserva apenas referência operacional para impedir restauração silenciosa por cliente antigo.
+- Identidade verificada por Firebase Admin no servidor; Google exige provider data confirmado e Steam exige OpenID validado mais UID mapeada. O proprietário nunca vem do corpo da requisição. Sincronização usa parâmetros SQL, lock e controle de versão. Exclusão preserva apenas referência operacional para impedir restauração silenciosa por cliente antigo.
 - Zod nos contratos, limites de listas/valores e renderização Angular como texto. Teste de armazém confirma que nome contendo HTML não cria elemento executável. Não aplicar substituição genérica de caracteres a todos os campos.
 - CSP com scripts próprios/OCR permitido, sem unsafe-inline de scripts; framing bloqueado, nosniff, Permissions-Policy e HSTS/upgrade para configuração HTTPS.
 - Sessão de autenticação em sessionStorage/PKCE e Authorization Bearer. **Não é cookie HttpOnly.** Não introduzimos uma sessão paralela. Um XSS ainda poderia acessar o token: mitigação exige CSP, escape e controle de scripts; revisão real de navegador continua necessária.
@@ -33,7 +33,7 @@ Entrega de 08/10/2026, após auditoria da revisão `56b073f`. Preserva Angular, 
 2. Use `APP_IMAGE` com tag de revisão ou digest existente, guardando a imagem anterior. Migração recebe CONTAINER_DATABASE_URL; API recebe apenas RUNTIME_DATABASE_URL. A aplicação de desenvolvimento permanece compatível com o banco local existente, sem impor alteração de credencial local.
 3. Banco novo: migrar, restaurar catálogo e publicar assets antes de abrir a entrada. Reexecute permissions após novas tabelas ou restauração. Imports administrativos são operações do mantenedor, não endpoints públicos; o gate de papel é aplicado no bootstrap do servidor API.
 4. Configure Tunnel no host para `127.0.0.1:8080`. A configuração Nginx pressupõe HTTPS externo e somente essa entrada confiável. Não exponha o gateway diretamente na internet nem reutilize a configuração de IP/protocolo em outro proxy sem revisão.
-5. Ative Supabase somente depois de testar redirects exatos, PKCE na mesma aba, duas contas, token expirado, logout, conflito e exclusão. Provedor permanece OFF sem configuração. SMTP/domínio não foram configurados por esta entrega.
+5. Configure projetos Firebase separados para staging e produção. Habilite Google e mantenha senha, e-mail/link e login anônimo desabilitados. Steam usa OpenID 2.0 validado pela API e callback HTTPS exato. Teste duas contas, token expirado, conflito e exclusão antes da publicação. A ativação real dos provedores ainda depende de projeto, domínio e credenciais externos.
 6. Agende backup e cópia privada externa; confira tamanho, retenção, permissões e recuperação. Assets não estão no pg_dump: copie versões imutáveis separadamente. Dumps podem conter dados pessoais; checksum verifica integridade, não cifra nem prova autenticidade.
 7. Crie monitores públicos de frontend e readiness; verifique e-mails. Credenciais/TLS/DNS/monitores e destinos externos não foram inventados nem considerados ativos.
 
@@ -76,7 +76,7 @@ Agendamento, fuso, PATH do Docker, rotação desse log e cópia externa devem se
 
 ## Limites
 
-Não é pentest/certificação. Rate limiting é local a uma instância, por IP, e precisa de calibração para redes compartilhadas; antes de replicar API, reavaliar coordenação e coletor. O papel do banco limita acesso técnico, enquanto isolamento por usuário continua na API, sem presumir RLS de Supabase no PostgreSQL próprio. Privilégios concedidos manualmente precisam de revisão.
+Não é pentest/certificação. Rate limiting é local a uma instância, por IP, e precisa de calibração para redes compartilhadas; antes de replicar API, reavaliar coordenação e coletor. O papel do banco limita acesso técnico, enquanto isolamento por usuário continua na API, sem presumir políticas Row Level Security no PostgreSQL próprio. Privilégios concedidos manualmente precisam de revisão.
 
 Backup no mesmo host não protege contra perda do servidor. Retenção/cópia externa, restauração no host final, HTTPS/proxy real, CSP/OCR no navegador, contas externas e alertas continuam pendentes de configuração e validação. Custos novos de serviços: **nenhum contratado**.
 

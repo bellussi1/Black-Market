@@ -1,17 +1,4 @@
 import { z } from 'zod';
-export function isPublicIdentityKey(value: string): boolean {
-  if (/^sb_publishable_[A-Za-z0-9_-]+$/.test(value)) return true;
-  try {
-    const parts = value.split('.');
-    return (
-      parts.length === 3 &&
-      (JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { role?: string })
-        .role === 'anon'
-    );
-  } catch {
-    return false;
-  }
-}
 
 export const envSchema = z
   .object({
@@ -95,23 +82,6 @@ export const envSchema = z
       (value) => (value === '' ? undefined : value),
       z.string().max(2048).optional(),
     ),
-    SUPABASE_URL: z.preprocess(
-      (value) => (value === '' ? undefined : value),
-      z
-        .string()
-        .url()
-        .regex(/^https:\/\//)
-        .optional(),
-    ),
-    SUPABASE_PUBLIC_KEY: z.preprocess(
-      (value) => (value === '' ? undefined : value),
-      z
-        .string()
-        .min(20)
-        .max(4096)
-        .refine(isPublicIdentityKey, 'Use somente a chave pública de identidade.')
-        .optional(),
-    ),
     DATABASE_URL: z
       .string()
       .url()
@@ -149,7 +119,7 @@ export const envSchema = z
       .default(''),
   })
   .superRefine((value, context) => {
-    for (const name of ['PUBLIC_SITE_URL', 'SUPABASE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
+    for (const name of ['PUBLIC_SITE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
       const raw = value[name];
       if (!raw) continue;
       let url: URL;
@@ -172,12 +142,6 @@ export const envSchema = z
             'Use um endereço sem credenciais, parâmetros ou fragmentos; o endereço público deve conter somente a origem.',
         });
     }
-    if (Boolean(value.SUPABASE_URL) !== Boolean(value.SUPABASE_PUBLIC_KEY))
-      context.addIssue({
-        code: 'custom',
-        path: ['SUPABASE_URL'],
-        message: 'Configure endereço e chave pública juntos.',
-      });
     const firebaseFields = [
       'FIREBASE_PROJECT_ID',
       'FIREBASE_AUTH_DOMAIN',
