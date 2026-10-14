@@ -29,6 +29,24 @@ async function render(component: typeof MarketPage) {
 
 describe('MarketPage', () => {
   useMemoryStorage();
+  it('targets the local API on the published port for market queries', async () => {
+    await renderComponent(MarketPage);
+    const request = TestBed.inject(HttpTestingController).expectOne(
+      (candidate) => candidate.url === 'http://localhost:3000/api/v1/market/board',
+    );
+    request.flush({
+      source: 'arsha',
+      region: 'sa',
+      locale: 'pt',
+      fetchedAt: new Date().toISOString(),
+      cacheStatus: 'cached',
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      categories: [],
+    });
+  });
   it('opens the central market with hot items and selectable page sizes', async () => {
     const fixture = await render(MarketPage);
     const element = fixture.nativeElement as HTMLElement;
@@ -54,7 +72,7 @@ describe('MarketPage', () => {
       iconUrl: null,
     } as unknown as CatalogItem);
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('http://localhost:3001/api/v1/market/items/676?region=sa&locale=pt').flush({
+    http.expectOne('http://localhost:3000/api/v1/market/items/676?region=sa&locale=pt').flush({
       source: 'arsha',
       region: 'sa',
       fetchedAt: new Date().toISOString(),
@@ -76,7 +94,7 @@ describe('MarketPage', () => {
     page.lookup();
     const http = TestBed.inject(HttpTestingController);
     const request = http.expectOne(
-      'http://localhost:3001/api/v1/market/items/676?region=sa&locale=pt',
+      'http://localhost:3000/api/v1/market/items/676?region=sa&locale=pt',
     );
     const item = {
       itemId: 676,
