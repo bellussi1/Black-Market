@@ -6,12 +6,14 @@ import { WorkspaceLayout } from './workspace-layout';
 describe('workspace navigation', () => {
   useMemoryStorage();
 
-  it('keeps the sidebar wordmark separate from the browser favicon', async () => {
+  it('uses the supplied logo and preserves the separate wordmark', async () => {
     const fixture = await renderComponent(WorkspaceLayout);
     const brand = (fixture.nativeElement as HTMLElement).querySelector('.brand')!;
     const wordmark = brand.querySelector('.brand-wordmark')!;
 
-    expect(brand.querySelector('.brand-symbol')?.getAttribute('src')).toBe('/brand-mark.svg');
+    expect(brand.querySelector('.brand-symbol')?.getAttribute('src')).toBe('/brand-mark.png');
+    expect(brand.querySelector('.brand-symbol')?.getAttribute('alt')).toBe('');
+    expect(brand.querySelector('.brand-symbol')?.getAttribute('aria-hidden')).toBe('true');
     expect(wordmark.children[0].textContent?.trim()).toBe('BLACK');
     expect(wordmark.children[1].textContent?.trim()).toBe('MARKET');
     expect(brand.querySelector('.brand-market')?.textContent?.trim()).toBe('MARKET');

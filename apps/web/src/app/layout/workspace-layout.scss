@@ -63,9 +63,10 @@
 
 .brand-symbol {
   display: block;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  object-fit: contain;
 }
 
 .sidebar-label {

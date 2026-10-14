@@ -988,3 +988,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Triagem importante**: roadmap dinâmico, preços de NPC/peixe, ícones de Life Skill, OCR K/M e validação explícita, consolidação de retornos, cookies legais/consentimento e troca de fórmula sem recarga têm implementação registrada. Ficam pendentes validação de acurácia OCR em conjunto independente, volume de vendas confiável, migração/role do roadmap no destino, ativação configurada de analytics, autenticação exclusiva Google/Steam (hoje existe Google e link por e-mail; Steam não localizado) e staging compartilhado para dez usuários.
 - **Artefato de desenho**: `docs/superpowers/specs/2026-10-14-semantic-surfaces-market-design.md`. A direção visual está aprovada; este documento é a especificação arquitetural aguardando revisão do usuário antes do plano de implementação. Não houve alteração de código de produto.
 - **Próximo passo**: solicitar revisão da especificação e ajustar se necessário. Após aprovação explícita do documento, escrever o plano de implementação do piloto do Mercado. Não migrar as demais telas até a primeira fatia estar validada.
+
+## 88. Logo da lateral substituída pela imagem enviada (Codex, 14/10/2026)
+
+- **Pedido**: manter o favicon atual e usar na navegação lateral a imagem de sacolinha enviada pelo usuário.
+- **Implementação**: a imagem foi copiada sem alteração para `apps/web/public/brand-mark.png` e substituiu a marca SVG anterior. O ícone da lateral passou a 48×48 px; o wordmark “BLACK / MARKET” continua ao lado. `favicon.svg` e seu link em `index.html` não foram modificados.
+- **Verificação**: SHA-256 do PNG no destino coincide com o anexo (`8768FF95258E42334FB9C7C2071B928D1EC61B948EB122A6B7AD0EAF9B536A14`). O favicon preserva o SHA-256 anterior (`55E7DD1A1771CA62D20F7CE1681EF18E1AE46236C467D4CEC9AC2DE78DB5D2D8`). O teste de layout foi atualizado para a nova imagem e atributos decorativos; a suíte não foi executada.
+- **Próximo passo**: conferir no navegador a marca em desktop e mobile quando o servidor local estiver disponível.
