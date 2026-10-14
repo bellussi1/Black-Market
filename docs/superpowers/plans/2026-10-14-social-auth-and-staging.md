@@ -52,12 +52,12 @@
 - Runtime configuration: `APP_ENV`, Firebase Web project/auth domain/API key/app ID, server-only Firebase Admin credential, exact Steam callback URL, optional staging test UID and roadmap-admin Firebase UID allowlist.
 - Exact environment names: `APP_ENV`, `FIREBASE_PROJECT_ID`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_ADMIN_CREDENTIALS_BASE64`, `STEAM_OPENID_CALLBACK_URL`, `STAGING_TEST_FIREBASE_UID`, and `ROADMAP_ADMIN_FIREBASE_UIDS`.
 
-- [ ] Add `env.schema.spec.ts` cases named `keeps optional Firebase auth disabled for local use`, `accepts a complete Firebase configuration`, `rejects partial Firebase configuration`, `requires an HTTPS Steam callback in staging and production`, and `rejects a staging seed UID outside staging`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` and confirm the new cases fail for missing Firebase settings and invalid environment combinations.
-- [ ] Add the Drizzle schema with unique constraints and foreign keys; do not change `user_workspaces.user_id`.
-- [ ] Generate and review the migration; add environment validation and pass only the Firebase Web config to the public identity config response.
-- [ ] Pass Firebase public config and Admin credentials only to the API container in local, staging and production Compose. Set `APP_ENV` explicitly in staging and production; leave secrets blank in `.env.example`.
-- [ ] Run `pnpm --filter @bdo/database db:check` and `pnpm --filter @bdo/api typecheck`; confirm the migration is ordered and all schema types compile.
+- [x] Add `env.schema.spec.ts` cases named `keeps optional Firebase auth disabled for local use`, `accepts a complete Firebase configuration`, `rejects partial Firebase configuration`, `requires an HTTPS Steam callback in staging and production`, and `rejects a staging seed UID outside staging`.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` and confirm the new cases fail for missing Firebase settings and invalid environment combinations.
+- [x] Add the Drizzle schema with unique constraints and foreign keys; do not change `user_workspaces.user_id`.
+- [x] Generate and review the migration and add environment validation. The public identity config response moves to Task 2, where Firebase verification and runtime configuration are introduced together.
+- [x] Pass Firebase public config and Admin credentials only to the API container in local, staging and production Compose. Set `APP_ENV` explicitly in staging and production; leave secrets blank in `.env.example`.
+- [x] Run `pnpm --filter @bdo/database db:check` and `pnpm --filter @bdo/api typecheck`; confirm the migration is ordered and all schema types compile.
 - [ ] Commit as `feat(auth): add Firebase identity schema and config`.
 
 ### Task 2: Firebase token verification and canonical account mapping

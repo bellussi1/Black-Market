@@ -1,6 +1,6 @@
 # Autenticação social e staging para testers
 
-**Estado:** especificação para revisão do usuário; implementação ainda não iniciada.
+**Estado:** aprovada pelo usuário para implementação; execução por tarefas atômicas em andamento.
 
 ## Objetivo
 
@@ -129,4 +129,4 @@ Não há evidência de usuários reais no staging que exija migração. Antes de
 - [x] Expõe a limitação do Quick Tunnel e separa sua allowlist do login do produto.
 - [x] Não inclui credenciais, e-mails de testers ou UID de conta no documento.
 
-**Após a revisão do usuário:** escrever o plano de implementação em entregas atômicas; só então alterar API, web, banco e scripts de staging.
+**Após a aprovação do usuário:** plano criado em `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md`; implementação isolada em worktree, com um commit por tarefa.

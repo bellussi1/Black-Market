@@ -1024,4 +1024,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Refinamento de segurança**: a especificação agora registra vínculo do state por cookie de navegador e PKCE S256 no código de troca Steam; não altera os provedores nem o modelo de sessão aprovados.
 - **Isolamento**: criado worktree gerenciado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; antes de executar o plano, o commit documental será incorporado a esse checkout.
 - **Restrições externas**: login real ainda depende dos projetos Firebase, segredo Admin, callback HTTPS/domínio autorizado, conta de teste e lista de e-mails allowlisted. Não usar credenciais reais do usuário no repositório nem afirmar login funcional sem E2E real.
-- **Próximo passo**: executar o plano no worktree e atualizar este contexto após cada commit de tarefa.
+- **Próximo passo**: a primeira fatia está implementada no worktree; seguir para verificação Firebase no servidor e atualizar este contexto após cada commit de tarefa.
+
+## 92. Esquema de identidade e configuração Firebase (Codex, 14/10/2026)
+
+- **Implementação**: incluído `APP_ENV` e validação opcional da configuração Firebase completa, credencial Admin Base64 vinculada ao `project_id`, callback Steam em rota fixa e HTTPS/origem pública fora do local, UID de seed exclusivo do staging e lista de admins validada. `.env.example` mantém credenciais vazias.
+- **Persistência**: criado o enum `auth_provider` e tabelas `auth_users`, `auth_identities`, `steam_auth_attempts` e `steam_auth_exchanges`. O Firebase UID tem constraint `UNIQUE` inline antes das FKs que o referenciam; identidades têm unicidade por provedor/sujeito e por usuário/provedor. O schema de `user_workspaces.user_id` não mudou.
+- **Compose**: os três ambientes encaminham configurações e a credencial Admin somente ao container da API. Staging e produção definem `APP_ENV` explicitamente; o container web não recebe credencial Admin.
+- **Testes/verificações**: `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` — 11/11 passaram; `pnpm --filter @bdo/database db:check` e `pnpm --filter @bdo/api typecheck` passaram. `docker compose config --quiet` local, staging e produção passou; staging/produção usaram somente placeholders temporários para segredos obrigatórios e hash de assets, sem iniciar containers nem guardar segredos.
+- **Limite de tarefa**: a resposta pública `/identity/config` será migrada no Task 2 junto do serviço Firebase, evitando expor configuração ainda sem o runtime que a sustenta.
+- **Arquivos**: `.env.example`, Compose local/staging/produção, schema Drizzle, migração `0008_huge_emma_frost.sql`, testes/schema de ambiente, plano e ledger SDD.
+- **Próximo passo**: concluir e commitar atomicamente `feat(auth): add Firebase identity schema and config`; depois implementar verificação de token e mapeamento UUID canônico.
