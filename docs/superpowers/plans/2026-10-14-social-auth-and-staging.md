@@ -79,13 +79,13 @@
 - `GET /api/v1/identity/config` returns `{ enabled, googleEnabled, steamEnabled, apiKey, authDomain, projectId, appId }` with `Cache-Control: no-store`.
 - `GET /api/v1/identity/me` returns only verified profile fields and linked provider names.
 
-- [ ] Replace Supabase-mocked identity tests with exact cases `requires a bearer credential`, `provisions a canonical owner for a verified Google user`, `reuses the Google mapping on subsequent requests`, `accepts a known Steam custom-token UID`, `rejects an unmapped custom-token UID`, `rejects expired or revoked Firebase tokens`, `rejects a token for another Firebase project`, and `allows roadmap edits only for a server-allowlisted UID`.
-- [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/firebase-auth.service.spec.ts src/workspace/identity.service.spec.ts` and confirm the cases fail before implementation.
-- [ ] Install Firebase Admin SDK, implement lazy/disabled-safe server initialization, and keep credentials out of logs and public configuration.
-- [ ] Implement transactional canonical-user/provider mapping. For Google, require verified Firebase provider data `google.com`; for custom tokens, require an existing Steam identity mapping.
-- [ ] Derive roadmap administration from the server-side Firebase UID allowlist; ignore client claims and e-mail.
-- [ ] Add `/identity/me`, close Supabase paths, and migrate workspace plus Roadmap authorization to the new identity boundary.
-- [ ] Run focused API tests, lint and typecheck.
+- [x] Replace Supabase-mocked identity tests with exact cases `requires a bearer credential`, `provisions a canonical owner for a verified Google user`, `reuses the Google mapping on subsequent requests`, `accepts a known Steam custom-token UID`, `rejects an unmapped custom-token UID`, `rejects expired or revoked Firebase tokens`, `rejects a token for another Firebase project`, and `allows roadmap edits only for a server-allowlisted UID`.
+- [x] Run `pnpm --filter @bdo/api exec vitest run src/workspace/firebase-auth.service.spec.ts src/workspace/identity.service.spec.ts` and confirm the cases fail before implementation.
+- [x] Install Firebase Admin SDK, implement lazy/disabled-safe server initialization, and keep credentials out of logs and public configuration.
+- [x] Implement transactional canonical-user/provider mapping. For Google, require verified Firebase provider data `google.com`; for custom tokens, require an existing Steam identity mapping.
+- [x] Derive roadmap administration from the server-side Firebase UID allowlist; ignore client claims and e-mail.
+- [x] Add `/identity/me` and migrate workspace plus Roadmap authorization to the Firebase identity boundary. Removing Supabase dependencies and configuration remains in Task 5 after all consumers migrate.
+- [x] Run focused API tests, lint and typecheck.
 - [ ] Commit as `feat(auth): verify Firebase sessions and map accounts`.
 
 ### Task 3: Steam OpenID, one-time exchange and explicit linking

@@ -1034,4 +1034,16 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Testes/verificações**: `pnpm --filter @bdo/api exec vitest run src/config/env.schema.spec.ts` — 11/11 passaram; `pnpm --filter @bdo/database db:check` e `pnpm --filter @bdo/api typecheck` passaram. `docker compose config --quiet` local, staging e produção passou; staging/produção usaram somente placeholders temporários para segredos obrigatórios e hash de assets, sem iniciar containers nem guardar segredos.
 - **Limite de tarefa**: a resposta pública `/identity/config` será migrada no Task 2 junto do serviço Firebase, evitando expor configuração ainda sem o runtime que a sustenta.
 - **Arquivos**: `.env.example`, Compose local/staging/produção, schema Drizzle, migração `0008_huge_emma_frost.sql`, testes/schema de ambiente, plano e ledger SDD.
-- **Próximo passo**: concluir e commitar atomicamente `feat(auth): add Firebase identity schema and config`; depois implementar verificação de token e mapeamento UUID canônico.
+- **Commit**: `3f22e47 feat(auth): add Firebase identity schema and config`.
+- **Próximo passo**: implementação registrada no commit seguinte; a Task 3 segue com Steam OpenID e troca PKCE de uso único.
+
+## 93. Verificação de sessões Firebase e dono canônico (Codex, 14/10/2026)
+
+- **Firebase Admin**: instalado `firebase-admin@14.5.0` com versão exata; serviço inicializa de forma preguiçosa usando credencial Admin exclusivamente no servidor, verifica ID token com checagem de revogação, consulta provider data e cria custom token somente via serviço interno.
+- **Identidade e workspace**: API aceita apenas ID tokens Firebase de `google.com` ou token custom com UID Steam já mapeado. Login Google comprova `providerData` no Admin e cria/reutiliza UUID canônico em transação, com restrições únicas e sem vincular por e-mail. `user_workspaces.user_id` segue UUID interno.
+- **Roadmap/conta**: autorização de edição usa somente `ROADMAP_ADMIN_FIREBASE_UIDS` no servidor. `GET /identity/me` retorna nome/e-mail/foto quando disponíveis, provedores vinculados e permissão de roadmap sem expor o UUID interno. `/identity/config` retorna somente configuração web pública e usa `no-store`.
+- **Módulos**: workspace e Roadmap passaram a usar o mesmo limite de identidade Firebase; as dependências/campos Supabase antigos ficam temporariamente até Task 5, depois da migração dos demais consumidores.
+- **Verificação**: a suíte direcionada (schema de ambiente + Firebase Admin + identidade) passou 25/25; `pnpm --filter @bdo/api lint` e `pnpm --filter @bdo/api typecheck` passaram. O typecheck inicial usou um `tsconfig.tsbuildinfo` obsoleto após a instalação; removi apenas esse artefato ignorado e rodei novamente, com saída zero.
+- **Limites**: ainda não há projeto Firebase nem credenciais; testes mockam Admin SDK e não representam login real Google/Steam. O callback Steam e a UI Firebase chegam nas Tasks 3 e 4.
+- **Arquivos**: `apps/api/src/workspace/firebase-auth.service.ts` e teste, `identity.service.ts` e teste, controller e módulos Workspace/Roadmap, `apps/api/package.json`, `pnpm-lock.yaml`, plano e este contexto.
+- **Próximo passo**: fechar o commit atômico `feat(auth): verify Firebase sessions and map accounts`; então implementar o verificador Steam OpenID e vinculação explícita.

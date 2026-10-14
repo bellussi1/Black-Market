@@ -10,8 +10,13 @@ export class WorkspaceController {
     private readonly identity: IdentityService,
     private readonly workspaces: WorkspaceService,
   ) {}
-  @Get('identity/config') config() {
+  @Get('identity/config') @Header('Cache-Control', 'no-store') config() {
     return this.identity.publicConfig();
+  }
+  @Get('identity/me') @Header('Cache-Control', 'private,no-store') async me(
+    @Headers('authorization') token: string | undefined,
+  ) {
+    return this.identity.me(token);
   }
   @Get('workspace') @Header('Cache-Control', 'private,no-store') async get(
     @Headers('authorization') token: string | undefined,
