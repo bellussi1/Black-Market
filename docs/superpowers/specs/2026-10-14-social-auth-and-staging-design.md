@@ -27,7 +27,7 @@ O primeiro acesso por um provedor cria a conta automaticamente. Não haverá sen
 4. **Dono dos dados:** adicionar um UUID interno canônico de usuário e mapear para ele o UID Firebase e os sujeitos externos Google/Steam. `user_workspaces.user_id` continua usando UUID interno; Firebase UIDs não são forçados a caber nessa coluna nem expostos como dono do workspace.
 5. **Permissões:** papéis administrativos são atribuídos pelo servidor, em armazenamento/claims sob controle do servidor. O cliente não pode conceder a si mesmo papel de administrador.
 
-Steam usa OpenID 2.0, não OAuth/OIDC. O fluxo deve validar `state` de uso único, retorno e `realm` exatos, sessão de correlação segura, assinatura por `check_authentication`, modo de resposta, identidade e SteamID64 canônicos. Retornos aceitam apenas caminhos locais permitidos. Configurar produção e staging exige HTTPS e URLs de retorno exatas.
+Steam usa OpenID 2.0, não OAuth/OIDC. O fluxo deve validar `state` de uso único, retorno e `realm` exatos, assinatura por `check_authentication`, modo de resposta, identidade e SteamID64 canônicos. O início também define um cookie HttpOnly/SameSite para vincular o retorno ao navegador que iniciou a autenticação; a troca do código de sessão usa PKCE S256, código curto e de uso único. Retornos aceitam apenas caminhos locais permitidos. Configurar produção e staging exige HTTPS e URLs de retorno exatas.
 
 ### Somente Google e Steam
 

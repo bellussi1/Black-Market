@@ -1010,8 +1010,18 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 
 - **Pedido**: permitir contas somente com Google e Steam, cadastrar personagem/família para a conta de teste e disponibilizar staging a dez usuários.
 - **Arquitetura aprovada pelo usuário**: Firebase Auth para sessões comuns; Google pelo SDK Web; Steam OpenID 2.0 validado no backend, com Firebase custom token. Um UUID canônico interno associa o Firebase UID e identidades externas ao workspace. Vinculação de provedores exige provar ambos; coincidência de e-mail não une contas.
+- **Detalhe de segurança incorporado no plano**: state Steam fica vinculado a cookie HttpOnly/SameSite e a troca do código de login usa PKCE S256 de uso único; isso evita reaproveitar o retorno em outro navegador sem afetar a arquitetura aprovada.
 - **Verificação do estado**: Minha Conta ainda exibe login por link de e-mail e Google via Supabase; API valida Supabase. Não há Steam. O banco de staging é isolado e exclui `user_workspaces` no seed. O fixture sintético de personagem/família `AuroraVale` / `ValeDourado` existe em `production-demo.ts`, mas não pertence a uma conta persistida.
 - **Staging**: Docker local e Quick Tunnel temporário já existentes; `pnpm test:staging` passou. O túnel muda de URL e depende do computador do mantenedor. O desenho conserva allowlist de até dez e-mails, Firebase e banco próprios de staging, dados de teste e analytics/coletores desligados. Para disponibilidade contínua será necessário domínio/túnel nomeado ou hospedagem.
 - **Artefato**: `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` documenta fluxos, modelo de identidade, segurança, seed idempotente e critérios de aceitação. Revisão própria concluída; ainda aguarda revisão explícita do usuário antes do plano de implementação, conforme a skill de brainstorming.
 - **Limites externos**: Firebase staging/produção, credencial Admin, domínio HTTPS/retornos, e-mails dos testers e a identificação da conta designada ainda precisam ser configurados; não enviar segredos pelo chat. Não há evidência sobre workspaces de eventual projeto Supabase externo, então não remover dados de lá sem inventário.
 - **Próximo passo**: após a revisão da especificação pelo usuário, criar o plano e implementar em commits atômicos; só validar login real e semear a conta quando a configuração externa e a identidade designada estiverem disponíveis.
+
+## 91. Plano aprovado para autenticação social e staging (Codex, 14/10/2026)
+
+- **Aprovação**: o usuário aprovou a especificação e pediu para seguir com plano e implementação.
+- **Plano**: `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md` decompõe o trabalho em esquema/configuração, Firebase API, Steam OpenID, UI Google/Steam e seed/ops do staging. Cada tarefa tem casos de teste, verificação e commit próprio.
+- **Refinamento de segurança**: a especificação agora registra vínculo do state por cookie de navegador e PKCE S256 no código de troca Steam; não altera os provedores nem o modelo de sessão aprovados.
+- **Isolamento**: criado worktree gerenciado a partir da branch `codex/recipe-workspace-ui`, em `C:\Users\Bellussi\.codex\worktrees\social-auth-staging\Site de BDO`; antes de executar o plano, o commit documental será incorporado a esse checkout.
+- **Restrições externas**: login real ainda depende dos projetos Firebase, segredo Admin, callback HTTPS/domínio autorizado, conta de teste e lista de e-mails allowlisted. Não usar credenciais reais do usuário no repositório nem afirmar login funcional sem E2E real.
+- **Próximo passo**: executar o plano no worktree e atualizar este contexto após cada commit de tarefa.
