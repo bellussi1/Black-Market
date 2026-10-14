@@ -73,6 +73,7 @@
 
 - `FirebaseAuthService.verifyIdToken(token: string): Promise<DecodedIdToken>` validates audience/issuer through Firebase Admin and checks revocation.
 - `FirebaseAuthService.getUser(uid: string)` supplies authoritative provider data for first sign-in and linking.
+- `FirebaseAuthService.createCustomToken(uid: string): Promise<string>` issues a custom token only after the Steam service has proved the provider identity.
 - `IdentityService.owner(authorization)` returns the internal UUID after verified Google provisioning or a known Steam mapping; it rejects unknown custom-token UIDs.
 - `IdentityService.me(authorization)` returns profile display fields, available linked providers and server-derived roadmap permission, without exposing the internal owner UUID.
 - `GET /api/v1/identity/config` returns `{ enabled, googleEnabled, steamEnabled, apiKey, authDomain, projectId, appId }` with `Cache-Control: no-store`.
@@ -100,16 +101,17 @@
 
 - `SteamOpenIdService.loginUrl(state: string, returnTo: string, realm: string): URL` builds a Steam OpenID 2.0 request.
 - `SteamOpenIdService.verifyCallback(params, expectedReturnTo): Promise<{ steamId: string }>` verifies the signed response using Steam `check_authentication` and canonical claimed ID.
-- `SteamAuthService.beginLogin(codeChallenge: string): Promise<URL>` persists an expiring state hash and PKCE challenge, sets an HttpOnly/SameSite state cookie, and returns the Steam URL.
-- `SteamAuthService.beginLink(firebaseUid: string): Promise<URL>` requires a verified Firebase session, binds state to the same browser cookie and persists the target UID.
+- `SteamAuthService.beginLogin(codeChallenge: string): Promise<{ url: URL; stateCookie: string }>` persists an expiring state hash and PKCE challenge; controller sets an HttpOnly/SameSite state cookie and redirects to the Steam URL.
+- `SteamAuthService.beginLink(firebaseUid: string): Promise<{ url: URL; stateCookie: string }>` requires a verified Firebase session, binds state to the same browser cookie and persists the target UID; controller sets the cookie and returns the URL.
 - `SteamAuthService.completeCallback(params): Promise<{ redirectUrl: string }>` consumes state once; login creates/finds the account and one-time exchange, link attaches Steam only if unclaimed.
 - `SteamAuthService.exchange(code: string, verifier: string): Promise<string>` atomically consumes one-time code, verifies PKCE S256, and returns a Firebase custom token.
-- Routes: `GET /identity/steam/start`, `GET /identity/steam/callback`, `POST /identity/steam/exchange`, `POST /identity/steam/link/start`, and `POST /identity/google/link`.
+- Routes: `GET /identity/steam/start?code_challenge=...`, `GET /identity/steam/callback`, `POST /identity/steam/exchange`, `POST /identity/steam/link/start`, and `POST /identity/google/link`.
 
 - [ ] Write `SteamOpenIdService` cases `builds a login URL with the configured callback and realm`, `rejects a different return URL`, `rejects missing signed fields`, `rejects Steam check_authentication is_valid false`, and `rejects a noncanonical claimed ID`; write `SteamAuthService` cases `consumes state only once`, `rejects a callback without the matching browser cookie`, `rejects expired state`, `rejects a mismatched PKCE verifier`, `consumes an exchange only once`, `logs into an existing linked Steam identity`, `links Steam to the authenticated Firebase UID`, and `rejects an identity already owned by another account`.
 - [ ] Run `pnpm --filter @bdo/api exec vitest run src/workspace/steam-openid.service.spec.ts src/workspace/steam-auth.service.spec.ts` and confirm callback/replay/link-conflict cases fail before implementation.
 - [ ] Implement OpenID request construction and bounded `check_authentication` POST; do not use Steam API keys or trust browser-submitted Steam IDs.
 - [ ] Persist only hashes for random state and exchange code; consume them transactionally and expire attempts/codes after five minutes.
+- [ ] Set state cookie `HttpOnly; SameSite=Lax; Path=/api/v1/identity/steam; Max-Age=300`, add `Secure` for HTTPS, clear it on every callback, and enable credentialed CORS only for the configured `WEB_ORIGIN` so Steam-link startup can set the cookie.
 - [ ] On login, issue a custom token only after proof; on link, preserve the existing Firebase UID and reject identities owned by another account.
 - [ ] Redirect to a fixed local `/account` fragment containing a short-lived exchange code or fixed success/error code; set no-store and no-referrer headers.
 - [ ] Implement Google link verification by checking Firebase Admin `providerData`, then attach the verified Google subject to the already-mapped UID.
