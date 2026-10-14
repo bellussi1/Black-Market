@@ -1083,3 +1083,13 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos**: fixture em `packages/shared/src/staging-test-profile.ts`; seeder/spec/CLI em `apps/api/src/workspace/`; atualização de `scripts/staging.ps1`, Compose, `.env.example`, `pnpm-lock.yaml`, `README.md` e documentação de staging/contas/segurança.
 - **Commits**: formatação isolada de documentos `716c4e0 style(docs): format market research notes`; implementação atômica do seed/staging `211a953 feat(staging): seed test account and document social auth setup`.
 - **Próximo passo**: manter a aplicação local acessível. Depois de configurar o projeto Firebase de staging, domínios autorizados, credencial Admin, UID designada e lista privada de testers, validar login Google/Steam e executar `SeedProfile`.
+
+## 97. Correção de API local e marca sem fundo branco (Codex, 14/10/2026)
+
+- **Causa dos erros**: o navegador usava `http://localhost:3001` em `environment.ts`, mas a API local é publicada na porta 3000. O mercado e os ícones de catálogo/receitas falhavam com `ERR_CONNECTION_REFUSED`.
+- **Correção da API**: base de desenvolvimento e fallbacks SSR/sitemap agora apontam para `localhost:3000`; o mapeamento SSR continua usando `API_BASE_URL` configurado quando disponível. Testes cobrem chamadas do mercado e URL dos ícones.
+- **Logo**: o PNG tem canvas branco fora do emblema arredondado. A navegação aplica `clip-path: inset(4% round 24%)` para cortar apenas o canvas externo, mantendo o arquivo e o desenho originais.
+- **Validação**: os testes direcionados passaram (17/17) e `pnpm check` passou. Playwright confirmou Mercado HTTP 200 com 20 linhas, sem erros no console; Receitas renderizou 24 imagens de itens, sem imagens quebradas nem alertas. Captura visual confirmou o emblema sem o fundo branco.
+- **Servidor local**: web e API permanecem ativos em `http://localhost:4200` e `http://localhost:3000`; o web dev server carrega o código desta worktree.
+- **Arquivos**: `apps/web/src/environments/environment.ts`, `apps/web/src/app/app.config.server.ts`, `apps/web/src/server.ts`, `apps/web/src/app/layout/workspace-layout.html`, `workspace-layout.scss`, specs do layout, mercado e catálogo.
+- **Commit**: `d3a1777 fix(web): correct local API URL and trim logo background`.
