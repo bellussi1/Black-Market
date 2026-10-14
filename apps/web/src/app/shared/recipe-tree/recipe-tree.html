@@ -401,7 +401,9 @@
                     <li class="preview-material-row">
                       <app-item-icon
                         [url]="
-                          catalog.resolveIconUrl(parts().get(material.itemId) ?? { iconUrl: null })
+                          catalog.resolveIconUrl(
+                            parts().get(material.itemId) ?? { itemId: material.itemId }
+                          )
                         "
                         [name]="productionMaterialName(material.itemId)"
                       />
@@ -638,7 +640,7 @@
                               <app-item-icon
                                 [url]="
                                   catalog.resolveIconUrl(
-                                    parts().get(row.itemId) ?? { iconUrl: null }
+                                    parts().get(row.itemId) ?? { itemId: row.itemId }
                                   )
                                 "
                                 [name]="productionMaterialName(row.itemId)"

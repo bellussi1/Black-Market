@@ -28,7 +28,6 @@ import {
   type TaxOptions,
 } from '@bdo/calculators';
 import type {
-  ActiveDatasetSummary,
   CatalogItem,
   CatalogItemDetail,
   CatalogRecipe,
@@ -224,8 +223,7 @@ export class RecipeTree {
   readonly customItemPrices = signal(new Map<number, string>());
   readonly returnProductSales = signal(new Map<number, boolean>());
   readonly showAllReturnedProducts = signal(false);
-  readonly returnCatalogItems = signal(new Map<number, CatalogItem>());
-  readonly returnCatalogDataset = signal<ActiveDatasetSummary | null>(null);
+  readonly recipeCatalogItems = signal(new Map<number, CatalogItem>());
   readonly marketQuotes = signal(new Map<number, MarketItemQuote>());
   readonly npcPurchasePrices = signal(new Map<number, NpcPurchasePrice>());
   readonly marketEquivalentInputs = signal(new Map<number, RecipeMarketEquivalent[]>());
@@ -431,7 +429,7 @@ export class RecipeTree {
         const plannerRow = plannerRows.find((r) => r.itemId === itemId);
         const name = this.productionMaterialName(itemId);
         const part = partsMap.get(itemId);
-        const iconUrl = this.catalog.resolveIconUrl(part ?? { iconUrl: null });
+        const iconUrl = this.catalog.resolveIconUrl(part ?? { itemId });
         const canProduce = this.makeChoice(itemId) !== 'buy';
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
@@ -984,7 +982,7 @@ export class RecipeTree {
     const parts = new Map<number, CatalogRecipePart>();
     for (const recipe of [graph.rootRecipe, ...graph.producerRecipes])
       for (const part of recipe.inputs) parts.set(part.itemId, part);
-    return graph.itemIds
+    return [...parts.keys()]
       .filter((itemId) => itemId !== rootId && !producedIds.has(itemId))
       .map((itemId) => {
         const part = parts.get(itemId);
@@ -992,8 +990,8 @@ export class RecipeTree {
         const draft = this.gatherEstimateDrafts().get(itemId);
         return {
           itemId,
-          name: part?.name ?? `Item ${itemId}`,
-          iconUrl: this.catalog.resolveIconUrl(part ?? { iconUrl: null }),
+          name: part!.name,
+          iconUrl: this.catalog.resolveIconUrl(part!),
           expectedYield: draft?.expectedYield ?? estimate?.expectedYield ?? null,
           craftSeconds: draft?.craftSeconds ?? estimate?.craftSeconds ?? null,
         };
@@ -1062,7 +1060,7 @@ export class RecipeTree {
     return plan.returns.map((product) => ({
       ...product,
       name:
-        this.returnCatalogItems().get(product.itemId)?.name ??
+        this.recipeCatalogItems().get(product.itemId)?.name ??
         names.get(product.itemId) ??
         this.marketQuotes().get(product.itemId)?.name ??
         `Item ${product.itemId}`,
@@ -1083,13 +1081,7 @@ export class RecipeTree {
   }
 
   private returnProductIconUrl(itemId: number): string | null {
-    const item = this.returnCatalogItems().get(itemId);
-    if (!item) return null;
-    return (
-      this.catalog.resolveIconUrl(item) ??
-      this.catalog.itemIconUrl?.(itemId, this.returnCatalogDataset()) ??
-      null
-    );
+    return this.catalog.resolveIconUrl(this.recipeCatalogItems().get(itemId) ?? { itemId });
   }
 
   setReturnProductSale(itemId: number, sell: boolean): void {
@@ -1359,19 +1351,27 @@ export class RecipeTree {
                 : []),
             ]),
           ];
-          const returnCatalogItems$ = returnItemIds.length
-            ? this.catalog.getItems({ ids: returnItemIds, page: 1, pageSize: 100 }).pipe(
-                map((page) => ({
-                  items: new Map(page.items.map((item) => [item.id, item])),
-                  dataset: page.dataset,
-                })),
-                catchError(() =>
-                  of({
-                    items: new Map<number, CatalogItem>(),
-                    dataset: null,
-                  }),
-                ),
-              )
+          const catalogItemIds = [
+            ...new Set([
+              ...itemIds,
+              ...returnItemIds,
+              ...this.recipes().flatMap((recipe) =>
+                [...recipe.inputs, ...recipe.outputs].map((part) => part.itemId),
+              ),
+              ...verifiedIngredientSubstitutionItemIds(this.recipes()),
+            ]),
+          ];
+          const recipeCatalogItems$ = catalogItemIds.length
+            ? this.catalog
+                .getItemsByIds(catalogItemIds, graph?.datasetVersion ?? this.datasetVersion())
+                .pipe(
+                  catchError(() =>
+                    of({
+                      items: new Map<number, CatalogItem>(),
+                      dataset: null,
+                    }),
+                  ),
+                )
             : of({ items: new Map<number, CatalogItem>(), dataset: null });
           const marketEquivalents$ = graph
             ? this.catalog
@@ -1411,7 +1411,7 @@ export class RecipeTree {
               return combineLatest({
                 quotes: quotes$,
                 npcPrices: npcPrices$,
-                returnCatalogItems: returnCatalogItems$,
+                recipeCatalogItems: recipeCatalogItems$,
                 marketEquivalents: of(marketEquivalents),
               }).pipe(map((result) => ({ ...result, marketEquivalentInputs: equivalentInputs })));
             }),
@@ -1420,12 +1420,11 @@ export class RecipeTree {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ quotes: quotesMap, npcPrices, returnCatalogItems, marketEquivalentInputs }) => {
+        next: ({ quotes: quotesMap, npcPrices, recipeCatalogItems, marketEquivalentInputs }) => {
           if (revision !== this.quoteRevision) return;
           this.npcPurchasePrices.set(npcPrices);
           this.marketEquivalentInputs.set(marketEquivalentInputs);
-          this.returnCatalogItems.set(returnCatalogItems.items);
-          this.returnCatalogDataset.set(returnCatalogItems.dataset);
+          this.recipeCatalogItems.set(recipeCatalogItems.items);
           const newPrices = new Map(this.livePrices());
           const newQuotes = new Map(this.marketQuotes());
           const observed = new Map(this.quoteObservedAt());
