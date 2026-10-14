@@ -26,5 +26,9 @@ data/
 .playwright-mcp/
 output/playwright/
 
-# Local synthetic and authorized OCR corpora, labels, and benchmark reports.
-tmp/ocr-dataset/
+# Local diagnostics, generated OCR corpora, benchmark reports, and browser logs.
+tmp/
+
+.playwright-cli/
+
+**/.nx/

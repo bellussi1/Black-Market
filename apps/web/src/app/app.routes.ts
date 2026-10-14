@@ -80,7 +80,7 @@ export const routes: Routes = [
         data: { private: true },
 
         loadComponent: () =>
-          import('./features/scans/scans-page').then((module) => module.ScansPage),
+          import('./features/scans/automatic-scan-page').then((module) => module.AutomaticScanPage),
       },
 
       {
@@ -126,6 +126,23 @@ export const routes: Routes = [
 
         loadComponent: () =>
           import('./features/world/world-page').then((module) => module.WorldPage),
+      },
+
+      {
+        path: 'roadmap/manage',
+        title: $localize`Black Market · Editar Roadmap`,
+        data: { private: true, noindex: true },
+        loadComponent: () =>
+          import('./features/roadmap/roadmap-manage-page').then(
+            (module) => module.RoadmapManagePage,
+          ),
+      },
+
+      {
+        path: 'roadmap',
+        title: $localize`Black Market · Roadmap`,
+        loadComponent: () =>
+          import('./features/roadmap/roadmap-page').then((module) => module.RoadmapPage),
       },
 
       {

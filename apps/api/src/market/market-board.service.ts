@@ -45,6 +45,8 @@ const querySchema = z.object({
   q: z.string().trim().max(80).default(''),
   categoryId: z.string().trim().min(1).max(120).optional(),
   sort: z.enum(['hot', 'price', 'stock', 'name']).default('hot'),
+  direction: z.enum(['asc', 'desc']).optional(),
+  stock: z.enum(['all', 'in_stock', 'out_of_stock']).default('all'),
   page: z.coerce.number().int().min(1).max(100000).default(1),
   pageSize: z.coerce
     .number()
@@ -219,26 +221,36 @@ export class MarketBoardService {
           ))
       );
     });
-    if (query.sort !== 'hot')
+    if (query.stock !== 'all')
+      matches = matches.filter((item) =>
+        query.stock === 'in_stock' ? item.stock > 0 : item.stock === 0,
+      );
+    if (query.sort !== 'hot') {
+      // Defaults keep the documented behaviour: cheapest first, most stocked first, A-Z.
+      const defaultDirection = query.sort === 'stock' ? 'desc' : 'asc';
+      const flip = (query.direction ?? defaultDirection) !== defaultDirection ? -1 : 1;
+      const tie = (a: (typeof matches)[number], b: (typeof matches)[number]) =>
+        a.itemId - b.itemId || a.subId - b.subId;
       matches = [...matches].sort((a, b) => {
         if (query.sort === 'price') {
+          // Unknown prices stay last in both directions: they carry no ordering information.
           if (a.price === null && b.price !== null) return 1;
           if (b.price === null && a.price !== null) return -1;
           const left = BigInt(a.price ?? '0');
           const right = BigInt(b.price ?? '0');
-          return left === right ? a.itemId - b.itemId || a.subId - b.subId : left < right ? -1 : 1;
+          return left === right ? tie(a, b) : (left < right ? -1 : 1) * flip;
         }
-        if (query.sort === 'stock')
-          return b.stock - a.stock || a.itemId - b.itemId || a.subId - b.subId;
-        return (
+        if (query.sort === 'stock') {
+          return a.stock === b.stock ? tie(a, b) : (b.stock - a.stock) * flip;
+        }
+        const byName =
           (held.metadata.get(a.itemId)?.name ?? a.name).localeCompare(
             held.metadata.get(b.itemId)?.name ?? b.name,
             query.locale,
-          ) ||
-          a.itemId - b.itemId ||
-          a.subId - b.subId
-        );
+          ) * flip;
+        return byName || tie(a, b);
       });
+    }
     const page = matches.slice((query.page - 1) * query.pageSize, query.page * query.pageSize);
     const ids = [...new Set(page.map((item) => item.itemId))];
     const now = Date.now();

@@ -4,14 +4,23 @@
     <h1 i18n>Armazém</h1>
     <p i18n>Importe capturas, confira o que já possui e corrija quantidades quando precisar.</p>
     <div class="action-row">
-      <a class="btn" routerLink="/scans" [queryParams]="{ type: kind() }" i18n>Importar capturas</a
-      ><button class="btn subtle" type="button" (click)="newItem()" i18n>
+      <a
+        hlmBtn
+        variant="outline"
+        class="btn"
+        routerLink="/scans"
+        [queryParams]="{ type: kind() }"
+        i18n
+        >Importar capturas</a
+      ><button hlmBtn variant="outline" class="btn subtle" type="button" (click)="newItem()" i18n>
         Adicionar item manualmente
       </button>
     </div>
   </header>
   <div class="workspace-tabs" role="group" aria-label="Itens do armazém" i18n-aria-label>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="kind() === 'storage'"
       (click)="selectKind('storage')"
@@ -20,6 +29,8 @@
       Armazéns por cidade
     </button>
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="kind() === 'inventory'"
       (click)="selectKind('inventory')"
@@ -28,16 +39,21 @@
       Inventários dos personagens
     </button>
   </div>
-  <section class="panel">
+  <section hlmCard class="panel">
     <div class="form-grid">
       <label i18n
         >Pesquisar item<input
+          hlmInput
           type="search"
           [ngModel]="search()"
           (ngModelChange)="search.set($event); resetPage()" /></label
       ><label
         >{{ kind() === 'storage' ? 'Cidade ou armazém' : 'Personagem'
-        }}<select [ngModel]="destination()" (ngModelChange)="destination.set($event); resetPage()">
+        }}<select
+          appBdoSelect
+          [ngModel]="destination()"
+          (ngModelChange)="destination.set($event); resetPage()"
+        >
           <option value="" i18n>Todos</option>
           @if (kind() === 'storage') {
             @for (location of locations(); track location) {
@@ -62,6 +78,8 @@
         i18n-aria-label
       >
         <button
+          hlmBtn
+          variant="outline"
           type="button"
           (click)="view.set('grid')"
           [attr.aria-pressed]="view() === 'grid'"
@@ -69,6 +87,8 @@
         >
           Grade</button
         ><button
+          hlmBtn
+          variant="outline"
           type="button"
           (click)="view.set('list')"
           [attr.aria-pressed]="view() === 'list'"
@@ -101,10 +121,19 @@
             @if (row.itemId) {
               <a [routerLink]="['/recipes/items', row.itemId]" i18n>Receitas e origens</a>
             }
-            <button type="button" (click)="edit(row)" [attr.aria-label]="'Editar ' + row.name" i18n>
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="edit(row)"
+              [attr.aria-label]="'Editar ' + row.name"
+              i18n
+            >
               Editar
             </button>
             <button
+              hlmBtn
+              variant="outline"
               class="btn danger"
               type="button"
               (click)="remove(row)"
@@ -121,22 +150,41 @@
           <p class="help" i18n>
             Importe uma captura para começar ou ajuste a pesquisa e o destino.
           </p>
-          <a class="btn subtle" routerLink="/scans" [queryParams]="{ type: kind() }" i18n
+          <a
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            routerLink="/scans"
+            [queryParams]="{ type: kind() }"
+            i18n
             >Importar capturas</a
           >
         </div>
       }
     </div>
     <nav class="action-row pagination-bar" aria-label="Páginas dos itens" i18n-aria-label>
-      <button (click)="page.update(previousPage)" [disabled]="page() === 0" i18n>Anterior</button
+      <button
+        hlmBtn
+        variant="outline"
+        (click)="page.update(previousPage)"
+        [disabled]="page() === 0"
+        i18n
+      >
+        Anterior</button
       ><span i18n>Página {{ page() + 1 }}</span
-      ><button (click)="page.update(nextPage)" [disabled]="(page() + 1) * 48 >= rows().length" i18n>
+      ><button
+        hlmBtn
+        variant="outline"
+        (click)="page.update(nextPage)"
+        [disabled]="(page() + 1) * 48 >= rows().length"
+        i18n
+      >
         Próxima
       </button>
     </nav>
   </section>
   @if (draft) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>
         {{
           (draft.kind ?? 'storage') === 'storage'
@@ -150,11 +198,13 @@
         (selected)="choose($event)"
       />
       @if ((draft.kind ?? 'storage') === 'storage') {
-        <label i18n>Cidade ou armazém<input [(ngModel)]="draft.location" maxlength="120" /></label>
+        <label i18n
+          >Cidade ou armazém<input hlmInput [(ngModel)]="draft.location" maxlength="120"
+        /></label>
       } @else {
         <label
           ><span i18n>Personagem</span
-          ><select [(ngModel)]="draft.characterId">
+          ><select appBdoSelect [(ngModel)]="draft.characterId">
             <option value="" i18n>Selecione</option>
             @for (profile of profiles(); track profile.id) {
               <option [value]="profile.id">{{ profile.name }}</option>
@@ -164,6 +214,7 @@
       }
       <label i18n
         >Quantidade exata<input
+          hlmInput
           type="number"
           min="0"
           max="1000000000"
@@ -171,13 +222,13 @@
           [(ngModel)]="draft.quantity"
       /></label>
       <div class="action-row">
-        <button class="btn" (click)="save()" i18n>Salvar alteração</button
-        ><button (click)="draft = null" i18n>Cancelar</button>
+        <button hlmBtn variant="outline" class="btn" (click)="save()" i18n>Salvar alteração</button
+        ><button hlmBtn variant="outline" (click)="draft = null" i18n>Cancelar</button>
       </div>
     </section>
   }
   @if (removed) {
-    <button type="button" (click)="undoRemove()" i18n>
+    <button hlmBtn variant="outline" type="button" (click)="undoRemove()" i18n>
       Desfazer remoção de {{ removed.name }}
     </button>
   }

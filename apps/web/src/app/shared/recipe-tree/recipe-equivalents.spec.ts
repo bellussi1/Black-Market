@@ -1,7 +1,13 @@
 import type { CatalogRecipe } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
-import { batchAlternatives, ingredientAlternatives, recipeFamilies } from './recipe-equivalents';
+import {
+  batchAlternatives,
+  ingredientAlternatives,
+  recipeFamilies,
+  verifiedIngredientSubstitutionItemIds,
+  withVerifiedIngredientSubstitutions,
+} from './recipe-equivalents';
 const make = (key: string, meat: number, amount = '5', extra = 4): CatalogRecipe => ({
   key,
   type: 'COOK',
@@ -32,6 +38,7 @@ describe('Ingredient equivalences from actual recipes', () => {
       ],
     }));
     expect(recipeFamilies(recipes)).toHaveLength(1);
+    expect(recipeFamilies(recipes)[0]?.[0]?.key).toBe('edania-100');
     expect(batchAlternatives(recipes[0], recipes).map((batch) => batch.quantity)).toEqual([
       1, 10, 100,
     ]);
@@ -62,5 +69,82 @@ describe('Ingredient equivalences from actual recipes', () => {
   it('does not merge different processing methods or output items', () => {
     const base = make('base', 1);
     expect(recipeFamilies([base, { ...make('different', 2), type: 'ALCHEMY' }])).toHaveLength(2);
+  });
+
+  it('prefers a normal cooking ingredient over a rare proc sold as a separate item', () => {
+    const specialIngredient: CatalogRecipe = {
+      ...make('a-special-first', 9305),
+      inputs: [
+        { itemId: 9305, name: 'Cuscuz Clássico', quantity: '1' },
+        { itemId: 9218, name: 'Sanduíche Teff', quantity: '1' },
+      ],
+    };
+    const normalIngredient: CatalogRecipe = {
+      ...make('z-normal', 9220),
+      inputs: [
+        { itemId: 9220, name: 'Cuscuz', quantity: '1' },
+        { itemId: 9218, name: 'Sanduíche Teff', quantity: '1' },
+      ],
+    };
+    specialIngredient.outputs = [{ itemId: 9609, name: 'Refeição de Valência', quantity: null }];
+    normalIngredient.outputs = [{ itemId: 9609, name: 'Refeição de Valência', quantity: null }];
+
+    expect(recipeFamilies([specialIngredient, normalIngredient])[0]?.[0]?.key).toBe('z-normal');
+  });
+
+  it('offers the market-priced dried green fish equivalent for Organic Feed', () => {
+    const organicFeed: CatalogRecipe = {
+      key: 'organic-feed',
+      type: 'COOK',
+      station: null,
+      inputs: [
+        { itemId: 9261, name: 'Aveia', quantity: '2' },
+        { itemId: 7905, name: 'Carne de Porco', quantity: '5' },
+        { itemId: 8201, name: 'Gobião', quantity: '1' },
+        { itemId: 7921, name: 'Frango', quantity: '4' },
+      ],
+      outputs: [{ itemId: 54018, name: 'Ração Orgânica', quantity: null }],
+    };
+    const expanded = withVerifiedIngredientSubstitutions([organicFeed]);
+    const fish = organicFeed.inputs[2]!;
+
+    expect(expanded).toHaveLength(4);
+    expect(verifiedIngredientSubstitutionItemIds(expanded)).toEqual([7901, 8501]);
+    expect(
+      ingredientAlternatives(organicFeed, expanded, fish).map(({ part }) => ({
+        itemId: part.itemId,
+        quantity: part.quantity,
+        name: part.name,
+      })),
+    ).toEqual([
+      { itemId: 8201, quantity: '1', name: 'Gobião' },
+      { itemId: 8501, quantity: '1', name: 'Gobião Desidratado' },
+    ]);
+  });
+
+  it('offers the deer-meat equivalent used in the Organic Feed comparison at the same ratio', () => {
+    const organicFeed: CatalogRecipe = {
+      key: 'organic-feed',
+      type: 'COOK',
+      station: null,
+      inputs: [
+        { itemId: 9261, name: 'Aveia', quantity: '2' },
+        { itemId: 7905, name: 'Carne de Porco', quantity: '5' },
+        { itemId: 8201, name: 'Gobião', quantity: '1' },
+        { itemId: 7921, name: 'Frango', quantity: '4' },
+      ],
+      outputs: [{ itemId: 54018, name: 'Ração Orgânica', quantity: null }],
+    };
+    const expanded = withVerifiedIngredientSubstitutions([organicFeed]);
+    const meat = organicFeed.inputs[1]!;
+
+    expect(verifiedIngredientSubstitutionItemIds(expanded)).toContain(7901);
+    expect(
+      ingredientAlternatives(organicFeed, expanded, meat).map(({ part }) => ({
+        itemId: part.itemId,
+        quantity: part.quantity,
+        name: part.name,
+      })),
+    ).toContainEqual({ itemId: 7901, quantity: '5', name: 'Carne de Veado' });
   });
 });

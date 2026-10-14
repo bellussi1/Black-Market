@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { lifeSkills } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -15,7 +18,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 @Component({
   selector: 'app-demo-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, ItemIcon],
+  imports: [HlmInput, HlmCard, HlmButton, FormsModule, RouterLink, ItemIcon],
   templateUrl: './demo-page.html',
 })
 export class DemoPage {

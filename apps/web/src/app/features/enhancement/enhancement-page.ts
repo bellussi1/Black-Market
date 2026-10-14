@@ -8,6 +8,9 @@ import {
   type FailstackInput,
   failstackSchema,
 } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
@@ -15,10 +18,20 @@ import { CalculationProof } from '../../shared/calculation-proof';
 import { EquipmentReference } from '../../shared/equipment-reference/equipment-reference';
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-enhancement-page',
-  imports: [FormsModule, PresetBar, CalculationProof, EquipmentReference],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    PresetBar,
+    CalculationProof,
+    EquipmentReference,
+  ],
   templateUrl: './enhancement-page.html',
 })
 export class EnhancementPage {

@@ -27,6 +27,9 @@ import type {
   MarketItemQuote,
   MarketLookupResponse,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
@@ -42,6 +45,7 @@ import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
 import {
@@ -50,6 +54,7 @@ import {
   liquidityEstimate,
   marketChart,
 } from './market-history';
+import { MarketProduction } from './market-production';
 import { MarketRefresh } from './market-refresh';
 
 type MarketHistoryMetric = HistoryMetric;
@@ -59,6 +64,10 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
   imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
     FormsModule,
     RouterLink,
     TaxOptionsComponent,
@@ -67,6 +76,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     CatalogItemPicker,
     ItemIcon,
     MarketBoard,
+    MarketProduction,
   ],
   templateUrl: './market-page.html',
   styleUrl: './market-page.scss',
@@ -108,6 +118,7 @@ export class MarketPage implements OnDestroy {
   }
   private readonly api = inject(MarketApi);
   private readonly catalog = inject(CatalogApiService);
+  private readonly document = inject(DOCUMENT);
   readonly cache = inject(MarketCacheService);
   private lookupTimer?: ReturnType<typeof setTimeout>;
   private liveRequest?: Subscription;
@@ -122,6 +133,15 @@ export class MarketPage implements OnDestroy {
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');
+  currentQuote(): MarketItemQuote | undefined {
+    return this.live()?.items.find((item) => item.subId === this.historySubId);
+  }
+  showItemDetails(): void {
+    this.showHistory(true);
+    const chart = this.document.getElementById('market-history');
+    chart?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    chart?.focus({ preventScroll: true });
+  }
 
   onLookupIdChange(id: string): void {
     this.lookupId.set(id);
@@ -267,7 +287,13 @@ export class MarketPage implements OnDestroy {
   netPrice(price: string | null): string | null {
     if (price === null) return null;
     const result = evaluate(() =>
-      calculateMarket({ ...this.form(), price, quantity: 1, cost: '0' }),
+      calculateMarket({
+        ...this.form(),
+        ...this.store.data().taxOptions,
+        price,
+        quantity: 1,
+        cost: '0',
+      }),
     );
     return result.value?.net ?? null;
   }

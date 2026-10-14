@@ -84,6 +84,206 @@ describe('Paginated item recipes', () => {
   });
 });
 
+describe('Alchemy byproduct recipe lookup', () => {
+  it('returns recipes attached to base outputs in one dataset-bound query', async () => {
+    const recipeRows = query([
+      { key: 'special-elixir', type: 'ALCHEMY', station: null, byproductOfItemId: 749 },
+    ]);
+    const inputRows = query([
+      { recipeKey: 'special-elixir', itemId: 6355, name: 'Sangue', quantity: '1.0000' },
+    ]);
+    const outputRows = query([
+      { recipeKey: 'special-elixir', itemId: 750, name: 'Elixir especial', quantity: null },
+    ]);
+    const db = {
+      select: vi
+        .fn()
+        .mockReturnValueOnce(recipeRows)
+        .mockReturnValueOnce(inputRows)
+        .mockReturnValueOnce(outputRows),
+    };
+    const assets = { getIconUrl: vi.fn(() => null) };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      assets as unknown as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      finishedAt: new Date(),
+    } as never);
+
+    const result = await instance.getByproductRecipes({
+      ids: '749,690',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(recipeRows.where).toHaveBeenCalledOnce();
+    const compiled = new PgDialect().sqlToQuery(recipeRows.where.mock.calls[0][0] as SQL);
+    expect(compiled.params).toContain('dataset');
+    expect(compiled.params).toContain(749);
+    expect(compiled.params).toContain(690);
+    expect(result).toMatchObject({
+      direction: 'byproducts',
+      total: 1,
+      recipes: [
+        {
+          key: 'special-elixir',
+          byproductOfItemId: 749,
+          inputs: [{ itemId: 6355, name: 'Sangue', quantity: '1.0000' }],
+          outputs: [{ itemId: 750, name: 'Elixir especial', quantity: null }],
+        },
+      ],
+    });
+  });
+
+  it('requires a bounded list of base item IDs', async () => {
+    const db = { select: vi.fn() };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    await expect(instance.getByproductRecipes({ region: 'sa' })).rejects.toThrow();
+    expect(db.select).not.toHaveBeenCalled();
+  });
+});
+
+describe('NPC purchase price lookup', () => {
+  it('returns only catalog entries with both a positive buy price and listed vendors', async () => {
+    const rowsQuery = query([
+      { itemId: 4986, sourceData: { buyPrice: 10000, vendors: { urns: ['urn::npc:43513'] } } },
+      { itemId: 7313, sourceData: { buyPrice: 1000, vendors: { urns: ['urn::npc:47045'] } } },
+      { itemId: 8211, sourceData: { buyPrice: 0, vendors: { urns: ['urn::npc:1'] } } },
+      { itemId: 9403, sourceData: { buyPrice: 1000 } },
+    ]);
+    const instance = new CatalogService(
+      { db: { select: vi.fn(() => rowsQuery) } } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      recipeCount: 1,
+      itemCount: 4,
+      finishedAt: new Date('2026-10-10T12:22:17.854Z'),
+    } as never);
+
+    const result = await instance.npcPurchasePrices({
+      ids: '4986,7313,8211,9403',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(result.prices.map(({ itemId, unitPrice }) => [itemId, unitPrice])).toEqual([
+      [4986, '10000'],
+      [7313, '1000'],
+    ]);
+    expect(result.dataset?.version).toBe('same');
+  });
+});
+
+describe('recipe market equivalents', () => {
+  it('returns only marketable dried fish linked by the active dataset DRY recipe', async () => {
+    const sourceRows = query([
+      { id: 8211, category: 'Fish', sourceData: { forTrade: true } },
+      { id: 9001, category: 'Etc', sourceData: { forTrade: true } },
+    ]);
+    const dryRows = query([
+      {
+        type: 'DRY',
+        recipeKey: 'squid-dry',
+        sourceItemId: 8211,
+        inputPosition: 0,
+        inputQuantity: '1.0000',
+        itemId: 8511,
+        outputPosition: 0,
+        outputQuantity: null,
+      },
+      {
+        type: 'DRY',
+        recipeKey: 'not-fish-dry',
+        sourceItemId: 9001,
+        inputPosition: 0,
+        inputQuantity: '1.0000',
+        itemId: 9901,
+        outputPosition: 0,
+        outputQuantity: null,
+      },
+    ]);
+    const outputRows = query([
+      {
+        id: 8511,
+        name: 'Calamar Desidratado',
+        category: 'Fish',
+        sourceData: { marketable: true },
+      },
+      {
+        id: 9901,
+        name: 'Material Desidratado',
+        category: 'Fish',
+        sourceData: { marketable: true },
+      },
+    ]);
+    const db = {
+      select: vi
+        .fn()
+        .mockReturnValueOnce(sourceRows)
+        .mockReturnValueOnce(dryRows)
+        .mockReturnValueOnce(outputRows),
+    };
+    const assets = { getIconUrl: vi.fn((id: number) => Promise.resolve(`/items/${id}.webp`)) };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      assets as unknown as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: 'checksum',
+      finishedAt: new Date('2026-10-13T12:00:00.000Z'),
+    } as never);
+
+    const response = await instance.recipeMarketEquivalents({
+      ids: '8211,9001',
+      region: 'sa',
+      preferredLocale: 'pt',
+    });
+
+    expect(response.equivalents).toEqual([
+      {
+        sourceItemId: 8211,
+        itemId: 8511,
+        name: 'Calamar Desidratado',
+        iconUrl: '/items/8511.webp',
+        quantityRatio: 1,
+      },
+    ]);
+    expect(new PgDialect().sqlToQuery(dryRows.where.mock.calls[0][0] as SQL).params).toContain(
+      'DRY',
+    );
+  });
+
+  it('requires item IDs before querying the active dataset', async () => {
+    const instance = new CatalogService(
+      { db: { select: vi.fn() } } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    const getDataset = vi.spyOn(instance, 'getActiveDataset');
+
+    await expect(instance.recipeMarketEquivalents({ region: 'sa' })).rejects.toThrow();
+    expect(getDataset).not.toHaveBeenCalled();
+  });
+});
+
 describe('Life skill discovery', () => {
   function discovery(items = false) {
     const countQuery = query([{ total: 0 }]);

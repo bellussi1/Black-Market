@@ -3,6 +3,30 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideBookOpenText,
+  lucideBoxes,
+  lucideChartNoAxesCombined,
+  lucideChevronDown,
+  lucideCompass,
+  lucideDice5,
+  lucideFlaskConical,
+  lucideHammer,
+  lucideHouse,
+  lucideListChecks,
+  lucideMap,
+  lucideMenu,
+  lucidePickaxe,
+  lucideScanLine,
+  lucideSparkles,
+  lucideStore,
+  lucideUserRound,
+  lucideUsersRound,
+  lucideWarehouse,
+  lucideX,
+} from '@ng-icons/lucide';
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
@@ -14,6 +38,7 @@ import { AdSlot } from '../shared/ad-slot/ad-slot';
 import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-picker';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
+import { BdoSelect } from '../ui/native-select/bdo-select';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +46,9 @@ import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
   selector: 'app-workspace-layout',
 
   imports: [
+    NgIcon,
+    HlmButton,
+    BdoSelect,
     RouterLink,
 
     RouterLinkActive,
@@ -35,6 +63,31 @@ import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
 
     PlatformFooter,
     CatalogItemPicker,
+  ],
+
+  providers: [
+    provideIcons({
+      lucideBookOpenText,
+      lucideBoxes,
+      lucideChartNoAxesCombined,
+      lucideChevronDown,
+      lucideCompass,
+      lucideDice5,
+      lucideFlaskConical,
+      lucideHammer,
+      lucideHouse,
+      lucideListChecks,
+      lucideMap,
+      lucideMenu,
+      lucidePickaxe,
+      lucideScanLine,
+      lucideSparkles,
+      lucideStore,
+      lucideUserRound,
+      lucideUsersRound,
+      lucideWarehouse,
+      lucideX,
+    }),
   ],
 
   templateUrl: './workspace-layout.html',
@@ -104,73 +157,89 @@ export class WorkspaceLayout {
 
   readonly primaryLinks = SCREENSHOT_MVP
     ? [
-        { path: '/', label: 'Início' },
-        { path: '/scans', label: 'Importar capturas' },
-        { path: '/market', label: 'Mercado' },
-        { path: '/recipes', label: 'Explorar receitas' },
-        { path: '/recommendations', label: 'O que fazer' },
-        { path: '/storage', label: 'Armazém' },
-        { path: '/family', label: 'Família' },
-        { path: '/shopping', label: 'Lista de materiais' },
+        { path: '/', label: 'Início', icon: 'lucideHouse' },
+        { path: '/scans', label: 'Importar capturas', icon: 'lucideScanLine' },
+        { path: '/market', label: 'Mercado', icon: 'lucideStore' },
+        { path: '/recipes', label: 'Explorar receitas', icon: 'lucideBookOpenText' },
+        { path: '/crafting', label: 'Calcular produção', icon: 'lucideHammer' },
+        { path: '/recommendations', label: 'O que fazer', icon: 'lucideCompass' },
+        { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse' },
+        { path: '/family', label: 'Família', icon: 'lucideUsersRound' },
+        { path: '/shopping', label: 'Lista de materiais', icon: 'lucideListChecks' },
+        { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
       ]
     : [
-        { path: '/', label: $localize`Início` },
+        { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
 
-        { path: '/recommendations', label: $localize`Ganhar prata` },
+        { path: '/recommendations', label: $localize`Ganhar prata`, icon: 'lucideCompass' },
       ].filter((link) => isMvpPathEnabled(link.path));
 
   readonly navGroups = [
-    { title: 'Seus itens', links: [{ path: '/storage', label: 'Armazém' }] },
+    {
+      title: 'Seus itens',
+      icon: 'lucideBoxes',
+      links: [{ path: '/storage', label: 'Armazém', icon: 'lucideWarehouse' }],
+    },
 
     {
       title: $localize`Mercado e produção`,
+      icon: 'lucideStore',
 
       links: [
-        { path: '/recipes', label: $localize`Receitas` },
+        { path: '/recipes', label: $localize`Receitas`, icon: 'lucideBookOpenText' },
 
-        { path: '/market', label: $localize`Consultar mercado` },
+        { path: '/market', label: $localize`Consultar mercado`, icon: 'lucideChartNoAxesCombined' },
 
-        { path: '/crafting', label: $localize`Calcular produção` },
+        { path: '/crafting', label: $localize`Calcular produção`, icon: 'lucideHammer' },
       ],
     },
 
     {
       title: $localize`Personagem e evolução`,
+      icon: 'lucideUsersRound',
 
       links: [
-        { path: '/family', label: $localize`Família` },
+        { path: '/family', label: $localize`Família`, icon: 'lucideUsersRound' },
 
-        { path: '/enhancement', label: $localize`Aprimoramento e acúmulos` },
+        {
+          path: '/enhancement',
+          label: $localize`Aprimoramento e acúmulos`,
+          icon: 'lucideSparkles',
+        },
 
-        { path: '/lifeskills', label: $localize`Profissões e rendimento` },
+        { path: '/lifeskills', label: $localize`Profissões e rendimento`, icon: 'lucidePickaxe' },
 
-        { path: '/buffs', label: $localize`Buffs e combinações` },
+        { path: '/buffs', label: $localize`Buffs e combinações`, icon: 'lucideFlaskConical' },
       ],
     },
 
     {
       title: $localize`Materiais e planejamento`,
+      icon: 'lucideBoxes',
 
       links: [
-        { path: '/storage', label: $localize`Armazém` },
+        { path: '/storage', label: $localize`Armazém`, icon: 'lucideWarehouse' },
 
-        { path: '/scans', label: $localize`Importar por captura` },
+        { path: '/scans', label: $localize`Importar por captura`, icon: 'lucideScanLine' },
 
-        { path: '/world', label: $localize`Bases e trabalhadores` },
+        { path: '/world', label: $localize`Bases e trabalhadores`, icon: 'lucideMap' },
 
-        { path: '/plans', label: $localize`Meus planos` },
+        { path: '/plans', label: $localize`Meus planos`, icon: 'lucideListChecks' },
 
-        { path: '/rng', label: $localize`Caixas e vendedor noturno` },
+        { path: '/rng', label: $localize`Caixas e vendedor noturno`, icon: 'lucideDice5' },
       ],
     },
 
     {
       title: $localize`Guias e conta`,
+      icon: 'lucideBookOpenText',
 
       links: [
-        { path: '/reference', label: $localize`Guia do mundo` },
+        { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
 
-        { path: '/account', label: $localize`Minha conta` },
+        { path: '/account', label: $localize`Minha conta`, icon: 'lucideUserRound' },
+
+        { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
       ],
     },
   ]

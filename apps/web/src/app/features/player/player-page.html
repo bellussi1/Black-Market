@@ -6,34 +6,53 @@
   </header>
   <div class="workspace-tabs" role="group" aria-label="Dados pessoais">
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="tab() === 'character'"
       (click)="selectTab('character')"
     >
       Personagens</button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [attr.aria-pressed]="tab() === 'equipment'"
       (click)="selectTab('equipment')"
     >
       Equipamentos
     </button>
-    <button type="button" [attr.aria-pressed]="tab() === 'family'" (click)="selectTab('family')">
+    <button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [attr.aria-pressed]="tab() === 'family'"
+      (click)="selectTab('family')"
+    >
       Família e benefícios
     </button>
   </div>
   <p class="save-feedback" role="status">{{ message() || store.message() }}</p>
   @if (tab() !== 'family') {
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="player-selector">
         <label
-          >Personagem ativo<select [ngModel]="current()?.id ?? ''" (ngModelChange)="select($event)">
+          >Personagem ativo<select
+            appBdoSelect
+            [ngModel]="current()?.id ?? ''"
+            (ngModelChange)="select($event)"
+          >
             <option value="">Escolha um personagem</option>
             @for (profile of profiles(); track profile.id) {
               <option [value]="profile.id">{{ profile.name }}</option>
             }
           </select></label
-        ><a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }"
+        ><a
+          hlmBtn
+          variant="outline"
+          class="btn"
+          routerLink="/scans"
+          [queryParams]="{ type: 'gear' }"
           >Importar equipamentos</a
         ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }"
           >Inventário do personagem →</a
@@ -42,8 +61,15 @@
       <details [open]="!profiles().length">
         <summary>Adicionar personagem · somente o nome</summary>
         <div class="action-row">
-          <label>Nome<input [(ngModel)]="name" maxlength="80" (keydown.enter)="create()" /></label
-          ><button type="button" (click)="create()">Criar personagem</button>
+          <label
+            >Nome<input
+              hlmInput
+              [(ngModel)]="name"
+              maxlength="80"
+              (keydown.enter)="create()" /></label
+          ><button hlmBtn variant="outline" type="button" (click)="create()">
+            Criar personagem
+          </button>
         </div>
       </details>
     </section>
@@ -53,7 +79,7 @@
   } @else if (tab() === 'character') {
     @if (current(); as profile) {
       <div class="player-workbench">
-        <section class="panel">
+        <section hlmCard class="panel">
           <div class="panel-heading">
             <h2>{{ profile.name }}</h2>
             <span class="badge"
@@ -63,17 +89,20 @@
           <div class="form-grid">
             <label
               >Nome<input
+                hlmInput
                 [ngModel]="profile.name"
                 (blur)="saveCharacter({ name: $any($event.target).value })"
                 maxlength="80" /></label
             ><label
               >Classe<input
+                hlmInput
                 [ngModel]="profile.className"
                 (blur)="saveCharacter({ className: $any($event.target).value })"
                 maxlength="40"
                 placeholder="Opcional" /></label
             ><label
               >Especialização<select
+                appBdoSelect
                 [ngModel]="profile.specialization"
                 (ngModelChange)="saveCharacter({ specialization: $event })"
               >
@@ -90,6 +119,7 @@
                 <label
                   >{{ field.label
                   }}<input
+                    hlmInput
                     type="number"
                     [min]="field.key === 'level' ? 1 : 0"
                     [max]="field.max"
@@ -113,6 +143,7 @@
                 <label
                   >{{ skillLabels[skill]
                   }}<input
+                    hlmInput
                     type="number"
                     min="0"
                     max="5000"
@@ -123,7 +154,7 @@
             </div>
           </details>
         </section>
-        <section class="panel">
+        <section hlmCard class="panel">
           <h2>Conjuntos e complementos</h2>
           @for (
             group of [
@@ -145,7 +176,12 @@
               @for (item of $any(profile)[group.key] ?? []; track $index) {
                 <div class="action-row">
                   <a [routerLink]="['/market/items', item.itemId]">{{ item.name }}</a
-                  ><button type="button" (click)="removeAccessory($any(group.key), $index)">
+                  ><button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    (click)="removeAccessory($any(group.key), $index)"
+                  >
                     Remover
                   </button>
                 </div>
@@ -159,25 +195,35 @@
             <summary>Presets de equipamentos e cristais</summary>
             <label
               >Nome do conjunto<input
+                hlmInput
                 [(ngModel)]="presetName"
                 maxlength="80"
                 placeholder="Coleta, combate, culinária…" /></label
-            ><button type="button" (click)="savePreset()">Salvar conjunto atual</button
+            ><button hlmBtn variant="outline" type="button" (click)="savePreset()">
+              Salvar conjunto atual</button
             ><label
-              >Conjunto salvo<select [(ngModel)]="presetId">
+              >Conjunto salvo<select appBdoSelect [(ngModel)]="presetId">
                 <option value="">Escolha</option>
                 @for (preset of profile.activityPresets ?? []; track preset.id) {
                   <option [value]="preset.id">{{ preset.name }}</option>
                 }
               </select></label
-            ><button type="button" (click)="applyPreset()" [disabled]="!presetId">
+            ><button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="applyPreset()"
+              [disabled]="!presetId"
+            >
               Aplicar ao personagem</button
-            ><button type="button" (click)="undoPreset()">Desfazer aplicação</button>
+            ><button hlmBtn variant="outline" type="button" (click)="undoPreset()">
+              Desfazer aplicação
+            </button>
           </details>
         </section>
       </div>
     } @else {
-      <section class="panel empty-workspace">
+      <section hlmCard class="panel empty-workspace">
         <p class="eyebrow">SEU PRIMEIRO PERSONAGEM</p>
         <h2>Um nome é suficiente para começar</h2>
         <p class="help">
@@ -185,13 +231,13 @@
           já estão disponíveis sem cadastro.
         </p>
         <div class="action-row">
-          <a class="btn subtle" routerLink="/recipes">Explorar receitas</a
-          ><a class="btn subtle" routerLink="/market">Consultar mercado</a>
+          <a hlmBtn variant="outline" class="btn subtle" routerLink="/recipes">Explorar receitas</a
+          ><a hlmBtn variant="outline" class="btn subtle" routerLink="/market">Consultar mercado</a>
         </div>
       </section>
     }
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>Dados compartilhados</h2>
       <p class="help">
         Esta família pertence à região {{ store.data().region.toUpperCase() }}. Energia atual, peso
@@ -200,11 +246,13 @@
       <div class="form-grid">
         <label
           >Nome da família<input
+            hlmInput
             [ngModel]="family().name"
             (blur)="saveFamily({ name: $any($event.target).value })"
             maxlength="80" /></label
         ><label
           >Contribuição<input
+            hlmInput
             type="number"
             min="0"
             max="2000"
@@ -216,6 +264,7 @@
             " /></label
         ><label
           >Energia máxima<input
+            hlmInput
             type="number"
             min="0"
             max="2000"
@@ -229,35 +278,36 @@
       </div>
       <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>Profissões da família</h2>
       @if (!family().lifeSkills && store.data().familyLifeSkills) {
         <p class="help">
           Há níveis salvos no modelo anterior. Confirme a região antes de reutilizar.
         </p>
-        <button type="button" (click)="importLegacySkills()">
+        <button hlmBtn variant="outline" type="button" (click)="importLegacySkills()">
           Usar níveis anteriores nesta família
         </button>
       }
       <div class="form-grid">
         <label
-          >Atividade<select [(ngModel)]="skill" (ngModelChange)="chooseSkill()">
+          >Atividade<select appBdoSelect [(ngModel)]="skill" (ngModelChange)="chooseSkill()">
             @for (key of skills; track key) {
               <option [value]="key">{{ skillLabels[key] }}</option>
             }
           </select></label
         ><label
-          >Graduação<select [(ngModel)]="tier">
+          >Graduação<select appBdoSelect [(ngModel)]="tier">
             @for (value of tiers; track value) {
               <option>{{ value }}</option>
             }
           </select></label
-        ><label>Nível<input type="number" min="1" max="100" [(ngModel)]="skillLevel" /></label
         ><label
-          >Experiência (%)<input type="number" min="0" max="100" [(ngModel)]="skillXp"
+          >Nível<input hlmInput type="number" min="1" max="100" [(ngModel)]="skillLevel" /></label
+        ><label
+          >Experiência (%)<input hlmInput type="number" min="0" max="100" [(ngModel)]="skillXp"
         /></label>
       </div>
-      <button type="button" (click)="saveSkill()">Salvar profissão</button>
+      <button hlmBtn variant="outline" type="button" (click)="saveSkill()">Salvar profissão</button>
       @if (family().lifeSkills; as levels) {
         <div class="family-skills">
           @for (key of skills; track key) {
@@ -270,44 +320,73 @@
         </div>
       }
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <details>
         <summary>Pets · {{ family().pets.length }}</summary>
         <div class="form-grid">
-          <label>Nome<input [(ngModel)]="pet.name" maxlength="80" /></label
-          ><label>Tier<input type="number" min="1" max="5" [(ngModel)]="pet.tier" /></label
-          ><label>Nível<input type="number" min="1" max="10" [(ngModel)]="pet.level" /></label
-          ><label>Habilidades<input [(ngModel)]="pet.skills" maxlength="500" /></label>
+          <label>Nome<input hlmInput [(ngModel)]="pet.name" maxlength="80" /></label
+          ><label>Tier<input hlmInput type="number" min="1" max="5" [(ngModel)]="pet.tier" /></label
+          ><label
+            >Nível<input hlmInput type="number" min="1" max="10" [(ngModel)]="pet.level" /></label
+          ><label>Habilidades<input hlmInput [(ngModel)]="pet.skills" maxlength="500" /></label>
         </div>
-        <button type="button" (click)="addPet()">
+        <button hlmBtn variant="outline" type="button" (click)="addPet()">
           {{ petId ? 'Salvar pet' : 'Adicionar pet' }}</button
-        ><button type="button" (click)="petId = ''">Novo pet</button>
+        ><button hlmBtn variant="outline" type="button" (click)="petId = ''">Novo pet</button>
         @for (item of family().pets; track item.id) {
           <p>{{ item.name }} · T{{ item.tier }} · Nv. {{ item.level }} · {{ item.skills }}</p>
-          <button type="button" (click)="editPet(item.id)">Editar pet</button>
-          <button type="button" (click)="removeFamilyItem('pets', item.id)">Remover pet</button>
+          <button hlmBtn variant="outline" type="button" (click)="editPet(item.id)">
+            Editar pet
+          </button>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="removeFamilyItem('pets', item.id)"
+          >
+            Remover pet
+          </button>
         }
       </details>
       <details>
         <summary>Montarias · {{ family().mounts.length }}</summary>
         <div class="form-grid">
-          <label>Nome<input [(ngModel)]="mount.name" maxlength="80" /></label
-          ><label>Tipo<input [(ngModel)]="mount.kind" maxlength="80" /></label
-          ><label>Nível<input type="number" min="1" max="100" [(ngModel)]="mount.level" /></label
-          ><label>Notas e habilidades<input [(ngModel)]="mount.notes" maxlength="500" /></label>
+          <label>Nome<input hlmInput [(ngModel)]="mount.name" maxlength="80" /></label
+          ><label>Tipo<input hlmInput [(ngModel)]="mount.kind" maxlength="80" /></label
+          ><label
+            >Nível<input
+              hlmInput
+              type="number"
+              min="1"
+              max="100"
+              [(ngModel)]="mount.level" /></label
+          ><label
+            >Notas e habilidades<input hlmInput [(ngModel)]="mount.notes" maxlength="500"
+          /></label>
         </div>
-        <button type="button" (click)="addMount()">
+        <button hlmBtn variant="outline" type="button" (click)="addMount()">
           {{ mountId ? 'Salvar montaria' : 'Adicionar montaria' }}</button
-        ><button type="button" (click)="mountId = ''">Nova montaria</button>
+        ><button hlmBtn variant="outline" type="button" (click)="mountId = ''">
+          Nova montaria
+        </button>
         @for (item of family().mounts; track item.id) {
           <p>{{ item.name }} · {{ item.kind }} · Nv. {{ item.level }} · {{ item.notes }}</p>
-          <button type="button" (click)="editMount(item.id)">Editar montaria</button>
-          <button type="button" (click)="removeFamilyItem('mounts', item.id)">
+          <button hlmBtn variant="outline" type="button" (click)="editMount(item.id)">
+            Editar montaria
+          </button>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="removeFamilyItem('mounts', item.id)"
+          >
             Remover montaria
           </button>
         }
       </details>
-      <button type="button" (click)="undoFamily()">Desfazer última alteração da família</button>
+      <button hlmBtn variant="outline" type="button" (click)="undoFamily()">
+        Desfazer última alteração da família
+      </button>
     </section>
   }
 </div>

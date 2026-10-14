@@ -30,6 +30,12 @@ Screenshots 06, 07 e 14: slot escuro, ícone proporcional, contorno fino. Reserv
 
 Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Alvos web têm pelo menos 44 px de altura, fonte legível e foco visível. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível.
 
+## Indicadores econômicos e ações de origem
+
+Mensagens de estado permanecem no fluxo e alinhadas às margens internas do painel. Escolhas mutuamente exclusivas usam `.segmented-control`, cada opção declara `aria-pressed` e mantém a mesma altura; uma ação calculada, como otimizar lucro por hora, fica separada em `.btn`.
+
+Na receita, priorize quatro indicadores em uma única faixa: lucro por hora, lucro líquido, custo dos materiais e faturamento líquido. Use números tabulares, colunas iguais no desktop e duas colunas no celular. O estado pendente ocupa o lugar do número quando faltam preço, rendimento ou tempo para fechar a conta. A melhor combinação aparece junto do resultado apenas quando o otimizador retorna um plano completo. Reserve o bronze para seleção e para o indicador principal da tarefa.
+
 ## Tooltips e estados
 
 Tooltip para identificação/qualidade ou informação complementar, nunca para esconder informação essencial. Sucesso e erro incluem texto, não apenas verde/vermelho. Loading preserva o nome do item e desabilita somente a ação duplicada; `aria-busy` comunica o estado.

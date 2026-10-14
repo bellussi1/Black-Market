@@ -8,10 +8,153 @@ import { describe, expect, it, vi } from 'vitest';
 import { AnalyticsService } from '../../core/analytics.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { IconRefiner } from './print-reader';
-import { ScansPage } from './scans-page';
+import { hasConfidentIconMatch, rankIconSuggestions, ScansPage } from './scans-page';
+
+describe('Icon suggestion ranking', () => {
+  const item = (id: number, name: string, category: string | null) =>
+    ({
+      id,
+      name,
+      category,
+      description: null,
+      grade: null,
+      weight: null,
+      icon: null,
+      categories: [],
+    }) as CatalogItem;
+
+  it('ranks refined visual matches ahead of coarse fallbacks even when their score scales differ', () => {
+    const fallback = item(1, 'Catalogued fallback', 'Furniture');
+    const visualMatch = item(2, 'Best visual match', null);
+
+    expect(
+      rankIconSuggestions(
+        [fallback, visualMatch],
+        [
+          { id: fallback.id, distance: 23, rankScore: 0.2, refined: false, sharedIcon: false },
+          { id: visualMatch.id, distance: 26, rankScore: 0.5, refined: true, sharedIcon: false },
+        ],
+      ).map((row) => row.id),
+    ).toEqual([visualMatch.id, fallback.id]);
+  });
+
+  it('uses catalog quality only to break a tie between aliases of the same icon', () => {
+    const retired = item(1, 'Retired placeholder', null);
+    const ordinary = item(2, 'Ordinary item', 'Material');
+
+    expect(
+      rankIconSuggestions(
+        [retired, ordinary],
+        [
+          {
+            id: retired.id,
+            distance: 12,
+            rankScore: 0.4,
+            refined: true,
+            sharedIcon: true,
+            sourceId: 9,
+          },
+          {
+            id: ordinary.id,
+            distance: 12,
+            rankScore: 0.4,
+            refined: true,
+            sharedIcon: true,
+            sourceId: 9,
+          },
+        ],
+      ).map((row) => row.id),
+    ).toEqual([ordinary.id, retired.id]);
+  });
+
+  it('recognizes a clear aligned-pixel winner and keeps near ties uncertain', () => {
+    const winner = {
+      id: 5302,
+      distance: 35,
+      pixelDistance: 36,
+      colorRank: 1,
+      refined: true,
+      sharedIcon: false,
+    };
+    const closeAlternative = {
+      id: 4802,
+      distance: 24,
+      pixelDistance: 25,
+      colorRank: 2,
+      refined: true,
+      sharedIcon: false,
+    };
+
+    expect(hasConfidentIconMatch(winner, [winner, { ...winner, id: 10, pixelDistance: 42 }])).toBe(
+      true,
+    );
+    expect(
+      hasConfidentIconMatch(closeAlternative, [
+        closeAlternative,
+        { ...closeAlternative, id: 11, pixelDistance: 26 },
+      ]),
+    ).toBe(false);
+  });
+
+  it('does not auto-select a nearest-color fallback without strong color evidence', () => {
+    const fallback = {
+      id: 5302,
+      distance: 55,
+      pixelDistance: 20,
+      colorRank: 1,
+      refined: true,
+      sharedIcon: false,
+      lowColorEvidence: true,
+    };
+
+    expect(
+      hasConfidentIconMatch(fallback, [fallback, { ...fallback, id: 4802, pixelDistance: 50 }]),
+    ).toBe(false);
+  });
+});
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('prioritizes review after upload and keeps setup in collapsed contextual sections', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    await page.file({
+      target: { files: [new File(['capture'], 'storage.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.page-heading')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.capture-destination')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.upload-tools').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.capture-list').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(true);
+    expect(fixture.nativeElement.querySelector('.batch-options')).toBeNull();
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: null,
+      itemUncertain: true,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      quantityConfidence: 0,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+    page.jobs.update((jobs) => jobs.map((job) => ({ ...job, status: 'ready', cells: [cell] })));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.batch-options').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.scan-review')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#scan-item-0')).toBeNull();
+  });
   it('lets the user choose a destination before uploading and requires an explicit first analysis', async () => {
     const fixture = await renderComponent(ScansPage);
     expect(fixture.componentInstance.autoRead()).toBe(false);
@@ -253,24 +396,91 @@ describe('Screenshot entry', () => {
     page.cells.set([cell]);
     page.useEstimate(cell);
     expect(cell.quantity).toBe('1200');
-    expect(cell.reviewed).toBe(true);
-    expect(cell.include).toBe(true);
+    expect(cell.reviewed).toBe(false);
+    expect(cell.include).toBe(false);
 
     cell.quantity = '';
     page.useDefaultQuantity(cell, '1');
     expect(cell.quantity).toBe('1');
-    expect(cell.reviewed).toBe(true);
-    expect(cell.include).toBe(true);
+    expect(cell.reviewed).toBe(false);
+    expect(cell.include).toBe(false);
 
-    page.toggleIgnore(cell);
+    page.removeCell(cell);
     expect(cell.ignored).toBe(true);
     expect(cell.include).toBe(false);
     expect(cell.reviewed).toBe(false);
 
-    page.toggleIgnore(cell);
-    expect(cell.ignored).toBe(false);
+    page.removeCell(cell);
+    expect(cell.ignored).toBe(true);
   });
-  it('directly confirms and saves all identified items in 1 click without individual reviews', async () => {
+  it('validates the selected item and quantity together, including an OCR suggestion', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const item = { id: 11, name: 'Item conferido', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: true,
+      quantity: '12',
+      quantityText: '12',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 95,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+
+    page.validateCell(cell);
+
+    expect(cell).toMatchObject({
+      itemUncertain: false,
+      autoExcluded: false,
+      include: true,
+      reviewed: true,
+    });
+    expect(page.reliable(cell, 'storage')).toBe(false);
+  });
+  it('removes a card from the import while preserving the editable item and quantity', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const item = { id: 12, name: 'Leitura incorreta', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: false,
+      quantity: '800',
+      quantityText: '800',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 95,
+      include: true,
+      reviewed: true,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    page.cells.set([cell]);
+
+    page.removeCell(cell);
+
+    expect(cell).toMatchObject({
+      item,
+      ignored: true,
+      include: false,
+      reviewed: false,
+      quantity: '800',
+    });
+    expect(cell.options).toContain(item);
+  });
+  it('saves reliable items but keeps uncertain and incomplete items out of the batch', async () => {
     images();
     const fixture = await renderComponent(ScansPage),
       page = fixture.componentInstance;
@@ -291,6 +501,7 @@ describe('Screenshot entry', () => {
         preview: '',
         options: [item1],
         item: item1,
+        score: 1,
         quantity: '50',
         quantityText: '50',
         quantityEstimate: null,
@@ -309,13 +520,16 @@ describe('Screenshot entry', () => {
         preview: '',
         options: [item2],
         item: item2,
-        quantity: '',
+        itemUncertain: true,
+        score: 1,
+        quantity: '1',
         quantityText: '',
         quantityEstimate: null,
-        quantityUncertain: false,
-        quantityConfidence: 85,
-        include: false,
-        reviewed: false,
+        quantityUncertain: true,
+        quantityConfidence: 0,
+        // This simulates a previously saved draft from before explicit validation was required.
+        include: true,
+        reviewed: true,
         slot: '',
         level: 0,
         caphras: 0,
@@ -325,20 +539,20 @@ describe('Screenshot entry', () => {
     page.jobs.set([...jobs]);
     page.cells.set(jobs[0].cells);
     expect(page.totalIdentifiedCount()).toBe(2);
+    expect(page.importableCount()).toBe(1);
     expect(page.canSaveDirectly()).toBe(true);
-    expect(page.saveBatchLabel()).toBe('Confirmar e salvar no armazém (2 itens)');
+    expect(page.saveBatchLabel()).toBe('Salvar 1 item no armazém');
     Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
 
-    await page.confirmAndSaveAll();
+    await page.saveReadyBatch();
 
-    expect(page.store.data().inventory).toHaveLength(2);
+    expect(page.store.data().inventory).toHaveLength(1);
     expect(
       page.store
         .data()
         .inventory.map((row) => row.itemId)
         .sort(),
-    ).toEqual([501, 502]);
-    expect(page.store.data().inventory.find((r) => r.itemId === 502)?.quantity).toBe(1);
+    ).toEqual([501]);
   });
   it('keeps the card visible while typing a multi-digit correction until explicitly included', async () => {
     const fixture = await renderComponent(ScansPage),
@@ -516,14 +730,14 @@ describe('Screenshot entry', () => {
     expect(fixture.componentInstance.store.data().inventory).toEqual([]);
   });
 
-  it('keeps unknown spaces and shared identities available for manual review without saving estimates', async () => {
+  it('shows the best shared icon candidate without auto-importing an uncertain item', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
     const page = fixture.componentInstance;
     await page.file({
       target: { files: [new File(['image'], 'print.png', { type: 'image/png' })] },
     } as unknown as Event);
-    page.columns = 2;
+    page.columns = 3;
     page.rows = 1;
     const items = [6202, 6201].map(
       (id) =>
@@ -545,8 +759,9 @@ describe('Screenshot entry', () => {
     Object.defineProperty(page, 'reader', {
       value: {
         readQuantities: vi.fn().mockResolvedValue([
-          { text: '264,8k', value: '264800', approximate: true, confidence: 80 },
+          { text: '370.3k', value: '370300', approximate: true, confidence: 80 },
           { text: '123', value: '123', approximate: false, confidence: 90 },
+          { text: '1.3M', value: '1300000', approximate: true, confidence: 80 },
         ]),
         close: vi.fn(),
       },
@@ -564,26 +779,86 @@ describe('Screenshot entry', () => {
       });
     await reading;
     fixture.detectChanges();
-    expect(page.cells()).toHaveLength(2);
+    expect(page.cells()).toHaveLength(3);
     expect(page.cells()[0].options.map((item) => item.id)).toEqual([6201, 6202]);
     expect(page.cells()[0]).toMatchObject({
-      item: items[1],
+      item: { id: 6201, name: 'Item 6201' },
       itemUncertain: true,
-      quantity: '',
-      quantityEstimate: '264800',
+      quantity: '370300',
+      quantityUncertain: true,
+      quantityEstimate: '370300',
       reviewed: false,
       include: false,
     });
-    expect(page.cells()[1]).toMatchObject({ item: null, itemUncertain: true, quantity: '123' });
-    expect(fixture.nativeElement.querySelectorAll('.scan-cell')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelector('.scan-cell .item-name').textContent).toContain(
+      'Item 6201',
+    );
+    expect(fixture.nativeElement.querySelector('.scan-cell .scan-status').textContent).toContain(
+      'Item incerto',
+    );
+    const suggestedCard = fixture.nativeElement.querySelector('.scan-cell') as HTMLElement;
+    const cardActions = suggestedCard.querySelectorAll('.scan-cell-actions button');
+    expect(cardActions).toHaveLength(2);
+    expect(cardActions[0].textContent).toContain('Validar');
+    expect(cardActions[1].textContent).toContain('Remover');
+    expect(suggestedCard.querySelector('.btn-item-confirm')).toBeNull();
+    expect(suggestedCard.querySelector('.btn-cell-ignore')).toBeNull();
+    (cardActions[0] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(page.cells()[0]).toMatchObject({
+      itemUncertain: false,
+      quantityUncertain: false,
+      include: true,
+      reviewed: true,
+    });
+    page.setReviewFilter('all');
+    fixture.detectChanges();
+    const removeButton = fixture.nativeElement.querySelector(
+      '.scan-cell-actions button:last-child',
+    ) as HTMLButtonElement;
+    expect(removeButton.textContent).toContain('Remover');
+    (
+      fixture.nativeElement.querySelectorAll('.scan-cell-actions button')[1] as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(
+      (
+        fixture.nativeElement.querySelector(
+          '.scan-cell-actions button:last-child',
+        ) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(page.cells()[0]).toMatchObject({
+      item: { id: 6201 },
+      quantity: '370300',
+      ignored: true,
+      include: false,
+    });
+    expect((fixture.nativeElement.querySelector('.manual-item') as HTMLDetailsElement).open).toBe(
+      false,
+    );
+    expect(page.cells()[1]).toMatchObject({
+      item: { id: 6201 },
+      itemUncertain: true,
+      quantity: '123',
+    });
+    expect(page.cells()[2]).toMatchObject({
+      quantity: '1300000',
+      quantityUncertain: true,
+      quantityEstimate: '1300000',
+    });
+    expect(fixture.nativeElement.querySelectorAll('.scan-cell')).toHaveLength(3);
+    expect(fixture.nativeElement.querySelector('.quantity-note').textContent).toContain(
+      'estimativa aplicada: 370300',
+    );
     page.confirmStock = true;
     page.applyStock();
     expect(page.store.data().inventory).toEqual([]);
     const cell = page.cells()[0];
     page.select(cell, items[0]);
     page.review(cell, true);
-    expect(page.includedCount()).toBe(0);
-    cell.quantity = '264800';
+    expect(page.includedCount()).toBe(1);
+    cell.quantity = '370300';
     page.edited(cell);
     page.review(cell, true);
     expect(page.includedCount()).toBe(1);
@@ -610,6 +885,30 @@ describe('Screenshot entry', () => {
     expect(page.store.data().inventory).toHaveLength(1);
     expect(page.store.data().inventory[0].id).toBe(savedId);
     TestBed.inject(HttpTestingController).verify();
+  });
+  it('does not mark an uncertain gear suggestion as reliable for batch import', async () => {
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [],
+      item: { id: 100, name: 'Espada', icon: null } as CatalogItem,
+      itemUncertain: true,
+      score: 1,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 100,
+      include: false,
+      reviewed: false,
+      slot: 'mainhand',
+      level: 0,
+      caphras: 0,
+    };
+
+    expect(page.reliable(cell, 'gear')).toBe(false);
   });
   it('accepts batches, detects exact duplicates and enforces eight captures', async () => {
     const decode = images();

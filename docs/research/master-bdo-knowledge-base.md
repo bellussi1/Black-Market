@@ -2,6 +2,15 @@
 
 _Este documento consolida a análise técnica e arquitetural de 16 repositórios de código aberto e das 3 principais referências web (BDOLytics, BDOCodex e Somethinglovely). Serve como contexto permanente compartilhado entre Codex e Antigravity para evitar retrabalho, economizar tokens e acelerar a implementação do Black Market._
 
+> **Leitura de confiança revisada em 10/10/2026:** este arquivo contém observações de snapshots de código e algumas hipóteses sobre aplicações web de terceiros. A stack interna, os endpoints não documentados, a cadência de atualização e a completude das bases de BDOLytics/BDOCodex não foram confirmados por contrato público; não use esses detalhes como especificação operacional. Confira o estado do nosso código, prioridades de dados e lacunas em [implementation-gap-matrix.md](implementation-gap-matrix.md). Regras e probabilidades de jogo exigem validação independente para região e patch.
+
+### Estado atual do Black Market
+
+- O navegador genérico de referências já expõe, entre outras coleções, conhecimento e temas; a página de item também mostra dados disponíveis e relações de receitas. O catálogo de referência é descrito em [extracted-data-inventory.md](../extracted-data-inventory.md).
+- As métricas de volume de mercado existem no código e dependem de snapshots com cobertura contínua; cotações em cache e gráficos não garantem uma operação executada.
+- A comparação automática de compra/produção para uma receita selecionada foi adicionada em 10/10/2026. Ela cobre até 256 combinações padrão da fórmula produtora selecionada, sem buscar globalmente fórmulas alternativas.
+- Nenhuma licença de código implica licença para os dados extraídos do jogo, imagens ou mapas. Rever cada licença e asset antes de redistribuir ou monetizar.
+
 ---
 
 ## 1. Classificação Geral de Utilidade e Confiabilidade
@@ -134,6 +143,7 @@ O repositório é uma aplicação desktop em Go + Wails + React. Podemos extrair
 3. **Dados e Catálogo**:
    - Continuar utilizando o dataset extraído do cliente SA/pt via `bdo-data-extractor` (mantido em `data/tools/`).
    - Nunca importar CSVs estáticos de 2021 de repositórios legados como verdade atual.
-4. **Mercado em Tempo Real**:
-   - Manter a integração com a API Arsha v2 e o cache inteligente no NestJS.
-   - Se for necessário fallback direto para a API oficial do jogo no futuro, reutilizar o decoder Huffman MIT do `bdo-marketplace-tools`.
+4. **Fonte do Mercado**:
+   - Tratar Arsha como adaptador comunitário para consultas sob demanda, não como feed licenciado/estável ou autorização para coleta periódica.
+   - Manter `MARKET_COLLECTOR_ENABLED` e `MARKET_BOARD_COLLECTOR_ENABLED` desligados até registrar permissão de uso, contrato estável, cobertura e consistência conforme [política de fonte do mercado](market-source-policy.md).
+   - Preferir observações manuais do Mercado Mundial oficial e preços fornecidos pelo usuário enquanto a fonte automática não cumprir esses critérios. Não inferir o provedor de sites concorrentes nem raspar seus endpoints internos.

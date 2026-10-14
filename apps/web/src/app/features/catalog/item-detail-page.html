@@ -19,15 +19,21 @@
       </div>
     </header>
     <div class="action-row">
-      <a class="btn" [routerLink]="['/recipes/items', selected.id]" i18n
+      <a hlmBtn variant="outline" class="btn" [routerLink]="['/recipes/items', selected.id]" i18n
         >Explorar produção e obtenção</a
       >
-      <a class="btn subtle" routerLink="/market" [queryParams]="{ item: selected.id }" i18n
+      <a
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        routerLink="/market"
+        [queryParams]="{ item: selected.id }"
+        i18n
         >Consultar mercado</a
       >
     </div>
     <div class="item-detail-layout">
-      <section class="panel item-description-panel">
+      <section hlmCard class="panel item-description-panel">
         <div class="panel-heading">
           <h2 i18n>Descrição do jogo</h2>
           <span class="badge" i18n>CATÁLOGO</span>
@@ -36,7 +42,7 @@
           {{ plain(selected.description) || 'Este item não tem descrição no catálogo disponível.' }}
         </p>
       </section>
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2 i18n>Informações do item</h2>
         <dl class="item-facts">
           @for (category of selected.categories; track category.id) {
@@ -68,7 +74,7 @@
         ];
         track group.name
       ) {
-        <section class="panel">
+        <section hlmCard class="panel">
           <h2>{{ group.name }}</h2>
           @for (recipe of group.data?.recipes; track recipe.key) {
             <p>

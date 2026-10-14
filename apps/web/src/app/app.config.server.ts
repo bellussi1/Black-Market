@@ -39,7 +39,7 @@ const serverConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([
         (request, next) => {
-          const base = process.env['API_BASE_URL'] ?? 'http://localhost:3000';
+          const base = process.env['API_BASE_URL'] ?? 'http://localhost:3001';
           if (request.url.startsWith('/api/v1/'))
             return next(request.clone({ url: base + request.url }));
           if (environment.apiBaseUrl && request.url.startsWith(environment.apiBaseUrl + '/api/v1/'))
@@ -57,7 +57,7 @@ const serverConfig: ApplicationConfig = {
         const origin =
           environment.apiBaseUrl ||
           (request ? new URL(request.url).origin : 'http://localhost:4000');
-        return { [new URL(process.env['API_BASE_URL'] ?? 'http://localhost:3000').origin]: origin };
+        return { [new URL(process.env['API_BASE_URL'] ?? 'http://localhost:3001').origin]: origin };
       },
     },
   ],

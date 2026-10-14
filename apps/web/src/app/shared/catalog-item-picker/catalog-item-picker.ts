@@ -10,16 +10,19 @@ import {
   untracked,
 } from '@angular/core';
 import type { CatalogCategory, CatalogItem, CatalogPage } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { ItemIcon } from '../item-icon/item-icon';
 
 @Component({
   selector: 'app-catalog-item-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon],
   templateUrl: './catalog-item-picker.html',
   styleUrl: './catalog-item-picker.scss',
 })

@@ -45,6 +45,26 @@ export function fixedRecipeYield(recipe: CatalogRecipe, itemId: number): number 
     [1389, 1391, 1393, 1395, 1397].every((id) => input(id, 10))
   )
     return 10;
+  if (itemId === 791) {
+    const knownIngredients = new Set([690, 691, 724, 725, 749, 750, 767, 768, 770, 4925, 4986]);
+    const hasOnlyGreenLeafIngredients = recipe.inputs.every((part) =>
+      knownIngredients.has(part.itemId),
+    );
+    if (
+      hasOnlyGreenLeafIngredients &&
+      recipe.inputs.length === 5 &&
+      input(4925, 10) &&
+      input(4986, 1)
+    )
+      return 10;
+    if (
+      hasOnlyGreenLeafIngredients &&
+      (recipe.inputs.length === 3 || recipe.inputs.length === 4) &&
+      input(4925, 1) &&
+      !recipe.inputs.some((part) => part.itemId === 4986)
+    )
+      return 1;
+  }
   const groups = draughts[itemId];
   if (groups && recipe.inputs.length === 5) {
     const scale = input(820936, 10) ? 1 : input(821372, 10) ? 10 : 0;
@@ -78,5 +98,15 @@ export function fixedRecipeYield(recipe: CatalogRecipe, itemId: number): number 
     )
       return scale;
   }
+  // Party Draught of Harmony - Edania is fixed-output Simple Alchemy.
+  if (
+    itemId === 1408 &&
+    ((recipe.inputs.length === 2 && input(1407, 1) && (input(1178, 6) || input(1179, 6))) ||
+      (recipe.inputs.length === 3 &&
+        input(1407, 10) &&
+        (input(1178, 60) || input(1179, 60)) &&
+        input(4986, 1)))
+  )
+    return recipe.inputs.length === 2 ? 1 : 10;
   return null;
 }

@@ -114,14 +114,16 @@ LT e VT são domínios separados. Um valor em VT é somente leitura e nunca pree
 O leitor amplia capturas pequenas até 1,5×, limitado a 2.400 pixels no maior lado, e converte as caixas OCR de volta para as coordenadas da imagem original. Com o manifesto local validado, execute o mesmo idioma, modo esparso, escala e parser de campos usados pela rota no navegador:
 
 ```powershell
-node scripts/validate-screen-ocr.mjs data/ocr-corpus/manifest.json
+node scripts/validate-screen-ocr.mjs data/ocr-corpus/manifest.json --split calibration
 ```
 
 O relatório agrupa contagens absolutas por tela e campo: `exact`, `unread`, `incorrect`, `ambiguous` e `unsupported`. Só rótulos marcados como conferidos entram na comparação. Antes da comparação, cada candidato precisa pertencer a um tipo de painel compatível com o campo e sua caixa precisa coincidir espacialmente com a área anotada. Valores diferentes para o mesmo campo na região anotada são contados como ambíguos, mesmo quando um deles coincide com o rótulo. Quando o detector não encontra uma tela, a categoria anotada no manifesto é usada apenas para avaliar o parser; `paneSources` informa quantas telas foram detectadas e quantas usaram esse recurso. O JSON não inclui texto OCR, valores esperados, nomes de arquivo nem caminhos. A imagem é lida localmente pelo processo Node e não é enviada a um serviço de OCR.
 
 Resultado observado em 10/10/2026 nas 13 capturas e 29 rótulos de calibração, com associação por painel e região: **16 exatos, 11 sem leitura, 1 incorreto e 1 não suportado; nenhum ambíguo**. Foram reconhecidos 14 painéis automaticamente; 7 categorias anotadas foram usadas como fallback para medir os campos sem atribuir sucesso à detecção da tela. O candidato incorreto permanece visível para revisão e não é aplicado sem confirmação. A amostra não é independente e não representa uma taxa geral de acerto.
 
-Esta implementação de leitura estruturada não tem avaliação independente nem validação de interface automatizada nesta entrega. Antes de publicar qualquer número de acurácia, separe sessões de captura para avaliação, anote cada valor diretamente no jogo e meça resultados por campo, unidade e tipo de tela.
+O manifesto aceita `calibration` e `evaluation`. Uma mesma `sessionId` não pode aparecer nos dois splits. Cada captura de avaliação exige pelo menos um rótulo `verified`, `authorizationRef` para localizar o registro de permissão/origem e `authorizedAt` com a data da autorização. O comando usa calibração por padrão; para medir um holdout, execute `node scripts/validate-screen-ocr.mjs data/ocr-corpus/manifest.json --split evaluation`. Se o split estiver vazio, a ferramenta falha em vez de publicar uma métrica zero. O relatório inclui o split escolhido e só pontua capturas dele.
+
+Hoje as 13 capturas únicas continuam em `calibration`; `evaluation` está vazio. Não há ainda avaliação independente do OCR de tela. Adicione somente novas capturas reais com origem e autorização registradas, de sessões que não aparecem na calibração; anote cada campo diretamente no jogo antes de marcar a captura como `evaluation`. As imagens existentes não devem ser promovidas para avaliação, pois já foram usadas na calibração. A revisão manual permanece obrigatória até haver dados independentes suficientes e uma avaliação por campo/tela que sustente mudança.
 
 ## Pipeline de amostras sintéticas e reais
 
@@ -193,7 +195,7 @@ Imagens, URLs de origem, evidências de consentimento, manifestos e relatórios 
 
 ### Medir o leitor
 
-O benchmark usa o detector de grades, o leitor Tesseract em português com modo esparso, a escala do `ScreenTextReader` e os parsers de quantidade e aprimoramento existentes no frontend. Ele valida hash e dimensões antes de OCR, pontua a grade por associação um a um e IoU mínimo de 0,5, e associa texto aos limites rotulados no manifesto. A divisão `evaluation` é padrão; `calibration` exige seleção explícita. O JSON agregado não inclui texto OCR, rótulos esperados, caminhos ou URLs.
+O benchmark usa o detector de grades, o leitor Tesseract em português com modo esparso, a escala do `ScreenTextReader` e os parsers de quantidade e aprimoramento existentes no frontend. Ele valida hash e dimensões antes de OCR, pontua a grade por associação um a um e IoU mínimo de 0,5, e associa texto aos limites rotulados no manifesto. Em imagens de 4K, limita o maior eixo do recorte de OCR a 2.400 px para manter o consumo de memória previsível; as coordenadas reconhecidas voltam à resolução original. A divisão `evaluation` é padrão; `calibration` exige seleção explícita. O JSON agregado não inclui texto OCR, rótulos esperados, caminhos ou URLs.
 
 ```powershell
 node scripts/benchmark-ocr.mjs --manifest tmp/ocr-dataset/synthetic-evaluation/ground-truth.json --output tmp/ocr-dataset/benchmark.json

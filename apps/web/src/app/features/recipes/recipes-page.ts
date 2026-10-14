@@ -18,9 +18,11 @@ import type {
   LifeSkillRecipeGroup,
   RecipeListResponse,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
 import {
   catchError,
   combineLatest,
+  distinctUntilChanged,
   forkJoin,
   map,
   type Observable,
@@ -36,12 +38,17 @@ import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
-import { recipeFamilies } from '../../shared/recipe-tree/recipe-equivalents';
+import {
+  batchAlternatives,
+  recipeFamilies,
+  withVerifiedIngredientSubstitutions,
+} from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-recipes-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CatalogItemPicker, ItemIcon, RecipeTree],
+  imports: [HlmButton, BdoSelect, RouterLink, CatalogItemPicker, ItemIcon, RecipeTree],
   templateUrl: './recipes-page.html',
   styleUrl: './recipes-page.scss',
 })
@@ -64,9 +71,18 @@ export class RecipesPage {
       this.methodFamilies().find((family) => family.some((r) => r.key === this.recipe()?.key))?.[0]
         ?.key ?? '',
   );
+  readonly rootBatchOptions = computed(() => {
+    const selected = this.recipe();
+    if (!selected) return [];
+    const family = this.methodFamilies().find((recipes) =>
+      recipes.some((candidate) => candidate.key === selected.key),
+    );
+    return batchAlternatives(selected, family ?? [selected]);
+  });
   readonly dataset = signal<ActiveDatasetSummary | null>(null);
   readonly loading = signal(true);
   readonly message = signal('');
+  private readonly selectedRecipeKey = signal<string | null>(null);
   readonly advanced = signal(false);
   readonly typeLabel = recipeTypeLabel;
   readonly recipeGroup = signal<LifeSkillRecipeGroup | ''>('');
@@ -83,22 +99,43 @@ export class RecipesPage {
   }
   page = 1;
   constructor() {
+    this.route.queryParamMap
+      .pipe(
+        map((params) => params.get('recipe')),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
+      .subscribe((key) => {
+        this.selectedRecipeKey.set(key);
+        if (!this.item() || !this.alternatives().length) return;
+        this.recipe.set(
+          key === 'external'
+            ? null
+            : (this.alternatives().find((candidate) => candidate.key === key) ??
+                this.methods()[0] ??
+                null),
+        );
+      });
     combineLatest([
       this.route.paramMap,
-      this.route.queryParamMap,
+      this.route.queryParamMap.pipe(
+        map((params) => params.get('item')),
+        distinctUntilChanged(),
+      ),
       toObservable(this.preferences.region),
       this.refresh.pipe(startWith(undefined)),
     ])
       .pipe(
-        switchMap(([params, query]) => {
+        switchMap(([params, itemQuery]) => {
           this.loading.set(true);
           this.message.set('');
           this.recipe.set(null);
           this.item.set(null);
-          this.result.set(null);
+          // Keep the existing page mounted while fetching the next page, preserving scroll geometry.
+          if (params.get('key') || params.get('id') || itemQuery) this.result.set(null);
           this.alternatives.set([]);
           const key = params.get('key'),
-            rawId = params.get('id') ?? query.get('item'),
+            rawId = params.get('id') ?? itemQuery,
             id = rawId ? Number(rawId) : null;
           if (
             (key && !/^[a-f0-9]{64}$/i.test(key)) ||
@@ -134,7 +171,7 @@ export class RecipesPage {
                   ),
                 )
             : id
-              ? itemRequest(id, query.get('recipe'))
+              ? itemRequest(id, null)
               : this.api
                   .getRecipes('', this.page, this.recipeGroup() || undefined)
                   .pipe(map((list) => ({ kind: 'list' as const, list })));
@@ -167,13 +204,13 @@ export class RecipesPage {
         }
         this.item.set(data.item.item);
         this.dataset.set(data.item.dataset);
-        this.alternatives.set(data.recipes.recipes);
+        const alternatives = withVerifiedIngredientSubstitutions(data.recipes.recipes);
+        this.alternatives.set(alternatives);
+        const selectedKey = data.selectedKey ?? this.selectedRecipeKey();
         this.recipe.set(
-          data.selectedKey === 'external'
+          selectedKey === 'external'
             ? null
-            : (data.recipes.recipes.find((r) => r.key === data.selectedKey) ??
-                this.methods()[0] ??
-                null),
+            : (alternatives.find((r) => r.key === selectedKey) ?? this.methods()[0] ?? null),
         );
         this.seo.describe(
           data.item.item.name + ' · Receitas e obtenção',
@@ -190,6 +227,12 @@ export class RecipesPage {
     const key = (event.target as HTMLSelectElement).value;
     this.setMethod(this.alternatives().find((r) => r.key === key) ?? null);
   }
+  chooseBatch(event: Event) {
+    const key = (event.target as HTMLSelectElement).value;
+    this.setMethod(
+      this.rootBatchOptions().find((batch) => batch.recipe.key === key)?.recipe ?? null,
+    );
+  }
   setMethod(recipe: CatalogRecipe | null) {
     this.recipe.set(recipe);
     void this.router.navigate([], {
@@ -200,6 +243,7 @@ export class RecipesPage {
     });
   }
   move(delta: number) {
+    if (this.loading()) return;
     this.page += delta;
     this.refresh.next();
   }

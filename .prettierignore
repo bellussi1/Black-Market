@@ -10,9 +10,17 @@ pnpm-lock.yaml
 packages/database/drizzle/
 .env*
 .dev.vars*
+# Official skill distributions are preserved verbatim for upstream updates.
+.agents/skills/angular-developer/
+.agents/skills/spartan/
 data/
 # Reviewed recipe snapshot bytes are included in the published dataset checksum.
 docs/recipe-supplements/*.json
 *.paz
 *.bss
 *.dbss
+
+.playwright-cli/
+tmp/pdfs/
+
+**/.nx/

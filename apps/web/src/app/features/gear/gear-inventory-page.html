@@ -12,17 +12,23 @@
     </p>
     @if (!embedded()) {
       <div class="action-row">
-        <a class="btn" routerLink="/scans" [queryParams]="{ type: 'gear' }" i18n
+        <a
+          hlmBtn
+          variant="outline"
+          class="btn"
+          routerLink="/scans"
+          [queryParams]="{ type: 'gear' }"
+          i18n
           >Importar equipamentos por captura</a
         ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventário</a>
       </div>
     }
   </header>
   @if (!embedded()) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <label
         ><span i18n>Personagem</span
-        ><select [ngModel]="profile()?.id ?? ''" (ngModelChange)="select($event)">
+        ><select appBdoSelect [ngModel]="profile()?.id ?? ''" (ngModelChange)="select($event)">
           <option value="" i18n>Escolha</option>
           @for (row of profiles(); track row.id) {
             <option [value]="row.id">{{ row.name }}</option>
@@ -31,13 +37,13 @@
       >
       <details [open]="!profiles().length">
         <summary i18n>Cadastrar personagem</summary>
-        <label i18n>Nome do personagem<input [(ngModel)]="name" maxlength="80" /></label
-        ><button type="button" (click)="create()" i18n>Cadastrar</button>
+        <label i18n>Nome do personagem<input hlmInput [(ngModel)]="name" maxlength="80" /></label
+        ><button hlmBtn variant="outline" type="button" (click)="create()" i18n>Cadastrar</button>
       </details>
     </section>
   }
   @if (profile(); as current) {
-    <section class="panel" aria-label="Atributos informados do personagem" i18n-aria-label>
+    <section hlmCard class="panel" aria-label="Atributos informados do personagem" i18n-aria-label>
       <h2 i18n>Atributos da ficha</h2>
       <div class="action-row">
         <strong>PA {{ current.mainAp }}</strong
@@ -60,26 +66,32 @@
       <div class="form-grid">
         <label
           ><span i18n>Posição</span
-          ><select [(ngModel)]="slot">
+          ><select appBdoSelect [(ngModel)]="slot">
             @for (position of slots; track position) {
               <option [value]="position">{{ labels[position] }}</option>
             }
           </select></label
         ><label i18n
           >Aprimoramento confirmado no jogo<input
+            hlmInput
             type="number"
             min="0"
             max="30"
             [(ngModel)]="level" /></label
         ><label i18n
-          >Caphras confirmado no jogo<input type="number" min="0" max="20" [(ngModel)]="caphras"
+          >Caphras confirmado no jogo<input
+            hlmInput
+            type="number"
+            min="0"
+            max="20"
+            [(ngModel)]="caphras"
         /></label>
       </div>
       <p class="help" i18n>
         0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1 a 10.
         Confira o item e o nível antes de substituir esta posição.
       </p>
-      <button class="btn" type="button" (click)="save()" i18n>
+      <button hlmBtn variant="outline" class="btn" type="button" (click)="save()" i18n>
         Confirmar equipamento nesta posição
       </button>
     </details>

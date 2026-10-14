@@ -16,6 +16,8 @@ import type {
   CatalogPage,
   CatalogRecipesResponse,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 
@@ -26,12 +28,13 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-item-catalog-page',
   standalone: true,
-  imports: [ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon],
   templateUrl: './item-catalog-page.html',
   styleUrl: './item-catalog-page.scss',
 })

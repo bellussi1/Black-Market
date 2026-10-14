@@ -3,6 +3,7 @@
     <label class="field" [for]="searchId"
       >{{ label() }}
       <input
+        hlmInput
         [id]="searchId"
         type="search"
         autocomplete="off"
@@ -18,6 +19,7 @@
       <label class="field" [for]="searchId + '-category'">
         <ng-container i18n>Categoria</ng-container>
         <select
+          appBdoSelect
           [id]="searchId + '-category'"
           [value]="category()"
           (focus)="loadCategories()"
@@ -36,7 +38,14 @@
       <span
         ><ng-container i18n>Selecionado:</ng-container> <strong>{{ selectionName() }}</strong></span
       >
-      <button type="button" (click)="clear()" aria-label="Limpar item selecionado" i18n-aria-label>
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        (click)="clear()"
+        aria-label="Limpar item selecionado"
+        i18n-aria-label
+      >
         ×
       </button>
     </div>
@@ -52,7 +61,10 @@
         <p role="status" i18n>Buscando itens…</p>
       } @else if (error()) {
         <p role="alert">
-          {{ error() }} <button type="button" (click)="find()" i18n>Tentar novamente</button>
+          {{ error() }}
+          <button hlmBtn variant="outline" type="button" (click)="find()" i18n>
+            Tentar novamente
+          </button>
         </p>
       } @else if (result(); as data) {
         @if (!data.dataset) {
@@ -61,7 +73,13 @@
           <p i18n>Nenhum item encontrado. Ajuste o nome ou a categoria.</p>
         } @else {
           @for (item of data.items; track item.id) {
-            <button class="result-item" type="button" (click)="choose(item)">
+            <button
+              hlmBtn
+              variant="outline"
+              class="result-item"
+              type="button"
+              (click)="choose(item)"
+            >
               <span class="icon" aria-hidden="true"
                 ><app-item-icon [url]="iconUrl(item)" [name]="item.name" [grade]="item.grade"
               /></span>

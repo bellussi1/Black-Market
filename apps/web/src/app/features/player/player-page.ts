@@ -10,16 +10,30 @@ import {
   type TaxOptions,
 } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { GearInventoryPage } from '../gear/gear-inventory-page';
 
 @Component({
   selector: 'app-player-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, TaxOptionsComponent, GearInventoryPage],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    TaxOptionsComponent,
+    GearInventoryPage,
+  ],
   templateUrl: './player-page.html',
 })
 export class PlayerPage {

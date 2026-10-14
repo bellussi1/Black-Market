@@ -13,6 +13,8 @@
   </header>
   <div class="tabs">
     <button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'stock'"
       [attr.aria-pressed]="tab() === 'stock'"
@@ -20,6 +22,8 @@
     >
       <ng-container i18n>Armazém</ng-container></button
     ><button
+      hlmBtn
+      variant="outline"
       type="button"
       [class.active]="tab() === 'projects'"
       [attr.aria-pressed]="tab() === 'projects'"
@@ -29,7 +33,7 @@
     </button>
   </div>
   @if (tab() === 'stock') {
-    <section class="panel" aria-labelledby="storage-start-title">
+    <section hlmCard class="panel" aria-labelledby="storage-start-title">
       <p class="tool-kicker" i18n>SEM PLANILHA PARA COMEÇAR</p>
       <h2 id="storage-start-title" i18n>Traga seus materiais por print.</h2>
       <p class="help" i18n>
@@ -51,8 +55,10 @@
         </li>
       </ol>
       <div class="action-row">
-        <a class="btn" routerLink="/scans" i18n>Importar por print</a
-        ><a class="btn subtle" href="#storage-manual-title" i18n>Cadastrar poucos itens</a>
+        <a hlmBtn variant="outline" class="btn" routerLink="/scans" i18n>Importar por print</a
+        ><a hlmBtn variant="outline" class="btn subtle" href="#storage-manual-title" i18n
+          >Cadastrar poucos itens</a
+        >
       </div>
       <details>
         <summary i18n>Como fazer a captura e evitar itens duplicados?</summary>
@@ -95,7 +101,14 @@
       </ol>
       <div class="panel-heading">
         <h2 id="storage-import-title" i18n>Importar armazém por CSV</h2>
-        <button class="btn subtle" type="button" (click)="downloadImportTemplate()" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="downloadImportTemplate()"
+          i18n
+        >
           Baixar modelo
         </button>
       </div>
@@ -146,6 +159,8 @@
         </div>
         <nav class="action-row" aria-label="Páginas da prévia do CSV" i18n-aria-label>
           <button
+            hlmBtn
+            variant="outline"
             class="btn subtle"
             type="button"
             [disabled]="importPage() === 0"
@@ -160,6 +175,8 @@
             {{ importRows().length }}</span
           >
           <button
+            hlmBtn
+            variant="outline"
             class="btn subtle"
             type="button"
             [disabled]="(importPage() + 1) * 20 >= importRows().length"
@@ -178,6 +195,8 @@
         </label>
         <div class="action-row">
           <button
+            hlmBtn
+            variant="outline"
             class="btn"
             type="button"
             (click)="applyImport()"
@@ -186,7 +205,16 @@
           >
             Confirmar importação
           </button>
-          <button class="btn subtle" type="button" (click)="cancelImport()" i18n>Cancelar</button>
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            type="button"
+            (click)="cancelImport()"
+            i18n
+          >
+            Cancelar
+          </button>
         </div>
       }
       <p class="help" i18n>
@@ -207,51 +235,59 @@
         >
       </div>
     </div>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 id="storage-manual-title" tabindex="-1">
         <ng-container i18n>Adicionar ou editar material</ng-container>
       </h2>
       <app-catalog-item-picker [selectionName]="draft.name" (selected)="selectStock($event)" />
       <div class="form-grid">
         <label class="field"
-          ><ng-container i18n>Item</ng-container><input [value]="draft.name" readonly /></label
+          ><ng-container i18n>Item</ng-container
+          ><input hlmInput [value]="draft.name" readonly /></label
         ><label class="field"
           ><ng-container i18n>Armazém / personagem</ng-container
-          ><input maxlength="140" [(ngModel)]="draft.location" /></label
+          ><input hlmInput maxlength="140" [(ngModel)]="draft.location" /></label
         ><label class="field"
           ><ng-container i18n>Quantidade disponível</ng-container
-          ><input type="number" min="0" [(ngModel)]="draft.quantity" /></label
+          ><input hlmInput type="number" min="0" [(ngModel)]="draft.quantity" /></label
         ><label class="field"
           ><ng-container i18n>Meta neste local</ng-container
-          ><input type="number" min="0" [(ngModel)]="draft.target" /></label
+          ><input hlmInput type="number" min="0" [(ngModel)]="draft.target" /></label
         ><label class="field"
           ><ng-container i18n>Preço unitário informado</ng-container
-          ><input inputmode="numeric" [(ngModel)]="draft.price"
+          ><input hlmInput inputmode="numeric" [(ngModel)]="draft.price"
         /></label>
       </div>
       <div class="action-row">
-        <button type="button" class="btn" (click)="saveStock()">
+        <button hlmBtn variant="outline" type="button" class="btn" (click)="saveStock()">
           <ng-container i18n>Salvar material</ng-container></button
-        ><button type="button" class="btn subtle" (click)="draft = newStock()">
+        ><button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          (click)="draft = newStock()"
+        >
           <ng-container i18n>Novo material </ng-container>
         </button>
       </div>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2>
           <ng-container i18n>Inventário · {{ store.data().region.toUpperCase() }}</ng-container>
         </h2>
-        <button type="button" class="btn subtle" (click)="exportList()">
+        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="exportList()">
           <ng-container i18n>Exportar CSV</ng-container>
         </button>
       </div>
       <div class="form-grid" style="margin-bottom: 20px">
         <label class="field"
-          ><ng-container i18n>Buscar item</ng-container><input [(ngModel)]="search" /></label
+          ><ng-container i18n>Buscar item</ng-container
+          ><input hlmInput [(ngModel)]="search" /></label
         ><label class="field"
           ><ng-container i18n>Local</ng-container
-          ><select [(ngModel)]="location">
+          ><select appBdoSelect [(ngModel)]="location">
             <option value=""><ng-container i18n>Todos</ng-container></option>
             @for (loc of locations; track loc) {
               <option [value]="loc">{{ loc }}</option>
@@ -259,44 +295,128 @@
           </select></label
         >
       </div>
-      @if (rows.length) {
-        <div class="max-w-full overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th><ng-container i18n>Item</ng-container></th>
-                <th><ng-container i18n>Local</ng-container></th>
-                <th class="numeric"><ng-container i18n>Tenho</ng-container></th>
-                <th class="numeric"><ng-container i18n>Meta</ng-container></th>
-                <th class="numeric"><ng-container i18n>Falta</ng-container></th>
-                <th class="numeric"><ng-container i18n>Preço</ng-container></th>
-                <th><ng-container i18n>Ações</ng-container></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of rows; track row.id) {
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td>{{ row.location }}</td>
-                  <td class="numeric">{{ number(row.quantity, 0) }}</td>
-                  <td class="numeric">{{ number(row.target, 0) }}</td>
-                  <td class="numeric">
-                    {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
-                  </td>
-                  <td class="numeric">{{ silver(row.price) }}</td>
-                  <td>
-                    <button type="button" class="btn subtle" (click)="edit(row)">
-                      <ng-container i18n>Editar</ng-container>
-                    </button>
-                    <button type="button" class="btn danger" (click)="remove(row.id)">
-                      <ng-container i18n>Excluir </ng-container>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+      <div
+        class="action-row"
+        style="margin-bottom: 16px; justify-content: space-between; align-items: center"
+      >
+        <div class="view-mode-toggle segmented-control">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn subtle"
+            [class.active]="viewMode() === 'grid'"
+            [attr.aria-pressed]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
+          >
+            Grade do jogo
+          </button>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn subtle"
+            [class.active]="viewMode() === 'table'"
+            [attr.aria-pressed]="viewMode() === 'table'"
+            (click)="viewMode.set('table')"
+          >
+            Lista detalhada
+          </button>
         </div>
+        <span class="help">{{ rows.length }} itens filtrados</span>
+      </div>
+      @if (rows.length) {
+        @if (viewMode() === 'grid') {
+          <div
+            class="storage-game-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+              gap: 6px;
+              padding: 12px;
+              background: var(--bm-input);
+              border: 1px solid var(--bm-border);
+              border-radius: 2px;
+            "
+          >
+            @for (row of rows; track row.id) {
+              <div
+                class="bdo-slot"
+                tabindex="0"
+                role="button"
+                [attr.title]="
+                  row.name +
+                  ' (' +
+                  row.location +
+                  ') · Tenho: ' +
+                  number(row.quantity, 0) +
+                  (row.target ? ' / Meta: ' + number(row.target, 0) : '')
+                "
+                (click)="edit(row)"
+                (keydown.enter)="edit(row)"
+                style="cursor: pointer"
+              >
+                <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
+                <span class="bdo-slot-count">{{ number(row.quantity, 0) }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="max-w-full overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><ng-container i18n>Item</ng-container></th>
+                  <th><ng-container i18n>Local</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Tenho</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Meta</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Falta</ng-container></th>
+                  <th class="numeric"><ng-container i18n>Preço</ng-container></th>
+                  <th><ng-container i18n>Ações</ng-container></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track row.id) {
+                  <tr>
+                    <td>
+                      <div style="display: inline-flex; align-items: center; gap: 8px">
+                        <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
+                        <span>{{ row.name }}</span>
+                      </div>
+                    </td>
+                    <td>{{ row.location }}</td>
+                    <td class="numeric">{{ number(row.quantity, 0) }}</td>
+                    <td class="numeric">{{ number(row.target, 0) }}</td>
+                    <td class="numeric">
+                      {{ number(row.target > row.quantity ? row.target - row.quantity : 0, 0) }}
+                    </td>
+                    <td class="numeric">{{ silver(row.price) }}</td>
+                    <td>
+                      <button
+                        hlmBtn
+                        variant="outline"
+                        type="button"
+                        class="btn subtle"
+                        (click)="edit(row)"
+                      >
+                        <ng-container i18n>Editar</ng-container>
+                      </button>
+                      <button
+                        hlmBtn
+                        variant="outline"
+                        type="button"
+                        class="btn danger"
+                        (click)="remove(row.id)"
+                      >
+                        <ng-container i18n>Excluir </ng-container>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       } @else {
         <div class="empty">
           <strong><ng-container i18n>Seu armazém começa aqui.</ng-container></strong
@@ -307,11 +427,12 @@
       }
     </section>
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Definir projeto</ng-container></h2>
       <label class="field"
         ><ng-container i18n>Nome do projeto</ng-container
         ><input
+          hlmInput
           maxlength="140"
           placeholder="Meu navio, meu equipamento, minha produção…"
           i18n-placeholder
@@ -328,25 +449,37 @@
             </div>
             <label class="field"
               ><ng-container i18n>Meta total</ng-container
-              ><input type="number" min="1" [(ngModel)]="material.target" /></label
+              ><input hlmInput type="number" min="1" [(ngModel)]="material.target" /></label
             ><label class="field"
               ><ng-container i18n>Preço unitário de compra</ng-container
-              ><input inputmode="numeric" [(ngModel)]="material.price"
+              ><input hlmInput inputmode="numeric" [(ngModel)]="material.price"
             /></label>
           </div>
           <div class="action-row">
-            <button type="button" class="btn danger" (click)="removeMaterial(k)">
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              class="btn danger"
+              (click)="removeMaterial(k)"
+            >
               <ng-container i18n>Remover material </ng-container>
             </button>
           </div>
         </div>
       }
       <div class="action-row">
-        <button type="button" class="btn subtle" (click)="addMaterial()">
+        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="addMaterial()">
           <ng-container i18n>Adicionar material</ng-container></button
-        ><button type="button" class="btn" (click)="saveProject()">
+        ><button hlmBtn variant="outline" type="button" class="btn" (click)="saveProject()">
           <ng-container i18n>Salvar projeto</ng-container></button
-        ><button type="button" class="btn subtle" (click)="project = newProject()">
+        ><button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="btn subtle"
+          (click)="project = newProject()"
+        >
           <ng-container i18n>Novo projeto </ng-container>
         </button>
       </div>
@@ -354,11 +487,15 @@
         <p class="error-box" role="alert">{{ error() }}</p>
       }
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2><ng-container i18n>Meus projetos</ng-container></h2>
       <label class="field"
         ><ng-container i18n>Acompanhar</ng-container
-        ><select [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
+        ><select
+          appBdoSelect
+          [ngModel]="selectedProject()"
+          (ngModelChange)="selectedProject.set($event)"
+        >
           <option value=""><ng-container i18n>Escolher projeto</ng-container></option>
           @for (p of projects; track p.id) {
             <option [value]="p.id">{{ p.name }}</option>
@@ -367,9 +504,21 @@
       >
       @if (currentProject(); as p) {
         <div class="action-row">
-          <button type="button" class="btn subtle" (click)="editProject(p)">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn subtle"
+            (click)="editProject(p)"
+          >
             <ng-container i18n>Editar projeto</ng-container></button
-          ><button type="button" class="btn danger" (click)="removeProject(p.id)">
+          ><button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn danger"
+            (click)="removeProject(p.id)"
+          >
             <ng-container i18n>Excluir projeto </ng-container>
           </button>
         </div>

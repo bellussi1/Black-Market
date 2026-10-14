@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { environment } from '../../../environments/environment';
-import { PrivacyService } from '../../core/privacy.service';
+import { PRIVACY_COOKIE, PrivacyService } from '../../core/privacy.service';
 import { PrivacyControls } from '../../shared/privacy-controls/privacy-controls';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { legalDocuments, legalUpdatedOn } from './legal-content';
@@ -37,8 +37,9 @@ describe('legal navigation and privacy controls', () => {
       for (const section of element.querySelectorAll('section[aria-labelledby]')) {
         expect(element.querySelector('#' + section.getAttribute('aria-labelledby'))).not.toBeNull();
       }
-      if (key !== 'contact')
-        expect(element.textContent).toContain('não foi juridicamente validado');
+      expect(element.textContent).not.toMatch(
+        /arsha|bdo-data-extractor|de onde vêm os dados|fórmula/i,
+      );
     });
   }
   it('navigates all four public legal routes and marks the current document', async () => {
@@ -102,6 +103,11 @@ describe('legal navigation and privacy controls', () => {
       .click();
     fixture.detectChanges();
     expect(privacy.allowsAnalytics()).toBe(true);
-    expect(JSON.parse(localStorage.getItem('black-market.privacy.v1')!).analytics).toBe(true);
+    const preference = document.cookie
+      .split(';')
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(PRIVACY_COOKIE + '='))
+      ?.slice(PRIVACY_COOKIE.length + 1);
+    expect(JSON.parse(decodeURIComponent(preference!)).analytics).toBe(true);
   });
 });

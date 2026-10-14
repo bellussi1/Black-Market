@@ -23,7 +23,7 @@ describe('market board collector', () => {
     vi.restoreAllMocks();
   });
   it('observes the full board on startup and every 8 minutes, then cancels on shutdown', async () => {
-    const { collector, refresh, prune } = fixture();
+    const { collector, refresh, prune } = fixture({ MARKET_BOARD_COLLECTOR_ENABLED: true });
     collector.onModuleInit();
     await vi.advanceTimersByTimeAsync(0);
     expect(refresh).toHaveBeenCalledTimes(1);
@@ -44,9 +44,16 @@ describe('market board collector', () => {
       collector.onModuleDestroy();
     },
   );
+  it('does not collect when the collector flag is absent', async () => {
+    const { collector, refresh } = fixture();
+    collector.onModuleInit();
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(refresh).not.toHaveBeenCalled();
+    collector.onModuleDestroy();
+  });
   it('avoids overlapping collection and never schedules after shutdown during an in-flight startup', async () => {
     let complete!: () => void;
-    const { collector, refresh } = fixture();
+    const { collector, refresh } = fixture({ MARKET_BOARD_COLLECTOR_ENABLED: true });
     refresh.mockImplementation(
       () =>
         new Promise<void>((resolve) => {

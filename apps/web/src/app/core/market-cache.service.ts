@@ -2,7 +2,19 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import type { OnDestroy } from '@angular/core';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import type { MarketBoardResponse, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
-import { catchError, forkJoin, map, type Observable, of, tap } from 'rxjs';
+import {
+  catchError,
+  concat,
+  finalize,
+  from,
+  map,
+  mergeMap,
+  type Observable,
+  of,
+  takeLast,
+  tap,
+  toArray,
+} from 'rxjs';
 
 import { MarketApi } from '../features/market/market-api';
 import { type Region, RegionPreferences } from './region-preferences';
@@ -27,6 +39,14 @@ export const DEFAULT_MARKET_CACHE_TTL_MS = 5 * 60 * 1000;
 /** Background polling interval: 6 minutes */
 export const MARKET_BACKGROUND_POLL_MS = 6 * 60 * 1000;
 export const MARKET_STORAGE_KEY_PREFIX = 'bm_market_cache_';
+
+function hasPositivePrice(value: string | null | undefined): boolean {
+  return !!value && /^\d{1,24}$/.test(value) && BigInt(value) > 0n;
+}
+
+function needsMaximumPrice(quote: MarketItemQuote | undefined): boolean {
+  return quote?.stock === 0 && !hasPositivePrice(quote.maxPrice);
+}
 
 @Injectable({ providedIn: 'root' })
 export class MarketCacheService implements OnDestroy {
@@ -83,6 +103,15 @@ export class MarketCacheService implements OnDestroy {
     return entry.quote;
   }
 
+  /** Retrieves the cached quote and its freshness timestamps, including stale entries. */
+  getCachedQuoteEntry(
+    itemId: number | string,
+    region: Region = this.preferences.region(),
+    subId = 0,
+  ): CachedQuoteEntry | null {
+    return this.quotesMap().get(this.quoteKey(itemId, region, subId)) ?? null;
+  }
+
   /**
    * Resolves an item quote automatically: returns cached if fresh,
    * otherwise queries the API in background and caches results without manual clicks.
@@ -102,20 +131,26 @@ export class MarketCacheService implements OnDestroy {
     }
 
     this.isSyncing.set(true);
+    return this.refreshQuote(itemId, region, subId, existing ?? null).pipe(
+      finalize(() => this.isSyncing.set(false)),
+    );
+  }
+
+  private refreshQuote(
+    itemId: number | string,
+    region: Region,
+    subId: number,
+    existing: CachedQuoteEntry | null,
+  ): Observable<MarketItemQuote | null> {
     return this.api.getItem(String(itemId), region).pipe(
       map((response: MarketLookupResponse) => {
         this.cacheLookupResponse(response, region);
-        this.isSyncing.set(false);
         this.lastSyncAt.set(new Date());
         return response.items.find((i) => i.subId === subId) ?? response.items[0] ?? null;
       }),
       catchError((_error) => {
-        this.isSyncing.set(false);
         // If network error occurred but we have stale cache, return stale as fallback
-        if (existing) {
-          return of(existing.quote);
-        }
-        return of(null);
+        return of(existing?.quote ?? null);
       }),
     );
   }
@@ -133,37 +168,39 @@ export class MarketCacheService implements OnDestroy {
       return of(new Map());
     }
 
-    const resultMap = new Map<number, MarketItemQuote>();
+    const cachedMap = new Map<number, MarketItemQuote>();
+    const entriesById = new Map<number, CachedQuoteEntry>();
     const missingOrExpired: number[] = [];
 
     for (const id of uniqueIds) {
-      const cached = this.getCachedQuote(id, region, 0);
-      const key = this.quoteKey(id, region, 0);
-      const entry = this.quotesMap().get(key);
+      const entry = this.getCachedQuoteEntry(id, region, 0);
+      if (entry) {
+        entriesById.set(id, entry);
+        cachedMap.set(id, entry.quote);
+      }
       const isFresh = entry && Date.now() < entry.expiresAt && !forceRefresh;
 
-      if (isFresh && cached) {
-        resultMap.set(id, cached);
-      } else {
+      if (!isFresh) {
         missingOrExpired.push(id);
       }
     }
 
     if (!missingOrExpired.length) {
-      return of(resultMap);
+      return of(cachedMap);
     }
 
     this.isSyncing.set(true);
-    const requests = missingOrExpired.map((id) =>
-      this.resolveQuote(id, region, 0, forceRefresh).pipe(
-        map((quote) => ({ id, quote })),
-        catchError(() => of({ id, quote: null })),
+    const refresh$ = from(missingOrExpired).pipe(
+      mergeMap(
+        (id) =>
+          this.refreshQuote(id, region, 0, entriesById.get(id) ?? null).pipe(
+            map((quote) => ({ id, quote })),
+          ),
+        6,
       ),
-    );
-
-    return forkJoin(requests).pipe(
+      toArray(),
       map((results) => {
-        this.isSyncing.set(false);
+        const resultMap = new Map(cachedMap);
         for (const { id, quote } of results) {
           if (quote) {
             resultMap.set(id, quote);
@@ -171,7 +208,122 @@ export class MarketCacheService implements OnDestroy {
         }
         return resultMap;
       }),
+      finalize(() => this.isSyncing.set(false)),
     );
+
+    return cachedMap.size ? concat(of(new Map(cachedMap)), refresh$) : refresh$;
+  }
+
+  /**
+   * Resolves quotes for crafting/production materials using the bulk production-quotes endpoint.
+   * Uses requests of at most 100 materials, caches all returned quotes, and enriches zero-stock
+   * summaries with the individual endpoint when it omitted the maximum market price.
+   */
+  resolveProductionQuotes(
+    itemIds: (number | string)[],
+    region: Region = this.preferences.region(),
+    forceRefresh = false,
+  ): Observable<Map<number, MarketItemQuote>> {
+    const uniqueIds = [...new Set(itemIds.map((id) => Number(id)).filter((id) => id > 0))];
+    if (!uniqueIds.length) {
+      return of(new Map());
+    }
+
+    const cachedMap = new Map<number, MarketItemQuote>();
+    const missingOrExpired: number[] = [];
+
+    for (const id of uniqueIds) {
+      const entry = this.getCachedQuoteEntry(id, region, 0);
+      if (entry) {
+        cachedMap.set(id, entry.quote);
+      }
+      const isFresh = entry && Date.now() < entry.expiresAt && !forceRefresh;
+      if (!isFresh) {
+        missingOrExpired.push(id);
+      }
+    }
+
+    if (!missingOrExpired.length) {
+      const missingMaximum = uniqueIds.filter((id) => needsMaximumPrice(cachedMap.get(id)));
+      if (!missingMaximum.length) return of(cachedMap);
+      return this.resolveQuotesBatch(missingMaximum, region, true).pipe(takeLast(1));
+    }
+
+    this.isSyncing.set(true);
+    const batches = Array.from({ length: Math.ceil(missingOrExpired.length / 100) }, (_, index) =>
+      missingOrExpired.slice(index * 100, (index + 1) * 100),
+    );
+    const refreshedMap = new Map(cachedMap);
+    const resolvedIds = new Set<number>();
+    const bulk$ = from(batches).pipe(
+      mergeMap((ids) => this.api.productionQuotes(ids, region), 2),
+      tap((response) => {
+        this.cacheLookupResponse(response, region);
+        for (const item of response.items) {
+          refreshedMap.set(item.itemId, item);
+          resolvedIds.add(item.itemId);
+        }
+        this.lastSyncAt.set(new Date());
+      }),
+      toArray(),
+      mergeMap(() => {
+        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
+        const fillOmitted$ = remaining.length
+          ? this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+              takeLast(1),
+              tap((fallbacks) => {
+                for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
+              }),
+            )
+          : of(refreshedMap);
+        return fillOmitted$.pipe(
+          mergeMap(() => {
+            const missingMaximum = missingOrExpired.filter((id) => {
+              const quote = refreshedMap.get(id);
+              return resolvedIds.has(id) && needsMaximumPrice(quote);
+            });
+            if (!missingMaximum.length) return of(refreshedMap);
+            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
+              takeLast(1),
+              map((details) => {
+                for (const [id, quote] of details) refreshedMap.set(id, quote);
+                return refreshedMap;
+              }),
+            );
+          }),
+        );
+      }),
+      catchError(() => {
+        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
+        // Arsha's bulk search can be unavailable while its per-item endpoint still works.
+        // Resolve omitted items through the bounded individual lookup path instead of
+        // leaving the entire recipe tree without current quotes.
+        return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
+          takeLast(1),
+          map((fallbacks) => {
+            for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
+            return refreshedMap;
+          }),
+          mergeMap(() => {
+            const missingMaximum = missingOrExpired.filter((id) => {
+              const quote = refreshedMap.get(id);
+              return resolvedIds.has(id) && needsMaximumPrice(quote);
+            });
+            if (!missingMaximum.length) return of(refreshedMap);
+            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
+              takeLast(1),
+              map((details) => {
+                for (const [id, quote] of details) refreshedMap.set(id, quote);
+                return refreshedMap;
+              }),
+            );
+          }),
+        );
+      }),
+      finalize(() => this.isSyncing.set(false)),
+    );
+
+    return cachedMap.size ? concat(of(new Map(cachedMap)), bulk$) : bulk$;
   }
 
   /**
@@ -216,6 +368,8 @@ export class MarketCacheService implements OnDestroy {
   cacheLookupResponse(response: MarketLookupResponse, region: Region): void {
     const now = Date.now();
     const expiresAt = now + DEFAULT_MARKET_CACHE_TTL_MS;
+    const responseFetchedAt = Date.parse(response.fetchedAt);
+    const fetchedAt = Number.isFinite(responseFetchedAt) ? responseFetchedAt : now;
     const current = new Map(this.quotesMap());
 
     for (const item of response.items) {
@@ -223,7 +377,7 @@ export class MarketCacheService implements OnDestroy {
       current.set(key, {
         quote: item,
         region,
-        fetchedAt: now,
+        fetchedAt,
         expiresAt,
       });
     }
@@ -274,6 +428,19 @@ export class MarketCacheService implements OnDestroy {
     }
     this.quotesMap.set(quotes);
     this.scheduleStorageSave(region);
+  }
+
+  /** Reads a board response by exact query key, including expired entries for stale display. */
+  getCachedBoardResponse(key: string, region: Region): CachedBoardEntry | null {
+    const entry = this.boardMap().get(key);
+    return entry?.key === key && entry.region === region ? entry : null;
+  }
+
+  /** Aliases a cached board view for a local sort without extending its freshness or quote TTL. */
+  cacheBoardAlias(key: string, source: CachedBoardEntry): void {
+    const boards = new Map(this.boardMap());
+    boards.set(key, { ...source, key });
+    this.boardMap.set(boards);
   }
 
   /**

@@ -6,11 +6,12 @@
       Reúna seus planos de produção. O estoque confirmado e as reservas são considerados novamente a
       cada atualização.
     </p>
-    <a class="btn" routerLink="/recipes">Explorar uma receita</a>
+    <a hlmBtn variant="outline" class="btn" routerLink="/recipes">Explorar uma receita</a>
   </header>
   @if (message()) {
     <p class="status-message" role="status">
-      {{ message() }} <button type="button" (click)="undo()">Desfazer remoção</button>
+      {{ message() }}
+      <button hlmBtn variant="outline" type="button" (click)="undo()">Desfazer remoção</button>
     </p>
   }
   @if (plans().length) {
@@ -25,10 +26,10 @@
         <small>ESTOQUE CONSIDERADO</small
         ><strong>{{ store.data().region.toUpperCase() }} · confirmado</strong>
       </div>
-      <a class="btn subtle" routerLink="/scans">Atualizar por captura</a>
+      <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans">Atualizar por captura</a>
     </div>
     <div class="shopping-workbench">
-      <section class="panel">
+      <section hlmCard class="panel">
         <div class="panel-heading">
           <h2>Materiais consolidados</h2>
           <span class="badge">ESTOQUE ALOCADO</span>
@@ -65,10 +66,18 @@
           </tbody>
         </table>
         <nav class="action-row pagination-bar" aria-label="Páginas da lista de materiais">
-          <button type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            [disabled]="page() === 0"
+            (click)="page.set(page() - 1)"
+          >
             Anterior</button
           ><span>Página {{ page() + 1 }}</span
           ><button
+            hlmBtn
+            variant="outline"
             type="button"
             [disabled]="(page() + 1) * pageSize >= rows().length"
             (click)="page.set(page() + 1)"
@@ -81,24 +90,26 @@
           novamente. Quantidades dependem dos rendimentos informados no cenário.
         </p>
       </section>
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2>Planos incluídos</h2>
         @for (plan of plans(); track plan.id) {
           <div class="shopping-plan">
             <a [routerLink]="['/recipes/items', plan.sourceItemId]">{{ plan.name }}</a
-            ><button type="button" (click)="remove(plan)">Remover da lista</button>
+            ><button hlmBtn variant="outline" type="button" (click)="remove(plan)">
+              Remover da lista
+            </button>
           </div>
         }
       </section>
     </div>
   } @else {
-    <section class="panel empty-workspace">
+    <section hlmCard class="panel empty-workspace">
       <h2>O próximo plano começa em uma receita</h2>
       <p>
         Escolha um produto, defina a quantidade e confirme os rendimentos. Depois use “Salvar lista
         de materiais” na árvore.
       </p>
-      <a class="btn" routerLink="/recipes">Encontrar um produto</a>
+      <a hlmBtn variant="outline" class="btn" routerLink="/recipes">Encontrar um produto</a>
     </section>
   }
 </div>

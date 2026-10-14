@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StoragePage } from './storage-page';
 
@@ -70,5 +71,42 @@ describe('Storage import guidance', () => {
     expect(JSON.stringify(capture.mock.calls)).not.toMatch(
       /private-warehouse|Local particular|9001|42|Example item/i,
     );
+  });
+
+  it('allows switching between detailed list and BDO game-style slot grid', async () => {
+    const fixture = await renderComponent(StoragePage);
+    const store = TestBed.inject(WorkspaceStore);
+    store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'test-item-1',
+          region: 'sa',
+          itemId: 1407,
+          name: 'Fármaco da Harmonia',
+          location: 'Calpheon',
+          quantity: 15,
+          target: 50,
+          price: '5000000',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    const element: HTMLElement = fixture.nativeElement;
+
+    // Default mode is table
+    expect(page.viewMode()).toBe('table');
+    expect(element.querySelector('.data-table')).not.toBeNull();
+    expect(element.querySelector('.storage-game-grid')).toBeNull();
+
+    // Switch to BDO grid
+    page.viewMode.set('grid');
+    fixture.detectChanges();
+    expect(element.querySelector('.data-table')).toBeNull();
+    const slot = element.querySelector<HTMLElement>('.storage-game-grid .bdo-slot');
+    expect(slot).not.toBeNull();
+    expect(slot?.querySelector('.bdo-slot-count')?.textContent?.trim()).toBe('15');
+    expect(slot?.getAttribute('title')).toContain('Fármaco da Harmonia');
   });
 });

@@ -16,6 +16,7 @@ export class IdentityService {
   readonly ready = signal(false);
   readonly email = signal('');
   readonly userId = signal('');
+  readonly canManageRoadmap = signal(false);
   async initialize(): Promise<void> {
     if (!this.browser || this.ready()) return;
     if (this.pending) return this.pending;
@@ -38,12 +39,10 @@ export class IdentityService {
         auth: { flowType: 'pkce', storage: sessionStorage, storageKey: 'black-market.auth.v1' },
       });
       this.client.auth.onAuthStateChange((_event, session) => {
-        this.email.set(session?.user.email ?? '');
-        this.userId.set(session?.user.id ?? '');
+        this.setUser(session?.user);
       });
       const { data } = await this.client.auth.getSession();
-      this.email.set(data.session?.user.email ?? '');
-      this.userId.set(data.session?.user.id ?? '');
+      this.setUser(data.session?.user);
       this.enabled.set(true);
     }
     this.ready.set(true);
@@ -78,7 +77,20 @@ export class IdentityService {
   }
   async signOut() {
     if (this.client) await this.client.auth.signOut();
-    this.email.set('');
-    this.userId.set('');
+    this.setUser(null);
+  }
+  private setUser(
+    user: { id: string; email?: string; app_metadata?: Record<string, unknown> } | null | undefined,
+  ) {
+    this.email.set(user?.email ?? '');
+    this.userId.set(user?.id ?? '');
+    const roles = user?.app_metadata?.['roles'];
+    const role = user?.app_metadata?.['role'];
+    this.canManageRoadmap.set(
+      (Array.isArray(roles) &&
+        roles.some((value) => value === 'admin' || value === 'roadmap_admin')) ||
+        role === 'admin' ||
+        role === 'roadmap_admin',
+    );
   }
 }

@@ -13,10 +13,13 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - Ícones reais do catálogo em slots reservados de 44 × 44 px, no máximo 48 × 48 px, `object-fit: contain`. Não usar imagens de menus como fundo de interface.
 - Conteúdo legível determina a altura do card. Não cortar nomes com line-clamp; quebrar texto e medir o card antes de calcular conexões.
 - Títulos de janelas usam uma sans discreta; não impor serifas decorativas aos controles de crafting.
-- Modo simples mostra produto, quantidade, materiais, origens e custo conhecido. Modo avançado revela opções existentes sem desmontar o grafo ou perder escolhas.
+- Produto, quantidade, materiais, origens e resultado ficam no fluxo principal. Ajustes de tempo, impostos e estoque ficam em detalhes no próprio contexto, sem um modo avançado global. Não desmontar o grafo ou perder escolhas.
 - Dados não conhecidos continuam identificados como ausentes. Não presumir rendimentos, preços, origens ou qualidade de itens por estética.
 - Unificar fórmulas do mesmo produto que diferem apenas por ingredientes substituíveis. Elixires com adjetivos de qualidade e carnes/sangues de um mesmo grupo são escolhas de ingrediente, não receitas independentes. Preservar IDs, estoques e proporções de substituição (como 3 comuns para 1 superior). Confirmar equivalências pelas fórmulas do catálogo; não considerar toda carne ou todo sangue intercambiável. Ver [Equivalências](references/recipe-equivalences.md).
 - Posições, seleção, expansão e viewport são estados separados. Expandir não significa recentralizar.
+- Mercado: ler primeiro a resposta da mesma chave de consulta; exibir cache vencido com idade enquanto revalida e mantê-lo em caso de erro. Não apresentar cache de outro filtro como resultado atual. Busca textual usa debounce de 250 ms.
+- Crafting orientado à venda: separar estoque do produto da receita de venda. Rendimento estimado é aplicado sem confirmação; ajustes permanecem opcionais. Uma combinação incompleta nunca recebe lucro/hora definitivo.
+- Na comparação de cenários, preservar lucro total e lucro/hora como métricas distintas. A prévia do otimizador mantém o cenário atual até aplicar; cotação, quantidade ou política alteradas invalidam a proposta. Pré-ordem não inclui espera no tempo de produção, e produzir esgotados não garante disponibilidade do lote inteiro.
 
 ## Referências por tarefa
 
@@ -33,3 +36,5 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 ## Antes de entregar
 
 Validar no navegador o conteúdo mais longo, expansão de vários níveis, scroll com cursor fora do centro, pan após zoom, teclado e largura móvel. Usar os testes existentes de receitas para preservar cálculo, estoque e alternativas. Documentar as limitações verificadas; imagem bonita não prova funcionamento.
+
+- Otimização: proposta fora do fluxo em dialog; ação otimizar/cancelar ocupa o mesmo espaço. Reservar feedback antes do cálculo e medir posições após fontes/cotações carregarem, incluindo resultado incompleto.

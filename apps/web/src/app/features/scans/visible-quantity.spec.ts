@@ -6,12 +6,20 @@ import { parseVisibleQuantity } from './visible-quantity';
 describe('Visible game quantities', () => {
   it.each([
     ['264.8k', '264800'],
+    ['370.3k', '370300'],
     ['264,8 K', '264800'],
     ['1.3M', '1300000'],
     ['455k', '455000'],
     ['1,25m', '1250000'],
   ])('keeps %s as an approximation', (text, value) => {
     expect(parseVisibleQuantity(text)).toMatchObject({ value, approximate: true });
+  });
+  it.each([
+    ['1444K', '144.4K', '144400'],
+    ['3905k', '390.5k', '390500'],
+    ['3110K', '311.0K', '311000'],
+  ])('restores a missing BDO decimal in %s', (text, normalized, value) => {
+    expect(parseVisibleQuantity(text)).toEqual({ text: normalized, value, approximate: true });
   });
   it.each([
     ['23567', '23567'],
@@ -30,6 +38,7 @@ describe('Visible game quantities', () => {
     '25oo',
     '-1',
     '2kk',
+    '14994K',
     '1.234,5',
     '9007199254740992',
     '99999999999999M',

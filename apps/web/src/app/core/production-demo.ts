@@ -12,13 +12,14 @@ export const productionDemoExplanation =
   'AuroraVale é uma personagem fictícia: Mestre 10 em Alquimia e Culinária, ' +
   'maestrias efetivas de 1.000 e 1.250, 1.500 LT, 2 bilhões de prata e 60 minutos ativos. ' +
   'Quantidades, equipamentos e aprimoramentos são premissas de teste. Identidades dos itens ' +
-  'vêm do catálogo regional; preços devem ser consultados no mercado. Não há bônus de traje, ' +
-  'cristal ou maestria aplicados automaticamente. O teste fica em memória e preserva seus dados.';
+  'vêm do catálogo regional; preços devem ser consultados no mercado. Rendimentos de culinária, ' +
+  'alquimia e processamento seguem as tabelas de maestria; trajes e cristais não são inferidos. ' +
+  'O teste fica em memória e preserva seus dados.';
 
 /** Adjustable test measurements, deliberately not claimed as game formulas. */
 export const productionDemoCalibrations = {
-  alchemy: { seconds: 2, expectedYield: 2.5 },
-  cooking: { seconds: 2, expectedYield: 2.5 },
+  alchemy: { seconds: 2 },
+  cooking: { seconds: 2 },
   processing: { seconds: 10 },
 } as const;
 

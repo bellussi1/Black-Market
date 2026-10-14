@@ -1,5 +1,5 @@
 @import 'tailwindcss' source('../');
-
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
 /* Theme values are shared with SCSS through CSS custom properties. */
 @theme inline {
   --color-market-background: var(--bm-background);
@@ -9,4 +9,34 @@
   --color-market-muted: var(--bm-muted);
   --color-market-danger: var(--bm-danger);
   --color-market-success: var(--bm-success);
+}
+
+:root {
+  --bm-panel-padding: 1.25rem;
+  color-scheme: dark;
+  --radius: 2px;
+  --background: var(--bm-background, #17181b);
+  --foreground: var(--bm-text, #eee9de);
+  --card: var(--bm-surface, #242529);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: #715a32;
+  --primary-foreground: #fff4da;
+  --secondary: #303136;
+  --secondary-foreground: var(--foreground);
+  --muted: #303136;
+  --muted-foreground: #c2b9a7;
+  --accent: #38352e;
+  --accent-foreground: #edcd85;
+  --border: #58534a;
+  --input: var(--border);
+  --ring: #e3bf70;
+  --destructive: #ef8888;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --bm-panel-padding: 1.125rem;
+  }
 }

@@ -4,6 +4,8 @@ import { RESPONSE_INIT } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { CatalogItemDetail, CatalogRecipesResponse } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
 import { catchError, combineLatest, forkJoin, of, Subject, switchMap } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -17,7 +19,7 @@ import { referenceFields } from '../reference/reference-fields';
 @Component({
   selector: 'app-item-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ItemIcon],
+  imports: [HlmCard, HlmButton, RouterLink, ItemIcon],
   templateUrl: './item-detail-page.html',
 })
 export class ItemDetailPage {

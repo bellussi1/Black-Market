@@ -18,14 +18,18 @@ import type {
   MarketBoardPageSize,
   MarketBoardResponse,
   MarketBoardSort,
+  MarketBoardStockFilter,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { MarketCacheService } from '../../core/market-cache.service';
+import { type CachedBoardEntry, MarketCacheService } from '../../core/market-cache.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketApi } from './market-api';
 import { MarketRefresh } from './market-refresh';
 
@@ -46,7 +50,7 @@ export interface PriceRangePosition {
 @Component({
   selector: 'app-market-board',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, ItemIcon],
   templateUrl: './market-board.html',
   styleUrl: './market-board.scss',
 })
@@ -60,6 +64,7 @@ export class MarketBoard implements OnDestroy {
   readonly active = input(true);
   readonly fullCatalog = computed(() => !!this.search().trim() || !!this.category());
   readonly result = signal<MarketBoardResponse | null>(null);
+  readonly cacheEntry = signal<CachedBoardEntry | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
   readonly category = signal('');
@@ -107,17 +112,52 @@ export class MarketBoard implements OnDestroy {
     Math.min(this.page() * this.pageSize(), this.result()?.total ?? 0),
   );
 
+  readonly cacheTimestamp = computed(() => {
+    const entry = this.cacheEntry();
+    return entry ? date(new Date(entry.fetchedAt).toISOString()) : '';
+  });
+  readonly cachedEntryStale = computed(() => {
+    const entry = this.cacheEntry();
+    return entry !== null && entry.expiresAt <= Date.now();
+  });
+
+  /** Columns the API orders over the complete hot set before paginating. */
+  private static readonly SERVER_SORT_COLUMNS = ['price', 'stock', 'name'];
+
+  /** Stock filter forwarded to the API (hot board only); catalogue scopes lack per-item stock. */
+  readonly serverStockFilter = computed<MarketBoardStockFilter>(() => {
+    const filter = this.stockFilter();
+    return !this.fullCatalog() && (filter === 'in_stock' || filter === 'out_of_stock')
+      ? filter
+      : 'all';
+  });
+
+  /** True when the active ordering or filter can only reorder the 20-100 rows on screen. */
+  readonly pageOnlyOrdering = computed(() => {
+    const column = this.sortColumn();
+    const columnPageOnly =
+      column !== 'hot' &&
+      (this.fullCatalog()
+        ? !(column === 'name' && this.sortDirection() === 'asc')
+        : !MarketBoard.SERVER_SORT_COLUMNS.includes(column));
+    const filter = this.stockFilter();
+    const filterPageOnly = filter === 'with_volume' || (filter !== 'all' && this.fullCatalog());
+    return columnPageOnly || filterPageOnly;
+  });
+
   /**
-   * Filtered and client-sorted items for the current page view.
+   * Items for the current page. Price, stock and name ordering plus the stock filter arrive
+   * already applied to the complete set; the remaining columns reorder this page only.
    */
   readonly displayItems = computed(() => {
     const rawItems = this.result()?.items ?? [];
     const filter = this.stockFilter();
+    const serverFiltered = this.serverStockFilter() !== 'all';
 
     let filtered = rawItems;
-    if (filter === 'in_stock') {
+    if (filter === 'in_stock' && !serverFiltered) {
       filtered = rawItems.filter((i) => i.stock !== null && i.stock > 0);
-    } else if (filter === 'out_of_stock') {
+    } else if (filter === 'out_of_stock' && !serverFiltered) {
       filtered = rawItems.filter((i) => i.stock === 0);
     } else if (filter === 'with_volume') {
       filtered = rawItems.filter((i) => i.volume24h !== null && i.volume24h !== '0');
@@ -127,7 +167,7 @@ export class MarketBoard implements OnDestroy {
     const dir = this.sortDirection();
     const factor = dir === 'asc' ? 1 : -1;
 
-    if (col === 'hot') {
+    if (col === 'hot' || (!this.fullCatalog() && MarketBoard.SERVER_SORT_COLUMNS.includes(col))) {
       return filtered;
     }
 
@@ -181,8 +221,11 @@ export class MarketBoard implements OnDestroy {
 
   private request?: Subscription;
   private timer?: ReturnType<typeof setTimeout>;
+  private resultKey = '';
   private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
-    ? new MarketRefresh(inject(DOCUMENT), () => this.load(true))
+    ? new MarketRefresh(inject(DOCUMENT), () =>
+        this.load({ forceRefresh: true, preservePrevious: true }),
+      )
     : null;
 
   constructor() {
@@ -197,20 +240,55 @@ export class MarketBoard implements OnDestroy {
         this.page.set(1);
         this.category.set('');
         this.result.set(null);
+        this.cacheEntry.set(null);
+        this.resultKey = '';
         this.load();
       });
     });
   }
 
-  load(preserve = false): void {
-    this.refresh?.markRefreshed();
-    if (this.timer) clearTimeout(this.timer);
-    this.request?.unsubscribe();
-    this.loading.set(true);
-    this.error.set('');
+  private boardCacheKey(region: string): string {
+    return [
+      'board',
+      region,
+      this.search().trim(),
+      this.category(),
+      this.serverStockFilter(),
+      this.sort(),
+      this.sortColumn(),
+      this.sortDirection(),
+      this.page(),
+      this.pageSize(),
+    ].join(':');
+  }
 
+  load(options: { forceRefresh?: boolean; preservePrevious?: boolean } = {}): void {
+    if (this.timer) clearTimeout(this.timer);
     const region = this.preferences.region();
-    const queryKey = `board:${region}:${this.search().trim()}:${this.category()}:${this.sort()}:${this.page()}:${this.pageSize()}`;
+    const queryKey = this.boardCacheKey(region);
+    const cached = this.cache.getCachedBoardResponse(queryKey, region);
+    const isFresh = cached !== null && cached.expiresAt > Date.now();
+
+    this.request?.unsubscribe();
+    this.error.set('');
+    if (cached) {
+      this.result.set(cached.response);
+      this.cacheEntry.set(cached);
+      this.resultKey = queryKey;
+    } else if (!options.preservePrevious || this.resultKey !== queryKey) {
+      this.result.set(null);
+      this.cacheEntry.set(null);
+      this.resultKey = '';
+    }
+
+    if (isFresh && !options.forceRefresh) {
+      this.loading.set(false);
+      this.refresh?.markRefreshed();
+      return;
+    }
+
+    this.loading.set(true);
+    this.refresh?.markRefreshed();
 
     this.request = this.api
       .board({
@@ -218,15 +296,21 @@ export class MarketBoard implements OnDestroy {
         q: this.search().trim(),
         categoryId: this.category(),
         sort: this.sort(),
+        direction: this.sortDirection(),
+        stock: this.serverStockFilter(),
         page: this.page(),
         pageSize: this.pageSize(),
       })
       .subscribe({
         next: (response) => {
+          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
           this.refresh?.markRefreshed();
-          this.result.set(response);
-          this.cache.cacheBoardResponse(queryKey, response, region);
           if (response.sort) this.sort.set(response.sort);
+          const responseKey = this.boardCacheKey(region);
+          this.result.set(response);
+          this.cache.cacheBoardResponse(responseKey, response, region);
+          this.cacheEntry.set(this.cache.getCachedBoardResponse(responseKey, region));
+          this.resultKey = responseKey;
           this.loading.set(false);
           if (this.page() > this.pageCount()) {
             this.page.set(this.pageCount());
@@ -234,7 +318,11 @@ export class MarketBoard implements OnDestroy {
           }
         },
         error: () => {
-          if (!preserve) this.result.set(null);
+          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
+          if (!cached && this.resultKey !== queryKey) {
+            this.result.set(null);
+            this.cacheEntry.set(null);
+          }
           this.loading.set(false);
           this.error.set('Não foi possível carregar o mercado. Tente novamente.');
         },
@@ -243,13 +331,34 @@ export class MarketBoard implements OnDestroy {
 
   find(value: string): void {
     this.search.set(value.slice(0, 80));
-    if (this.fullCatalog()) this.sort.set('name');
-    else this.sort.set('hot');
+    if (this.fullCatalog()) {
+      this.sort.set('name');
+      this.sortColumn.set('name');
+      this.sortDirection.set('asc');
+    } else {
+      this.sort.set('hot');
+      this.sortColumn.set('hot');
+      this.sortDirection.set('desc');
+    }
     this.page.set(1);
     this.request?.unsubscribe();
-    this.loading.set(true);
+    const region = this.preferences.region();
+    const key = this.boardCacheKey(region);
+    const cached = this.cache.getCachedBoardResponse(key, region);
+    if (cached) {
+      this.result.set(cached.response);
+      this.cacheEntry.set(cached);
+      this.resultKey = key;
+      this.loading.set(cached.expiresAt <= Date.now());
+    } else {
+      this.result.set(null);
+      this.cacheEntry.set(null);
+      this.resultKey = '';
+      this.loading.set(true);
+    }
+    this.error.set('');
     if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.load(), 300);
+    this.timer = setTimeout(() => this.load(), 250);
   }
 
   clearSearch(): void {
@@ -258,28 +367,28 @@ export class MarketBoard implements OnDestroy {
 
   filterCategory(value: string): void {
     this.category.set(value);
-    this.sort.set(this.fullCatalog() ? 'name' : 'hot');
+    const nextSort = this.fullCatalog() ? 'name' : 'hot';
+    this.sort.set(nextSort);
+    this.sortColumn.set(nextSort);
+    this.sortDirection.set(nextSort === 'name' ? 'asc' : 'desc');
     this.page.set(1);
     this.load();
   }
 
   setStockFilter(filter: StockFilterType): void {
+    const before = this.serverStockFilter();
     this.stockFilter.set(filter);
+    // Stock filters on the hot board are resolved by the API over the whole list.
+    if (before !== this.serverStockFilter()) {
+      this.page.set(1);
+      this.load({ preservePrevious: true });
+    }
   }
 
   setPageSize(value: string): void {
     const size = Number(value);
     if (size !== 20 && size !== 50 && size !== 100) return;
     this.pageSize.set(size);
-    this.page.set(1);
-    this.load();
-  }
-
-  setSort(value: string): void {
-    if (!['hot', 'price', 'stock', 'name'].includes(value)) return;
-    this.sort.set(value as MarketBoardSort);
-    this.sortColumn.set(value);
-    this.sortDirection.set(value === 'name' ? 'asc' : 'desc');
     this.page.set(1);
     this.load();
   }
@@ -292,10 +401,30 @@ export class MarketBoard implements OnDestroy {
       this.sortDirection.set(column === 'name' ? 'asc' : 'desc');
     }
 
-    // Sync with backend if it's a backend-supported sort
-    if (['hot', 'price', 'stock', 'name'].includes(column)) {
+    if (!this.fullCatalog() && MarketBoard.SERVER_SORT_COLUMNS.includes(column)) {
+      // The API orders the complete hot list before paginating.
       this.sort.set(column as MarketBoardSort);
+      this.page.set(1);
+      this.load({ preservePrevious: true });
+      return;
     }
+
+    // Other columns reorder the rows already on screen; reuse the cached page under the new key.
+    const current = this.result();
+    if (current) {
+      const region = this.preferences.region();
+      const queryKey = this.boardCacheKey(region);
+      const source = this.cache.getCachedBoardResponse(this.resultKey, region);
+      if (source) {
+        this.cache.cacheBoardAlias(queryKey, source);
+        this.cacheEntry.set(this.cache.getCachedBoardResponse(queryKey, region));
+        this.resultKey = queryKey;
+      }
+    }
+  }
+
+  refreshBoard(): void {
+    this.load({ forceRefresh: true, preservePrevious: true });
   }
 
   calculateTrendPercent(item: MarketBoardItem): number | null {

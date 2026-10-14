@@ -10,6 +10,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { availableInventory, type PersonalPlan, personalPlanSchema } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -19,7 +22,7 @@ import { silver } from '../../shared/formatters';
 @Component({
   selector: 'app-plans-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CatalogItemPicker],
+  imports: [HlmInput, HlmCard, HlmButton, FormsModule, CatalogItemPicker],
   templateUrl: './plans-page.html',
 })
 export class PlansPage {

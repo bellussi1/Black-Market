@@ -7,14 +7,14 @@
       explore os cálculos usando esses dados.
     </p>
   </header>
-  <section class="panel">
+  <section hlmCard class="panel">
     <h2 i18n>1. Preparar o exemplo</h2>
     <p i18n>
       Os itens vêm do catálogo da região. Saldos, preços, resultados de atividades e atributos são
       simulados. O exemplo fica apenas nesta sessão, sem substituir seus dados ou sincronizar com
       sua conta.
     </p>
-    <button class="btn" (click)="prepare()" [disabled]="loading()" i18n>
+    <button hlmBtn variant="outline" class="btn" (click)="prepare()" [disabled]="loading()" i18n>
       Preparar demonstração
     </button>
     @if (loading()) {
@@ -25,7 +25,7 @@
     }
   </section>
   @if (draft(); as data) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>2. Confira a família e o personagem</h2>
       <p i18n>
         Valores de PA e PD representam uma ficha simulada e não são recalculados pelos equipamentos.
@@ -35,17 +35,23 @@
         <label class="field"
           ><span i18n>Família</span
           ><input
+            hlmInput
             [(ngModel)]="data.characters[0].familyName"
             (ngModelChange)="edited()"
             maxlength="80"
         /></label>
         <label class="field"
           ><span i18n>Personagem</span
-          ><input [(ngModel)]="data.characters[0].name" (ngModelChange)="edited()" maxlength="80"
+          ><input
+            hlmInput
+            [(ngModel)]="data.characters[0].name"
+            (ngModelChange)="edited()"
+            maxlength="80"
         /></label>
         <label class="field"
           ><span i18n>Classe</span
           ><input
+            hlmInput
             [(ngModel)]="data.characters[0].className"
             (ngModelChange)="edited()"
             maxlength="40"
@@ -53,6 +59,7 @@
         <label class="field"
           ><span i18n>Nível</span
           ><input
+            hlmInput
             type="number"
             min="1"
             max="100"
@@ -62,17 +69,23 @@
         <label class="field"
           ><span i18n>Prata do personagem</span
           ><input
+            hlmInput
             inputmode="numeric"
             [(ngModel)]="data.characters[0].silver"
             (ngModelChange)="edited()"
         /></label>
         <label class="field"
           ><span i18n>Prata compartilhada da família</span
-          ><input inputmode="numeric" [(ngModel)]="data.familySilver" (ngModelChange)="edited()"
+          ><input
+            hlmInput
+            inputmode="numeric"
+            [(ngModel)]="data.familySilver"
+            (ngModelChange)="edited()"
         /></label>
         <label class="field"
           ><span i18n>PA principal</span
           ><input
+            hlmInput
             type="number"
             min="0"
             [(ngModel)]="data.characters[0].mainAp"
@@ -81,6 +94,7 @@
         <label class="field"
           ><span i18n>PA de despertar</span
           ><input
+            hlmInput
             type="number"
             min="0"
             [(ngModel)]="data.characters[0].awakeAp"
@@ -89,6 +103,7 @@
         <label class="field"
           ><span i18n>PD</span
           ><input
+            hlmInput
             type="number"
             min="0"
             [(ngModel)]="data.characters[0].dp"
@@ -97,6 +112,7 @@
         <label class="field"
           ><span i18n>Energia</span
           ><input
+            hlmInput
             type="number"
             min="0"
             [(ngModel)]="data.characters[0].energy"
@@ -105,6 +121,7 @@
         <label class="field"
           ><span i18n>Contribuição</span
           ><input
+            hlmInput
             type="number"
             min="0"
             [(ngModel)]="data.characters[0].contribution"
@@ -125,6 +142,7 @@
             ><label
               ><span i18n>Nível de aprimoramento</span
               ><input
+                hlmInput
                 type="number"
                 min="0"
                 max="30"
@@ -137,6 +155,7 @@
           <label class="field"
             ><span>{{ skillLabels[skill] }}</span
             ><input
+              hlmInput
               type="number"
               min="0"
               max="5000"
@@ -146,7 +165,7 @@
         }
       </details>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>Materiais identificados</h2>
       <p i18n>
         Confira as quantidades por local. Os preços abaixo são exemplos, não cotações atuais.
@@ -172,6 +191,7 @@
                 <td>{{ row.location }}</td>
                 <td>
                   <input
+                    hlmInput
                     [attr.aria-label]="'Quantidade de ' + row.name + ' em ' + row.location"
                     type="number"
                     min="0"
@@ -187,7 +207,7 @@
         </table>
       </div>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2 i18n>3. Importar e explorar</h2>
       <label
         ><input type="checkbox" [(ngModel)]="confirmed" /><span i18n
@@ -195,7 +215,14 @@
         ></label
       >
       <div class="action-row">
-        <button class="btn" [disabled]="!confirmed" (click)="confirm()" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn"
+          [disabled]="!confirmed"
+          (click)="confirm()"
+          i18n
+        >
           Importar demonstração</button
         ><a routerLink="/" i18n>Voltar ao início</a>
       </div>

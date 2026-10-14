@@ -9,9 +9,13 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import type { CharacterProfile } from '@bdo/calculators';
+import { type CharacterProfile, characterSchema } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import type { Crop } from './print-reader';
 import { applyProfileFieldCandidates } from './profile-field-application';
 import {
@@ -123,7 +127,7 @@ function dedupeCandidates(candidates: readonly ScreenFieldCandidate[]): ScreenFi
 @Component({
   selector: 'app-profile-screen-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './profile-screen-import.html',
   styleUrl: './profile-screen-import.scss',
 })
@@ -149,7 +153,47 @@ export class ProfileScreenImportComponent implements OnDestroy {
   readonly candidates = signal<ScreenFieldCandidate[]>([]);
   readonly selectedFields = signal<string[]>([]);
   readonly manualField = signal('');
-  readonly targetId = signal('');
+  readonly targetId = signal(this.store.data().activeCharacterId ?? '');
+  selectValidFields(): void {
+    this.selectedFields.set(
+      this.candidates()
+        .filter(
+          (candidate) =>
+            this.canEdit(candidate) &&
+            this.canSelect(candidate) &&
+            candidate.status === 'candidate',
+        )
+        .map((candidate) => candidate.field),
+    );
+  }
+  readonly newCharacterName = signal('');
+  createTarget(): void {
+    const name = this.newCharacterName().trim();
+    if (!name) {
+      this.message.set('Informe o nome do personagem.');
+      return;
+    }
+    const parsed = characterSchema.safeParse({
+      id: crypto.randomUUID(),
+      name,
+      region: this.store.data().region,
+    });
+    if (!parsed.success) {
+      this.message.set('Confira o nome do personagem.');
+      return;
+    }
+    if (
+      this.store.update((state) => ({
+        ...state,
+        characters: [...state.characters, parsed.data],
+        activeCharacterId: state.activeCharacterId || parsed.data.id,
+      }))
+    ) {
+      this.targetId.set(parsed.data.id);
+      this.newCharacterName.set('');
+      this.message.set('Personagem criado. Selecione os campos revisados e confirme a importação.');
+    }
+  }
   readonly kindOptions = kinds;
   readonly manualFields = manualFieldOptions;
   readonly labels = fieldLabels;
@@ -162,7 +206,7 @@ export class ProfileScreenImportComponent implements OnDestroy {
     return this.characters().find((character) => character.id === this.targetId()) ?? null;
   }
 
-  async chooseFile(event: Event): Promise<void> {
+  async chooseFile(event: Event, recognizedLines?: OcrTextLine[]): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -190,21 +234,23 @@ export class ProfileScreenImportComponent implements OnDestroy {
       this.imageName.set(file.name);
       this.imageSize.set({ width: bitmap.width, height: bitmap.height });
       this.message.set('Imagem pronta. Leia a tela para revisar os campos encontrados.');
-      await this.readImage(generation);
+      await this.readImage(generation, recognizedLines);
     } catch {
       if (generation === this.generation) this.message.set('Não foi possível abrir esta imagem.');
     }
   }
 
-  private async readImage(generation: number): Promise<void> {
+  private async readImage(generation: number, recognizedLines?: OcrTextLine[]): Promise<void> {
     if (!this.bitmap) return;
     this.reading.set(true);
     this.progress.set(0);
     this.message.set('Lendo texto localmente…');
     try {
-      const lines = await this.reader.read(this.bitmap, (value) => {
-        if (generation === this.generation) this.progress.set(value);
-      });
+      const lines =
+        recognizedLines ??
+        (await this.reader.read(this.bitmap, (value) => {
+          if (generation === this.generation) this.progress.set(value);
+        }));
       if (generation !== this.generation) return;
       this.lines.set(lines);
       const panes = detectScreenPanes(lines, this.imageSize().width, this.imageSize().height);

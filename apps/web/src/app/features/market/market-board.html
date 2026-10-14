@@ -18,6 +18,7 @@
       <label class="mobile-category"
         >Categoria
         <select
+          appBdoSelect
           aria-label="Categoria do mercado"
           [ngModel]="category()"
           (ngModelChange)="filterCategory($event)"
@@ -34,12 +35,20 @@
         </select>
       </label>
       <h3>Categorias</h3>
-      <button type="button" [attr.aria-pressed]="!category()" (click)="filterCategory('')">
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        [attr.aria-pressed]="!category()"
+        (click)="filterCategory('')"
+      >
         {{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}
       </button>
       <div class="category-list">
         @for (entry of categoryRoots(); track entry.id) {
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             [class.subcategory]="!!entry.parentId"
             [attr.aria-pressed]="category() === entry.id"
@@ -50,6 +59,8 @@
           @if (selectedCategoryParent() === entry.id) {
             @for (child of childrenOf(entry.id); track child.id) {
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="subcategory"
                 [attr.aria-pressed]="category() === child.id"
@@ -72,6 +83,7 @@
             <span>Buscar no mercado</span>
             <div class="search-input-wrap">
               <input
+                hlmInput
                 type="search"
                 placeholder="Nome ou código do item"
                 maxlength="80"
@@ -80,6 +92,8 @@
               />
               @if (search()) {
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="btn-clear-search"
                   (click)="clearSearch()"
@@ -95,6 +109,8 @@
         <div class="board-filters-group">
           <div class="filter-pills" role="radiogroup" aria-label="Filtro rápido de estoque">
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'all'"
@@ -103,6 +119,8 @@
               Todos
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'in_stock'"
@@ -111,6 +129,8 @@
               Com estoque
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'out_of_stock'"
@@ -119,6 +139,8 @@
               Estoque zerado
             </button>
             <button
+              hlmBtn
+              variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'with_volume'"
@@ -128,20 +150,12 @@
             </button>
           </div>
 
-          <label class="sort-select-wrap">
-            <span>Ordenar por</span>
-            <select [ngModel]="sort()" (ngModelChange)="setSort($event)">
-              <option value="hot" [disabled]="fullCatalog()">Em alta</option>
-              <option value="price" [disabled]="fullCatalog()">Menor preço</option>
-              <option value="stock" [disabled]="fullCatalog()">Maior estoque</option>
-              <option value="name">Nome do item</option>
-            </select>
-          </label>
-
           <button
+            hlmBtn
+            variant="outline"
             type="button"
             class="btn-refresh-market"
-            (click)="load()"
+            (click)="refreshBoard()"
             [disabled]="loading()"
             aria-label="Atualizar cotações do mercado"
           >
@@ -154,7 +168,9 @@
         <span class="summary-total">
           {{
             loading()
-              ? 'Carregando mercado…'
+              ? cacheEntry()
+                ? 'Atualizando cotações em segundo plano…'
+                : 'Carregando mercado…'
               : number(result()?.total, 0) +
                 (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
           }}
@@ -163,7 +179,21 @@
               ({{ displayItems().length }} visíveis no filtro)
             </span>
           }
+          @if (pageOnlyOrdering()) {
+            <span class="summary-filtered-count">
+              · ordenação/filtro aplicado aos itens visíveis desta página
+            </span>
+          }
         </span>
+        @if (cacheEntry()) {
+          <span class="summary-timestamp">
+            {{ loading() ? 'Atualizando · dados locais de' : 'Cache local de' }}
+            {{ cacheTimestamp() }}
+            @if (cachedEntryStale()) {
+              <span class="cache-stale-label"> · desatualizado</span>
+            }
+          </span>
+        }
         @if (result(); as response) {
           <span class="summary-timestamp">
             {{
@@ -180,7 +210,10 @@
 
       @if (error()) {
         <p role="alert" class="error-box">
-          {{ error() }} <button type="button" (click)="load()">Tentar novamente</button>
+          {{ error() }}
+          <button hlmBtn variant="outline" type="button" (click)="refreshBoard()">
+            Tentar novamente
+          </button>
         </p>
       }
 
@@ -216,7 +249,13 @@
                     : 'none'
                 "
               >
-                <button type="button" class="col-sort-btn" (click)="toggleColumnSort('name')">
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="col-sort-btn"
+                  (click)="toggleColumnSort('name')"
+                >
                   <span>Item</span>
                   <span class="sort-arrow" [class.active]="sortColumn() === 'name'">
                     {{ sortColumn() === 'name' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
@@ -227,7 +266,7 @@
                 scope="col"
                 class="numeric"
                 [attr.aria-sort]="
-                  sortColumn() === 'price'
+                  sortColumn() === 'meanPrice'
                     ? sortDirection() === 'asc'
                       ? 'ascending'
                       : 'descending'
@@ -235,24 +274,19 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
-                  (click)="toggleColumnSort('price')"
+                  (click)="toggleColumnSort('meanPrice')"
                 >
-                  <span
-                    >Preço atual<br /><abbr
-                      title="Média aritmética das cotações observadas nos últimos 30 dias"
-                      >Média 30d</abbr
-                    ></span
-                  >
-                  <span class="sort-arrow" [class.active]="sortColumn() === 'price'">
-                    {{ sortColumn() === 'price' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
+                  <span>Preço médio · 30d</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'meanPrice'">
+                    {{
+                      sortColumn() === 'meanPrice' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
+                    }}
                   </span>
                 </button>
-              </th>
-              <th scope="col" class="numeric price-limits-th">
-                <abbr title="Preço máximo permitido pelo mercado">Topo</abbr><br />
-                <abbr title="Preço mínimo permitido pelo mercado">Bottom</abbr>
               </th>
               <th
                 scope="col"
@@ -266,6 +300,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('stock')"
@@ -288,6 +324,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume24h')"
@@ -312,6 +350,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume15d')"
@@ -336,6 +376,8 @@
                 "
               >
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
                   (click)="toggleColumnSort('volume30d')"
@@ -353,120 +395,92 @@
           <tbody>
             @for (item of displayItems(); track item.itemId + ':' + item.subId) {
               <tr class="board-row">
-                <th scope="row">
+                <td colspan="6" class="board-row-cell">
                   <button
+                    hlmBtn
+                    variant="outline"
                     type="button"
-                    class="board-item"
+                    class="board-item board-full-row"
                     (click)="selected.emit(item)"
                     [attr.aria-label]="
                       'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
                     "
                   >
-                    <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
-                    <span class="item-meta">
-                      <strong>{{ item.name }}</strong>
-                      <small>
-                        {{ item.categories[0]?.name ?? 'Mercado Central' }}
-                        @if (item.quoteScope === 'summary') {
-                          ·
-                          {{
-                            item.marketAvailable === false ? 'Sem cotação' : 'Resumo das variantes'
-                          }}
-                        } @else if (item.subId) {
-                          · Variante {{ item.subId }}
-                        }
-                      </small>
+                    <span class="board-identity">
+                      <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                      <span class="item-meta">
+                        <strong>{{ item.name }}</strong>
+                        <small>
+                          {{ item.categories[0]?.name ?? 'Mercado Central' }}
+                          @if (item.quoteScope === 'summary') {
+                            ·
+                            {{
+                              item.marketAvailable === false
+                                ? 'Sem cotação'
+                                : 'Resumo das variantes'
+                            }}
+                          } @else if (item.subId) {
+                            · Variante {{ item.subId }}
+                          }
+                        </small>
+                      </span>
+                    </span>
+                    <span class="numeric col-price">
+                      <span
+                        class="mean-price"
+                        [attr.title]="
+                          item.meanPrice === null
+                            ? 'Histórico insuficiente para a média de 30 dias'
+                            : item.observationCount + ' observações de preço'
+                        "
+                        >{{ silver(item.meanPrice) }}</span
+                      >
+                    </span>
+                    <span class="numeric col-stock">
+                      @if (item.stock === null) {
+                        —
+                      } @else if (item.stock === 0) {
+                        <span class="stock-badge stock-zero">0 un (Zerado)</span>
+                      } @else {
+                        {{ number(item.stock, 0) }}
+                      }
+                    </span>
+                    <span
+                      class="numeric col-volume"
+                      [attr.title]="
+                        item.volume24h === null
+                          ? 'Histórico insuficiente para 24 horas'
+                          : 'Unidades negociadas em 24 horas'
+                      "
+                    >
+                      {{ silver(item.volume24h) }}
+                    </span>
+                    <span
+                      class="numeric col-volume"
+                      [attr.title]="
+                        item.volume15d === null
+                          ? 'Histórico insuficiente para 15 dias'
+                          : 'Unidades negociadas em 15 dias'
+                      "
+                    >
+                      {{ silver(item.volume15d) }}
+                    </span>
+                    <span
+                      class="numeric col-volume"
+                      [attr.title]="
+                        item.volume30d === null
+                          ? 'Histórico insuficiente para 30 dias'
+                          : 'Unidades negociadas em 30 dias'
+                      "
+                    >
+                      {{ silver(item.volume30d) }}
                     </span>
                   </button>
-                </th>
-                <td class="numeric col-price">
-                  <span class="current-price">{{ silver(item.price) }}</span>
-                  <small
-                    class="secondary-price"
-                    [attr.title]="
-                      item.meanPrice === null
-                        ? 'Histórico insuficiente para a média'
-                        : item.observationCount + ' observações de preço'
-                    "
-                  >
-                    Média {{ silver(item.meanPrice) }}
-                  </small>
-                  @if (calculateTrend(item); as trend) {
-                    <span
-                      class="trend-badge"
-                      [class.trend-up]="trend.direction === 'up'"
-                      [class.trend-down]="trend.direction === 'down'"
-                      [class.trend-flat]="trend.direction === 'flat'"
-                      [attr.title]="'Variação em relação à média dos últimos 30 dias'"
-                    >
-                      {{ trend.label }}
-                    </span>
-                  }
-                </td>
-                <td class="numeric price-limits">
-                  @if (item.minPrice !== null || item.maxPrice !== null) {
-                    <span><small>Topo</small> {{ silver(item.maxPrice) }}</span>
-                    <span><small>Bottom</small> {{ silver(item.minPrice) }}</span>
-                    @if (calculatePricePosition(item); as pos) {
-                      <div
-                        class="price-meter"
-                        [attr.title]="
-                          'Posição no limite de mercado: ' + pos.percent + '% entre Bottom e Topo'
-                        "
-                      >
-                        <div class="meter-bar">
-                          <div class="meter-fill" [style.width.%]="pos.percent"></div>
-                          <div class="meter-point" [style.left.%]="pos.percent"></div>
-                        </div>
-                      </div>
-                    }
-                  } @else {
-                    —
-                  }
-                </td>
-                <td class="numeric col-stock">
-                  @if (item.stock === null) {
-                    —
-                  } @else if (item.stock === 0) {
-                    <span class="stock-badge stock-zero">0 un (Zerado)</span>
-                  } @else {
-                    {{ number(item.stock, 0) }}
-                  }
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume24h === null
-                      ? 'Histórico insuficiente para 24 horas'
-                      : 'Unidades negociadas em 24 horas'
-                  "
-                >
-                  {{ silver(item.volume24h) }}
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume15d === null
-                      ? 'Histórico insuficiente para 15 dias'
-                      : 'Unidades negociadas em 15 dias'
-                  "
-                >
-                  {{ silver(item.volume15d) }}
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume30d === null
-                      ? 'Histórico insuficiente para 30 dias'
-                      : 'Unidades negociadas em 30 dias'
-                  "
-                >
-                  {{ silver(item.volume30d) }}
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="board-empty">
+                <td colspan="6" class="board-empty">
                   {{
                     loading()
                       ? 'Consultando mercado…'
@@ -485,6 +499,7 @@
         <label
           >Itens por página
           <select
+            appBdoSelect
             aria-label="Itens por página"
             [ngModel]="pageSize()"
             (ngModelChange)="setPageSize($event)"
@@ -495,10 +510,22 @@
           </select></label
         >
         <div>
-          <button type="button" (click)="move(-1)" [disabled]="loading() || page() === 1">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="move(-1)"
+            [disabled]="loading() || page() === 1"
+          >
             Anterior</button
           ><span>{{ page() }} / {{ pageCount() }}</span
-          ><button type="button" (click)="move(1)" [disabled]="loading() || page() >= pageCount()">
+          ><button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="move(1)"
+            [disabled]="loading() || page() >= pageCount()"
+          >
             Próxima
           </button>
         </div>
@@ -507,9 +534,9 @@
         Consulta e cache automáticos em background. Clicar no cabeçalho das colunas ordena a
         visualização. A fonte mantém cache de até
         {{ result()?.upstreamCacheMinutes ?? 30 }} minutos. Resumos agregam variantes; selecione um
-        item para suas cotações individuais. Preços em prata por unidade. Topo e bottom são os
-        limites permitidos pelo mercado. Média de cotações observadas em 30 dias; volumes exigem
-        histórico completo do período. <strong>—</strong> indica dado ainda indisponível.
+        item para suas cotações individuais. Preços médios em prata por unidade. Média de cotações
+        observadas em 30 dias; volumes exigem histórico completo do período.
+        <strong>—</strong> indica dado ainda indisponível.
       </p>
     </div>
   </div>

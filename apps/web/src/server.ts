@@ -198,7 +198,7 @@ app.get('/sobre/', (_req, res, next) => {
   void readFile(join(browserDistFolder, 'sobre', 'index.html'), 'utf8')
     .then((html) => {
       const description =
-        'Conheça o Black Market: ferramentas de Black Desert para SA, fontes dos dados e importação em português brasileiro.';
+        'Conheça o Black Market: ferramentas de Black Desert para organizar materiais e planejar atividades em português brasileiro.';
       const publicUrl = process.env['PUBLIC_SITE_URL'];
       let metadata =
         `<meta name="description" content="${description}" />` +
@@ -257,7 +257,7 @@ app.get('/sobre/index.html', (_req, res) => res.redirect(308, '/sobre'));
 async function sitemapResponse(path: string, res: express.Response) {
   try {
     const response = await fetch(
-      (process.env['API_BASE_URL'] ?? 'http://localhost:3000') + '/api/v1/catalog/' + path,
+      (process.env['API_BASE_URL'] ?? 'http://localhost:3001') + '/api/v1/catalog/' + path,
       { signal: AbortSignal.timeout(8000) },
     );
     if (!response.ok) {

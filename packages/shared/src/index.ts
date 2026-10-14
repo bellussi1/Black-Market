@@ -8,6 +8,7 @@ export * from './life-skills';
 export * from './market-board';
 export * from './markets';
 export * from './platform';
+export * from './roadmap';
 
 export interface CursorPage<T> {
   items: T[];
@@ -79,7 +80,7 @@ export interface CatalogRecipe {
 export interface CatalogRecipesResponse {
   recipes: CatalogRecipe[];
   total: number;
-  direction: 'produces' | 'uses';
+  direction: 'produces' | 'uses' | 'byproducts';
   dataset: ActiveDatasetSummary | null;
   page?: number;
   pageSize?: number;
@@ -104,6 +105,34 @@ export interface RecipeListResponse {
   total: number;
   page: number;
   pageSize: number;
+  dataset: ActiveDatasetSummary | null;
+}
+
+/** NPC purchase prices extracted from the active catalog item data. */
+export interface NpcPurchasePrice {
+  itemId: number;
+  unitPrice: string;
+  vendor: string;
+  verifiedAt: string;
+}
+
+export interface NpcPurchasePricesResponse {
+  prices: NpcPurchasePrice[];
+  dataset: ActiveDatasetSummary | null;
+}
+
+/** A data-derived marketable form for a recipe material that cannot be bought directly. */
+export interface RecipeMarketEquivalent {
+  sourceItemId: number;
+  itemId: number;
+  name: string;
+  iconUrl: string | null;
+  /** Number of equivalent market units required for one unit of the recipe material. */
+  quantityRatio: number;
+}
+
+export interface RecipeMarketEquivalentsResponse {
+  equivalents: RecipeMarketEquivalent[];
   dataset: ActiveDatasetSummary | null;
 }
 

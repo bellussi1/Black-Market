@@ -11,3 +11,19 @@
 @use 'styles/guided';
 @use 'styles/workstation';
 @use 'styles/responsive';
+/* Interactive controls expose their action consistently across the application. */
+:where(
+    a[href],
+    button,
+    summary,
+    select,
+    [role='button'],
+    [role='tab'],
+    input[type='checkbox'],
+    input[type='radio'],
+    input[type='range'],
+    label:has(input[type='checkbox']),
+    label:has(input[type='radio'])
+  ):not(:disabled):not([aria-disabled='true']) {
+  cursor: pointer;
+}

@@ -15,8 +15,9 @@
 </div>
 <p class="help" i18n>
   Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços
-  entre níveis. Role para ampliar. Arraste para navegar. Clique em um item para abrir ou recolher
-  suas dependências. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+  entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os
+  botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a
+  árvore.
 </p>
 @if (layout().truncated) {
   <p role="status" i18n>
@@ -71,8 +72,7 @@
           class="node-select"
           [attr.aria-pressed]="selection() === entry.node.path"
           (focus)="focusNode(entry.node.path)"
-          [attr.aria-label]="'Explorar ' + entry.node.part.name"
-          [attr.aria-expanded]="entry.node.expanded"
+          [attr.aria-label]="'Selecionar ' + entry.node.part.name"
           (click)="activate(entry.node)"
         >
           <app-item-icon
@@ -95,6 +95,25 @@
               entry.node.part.name
             }}</strong></span
           >
+        </button>
+        <button
+          type="button"
+          class="node-details"
+          [attr.aria-label]="'Ver detalhes de ' + entry.node.part.name"
+          (click)="emit(entry.node.path, 'source')"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v6M12 7v1" />
+          </svg>
         </button>
         @if (allocation(entry.node.path); as row) {
           <p>
@@ -131,27 +150,13 @@
           </label>
         }
         @if ((entry.node.substitutions?.length ?? 0) > 1) {
-          <label class="node-variant"
-            >Ingrediente equivalente
-            <select
-              [attr.aria-label]="'Substituir ' + entry.node.part.name"
-              [value]="substitutionKey(entry.node)"
-              (change)="
-                chooseRecipe(
-                  parentPath(entry.node.path),
-                  $any($event.target).value,
-                  entry.node.path
-                )
-              "
-            >
-              @for (choice of entry.node.substitutions; track choice.recipeKey) {
-                <option [value]="choice.recipeKey">
-                  {{ choice.part.name }} ×
-                  {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
-                </option>
-              }
-            </select>
-          </label>
+          <app-recipe-ingredient-alternatives
+            class="node-variant"
+            [choices]="entry.node.substitutions ?? []"
+            [selectedKey]="substitutionKey(entry.node)"
+            [groupName]="'ingredient-alternative-' + entry.node.path"
+            (choiceSelected)="chooseRecipe(parentPath(entry.node.path), $event, entry.node.path)"
+          />
         }
         @if (batches(entry.node).length > 1) {
           <label class="node-variant"
@@ -172,15 +177,9 @@
             </select>
           </label>
         }
-        <button
-          type="button"
-          class="node-details"
-          [attr.aria-label]="'Detalhes de ' + entry.node.part.name"
-          (click)="emit(entry.node.path, 'source')"
-          i18n
-        >
-          Detalhes e origens
-        </button>
+        @if (entry.node.message) {
+          <span class="node-message" role="status">{{ entry.node.message }}</span>
+        }
         <button
           type="button"
           class="expand-node"
@@ -199,9 +198,6 @@
                   : '+ Explorar produção'
           }}
         </button>
-        @if (entry.node.message) {
-          <span class="node-message" role="status">{{ entry.node.message }}</span>
-        }
       </article>
     }
     @for (entry of layout().sources; track entry.path) {

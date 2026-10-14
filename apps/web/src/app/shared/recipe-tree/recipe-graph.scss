@@ -80,6 +80,7 @@
   width: 248px;
   min-height: 200px;
   height: auto;
+  padding: 2px;
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
   box-shadow: 0 2px 6px #0003;
@@ -207,6 +208,9 @@ svg.source-symbol {
   overflow-wrap: anywhere;
 }
 .node-details {
+  position: absolute;
+  top: 6px;
+  right: 6px;
   margin: auto 12px 6px;
   text-align: left;
   min-height: 32px;
@@ -220,6 +224,8 @@ svg.source-symbol {
   text-underline-offset: 3px;
 }
 .expand-node {
+  margin-top: auto;
+  flex-shrink: 0;
   min-height: 40px;
   padding: 6px 12px;
   font-size: 13px;
@@ -285,4 +291,22 @@ button:focus-visible {
   .node-details {
     min-height: 44px;
   }
+}
+
+.node-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+  color: var(--bm-accent);
+  cursor: pointer;
+}
+
+.graph-node .node-select {
+  padding-right: 40px;
 }

@@ -6,11 +6,13 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 
 ## Relatórios e cobertura
 
-| Relatório                                                | Cobertura declarada                                                                            |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [BDO Codex e Black Desert Foundry](codex-foundry.md)     | 35 páginas Codex e 18 Foundry; 460 URLs Codex e 277 links internos Foundry descobertos no HTML |
-| [BDOLytics e BDO Workshop](lytics-workshop.md)           | Cerca de 35 rotas Workshop; shell atual e páginas/indexação BDOLytics distinguidos             |
-| [Garmoth, Workerman e Arsha](garmoth-workerman-arsha.md) | Nove páginas Garmoth; aplicação/código Workerman; documentação e código Arsha                  |
+| Documento                                                                 | Cobertura                                                                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [Estado implementado e lacunas verificadas](implementation-gap-matrix.md) | Checkout de 10/10/2026, capacidades consumidas, lacunas, dados necessários e limites de confiança |
+| [BDO Codex e Black Desert Foundry](codex-foundry.md)                      | 35 páginas Codex e 18 Foundry; 460 URLs Codex e 277 links internos Foundry descobertos no HTML    |
+| [BDOLytics e BDO Workshop](lytics-workshop.md)                            | Cerca de 35 rotas Workshop; shell atual e páginas/indexação BDOLytics distinguidos                |
+| [Garmoth, Workerman e Arsha](garmoth-workerman-arsha.md)                  | Nove páginas Garmoth; aplicação/código Workerman; documentação e código Arsha                     |
+| [Política de fonte do mercado](market-source-policy.md)                   | Fonte manual aprovada; Arsha candidato não aprovado; controles e critérios para habilitar coleta  |
 
 Essas contagens não representam todas as rotas possíveis. Cada site tem entidades, filtros, idiomas e paginações que multiplicam URLs. Áreas autenticadas, respostas apenas com shell JavaScript, páginas indisponíveis e bloqueios estão registrados nos relatórios. Não é correto apresentar a pesquisa como uma cópia integral das bases dos concorrentes.
 

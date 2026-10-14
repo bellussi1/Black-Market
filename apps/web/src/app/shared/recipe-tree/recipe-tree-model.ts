@@ -6,12 +6,14 @@ import type { Workspace } from '../../core/workspace-models';
 import { validationMessage } from '../calculation-feedback';
 import { ingredientAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
+import { recipeOutputQuantityWithoutMastery } from './recipe-yield';
 export interface RecipeNode {
   path: string;
   part: CatalogRecipePart;
   recipe: CatalogRecipe | null;
   yield: number | null;
   expanded: boolean;
+  useRareProcs: boolean;
   children: RecipeNode[];
   options: CatalogRecipe[];
   loading: boolean;
@@ -27,6 +29,7 @@ export function nodeFor(part: CatalogRecipePart, path: string): RecipeNode {
     recipe: null,
     yield: null,
     expanded: false,
+    useRareProcs: false,
     children: [],
     options: [],
     loading: false,
@@ -39,18 +42,13 @@ export function withRecipe(
   recipe: CatalogRecipe,
   yieldOverride?: number,
 ): RecipeNode {
-  const out = recipe.outputs.find((p) => p.itemId === node.part.itemId);
   const sourceYield =
-    out?.quantity && Number(out.quantity) > 0
-      ? Number(out.quantity)
-      : fixedRecipeYield(recipe, node.part.itemId);
-  const previousOut = node.recipe?.outputs.find((p) => p.itemId === node.part.itemId);
-  const previousYield =
-    previousOut?.quantity && Number(previousOut.quantity) > 0
-      ? Number(previousOut.quantity)
-      : node.recipe
-        ? fixedRecipeYield(node.recipe, node.part.itemId)
-        : null;
+    fixedRecipeYield(recipe, node.part.itemId) ??
+    recipeOutputQuantityWithoutMastery(recipe, node.part.itemId);
+  const previousYield = node.recipe
+    ? (fixedRecipeYield(node.recipe, node.part.itemId) ??
+      recipeOutputQuantityWithoutMastery(node.recipe, node.part.itemId))
+    : null;
   const preserveYield =
     node.recipe &&
     sourceYield === previousYield &&
@@ -58,6 +56,7 @@ export function withRecipe(
   return {
     ...node,
     recipe,
+    useRareProcs: node.recipe?.key === recipe.key ? node.useRareProcs : false,
     acquisition: undefined,
     yield: yieldOverride ?? (preserveYield ? (node.yield ?? sourceYield) : sourceYield),
     expanded: true,
@@ -103,7 +102,11 @@ export function planRecipeTree(
   root: RecipeNode,
   target: number,
   state: Workspace,
-  options: { excludedLocations?: string[]; prices?: ReadonlyMap<number, string> } = {},
+  options: {
+    excludedLocations?: string[];
+    prices?: ReadonlyMap<number, string>;
+    rootCrafts?: number;
+  } = {},
 ) {
   const recipes: ManualRecipe[] = [],
     warnings: string[] = [];
@@ -227,6 +230,7 @@ export function planRecipeTree(
     const value = calculateProduction({
       recipeId: root.path,
       quantity: target,
+      ...(options.rootCrafts === undefined ? {} : { rootCrafts: options.rootCrafts }),
       recipes,
       inventory,
     });

@@ -1,12 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  alignedIconPixelDistance,
   averageRgb,
   colorDistance,
   type ColorIconIndex,
+  cropCanvas,
+  iconColorSampleCrops,
+  iconColorSampleProfiles,
   iconDetailDistance,
+  iconDetailSampleCrops,
   IconRefiner,
+  quantityRetryScale,
   rankColorSamples,
+  shouldRetryQuantityWithSmoothing,
 } from './print-reader';
 
 const color = (r: number, g: number, b: number) =>
@@ -17,6 +24,58 @@ const entry = (pixels: Uint8Array, ids: number[]) => ({
 });
 
 describe('Color icon comparison', () => {
+  it('adds a shifted lower icon profile to tolerate grid-edge detection drift', () => {
+    const [profile] = iconColorSampleProfiles({ left: 10, top: 20, width: 56, height: 56 }).slice(
+      -1,
+    );
+
+    expect(profile.heightRatio).toBe(0.85);
+    expect(profile.crop.left).toBeCloseTo(10 + 56 * 0.13 + 1);
+    expect(profile.crop.top).toBeCloseTo(20 + 56 * 0.13);
+    expect(profile.crop.width).toBeCloseTo(56 * 0.74);
+    expect(profile.crop.height).toBeCloseTo(56 * 0.74);
+  });
+  it('matches a scaled catalog icon inside the slot while ignoring the quantity overlay', () => {
+    const width = 12;
+    const height = 12;
+    const screen = new Uint8Array(width * height * 4);
+    const icon = new Uint8Array(6 * 6 * 4);
+    const wrongIcon = new Uint8Array(6 * 6 * 4);
+    for (let pixel = 0; pixel < width * height; pixel++) {
+      screen.set([20, 20, 20, 255], pixel * 4);
+    }
+    for (let pixel = 0; pixel < 6 * 6; pixel++) {
+      icon.set([pixel * 5, 80, 200 - pixel * 3, 255], pixel * 4);
+      wrongIcon.set([200 - pixel * 3, 200, pixel * 5, 255], pixel * 4);
+    }
+    for (let y = 0; y < 6; y++) {
+      for (let x = 0; x < 6; x++) {
+        screen.set(
+          icon.subarray((y * 6 + x) * 4, (y * 6 + x + 1) * 4),
+          ((y + 3) * width + x + 3) * 4,
+        );
+      }
+    }
+    for (let y = 9; y < height; y++) {
+      for (let x = 0; x < width; x++) screen.set([255, 255, 255, 255], (y * width + x) * 4);
+    }
+
+    expect(alignedIconPixelDistance(screen, width, height, icon, 6, 6)).toBe(0);
+    expect(alignedIconPixelDistance(screen, width, height, wrongIcon, 6, 6)).toBeGreaterThan(0);
+  });
+  it('samples asymmetric grid insets as well as the centered icon area', () => {
+    const crops = iconColorSampleCrops({ left: 10, top: 20, width: 100, height: 50 });
+
+    expect(crops).toHaveLength(10);
+    expect(crops).toContainEqual({ left: 18, top: 20, width: 92, height: 50 });
+    expect(crops).toContainEqual({ left: 24, top: 27, width: 86, height: 43 });
+  });
+  it('keeps asymmetric slot profiles available to the detail refiner', () => {
+    const crops = iconDetailSampleCrops({ left: 10, top: 20, width: 100, height: 50 });
+
+    expect(crops).toContainEqual({ left: 18, top: 20, width: 92, height: 50 });
+    expect(crops).toContainEqual({ left: 24, top: 27, width: 86, height: 43 });
+  });
   it('ignores the numeric overlay but preserves the lower-left icon shape', () => {
     const source = new Uint8Array(768),
       changed = source.slice();
@@ -56,7 +115,7 @@ describe('Color icon comparison', () => {
     await Promise.resolve();
     expect(bitmap.close).toHaveBeenCalledOnce();
   });
-  it('keeps failed public icon downloads out of confident suggestions', async () => {
+  it('keeps color candidates available when public icon downloads fail', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
       fillRect: vi.fn(),
@@ -64,14 +123,15 @@ describe('Color icon comparison', () => {
       getImageData: () => ({ data: new Uint8Array(64 * 64 * 4) }),
     } as unknown as CanvasRenderingContext2D);
     const refiner = new IconRefiner();
+    const matches = [{ id: 1, distance: 1, sharedIcon: false, colorRank: 1, rankScore: 0.1 }];
     expect(
       await refiner.refine(
         {} as CanvasImageSource,
         { left: 0, top: 0, width: 48, height: 48 },
-        [{ id: 1, distance: 1, sharedIcon: false }],
+        matches,
         () => '/unavailable',
       ),
-    ).toEqual([]);
+    ).toEqual([{ ...matches[0], colorRank: undefined, rankScore: 1, refined: false }]);
     refiner.close();
   });
   it('averages a whole pixel area instead of choosing one aliased thumbnail pixel', () => {
@@ -113,19 +173,125 @@ describe('Color icon comparison', () => {
     expect(result.map((row) => row.id)).toEqual([6201, 6202]);
     expect(result.every((row) => row.sharedIcon)).toBe(true);
   });
+  it('keeps a matching silhouette when color-only ranking would hide it below twelve', () => {
+    const screenshot = new Uint8Array(192);
+    for (let pixel = 0; pixel < 64; pixel++) {
+      const value = 35 + (pixel % 8) * 17 + Math.floor(pixel / 8) * 5;
+      screenshot[pixel * 3] = screenshot[pixel * 3 + 1] = screenshot[pixel * 3 + 2] = value;
+    }
+    const colorDistractors = Array.from({ length: 13 }, (_, i) => {
+      const pixels = screenshot.slice();
+      pixels[((i * 7 + 11) % 64) * 3] = 0;
+      return entry(pixels, [100 + i]);
+    });
+    const sameSilhouette = screenshot.slice();
+    for (let pixel = 0; pixel < 64; pixel++) {
+      sameSilhouette[pixel * 3] += 20;
+      sameSilhouette[pixel * 3 + 1] -= 6;
+      sameSilhouette[pixel * 3 + 2] -= 14;
+    }
+    const result = rankColorSamples([screenshot], {
+      algorithm: 'rgb-top-v2',
+      checksum: 'c'.repeat(64),
+      entries: [...colorDistractors, entry(sameSilhouette, [999])],
+    });
+
+    expect(result.map((row) => row.id)).toContain(999);
+  });
+  it('keeps a matching silhouette beyond the first hundred color candidates', () => {
+    const screenshot = new Uint8Array(192);
+    for (let pixel = 0; pixel < 64; pixel++) {
+      const value = 35 + (pixel % 8) * 17 + Math.floor(pixel / 8) * 5;
+      screenshot[pixel * 3] = screenshot[pixel * 3 + 1] = screenshot[pixel * 3 + 2] = value;
+    }
+    const colorDistractors = Array.from({ length: 101 }, (_, i) => {
+      const pixels = screenshot.slice();
+      pixels.fill(0, (16 + (i % 48)) * 3, (16 + (i % 48)) * 3 + 3);
+      return entry(pixels, [100 + i]);
+    });
+    const sameSilhouette = screenshot.slice();
+    for (let pixel = 0; pixel < 64; pixel++) {
+      sameSilhouette[pixel * 3] += 20;
+      sameSilhouette[pixel * 3 + 1] -= 6;
+      sameSilhouette[pixel * 3 + 2] -= 14;
+    }
+    const result = rankColorSamples([screenshot], {
+      algorithm: 'rgb-top-v2',
+      checksum: 'd'.repeat(64),
+      entries: [...colorDistractors, entry(sameSilhouette, [999])],
+    });
+
+    expect(result.map((row) => row.id)).toContain(999);
+  });
+  it('keeps nearest items available as uncertain suggestions when color distance is outside the cutoff', () => {
+    const screenshot = Uint8Array.from({ length: 192 }, (_, i) => (i * 37 + 13) % 256);
+    const distantIcon = Uint8Array.from(screenshot, (value) => 255 - value);
+    const result = rankColorSamples([screenshot], {
+      algorithm: 'rgb-top-v2',
+      checksum: 'e'.repeat(64),
+      entries: [entry(distantIcon, [999])],
+    });
+
+    expect(colorDistance(screenshot, distantIcon)).toBeGreaterThan(38);
+    expect(result).toEqual([expect.objectContaining({ id: 999, lowColorEvidence: true })]);
+  });
   it('tolerates a small uniform brightness shift without discarding chromatic differences', () => {
     expect(colorDistance(color(160, 40, 40), color(150, 30, 30))).toBeCloseTo(0, 10);
     expect(colorDistance(color(30, 30, 150), color(150, 30, 30))).toBeGreaterThan(38);
     expect(colorDistance(new Uint8Array(1), color(150, 30, 30))).toBe(Infinity);
   });
-  it('compares alternative crop insets and refuses distant or missing candidates', () => {
+  it('compares alternative crop insets and keeps distant suggestions marked as weak', () => {
     const index: ColorIconIndex = {
       algorithm: 'rgb-top-v2',
       checksum: 'b'.repeat(64),
       entries: [entry(color(150, 30, 30), [6201])],
     };
     expect(rankColorSamples([color(30, 30, 150), color(150, 30, 30)], index)[0].id).toBe(6201);
-    expect(rankColorSamples([color(30, 30, 150)], index)).toEqual([]);
+    expect(rankColorSamples([color(30, 30, 150)], index)[0]).toMatchObject({
+      id: 6201,
+      lowColorEvidence: true,
+    });
     expect(rankColorSamples([], index)).toEqual([]);
+  });
+});
+describe('Quantity retry scaling', () => {
+  it('allows the narrow-label retry to smooth only its fallback crop', () => {
+    const context = { imageSmoothingEnabled: false, drawImage: vi.fn() };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
+      context as unknown as CanvasRenderingContext2D,
+    );
+
+    cropCanvas({} as CanvasImageSource, { left: 0, top: 0, width: 33, height: 13 }, 5, true);
+
+    expect(context.imageSmoothingEnabled).toBe(true);
+    expect(context.drawImage).toHaveBeenCalledOnce();
+  });
+  it('uses a measured scale for narrow labels while capping enlargement', () => {
+    expect(quantityRetryScale(33)).toBe(4);
+    expect(quantityRetryScale(52)).toBeCloseTo(192 / 52);
+    expect(quantityRetryScale(20)).toBe(4);
+  });
+  it('retries only weak short abbreviated values with a smoothed view', () => {
+    expect(
+      shouldRetryQuantityWithSmoothing(33, {
+        text: '31k',
+        approximate: true,
+        confidence: 0,
+      }),
+    ).toBe(true);
+    expect(
+      shouldRetryQuantityWithSmoothing(33, {
+        text: '146k',
+        approximate: true,
+        confidence: 39,
+      }),
+    ).toBe(false);
+    expect(
+      shouldRetryQuantityWithSmoothing(52, {
+        text: '31k',
+        approximate: true,
+        confidence: 0,
+      }),
+    ).toBe(false);
   });
 });

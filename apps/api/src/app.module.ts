@@ -9,6 +9,7 @@ import { HealthModule } from './health/health.module';
 import { MarketModule } from './market/market.module';
 import { OperationsModule } from './operations/operations.module';
 import { ReferenceModule } from './reference/reference.module';
+import { RoadmapModule } from './roadmap/roadmap.module';
 import { WorkspaceModule } from './workspace/workspace.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
     MarketModule,
     WorkspaceModule,
     ReferenceModule,
+    RoadmapModule,
     OperationsModule,
   ],
 })

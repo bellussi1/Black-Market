@@ -39,6 +39,8 @@ pnpm --filter @bdo/api data:import -- --input "C:\bdo\extracted\data" --version 
 
 Na primeira extração SA/pt foram gerados 74.216 itens, 212 categorias e 5.063 receitas. O importador normaliza o formato atual (graus numéricos e referências URN), mantém 730 itens sem nome pelo ID e deduplica as receitas para 4.406 registros distintos. As 569 relações de subproduto permanecem identificadas. O catálogo e seus ícones podem ser publicados localmente pelo perfil Docker `data`; preços continuam em uma fonte separada. Os outros 20 JSONs do build foram preservados localmente para integrações futuras.
 
+Essas contagens de 5.063/4.406 descrevem a extração inicial, não o dataset ativo atual. A extração atual, a quarentena de referências, as fórmulas do banco e os filtros do endpoint/tela foram reconciliados em [contagens de receitas](recipe-counts.md).
+
 ## Atualização de preços de mercado
 
 A documentação do Arsha descreve dados por região e idioma, endpoints de hot list, preço/estoque/trades, listagem por categoria, detalhe de item, ordens, fila e histórico. O wrapper declara cache por 30 minutos, que pode ser removido conforme frequência de uso. Seu WebSocket publica eventos quando uma entrada de cache expira, com ID, região e endpoint; o evento representa expiração, não um feed contínuo nem garantia de atualização imediata. [Documentação Arsha no Postman](https://www.postman.com/bdomarket/arsha-io-bdo-market-api/documentation/qpavrc8/bdo-market-api-v2) e [código do wrapper self-hosted](https://github.com/guy0090/api.arsha.io).
@@ -70,4 +72,4 @@ A consulta pública por item foi verificada em SA e passou a estar disponível e
 
 O endpoint e a instância pública são descritos no [repositório do operador](https://github.com/guy0090/api.arsha.io). Isso não identifica o fornecedor usado pelo BDOLytics ou Workshop. FetchedAt é o horário da nossa consulta, não uma garantia de idade do dado dentro do cache upstream. Última venda traz seu horário separado quando disponível.
 
-O usuário pode guardar cotações no navegador e criar histórico pessoal; não há cron, ingestão massiva ou histórico global em PostgreSQL nesta entrega. A futura coleta persistente precisa definir retenção e escopo antes de ser ativada.
+O usuário pode guardar cotações no navegador. O backend também persiste observações de item/mercado e expõe histórico; os coletores periódicos existem, mas ficam desligados por padrão. A [política de fonte do mercado](research/market-source-policy.md), revisada em 10/10/2026, mantém Arsha como candidato comunitário para consultas sob demanda e não aprovado para coleta persistente agendada. Nenhum coletor deve ser ativado até haver permissão/licença documentada, contrato estável e amostragem de cobertura/consistência aprovada. As opções desligadas no staging não equivalem a uma autorização de uso.

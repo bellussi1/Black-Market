@@ -1,9 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { PrivacyService } from '../../core/privacy.service';
+import { PRIVACY_COOKIE, PrivacyService } from '../../core/privacy.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { PrivacyControls } from './privacy-controls';
+
+function cookieValue(name: string): string | null {
+  const value = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(name + '='))
+    ?.slice(name.length + 1);
+  return value === undefined ? null : decodeURIComponent(value);
+}
 
 describe('privacy preference controls', () => {
   useMemoryStorage();
@@ -14,7 +23,7 @@ describe('privacy preference controls', () => {
     privacy.open.set(true);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Nenhuma ferramenta opcional será iniciada');
+    expect(element.textContent).toContain('Nenhum evento de analytics será enviado');
     expect(element.querySelector('button')).not.toBeNull();
     expect(element.textContent).not.toContain('Aceitar estatísticas');
     expect(element.textContent).not.toContain('Rejeitar opcionais');
@@ -33,7 +42,7 @@ describe('privacy preference controls', () => {
     expect(revoke).toBeTruthy();
     revoke.click();
     expect(privacy.allowsAnalytics()).toBe(false);
-    expect(localStorage.getItem('black-market.privacy.v1')).toContain('false');
+    expect(JSON.parse(cookieValue(PRIVACY_COOKIE)!).analytics).toBe(false);
   });
 
   it('restores focus after closing preferences with Escape', async () => {
@@ -66,13 +75,8 @@ describe('privacy preference controls', () => {
     const privacy = TestBed.inject(PrivacyService);
     privacy.optionalAvailable.set(true);
     fixture.detectChanges();
-    vi.stubGlobal('localStorage', {
-      getItem: () => null,
-      setItem: () => {
-        throw new DOMException('blocked', 'SecurityError');
-      },
-      removeItem: () => undefined,
-    });
+    vi.spyOn(document, 'cookie', 'get').mockReturnValue('');
+    vi.spyOn(document, 'cookie', 'set').mockImplementation(() => {});
     fixture.nativeElement.querySelector('button')!.click();
     fixture.detectChanges();
     expect(privacy.storageWarning()).toContain('enquanto esta página estiver aberta');

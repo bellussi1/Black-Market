@@ -395,7 +395,44 @@ export function calculateProduction(raw: unknown) {
   };
   const root = recipes.get(i.recipeId);
   if (!root) throw new RangeError('Escolha uma receita existente.');
-  take(root.name, i.quantity, root.id, '0', [], root.itemId);
+  const rootCrafts = i.rootCrafts;
+  if (rootCrafts === undefined) {
+    take(root.name, i.quantity, root.id, '0', [], root.itemId);
+  } else {
+    const produced = Math.floor(rootCrafts * root.yield);
+    if (!Number.isSafeInteger(produced) || produced > 1e12)
+      throw new RangeError('A produção excedeu o limite de quantidade.');
+    const output = rowFor(root.name, root.itemId);
+    output.required += produced;
+    output.produced += produced;
+    allocations.push({
+      path: 'root',
+      itemId: root.itemId,
+      required: produced,
+      fromStock: 0,
+      fromSurplus: 0,
+      missing: produced,
+      crafts: rootCrafts,
+      produced,
+    });
+    root.ingredients.forEach((ingredient, index) =>
+      take(
+        ingredient.name,
+        ingredient.quantity * rootCrafts,
+        ingredient.recipeId,
+        ingredient.price,
+        [root.id],
+        ingredient.itemId,
+        `root/${index}`,
+      ),
+    );
+    tasks.set(root.id, {
+      id: root.id,
+      name: root.name,
+      crafts: rootCrafts,
+      produced,
+    });
+  }
   return {
     target: root.name,
     quantity: i.quantity,

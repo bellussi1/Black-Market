@@ -19,6 +19,7 @@ const allowedScreens = new Set([
   'unknown',
 ]);
 const allowedStatuses = new Set(['verified', 'ambiguous', 'occluded', 'not_present']);
+const allowedSplits = new Set(['calibration', 'evaluation']);
 
 function fail(message) {
   throw new Error(message);
@@ -58,6 +59,11 @@ export async function validateOcrCorpus(manifestPath) {
 
   const ids = new Set();
   const hashes = new Set();
+  const sessionSplits = new Map();
+  const splits = {
+    calibration: { captures: 0, labels: 0 },
+    evaluation: { captures: 0, labels: 0 },
+  };
   let labels = 0;
   for (const capture of manifest.captures) {
     if (!isRecord(capture) || typeof capture.id !== 'string' || !capture.id || ids.has(capture.id))
@@ -86,12 +92,26 @@ export async function validateOcrCorpus(manifestPath) {
       !capture.sessionId ||
       typeof capture.locale !== 'string' ||
       typeof capture.source !== 'string' ||
-      capture.split !== 'calibration' ||
+      !allowedSplits.has(capture.split) ||
       !Array.isArray(capture.screens) ||
       capture.screens.some((screen) => !allowedScreens.has(screen)) ||
       !Array.isArray(capture.labels)
     )
       fail('Metadados de captura inválidos.');
+
+    const priorSplit = sessionSplits.get(capture.sessionId);
+    if (priorSplit && priorSplit !== capture.split)
+      fail('Capturas da mesma sessão não podem aparecer em splits diferentes.');
+    sessionSplits.set(capture.sessionId, capture.split);
+    splits[capture.split].captures++;
+    if (
+      capture.split === 'evaluation' &&
+      (typeof capture.authorizationRef !== 'string' ||
+        !capture.authorizationRef.trim() ||
+        typeof capture.authorizedAt !== 'string' ||
+        !Number.isFinite(Date.parse(capture.authorizedAt)))
+    )
+      fail('Capturas de avaliação precisam registrar a autorização e sua data.');
 
     let image;
     let metadata;
@@ -120,6 +140,7 @@ export async function validateOcrCorpus(manifestPath) {
     )
       fail('Dimensões da imagem não conferem.');
 
+    let verifiedLabels = 0;
     for (const label of capture.labels) {
       if (
         !isRecord(label) ||
@@ -133,9 +154,13 @@ export async function validateOcrCorpus(manifestPath) {
       )
         fail('Rótulo do corpus OCR inválido.');
       labels++;
+      splits[capture.split].labels++;
+      if (label.status === 'verified') verifiedLabels++;
     }
+    if (capture.split === 'evaluation' && !verifiedLabels)
+      fail('Capturas de avaliação precisam de pelo menos um rótulo verificado.');
   }
-  return { captures: manifest.captures.length, labels };
+  return { captures: manifest.captures.length, labels, splits };
 }
 
 const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';

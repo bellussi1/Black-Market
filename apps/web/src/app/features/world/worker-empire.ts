@@ -23,6 +23,9 @@ import {
   type WorldNode,
 } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -30,11 +33,21 @@ import { evaluate, validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 @Component({
   selector: 'app-worker-empire',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, TaxOptionsComponent],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    TaxOptionsComponent,
+  ],
   templateUrl: './worker-empire.html',
   styleUrl: './worker-empire.scss',
 })

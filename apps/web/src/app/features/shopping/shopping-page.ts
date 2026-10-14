@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import type { PersonalPlan } from '@bdo/calculators';
 import { availableInventory } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
@@ -9,7 +11,7 @@ import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
 @Component({
   selector: 'app-shopping-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [HlmCard, HlmButton, RouterLink],
   templateUrl: './shopping-page.html',
 })
 export class ShoppingPage {

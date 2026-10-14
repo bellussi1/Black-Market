@@ -41,6 +41,52 @@ describe('Accessible graph controls', () => {
     expect(emit).toHaveBeenCalledWith({ path: 'root', action: 'choose', value: 'superior' });
     expect(fixture.nativeElement.textContent).toContain('Escolher método de produção');
   });
+
+  it('shows icons and item names for every equivalent ingredient in the graph', async () => {
+    const alternatives = [
+      {
+        recipeKey: 'lion-meat',
+        part: {
+          itemId: 902,
+          name: 'Carne de Leão',
+          quantity: '2',
+          iconUrl: '/icons/lion-meat.png',
+        },
+      },
+      {
+        recipeKey: 'goat-meat',
+        part: {
+          itemId: 901,
+          name: 'Carne de Cabra',
+          quantity: '3',
+          iconUrl: '/icons/goat-meat.png',
+        },
+      },
+    ];
+    const root = nodeFor({ itemId: 100, name: 'Receita', quantity: '1' }, 'root');
+    root.expanded = true;
+    const ingredient = nodeFor(alternatives[0]!.part, 'root/0');
+    ingredient.substitutions = alternatives;
+    root.children = [ingredient];
+
+    const fixture = await renderComponent(RecipeGraph, { root });
+    const choices = fixture.nativeElement.querySelectorAll('.ingredient-alternative');
+
+    expect(choices).toHaveLength(2);
+    expect(choices[0].textContent).toContain('Carne de Leão');
+    expect(choices[0].querySelector('app-item-icon')?.getAttribute('title')).toContain(
+      'Carne de Leão',
+    );
+    expect(choices[1].textContent).toContain('Carne de Cabra');
+    expect(choices[1].querySelector('app-item-icon')?.getAttribute('title')).toContain(
+      'Carne de Cabra',
+    );
+    const emit = vi.spyOn(fixture.componentInstance.action, 'emit');
+    const goatChoice = choices[1].querySelector('input') as HTMLInputElement;
+    goatChoice.checked = true;
+    goatChoice.dispatchEvent(new Event('change'));
+    expect(emit).toHaveBeenCalledWith({ path: 'root', action: 'choose', value: 'goat-meat' });
+  });
   it('aligns each tier below its tallest card and keeps sibling branch spans separate', () => {
     const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
     root.expanded = true;
@@ -79,6 +125,9 @@ describe('Accessible graph controls', () => {
     expect(fixture.nativeElement.querySelector('.node-select').getAttribute('aria-pressed')).toBe(
       'true',
     );
+    expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'source' });
+    expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'expand' });
+    fixture.nativeElement.querySelector('.node-details').click();
     expect(selected).toHaveBeenCalledWith({ path: 'root', action: 'source' });
     graph.scale(100);
     expect(graph.zoom()).toBe(1.75);
@@ -289,6 +338,8 @@ describe('Accessible graph controls', () => {
     graph.start(event(100, 100));
     graph.end();
     card.click();
+    expect(actions).toEqual([]);
+    fixture.nativeElement.querySelector('.expand-node').click();
     expect(actions).toContainEqual({ path: 'root', action: 'expand' });
   });
   it('prevents a growing card from overlapping descendants of a different branch', () => {

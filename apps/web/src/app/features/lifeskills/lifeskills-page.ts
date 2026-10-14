@@ -12,6 +12,9 @@ import {
   type TrainingInput,
   trainingSchema,
 } from '@bdo/calculators';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -21,10 +24,21 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',
-  imports: [FormsModule, TaxOptionsComponent, PresetBar, CalculationProof, CatalogItemPicker],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    TaxOptionsComponent,
+    PresetBar,
+    CalculationProof,
+    CatalogItemPicker,
+  ],
   templateUrl: './lifeskills-page.html',
 })
 export class LifeskillsPage {

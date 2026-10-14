@@ -1,9 +1,27 @@
 import { quantityGlyphs } from './quantity-glyphs';
+import { realQuantityGlyphs } from './quantity-real-glyphs';
 
 interface Mask {
   width: number;
   height: number;
   pixels: Uint8Array;
+}
+export function binarizeQuantityPixels(
+  data: ArrayLike<number>,
+  threshold = 120,
+): Uint8ClampedArray {
+  const output = new Uint8ClampedArray(data.length);
+  for (let i = 0; i + 3 < data.length; i += 4) {
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
+    const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    const ink = luminance >= threshold && Math.max(r, g, b) - Math.min(r, g, b) < 85;
+    const value = ink ? 0 : 255;
+    output[i] = output[i + 1] = output[i + 2] = value;
+    output[i + 3] = 255;
+  }
+  return output;
 }
 function trim(mask: Mask): Mask | null {
   let left = mask.width,
@@ -30,7 +48,7 @@ function trim(mask: Mask): Mask | null {
     ),
   };
 }
-const templates = quantityGlyphs.map(({ character, rows }) => ({
+const templates = [...quantityGlyphs, ...realQuantityGlyphs].map(({ character, rows }) => ({
   character,
   mask: trim({
     width: rows[0].length,
@@ -111,7 +129,11 @@ export function readQuantityPixels(
             min = Math.min(min, y);
             max = Math.max(max, y);
           }
-      return max - min + 1 >= height * 0.35;
+      const glyphHeight = max - min + 1;
+      return (
+        glyphHeight >= height * 0.35 ||
+        (glyphHeight <= 3 && run.right - run.left <= 2 && max >= bottom - 2)
+      );
     });
     const last = letterRuns.at(-1);
     if (!last || last.right < width * 0.72) continue;
@@ -133,6 +155,10 @@ export function readQuantityPixels(
           (_, i) => pixels[(top + Math.floor(i / w)) * width + run.left + (i % w)],
         ),
       });
+      if (mask && mask.height <= 3 && mask.width <= 3) {
+        text += mask.height > mask.width + 1 ? ',' : '.';
+        continue;
+      }
       if (!mask || mask.height < height * 0.35) {
         text = '';
         break;
@@ -142,8 +168,14 @@ export function readQuantityPixels(
         text = '';
         break;
       }
-      const ranked = templates
-        .map((t) => ({ character: t.character, score: similarity(mask, t.mask) }))
+      const byCharacter = new Map<string, number>();
+      for (const t of templates)
+        byCharacter.set(
+          t.character,
+          Math.max(byCharacter.get(t.character) ?? -Infinity, similarity(mask, t.mask)),
+        );
+      const ranked = [...byCharacter]
+        .map(([character, score]) => ({ character, score }))
         .sort((a, b) => b.score - a.score);
       if (ranked[0].score < 0.74 || ranked[0].score - ranked[1].score < 0.05) {
         text = '';

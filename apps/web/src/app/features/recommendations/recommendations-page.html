@@ -8,36 +8,54 @@
     </p>
   </header>
   <div class="action-row">
-    <button class="btn" (click)="load()" [disabled]="busy()">Carregar catálogo</button>
-    <button class="btn subtle" (click)="startDemo()" [disabled]="busy()">
+    <button hlmBtn variant="outline" class="btn" (click)="load()" [disabled]="busy()">
+      Carregar catálogo
+    </button>
+    <button hlmBtn variant="outline" class="btn subtle" (click)="startDemo()" [disabled]="busy()">
       Criar personagem de teste
     </button>
-    <a class="btn subtle" routerLink="/scans">Importar capturas</a>
+    <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans">Importar capturas</a>
   </div>
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
   @if (store.demoActive()) {
-    <section class="panel demo-panel">
+    <section hlmCard class="panel demo-panel">
       <h2>Modo de teste em memória</h2>
       <p>{{ demoExplanation }}</p>
-      <button class="btn subtle" [disabled]="busy()" (click)="applyMockPrices()">
+      <button
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        [disabled]="busy()"
+        (click)="applyMockPrices()"
+      >
         Aplicar preços fictícios para testar
       </button>
-      <button class="btn subtle" [disabled]="busy()" (click)="store.exitDemo(); plans.set(null)">
+      <button
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        [disabled]="busy()"
+        (click)="store.exitDemo(); plans.set(null)"
+      >
         Sair do teste e restaurar meus dados
       </button>
     </section>
   }
   @if (profile(); as player) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2>Condições do personagem</h2>
         <a routerLink="/family">Editar na Família</a>
       </div>
       <label class="field"
         ><span>Personagem</span
-        ><select [ngModel]="player.id" (ngModelChange)="selected.set($event); plans.set(null)">
+        ><select
+          appBdoSelect
+          [ngModel]="player.id"
+          (ngModelChange)="selected.set($event); plans.set(null)"
+        >
           @for (row of profiles(); track row.id) {
             <option [value]="row.id">{{ row.name }}</option>
           }
@@ -48,7 +66,8 @@
         ><span>{{ silver(player.silver) }} prata</span
         ><span>{{ player.carriedWeight }} / {{ player.weightLimit }} LT</span>
         <span>Alquimia: {{ player.mastery.alchemy }} de maestria</span
-        ><span>Culinária: {{ player.mastery.cooking }}</span>
+        ><span>Culinária: {{ player.mastery.cooking }} de maestria</span
+        ><span>Processamento: {{ player.mastery.processing }} de maestria</span>
       </div>
       <p>
         Equipamento:
@@ -60,13 +79,15 @@
         }
       </p>
       <p>
-        Maestria, trajes e cristais servem de contexto para medir seu rendimento. Não há
-        multiplicadores automáticos. Se mudar o conjunto, confira as medições abaixo.
+        A maestria do personagem estima automaticamente o rendimento de culinária e alquimia e os
+        lotes de processamento em todas as receitas e subreceitas. Em culinária, ela também ajusta o
+        tempo médio pelo cozimento em massa. Trajes e cristais não são inferidos: informe o tempo
+        observado com seu conjunto ativo.
       </p>
       <div class="action-row">
         <label
           ><input type="checkbox" [(ngModel)]="useOwned" (ngModelChange)="plans.set(null)" /> Usar
-          estoque livre no cenário de produção</label
+          estoque livre na produção e combinação automática</label
         >
         <label
           ><input type="checkbox" [(ngModel)]="valuePack" (ngModelChange)="plans.set(null)" />
@@ -75,19 +96,21 @@
       </div>
     </section>
   } @else {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>Selecione um personagem</h2>
       <p>Cadastre a prata, o peso e a maestria na Família ou crie o personagem de teste.</p>
-      <a class="btn" routerLink="/family">Abrir Família</a>
+      <a hlmBtn variant="outline" class="btn" routerLink="/family">Abrir Família</a>
     </section>
   }
   @if (snapshot(); as data) {
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>Tempo e rendimento medidos</h2>
       <p>
-        Segundos por operação incluem seu conjunto ativo. Alquimia e culinária exigem rendimento
-        médio informado; saídas variáveis de processamento permanecem pendentes. Não contamos
-        subprodutos sem uma medição específica.
+        O rendimento vem da maestria escolhida e das regras da receita; não é necessário informar
+        uma média genérica que seria aplicada a receitas diferentes. Se tiver uma medição própria,
+        informe-a na receita selecionada para substituir apenas aquela estimativa. Informe os
+        segundos por operação com o conjunto ativo; a maestria de culinária ajusta a taxa de
+        operações em massa. Não contamos subprodutos sem uma medição específica.
       </p>
       <div class="calibration-grid">
         @for (type of methods(); track type) {
@@ -96,33 +119,31 @@
             <label class="field"
               ><span>Segundos por operação</span
               ><input
+                hlmInput
                 type="number"
                 min="0.001"
                 step="0.1"
                 [ngModel]="calibration[type].seconds"
                 (ngModelChange)="calibration[type].seconds = $event; plans.set(null)"
             /></label>
-            @if (type === 'ALCHEMY' || type === 'COOK') {
-              <label class="field"
-                ><span>Unidades médias por operação</span
-                ><input
-                  type="number"
-                  min="0.001"
-                  step="0.1"
-                  [ngModel]="calibration[type].yield"
-                  (ngModelChange)="calibration[type].yield = $event; plans.set(null)"
-              /></label>
-            }
           </fieldset>
         }
       </div>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <div class="panel-heading">
         <h2>Cotações e custos</h2>
-        <button class="btn" [disabled]="busy()" (click)="refreshQuotes()">Consultar mercado</button>
+        <button hlmBtn variant="outline" class="btn" [disabled]="busy()" (click)="refreshQuotes()">
+          Consultar mercado
+        </button>
         @if (resumable) {
-          <button class="btn subtle" [disabled]="busy()" (click)="refreshQuotes(true)">
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            [disabled]="busy()"
+            (click)="refreshQuotes(true)"
+          >
             Retomar consulta
           </button>
         }
@@ -130,8 +151,9 @@
       <p>
         Consultas em lotes de 100 itens. A fonte usa cache de até 30 minutos; os dados consultados
         ficam válidos por 30 minutos nesta comparação. Preços manuais são premissas e não confirmam
-        oferta. Materiais sem cotação ou peso impedem um resultado completo. Equipamentos com
-        aprimoramento não usam preços agregados: informe o preço da variante desejada manualmente.
+        oferta. O preço atual usa a oferta disponível; sem estoque, usa a máxima do mercado.
+        Materiais sem preço ou peso impedem um resultado completo. Equipamentos com aprimoramento
+        não usam preços agregados: informe o preço da variante desejada manualmente.
       </p>
       @if (progress().total) {
         <p role="status">{{ progress().done }} / {{ progress().total }} itens consultados</p>
@@ -139,6 +161,7 @@
       <label class="field"
         ><span>Encontrar item para ajustar preço</span
         ><input
+          hlmInput
           [ngModel]="priceSearch()"
           (ngModelChange)="priceSearch.set($event); pricePage.set(1)"
           placeholder="Nome do ingrediente ou produto"
@@ -165,21 +188,16 @@
                 </td>
                 <td>
                   <input
+                    hlmInput
                     [attr.aria-label]="'Preço de ' + item.name"
                     inputmode="numeric"
-                    [ngModel]="quotes()[item.id]?.unitPrice ?? ''"
+                    [ngModel]="quoteFor(item.id)?.unitPrice ?? ''"
                     (ngModelChange)="manualPrice(item.id, $event)"
                     placeholder="Sem preço"
                   />
                 </td>
                 <td>
-                  {{
-                    quotes()[item.id]?.source === 'market'
-                      ? 'Mercado · ' + quotes()[item.id].available
-                      : quotes()[item.id]
-                        ? 'Premissa manual'
-                        : 'Pendente'
-                  }}
+                  {{ quoteOrigin(item.id) }}
                 </td>
               </tr>
             }
@@ -188,6 +206,8 @@
       </div>
       <div class="pagination">
         <button
+          hlmBtn
+          variant="outline"
           class="btn subtle"
           [disabled]="pricePage() <= 1"
           (click)="pricePage.set(pricePage() - 1)"
@@ -195,6 +215,8 @@
           Preços anteriores</button
         ><span>{{ pricePage() }} / {{ pricePages() }}</span
         ><button
+          hlmBtn
+          variant="outline"
           class="btn subtle"
           [disabled]="pricePage() >= pricePages()"
           (click)="pricePage.set(pricePage() + 1)"
@@ -203,19 +225,24 @@
         </button>
       </div>
     </section>
-    <section class="panel">
+    <section hlmCard class="panel">
       <h2>Receitas para comparar</h2>
       <div class="filter-grid">
         <label class="field"
           ><span>Pesquisar receita</span
           ><input
+            hlmInput
             [ngModel]="search()"
             (ngModelChange)="search.set($event); methodChanged()"
             placeholder="Edania, cerveja, reagente…"
         /></label>
         <label class="field"
           ><span>Atividade</span
-          ><select [ngModel]="method()" (ngModelChange)="method.set($event); methodChanged()">
+          ><select
+            appBdoSelect
+            [ngModel]="method()"
+            (ngModelChange)="method.set($event); methodChanged()"
+          >
             <option value="">Todas as Life Skills</option>
             @for (type of methods(); track type) {
               <option [value]="type">{{ methodLabel(type) }}</option>
@@ -227,11 +254,13 @@
         {{ candidates().length }} receitas no escopo · {{ recipes().length }} no catálogo. Limpar a
         busca compara todo o catálogo, com até 10.000 operações por cenário. Cada receita pode ter
         várias fórmulas; o cenário de produção usa a primeira fórmula disponível, que você pode
-        substituir na personalização.
+        substituir na personalização. Ao selecionar uma receita, o resultado também testa até 256
+        combinações de compra e produção para a quantidade informada; fórmulas aninhadas usam a
+        primeira opção do catálogo.
       </p>
       <label class="field"
         ><span>Personalizar ingredientes de uma receita</span
-        ><select [ngModel]="focus()" (ngModelChange)="focusRecipe($event)">
+        ><select appBdoSelect [ngModel]="focus()" (ngModelChange)="focusRecipe($event)">
           <option [ngValue]="null">Selecione uma receita</option>
           @for (row of candidates(); track row.id) {
             <option [value]="row.id">
@@ -243,8 +272,20 @@
       @if (focused(); as recipe) {
         <div class="filter-grid">
           <label class="field"
+            ><span>Operações para a combinação automática</span
+            ><input
+              hlmInput
+              type="number"
+              min="1"
+              max="1000000000"
+              step="1"
+              [(ngModel)]="optimizationCrafts"
+              (ngModelChange)="plans.set(null)"
+          /></label>
+          <label class="field"
             ><span>Segundos por operação desta fórmula</span
             ><input
+              hlmInput
               type="number"
               min="0.001"
               step="0.1"
@@ -254,6 +295,7 @@
           <label class="field"
             ><span>Unidades médias por operação desta fórmula</span
             ><input
+              hlmInput
               type="number"
               min="0.001"
               step="0.1"
@@ -262,14 +304,15 @@
           /></label>
         </div>
         <p>
-          Em branco, usa a medição da atividade ou a saída exata do catálogo. Valores preenchidos
-          são premissas específicas desta fórmula, incluindo processamento e produção em lote.
+          Em branco, usa a saída do catálogo ajustada pela maestria do personagem. Um valor
+          preenchido substitui o rendimento calculado somente para esta fórmula.
         </p>
         <div class="custom-materials">
           @for (part of recipe.ingredients; track $index) {
             <label class="field"
               ><span>{{ name(part.itemId) }}</span>
               <select
+                appBdoSelect
                 [ngModel]="choices[part.itemId] ?? 'buy'"
                 (ngModelChange)="choose(part.itemId, $event)"
               >
@@ -279,6 +322,7 @@
               </select>
               @if (producers(part.itemId).length > 1) {
                 <select
+                  appBdoSelect
                   [attr.aria-label]="'Receita de ' + name(part.itemId)"
                   [(ngModel)]="customRecipes[part.itemId]"
                   (ngModelChange)="plans.set(null)"
@@ -295,12 +339,18 @@
           }
         </div>
       }
-      <button class="btn" [disabled]="busy() || !profile()" (click)="compare()">
+      <button
+        hlmBtn
+        variant="outline"
+        class="btn"
+        [disabled]="busy() || !profile()"
+        (click)="compare()"
+      >
         Comparar lucro por hora
       </button>
     </section>
     @if (plans(); as result) {
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2>Ranking de lucro por hora</h2>
         <p>
           Faturamento bruto, recebimento após impostos e lucro econômico aparecem separados. O lucro
@@ -374,10 +424,18 @@
           </table>
         </div>
         <div class="pagination">
-          <button class="btn subtle" [disabled]="page() <= 1" (click)="page.set(page() - 1)">
+          <button
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            [disabled]="page() <= 1"
+            (click)="page.set(page() - 1)"
+          >
             Anterior</button
           ><span>{{ page() }} / {{ resultPages() }} · 20 cenários por página</span
           ><button
+            hlmBtn
+            variant="outline"
             class="btn subtle"
             [disabled]="page() >= resultPages()"
             (click)="page.set(page() + 1)"
@@ -386,13 +444,13 @@
           </button>
         </div>
       </section>
-      <section class="panel">
+      <section hlmCard class="panel">
         <h2>Dados pendentes · {{ result.incomplete.length }} cenários</h2>
         <p>
-          Sem os dados abaixo, o resultado não entra no ranking. Mostrando os primeiros 30 cenários
-          pendentes.
+          Sem os dados abaixo, o resultado não entra no ranking. Mostrando até 30 cenários
+          pendentes; a combinação automática da receita selecionada permanece visível.
         </p>
-        @for (row of result.incomplete.slice(0, 30); track row.recipeId + row.scenario) {
+        @for (row of visibleIncomplete(); track row.recipeId + row.scenario) {
           <details class="pending">
             <summary>
               {{ row.name }} · {{ scenarioNames[row.scenario] }} ·

@@ -3,14 +3,27 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { characterSchema, gearSlots } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-gear-inventory-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CatalogItemPicker, EquipmentSheet],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    EquipmentSheet,
+  ],
   templateUrl: './gear-inventory-page.html',
 })
 export class GearInventoryPage {

@@ -75,6 +75,7 @@
           ><ng-container i18n>Buscar pelo nome ou código do item</ng-container></span
         >
         <input
+          hlmInput
           type="search"
           autocomplete="off"
           placeholder="Buscar item pelo nome..."
@@ -86,7 +87,12 @@
 
       <label class="filter-field">
         <span><ng-container i18n>Categoria</ng-container></span>
-        <select [value]="categoryId()" (change)="onCategory($event)" [disabled]="categoryError()">
+        <select
+          appBdoSelect
+          [value]="categoryId()"
+          (change)="onCategory($event)"
+          [disabled]="categoryError()"
+        >
           <option value=""><ng-container i18n>Todas as categorias</ng-container></option>
           @for (category of categories(); track category.id) {
             <option [value]="category.id">
@@ -98,7 +104,7 @@
 
       <label class="filter-field grade-filter">
         <span><ng-container i18n>Grau</ng-container></span>
-        <select [value]="grade()" (change)="onGrade($event)">
+        <select appBdoSelect [value]="grade()" (change)="onGrade($event)">
           <option value=""><ng-container i18n>Todos</ng-container></option>
           @for (gradeOption of grades; track gradeOption.value) {
             <option [value]="gradeOption.value">{{ gradeOption.label }}</option>
@@ -107,7 +113,13 @@
       </label>
 
       @if (hasFilters()) {
-        <button class="clear-filters" type="button" (click)="resetFilters()">
+        <button
+          hlmBtn
+          variant="outline"
+          class="clear-filters"
+          type="button"
+          (click)="resetFilters()"
+        >
           <ng-container i18n>Limpar filtros</ng-container>
         </button>
       }
@@ -115,10 +127,24 @@
 
     <nav class="action-row" aria-label="Sugestões de busca" i18n-aria-label>
       <span i18n>Experimente:</span>
-      <button class="btn subtle" type="button" (click)="searchFor('Fármaco da Harmonia')" i18n>
+      <button
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        type="button"
+        (click)="searchFor('Fármaco da Harmonia')"
+        i18n
+      >
         Fármaco da Harmonia
       </button>
-      <button class="btn subtle" type="button" (click)="searchFor('Pedra Negra')" i18n>
+      <button
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        type="button"
+        (click)="searchFor('Pedra Negra')"
+        i18n
+      >
         Pedra Negra
       </button>
     </nav>
@@ -127,7 +153,7 @@
       <div class="inline-alert" role="alert">
         <span class="alert-icon" aria-hidden="true">!</span>
         <span>{{ error() }}</span>
-        <button type="button" (click)="retry()">
+        <button hlmBtn variant="outline" type="button" (click)="retry()">
           <ng-container i18n>Tentar novamente</ng-container>
         </button>
       </div>
@@ -136,7 +162,7 @@
       <div class="inline-alert subtle-alert" role="status">
         <ng-container i18n
           >As categorias não carregaram. A busca por nome continua disponível. </ng-container
-        ><button type="button" (click)="retryCategories()">
+        ><button hlmBtn variant="outline" type="button" (click)="retryCategories()">
           <ng-container i18n>Recarregar</ng-container>
         </button>
       </div>
@@ -255,6 +281,8 @@
           }
         </div>
         <button
+          hlmBtn
+          variant="outline"
           class="close-detail"
           type="button"
           aria-label="Fechar detalhes"
@@ -322,7 +350,7 @@
             <span class="empty-index">00</span>
             <h3><ng-container i18n>Nenhum item corresponde a esses filtros.</ng-container></h3>
             <p><ng-container i18n>Experimente outro nome ou remova uma categoria.</ng-container></p>
-            <button type="button" (click)="resetFilters()">
+            <button hlmBtn variant="outline" type="button" (click)="resetFilters()">
               <ng-container i18n>Limpar busca e filtros</ng-container>
             </button>
           </div>
@@ -330,6 +358,8 @@
           <div class="item-grid">
             @for (item of data.items; track item.id) {
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 class="item-card"
                 [class.selected]="selectedItem()?.id === item.id"
@@ -364,6 +394,8 @@
             >
             <div class="pagination-actions">
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 aria-label="Página anterior"
                 i18n-aria-label
@@ -374,6 +406,8 @@
               </button>
               <span>{{ page() }} <i>/</i> {{ pageCount() }}</span>
               <button
+                hlmBtn
+                variant="outline"
                 type="button"
                 aria-label="Próxima página"
                 i18n-aria-label

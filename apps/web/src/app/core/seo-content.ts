@@ -18,6 +18,8 @@ export const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Planeje seu império de bases e trabalhadores em Black Desert Online. Compare produção diária, custos e contribuição compartilhada.',
   '/market':
     'Consulte preços e disponibilidade no mercado SA de Black Desert Online. Confira a origem e a data de atualização dos dados.',
+  '/roadmap':
+    'Conheça o fluxo do Black Market para comparar mercado, Crafting, armazém e atividades de Life Skill, sem prazos de entrega.',
   '/market/items':
     'Consulte informações, imagens e relações de produção de itens de Black Desert Online no Mercado.',
   '/crafting':

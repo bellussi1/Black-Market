@@ -19,6 +19,17 @@ const requireApi = createRequire(new URL('../apps/api/package.json', import.meta
 const sharp = requireApi('sharp');
 const temporaryDirectories = [];
 
+test('accepts a measured profile without changing the output directory', () => {
+  const parsed = parseGeneratorArgs([
+    '--quantity-profile',
+    'tmp/profile.json',
+    '--output',
+    'tmp/samples',
+  ]);
+  assert.equal(parsed.quantityProfilePath, path.resolve('tmp/profile.json'));
+  assert.equal(parsed.outputDir, path.resolve('tmp/samples'));
+});
+
 async function makeCatalog(redirects = { 'urn::item:100': 'icons/100.webp' }) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'bdo-ocr-catalog-'));
   temporaryDirectories.push(directory);
@@ -47,6 +58,20 @@ test('rejectsUnsafeCatalogPaths', async () => {
   });
 
   await assert.rejects(readPublishedIconCatalog(catalogDir), /unsafe|WebP|path/i);
+});
+
+test('focuses published recipe catalogs on life skill ingredients and products', async () => {
+  const catalogDir = await makeCatalog();
+  await writeFile(
+    path.join(catalogDir, 'recipes.json'),
+    JSON.stringify([{ type: 'COOK', output: 'urn::item:100', inputs: [] }]),
+  );
+  assert.equal((await readPublishedIconCatalog(catalogDir))[0].itemId, '100');
+  await writeFile(
+    path.join(catalogDir, 'recipes.json'),
+    JSON.stringify([{ type: 'COOK', output: 'urn::item:200', inputs: [] }]),
+  );
+  await assert.rejects(readPublishedIconCatalog(catalogDir), /no readable item/);
 });
 
 test('rejectsMissingOrEmptyCatalog', async () => {
@@ -212,10 +237,7 @@ test('labelsOccupiedAndEmptySlotsCorrectly', async () => {
   assert.equal(formatQuantityLabel(139100), '139.1k');
   assert.equal(formatQuantityLabel(319900), '319.9k');
   assert.equal(formatQuantityLabel(1300000), '1.3M');
-  assert.deepEqual(
-    romanLabels,
-    new Set(['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']),
-  );
+  assert.deepEqual(romanLabels, new Set());
   assert.ok(
     occupied.some(
       (slot) =>

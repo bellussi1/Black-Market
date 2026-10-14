@@ -59,6 +59,16 @@
   </button>
   <div class="step-tools">
     <button type="button" class="step-source" (click)="emit('source')">Detalhes e origem</button>
+    @if (supportsRareProcs()) {
+      <label class="rare-proc-toggle">
+        <input
+          type="checkbox"
+          [ngModel]="node().useRareProcs"
+          (ngModelChange)="emit('rare-procs', $event)"
+        />
+        <span>Usar procs raros <small>Até 3 por operação, limitado pela receita</small></span>
+      </label>
+    }
     <details class="step-settings">
       <summary>Ajustes</summary>
       <div class="settings-content">
@@ -75,19 +85,12 @@
           <p>Origem escolhida: {{ node().acquisition?.label }}</p>
         }
         @if ((node().substitutions?.length ?? 0) > 1) {
-          <label
-            >Substituir ingrediente<select
-              [ngModel]="substitutionKey()"
-              (ngModelChange)="substitute($event)"
-            >
-              @for (choice of node().substitutions; track choice.recipeKey) {
-                <option [value]="choice.recipeKey">
-                  {{ choice.part.name }} ×
-                  {{ choice.part.quantity === null ? 'a confirmar' : +choice.part.quantity }}
-                </option>
-              }
-            </select></label
-          >
+          <app-recipe-ingredient-alternatives
+            [choices]="node().substitutions ?? []"
+            [selectedKey]="substitutionKey()"
+            [groupName]="'ingredient-alternative-' + node().path"
+            (choiceSelected)="substitute($event)"
+          />
         }
         @if (batches().length > 1) {
           <label
@@ -121,7 +124,7 @@
               type="number"
               min="0.001"
               max="1000000"
-              step="0.001"
+              step="0.0001"
               [ngModel]="node().yield"
               (ngModelChange)="emit('yield', $event)"
           /></label>
@@ -180,7 +183,7 @@
             type="number"
             min="0.001"
             max="1000000"
-            step="0.001"
+            step="0.0001"
             [ngModel]="node().yield"
             [ngModelOptions]="{ updateOn: 'blur' }"
             (ngModelChange)="emit('yield', $event)"

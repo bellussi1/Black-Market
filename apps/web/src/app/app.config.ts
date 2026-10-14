@@ -33,7 +33,7 @@ export const appConfig: ApplicationConfig = {
         filter: (request) =>
           request.method === 'GET' &&
           !request.headers.has('Authorization') &&
-          ['/items', '/recipes', '/reference', '/categories', '/world/'].some((path) =>
+          ['/items', '/recipes', '/reference', '/categories', '/world/', '/roadmap'].some((path) =>
             request.url.includes('/api/v1' + path),
           ),
       }),

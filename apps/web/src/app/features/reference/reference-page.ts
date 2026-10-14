@@ -12,16 +12,20 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmCard } from '@bdo/ui/card';
+import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { ReferenceApi, type ReferenceEntry } from '../../core/reference-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { referenceFields } from './reference-fields';
 @Component({
   selector: 'app-reference-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
   templateUrl: './reference-page.html',
 })
 export class ReferencePage implements OnDestroy {

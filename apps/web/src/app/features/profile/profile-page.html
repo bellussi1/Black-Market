@@ -10,49 +10,60 @@
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
-  <section class="panel">
-    <a class="btn subtle" routerLink="/demo" i18n>Importar um personagem de exemplo</a>
+  <section hlmCard class="panel">
+    <a hlmBtn variant="outline" class="btn subtle" routerLink="/demo" i18n
+      >Importar um personagem de exemplo</a
+    >
     @if (selected) {
       <app-equipment-sheet [profile]="draft" />
     }
     <div class="action-row">
       <label class="field"
         ><span i18n>Personagem salvo</span
-        ><select [(ngModel)]="selected" (change)="load()">
+        ><select appBdoSelect [(ngModel)]="selected" (change)="load()">
           <option value="" i18n>Novo personagem</option>
           @for (profile of profiles(); track profile.id) {
             <option [value]="profile.id">{{ profile.name }}</option>
           }
         </select></label
-      ><button class="btn subtle" type="button" (click)="create()" i18n>Novo</button>
+      ><button hlmBtn variant="outline" class="btn subtle" type="button" (click)="create()" i18n>
+        Novo
+      </button>
     </div>
     <div class="form-grid">
       <label class="field"
-        ><span i18n>Nome ou apelido</span><input [(ngModel)]="draft.name" maxlength="80" /></label
+        ><span i18n>Nome ou apelido</span
+        ><input hlmInput [(ngModel)]="draft.name" maxlength="80" /></label
       ><label class="field"
         ><span i18n>Prata disponível</span
-        ><input [(ngModel)]="draft.silver" inputmode="numeric" /></label
+        ><input hlmInput [(ngModel)]="draft.silver" inputmode="numeric" /></label
       ><label class="field"
         ><span i18n>Energia disponível</span
-        ><input type="number" min="0" max="2000" [(ngModel)]="draft.energy" /></label
+        ><input hlmInput type="number" min="0" max="2000" [(ngModel)]="draft.energy" /></label
       ><label class="field"
         ><span i18n>Tempo ativo disponível (minutos)</span
-        ><input type="number" min="1" max="1440" [(ngModel)]="draft.activeMinutes" /></label
+        ><input
+          hlmInput
+          type="number"
+          min="1"
+          max="1440"
+          [(ngModel)]="draft.activeMinutes" /></label
       ><label class="field"
         ><span i18n>Tempo AFK disponível (minutos)</span
-        ><input type="number" min="0" max="1440" [(ngModel)]="draft.afkMinutes"
+        ><input hlmInput type="number" min="0" max="1440" [(ngModel)]="draft.afkMinutes"
       /></label>
     </div>
     <h2 i18n>Atributos mostrados no jogo</h2>
     <div class="form-grid">
       <label class="field"
         ><span i18n>PA principal</span
-        ><input type="number" [(ngModel)]="draft.mainAp" min="0" max="5000" /></label
+        ><input hlmInput type="number" [(ngModel)]="draft.mainAp" min="0" max="5000" /></label
       ><label class="field"
         ><span i18n>PA de despertar</span
-        ><input type="number" [(ngModel)]="draft.awakeAp" min="0" max="5000" /></label
+        ><input hlmInput type="number" [(ngModel)]="draft.awakeAp" min="0" max="5000" /></label
       ><label class="field"
-        ><span i18n>PD</span><input type="number" [(ngModel)]="draft.dp" min="0" max="5000"
+        ><span i18n>PD</span
+        ><input hlmInput type="number" [(ngModel)]="draft.dp" min="0" max="5000"
       /></label>
     </div>
     <h2 i18n>Maestria por profissão</h2>
@@ -63,14 +74,14 @@
       @for (skill of skills; track skill) {
         <label class="field"
           ><span>{{ skillLabels[skill] }}</span
-          ><input type="number" min="0" max="5000" [(ngModel)]="draft.mastery[skill]"
+          ><input hlmInput type="number" min="0" max="5000" [(ngModel)]="draft.mastery[skill]"
         /></label>
       }
     </div>
     <h2 i18n>Equipamentos e ferramenta</h2>
     <label class="field"
       ><span i18n>Espaço do equipamento</span
-      ><select [(ngModel)]="slot">
+      ><select appBdoSelect [(ngModel)]="slot">
         @for (position of slots; track position) {
           <option [value]="position">{{ slotLabels[position] }}</option>
         }
@@ -82,13 +93,20 @@
         <div class="form-grid">
           <label class="field"
             ><span i18n>Nível de aprimoramento</span
-            ><input type="number" min="0" max="30" [(ngModel)]="part.level" /></label
+            ><input hlmInput type="number" min="0" max="30" [(ngModel)]="part.level" /></label
           ><label class="field"
             ><span i18n>Nível de Caphras</span
-            ><input type="number" min="0" max="20" [(ngModel)]="part.caphras"
+            ><input hlmInput type="number" min="0" max="20" [(ngModel)]="part.caphras"
           /></label>
         </div>
-        <button class="btn subtle" type="button" (click)="removeGear(part.slot)" i18n>
+        <button
+          hlmBtn
+          variant="outline"
+          class="btn subtle"
+          type="button"
+          (click)="removeGear(part.slot)"
+          i18n
+        >
           Remover equipamento
         </button>
       </div>
@@ -98,8 +116,17 @@
       considerar também bônus, cristais e livros.
     </p>
     <div class="action-row">
-      <button class="btn" type="button" (click)="save()" i18n>Salvar personagem</button
-      ><button class="btn danger" type="button" (click)="remove()" [disabled]="!selected" i18n>
+      <button hlmBtn variant="outline" class="btn" type="button" (click)="save()" i18n>
+        Salvar personagem</button
+      ><button
+        hlmBtn
+        variant="outline"
+        class="btn danger"
+        type="button"
+        (click)="remove()"
+        [disabled]="!selected"
+        i18n
+      >
         Excluir personagem selecionado
       </button>
     </div>

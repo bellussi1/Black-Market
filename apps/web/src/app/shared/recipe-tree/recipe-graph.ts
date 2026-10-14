@@ -23,13 +23,14 @@ import type { BranchAction } from './recipe-branch';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
+import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
 import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
 
 @Component({
   selector: 'app-recipe-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemIcon],
+  imports: [ItemIcon, RecipeIngredientAlternatives],
   templateUrl: './recipe-graph.html',
   styleUrl: './recipe-graph.scss',
 })
@@ -249,8 +250,8 @@ export class RecipeGraph {
     this.locationSelected.emit({ path: itemPath, source });
   }
   activate(node: RecipeNode) {
-    this.emit(node.path, 'source');
-    if (!node.loading) this.emit(node.path, node.expanded ? 'collapse' : 'expand');
+    this.localSelection.set({ path: node.path, ownerPath: node.path });
+    this.focusNode(node.path);
   }
   private zoomAt(next: number, x: number, y: number) {
     const zoom = Math.max(0.005, Math.min(1.75, next));

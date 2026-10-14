@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import type {
+  MarketBoardDirection,
   MarketBoardPageSize,
   MarketBoardResponse,
   MarketBoardSort,
+  MarketBoardStockFilter,
   MarketLookupResponse,
 } from '@bdo/shared';
 
@@ -26,6 +28,8 @@ export class MarketApi {
     q: string;
     categoryId: string;
     sort: MarketBoardSort;
+    direction?: MarketBoardDirection;
+    stock?: MarketBoardStockFilter;
     page: number;
     pageSize: MarketBoardPageSize;
   }) {
@@ -35,6 +39,8 @@ export class MarketApi {
         locale: preferredDataLocale(),
         q: params.q,
         sort: params.sort,
+        ...(params.direction ? { direction: params.direction } : {}),
+        ...(params.stock && params.stock !== 'all' ? { stock: params.stock } : {}),
         page: params.page,
         pageSize: params.pageSize,
         ...(params.categoryId ? { categoryId: params.categoryId } : {}),
@@ -54,6 +60,20 @@ export class MarketApi {
     return this.http.get<MarketLookupResponse>(
       `${environment.apiBaseUrl}/api/v1/market/items/${encodeURIComponent(itemId)}`,
       { params: { region, locale: preferredDataLocale() } },
+    );
+  }
+
+  productionQuotes(itemIds: (number | string)[], region: Region) {
+    const ids = itemIds.map(Number).filter((id) => Number.isFinite(id) && id > 0);
+    return this.http.get<MarketLookupResponse>(
+      `${environment.apiBaseUrl}/api/v1/market/production-quotes`,
+      {
+        params: {
+          ids: ids.join(','),
+          region,
+          locale: preferredDataLocale(),
+        },
+      },
     );
   }
 }

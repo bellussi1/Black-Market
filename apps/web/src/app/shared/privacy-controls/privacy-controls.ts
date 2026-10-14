@@ -24,9 +24,10 @@ import { PrivacyService } from '../../core/privacy.service';
       >
         <h2 id="privacy-title" #title tabindex="-1" i18n>Sua privacidade</h2>
         <p i18n>
-          As ferramentas guardam dados neste dispositivo. Se você confirmar a sincronização, uma
-          cópia será enviada à sua conta. Estatísticas são opcionais e não incluem sua conta,
-          estoque nem prints.
+          Cookies necessários guardam sua região e escolha de privacidade. Estatísticas opcionais
+          usam um identificador aleatório em cookie próprio por até 180 dias, somente após seu
+          aceite. Registram áreas visitadas e etapas agregadas, sem dados da conta, armazém,
+          pesquisas, nomes ou IDs de itens ou imagens. Você pode mudar a escolha pelo rodapé.
         </p>
         <p><a routerLink="/cookies" i18n>Como usamos cookies e armazenamento</a></p>
         @if (privacy.optionalAvailable()) {
@@ -57,7 +58,7 @@ import { PrivacyService } from '../../core/privacy.service';
           }
         } @else {
           <p role="status" i18n>
-            Estatísticas opcionais estão indisponíveis. Nenhuma ferramenta opcional será iniciada.
+            Estatísticas opcionais estão indisponíveis. Nenhum evento de analytics será enviado.
           </p>
           @if (privacy.choices()?.analytics === true) {
             <button type="button" class="btn" (click)="privacy.save(false)" i18n>

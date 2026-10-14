@@ -9,15 +9,24 @@ export interface ProductionRecipe {
   output: { itemId: number; quantity: ProductionQuantity };
   ingredients: { itemId: number; quantity: ProductionQuantity }[];
   byproducts?: { itemId: number; quantity: ProductionQuantity }[];
+  /** Maximum number of primary-item units one rare output can satisfy when selected. */
+  rareSubstitution?: { itemId: number; ratio: number };
 }
 export interface ProductionEstimate {
   expectedYield?: number;
   craftSeconds?: number;
   source: 'informed' | 'calibrated' | 'fixed';
   contextHash?: string;
+  origin?: 'user-confirmed';
 }
-export type ProductionChoice = 'buy' | 'produce' | 'stock';
-export type ProductionScenario = 'buy-all' | 'produce-all' | 'custom';
+export type ProductionChoice = 'buy' | 'produce' | 'gather' | 'stock';
+export type ProductionScenario = 'buy-all' | 'produce-all' | 'custom' | 'optimized';
+export interface ProductionCandidate {
+  recipeId: string;
+  crafts?: number;
+  /** Adds one fixed-size automatic buy/produce search for this recipe. */
+  optimizeCrafts?: number;
+}
 export interface ProductionPlannerInput {
   recipes: ProductionRecipe[];
   quotes: Record<
@@ -27,11 +36,12 @@ export interface ProductionPlannerInput {
       available: number | null;
       observedAt: string;
       source: 'market' | 'npc' | 'manual';
+      sourceUrl?: string;
     }
   >;
   inventory: { itemId: number; quantity: number; reserved?: number }[];
   estimates: Record<string, ProductionEstimate>;
-  candidates: { recipeId: string; crafts?: number }[];
+  candidates: ProductionCandidate[];
   profile: {
     budget: string;
     activeMinutes: number;
@@ -44,14 +54,25 @@ export interface ProductionPlannerInput {
   maxQuoteAgeMinutes?: number;
   /** Automatic rate optimization checks every feasible batch up to this bound, capped at 10,000. */
   maxCrafts?: number;
+  /** Maximum exact decision states for a focused candidate, capped at 10,000. Defaults to 10,000. */
+  maxOptimizationStates?: number;
+  gatheringEstimates?: Record<number, ProductionEstimate>;
   itemWeights?: Record<number, number>;
   customChoices?: Record<number, ProductionChoice>;
   customRecipes?: Record<number, string>;
   useOwnedInProduction?: boolean;
+  /** False for economic simulations independent of current purchasing capacity. Defaults to true. */
+  enforcePurchaseLimits?: boolean;
+  /** False when market prices are used as valuation references regardless of current stock. */
+  enforceMarketAvailability?: boolean;
   byproductValues?: Record<
     string,
     { itemId: number; expectedQuantity: number; unitPrice: string; sell: boolean }[]
   >;
+  /** Explicit market-sale choices for leftover outputs of intermediate recipes. */
+  surplusSales?: Record<number, boolean>;
+  /** Selected intermediate recipes whose rare output can replace ordinary dishes. */
+  useRareProcs?: Record<string, boolean>;
 }
 export interface ProductionIssue {
   code:
@@ -70,6 +91,7 @@ export interface ProductionIssue {
     | 'time'
     | 'weight'
     | 'missing-weight'
+    | 'optimization-limit'
     | 'invalid-input';
   message: string;
   itemId?: number;
@@ -99,7 +121,12 @@ export interface ProductionPlan {
     bought: number;
     owned: number;
     produced: number;
+    /** Base-item equivalent fulfilled with selected rare outputs. */
+    substituted: number;
   }[];
+  returns: { itemId: number; quantity: number; sell: boolean }[];
+  /** Exact source decisions certified by the optimized scenario. */
+  sourceChoices?: Record<number, ProductionChoice>;
   steps: { recipeId: string; crafts: number; output: number; seconds: number | null }[];
 }
 export interface ProductionPlannerResult {
@@ -158,6 +185,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     recipeId: string,
     crafts: number,
     scenario: ProductionScenario,
+    optimizedChoices: Record<number, ProductionChoice> = {},
   ): ProductionPlan {
     const root = recipes.get(recipeId);
     const issues: ProductionIssue[] = [];
@@ -169,7 +197,9 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       if (
         !issues.some(
           (row) =>
-            row.code === code && row.itemId === details.itemId && row.recipeId === details.recipeId,
+            row.code === code &&
+            row.itemId === details.itemId &&
+            (details.itemId !== undefined || row.recipeId === details.recipeId),
         )
       )
         issues.push({ code, message, ...details });
@@ -177,7 +207,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const assumptions = new Set<string>([
       'Materiais próprios são avaliados pelo preço de reposição informado; não são gratuitos.',
       'Receita de venda usa o imposto e os bônus informados; a cotação não garante venda imediata.',
-      'Tempos e rendimentos são premissas explícitas, sem extrapolar fórmulas de maestria.',
+      'Tempos calibrados e rendimentos seguem estimativas ou medições informadas; a maestria só é aplicada quando há regra catalogada.',
     ]);
     const owned = new Map<number, bigint>();
     for (const entry of input.inventory) {
@@ -189,17 +219,32 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const surplus = new Map<number, bigint>();
     const materials = new Map<
       number,
-      { itemId: number; required: bigint; bought: bigint; owned: bigint; produced: bigint }
+      {
+        itemId: number;
+        required: bigint;
+        bought: bigint;
+        owned: bigint;
+        produced: bigint;
+        substituted: bigint;
+      }
     >();
     const material = (id: number) => {
       let row = materials.get(id);
       if (!row) {
-        row = { itemId: id, required: 0n, bought: 0n, owned: 0n, produced: 0n };
+        row = { itemId: id, required: 0n, bought: 0n, owned: 0n, produced: 0n, substituted: 0n };
         materials.set(id, row);
       }
       return row;
     };
     const steps: ProductionPlan['steps'] = [];
+    const returns = new Map<number, { quantity: bigint; sell: boolean }>();
+    const addReturn = (itemId: number, quantity: bigint, sell: boolean) => {
+      if (quantity <= 0n) return;
+      const current = returns.get(itemId) ?? { quantity: 0n, sell };
+      current.quantity += quantity;
+      current.sell ||= sell;
+      returns.set(itemId, current);
+    };
     const weightSteps: {
       ingredients: { itemId: number; quantity: bigint }[];
       outputs: { itemId: number; quantity: bigint | null }[];
@@ -212,6 +257,8 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     let output: bigint | null = null;
     let byproductGross = 0n;
     let byproductNet = 0n;
+    let surplusGross = 0n;
+    let surplusNet = 0n;
 
     function quote(id: number, buying = false): bigint | null {
       const value = input.quotes[id];
@@ -230,6 +277,8 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           issue('stale-quote', 'Atualize a cotação de mercado.', { itemId: id });
         if (
           buying &&
+          input.enforcePurchaseLimits !== false &&
+          input.enforceMarketAvailability !== false &&
           (value.available === null || !Number.isFinite(value.available) || value.available < 0)
         )
           issue('unknown-availability', 'Informe a quantidade disponível no mercado.', {
@@ -250,6 +299,8 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       }
       const value = input.quotes[id];
       if (
+        input.enforcePurchaseLimits !== false &&
+        input.enforceMarketAvailability !== false &&
         value?.source === 'market' &&
         value.available !== null &&
         Number.isFinite(value.available) &&
@@ -273,7 +324,12 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       return needed - used;
     }
 
-    function satisfy(id: number, quantity: bigint, path: Set<string>) {
+    function satisfy(
+      id: number,
+      quantity: bigint,
+      path: Set<string>,
+      maxRareSubstitutionPerOperation = 3,
+    ) {
       const row = material(id);
       row.required += quantity;
       const choice: ProductionChoice =
@@ -281,8 +337,10 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           ? 'buy'
           : scenario === 'produce-all'
             ? 'produce'
-            : (input.customChoices?.[id] ?? 'buy');
-      if (choice === 'buy') {
+            : scenario === 'optimized'
+              ? (optimizedChoices[id] ?? 'buy')
+              : (input.customChoices?.[id] ?? 'buy');
+      if (choice === 'buy' && scenario !== 'optimized') {
         purchase(id, quantity);
         return;
       }
@@ -291,13 +349,56 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       const reused = made < missing ? made : missing;
       missing -= reused;
       surplus.set(id, made - reused);
-      if (choice === 'stock' || (scenario === 'produce-all' && input.useOwnedInProduction))
+      if (
+        choice === 'stock' ||
+        (input.useOwnedInProduction &&
+          (scenario === 'produce-all' ||
+            scenario === 'optimized' ||
+            (scenario === 'custom' && choice !== 'buy')))
+      )
         missing = useStock(id, missing);
       if (missing === 0n) return;
+      if (choice === 'buy') {
+        purchase(id, missing);
+        return;
+      }
       if (choice === 'stock') {
         issue('stock-shortage', 'O estoque livre não cobre o cenário personalizado.', {
           itemId: id,
         });
+        return;
+      }
+      if (choice === 'gather') {
+        const estimate = input.gatheringEstimates?.[id];
+        const yieldValue = estimate?.expectedYield;
+        const seconds = estimate?.craftSeconds;
+        if (!positive(yieldValue) || scaled(yieldValue) === 0n) {
+          issue('missing-yield', 'Informe o rendimento esperado da coleta.', { itemId: id });
+          costsKnown = false;
+        }
+        if (!positive(seconds) || Math.round(seconds * 1000) === 0) {
+          issue('missing-time', 'Informe os segundos por operação de coleta.', { itemId: id });
+          timesKnown = false;
+        }
+        if (!positive(yieldValue) || scaled(yieldValue) === 0n) return;
+        const count = ceilDivide(missing, scaled(yieldValue));
+        if (count > 1_000_000_000n) {
+          issue('invalid-input', 'A coleta excede o limite de operações.', { itemId: id });
+          return;
+        }
+        const gathered = count * scaled(yieldValue);
+        material(id).produced += gathered;
+        surplus.set(id, (surplus.get(id) ?? 0n) + gathered - missing);
+        if (positive(seconds) && Math.round(seconds * 1000) > 0)
+          totalMilliseconds += BigInt(Math.round(seconds * 1000)) * count;
+        steps.push({
+          recipeId: `gather:${id}`,
+          crafts: Number(count),
+          output: unscaled(gathered),
+          seconds: positive(seconds) ? seconds * Number(count) : null,
+        });
+        weightSteps.push({ ingredients: [], outputs: [{ itemId: id, quantity: gathered }] });
+        assumptions.add(`Item ${id}: coleta estimada com rendimento e tempo calibrados.`);
         return;
       }
       const producer = producers.get(id);
@@ -309,17 +410,25 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         else purchase(id, missing);
         return;
       }
-      const yieldValue = recipeYield(producer);
+      const rareRatio =
+        input.useRareProcs?.[producer.id] && producer.rareSubstitution
+          ? Math.min(
+              3,
+              producer.rareSubstitution.ratio,
+              Math.max(1, Math.ceil(maxRareSubstitutionPerOperation)),
+            )
+          : 0;
+      const yieldValue = recipeYieldForDemand(producer, rareRatio);
       if (yieldValue === null) return;
       const count = ceilDivide(missing, yieldValue);
       if (count > 1_000_000_000n) {
         issue('invalid-input', 'A cadeia excede o limite de operações.', { recipeId: producer.id });
         return;
       }
-      const produced = produce(producer, Number(count), path);
+      const produced = produce(producer, Number(count), path, missing, rareRatio);
       if (produced !== null) {
         row.produced += produced;
-        surplus.set(id, (surplus.get(id) ?? 0n) + produced - missing);
+        surplus.set(id, (surplus.get(id) ?? 0n) + (produced > missing ? produced - missing : 0n));
       }
     }
 
@@ -349,7 +458,55 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       return scaled(value);
     }
 
-    function produce(recipe: ProductionRecipe, count: number, path: Set<string>): bigint | null {
+    function rareSubstitutionYield(recipe: ProductionRecipe, ratio: number): bigint {
+      if (!input.useRareProcs?.[recipe.id] || ratio === 0) return 0n;
+      const substitution = recipe.rareSubstitution;
+      const byproduct = substitution
+        ? recipe.byproducts?.find((part) => part.itemId === substitution.itemId)
+        : undefined;
+      if (
+        !substitution ||
+        !byproduct ||
+        !Number.isSafeInteger(substitution.itemId) ||
+        substitution.itemId < 1 ||
+        !Number.isSafeInteger(substitution.ratio) ||
+        substitution.ratio < 1 ||
+        substitution.ratio > 3
+      ) {
+        issue('invalid-input', 'A substituição por procs raros está mal configurada.', {
+          recipeId: recipe.id,
+        });
+        return 0n;
+      }
+      const expected = input.byproductValues?.[recipe.id]?.find(
+        (value) => value.itemId === substitution.itemId,
+      )?.expectedQuantity;
+      const quantity = expected ?? exactQuantity(byproduct.quantity);
+      if (!positive(quantity)) {
+        issue('missing-yield', 'Informe o rendimento esperado do proc raro.', {
+          recipeId: recipe.id,
+          itemId: substitution.itemId,
+        });
+        return 0n;
+      }
+      return scaled(quantity) * BigInt(ratio);
+    }
+
+    function recipeYieldForDemand(
+      recipe: ProductionRecipe,
+      substitutionRatio: number,
+    ): bigint | null {
+      const primary = recipeYield(recipe);
+      return primary === null ? null : primary + rareSubstitutionYield(recipe, substitutionRatio);
+    }
+
+    function produce(
+      recipe: ProductionRecipe,
+      count: number,
+      path: Set<string>,
+      requiredQuantity?: bigint,
+      substitutionRatio = 0,
+    ): bigint | null {
       if (path.has(recipe.id)) {
         issue('cycle', 'A cadeia de ingredientes contém um ciclo.', { recipeId: recipe.id });
         costsKnown = false;
@@ -372,7 +529,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         }
         const total = scaled(quantity) * BigInt(count);
         ingredients.push({ itemId: part.itemId, quantity: total });
-        satisfy(part.itemId, total, next);
+        satisfy(part.itemId, total, next, quantity);
       }
       const seconds = input.estimates[recipe.id]?.craftSeconds;
       if (!positive(seconds) || Math.round(seconds * 1000) === 0) {
@@ -380,6 +537,45 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         timesKnown = false;
       } else totalMilliseconds += BigInt(Math.round(seconds * 1000)) * BigInt(count);
       const result = yieldValue * BigInt(count);
+      const substitution =
+        substitutionRatio > 0 && input.useRareProcs?.[recipe.id]
+          ? recipe.rareSubstitution
+          : undefined;
+      const substitutionPart = substitution
+        ? recipe.byproducts?.find((part) => part.itemId === substitution.itemId)
+        : undefined;
+      const substitutionQuantity =
+        substitution && substitutionPart
+          ? (input.byproductValues?.[recipe.id]?.find(
+              (value) => value.itemId === substitution.itemId,
+            )?.expectedQuantity ?? exactQuantity(substitutionPart.quantity))
+          : undefined;
+      const substitutionTotal = positive(substitutionQuantity)
+        ? scaled(substitutionQuantity) * BigInt(count)
+        : 0n;
+      const requiredBeyondPrimary =
+        requiredQuantity !== undefined && requiredQuantity > result
+          ? requiredQuantity - result
+          : 0n;
+      const consumedSubstitution =
+        substitution &&
+        substitutionPart &&
+        Number.isSafeInteger(substitution.ratio) &&
+        substitutionRatio > 0 &&
+        substitutionTotal > 0n &&
+        requiredBeyondPrimary > 0n
+          ? (() => {
+              const requiredUnits = ceilDivide(requiredBeyondPrimary, BigInt(substitutionRatio));
+              return requiredUnits < substitutionTotal ? requiredUnits : substitutionTotal;
+            })()
+          : 0n;
+      if (consumedSubstitution > 0n)
+        assumptions.add(
+          `${recipe.name}: ${unscaled(consumedSubstitution)} unidade(s) de procs raros usadas como ${unscaled(consumedSubstitution * BigInt(substitutionRatio))} unidade(s) do prato normal.`,
+        );
+      if (consumedSubstitution > 0n)
+        material(recipe.output.itemId).substituted +=
+          consumedSubstitution * BigInt(substitutionRatio);
       steps.push({
         recipeId: recipe.id,
         crafts: count,
@@ -394,15 +590,26 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             const expected =
               input.byproductValues?.[recipe.id]?.find((value) => value.itemId === part.itemId)
                 ?.expectedQuantity ?? exactQuantity(part.quantity);
+            const total = positive(expected) ? scaled(expected) * BigInt(count) : null;
             return {
               itemId: part.itemId,
-              quantity: positive(expected) ? scaled(expected) * BigInt(count) : null,
+              quantity:
+                total === null
+                  ? null
+                  : part.itemId === substitution?.itemId
+                    ? total - consumedSubstitution
+                    : total,
             };
           }),
         ],
       });
       for (const byproduct of input.byproductValues?.[recipe.id] ?? []) {
-        if (!byproduct.sell) continue;
+        const total = positive(byproduct.expectedQuantity)
+          ? scaled(byproduct.expectedQuantity) * BigInt(count)
+          : 0n;
+        const consumed = byproduct.itemId === substitution?.itemId ? consumedSubstitution : 0n;
+        const remaining = total > consumed ? total - consumed : 0n;
+        if (!byproduct.sell || remaining === 0n) continue;
         if (!positive(byproduct.expectedQuantity) || !money(byproduct.unitPrice)) {
           issue('invalid-input', 'A valoração de subproduto é inválida.', {
             recipeId: recipe.id,
@@ -417,14 +624,27 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           });
           continue;
         }
-        const gross =
-          (scaled(byproduct.expectedQuantity) * BigInt(count) * BigInt(byproduct.unitPrice)) /
-          QUANTITY_SCALE;
+        const gross = (remaining * BigInt(byproduct.unitPrice)) / QUANTITY_SCALE;
         byproductGross += gross;
         byproductNet += net(gross);
         assumptions.add(
           `${recipe.name}: subproduto ${byproduct.itemId} valorizado pelo rendimento e preço explicitamente informados.`,
         );
+      }
+      for (const byproduct of recipe.byproducts ?? []) {
+        const configured = input.byproductValues?.[recipe.id]?.find(
+          (value) => value.itemId === byproduct.itemId,
+        );
+        const quantity = configured?.expectedQuantity ?? exactQuantity(byproduct.quantity);
+        if (positive(quantity)) {
+          const total = scaled(quantity) * BigInt(count);
+          const consumed = byproduct.itemId === substitution?.itemId ? consumedSubstitution : 0n;
+          addReturn(
+            byproduct.itemId,
+            total > consumed ? total - consumed : 0n,
+            configured?.sell ?? false,
+          );
+        }
       }
       return result;
     }
@@ -444,9 +664,18 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     else output = produce(root, crafts, new Set());
     const cash = costsKnown ? ceilDivide(cashScaled, QUANTITY_SCALE) : null;
     const economic = costsKnown ? ceilDivide(economicScaled, QUANTITY_SCALE) : null;
-    if (cash !== null && money(input.profile.budget) && cash > BigInt(input.profile.budget))
+    if (
+      input.enforcePurchaseLimits !== false &&
+      cash !== null &&
+      money(input.profile.budget) &&
+      cash > BigInt(input.profile.budget)
+    )
       issue('budget', 'A prata disponível não cobre as compras do lote.');
-    if (timesKnown && unscaled(totalMilliseconds * 1000n) > input.profile.activeMinutes * 60)
+    if (
+      input.enforcePurchaseLimits !== false &&
+      timesKnown &&
+      unscaled(totalMilliseconds * 1000n) > input.profile.activeMinutes * 60
+    )
       issue('time', 'A cadeia excede o tempo ativo disponível.');
 
     let peakWeight: number | null = null;
@@ -501,10 +730,30 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         'Peso simula a compra dos materiais do lote antes da cadeia; peso atual deve excluir os materiais próprios alocados ao lote.',
       );
     }
+    for (const [itemId, quantity] of surplus) {
+      if (quantity <= 0n) continue;
+      const sell = input.surplusSales?.[itemId] ?? false;
+      addReturn(itemId, quantity, sell);
+      if (!sell) continue;
+      const saleQuote = input.quotes[itemId];
+      if (saleQuote?.source !== 'market') {
+        issue('missing-quote', 'Informe uma cotação de mercado para vender o excedente.', {
+          itemId,
+        });
+        continue;
+      }
+      const unitPrice = quote(itemId);
+      if (unitPrice === null) continue;
+      const gross = (quantity * unitPrice) / QUANTITY_SCALE;
+      surplusGross += gross;
+      surplusNet += net(gross);
+      assumptions.add(`Excedente do item ${itemId} valorizado pelo preço de mercado informado.`);
+    }
+
     const salePrice = root && output !== null ? quote(root.output.itemId) : null;
     const gross =
       output !== null && salePrice !== null ? (output * salePrice) / QUANTITY_SCALE : null;
-    const revenue = gross === null ? null : net(gross) + byproductNet;
+    const revenue = gross === null ? null : net(gross) + byproductNet + surplusNet;
     const profit =
       issues.length === 0 && revenue !== null && economic !== null ? revenue - economic : null;
     const perHour =
@@ -521,7 +770,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       durationMilliseconds: timesKnown ? String(totalMilliseconds) : null,
       cashCost: cash === null ? null : String(cash),
       economicCost: economic === null ? null : String(economic),
-      grossRevenue: gross === null ? null : String(gross + byproductGross),
+      grossRevenue: gross === null ? null : String(gross + byproductGross + surplusGross),
       netRevenue: revenue === null ? null : String(revenue),
       profit: profit === null ? null : String(profit),
       profitPerHour: perHour === null ? null : String(perHour),
@@ -534,11 +783,258 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
         bought: unscaled(part.bought),
         owned: unscaled(part.owned),
         produced: unscaled(part.produced),
+        substituted: unscaled(part.substituted),
       })),
+      returns: [...returns].map(([itemId, value]) => ({
+        itemId,
+        quantity: unscaled(value.quantity),
+        sell: value.sell,
+      })),
+      ...(scenario === 'optimized'
+        ? {
+            sourceChoices: Object.fromEntries(
+              [...materials.keys()].map((itemId) => [itemId, optimizedChoices[itemId] ?? 'buy']),
+            ),
+          }
+        : {}),
       steps,
     };
     durations.set(plan, totalMilliseconds);
     return plan;
+  }
+
+  function optimizationRevenueCeiling(
+    recipeId: string,
+    crafts: number,
+    choices: Readonly<Record<number, ProductionChoice>>,
+  ): bigint | null {
+    const root = recipes.get(recipeId);
+    if (!root) return null;
+    const postorder: ProductionRecipe[] = [];
+    const visited = new Set<string>();
+    const active = new Set<string>();
+    const visit = (recipe: ProductionRecipe): boolean => {
+      if (active.has(recipe.id)) return false;
+      if (visited.has(recipe.id)) return true;
+      active.add(recipe.id);
+      for (const ingredient of recipe.ingredients) {
+        const choice = choices[ingredient.itemId];
+        if (choice === 'buy') continue;
+        if (choice === 'gather' || choice === 'stock') return false;
+        const producer = producers.get(ingredient.itemId);
+        if (producer && active.has(producer.id)) {
+          if (choice === 'produce') return false;
+          continue;
+        }
+        if (producer && !visit(producer)) return false;
+      }
+      active.delete(recipe.id);
+      visited.add(recipe.id);
+      postorder.push(recipe);
+      return true;
+    };
+    if (!visit(root)) return null;
+    const order = postorder.reverse();
+    const yieldOf = (recipe: ProductionRecipe) => {
+      const estimate =
+        input.estimates[recipe.id]?.expectedYield ?? exactQuantity(recipe.output.quantity);
+      return positive(estimate) && scaled(estimate) > 0n ? scaled(estimate) : null;
+    };
+    const rootYield = yieldOf(root);
+    const rootQuote = input.quotes[root.output.itemId]?.unitPrice;
+    if (!rootYield || !money(rootQuote) || rootQuote === '0') return null;
+    const requestedCrafts = BigInt(crafts);
+    let revenueGross = (rootYield * requestedCrafts * BigInt(rootQuote)) / QUANTITY_SCALE;
+    const demands = new Map<number, bigint>();
+    const calls = new Map<string, bigint>([[root.id, 1n]]);
+
+    const addByproductCeiling = (recipe: ProductionRecipe, recipeCrafts: bigint) => {
+      for (const byproduct of input.byproductValues?.[recipe.id] ?? []) {
+        if (!byproduct.sell || !positive(byproduct.expectedQuantity) || !money(byproduct.unitPrice))
+          continue;
+        revenueGross +=
+          (scaled(byproduct.expectedQuantity) * recipeCrafts * BigInt(byproduct.unitPrice)) /
+          QUANTITY_SCALE;
+      }
+    };
+    const addIngredientDemand = (
+      recipe: ProductionRecipe,
+      recipeCrafts: bigint,
+      recipeCalls: bigint,
+    ): boolean => {
+      for (const ingredient of recipe.ingredients) {
+        const choice = choices[ingredient.itemId];
+        if (choice === 'buy') continue;
+        const quantity = exactQuantity(ingredient.quantity);
+        if (quantity === undefined) return false;
+        const producer = producers.get(ingredient.itemId);
+        if (!producer) continue;
+        demands.set(
+          ingredient.itemId,
+          (demands.get(ingredient.itemId) ?? 0n) + scaled(quantity) * recipeCrafts,
+        );
+        calls.set(producer.id, (calls.get(producer.id) ?? 0n) + recipeCalls);
+      }
+      return true;
+    };
+
+    addByproductCeiling(root, requestedCrafts);
+    if (!addIngredientDemand(root, requestedCrafts, 1n)) return null;
+    for (const recipe of order.slice(1)) {
+      const recipeCalls = calls.get(recipe.id) ?? 0n;
+      const demand = demands.get(recipe.output.itemId) ?? 0n;
+      if (recipeCalls === 0n || demand === 0n) continue;
+      const yieldScaled = yieldOf(recipe);
+      if (!yieldScaled) return null;
+      // The per-call ceiling allows one extra operation for every incoming
+      // request, covering batches that cannot reuse another call's surplus.
+      const recipeCrafts = ceilDivide(demand, yieldScaled) + recipeCalls;
+      addByproductCeiling(recipe, recipeCrafts);
+
+      const saleQuote = input.quotes[recipe.output.itemId];
+      if (
+        input.surplusSales?.[recipe.output.itemId] &&
+        saleQuote?.source === 'market' &&
+        money(saleQuote.unitPrice) &&
+        saleQuote.unitPrice !== '0'
+      ) {
+        // Each production call can leave less than one recipe yield as surplus.
+        revenueGross +=
+          ((yieldScaled - 1n) * recipeCalls * BigInt(saleQuote.unitPrice)) / QUANTITY_SCALE;
+      }
+      if (!addIngredientDemand(recipe, recipeCrafts, recipeCalls)) return null;
+    }
+    return net(revenueGross);
+  }
+
+  function minimumEconomicCost(
+    recipeId: string,
+    crafts: number,
+    choices: Readonly<Record<number, ProductionChoice>>,
+  ): bigint {
+    const root = recipes.get(recipeId);
+    if (!root) return 0n;
+    const unitCosts = new Map<number, bigint>();
+    const minimumUnitCost = (itemId: number, path: ReadonlySet<number>): bigint => {
+      if (path.has(itemId)) return 0n;
+      const choice = choices[itemId];
+      const quote = input.quotes[itemId]?.unitPrice;
+      const buyCost = money(quote) && quote !== '0' ? BigInt(quote) : null;
+      if (choice === 'buy') return buyCost ?? 0n;
+      if (choice === 'gather' || choice === 'stock') return 0n;
+      const cached = unitCosts.get(itemId);
+      if (cached !== undefined) return cached;
+      const producer = producers.get(itemId);
+      if (!producer) return buyCost ?? 0n;
+      const yieldScaled =
+        input.estimates[producer.id]?.expectedYield ?? exactQuantity(producer.output.quantity);
+      if (!positive(yieldScaled)) return choice === 'produce' ? 0n : (buyCost ?? 0n);
+      let ingredientCostScaled = 0n;
+      const nextPath = new Set(path).add(itemId);
+      for (const ingredient of producer.ingredients) {
+        const quantity = exactQuantity(ingredient.quantity);
+        if (quantity === undefined) return choice === 'produce' ? 0n : (buyCost ?? 0n);
+        ingredientCostScaled += scaled(quantity) * minimumUnitCost(ingredient.itemId, nextPath);
+      }
+      const producedCost = ingredientCostScaled / scaled(yieldScaled);
+      const result =
+        choice === 'produce'
+          ? producedCost
+          : buyCost === null || producedCost < buyCost
+            ? producedCost
+            : buyCost;
+      unitCosts.set(itemId, result);
+      return result;
+    };
+
+    let costScaled = 0n;
+    for (const ingredient of root.ingredients) {
+      const quantity = exactQuantity(ingredient.quantity);
+      if (quantity === undefined) return 0n;
+      costScaled +=
+        scaled(quantity) * BigInt(crafts) * minimumUnitCost(ingredient.itemId, new Set());
+    }
+    return costScaled / QUANTITY_SCALE;
+  }
+
+  function hasForcedProductionCycle(
+    recipeId: string,
+    choices: ReadonlyMap<number, ProductionChoice>,
+  ): boolean {
+    const root = recipes.get(recipeId);
+    if (!root) return false;
+    const visit = (recipe: ProductionRecipe, active: ReadonlySet<string>): boolean => {
+      const nextActive = new Set(active).add(recipe.id);
+      for (const ingredient of recipe.ingredients) {
+        if (choices.get(ingredient.itemId) !== 'produce') continue;
+        const producer = producers.get(ingredient.itemId);
+        if (!producer) continue;
+        if (nextActive.has(producer.id) || visit(producer, nextActive)) return true;
+      }
+      return false;
+    };
+    return visit(root, new Set());
+  }
+
+  const branchImpact = new Map<number, { recipes: number; milliseconds: number }>();
+  function optimizationBranchImpact(itemId: number): { recipes: number; milliseconds: number } {
+    const cached = branchImpact.get(itemId);
+    if (cached) return cached;
+    const recipesInBranch = new Set<string>();
+    const pending = [itemId];
+    let milliseconds = 0;
+    while (pending.length) {
+      const currentItemId = pending.pop()!;
+      const producer = producers.get(currentItemId);
+      if (!producer || recipesInBranch.has(producer.id)) continue;
+      recipesInBranch.add(producer.id);
+      const seconds = input.estimates[producer.id]?.craftSeconds;
+      if (positive(seconds)) milliseconds += Math.round(seconds * 1000);
+      for (const ingredient of producer.ingredients) pending.push(ingredient.itemId);
+    }
+    const impact = { recipes: recipesInBranch.size, milliseconds };
+    branchImpact.set(itemId, impact);
+    return impact;
+  }
+
+  function nextOptimizationDecision(
+    recipeId: string,
+    choices: ReadonlyMap<number, ProductionChoice>,
+  ): number | null {
+    const root = recipes.get(recipeId);
+    if (!root) return null;
+    const visitedItems = new Set<number>();
+    const frontier: number[] = [];
+    const visit = (itemId: number, activeRecipes: ReadonlySet<string>): number | null => {
+      if (visitedItems.has(itemId)) return null;
+      visitedItems.add(itemId);
+      const producer = producers.get(itemId);
+      const hasGatherEstimate = input.gatheringEstimates?.[itemId] !== undefined;
+      if (!producer && !hasGatherEstimate) return null;
+      const choice = choices.get(itemId);
+      if (!choice) {
+        frontier.push(itemId);
+        return null;
+      }
+      if (choice !== 'produce' || !producer || activeRecipes.has(producer.id)) return null;
+      const nextActive = new Set(activeRecipes).add(producer.id);
+      for (const ingredient of producer.ingredients) {
+        const next = visit(ingredient.itemId, nextActive);
+        if (next !== null) return next;
+      }
+      return null;
+    };
+    const activeRecipes = new Set([recipeId]);
+    for (const ingredient of root.ingredients) {
+      const next = visit(ingredient.itemId, activeRecipes);
+      if (next !== null) return next;
+    }
+    frontier.sort((left, right) => {
+      const a = optimizationBranchImpact(left);
+      const b = optimizationBranchImpact(right);
+      return b.recipes - a.recipes || b.milliseconds - a.milliseconds || left - right;
+    });
+    return frontier[0] ?? null;
   }
 
   const ranked: ProductionPlan[] = [];
@@ -583,6 +1079,182 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       }
       if (result.profitPerHour === null) incomplete.push(result);
       else ranked.push(result);
+    }
+    if (candidate.optimizeCrafts !== undefined) {
+      const rawLimit = input.maxOptimizationStates ?? 10_000;
+      const stateLimit =
+        Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 10_000) : 10_000;
+      if (
+        !Number.isSafeInteger(candidate.optimizeCrafts) ||
+        candidate.optimizeCrafts <= 0 ||
+        candidate.optimizeCrafts > 1_000_000_000
+      ) {
+        const result = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
+        if (result.profitPerHour === null) incomplete.push(result);
+        else ranked.push(result);
+      } else {
+        let best: ProductionPlan | null = null;
+        let bestPending: ProductionPlan | null = null;
+        let visitedStates = 0;
+        let boundPrunedStates = 0;
+        let duplicateStates = 0;
+        let cyclicChoicesPruned = 0;
+        let complete = true;
+        const betterThanCurrent = (plan: ProductionPlan, current: ProductionPlan) =>
+          compareRate(plan, current) > 0 ||
+          (compareRate(plan, current) === 0 &&
+            BigInt(plan.cashCost ?? '0') < BigInt(current.cashCost ?? '0'));
+        const allProducedChoices = Object.fromEntries(
+          [...producers.keys()].map((itemId) => [itemId, 'produce' as const]),
+        );
+        const hasGatheringAlternatives = Object.keys(input.gatheringEstimates ?? {}).length > 0;
+        const hasRareSubstitutions = Object.values(input.useRareProcs ?? {}).some(Boolean);
+        // Seed the search with complete plans already represented by the UI.
+        // A state limit must never discard a known better rate than the partial search found.
+        for (const choices of [{}, allProducedChoices, input.customChoices ?? {}]) {
+          const plan = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized', choices);
+          if (plan.profitPerHour !== null) {
+            if (best === null || betterThanCurrent(plan, best)) best = plan;
+          } else if (bestPending === null || plan.issues.length < bestPending.issues.length) {
+            bestPending = plan;
+          }
+        }
+        const initialChoices = new Map<number, ProductionChoice>();
+        const pending: Map<number, ProductionChoice>[] = [initialChoices];
+        const visited = new Set<string>();
+        while (pending.length) {
+          const choices = pending.pop()!;
+          const stateKey = [...choices]
+            .sort(([left], [right]) => left - right)
+            .map(([itemId, choice]) => `${itemId}:${choice}`)
+            .join('|');
+          if (visited.has(stateKey)) {
+            duplicateStates++;
+            continue;
+          }
+
+          const choiceRecord = Object.fromEntries(choices) as Record<number, ProductionChoice>;
+          if (best && !hasGatheringAlternatives && !hasRareSubstitutions) {
+            const optimistic = evaluate(
+              candidate.recipeId,
+              candidate.optimizeCrafts,
+              'optimized',
+              choiceRecord,
+            );
+            const revenueCeiling = optimizationRevenueCeiling(
+              candidate.recipeId,
+              candidate.optimizeCrafts,
+              choiceRecord,
+            );
+            const costFloor = minimumEconomicCost(
+              candidate.recipeId,
+              candidate.optimizeCrafts,
+              choiceRecord,
+            );
+            const lowerDuration = optimistic.durationMilliseconds;
+            if (
+              optimistic.netRevenue !== null &&
+              revenueCeiling !== null &&
+              lowerDuration !== null &&
+              BigInt(lowerDuration) > 0n &&
+              best.durationMilliseconds !== null &&
+              BigInt(best.durationMilliseconds) > 0n
+            ) {
+              const optimisticRevenue = BigInt(optimistic.netRevenue);
+              const profitRevenue =
+                optimisticRevenue > revenueCeiling ? optimisticRevenue : revenueCeiling;
+              const profitCeiling = profitRevenue > costFloor ? profitRevenue - costFloor : 0n;
+              const upperProfit = profitCeiling > 0n ? profitCeiling : 0n;
+              if (
+                BigInt(best.profit!) * BigInt(lowerDuration) >
+                upperProfit * BigInt(best.durationMilliseconds)
+              ) {
+                boundPrunedStates++;
+                continue;
+              }
+            }
+          }
+          if (visitedStates >= stateLimit) {
+            complete = false;
+            break;
+          }
+          visited.add(stateKey);
+          visitedStates++;
+          const nextItemId = nextOptimizationDecision(candidate.recipeId, choices);
+          if (nextItemId !== null) {
+            // A purchase without a price can never yield a complete economic plan.
+            // Exclude that branch before enumerating its downstream combinations.
+            const purchaseQuote = input.quotes[nextItemId];
+            const options: ProductionChoice[] =
+              purchaseQuote && money(purchaseQuote.unitPrice) && purchaseQuote.unitPrice !== '0'
+                ? ['buy']
+                : [];
+            if (producers.has(nextItemId)) {
+              const produceChoices = new Map(choices);
+              produceChoices.set(nextItemId, 'produce');
+              if (hasForcedProductionCycle(candidate.recipeId, produceChoices))
+                cyclicChoicesPruned++;
+              else options.push('produce');
+            }
+            if (input.gatheringEstimates?.[nextItemId]) options.push('gather');
+            if (!options.length) {
+              const blocked = evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized', {
+                ...choiceRecord,
+                [nextItemId]: 'buy',
+              });
+              if (bestPending === null || blocked.issues.length < bestPending.issues.length)
+                bestPending = blocked;
+              continue;
+            }
+            for (const option of options.reverse()) {
+              const nextChoices = new Map(choices);
+              nextChoices.set(nextItemId, option);
+              pending.push(nextChoices);
+            }
+            continue;
+          }
+          const result = evaluate(
+            candidate.recipeId,
+            candidate.optimizeCrafts,
+            'optimized',
+            choiceRecord,
+          );
+          if (result.profitPerHour !== null) {
+            if (best === null || betterThanCurrent(result, best)) best = result;
+          } else if (bestPending === null || result.issues.length < bestPending.issues.length) {
+            bestPending = result;
+          }
+        }
+        if (pending.length) complete = false;
+        const result =
+          best ??
+          bestPending ??
+          evaluate(candidate.recipeId, candidate.optimizeCrafts, 'optimized');
+        result.assumptions.push(
+          `Busca exata por estados alcançáveis: ${visitedStates} visitados, ${boundPrunedStates} estados podados pelo limite superior seguro e ${duplicateStates} duplicados eliminados, limite de ${stateLimit}.`,
+        );
+        if (cyclicChoicesPruned > 0)
+          result.assumptions.push(
+            `${cyclicChoicesPruned} escolhas de produção que criariam ciclos foram descartadas por não formarem planos viáveis.`,
+          );
+        if (!complete) {
+          result.issues.push({
+            code: 'optimization-limit',
+            message: `A busca excedeu o limite de ${stateLimit} estados; não há combinação ótima certificada.`,
+            recipeId: candidate.recipeId,
+          });
+          result.assumptions.push(
+            'O limite de segurança foi alcançado. As métricas mostram o melhor candidato encontrado; a busca não certifica que seja o ótimo global.',
+          );
+          incomplete.push(result);
+        } else {
+          result.assumptions.push(
+            'A busca automática avaliou todas as escolhas alcançáveis de compra, produção e coleta para a fórmula selecionada.',
+          );
+          if (best) ranked.push(best);
+          else incomplete.push(result);
+        }
+      }
     }
   }
   ranked.sort((a, b) => {

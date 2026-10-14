@@ -1,5 +1,5 @@
 <div class="tool-page recipe-explorer">
-  <header class="tool-heading">
+  <header class="tool-heading" [hidden]="!!item()">
     <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
     <h1 i18n>Oficina de produção</h1>
     <p [hidden]="!!item()" i18n>
@@ -24,11 +24,16 @@
     </p>
   </details>
   @if (loading()) {
-    <p class="loading-state" role="status" i18n>Carregando item e receitas…</p>
+    <p class="loading-state" [class.refresh-status]="!!result()" role="status" i18n>
+      Carregando item e receitas…
+    </p>
   }
   @if (message()) {
     <p class="error-box" role="alert">
-      {{ message() }} <button type="button" (click)="retry()" i18n>Tentar novamente</button>
+      {{ message() }}
+      <button hlmBtn variant="outline" type="button" (click)="retry()" i18n>
+        Tentar novamente
+      </button>
     </p>
   }
   @if (item(); as selected) {
@@ -38,13 +43,12 @@
       [selectedItem]="selected"
       [datasetVersion]="dataset()?.version ?? ''"
       (rootMethod)="setMethod($event)"
-      (advancedChanged)="advanced.set($event)"
     >
       <div recipe-method>
         @if (alternatives().length) {
           <section class="recipe-methods">
-            <label for="root-recipe" i18n>Como você quer obter este item?</label
-            ><select id="root-recipe" (change)="choose($event)">
+            <label for="root-recipe" i18n>Fórmula</label
+            ><select appBdoSelect id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
               @for (method of methods(); track method.key) {
                 <option [value]="method.key" [selected]="method.key === selectedMethodKey()">
@@ -52,28 +56,22 @@
                 </option>
               }
             </select>
-            <div class="item-toolbar">
-              <span class="help" i18n
-                >{{ methods().length }} métodos · ingredientes equivalentes na mesma receita</span
-              >
-              <a [routerLink]="['/market/items', selected.id]" i18n>Informações do item →</a>
-            </div>
-            @if (recipe(); as method) {
-              <details class="ingredient-preview">
-                <summary i18n>{{ method.inputs.length }} ingredientes por operação</summary>
-                <div class="method-ingredients">
-                  @for (part of method.inputs; track $index) {
-                    <span
-                      ><app-item-icon [url]="api.resolveIconUrl(part)" [name]="part.name" />{{
-                        part.name
-                      }}
-                      × {{ part.quantity ?? 'a confirmar' }}</span
-                    >
-                  }
-                </div>
-              </details>
-            }
           </section>
+          @if (rootBatchOptions().length > 1) {
+            <section class="recipe-methods recipe-batch-size">
+              <label for="root-recipe-batch" i18n>Produção por operação</label>
+              <select appBdoSelect id="root-recipe-batch" (change)="chooseBatch($event)">
+                @for (batch of rootBatchOptions(); track batch.recipe.key) {
+                  <option
+                    [value]="batch.recipe.key"
+                    [selected]="batch.recipe.key === recipe()?.key"
+                  >
+                    {{ batch.quantity }} unidades por operação
+                  </option>
+                }
+              </select>
+            </section>
+          }
         } @else {
           <p class="notice" i18n>
             Não há receita vinculada a este item na extração disponível. Explore a descrição e as
@@ -90,7 +88,12 @@
       </div>
       <label class="field recipe-group-filter" for="recipe-group">
         <ng-container i18n>Atividade</ng-container>
-        <select id="recipe-group" [value]="recipeGroup()" (change)="filterGroup($event)">
+        <select
+          appBdoSelect
+          id="recipe-group"
+          [value]="recipeGroup()"
+          (change)="filterGroup($event)"
+        >
           <option value="" i18n>Todas as profissões</option>
           <option value="cooking" i18n>Culinária</option>
           <option value="alchemy" i18n>Alquimia</option>
@@ -113,24 +116,29 @@
         }
       </div>
       <nav class="action-row pagination-bar" aria-label="Páginas de receitas" i18n-aria-label>
-        <button (click)="move(-1)" [disabled]="page === 1" i18n>Anterior</button
+        <button hlmBtn variant="outline" (click)="move(-1)" [disabled]="page === 1" i18n>
+          Anterior</button
         ><span>{{ page }}</span
-        ><button (click)="move(1)" [disabled]="page * list.pageSize >= list.total" i18n>
+        ><button
+          hlmBtn
+          variant="outline"
+          (click)="move(1)"
+          [disabled]="page * list.pageSize >= list.total"
+          i18n
+        >
           Próxima
         </button>
       </nav>
     </section>
   }
-  @if (advanced() || !item()) {
-    @if (dataset(); as data) {
-      <details class="dataset-provenance">
-        <summary i18n>Fonte e versão do catálogo · {{ data.region.toUpperCase() }}</summary>
-        <p>
-          Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
-          {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
-          rendimentos podem ter lacunas ou divergências.
-        </p>
-      </details>
-    }
+  @if (dataset(); as data) {
+    <details class="dataset-provenance">
+      <summary i18n>Fonte e versão do catálogo · {{ data.region.toUpperCase() }}</summary>
+      <p>
+        Catálogo extraído do jogo · {{ data.region.toUpperCase() }} / {{ data.locale }} ·
+        {{ data.version }}<br />Dados importados: {{ data.importedAt }}. Receitas, descrições e
+        rendimentos podem ter lacunas ou divergências.
+      </p>
+    </details>
   }
 </div>

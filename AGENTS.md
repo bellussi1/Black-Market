@@ -27,6 +27,7 @@ Para que você (Codex ou Antigravity) saiba exatamente o que o outro agente fez 
 2. **Durante o Desenvolvimento**:
    - Mantenha alterações coesas e evite deixar arquivos quebrados ao terminar um turno.
    - Siga as regras de UI definidas na skill `.agents/skills/bdo-ui-design/SKILL.md`.
+   - Para composição e revisão visual, use `.agents/skills/ui-design/SKILL.md` e seu agente `.agents/skills/ui-design/agents/design-ui.md`. Para implementação, consulte as skills oficiais `angular-developer` e `spartan`.
 3. **Ao Finalizar o Turno (ou quando o limite de mensagens estiver próximo)**:
    - Atualize [`docs/ACTIVE_CONTEXT.md`](docs/ACTIVE_CONTEXT.md) documentando:
      - O que foi concluído.
