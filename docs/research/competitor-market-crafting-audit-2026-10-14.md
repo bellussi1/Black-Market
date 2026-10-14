@@ -128,4 +128,12 @@ Antes de comparar uma página entre ferramentas, registrar para cada cálculo: r
 
 ## Próximo passo
 
-Usar esta comparação como base para a implementação aprovada do piloto do Mercado. A proposta de volume continua separada porque a unidade de `totalTrades` segue sem confirmação. Antes de mexer na ordenação padrão do mercado, verificar o comportamento atual por região e definir a pergunta principal que essa ordenação deve responder.
+Usar esta comparação para orientar o piloto do Mercado. A revisão em 14/10 já corrigiu os rótulos e removeu a inferência de giro baseada em `totalTrades`; os gaps remanescentes e a validação realizada estão registrados abaixo. Antes de alterar a ordenação padrão, definir qual decisão do usuário ela deve priorizar por região.
+
+## Atualização após validação local (14/10/2026)
+
+- O Black Market agora identifica `volume24h/15d/30d` na interface como **registros de negociações**, derivados da diferença observada de `totalTrades`. A descrição informa que a unidade não foi confirmada; o gráfico detalhado mantém a duração de cada intervalo.
+- A estimativa de dias de giro foi removida do produto. Dividir estoque por um contador sem semântica de unidades não comprova quantos itens são vendidos, então também não comprova escoamento. Uma futura estimativa deve usar uma fonte que exponha volume em unidades por janela e indicar cobertura/idade.
+- A leitura competitiva continua sendo: Garmoth e BDOLytics expõem sinais distintos como estoque, negociações acumuladas e métricas de vendas/volume; esses conceitos não devem ser fundidos em um único contador local. As comparações de preço e lucro dependem da região, período, imposto, quantidade e escolhas da cadeia; não tratar snapshots de regiões diferentes como teste de fórmula.
+- A validação de Refeição de Valência em 1.000 de maestria comparou o rendimento esperado do Black Market (276,7 Refeições, 40,93 especiais e 28,32 leites por 100 operações) com a página pública do BDOLytics (2.767, 409 e 283 por 1.000 operações). Os valores por lote alinham dentro do arredondamento. Isso valida os rendimentos mostrados nesse caso e parâmetro; não valida automaticamente preços, impostos ou todas as receitas.
+- Permanecem pendentes: preço corrente/referência no quadro do Mercado, estrutura tabular acessível no quadro, dados confirmados de unidades vendidas e reconciliação de pelo menos cinco receitas por profissão com região/parâmetros equivalentes.
