@@ -154,4 +154,36 @@ describe('tutorial guide update validation', () => {
       'anchorKey',
     ]);
   });
+
+  it.each([
+    ['multiline emphasis', '*ênfase\ncontinua*'],
+    ['multiline strong emphasis', '**ênfase\ncontinua**'],
+    ['multiline underscore emphasis', '_ênfase\r\ncontinua_'],
+    ['tables without outer pipes', 'Item | Quantidade\n--- | ---\nMadeira | 1'],
+    ['tables with aligned columns', 'Item | Quantidade\r\n:--- | ---:\r\nMadeira | 1'],
+  ])('rejects Markdown %s in either editorial field', (_description, text) => {
+    for (const field of ['title', 'body']) {
+      expectInvalid({ ...update, steps: [{ ...step, [field]: text }] }, ['steps', 0, field]);
+    }
+  });
+
+  it('accepts plain multiline prose and pipes without Markdown table delimiters', () => {
+    const body = 'Compare item | quantidade.\nUse o estoque disponível.';
+    expect(
+      parseTutorialGuideUpdate('market', 'pt-BR', {
+        ...update,
+        steps: [{ ...step, body }],
+      }).steps[0]?.body,
+    ).toBe(body);
+  });
+
+  it('accepts prose with different emphasis symbols on separate lines', () => {
+    const body = 'Use * para marcar favoritos.\nA opção _ fica ativa no painel.';
+    expect(
+      parseTutorialGuideUpdate('market', 'pt-BR', {
+        ...update,
+        steps: [{ ...step, body }],
+      }).steps[0]?.body,
+    ).toBe(body);
+  });
 });

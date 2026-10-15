@@ -9,12 +9,17 @@ import { z } from 'zod';
 
 // Reject formatting syntax while allowing ordinary punctuation in editorial text.
 const markupPattern =
-  /<[^>]*>|!?(?:\[[^\]\n]+\])(?:\([^\n]*\)|\[[^\]\n]*\])|[*_~]{1,2}[^\n]+?[*_~]{1,2}|`|^(?:\s{0,3}(?:#{1,6}(?:\s|$)|>|[-+*]\s|\d+[.)]\s|(?:[-*_]\s*){3,}$|[=-]+\s*$|\[[^\]]+\]:|\|.*\|)| {4}\S|\t\S)/m;
+  /<[^>]*>|!?(?:\[[^\]\n]+\])(?:\([^\n]*\)|\[[^\]\n]*\])|(\*{1,2}|_{1,2}|~{1,2})[\s\S]+?\1|`|^(?:\s{0,3}(?:#{1,6}(?:\s|$)|>|[-+*]\s|\d+[.)]\s|(?:[-*_]\s*){3,}$|[=-]+\s*$|\[[^\]]+\]:|\|.*\|)| {4}\S|\t\S)/m;
+const tableDelimiterPattern =
+  /^ {0,3}\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?[\t ]*\r?$/m;
 
 function plainText(maxLength: number) {
   return z
     .string()
-    .refine((value) => !markupPattern.test(value), 'Use texto simples, sem HTML ou Markdown.')
+    .refine(
+      (value) => !markupPattern.test(value) && !tableDelimiterPattern.test(value),
+      'Use texto simples, sem HTML ou Markdown.',
+    )
     .trim()
     .min(1)
     .max(maxLength);
