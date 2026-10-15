@@ -10,6 +10,7 @@ import { MarketModule } from './market/market.module';
 import { OperationsModule } from './operations/operations.module';
 import { ReferenceModule } from './reference/reference.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
+import { TutorialsModule } from './tutorials/tutorials.module';
 import { WorkspaceModule } from './workspace/workspace.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
     WorkspaceModule,
     ReferenceModule,
     RoadmapModule,
+    TutorialsModule,
     OperationsModule,
   ],
 })
