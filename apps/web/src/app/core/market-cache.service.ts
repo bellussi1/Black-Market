@@ -1,7 +1,15 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import type { OnDestroy } from '@angular/core';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import type { MarketBoardResponse, MarketItemQuote, MarketLookupResponse } from '@bdo/shared';
+import type {
+  MarketBoardDirection,
+  MarketBoardPageSize,
+  MarketBoardResponse,
+  MarketBoardSort,
+  MarketBoardStockFilter,
+  MarketItemQuote,
+  MarketLookupResponse,
+} from '@bdo/shared';
 import {
   catchError,
   concat,
@@ -11,6 +19,7 @@ import {
   mergeMap,
   type Observable,
   of,
+  shareReplay,
   takeLast,
   tap,
   toArray,
@@ -18,6 +27,19 @@ import {
 
 import { MarketApi } from '../features/market/market-api';
 import { type Region, RegionPreferences } from './region-preferences';
+
+export interface MarketBoardCacheQuery {
+  region: Region;
+  search: string;
+  categoryId: string;
+  sort: MarketBoardSort;
+  direction: MarketBoardDirection;
+  stock: MarketBoardStockFilter;
+  page: number;
+  pageSize: MarketBoardPageSize;
+  /** Client-side column ordering is also part of the rendered board identity. */
+  clientSort?: string;
+}
 
 export interface CachedQuoteEntry {
   quote: MarketItemQuote;
@@ -73,6 +95,7 @@ export class MarketCacheService implements OnDestroy {
 
   private pollTimer?: ReturnType<typeof setInterval>;
   private storageSaveTimer?: ReturnType<typeof setTimeout>;
+  private readonly boardRequests = new Map<string, Observable<CachedBoardEntry>>();
 
   constructor() {
     if (this.isBrowser) {
@@ -87,6 +110,66 @@ export class MarketCacheService implements OnDestroy {
    */
   quoteKey(itemId: number | string, region: Region, subId = 0): string {
     return `${region}:${itemId}:${subId}`;
+  }
+
+  /** Canonical key for one complete market-board query and its rendered ordering. */
+  boardKey(query: MarketBoardCacheQuery): string {
+    return `board:${JSON.stringify({
+      region: query.region,
+      search: query.search.trim(),
+      categoryId: query.categoryId,
+      sort: query.sort,
+      direction: query.direction,
+      stock: query.stock,
+      page: query.page,
+      pageSize: query.pageSize,
+      clientSort: query.clientSort ?? null,
+    })}`;
+  }
+
+  /**
+   * Resolves only the matching board query. Fresh entries return immediately;
+   * expired entries are emitted first while one shared refresh runs.
+   */
+  resolveBoard(query: MarketBoardCacheQuery, forceRefresh = false): Observable<CachedBoardEntry> {
+    const key = this.boardKey(query);
+    const cached = this.getCachedBoardResponse(key, query.region);
+    if (cached && cached.expiresAt > Date.now() && !forceRefresh) return of(cached);
+
+    let refresh = this.boardRequests.get(key);
+    if (!refresh) {
+      let request!: Observable<CachedBoardEntry>;
+      request = this.api
+        .board({
+          region: query.region,
+          q: query.search.trim(),
+          categoryId: query.categoryId,
+          sort: query.sort,
+          direction: query.direction,
+          stock: query.stock,
+          page: query.page,
+          pageSize: query.pageSize,
+        })
+        .pipe(
+          tap((response) => {
+            this.cacheBoardResponse(key, response, query.region);
+            this.lastSyncAt.set(new Date());
+          }),
+          map(() => {
+            const entry = this.getCachedBoardResponse(key, query.region);
+            if (!entry) throw new Error('A resposta do mercado não foi armazenada.');
+            return entry;
+          }),
+          finalize(() => {
+            if (this.boardRequests.get(key) === request) this.boardRequests.delete(key);
+          }),
+          shareReplay({ bufferSize: 1, refCount: true }),
+        );
+      this.boardRequests.set(key, request);
+      refresh = request;
+    }
+
+    return cached ? concat(of(cached), refresh) : refresh;
   }
 
   /**

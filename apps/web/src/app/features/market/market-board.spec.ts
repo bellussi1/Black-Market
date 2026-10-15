@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { MarketBoardResponse } from '@bdo/shared';
+import type { CatalogCategory, MarketBoardResponse } from '@bdo/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MarketCacheService } from '../../core/market-cache.service';
@@ -50,10 +50,20 @@ const takeRequest = () =>
     request.url.endsWith('/market/board'),
   );
 
+async function renderMarketBoard(categories: CatalogCategory[] = []) {
+  const fixture = await renderComponent(MarketBoard);
+  const requests = TestBed.inject(HttpTestingController).match((request) =>
+    request.url.endsWith('/categories'),
+  );
+  expect(requests).toHaveLength(1);
+  requests[0]?.flush({ categories, dataset: null });
+  return fixture;
+}
+
 describe('MarketBoard', () => {
   useMemoryStorage();
   it('shows only the observed mean price and opens details with the row button', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items[0].meanPrice = '1100';
     takeRequest().flush(data);
@@ -71,7 +81,7 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
   it('shows reference price and its basis separately from the 30-day mean', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items = [
       {
@@ -126,7 +136,7 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
   it('aligns market values with table headers and confines selection to the item cell', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     takeRequest().flush(response());
     fixture.detectChanges();
 
@@ -153,7 +163,7 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
   it('keeps catalogue results visible and explains unavailable provider quotes', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.scope = 'search';
     data.cacheStatus = 'stale';
@@ -181,7 +191,7 @@ describe('MarketBoard', () => {
   });
 
   it('paginates on the server and resets the page when changing page size', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const board = fixture.componentInstance;
     const request = takeRequest();
     expect(request.request.params.get('pageSize')).toBe('20');
@@ -202,7 +212,7 @@ describe('MarketBoard', () => {
   });
 
   it('keeps absent historical metrics unknown and emits the exact item variant', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items[0].subId = 3;
     takeRequest().flush(data);
@@ -219,7 +229,7 @@ describe('MarketBoard', () => {
   });
 
   it('labels market counter differences as registered trades, not item units', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items[0].volume24h = '35';
     takeRequest().flush(data);
@@ -238,7 +248,7 @@ describe('MarketBoard', () => {
   });
 
   it('filters the complete list before pagination and discards a pending older query', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const initial = takeRequest();
     fixture.componentInstance.filterCategory('alchemy');
     expect(initial.cancelled).toBe(true);
@@ -255,7 +265,7 @@ describe('MarketBoard', () => {
   });
 
   it('uses catalog search context and keeps unknown stock separate from zero', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     takeRequest().flush(response());
     fixture.componentInstance.find('676');
     fixture.componentInstance.load();
@@ -282,7 +292,7 @@ describe('MarketBoard', () => {
   });
 
   it('sorts columns interactively and calculates price trends', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items = [
       {
@@ -337,7 +347,7 @@ describe('MarketBoard', () => {
   });
 
   it('sends the stock filter to the API instead of filtering the visible page', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     data.items = [
       { ...data.items[0], itemId: 1, name: 'In Stock', stock: 15 },
@@ -366,7 +376,7 @@ describe('MarketBoard', () => {
   });
 
   it('uses a fresh same-query cache entry without requesting the board again', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     takeRequest().flush(data);
 
@@ -382,7 +392,7 @@ describe('MarketBoard', () => {
   });
 
   it('forces manual refresh while keeping the current table visible', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const first = response();
     takeRequest().flush(first);
 
@@ -398,7 +408,7 @@ describe('MarketBoard', () => {
   });
 
   it('returns to an earlier query from its matching cache entry', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const original = response();
     takeRequest().flush(original);
     const board = fixture.componentInstance;
@@ -420,11 +430,16 @@ describe('MarketBoard', () => {
   });
 
   it('cancels a pending response when the selected region changes', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const pending = takeRequest();
 
     TestBed.inject(RegionPreferences).setRegion('eu');
     fixture.detectChanges();
+    const categoryRequests = TestBed.inject(HttpTestingController).match((request) =>
+      request.url.endsWith('/categories'),
+    );
+    expect(categoryRequests).toHaveLength(1);
+    categoryRequests[0]?.flush({ categories: [], dataset: null });
 
     expect(pending.cancelled).toBe(true);
     const euRequest = takeRequest();
@@ -435,7 +450,7 @@ describe('MarketBoard', () => {
   });
 
   it('keeps stale cached results visible when background refresh fails', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     const data = response();
     takeRequest().flush(data);
 
@@ -459,8 +474,43 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
 
+  it('keeps catalog taxonomy visible through empty and failed category queries', async () => {
+    const categories: CatalogCategory[] = [
+      { id: 'materials', parentId: null, name: 'Materiais', sortOrder: 1 },
+      { id: 'ores', parentId: 'materials', name: 'Minérios', sortOrder: 1 },
+    ];
+    const fixture = await renderMarketBoard(categories);
+    const http = TestBed.inject(HttpTestingController);
+    takeRequest().flush({ ...response(), categories });
+    fixture.detectChanges();
+
+    const board = fixture.componentInstance;
+    board.filterCategory('materials');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(
+      'Materiais',
+    );
+    takeRequest().flush({ ...response(), categories: [], items: [], total: 0 });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(
+      'Minérios',
+    );
+
+    board.filterCategory('ores');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(
+      'Materiais',
+    );
+    takeRequest().flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(
+      'Minérios',
+    );
+    http.verify();
+  });
+
   it('does not display the previous search results while the next search is debounced', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     takeRequest().flush(response());
 
     fixture.componentInstance.find('Edania');
@@ -472,7 +522,7 @@ describe('MarketBoard', () => {
   });
 
   it('debounces search requests by 250 milliseconds', async () => {
-    const fixture = await renderComponent(MarketBoard);
+    const fixture = await renderMarketBoard();
     takeRequest().flush(response());
     const board = fixture.componentInstance;
 

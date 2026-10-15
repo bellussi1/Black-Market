@@ -115,10 +115,17 @@
   padding-left: 18px;
 }
 .category-list {
+  min-height: 180px;
   max-height: 600px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
+}
+.category-loading {
+  margin: 8px;
+  color: var(--bm-muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 .category-note {
   padding: 8px;

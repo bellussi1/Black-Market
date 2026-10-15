@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type {
+  CatalogCategory,
   MarketBoardItem,
   MarketBoardPageSize,
   MarketBoardResponse,
@@ -26,12 +27,15 @@ import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { type CachedBoardEntry, MarketCacheService } from '../../core/market-cache.service';
-import { RegionPreferences } from '../../core/region-preferences';
+import {
+  type CachedBoardEntry,
+  type MarketBoardCacheQuery,
+  MarketCacheService,
+} from '../../core/market-cache.service';
+import { type Region, RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
-import { MarketApi } from './market-api';
 import { MarketRefresh } from './market-refresh';
 
 export type StockFilterType = 'all' | 'in_stock' | 'out_of_stock' | 'with_volume';
@@ -56,7 +60,6 @@ export interface PriceRangePosition {
   styleUrl: './market-board.scss',
 })
 export class MarketBoard implements OnDestroy {
-  private readonly api = inject(MarketApi);
   readonly catalog = inject(CatalogApiService);
   readonly preferences = inject(RegionPreferences);
   readonly cache = inject(MarketCacheService);
@@ -68,6 +71,8 @@ export class MarketBoard implements OnDestroy {
   readonly cacheEntry = signal<CachedBoardEntry | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
+  readonly taxonomy = signal<CatalogCategory[]>([]);
+  readonly taxonomyLoading = signal(true);
   readonly category = signal('');
   readonly page = signal(1);
   readonly pageSize = signal<MarketBoardPageSize>(20);
@@ -86,19 +91,19 @@ export class MarketBoard implements OnDestroy {
   readonly date = date;
 
   readonly categoryRoots = computed(() => {
-    const categories = this.result()?.categories ?? [];
+    const categories = this.taxonomy();
     return categories.filter(
       (entry) => !entry.parentId || !categories.some((parent) => parent.id === entry.parentId),
     );
   });
 
   readonly selectedCategoryParent = computed(() => {
-    const entry = this.result()?.categories.find((category) => category.id === this.category());
+    const entry = this.taxonomy().find((category) => category.id === this.category());
     return entry?.parentId ?? entry?.id ?? '';
   });
 
   childrenOf(id: string) {
-    return this.result()?.categories.filter((entry) => entry.parentId === id) ?? [];
+    return this.taxonomy().filter((entry) => entry.parentId === id);
   }
 
   readonly pageCount = computed(() =>
@@ -225,6 +230,7 @@ export class MarketBoard implements OnDestroy {
   });
 
   private request?: Subscription;
+  private taxonomyRequest?: Subscription;
   private timer?: ReturnType<typeof setTimeout>;
   private resultKey = '';
   private readonly refresh = isPlatformBrowser(inject(PLATFORM_ID))
@@ -240,8 +246,12 @@ export class MarketBoard implements OnDestroy {
     });
 
     effect(() => {
-      this.preferences.region();
+      const region = this.preferences.region();
       untracked(() => {
+        this.taxonomyRequest?.unsubscribe();
+        this.taxonomy.set([]);
+        this.taxonomyLoading.set(true);
+        this.loadTaxonomy(region);
         this.page.set(1);
         this.category.set('');
         this.result.set(null);
@@ -252,25 +262,38 @@ export class MarketBoard implements OnDestroy {
     });
   }
 
-  private boardCacheKey(region: string): string {
-    return [
-      'board',
+  private loadTaxonomy(region: Region): void {
+    this.taxonomyRequest = this.catalog.getCategories().subscribe({
+      next: (response) => {
+        if (this.preferences.region() !== region) return;
+        this.taxonomy.set(response.categories);
+        this.taxonomyLoading.set(false);
+      },
+      error: () => {
+        if (this.preferences.region() === region) this.taxonomyLoading.set(false);
+      },
+    });
+  }
+
+  private boardQuery(region: Region): MarketBoardCacheQuery {
+    return {
       region,
-      this.search().trim(),
-      this.category(),
-      this.serverStockFilter(),
-      this.sort(),
-      this.sortColumn(),
-      this.sortDirection(),
-      this.page(),
-      this.pageSize(),
-    ].join(':');
+      search: this.search().trim(),
+      categoryId: this.category(),
+      sort: this.sort(),
+      direction: this.sortDirection(),
+      stock: this.serverStockFilter(),
+      page: this.page(),
+      pageSize: this.pageSize(),
+      clientSort: `${this.sortColumn()}:${this.sortDirection()}`,
+    };
   }
 
   load(options: { forceRefresh?: boolean; preservePrevious?: boolean } = {}): void {
     if (this.timer) clearTimeout(this.timer);
     const region = this.preferences.region();
-    const queryKey = this.boardCacheKey(region);
+    const query = this.boardQuery(region);
+    const queryKey = this.cache.boardKey(query);
     const cached = this.cache.getCachedBoardResponse(queryKey, region);
     const isFresh = cached !== null && cached.expiresAt > Date.now();
 
@@ -295,43 +318,35 @@ export class MarketBoard implements OnDestroy {
     this.loading.set(true);
     this.refresh?.markRefreshed();
 
-    this.request = this.api
-      .board({
-        region,
-        q: this.search().trim(),
-        categoryId: this.category(),
-        sort: this.sort(),
-        direction: this.sortDirection(),
-        stock: this.serverStockFilter(),
-        page: this.page(),
-        pageSize: this.pageSize(),
-      })
-      .subscribe({
-        next: (response) => {
-          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
-          this.refresh?.markRefreshed();
-          if (response.sort) this.sort.set(response.sort);
-          const responseKey = this.boardCacheKey(region);
-          this.result.set(response);
-          this.cache.cacheBoardResponse(responseKey, response, region);
-          this.cacheEntry.set(this.cache.getCachedBoardResponse(responseKey, region));
-          this.resultKey = responseKey;
-          this.loading.set(false);
-          if (this.page() > this.pageCount()) {
-            this.page.set(this.pageCount());
-            this.load();
-          }
-        },
-        error: () => {
-          if (this.boardCacheKey(this.preferences.region()) !== queryKey) return;
-          if (!cached && this.resultKey !== queryKey) {
-            this.result.set(null);
-            this.cacheEntry.set(null);
-          }
-          this.loading.set(false);
-          this.error.set('Não foi possível carregar o mercado. Tente novamente.');
-        },
-      });
+    this.request = this.cache.resolveBoard(query, options.forceRefresh).subscribe({
+      next: (entry) => {
+        if (this.cache.boardKey(this.boardQuery(this.preferences.region())) !== queryKey) return;
+        this.refresh?.markRefreshed();
+        this.loading.set(entry === cached);
+        if (entry.response.sort) this.sort.set(entry.response.sort);
+        if (!this.taxonomy().length && entry.response.categories.length)
+          this.taxonomy.set(entry.response.categories);
+        const responseKey = this.cache.boardKey(this.boardQuery(region));
+        if (responseKey !== queryKey) this.cache.cacheBoardAlias(responseKey, entry);
+        this.result.set(entry.response);
+        this.cacheEntry.set(this.cache.getCachedBoardResponse(responseKey, region));
+        this.resultKey = responseKey;
+        if (entry !== cached) this.loading.set(false);
+        if (this.page() > this.pageCount()) {
+          this.page.set(this.pageCount());
+          this.load();
+        }
+      },
+      error: () => {
+        if (this.cache.boardKey(this.boardQuery(this.preferences.region())) !== queryKey) return;
+        if (!cached && this.resultKey !== queryKey) {
+          this.result.set(null);
+          this.cacheEntry.set(null);
+        }
+        this.loading.set(false);
+        this.error.set('Não foi possível carregar o mercado. Tente novamente.');
+      },
+    });
   }
 
   find(value: string): void {
@@ -348,7 +363,7 @@ export class MarketBoard implements OnDestroy {
     this.page.set(1);
     this.request?.unsubscribe();
     const region = this.preferences.region();
-    const key = this.boardCacheKey(region);
+    const key = this.cache.boardKey(this.boardQuery(region));
     const cached = this.cache.getCachedBoardResponse(key, region);
     if (cached) {
       this.result.set(cached.response);
@@ -418,7 +433,7 @@ export class MarketBoard implements OnDestroy {
     const current = this.result();
     if (current) {
       const region = this.preferences.region();
-      const queryKey = this.boardCacheKey(region);
+      const queryKey = this.cache.boardKey(this.boardQuery(region));
       const source = this.cache.getCachedBoardResponse(this.resultKey, region);
       if (source) {
         this.cache.cacheBoardAlias(queryKey, source);
@@ -512,6 +527,7 @@ export class MarketBoard implements OnDestroy {
   ngOnDestroy(): void {
     this.refresh?.destroy();
     this.request?.unsubscribe();
+    this.taxonomyRequest?.unsubscribe();
     if (this.timer) clearTimeout(this.timer);
   }
 }

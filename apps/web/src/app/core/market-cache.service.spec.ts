@@ -429,6 +429,116 @@ describe('MarketCacheService', () => {
     expect(stale!.expiresAt).toBeLessThan(Date.now());
   });
 
+  it('keys board cache entries by every effective query field', () => {
+    const query = {
+      region: 'sa' as const,
+      search: 'beer',
+      categoryId: 'materials',
+      sort: 'name' as const,
+      direction: 'asc' as const,
+      stock: 'in_stock' as const,
+      page: 2,
+      pageSize: 50 as const,
+    };
+    const boardKey = (service as unknown as { boardKey?: (value: unknown) => string }).boardKey;
+    expect(boardKey).toBeTypeOf('function');
+    if (!boardKey) return;
+
+    const key = boardKey.call(service, query);
+    const variants = [
+      { ...query, region: 'eu' as const },
+      { ...query, search: 'wine' },
+      { ...query, categoryId: 'alchemy' },
+      { ...query, sort: 'price' as const },
+      { ...query, direction: 'desc' as const },
+      { ...query, stock: 'out_of_stock' as const },
+      { ...query, page: 3 },
+      { ...query, pageSize: 100 as const },
+    ];
+    for (const variant of variants) expect(boardKey.call(service, variant)).not.toBe(key);
+  });
+
+  it('shares one in-flight board request for identical query keys', () => {
+    const query = {
+      region: 'sa' as const,
+      search: '',
+      categoryId: '',
+      sort: 'hot' as const,
+      direction: 'desc' as const,
+      stock: 'all' as const,
+      page: 1,
+      pageSize: 20 as const,
+    };
+    const resolver = (
+      service as unknown as {
+        resolveBoard?: (
+          value: typeof query,
+          forceRefresh?: boolean,
+        ) => import('rxjs').Observable<unknown>;
+      }
+    ).resolveBoard;
+    expect(resolver).toBeTypeOf('function');
+    if (!resolver) return;
+
+    let first: unknown;
+    let second: unknown;
+    resolver.call(service, query).subscribe((value) => (first = value));
+    resolver.call(service, query).subscribe((value) => (second = value));
+    const requests = httpTesting.match((request) => request.url.endsWith('/market/board'));
+    expect(requests).toHaveLength(1);
+    requests[0]?.flush(mockBoardResponse);
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+    httpTesting.verify();
+  });
+
+  it('emits an exact stale board before refresh and preserves it after refresh failure', () => {
+    const query = {
+      region: 'sa' as const,
+      search: '',
+      categoryId: '',
+      sort: 'hot' as const,
+      direction: 'desc' as const,
+      stock: 'all' as const,
+      page: 1,
+      pageSize: 20 as const,
+    };
+    const boardKey = (service as unknown as { boardKey?: (value: unknown) => string }).boardKey;
+    const resolver = (
+      service as unknown as {
+        resolveBoard?: (
+          value: typeof query,
+          forceRefresh?: boolean,
+        ) => import('rxjs').Observable<unknown>;
+      }
+    ).resolveBoard;
+    expect(boardKey).toBeTypeOf('function');
+    expect(resolver).toBeTypeOf('function');
+    if (!boardKey || !resolver) return;
+
+    const key = boardKey.call(service, query);
+    service.cacheBoardResponse(key, mockBoardResponse, 'sa');
+    const original = service.getCachedBoardResponse(key, 'sa')!;
+    service.boardMap.update((entries) => {
+      const updated = new Map(entries);
+      updated.set(key, { ...original, expiresAt: Date.now() - 1 });
+      return updated;
+    });
+
+    const emissions: unknown[] = [];
+    let failed = false;
+    resolver.call(service, query).subscribe({
+      next: (value) => emissions.push(value),
+      error: () => (failed = true),
+    });
+    expect(emissions[0]).toEqual(expect.objectContaining({ response: mockBoardResponse }));
+    const request = httpTesting.expectOne((request) => request.url.endsWith('/market/board'));
+    request.flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+
+    expect(failed).toBe(true);
+    expect(service.getCachedBoardResponse(key, 'sa')?.response).toEqual(mockBoardResponse);
+  });
+
   it('aliases locally sorted board views without renewing their freshness', () => {
     service.cacheBoardResponse('board:sa:default', mockBoardResponse, 'sa');
     const source = service.getCachedBoardResponse('board:sa:default', 'sa')!;

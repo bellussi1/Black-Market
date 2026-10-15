@@ -44,7 +44,12 @@
       >
         {{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}
       </button>
-      <div class="category-list">
+      <div class="category-list" [attr.aria-busy]="taxonomyLoading()">
+        @if (!categoryRoots().length) {
+          <p class="category-loading" role="status">
+            {{ taxonomyLoading() ? 'Carregando categorias…' : 'Categorias indisponíveis' }}
+          </p>
+        }
         @for (entry of categoryRoots(); track entry.id) {
           <button
             hlmBtn
