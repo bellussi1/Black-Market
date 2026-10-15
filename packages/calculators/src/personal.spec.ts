@@ -46,6 +46,34 @@ describe('Personal planning', () => {
     const old: Record<string, unknown> = { ...emptyWorkspace() };
     delete old['characters'];
     delete old['personalPlans'];
-    expect(workspaceSchema.parse(old).characters).toEqual([]);
+    delete old['activityCoach'];
+    const restored = workspaceSchema.parse(old);
+    expect(restored.characters).toEqual([]);
+    expect(restored.activityCoach.preferredSkills).toEqual(['cooking', 'alchemy', 'processing']);
+    expect(restored.activityCoach.calibrations).toEqual([]);
+  });
+  it('validates persisted activity preferences and positive per-character calibrations', () => {
+    const workspace = emptyWorkspace();
+    workspace.activityCoach = {
+      preferredSkills: ['alchemy'],
+      calibrations: [
+        {
+          characterId: 'main',
+          method: 'ALCHEMY',
+          seconds: 4.5,
+          updatedAt: '2026-10-15T12:00:00.000Z',
+        },
+      ],
+    };
+    expect(workspaceSchema.parse(workspace).activityCoach).toEqual(workspace.activityCoach);
+    expect(
+      workspaceSchema.safeParse({
+        ...workspace,
+        activityCoach: {
+          ...workspace.activityCoach,
+          calibrations: [{ ...workspace.activityCoach.calibrations[0]!, seconds: 0 }],
+        },
+      }).success,
+    ).toBe(false);
   });
 });
