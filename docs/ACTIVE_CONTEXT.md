@@ -1116,3 +1116,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos**: guard e retorno seguro com testes, rotas e escopo MVP, página de conta, cabeçalho e tradução; especificação/plano e este contexto.
 - **Commit atômico**: `feat(auth): gate personal workspaces with social login`.
 - **Próximo passo**: iniciar o corte de Mercado: calcular uma referência dinâmica baseada em preço atual com estoque e preço máximo quando sem estoque, depois corrigir semântica da tabela e organizar os grupos internos da janela.
+
+## 100. Preço de referência do Mercado (Codex, 15/10/2026)
+
+- **Regra compartilhada**: o preço de referência é o preço atual quando há estoque; com estoque zerado, usa o `maxPrice` fornecido pela fonte; quando faltar cotação/estoque/preço máximo, fica indisponível. Não há fallback inventado.
+- **Uso**: ordenação por preço da API e da página usa a mesma regra e mantém dados desconhecidos por último. Busca de catálogo preserva o `maxPrice` retornado em vez de descartá-lo. A média observada em 30 dias continua identificada como histórico.
+- **UI**: o quadro mostra preço de referência e sua base, fonte Arsha no detalhe acessível e horário de consulta no resumo da cotação. Os filtros receberam estado `aria-pressed` e grupo semântico.
+- **Validação**: serviço de Mercado passou 20/20 testes e componente Web 17/17. O teste de ordenação cobre preços grandes, estoque disponível/zerado e cotações ausentes.
+- **Limite de dados**: contador `totalTrades` segue descrito como registros; não foi convertido em quantidade de unidades ou demanda vendida.
+- **Arquivos**: helper em `packages/shared/src/market-board.ts`, ordenação e montagem da resposta na API, exibição/ordenação do quadro e testes, plano e este contexto.
+- **Commit atômico**: `feat(market): show dynamic reference prices`.
+- **Próximo passo**: separar a linha em células correspondentes aos cabeçalhos, manter a seleção só no botão do item, corrigir o estado acessível dos filtros e aplicar espaçamento/divisórias à área do Mercado.

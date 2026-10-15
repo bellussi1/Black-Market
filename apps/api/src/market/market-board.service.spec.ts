@@ -250,7 +250,7 @@ describe('market board', () => {
     const armor = await service.board({ categoryId: 'armor' });
     expect(armor.total).toBe(1);
     expect(armor.items[0].categories[0].name).toBe('Armaduras');
-    expect((await service.board({ sort: 'price' })).items[0].itemId).toBe(1);
+    expect((await service.board({ sort: 'price' })).items[0].itemId).toBe(2);
   });
   it('keeps the previous observation timestamp during provider failure and backs off', async () => {
     const upstream = vi
@@ -269,11 +269,11 @@ describe('market board', () => {
   });
   it('sorts lowest prices first with exact large integers, deterministic ties and unknown prices last', async () => {
     const payload = [
-      { ...hot[0], id: 2, basePrice: '9007199254740994' },
-      { ...hot[0], id: 3, basePrice: 0 },
-      { ...hot[0], id: 5, basePrice: 100 },
-      { ...hot[0], id: 4, basePrice: 100 },
-      { ...hot[0], id: 1, basePrice: '9007199254740993' },
+      { ...hot[0], id: 2, basePrice: '9007199254740994', currentStock: 2 },
+      { ...hot[0], id: 3, basePrice: 0, currentStock: 2 },
+      { ...hot[0], id: 5, basePrice: 100, currentStock: 2 },
+      { ...hot[0], id: 4, basePrice: 100, currentStock: 2 },
+      { ...hot[0], id: 1, basePrice: '9007199254740993', currentStock: 2 },
     ];
     vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve(new Response(JSON.stringify(payload))),
@@ -282,10 +282,39 @@ describe('market board', () => {
       (await fixture().service.board({ sort: 'price' })).items.map((item) => item.itemId),
     ).toEqual([4, 5, 1, 2, 3]);
   });
+  it('sorts by current price with stock and maximum price when sold out', async () => {
+    const payload = [
+      { ...hot[0], id: 1, basePrice: 300, currentStock: 5, priceMax: 900 },
+      { ...hot[0], id: 2, basePrice: 1000, currentStock: 0, priceMax: 200 },
+      { ...hot[0], id: 3, basePrice: 10000, currentStock: 0, priceMax: 0 },
+      { ...hot[0], id: 4, basePrice: 400, currentStock: 2, priceMax: 800 },
+      { ...hot[0], id: 5, basePrice: 0, currentStock: 0, priceMax: 100 },
+    ];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify(payload))),
+    );
+    const { service } = fixture();
+    const ids = async (direction: 'asc' | 'desc') =>
+      (await service.board({ sort: 'price', direction })).items.map((item) => item.itemId);
+
+    expect(await ids('asc')).toEqual([5, 2, 1, 4, 3]);
+    expect(await ids('desc')).toEqual([4, 1, 2, 5, 3]);
+  });
+  it('preserves provider maximum prices in catalog summaries', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((_url, options) => {
+      const ids = options?.body ? (JSON.parse(options.body as string) as number[]) : null;
+      return Promise.resolve(
+        new Response(JSON.stringify(hot.filter((item) => !ids || ids.includes(item.id)))),
+      );
+    });
+    const result = await fixture().service.board({ q: 'Item 1' });
+
+    expect(result.items[0]).toMatchObject({ itemId: 1, maxPrice: '500', stock: 0 });
+  });
   it('applies direction and stock filter to the whole hot set before paginating', async () => {
     const payload = [
       { ...hot[0], id: 1, basePrice: 300, currentStock: 5 },
-      { ...hot[0], id: 2, basePrice: 100, currentStock: 0 },
+      { ...hot[0], id: 2, basePrice: 100, currentStock: 0, priceMax: 100 },
       { ...hot[0], id: 3, basePrice: 200, currentStock: 9 },
       { ...hot[0], id: 4, basePrice: 0, currentStock: 2 },
     ];

@@ -25,6 +25,28 @@ export interface MarketBoardItem extends Omit<MarketItemQuote, 'stock' | 'totalT
   observedTo: string | null;
 }
 
+export type MarketPriceBasis = 'current' | 'maximum' | 'unavailable';
+export interface MarketPriceReference {
+  value: string | null;
+  basis: MarketPriceBasis;
+}
+
+/** The price used for comparison: current ask with stock, maximum ask when sold out. */
+export function marketPriceReference(
+  item: Pick<MarketBoardItem, 'price' | 'stock' | 'maxPrice'>,
+): MarketPriceReference {
+  const validPositivePrice = (value: string | null): value is string => {
+    if (!value || !/^\d{1,24}$/.test(value)) return false;
+    return BigInt(value) > 0n;
+  };
+
+  if (item.stock !== null && item.stock > 0 && validPositivePrice(item.price))
+    return { value: item.price, basis: 'current' };
+  if (item.stock === 0 && validPositivePrice(item.maxPrice))
+    return { value: item.maxPrice, basis: 'maximum' };
+  return { value: null, basis: 'unavailable' };
+}
+
 export interface MarketBoardResponse {
   source: 'arsha';
   region: string;

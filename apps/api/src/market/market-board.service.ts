@@ -17,6 +17,7 @@ import {
   DEFAULT_DATA_LOCALE,
   DEFAULT_REGION,
   MARKET_PROVIDER_REGIONS,
+  marketPriceReference,
 } from '@bdo/shared';
 import {
   BadRequestException,
@@ -234,10 +235,12 @@ export class MarketBoardService {
       matches = [...matches].sort((a, b) => {
         if (query.sort === 'price') {
           // Unknown prices stay last in both directions: they carry no ordering information.
-          if (a.price === null && b.price !== null) return 1;
-          if (b.price === null && a.price !== null) return -1;
-          const left = BigInt(a.price ?? '0');
-          const right = BigInt(b.price ?? '0');
+          const leftPrice = marketPriceReference(a).value;
+          const rightPrice = marketPriceReference(b).value;
+          if (leftPrice === null && rightPrice !== null) return 1;
+          if (rightPrice === null && leftPrice !== null) return -1;
+          const left = BigInt(leftPrice ?? '0');
+          const right = BigInt(rightPrice ?? '0');
           return left === right ? tie(a, b) : (left < right ? -1 : 1) * flip;
         }
         if (query.sort === 'stock') {
@@ -347,7 +350,7 @@ export class MarketBoardService {
           stock: quote?.stock ?? null,
           totalTrades: quote?.totalTrades ?? null,
           minPrice: null,
-          maxPrice: null,
+          maxPrice: quote?.maxPrice ?? null,
           lastSoldPrice: null,
           lastSoldAt: null,
           quoteScope: 'summary',

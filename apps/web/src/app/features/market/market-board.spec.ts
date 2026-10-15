@@ -59,7 +59,7 @@ describe('MarketBoard', () => {
     takeRequest().flush(data);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.col-price')?.textContent).toContain('1.100');
+    expect(element.querySelector('.mean-price')?.textContent).toContain('1.100');
     expect(element.querySelector('.price-limits')).toBeNull();
     expect(element.querySelector('thead')?.textContent).not.toContain('Bottom');
     const selected = vi.fn();
@@ -68,6 +68,61 @@ describe('MarketBoard', () => {
     expect(selected).toHaveBeenCalledWith(data.items[0]);
     fixture.componentInstance.toggleColumnSort('meanPrice');
     expect(fixture.componentInstance.pageOnlyOrdering()).toBe(true);
+    TestBed.inject(HttpTestingController).verify();
+  });
+  it('shows reference price and its basis separately from the 30-day mean', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const data = response();
+    data.items = [
+      {
+        ...data.items[0],
+        itemId: 1,
+        name: 'Disponível',
+        price: '1200',
+        stock: 42,
+        maxPrice: '2000',
+        meanPrice: '1100',
+      },
+      {
+        ...data.items[0],
+        itemId: 2,
+        name: 'Esgotado',
+        price: '1200',
+        stock: 0,
+        maxPrice: '2300',
+        meanPrice: '1000',
+      },
+      {
+        ...data.items[0],
+        itemId: 3,
+        name: 'Sem cotação',
+        price: null,
+        stock: null,
+        maxPrice: null,
+        meanPrice: null,
+      },
+    ];
+    takeRequest().flush(data);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const headers = [...element.querySelectorAll('thead th')].map((header) =>
+      header.textContent?.trim(),
+    );
+    const rows = [...element.querySelectorAll('tbody tr')];
+    expect(headers.some((heading) => heading?.includes('Preço de referência'))).toBe(true);
+    expect(element.querySelector('.mean-price')?.textContent).toContain('Média 30d: 1.100');
+    expect(rows[0].querySelector('.col-reference-price')?.textContent).toContain('1.200');
+    expect(rows[0].querySelector('.reference-basis')?.textContent).toContain('Atual · com estoque');
+    expect(rows[1].querySelector('.col-reference-price')?.textContent).toContain('2.300');
+    expect(rows[1].querySelector('.reference-basis')?.textContent).toContain(
+      'Máxima · sem estoque',
+    );
+    expect(rows[2].querySelector('.col-reference-price')?.textContent).toContain('—');
+    expect(rows[2].querySelector('.reference-basis')?.textContent).toContain('Sem cotação');
+    expect(rows[0].querySelector('.mean-price')?.textContent).toContain('Média 30d: 1.100');
+    expect(element.querySelector('.filter-pills')?.getAttribute('role')).toBe('group');
+    expect(element.querySelector('.pill-btn.active')?.getAttribute('aria-pressed')).toBe('true');
     TestBed.inject(HttpTestingController).verify();
   });
   it('keeps catalogue results visible and explains unavailable provider quotes', async () => {

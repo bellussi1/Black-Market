@@ -20,6 +20,7 @@ import type {
   MarketBoardSort,
   MarketBoardStockFilter,
 } from '@bdo/shared';
+import { marketPriceReference } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmInput } from '@bdo/ui/input';
 import type { Subscription } from 'rxjs';
@@ -176,8 +177,12 @@ export class MarketBoard implements OnDestroy {
         return a.name.localeCompare(b.name, 'pt') * factor;
       }
       if (col === 'price') {
-        const pa = BigInt(a.price ?? '0');
-        const pb = BigInt(b.price ?? '0');
+        const priceA = marketPriceReference(a).value;
+        const priceB = marketPriceReference(b).value;
+        if (priceA === null && priceB !== null) return 1;
+        if (priceB === null && priceA !== null) return -1;
+        const pa = BigInt(priceA ?? '0');
+        const pb = BigInt(priceB ?? '0');
         if (pa === pb) return 0;
         return (pa < pb ? -1 : 1) * factor;
       }
@@ -436,6 +441,21 @@ export class MarketBoard implements OnDestroy {
       return ((p - m) / m) * 100;
     } catch {
       return null;
+    }
+  }
+
+  priceReference(item: MarketBoardItem) {
+    return marketPriceReference(item);
+  }
+
+  priceReferenceLabel(item: MarketBoardItem): string {
+    switch (this.priceReference(item).basis) {
+      case 'current':
+        return 'Atual · com estoque';
+      case 'maximum':
+        return 'Máxima · sem estoque';
+      case 'unavailable':
+        return 'Sem cotação';
     }
   }
 

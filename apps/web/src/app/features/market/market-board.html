@@ -107,13 +107,14 @@
         </div>
 
         <div class="board-filters-group">
-          <div class="filter-pills" role="radiogroup" aria-label="Filtro rápido de estoque">
+          <div class="filter-pills" role="group" aria-label="Filtro rápido de estoque">
             <button
               hlmBtn
               variant="outline"
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'all'"
+              [attr.aria-pressed]="stockFilter() === 'all'"
               (click)="setStockFilter('all')"
             >
               Todos
@@ -124,6 +125,7 @@
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'in_stock'"
+              [attr.aria-pressed]="stockFilter() === 'in_stock'"
               (click)="setStockFilter('in_stock')"
             >
               Com estoque
@@ -134,6 +136,7 @@
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'out_of_stock'"
+              [attr.aria-pressed]="stockFilter() === 'out_of_stock'"
               (click)="setStockFilter('out_of_stock')"
             >
               Estoque zerado
@@ -144,6 +147,7 @@
               type="button"
               class="pill-btn"
               [class.active]="stockFilter() === 'with_volume'"
+              [attr.aria-pressed]="stockFilter() === 'with_volume'"
               (click)="setStockFilter('with_volume')"
             >
               Com volume 24h
@@ -266,7 +270,7 @@
                 scope="col"
                 class="numeric"
                 [attr.aria-sort]="
-                  sortColumn() === 'meanPrice'
+                  sortColumn() === 'price'
                     ? sortDirection() === 'asc'
                       ? 'ascending'
                       : 'descending'
@@ -278,13 +282,11 @@
                   variant="outline"
                   type="button"
                   class="col-sort-btn numeric-btn"
-                  (click)="toggleColumnSort('meanPrice')"
+                  (click)="toggleColumnSort('price')"
                 >
-                  <span>Preço médio · 30d</span>
-                  <span class="sort-arrow" [class.active]="sortColumn() === 'meanPrice'">
-                    {{
-                      sortColumn() === 'meanPrice' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅'
-                    }}
+                  <span>Preço de referência</span>
+                  <span class="sort-arrow" [class.active]="sortColumn() === 'price'">
+                    {{ sortColumn() === 'price' ? (sortDirection() === 'asc' ? '▲' : '▼') : '⇅' }}
                   </span>
                 </button>
               </th>
@@ -425,7 +427,12 @@
                         </small>
                       </span>
                     </span>
-                    <span class="numeric col-price">
+                    <span
+                      class="numeric col-price col-reference-price"
+                      [attr.title]="'Fonte: Arsha · ' + priceReferenceLabel(item)"
+                    >
+                      <span class="reference-value">{{ silver(priceReference(item).value) }}</span>
+                      <small class="reference-basis">{{ priceReferenceLabel(item) }}</small>
                       <span
                         class="mean-price"
                         [attr.title]="
@@ -433,7 +440,7 @@
                             ? 'Histórico insuficiente para a média de 30 dias'
                             : item.observationCount + ' observações de preço'
                         "
-                        >{{ silver(item.meanPrice) }}</span
+                        >Média 30d: {{ silver(item.meanPrice) }}</span
                       >
                     </span>
                     <span class="numeric col-stock">
@@ -531,8 +538,9 @@
         </div>
       </nav>
       <p class="board-note">
-        Consulta e cache automáticos em background. Clicar no cabeçalho das colunas ordena a
-        visualização. A fonte mantém cache de até
+        Consulta e cache automáticos em background. Preço de referência fornecido pela Arsha: preço
+        atual quando há estoque e preço máximo quando está zerado. Clicar no cabeçalho das colunas
+        ordena a visualização. A fonte mantém cache de até
         {{ result()?.upstreamCacheMinutes ?? 30 }} minutos. Resumos agregam variantes; selecione um
         item para suas cotações individuais. Preços médios em prata por unidade. Média de cotações
         observadas em 30 dias; contagens de negociações exigem histórico completo do período.

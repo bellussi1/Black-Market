@@ -419,6 +419,17 @@
   font-weight: 500;
   color: var(--bm-accent);
 }
+.reference-value {
+  display: block;
+  color: var(--bm-accent);
+  font-weight: 600;
+}
+.reference-basis {
+  display: block;
+  margin-top: 3px;
+  color: var(--bm-muted);
+  font-size: 11px;
+}
 .mean-price {
   display: block;
   color: var(--bm-text);
