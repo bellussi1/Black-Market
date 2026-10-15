@@ -1291,3 +1291,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Verificação local adicional**: dashboard/Home e as duas páginas do Roadmap passaram 8/8 testes focados. O build exibiu o aviso conhecido de locale `pt-BR` usando dados `pt`.
 - **Estado do Git**: a auditoria não alterou código; este registro é documentação de handoff. Não houve deploy, push, login social real ou escrita de dados de usuário.
 - **Próximos passos**: fechar guards de `/plans` e `/settings` e grants/RLS de identidade; configurar Firebase de staging e então executar login/seed; provisionar R2/criptografia e validar restauração; considerar cobertura de snapshots de histórico e testes pareados de maestria. Para o tour guiado, escolher/validar uma biblioteca antes de implementar.
+
+## 117. Especificação de Home e Roadmap dinâmicos (Codex, 15/10/2026)
+
+- **Pedido e aprovações**: refatorar Home/Roadmap, retirar CTAs duplicados e ligar as fases e pilares em trilha dinâmica sem prazos. A Home consumirá os focos ativos do Roadmap; conteúdo e ordem devem vir da API/banco, sem arrays fixos de jornadas ou ferramentas.
+- **Desenho**: `docs/superpowers/specs/2026-10-15-home-roadmap-dynamic-flow-design.md`. A trilha usa uma ordenação global para fases e pilares; a Home mostra todas as entradas `featured` em ordem, permite zero ou vários focos e mantém busca contextual por item e retomada do workspace. Visitantes não recebem links diretos para rotas protegidas.
+- **Revisão**: especificação self-review concluída; estados de carregamento, vazio, falha, responsividade, acessibilidade, migração/editor e critérios de aceite estão descritos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
+- **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
+- **Próximo passo**: após aprovação da especificação, preparar plano e implementar Home/Roadmap em fatias verificáveis, registrando commits separados conforme escopo.
