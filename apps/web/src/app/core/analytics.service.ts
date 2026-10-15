@@ -4,6 +4,7 @@ import { effect, inject, Injectable, PLATFORM_ID, signal, untracked } from '@ang
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
+import { isTutorialScreenKey, type TutorialScreenKey } from '@bdo/shared';
 import { filter, Subject, takeUntil } from 'rxjs';
 
 import { environment } from '../../environments/environment';
@@ -162,7 +163,40 @@ export class AnalyticsService {
     if (page === this.lastPage) return;
     if (this.capture('page_viewed', { feature: page })) this.lastPage = page;
   }
+  captureTutorial(
+    event: 'tutorial_started' | 'tutorial_completed' | 'tutorial_dismissed',
+    screenKey: TutorialScreenKey,
+    guideUpdatedAt: string,
+  ): boolean {
+    if (
+      !['tutorial_started', 'tutorial_completed', 'tutorial_dismissed'].includes(event) ||
+      !isTutorialScreenKey(screenKey) ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(guideUpdatedAt) ||
+      !Number.isFinite(Date.parse(guideUpdatedAt)) ||
+      new Date(guideUpdatedAt).toISOString() !== guideUpdatedAt
+    )
+      return false;
+    return this.send(event, { screenKey, guideUpdatedAt });
+  }
   capture(event: AnalyticsEvent, properties: EventProperties): boolean {
+    if (
+      ![
+        'page_viewed',
+        'item_detail_opened',
+        'journey_started',
+        'journey_completed',
+        'journey_failed',
+      ].includes(event)
+    )
+      return false;
+    return this.send(event, cleanProperties(properties));
+  }
+  private send(
+    event: AnalyticsEvent | 'tutorial_started' | 'tutorial_completed' | 'tutorial_dismissed',
+    properties:
+      | ReturnType<typeof cleanProperties>
+      | { screenKey: TutorialScreenKey; guideUpdatedAt: string },
+  ): boolean {
     const config = this.config();
     if (
       !this.browser ||
@@ -171,14 +205,7 @@ export class AnalyticsService {
       !config.key ||
       !config.host ||
       !this.privacy.allowsAnalytics() ||
-      this.events >= 100 ||
-      ![
-        'page_viewed',
-        'item_detail_opened',
-        'journey_started',
-        'journey_completed',
-        'journey_failed',
-      ].includes(event)
+      this.events >= 100
     )
       return false;
     if (!this.id) {
@@ -193,7 +220,7 @@ export class AnalyticsService {
           api_key: config.key,
           event,
           properties: {
-            ...cleanProperties(properties),
+            ...properties,
             distinct_id: this.id,
             $process_person_profile: false,
             $ip: null,

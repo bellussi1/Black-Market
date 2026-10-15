@@ -6,6 +6,7 @@ import type { TutorialPublicGuide, TutorialScreenKey } from '@bdo/shared';
 import type { Driver, DriveStep, PopoverDOM } from 'driver.js';
 import { filter } from 'rxjs';
 
+import { AnalyticsService } from './analytics.service';
 import { type ResolvedTutorialStep, resolveTutorialSteps } from './tutorial-anchor-resolver';
 
 export const ANCHOR_RECHECK_DELAY_MS = 150;
@@ -16,6 +17,8 @@ export type TutorialStartResult = 'started' | 'needs-update' | 'unavailable';
 @Injectable({ providedIn: 'root' })
 export class TutorialService {
   private readonly document = inject(DOCUMENT);
+  private readonly analytics = inject(AnalyticsService);
+  private activeAnalytics: { screenKey: TutorialScreenKey; guideUpdatedAt: string } | null = null;
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -105,6 +108,8 @@ export class TutorialService {
       this.activeDriver = instance;
       this.installEscapeListener();
       instance.drive(0);
+      this.activeAnalytics = { screenKey: guide.screenKey, guideUpdatedAt: guide.updatedAt };
+      this.analytics.captureTutorial('tutorial_started', guide.screenKey, guide.updatedAt);
       return 'started';
     } catch {
       this.destroyTour('dismissed');
@@ -116,6 +121,8 @@ export class TutorialService {
 
   destroyTour(reason: TutorialCloseReason): void {
     const instance = this.activeDriver;
+    const analytics = this.activeAnalytics;
+    this.activeAnalytics = null;
     const focusTarget = this.returnFocusTarget;
     this.activeDriver = null;
     this.activeSteps = [];
@@ -134,7 +141,13 @@ export class TutorialService {
 
     if (focusTarget?.isConnected) focusTarget.focus();
     resolveRecheck?.();
-    void reason;
+    if (analytics && reason !== 'navigation') {
+      this.analytics.captureTutorial(
+        reason === 'completed' ? 'tutorial_completed' : 'tutorial_dismissed',
+        analytics.screenKey,
+        analytics.guideUpdatedAt,
+      );
+    }
   }
 
   private toDriverSteps(steps: ResolvedTutorialStep[]): DriveStep[] {

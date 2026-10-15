@@ -4,7 +4,7 @@ export interface LegalDocument {
   sections: { title: string; paragraphs: string[] }[];
 }
 
-export const legalUpdatedOn = '2026-10-13';
+export const legalUpdatedOn = '2026-10-15';
 
 export const legalDocuments: Record<string, LegalDocument> = {
   terms: {
@@ -66,6 +66,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         paragraphs: [
           'As informações são usadas para oferecer as ferramentas que você solicita, manter suas preferências, sincronizar a cópia que você confirmar, atender solicitações e investigar falhas. Os critérios de uma consulta são processados para produzir a resposta e não são incluídos nos eventos opcionais de analytics.',
           'Estatísticas de uso são opcionais. Somente após seu aceite, a plataforma pode enviar ao PostHog Cloud um identificador aleatório do navegador e eventos limitados à área visitada, à etapa realizada e a resultados agregados. Esses eventos não incluem sua identidade de conta, e-mail, texto de busca, identificadores ou nomes de itens, conteúdo do armazém, quantidades, valores pessoais, imagens, credenciais ou URL completa. O provedor e os serviços de rede podem processar metadados da conexão necessários à entrega da solicitação.',
+          'Os eventos opcionais agregados de tutorial registram início (tutorial_started), conclusão (tutorial_completed) e dispensa (tutorial_dismissed), com apenas a tela cadastrada (screenKey) e a data da revisão do guia (guideUpdatedAt). Usam a mesma escolha de analytics e o mesmo identificador aleatório já descritos, sem registrar passos individuais, texto do guia, campos digitados, nomes ou dados pessoais.',
           'Dados sincronizados são compartilhados com os serviços que mantêm a conta e a cópia que você pediu para guardar. Prestadores de hospedagem e segurança podem tratar dados técnicos da conexão. Não usamos estatísticas para publicidade. A operação dos prestadores pode ocorrer fora do Brasil.',
         ],
       },

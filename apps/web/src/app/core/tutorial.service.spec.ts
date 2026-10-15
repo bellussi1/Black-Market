@@ -48,6 +48,7 @@ const driverMocks = vi.hoisted(() => ({
 
 vi.mock('driver.js', () => ({ driver: driverMocks.factory }));
 
+import { AnalyticsService } from './analytics.service';
 import { TutorialService } from './tutorial.service';
 
 @Component({ template: '' })
@@ -161,6 +162,7 @@ function setUp(platformId = 'browser') {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: '**', component: EmptyPage }]),
+      { provide: AnalyticsService, useValue: { captureTutorial: vi.fn(() => true) } },
       { provide: PLATFORM_ID, useValue: platformId },
     ],
   });
@@ -187,6 +189,56 @@ describe('TutorialService', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     TestBed.resetTestingModule();
+  });
+
+  it('emits exactly one start and one terminal event for completion or dismissal, never per step', async () => {
+    const { service, launcher, router } = setUp();
+    const capture = vi.mocked(TestBed.inject(AnalyticsService).captureTutorial);
+    await service.startTour(guide, launcher);
+    const first = driverMocks.instances[0]!;
+    await first.config.onNextClick?.(undefined, undefined, {
+      state: { activeIndex: 0 },
+      driver: first,
+    });
+    expect(capture.mock.calls).toEqual([['tutorial_started', guide.screenKey, guide.updatedAt]]);
+    first.config.onDoneClick?.();
+    first.config.onCloseClick?.();
+    service.destroyTour('completed');
+    expect(capture.mock.calls).toEqual([
+      ['tutorial_started', guide.screenKey, guide.updatedAt],
+      ['tutorial_completed', guide.screenKey, guide.updatedAt],
+    ]);
+    await service.startTour(guide, launcher);
+    driverMocks.instances[1]!.config.onCloseClick?.();
+    service.destroyTour('dismissed');
+    expect(capture.mock.calls.slice(2)).toEqual([
+      ['tutorial_started', guide.screenKey, guide.updatedAt],
+      ['tutorial_dismissed', guide.screenKey, guide.updatedAt],
+    ]);
+    await service.startTour(guide, launcher);
+    await router.navigateByUrl('/recipes');
+    service.destroyTour('dismissed');
+    expect(capture.mock.calls.slice(4)).toEqual([
+      ['tutorial_started', guide.screenKey, guide.updatedAt],
+    ]);
+  });
+
+  it('does not emit tutorial events when driver initialization fails', async () => {
+    const { service, launcher } = setUp();
+    const capture = vi.mocked(TestBed.inject(AnalyticsService).captureTutorial);
+    driverMocks.factory.mockImplementationOnce(() => {
+      throw new Error('Driver unavailable');
+    });
+    await expect(service.startTour(guide, launcher)).resolves.toBe('unavailable');
+    expect(capture).not.toHaveBeenCalled();
+    driverMocks.factory.mockImplementationOnce(() => ({
+      drive: () => {
+        throw new Error('Cannot drive');
+      },
+      destroy: vi.fn(),
+    }));
+    await expect(service.startTour(guide, launcher)).resolves.toBe('unavailable');
+    expect(capture).not.toHaveBeenCalled();
   });
 
   it('does not import or construct Driver before a browser click', async () => {
