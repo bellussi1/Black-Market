@@ -67,6 +67,7 @@ describe('Catalog picker search scope', () => {
         page: 1,
         pageSize: 12,
       });
+    fixture.componentInstance.query.set('espadas');
     fixture.componentInstance.find();
     const pending = http.expectOne((r) => r.url.endsWith('/items'));
     fixture.componentInstance.loadCategories();

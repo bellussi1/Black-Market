@@ -139,7 +139,7 @@ export class CatalogApiService {
           }
         }),
         finalize(() => this.publicReadInflight.delete(key)),
-        shareReplay({ bufferSize: 1, refCount: false }),
+        shareReplay({ bufferSize: 1, refCount: true }),
       );
       this.publicReadInflight.set(key, refresh);
     }
