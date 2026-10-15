@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { type RuntimePrivileges, runtimeRoleIsRestricted } from './runtime-role';
+import {
+  RUNTIME_PRIVILEGES_QUERY,
+  type RuntimePrivileges,
+  runtimeRoleIsRestricted,
+} from './runtime-role';
 
 const restricted: RuntimePrivileges = {
   rolsuper: false,
@@ -32,6 +36,14 @@ const restricted: RuntimePrivileges = {
   steam_exchanges_insert: true,
   steam_exchanges_update: true,
   steam_exchanges_delete: true,
+  tutorial_guides_select: true,
+  tutorial_guides_insert: true,
+  tutorial_guides_update: true,
+  tutorial_guides_delete: true,
+  tutorial_steps_select: true,
+  tutorial_steps_insert: true,
+  tutorial_steps_update: true,
+  tutorial_steps_delete: true,
 };
 describe('Runtime database privileges', () => {
   it('accepts a restricted role', () => expect(runtimeRoleIsRestricted(restricted)).toBe(true));
@@ -59,5 +71,33 @@ describe('Runtime database privileges', () => {
   it('fails closed for missing privilege results', () => {
     expect(runtimeRoleIsRestricted(undefined)).toBe(false);
     expect(runtimeRoleIsRestricted({} as RuntimePrivileges)).toBe(false);
+  });
+  it('requires only the four tutorial table privileges used by the API', () => {
+    expect(runtimeRoleIsRestricted(restricted)).toBe(true);
+    for (const key of [
+      'tutorial_guides_select',
+      'tutorial_guides_insert',
+      'tutorial_guides_update',
+      'tutorial_guides_delete',
+      'tutorial_steps_select',
+      'tutorial_steps_insert',
+      'tutorial_steps_update',
+      'tutorial_steps_delete',
+    ] as const) {
+      expect(runtimeRoleIsRestricted({ ...restricted, [key]: false }), key).toBe(false);
+      expect(runtimeRoleIsRestricted({ ...restricted, [key]: undefined }), key).toBe(false);
+    }
+  });
+  it('queries each required tutorial privilege against the correct table', () => {
+    for (const [table, prefix] of [
+      ['tutorial_guides', 'tutorial_guides'],
+      ['tutorial_guide_steps', 'tutorial_steps'],
+    ]) {
+      for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) {
+        expect(RUNTIME_PRIVILEGES_QUERY).toContain(
+          `has_table_privilege(current_user,'public.${table}','${privilege}') AS ${prefix}_${privilege.toLowerCase()}`,
+        );
+      }
+    }
   });
 });

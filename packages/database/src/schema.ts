@@ -423,6 +423,36 @@ export const roadmapEntries = pgTable(
   ],
 );
 
+export const tutorialGuides = pgTable(
+  'tutorial_guides',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    screenKey: varchar('screen_key', { length: 64 }).notNull(),
+    locale: varchar('locale', { length: 8 }).notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('tutorial_guides_screen_locale_uidx').on(table.screenKey, table.locale)],
+);
+
+export const tutorialGuideSteps = pgTable(
+  'tutorial_guide_steps',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    guideId: uuid('guide_id')
+      .notNull()
+      .references(() => tutorialGuides.id, { onDelete: 'cascade' }),
+    sortOrder: integer('sort_order').notNull(),
+    anchorKey: varchar('anchor_key', { length: 64 }),
+    title: varchar('title', { length: 100 }).notNull(),
+    body: text('body').notNull(),
+  },
+  (table) => [
+    uniqueIndex('tutorial_guide_steps_guide_order_uidx').on(table.guideId, table.sortOrder),
+    check('tutorial_guide_steps_order_check', sql`${table.sortOrder} >= 0`),
+  ],
+);
+
 export const marketSnapshots = pgTable(
   'market_snapshots',
   {
@@ -455,6 +485,8 @@ export const schema = {
   referenceCollections,
   userWorkspaces,
   roadmapEntries,
+  tutorialGuides,
+  tutorialGuideSteps,
   marketSnapshots,
   categories,
   categoryTranslations,
