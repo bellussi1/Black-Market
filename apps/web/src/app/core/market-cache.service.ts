@@ -349,58 +349,26 @@ export class MarketCacheService implements OnDestroy {
       }),
       toArray(),
       mergeMap(() => {
-        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
-        const fillOmitted$ = remaining.length
-          ? this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
-              takeLast(1),
-              tap((fallbacks) => {
-                for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
-              }),
-            )
-          : of(refreshedMap);
-        return fillOmitted$.pipe(
-          mergeMap(() => {
-            const missingMaximum = missingOrExpired.filter((id) => {
-              const quote = refreshedMap.get(id);
-              return resolvedIds.has(id) && needsMaximumPrice(quote);
-            });
-            if (!missingMaximum.length) return of(refreshedMap);
-            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
-              takeLast(1),
-              map((details) => {
-                for (const [id, quote] of details) refreshedMap.set(id, quote);
-                return refreshedMap;
-              }),
-            );
+        // IDs omitted by the summary have no usable public quote. Do not issue
+        // one request per omission; only enrich returned zero-stock summaries
+        // when they specifically lack the maximum price.
+        const missingMaximum = missingOrExpired.filter(
+          (id) => resolvedIds.has(id) && needsMaximumPrice(refreshedMap.get(id)),
+        );
+        if (!missingMaximum.length) return of(refreshedMap);
+        return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
+          takeLast(1),
+          map((details) => {
+            for (const [id, quote] of details) refreshedMap.set(id, quote);
+            return refreshedMap;
           }),
         );
       }),
       catchError(() => {
-        const remaining = missingOrExpired.filter((id) => !resolvedIds.has(id));
-        // Arsha's bulk search can be unavailable while its per-item endpoint still works.
-        // Resolve omitted items through the bounded individual lookup path instead of
-        // leaving the entire recipe tree without current quotes.
-        return this.resolveQuotesBatch(remaining, region, forceRefresh).pipe(
-          takeLast(1),
-          map((fallbacks) => {
-            for (const [id, quote] of fallbacks) refreshedMap.set(id, quote);
-            return refreshedMap;
-          }),
-          mergeMap(() => {
-            const missingMaximum = missingOrExpired.filter((id) => {
-              const quote = refreshedMap.get(id);
-              return resolvedIds.has(id) && needsMaximumPrice(quote);
-            });
-            if (!missingMaximum.length) return of(refreshedMap);
-            return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
-              takeLast(1),
-              map((details) => {
-                for (const [id, quote] of details) refreshedMap.set(id, quote);
-                return refreshedMap;
-              }),
-            );
-          }),
-        );
+        // A failed bulk request is a provider outage, not an invitation to fan out
+        // one lookup per ingredient. Keep any fresh/stale entries and let the page
+        // show missing quotes as incomplete rather than amplifying the outage.
+        return of(refreshedMap);
       }),
       finalize(() => this.isSyncing.set(false)),
     );

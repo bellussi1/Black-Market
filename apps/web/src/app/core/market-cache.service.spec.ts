@@ -268,6 +268,26 @@ describe('MarketCacheService', () => {
     expect(service.cachedQuotesCount()).toBe(117);
   });
 
+  it('does not fan out for item IDs omitted by a successful bulk quote', () => {
+    const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
+    service
+      .resolveProductionQuotes([1408, 9001, 9002], 'sa')
+      .subscribe((result) => emissions.push(result));
+
+    httpTesting
+      .expectOne((request) => request.url.includes('/production-quotes'))
+      .flush({
+        ...mockLookupResponse,
+        items: [mockLookupResponse.items[0]!],
+      });
+
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
+    expect(emissions.at(-1)?.get(1408)).toEqual(mockLookupResponse.items[0]);
+    expect(emissions.at(-1)?.has(9001)).toBe(false);
+    expect(emissions.at(-1)?.has(9002)).toBe(false);
+    expect(service.isSyncing()).toBe(false);
+  });
+
   it('fetches the detailed quote when a zero-stock bulk quote omits maxPrice', () => {
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
@@ -342,7 +362,7 @@ describe('MarketCacheService', () => {
     expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBe('90');
   });
 
-  it('falls back to individual market quotes when the bulk provider is unavailable', () => {
+  it('keeps cached quotes without fanning out when the bulk provider is unavailable', () => {
     service.cacheLookupResponse(mockLookupResponse, 'sa');
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service
@@ -353,17 +373,13 @@ describe('MarketCacheService', () => {
       .expectOne((request) => request.url.includes('/production-quotes'))
       .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
 
-    const fallback = httpTesting.expectOne((request) => request.url.includes('/market/items/9001'));
-    fallback.flush({
-      ...mockLookupResponse,
-      items: [{ ...mockLookupResponse.items[0]!, itemId: 9001, name: 'Ingrediente' }],
-    });
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
     expect(emissions.at(-1)?.get(1408)).toEqual(mockLookupResponse.items[0]);
-    expect(emissions.at(-1)?.get(9001)?.price).toBe(mockLookupResponse.items[0]?.price);
+    expect(emissions.at(-1)?.has(9001)).toBe(false);
     expect(service.isSyncing()).toBe(false);
   });
 
-  it('falls back for every item in a later unavailable bulk batch', () => {
+  it('keeps completed bulk results without fanning out a failed later batch', () => {
     const itemIds = Array.from({ length: 117 }, (_, index) => index + 1);
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes(itemIds, 'sa').subscribe((result) => emissions.push(result));
@@ -379,22 +395,11 @@ describe('MarketCacheService', () => {
     });
     second.flush('Unavailable', { status: 503, statusText: 'Unavailable' });
 
-    let resolved = 0;
-    while (resolved < 17) {
-      const fallbacks = httpTesting.match((request) => request.url.includes('/market/items/'));
-      expect(fallbacks.length).toBeGreaterThan(0);
-      resolved += fallbacks.length;
-      for (const fallback of fallbacks) {
-        const itemId = Number(fallback.request.url.split('/').at(-1));
-        fallback.flush({
-          ...mockLookupResponse,
-          items: [{ ...mockLookupResponse.items[0]!, itemId, name: `Item ${itemId}` }],
-        });
-      }
-    }
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
 
-    expect(emissions.at(-1)?.size).toBe(117);
-    expect(emissions.at(-1)?.has(117)).toBe(true);
+    expect(emissions.at(-1)?.size).toBe(100);
+    expect(emissions.at(-1)?.has(100)).toBe(true);
+    expect(emissions.at(-1)?.has(117)).toBe(false);
     expect(service.isSyncing()).toBe(false);
   });
 
