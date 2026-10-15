@@ -1205,3 +1205,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos**: `apps/api/src/workspace/staging-test-workspace.ts`, `staging-test-workspace.spec.ts`, `test-workspace-seeder.ts`, `test-workspace-seeder.spec.ts`, CLI e módulos Nest; `docs/staging-local.md`; este handoff.
 - **Commit atômico**: `feat(staging): seed catalog-backed test workspace` (local, sem push).
 - **Próximo passo**: configurar Firebase exclusivo de staging, habilitar Google/Steam, autorizar o domínio e fazer login. Então definir a UID em `STAGING_TEST_FIREBASE_UID` e executar `pwsh -File scripts/staging.ps1 SeedProfile`. Só depois do login social válido e UID configurada o seed pode ser aplicado; nenhuma conta foi criada ou alterada nesta etapa.
+
+## 108. Especificação: navegação rápida de Mercado/Receitas e proporção da oficina (Codex, 15/10/2026)
+
+- **Solicitação**: estabilizar a hierarquia de categorias no Mercado durante filtros; carregar Mercado/Receitas por resolvedores e cache de intenção para a navegação parecer imediata; no editor de receita, usar aproximadamente 2/3 para produto/configuração e 1/3 para resultado, incluindo maestria da profissão e de Processamento quando aplicável.
+- **Desenho registrado**: `docs/superpowers/specs/2026-10-15-market-recipe-route-cache-and-workbench-design.md`. Usa categorias vindas da taxonomia ativa, cache de catálogo em memória por região/idioma/versão/parâmetros, revalidação sem apagar dados válidos e prefetch sob intenção de navegação. O resolvedor cobre dados essenciais da rota e não executa otimizador ou árvore completa. A maestria permanece uma sobreposição temporária da simulação.
+- **Estado**: especificação escrita, em revisão do usuário conforme o gate arquitetural de `superpowers:brainstorming`. Nenhum código funcional foi alterado ou testado nesta etapa; aguardar revisão antes de escrever o plano de implementação.
+- **Commit atômico**: esta entrega de documentação inclui a especificação e este handoff; somente local, sem push.
