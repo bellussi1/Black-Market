@@ -55,9 +55,9 @@ As âncoras devem marcar grupos e controles com nome compreensível, sem mudar s
 
 Adicionar migração Drizzle com duas tabelas conceituais:
 
-| Tabela | Campos e regras |
-|---|---|
-| `tutorial_guides` | `id` UUID; `screen_key`; `locale`; `enabled`; `updated_at`; unicidade `(screen_key, locale)`. `screen_key` precisa constar no registro compilado. |
+| Tabela                 | Campos e regras                                                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tutorial_guides`      | `id` UUID; `screen_key`; `locale`; `enabled`; `updated_at`; unicidade `(screen_key, locale)`. `screen_key` precisa constar no registro compilado.                             |
 | `tutorial_guide_steps` | `id` UUID; `guide_id` com FK e cascade; `sort_order`; `anchor_key` nula ou chave permitida da tela; `title`; `body`. Unicidade `(guide_id, sort_order)` e ordem não negativa. |
 
 O endpoint e a validação limitam o guia a 1–8 passos, título de até 100 caracteres e corpo de até 360 caracteres por passo. Esses limites mantêm o guia curto e permitem validar a composição do popover. A ordem é explícita, densa e normalizada de zero a `n - 1` ao salvar. Uma âncora nula significa intencionalmente um passo geral centralizado, não uma âncora esquecida.
@@ -70,10 +70,10 @@ Não inserir cópia de exemplo ou conteúdo de negócio na migração ou no bund
 
 Endpoints propostos sob `/api/v1/tutorials`:
 
-| Método e caminho | Acesso | Comportamento |
-|---|---|---|
-| `GET /:screenKey?locale=pt-BR` | Público | Retorna guia publicado e `updatedAt`; se a tela existir no registro mas não tiver guia ativo, retorna `guide: null`. Chave de tela desconhecida retorna 404. Resposta cacheável por 60 s com `stale-while-revalidate=300`. |
-| `GET /manage` | Administrador autenticado | Retorna a lista das telas/idiomas e o conteúdo existente, incluindo guias desativados. `Cache-Control: private, no-store`. |
+| Método e caminho                      | Acesso                    | Comportamento                                                                                                                                                                                                                            |
+| ------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /:screenKey?locale=pt-BR`        | Público                   | Retorna guia publicado e `updatedAt`; se a tela existir no registro mas não tiver guia ativo, retorna `guide: null`. Chave de tela desconhecida retorna 404. Resposta cacheável por 60 s com `stale-while-revalidate=300`.               |
+| `GET /manage`                         | Administrador autenticado | Retorna a lista das telas/idiomas e o conteúdo existente, incluindo guias desativados. `Cache-Control: private, no-store`.                                                                                                               |
 | `PUT /manage/:screenKey?locale=pt-BR` | Administrador autenticado | Substitui atomicamente ativação e passos da tela/idioma. `expectedUpdatedAt: null` cria somente se ainda não existir; um timestamp exige igualdade com a versão atual. Conflito retorna 409 preservando o rascunho do editor. Sem cache. |
 
 A API valida formato e tamanho do texto, `locale` suportado, `screenKey`, associação entre `screenKey` e `anchorKey`, quantidade e ordem dos passos, e rejeita marcação HTML. `anchorKey` inválida não é salva nem apresentada ao Driver.js. Uma requisição não pode inserir, renomear ou reordenar telas fora do registro de código.
@@ -154,16 +154,16 @@ Propriedades permitidas: `screenKey` do registro de código e versão `updatedAt
 
 ## Riscos e mitigação
 
-| Risco | Mitigação prevista |
-|---|---|
-| Refatoração de template quebra âncora salva | Chaves estáveis, registro com revisão de mudanças, validação de runtime e aviso no editor; não permitir fallback para seletor amplo. |
-| Texto do banco explora HTML aceito pelo Driver.js | Nunca passar texto dinâmico aos campos HTML; preencher DOM por `textContent` e validar texto simples na API. |
-| Import do Driver.js toca `document` durante SSR | Importação e instância apenas sob guarda de browser e acionamento no cliente; CSS global não deve executar lógica. |
-| Conteúdo cadastrado em idioma diferente do visitante | Chaves por locale e ausência sem fallback silencioso; publicar somente traduções revisadas. |
-| Popover interfere com uso de teclado ou tela estreita | Controles nativos, gestão de foco, ausência de interceptação de setas/digitação, teste desktop/mobile/leitor de tela e suporte a movimento reduzido. |
-| Administrador sobrescreve edição concorrente | `expectedUpdatedAt`, substituição transacional e HTTP 409 com rascunho mantido. |
-| Alvo de tour vira âncora errada por duplicação ou reuso em variantes | Registro vinculado à tela e resolução única/visível antes de montar passos; omitir ou bloquear em caso ambíguo. |
-| Mudança administrativa aparece com atraso por cache | Resposta pública com TTL de 60 s; editor sem cache; cliente que acabou de salvar invalida sua própria leitura. |
+| Risco                                                                | Mitigação prevista                                                                                                                                   |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Refatoração de template quebra âncora salva                          | Chaves estáveis, registro com revisão de mudanças, validação de runtime e aviso no editor; não permitir fallback para seletor amplo.                 |
+| Texto do banco explora HTML aceito pelo Driver.js                    | Nunca passar texto dinâmico aos campos HTML; preencher DOM por `textContent` e validar texto simples na API.                                         |
+| Import do Driver.js toca `document` durante SSR                      | Importação e instância apenas sob guarda de browser e acionamento no cliente; CSS global não deve executar lógica.                                   |
+| Conteúdo cadastrado em idioma diferente do visitante                 | Chaves por locale e ausência sem fallback silencioso; publicar somente traduções revisadas.                                                          |
+| Popover interfere com uso de teclado ou tela estreita                | Controles nativos, gestão de foco, ausência de interceptação de setas/digitação, teste desktop/mobile/leitor de tela e suporte a movimento reduzido. |
+| Administrador sobrescreve edição concorrente                         | `expectedUpdatedAt`, substituição transacional e HTTP 409 com rascunho mantido.                                                                      |
+| Alvo de tour vira âncora errada por duplicação ou reuso em variantes | Registro vinculado à tela e resolução única/visível antes de montar passos; omitir ou bloquear em caso ambíguo.                                      |
+| Mudança administrativa aparece com atraso por cache                  | Resposta pública com TTL de 60 s; editor sem cache; cliente que acabou de salvar invalida sua própria leitura.                                       |
 
 ## Decisões fechadas para a especificação
 

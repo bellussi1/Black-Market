@@ -3,8 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import type { MarketLookupResponse } from '@bdo/shared';
 
 import { environment } from '../../environments/environment';
-import { preferredDataLocale } from './locale';
 import { CatalogApiService } from './catalog-api.service';
+import { preferredDataLocale } from './locale';
 import type { Region } from './region-preferences';
 
 @Injectable({ providedIn: 'root' })

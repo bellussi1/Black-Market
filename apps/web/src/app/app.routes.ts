@@ -5,8 +5,8 @@ import { authGuard } from './core/auth.guard';
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
 import {
   marketRouteResolver,
-  recommendationsRouteResolver,
   recipesRouteResolver,
+  recommendationsRouteResolver,
 } from './core/public-route-data';
 import { WorkspaceLayout } from './layout/workspace-layout';
 

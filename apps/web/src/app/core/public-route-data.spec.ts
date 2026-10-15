@@ -15,8 +15,8 @@ import {
   marketRouteResolver,
   PublicRouteData,
   type PublicRouteWarmResult,
-  recommendationsRouteResolver,
   recipesRouteResolver,
+  recommendationsRouteResolver,
 } from './public-route-data';
 import { RegionPreferences } from './region-preferences';
 
