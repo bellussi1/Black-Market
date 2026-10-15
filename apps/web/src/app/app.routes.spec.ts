@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { routes } from './app.routes';
 import { serverRoutes } from './app.routes.server';
+import { recommendationsRouteResolver } from './core/public-route-data';
 
 @Component({ template: '' })
 class RouteDestination {}
@@ -81,8 +82,14 @@ describe('Unified personal workspace routes', () => {
     }
   });
 
+  it('warms only the public production catalog after the private route guard', () => {
+    const route = routes[0].children?.find((candidate) => candidate.path === 'recommendations');
+    expect(route?.canActivate?.length).toBeGreaterThan(0);
+    expect(route?.resolve?.['productionCatalog']).toBe(recommendationsRouteResolver);
+  });
+
   it('keeps personal data routes client-rendered and non-cacheable', () => {
-    for (const path of ['family', 'shopping']) {
+    for (const path of ['family', 'shopping', 'recommendations']) {
       const route = serverRoutes.find((candidate) => candidate.path === path);
       expect(route?.renderMode).toBe(RenderMode.Client);
       expect(route?.headers).toMatchObject({

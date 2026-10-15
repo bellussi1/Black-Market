@@ -30,10 +30,10 @@ export class PublicRouteData {
   private readonly preferences = inject(RegionPreferences);
   private readonly routeLoads = new Map<string, Observable<PublicRouteWarmResult>>();
 
-  /** Only public catalog and market pages are eligible for route warming. */
+  /** Warm public catalog/market data; private workspace data never passes through this service. */
   prefetchPath(url: string): Observable<PublicRouteWarmResult> {
     const path = this.normalizedPath(url);
-    if (!this.isPublicPath(path)) return of(ignored);
+    if (!this.isWarmablePath(path)) return of(ignored);
 
     let request = this.routeLoads.get(path);
     if (!request) {
@@ -57,9 +57,10 @@ export class PublicRouteData {
     return path.length > 1 ? path.replace(/\/+$/, '') : path;
   }
 
-  private isPublicPath(path: string): boolean {
+  private isWarmablePath(path: string): boolean {
     return (
       path === '/market' ||
+      path === '/recommendations' ||
       path === '/recipes' ||
       /^\/recipes\/items\/[^/]+$/.test(path) ||
       /^\/recipes\/[^/]+$/.test(path)
@@ -67,6 +68,10 @@ export class PublicRouteData {
   }
 
   private loadPath(path: string): Observable<PublicRouteWarmResult> {
+    if (path === '/recommendations') {
+      return this.catalog.getProductionCatalog(this.preferences.region()).pipe(map(() => ready));
+    }
+
     if (path === '/market') {
       const region = this.preferences.region();
       return forkJoin({
@@ -123,6 +128,9 @@ export class PublicRouteData {
 
 export const marketRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
   inject(PublicRouteData).prefetchPath('/market');
+
+export const recommendationsRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
+  inject(PublicRouteData).prefetchPath('/recommendations');
 
 export const recipesRouteResolver: ResolveFn<PublicRouteWarmResult> = (route) => {
   const id = route.paramMap.get('id') ?? route.queryParamMap.get('item');

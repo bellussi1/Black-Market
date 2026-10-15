@@ -12,6 +12,7 @@ import type {
   LifeSkillRecipeGroup,
   NpcPurchasePrice,
   NpcPurchasePricesResponse,
+  ProductionCatalogResponse,
   RecipeListResponse,
   RecipeMarketEquivalent,
   RecipeMarketEquivalentsResponse,
@@ -376,6 +377,24 @@ export class CatalogApiService {
           response.dataset,
         ),
       ),
+    );
+  }
+
+  getProductionCatalog(region: Region = this.preferences.region()) {
+    const params = new HttpParams()
+      .set('region', region)
+      .set('preferredLocale', preferredDataLocale());
+    return this.cachedPublicRead(
+      '/production/catalog',
+      params,
+      () =>
+        this.http.get<ProductionCatalogResponse>(`${this.baseUrl}/production/catalog`, { params }),
+      (response) => response.dataset,
+    ).pipe(
+      tap((response) => {
+        this.rememberItemIcons(response.items, response.dataset);
+        this.rememberRecipeIcons(response.recipes, response.dataset);
+      }),
     );
   }
 
