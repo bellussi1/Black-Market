@@ -61,7 +61,7 @@ Se preferir, execute diretamente no serviço já iniciado:
 docker compose --env-file .env.staging -f docker-compose.staging.yml exec -T api pnpm --filter @bdo/api workspace:seed-test-profile
 ```
 
-Esse comando somente funciona em `APP_ENV=staging` e para a UID explicitamente configurada. Ele acrescenta AuroraVale/ValeDourado se ainda não existirem, sem substituir personagem, família, seleção ou dados já existentes. Repetir o comando não duplica o perfil nem incrementa a versão quando nada muda. O seed não cria conta Firebase e não é um endpoint HTTP.
+Esse comando somente funciona em `APP_ENV=staging` e para a UID explicitamente configurada. Ele busca até cinco receitas únicas de Culinária, Alquimia e Processamento no catálogo ativo em português, com ingredientes e equipamentos reais do catálogo; os preços, estoques, sessões e cenários são marcados como demonstração sintética. Acrescenta personagens, maestria/gear, família com pets e montarias, receitas e cotações salvas, estoque de Velia/Heidel, inventário, planos, sessões, presets, projetos, buffs e histórico de aprimoramento, sem substituir registros ou a seleção já existente. Repetir o comando não duplica dados nem incrementa a versão quando nada muda. O seed não cria conta Firebase e não é um endpoint HTTP.
 
 A lista `Share -AllowedEmail` é obrigatória e aceita de um a dez e-mails válidos distintos; sem ela, o túnel não inicia. Essa barreira é independente do login do produto. Não compartilhe e-mails de testers no Git ou em mensagens do produto. O staging local e o quick tunnel dependem do computador do mantenedor; para disponibilidade persistente, use domínio/túnel nomeado ou hospedagem.
 

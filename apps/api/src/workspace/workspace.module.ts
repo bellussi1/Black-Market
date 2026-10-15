@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CatalogModule } from '../catalog/catalog.module';
 import { FirebaseAuthService } from './firebase-auth.service';
 import { IdentityController } from './identity.controller';
 import { IdentityService } from './identity.service';
@@ -10,6 +11,7 @@ import { TestWorkspaceSeeder } from './test-workspace-seeder';
 import { WorkspaceController } from './workspace.controller';
 import { WorkspaceService } from './workspace.service';
 @Module({
+  imports: [CatalogModule],
   controllers: [WorkspaceController, IdentityController],
   providers: [
     WorkspaceService,

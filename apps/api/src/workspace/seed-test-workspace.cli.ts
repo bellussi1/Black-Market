@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
+import { CatalogModule } from '../catalog/catalog.module';
 import { validateEnvironment } from '../config/env.schema';
 import { DatabaseModule } from '../database/database.module';
 import { TestWorkspaceSeeder } from './test-workspace-seeder';
@@ -14,6 +15,7 @@ import { TestWorkspaceSeeder } from './test-workspace-seeder';
       validate: validateEnvironment,
     }),
     DatabaseModule,
+    CatalogModule,
   ],
   providers: [TestWorkspaceSeeder],
 })
@@ -31,8 +33,12 @@ async function main() {
     const result = await app.get(TestWorkspaceSeeder).seed(firebaseUid);
     process.stdout.write(
       result.seeded
-        ? `Perfil de teste aplicado ao workspace (versão ${result.version}).\n`
-        : `Perfil de teste já estava aplicado (versão ${result.version}).\n`,
+        ? `Seed sintético aplicado ao workspace (versão ${result.version}): ${Object.entries(
+            result.counts,
+          )
+            .map(([name, count]) => `${name}=${count}`)
+            .join(', ')}.\n`
+        : `Seed sintético já estava aplicado (versão ${result.version}).\n`,
     );
   } finally {
     await app.close();
