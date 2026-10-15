@@ -288,7 +288,7 @@ describe('MarketCacheService', () => {
     expect(service.isSyncing()).toBe(false);
   });
 
-  it('fetches the detailed quote when a zero-stock bulk quote omits maxPrice', () => {
+  it('keeps a zero-stock quote without maxPrice pending instead of fanning out to the item endpoint', () => {
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
 
@@ -306,26 +306,14 @@ describe('MarketCacheService', () => {
         ],
       });
 
-    httpTesting
-      .expectOne((request) => request.url.includes('/market/items/1408'))
-      .flush({
-        ...mockLookupResponse,
-        items: [
-          {
-            ...mockLookupResponse.items[0]!,
-            price: '51',
-            stock: 0,
-            maxPrice: '90',
-          },
-        ],
-      });
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
 
-    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBe('90');
-    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBe('90');
+    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBeNull();
+    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBeNull();
     expect(service.isSyncing()).toBe(false);
   });
 
-  it('enriches a fresh cached zero-stock quote that has no maximum price', () => {
+  it('does not individually refresh a fresh cached zero-stock quote missing maxPrice', () => {
     service.cacheLookupResponse(
       {
         ...mockLookupResponse,
@@ -343,23 +331,10 @@ describe('MarketCacheService', () => {
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
 
-    httpTesting
-      .expectOne((request) => request.url.includes('/market/items/1408'))
-      .flush({
-        ...mockLookupResponse,
-        items: [
-          {
-            ...mockLookupResponse.items[0]!,
-            price: '51',
-            stock: 0,
-            maxPrice: '90',
-          },
-        ],
-      });
-
+    httpTesting.expectNone((request) => request.url.includes('/market/items/'));
     httpTesting.expectNone((request) => request.url.includes('/production-quotes'));
-    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBe('90');
-    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBe('90');
+    expect(emissions.at(-1)?.get(1408)?.maxPrice).toBeNull();
+    expect(service.getCachedQuote(1408, 'sa')?.maxPrice).toBeNull();
   });
 
   it('keeps cached quotes without fanning out when the bulk provider is unavailable', () => {

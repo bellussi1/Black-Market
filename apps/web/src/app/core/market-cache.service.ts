@@ -20,7 +20,6 @@ import {
   type Observable,
   of,
   shareReplay,
-  takeLast,
   tap,
   toArray,
 } from 'rxjs';
@@ -61,14 +60,6 @@ export const DEFAULT_MARKET_CACHE_TTL_MS = 5 * 60 * 1000;
 /** Background polling interval: 6 minutes */
 export const MARKET_BACKGROUND_POLL_MS = 6 * 60 * 1000;
 export const MARKET_STORAGE_KEY_PREFIX = 'bm_market_cache_';
-
-function hasPositivePrice(value: string | null | undefined): boolean {
-  return !!value && /^\d{1,24}$/.test(value) && BigInt(value) > 0n;
-}
-
-function needsMaximumPrice(quote: MarketItemQuote | undefined): boolean {
-  return quote?.stock === 0 && !hasPositivePrice(quote.maxPrice);
-}
 
 @Injectable({ providedIn: 'root' })
 export class MarketCacheService implements OnDestroy {
@@ -298,8 +289,8 @@ export class MarketCacheService implements OnDestroy {
 
   /**
    * Resolves quotes for crafting/production materials using the bulk production-quotes endpoint.
-   * Uses requests of at most 100 materials, caches all returned quotes, and enriches zero-stock
-   * summaries with the individual endpoint when it omitted the maximum market price.
+   * Uses requests of at most 100 materials and caches returned quotes. Missing maximum prices
+   * remain unknown so a production comparison cannot trigger one individual request per item.
    */
   resolveProductionQuotes(
     itemIds: (number | string)[],
@@ -325,45 +316,24 @@ export class MarketCacheService implements OnDestroy {
       }
     }
 
-    if (!missingOrExpired.length) {
-      const missingMaximum = uniqueIds.filter((id) => needsMaximumPrice(cachedMap.get(id)));
-      if (!missingMaximum.length) return of(cachedMap);
-      return this.resolveQuotesBatch(missingMaximum, region, true).pipe(takeLast(1));
-    }
+    if (!missingOrExpired.length) return of(cachedMap);
 
     this.isSyncing.set(true);
     const batches = Array.from({ length: Math.ceil(missingOrExpired.length / 100) }, (_, index) =>
       missingOrExpired.slice(index * 100, (index + 1) * 100),
     );
     const refreshedMap = new Map(cachedMap);
-    const resolvedIds = new Set<number>();
     const bulk$ = from(batches).pipe(
       mergeMap((ids) => this.api.productionQuotes(ids, region), 2),
       tap((response) => {
         this.cacheLookupResponse(response, region);
         for (const item of response.items) {
           refreshedMap.set(item.itemId, item);
-          resolvedIds.add(item.itemId);
         }
         this.lastSyncAt.set(new Date());
       }),
       toArray(),
-      mergeMap(() => {
-        // IDs omitted by the summary have no usable public quote. Do not issue
-        // one request per omission; only enrich returned zero-stock summaries
-        // when they specifically lack the maximum price.
-        const missingMaximum = missingOrExpired.filter(
-          (id) => resolvedIds.has(id) && needsMaximumPrice(refreshedMap.get(id)),
-        );
-        if (!missingMaximum.length) return of(refreshedMap);
-        return this.resolveQuotesBatch(missingMaximum, region, true).pipe(
-          takeLast(1),
-          map((details) => {
-            for (const [id, quote] of details) refreshedMap.set(id, quote);
-            return refreshedMap;
-          }),
-        );
-      }),
+      map(() => refreshedMap),
       catchError(() => {
         // A failed bulk request is a provider outage, not an invitation to fan out
         // one lookup per ingredient. Keep any fresh/stale entries and let the page
