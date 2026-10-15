@@ -27,65 +27,44 @@
       O Roadmap ainda não tem conteúdo.
     </p>
   } @else if (loaded()) {
-    @if (flowEntries().length) {
-      <section class="roadmap-flow-section" aria-labelledby="roadmap-flow-title">
-        <div class="roadmap-section-heading">
-          <p class="tool-kicker" i18n>DO CONTEXTO À DECISÃO</p>
-          <h2 id="roadmap-flow-title" i18n>Como as partes se conectam</h2>
-        </div>
-        <ol class="roadmap-flow">
-          @for (entry of flowEntries(); track entry.id) {
-            <li>
-              <article class="roadmap-flow-step">
-                <ng-icon [name]="entry.icon" aria-hidden="true" />
-                <div>
-                  <h3>{{ entry.title }}</h3>
-                  <p class="flow-summary">{{ entry.summary }}</p>
-                  @if (entry.description) {
-                    <p class="flow-description">{{ entry.description }}</p>
+    <ol class="roadmap-path" aria-labelledby="roadmap-title">
+      @for (entry of orderedEntries(); track entry.id; let index = $index) {
+        <li class="roadmap-path-step">
+          <span class="roadmap-path-marker" aria-hidden="true">{{ index + 1 }}</span>
+          <article class="roadmap-card" [class.featured]="entry.featured">
+            <div class="roadmap-card-top">
+              <ng-icon [name]="entry.icon" aria-hidden="true" />
+              <div class="roadmap-labels">
+                <span class="roadmap-kind">
+                  @if (entry.kind === 'flow') {
+                    <ng-container i18n>Fase</ng-container>
+                  } @else {
+                    <ng-container i18n>Pilar</ng-container>
                   }
-                </div>
-              </article>
-            </li>
-          }
-        </ol>
-      </section>
-    }
-
-    @if (pillars().length) {
-      <section class="roadmap-pillars-section" aria-labelledby="roadmap-pillars-title">
-        <div class="roadmap-section-heading">
-          <p class="tool-kicker" i18n>FOCOS PRINCIPAIS</p>
-          <h2 id="roadmap-pillars-title" i18n>O que estamos construindo</h2>
-        </div>
-        <ol class="roadmap-path" aria-labelledby="roadmap-pillars-title">
-          @for (entry of pillars(); track entry.id; let index = $index) {
-            <li class="roadmap-path-step">
-              <span class="roadmap-path-marker" aria-hidden="true">{{ index + 1 }}</span>
-              <article class="roadmap-card" [class.featured]="entry.featured">
-                <div class="roadmap-card-top">
-                  <ng-icon [name]="entry.icon" aria-hidden="true" />
-                  @if (entry.statusLabel) {
-                    <span class="roadmap-state">{{ entry.statusLabel }}</span>
-                  }
-                </div>
-                <h3>{{ entry.title }}</h3>
-                <p class="roadmap-summary">{{ entry.summary }}</p>
-                @if (entry.description) {
-                  <p class="roadmap-description">{{ entry.description }}</p>
+                </span>
+                @if (entry.featured) {
+                  <span class="roadmap-featured" i18n>Foco da Home</span>
                 }
-                @if (entry.links.length) {
-                  <nav class="roadmap-links" [attr.aria-label]="entry.title">
-                    @for (link of entry.links; track link.path) {
-                      <a class="btn subtle" [routerLink]="link.path">{{ link.label }}</a>
-                    }
-                  </nav>
+                @if (entry.statusLabel) {
+                  <span class="roadmap-state">{{ entry.statusLabel }}</span>
                 }
-              </article>
-            </li>
-          }
-        </ol>
-      </section>
-    }
+              </div>
+            </div>
+            <h2>{{ entry.title }}</h2>
+            <p class="roadmap-summary">{{ entry.summary }}</p>
+            @if (entry.description) {
+              <p class="roadmap-description">{{ entry.description }}</p>
+            }
+            @if (entry.links.length) {
+              <nav class="roadmap-links" [attr.aria-label]="entry.title">
+                @for (link of entry.links; track link.path) {
+                  <a class="btn subtle" [routerLink]="link.path">{{ link.label }}</a>
+                }
+              </nav>
+            }
+          </article>
+        </li>
+      }
+    </ol>
   }
 </section>

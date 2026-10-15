@@ -38,14 +38,9 @@ export class RoadmapPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly loaded = signal(false);
-  readonly flowEntries = computed(() =>
+  readonly orderedEntries = computed(() =>
     this.entries()
-      .filter((entry) => entry.kind === 'flow')
-      .sort((left, right) => left.sortOrder - right.sortOrder),
-  );
-  readonly pillars = computed(() =>
-    this.entries()
-      .filter((entry) => entry.kind === 'pillar')
+      .slice()
       .sort((left, right) => left.sortOrder - right.sortOrder)
       .map((entry) => ({
         ...entry,
