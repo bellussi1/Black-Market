@@ -26,6 +26,11 @@
     "test:staging": "node scripts/smoke-staging.mjs",
     "test:legal:layout": "node scripts/check-legal-layout.mjs"
   },
+  "pnpm": {
+    "overrides": {
+      "@grpc/grpc-js": "1.14.6"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "eslint": "10.12.0",
