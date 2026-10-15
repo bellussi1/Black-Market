@@ -1362,3 +1362,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos**: cache/specs de mercado; componente/specs/template/estilos de Recomendações; estilos do shell/rodapé/base; este handoff, plano de remediação e revisão concorrencial.
 - **Commits locais**: `ff01dd8` (fan-out de cotações), `549b044` (Coach/pendências) e `ea414a9` (responsividade). A atualização documental está sendo registrada separadamente; sem push.
 - **Próximo passo**: perfilar a comparação máxima antes de qualquer otimização e protegê-la com teste de equivalência; não reduzir cobertura nem operações máximas em silêncio. Retomar a divergência numérica com premissas pareadas e planejar dados revisáveis para PvPvE/Coleta sem inventar benchmark.
+
+## 124. Coach — alinhamento ao padrão visual BDO (Codex, 15/10/2026)
+
+- **Auditoria**: a primeira versão tinha a paleta escura/dourada e a Barlow Semi Condensed, mas a composição ainda parecia dashboard SaaS: cartões com raio de 10 px, opções em pílulas e painéis sem titlebar bronze. Isso divergía de `.panel`/`.panel-heading`, raio de 2 px e controles retangulares definidos em `.agents/skills/bdo-ui-design/`.
+- **Correção**: Perfil, preferências, recomendações e calibração agora usam a primitiva global `.panel` com barras `.panel-heading`; opções e marcador de ranking usam raio de 2 px; cores foram consolidadas nos tokens `--bm-*`. A hierarquia resumo-primeiro e os detalhes recolhidos foram mantidos.
+- **Verificação**: `pnpm check` passou; `pnpm --filter @bdo/web test --include=src/app/features/recommendations/recommendations-page.spec.ts` passou (21 testes). Aviso existente de locale `pt-BR`/fallback `pt` permanece.
+- **Limite de inspeção**: a captura visual disponível é anterior a essa correção. A navegação de teste continuou redirecionando a `/account` mesmo durante a tentativa local de liberar a rota; `canActivate: [authGuard]` foi restaurado no código. Portanto o markup e o build foram verificados, mas não há screenshot pós-correção para atestar os pixels renderizados.
+- **Commit**: `0b424c5 fix(ui): align coach panels with BDO design`.
+- **Próximo passo**: quando houver contexto de navegador autorizado para abrir a rota, conferir a titlebar em desktop e o reflow em 320/160 px. Não voltar a remover o guard no estado entregue.
