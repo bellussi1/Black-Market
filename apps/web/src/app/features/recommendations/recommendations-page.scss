@@ -52,15 +52,17 @@
 
 .profile-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
   gap: 0.65rem 1rem;
   color: var(--color-gold, #ceb789);
 }
 
 .profile-summary span,
 .opportunity-metrics span {
+  min-width: 0;
   display: grid;
   gap: 0.2rem;
+  overflow-wrap: anywhere;
 }
 
 .profile-summary small,
@@ -284,6 +286,10 @@
   border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 12%, transparent);
 }
 
+.pending-intro {
+  color: var(--color-muted, #b8ad98);
+}
+
 .pending-issue {
   display: flex;
   flex-wrap: wrap;
@@ -294,6 +300,26 @@
 
 .pending-issue p {
   margin: 0.5rem 0;
+}
+
+.pending-row > small {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--color-muted, #b8ad98);
+}
+
+.pending-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding-top: 0.9rem;
+}
+
+.pending-pagination span {
+  min-width: 0;
+  text-align: center;
 }
 
 .manual-price-field {
@@ -369,5 +395,9 @@ select {
 
   .manual-price-field {
     grid-template-columns: 1fr;
+  }
+
+  .calibration-fields {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

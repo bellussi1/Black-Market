@@ -54,6 +54,7 @@ p {
   margin-block: 8px;
 }
 button {
+  min-width: 0;
   max-width: 100%;
   margin-top: 8px;
   padding: 8px 12px;
@@ -62,6 +63,8 @@ button {
   background: var(--bm-input);
   font: inherit;
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 a:focus-visible,
@@ -88,5 +91,16 @@ button:focus-visible {
   }
   .footer-bottom {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 240px) {
+  .footer-content {
+    gap: 12px;
+  }
+
+  button {
+    width: 100%;
+    padding-inline: 8px;
   }
 }
