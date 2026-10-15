@@ -16,10 +16,24 @@ import type {
   RecipeMarketEquivalent,
   RecipeMarketEquivalentsResponse,
 } from '@bdo/shared';
-import { EMPTY, expand, forkJoin, map, type Observable, of, reduce, tap } from 'rxjs';
+import {
+  concat,
+  defer,
+  EMPTY,
+  expand,
+  finalize,
+  forkJoin,
+  map,
+  type Observable,
+  of,
+  reduce,
+  shareReplay,
+  tap,
+} from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { preferredDataLocale } from './locale';
+import { DEFAULT_MARKET_CACHE_TTL_MS } from './market-cache.service';
 import { type Region, RegionPreferences } from './region-preferences';
 
 export interface CatalogSearchParams {
@@ -43,6 +57,15 @@ type IconResolvable = {
   itemId?: number;
 };
 
+interface PublicCatalogCacheEntry<T> {
+  scope: string;
+  value: T;
+  fetchedAt: number;
+  expiresAt: number;
+}
+
+const MAX_PUBLIC_CATALOG_CACHE_ENTRIES = 120;
+
 @Injectable({ providedIn: 'root' })
 export class CatalogApiService {
   private readonly http = inject(HttpClient);
@@ -50,7 +73,79 @@ export class CatalogApiService {
   private readonly document = inject(DOCUMENT);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1`;
   private readonly itemIconUrls = new Map<string, string>();
+  private readonly publicReadCache = new Map<string, PublicCatalogCacheEntry<unknown>>();
+  private readonly publicReadInflight = new Map<string, Observable<unknown>>();
+  private readonly activeDatasetIdentity = new Map<string, string>();
   private activeIconChecksum: string | null = null;
+
+  private cachedPublicRead<T>(
+    endpoint: string,
+    params: HttpParams,
+    load: () => Observable<T>,
+    getDataset: (value: T) => ActiveDatasetSummary | null | undefined,
+  ): Observable<T> {
+    const region = params.get('region') ?? this.preferences.region();
+    const locale = params.get('preferredLocale') ?? preferredDataLocale();
+    const scope = `${region}:${locale}`;
+    const identity = this.activeDatasetIdentity.get(scope) ?? 'unknown';
+    const paramsKey = params
+      .keys()
+      .sort()
+      .map(
+        (key) =>
+          `${encodeURIComponent(key)}=${(params.getAll(key) ?? [])
+            .map(encodeURIComponent)
+            .sort()
+            .join(',')}`,
+      )
+      .join('&');
+    const key = `${scope}|${identity}|${endpoint}|${paramsKey}`;
+    const now = Date.now();
+    const cached = this.publicReadCache.get(key) as PublicCatalogCacheEntry<T> | undefined;
+    if (cached && cached.expiresAt > now) {
+      this.publicReadCache.delete(key);
+      this.publicReadCache.set(key, cached);
+      return of(cached.value);
+    }
+
+    let refresh = this.publicReadInflight.get(key) as Observable<T> | undefined;
+    if (!refresh) {
+      refresh = defer(load).pipe(
+        tap((value) => {
+          const dataset = getDataset(value);
+          const nextIdentity = dataset
+            ? `${dataset.version}:${dataset.checksum ?? ''}`
+            : (this.activeDatasetIdentity.get(scope) ?? 'unknown');
+          const previousIdentity = this.activeDatasetIdentity.get(scope);
+          if (dataset && previousIdentity && previousIdentity !== nextIdentity) {
+            for (const [cachedKey, entry] of this.publicReadCache) {
+              if (entry.scope === scope) this.publicReadCache.delete(cachedKey);
+            }
+          }
+          if (dataset) this.activeDatasetIdentity.set(scope, nextIdentity);
+
+          const responseKey = `${scope}|${nextIdentity}|${endpoint}|${paramsKey}`;
+          this.publicReadCache.delete(responseKey);
+          this.publicReadCache.set(responseKey, {
+            scope,
+            value,
+            fetchedAt: Date.now(),
+            expiresAt: Date.now() + DEFAULT_MARKET_CACHE_TTL_MS,
+          });
+          while (this.publicReadCache.size > MAX_PUBLIC_CATALOG_CACHE_ENTRIES) {
+            const oldestKey = this.publicReadCache.keys().next().value;
+            if (oldestKey === undefined) break;
+            this.publicReadCache.delete(oldestKey);
+          }
+        }),
+        finalize(() => this.publicReadInflight.delete(key)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.publicReadInflight.set(key, refresh);
+    }
+
+    return cached ? concat(of(cached.value), refresh) : refresh;
+  }
 
   resolveIconUrl(item: IconResolvable): string | null {
     const itemId = item.id ?? item.itemId;
@@ -112,9 +207,12 @@ export class CatalogApiService {
     if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
     if (params.grade) httpParams = httpParams.set('grade', params.grade);
     if (params.scope) httpParams = httpParams.set('scope', params.scope);
-    return this.http
-      .get<CatalogPage>(`${this.baseUrl}/items`, { params: httpParams })
-      .pipe(tap((page) => this.rememberItemIcons(page.items, page.dataset)));
+    return this.cachedPublicRead(
+      '/items',
+      httpParams,
+      () => this.http.get<CatalogPage>(`${this.baseUrl}/items`, { params: httpParams }),
+      (page) => page.dataset,
+    ).pipe(tap((page) => this.rememberItemIcons(page.items, page.dataset)));
   }
 
   getItemsByIds(itemIds: readonly number[], expectedDatasetVersion: string) {
@@ -142,21 +240,28 @@ export class CatalogApiService {
   }
 
   getCategories(scope?: 'life-skill') {
-    return this.http.get<CatalogCategoriesResponse>(`${this.baseUrl}/categories`, {
-      params: {
-        region: this.preferences.region(),
-        preferredLocale: preferredDataLocale(),
-        ...(scope ? { scope } : {}),
-      },
-    });
+    let params = new HttpParams()
+      .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale());
+    if (scope) params = params.set('scope', scope);
+    return this.cachedPublicRead(
+      '/categories',
+      params,
+      () => this.http.get<CatalogCategoriesResponse>(`${this.baseUrl}/categories`, { params }),
+      (response) => response.dataset,
+    );
   }
 
   getItem(id: number) {
-    return this.http
-      .get<CatalogItemResponse>(`${this.baseUrl}/items/${id}`, {
-        params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
-      })
-      .pipe(tap((response) => this.rememberItemIcons([response.item], response.dataset)));
+    const params = new HttpParams()
+      .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale());
+    return this.cachedPublicRead(
+      `/items/${id}`,
+      params,
+      () => this.http.get<CatalogItemResponse>(`${this.baseUrl}/items/${id}`, { params }),
+      (response) => response.dataset,
+    ).pipe(tap((response) => this.rememberItemIcons([response.item], response.dataset)));
   }
 
   getItemRecipes(id: number, direction: 'produces' | 'uses') {
@@ -168,34 +273,41 @@ export class CatalogApiService {
       this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/items/${id}/recipes`, {
         params: params.set('page', page).set('pageSize', 100),
       });
-    return request(1).pipe(
-      expand((response) => {
-        const loaded = (response.page ?? 1) * (response.pageSize ?? 100);
-        if (loaded >= response.total) return EMPTY;
-        if (!response.page || !response.pageSize || !response.recipes.length)
-          throw new Error('Consulta de receitas incompleta. Atualize a API antes de continuar.');
-        return request(response.page + 1);
-      }, 1),
-      reduce((previous: CatalogRecipesResponse | null, response) => {
-        if (!previous) return response;
-        if (
-          previous.dataset?.version !== response.dataset?.version ||
-          previous.total !== response.total
-        )
-          throw new Error('O catálogo mudou durante a consulta de receitas. Tente novamente.');
-        return { ...previous, recipes: [...previous.recipes, ...response.recipes] };
-      }, null),
-      map((response) => {
-        if (!response) throw new Error('Consulta de receitas indisponível.');
-        const unique = [
-          ...new Map(response.recipes.map((recipe) => [recipe.key, recipe])).values(),
-        ];
-        if (unique.length !== response.total)
-          throw new Error('Consulta de receitas incompleta. Tente novamente.');
-        return { ...response, recipes: unique };
-      }),
-      tap((response) => this.rememberRecipeIcons(response.recipes, response.dataset)),
-    );
+    return this.cachedPublicRead(
+      `/items/${id}/recipes`,
+      params,
+      () =>
+        request(1).pipe(
+          expand((response) => {
+            const loaded = (response.page ?? 1) * (response.pageSize ?? 100);
+            if (loaded >= response.total) return EMPTY;
+            if (!response.page || !response.pageSize || !response.recipes.length)
+              throw new Error(
+                'Consulta de receitas incompleta. Atualize a API antes de continuar.',
+              );
+            return request(response.page + 1);
+          }, 1),
+          reduce((previous: CatalogRecipesResponse | null, response) => {
+            if (!previous) return response;
+            if (
+              previous.dataset?.version !== response.dataset?.version ||
+              previous.total !== response.total
+            )
+              throw new Error('O catálogo mudou durante a consulta de receitas. Tente novamente.');
+            return { ...previous, recipes: [...previous.recipes, ...response.recipes] };
+          }, null),
+          map((response) => {
+            if (!response) throw new Error('Consulta de receitas indisponível.');
+            const unique = [
+              ...new Map(response.recipes.map((recipe) => [recipe.key, recipe])).values(),
+            ];
+            if (unique.length !== response.total)
+              throw new Error('Consulta de receitas incompleta. Tente novamente.');
+            return { ...response, recipes: unique };
+          }),
+        ),
+      (response) => response.dataset,
+    ).pipe(tap((response) => this.rememberRecipeIcons(response.recipes, response.dataset)));
   }
 
   getByproductRecipes(
@@ -245,36 +357,42 @@ export class CatalogApiService {
   }
 
   getRecipes(q: string, page: number, recipeGroup?: LifeSkillRecipeGroup) {
-    return this.http
-      .get<RecipeListResponse>(`${this.baseUrl}/recipes`, {
-        params: {
-          q,
-          page,
-          pageSize: 24,
-          region: this.preferences.region(),
-          preferredLocale: preferredDataLocale(),
-          ...(recipeGroup ? { recipeGroup } : {}),
-        },
-      })
-      .pipe(
-        tap((response) =>
-          this.rememberItemIcons(
-            response.recipes.map((recipe) => ({ id: recipe.itemId, iconUrl: recipe.iconUrl })),
-            response.dataset,
-          ),
+    let params = new HttpParams()
+      .set('q', q)
+      .set('page', page)
+      .set('pageSize', 24)
+      .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale());
+    if (recipeGroup) params = params.set('recipeGroup', recipeGroup);
+    return this.cachedPublicRead(
+      '/recipes',
+      params,
+      () => this.http.get<RecipeListResponse>(`${this.baseUrl}/recipes`, { params }),
+      (response) => response.dataset,
+    ).pipe(
+      tap((response) =>
+        this.rememberItemIcons(
+          response.recipes.map((recipe) => ({ id: recipe.itemId, iconUrl: recipe.iconUrl })),
+          response.dataset,
         ),
-      );
+      ),
+    );
   }
 
   getRecipe(key: string) {
-    return this.http
-      .get<{ recipe: CatalogRecipe; dataset: ActiveDatasetSummary }>(
-        `${this.baseUrl}/recipes/${encodeURIComponent(key)}`,
-        {
-          params: { region: this.preferences.region(), preferredLocale: preferredDataLocale() },
-        },
-      )
-      .pipe(tap((response) => this.rememberRecipeIcons([response.recipe], response.dataset)));
+    const params = new HttpParams()
+      .set('region', this.preferences.region())
+      .set('preferredLocale', preferredDataLocale());
+    return this.cachedPublicRead(
+      `/recipes/${encodeURIComponent(key)}`,
+      params,
+      () =>
+        this.http.get<{ recipe: CatalogRecipe; dataset: ActiveDatasetSummary }>(
+          `${this.baseUrl}/recipes/${encodeURIComponent(key)}`,
+          { params },
+        ),
+      (response) => response.dataset,
+    ).pipe(tap((response) => this.rememberRecipeIcons([response.recipe], response.dataset)));
   }
 
   getNpcPurchasePrices(

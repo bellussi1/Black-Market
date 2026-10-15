@@ -1,10 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { CatalogRecipe } from '@bdo/shared';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { ActiveDatasetSummary, CatalogPage, CatalogRecipe } from '@bdo/shared';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from './catalog-api.service';
+import { RegionPreferences } from './region-preferences';
 
 const recipes = (start: number, count: number): CatalogRecipe[] =>
   Array.from({ length: count }, (_, index) => ({
@@ -174,5 +175,175 @@ describe('Batch recipe market equivalent lookup', () => {
       .expectOne((r) => r.url.endsWith('/recipe-market-equivalents'))
       .flush({ equivalents: [], dataset: { version: 'new' } });
     expect(message).toContain('catálogo mudou');
+  });
+});
+
+describe('Public catalog in-memory cache', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
+  );
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  const dataset = (
+    region = 'sa',
+    locale = 'pt',
+    version = 'v1',
+    checksum = version,
+  ): ActiveDatasetSummary => ({
+    version,
+    region,
+    locale,
+    checksum,
+    itemCount: 1,
+    recipeCount: 0,
+    importedAt: `2026-10-15T00:00:00.000Z`,
+  });
+  const itemPage = (catalog: ActiveDatasetSummary = dataset()): CatalogPage => ({
+    items: [
+      {
+        id: 1,
+        name: `Dataset ${catalog.version}`,
+        description: null,
+        grade: null,
+        weight: null,
+        category: null,
+        icon: null,
+        iconUrl: null,
+        categories: [],
+      },
+    ],
+    total: 1,
+    page: 1,
+    pageSize: 24,
+    dataset: catalog,
+  });
+
+  it('serves a fresh item page from memory without a second network request', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const params = { page: 1, pageSize: 24 };
+    let results: CatalogPage[] = [];
+    service.getItems(params).subscribe((page) => results.push(page));
+    http.expectOne((request) => request.url.endsWith('/items')).flush(itemPage());
+
+    service.getItems(params).subscribe((page) => results.push(page));
+
+    http.expectNone((request) => request.url.endsWith('/items'));
+    expect(results.map((page) => page.items[0]?.name)).toEqual(['Dataset v1', 'Dataset v1']);
+  });
+
+  it('shares an in-flight item-page request between identical callers', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const params = { page: 1, pageSize: 24 };
+    const results: CatalogPage[] = [];
+    service.getItems(params).subscribe((page) => results.push(page));
+    service.getItems(params).subscribe((page) => results.push(page));
+
+    const requests = http.match((request) => request.url.endsWith('/items'));
+    expect(requests).toHaveLength(1);
+    requests.forEach((request) => request.flush(itemPage()));
+    expect(results).toHaveLength(2);
+  });
+
+  it('separates cached reads by region, locale, endpoint, and effective parameters', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const preferences = TestBed.inject(RegionPreferences);
+    preferences.setRegion('sa');
+    service.getItems({ page: 1, pageSize: 24 }).subscribe();
+    const initialRequest = http.expectOne((request) => request.url.endsWith('/items'));
+    const initialLocale = initialRequest.request.params.get('preferredLocale');
+
+    vi.stubGlobal(
+      '$localize',
+      Object.assign(() => '', { locale: 'en-US' }),
+    );
+    service.getItems({ page: 1, pageSize: 24 }).subscribe();
+    preferences.setRegion('eu');
+    service.getItems({ page: 1, pageSize: 24 }).subscribe();
+    service.getItems({ page: 2, pageSize: 24 }).subscribe();
+    service.getCategories().subscribe();
+
+    const requests = http.match(() => true);
+    expect(requests).toHaveLength(4);
+    expect(requests.map((request) => request.request.params.get('region'))).toEqual([
+      'sa',
+      'eu',
+      'eu',
+      'eu',
+    ]);
+    expect(requests[0]?.request.params.get('preferredLocale')).not.toBe(initialLocale);
+    expect(requests[2]?.request.params.get('page')).toBe('2');
+    expect(requests[3]?.request.url).toContain('/categories');
+    initialRequest.flush(itemPage(dataset('sa', initialLocale ?? 'pt')));
+    requests.forEach((request) => {
+      const region = request.request.params.get('region') ?? 'sa';
+      const locale = request.request.params.get('preferredLocale') ?? 'pt';
+      request.flush(
+        request.request.url.endsWith('/categories')
+          ? { categories: [], dataset: dataset(region, locale) }
+          : itemPage(dataset(region, locale)),
+      );
+    });
+  });
+
+  it('invalidates entries from an older dataset version when a newer response is observed', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const params = { page: 1, pageSize: 24 };
+    service.getItems(params).subscribe();
+    http
+      .expectOne((request) => request.url.endsWith('/items'))
+      .flush(itemPage(dataset('sa', 'pt', 'v1', 'checksum-1')));
+    service.getCategories().subscribe();
+    http
+      .expectOne((request) => request.url.endsWith('/categories'))
+      .flush({ categories: [], dataset: dataset('sa', 'pt', 'v2', 'checksum-2') });
+
+    let version = '';
+    service.getItems(params).subscribe((page) => (version = page.dataset?.version ?? ''));
+    http
+      .expectOne((request) => request.url.endsWith('/items'))
+      .flush(itemPage(dataset('sa', 'pt', 'v2', 'checksum-2')));
+    expect(version).toBe('v2');
+  });
+
+  it('emits expired data before refresh and keeps it available after a refresh failure', async () => {
+    const { DEFAULT_MARKET_CACHE_TTL_MS } = await import('./market-cache.service');
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-15T12:00:00.000Z'));
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const params = { page: 1, pageSize: 24 };
+    const emissions: CatalogPage[] = [];
+    let errors = 0;
+    service.getItems(params).subscribe((page) => emissions.push(page));
+    http.expectOne((request) => request.url.endsWith('/items')).flush(itemPage());
+
+    vi.setSystemTime(new Date(Date.now() + DEFAULT_MARKET_CACHE_TTL_MS + 1));
+    service.getItems(params).subscribe({
+      next: (page) => emissions.push(page),
+      error: () => errors++,
+    });
+    expect(emissions.at(-1)?.items[0]?.name).toBe('Dataset v1');
+    http
+      .expectOne((request) => request.url.endsWith('/items'))
+      .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+    expect(errors).toBe(1);
+
+    service.getItems(params).subscribe((page) => emissions.push(page));
+    expect(emissions.at(-1)?.items[0]?.name).toBe('Dataset v1');
+    http
+      .expectOne((request) => request.url.endsWith('/items'))
+      .flush('Unavailable', { status: 503, statusText: 'Unavailable' });
+    expect(emissions).toHaveLength(3);
   });
 });
