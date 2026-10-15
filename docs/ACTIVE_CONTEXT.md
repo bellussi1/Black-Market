@@ -1251,3 +1251,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Firebase/R2 continuam pendentes**: a aprovação dos Termos do Firebase e da configuração de R2 foi dada, mas a tentativa via Console anterior não conseguiu criar o projeto nem habilitar o produto. `.env.staging` continua sem configuração social; `identity/config` confirma Google e Steam desativados. O seed aguarda uma UID autenticada. Não há bucket nem backup remoto cifrado, nem URL HTTPS de túnel ativa; o acesso verificado é somente local `http://localhost:8081` (API pelo gateway em `/api/v1`).
 - **Commit atômico de documentação**: este handoff, status da especificação e plano de verificação.
 - **Próximo passo**: retomar a configuração externa Firebase e R2 quando os painéis permitirem concluir; depois testar login, aplicar seed para `enzobellussifam@gmail.com`, publicar tunnel protegido e realizar restore de backup remoto cifrado. Corrigir a origem/limite das cotações em lote e máximas antes de certificar lucro por hora. Repetir a suíte Web integral sem carga concorrente para investigar seus timeouts.
+
+## 113. Acesso HTTPS temporário para testers (Codex, 15/10/2026)
+
+- **Túnel**: `scripts/staging.ps1 Share` está ativo e usa o Quick Tunnel do Cloudflare com dois e-mails autorizados. Não gravar endereços de e-mail ou hostname temporário no repositório; o link foi entregue nesta conversa.
+- **Validação**: processo `cloudflared` corresponde ao estado salvo; a linha de comando contém as duas autorizações. Requisição sem sessão à URL pública retornou `302` para o fluxo de autenticação `login.trycloudflare.com`. `pnpm test:staging` passou (HTTP, SSR, catálogo, ícone e bloqueio de indexação).
+- **Operação**: manter a sessão PowerShell do script `Share`, Docker, computador e conexão ativos. O link expira quando o túnel é encerrado. A proteção Cloudflare libera acesso ao staging, mas não ativa Google/Steam dentro do app; Firebase de staging continua pendente.
+- **Próximo passo**: tester abre o link e conclui o desafio de acesso enviado ao e-mail autorizado. Recriar o túnel com a lista atualizada se outro tester for incluído.
