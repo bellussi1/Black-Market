@@ -74,6 +74,27 @@ function createIdentity() {
 }
 
 describe('RoadmapPage', () => {
+  it('shows Editar tutoriais only to a roadmap administrator', async () => {
+    const identity = createIdentity();
+    const fixture = await renderComponent(RoadmapPage, {}, [
+      { provide: IdentityService, useValue: identity },
+    ]);
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
+      .flush({ entries: [], updatedAt: null });
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('a[href="/tutorials/manage"]')).toBeNull();
+    identity.canManageRoadmap.set(true);
+    await fixture.whenStable();
+    expect(
+      fixture.nativeElement.querySelector('a[href="/tutorials/manage"]')?.textContent,
+    ).toContain('Editar tutoriais');
+    identity.canManageRoadmap.set(false);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('a[href="/tutorials/manage"]')).toBeNull();
+    http.verify();
+  });
   it('rendersMixedKindsInOneOrderedListWithTextualTypeAndFocus', async () => {
     const identity = createIdentity();
     const fixture = await renderComponent(RoadmapPage, {}, [

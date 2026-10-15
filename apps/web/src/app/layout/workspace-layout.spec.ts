@@ -47,7 +47,14 @@ describe('workspace navigation', () => {
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
     expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
     expect(paths.filter((path) => path === '/roadmap')).toHaveLength(1);
-    for (const path of ['/inventory', '/profile', '/gear', '/database/items', '/settings']) {
+    for (const path of [
+      '/inventory',
+      '/profile',
+      '/gear',
+      '/database/items',
+      '/settings',
+      '/tutorials/manage',
+    ]) {
       expect(paths).not.toContain(path);
     }
     expect(nav.textContent).toContain('Armazém');

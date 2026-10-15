@@ -1,0 +1,275 @@
+<section class="tool-page tutorials-manage-page" aria-labelledby="tutorial-manage-title">
+  <header class="tool-heading">
+    <div>
+      <p class="tool-kicker" i18n>BLACK MARKET · ADMINISTRAÇÃO</p>
+      <h1 id="tutorial-manage-title" i18n>Editar tutoriais</h1>
+      <p i18n>
+        Escolha a tela e edite os passos do tutorial. Use texto simples, sem HTML ou Markdown.
+      </p>
+    </div>
+    <a hlmBtn variant="outline" routerLink="/roadmap" i18n>Voltar ao Roadmap</a>
+  </header>
+
+  @if (error()) {
+    <div class="tutorial-feedback" role="alert">
+      <p>{{ error() }}</p>
+      @if (!accessVerified()) {
+        <button hlmBtn variant="outline" type="button" (click)="initialize()" i18n>
+          Tentar novamente
+        </button>
+      } @else if (authorized() && !loaded()) {
+        <button
+          hlmBtn
+          variant="outline"
+          class="tutorial-retry"
+          type="button"
+          (click)="load()"
+          [disabled]="loading()"
+          i18n
+        >
+          Tentar novamente
+        </button>
+      }
+    </div>
+  }
+  @if (!accessVerified() && !error()) {
+    <p role="status" i18n>Verificando acesso administrativo…</p>
+  } @else if (accessVerified() && !authorized()) {
+    <p role="status" i18n>Sua conta não tem permissão para editar tutoriais.</p>
+  } @else if (authorized()) {
+    @if (loading()) {
+      <p role="status" i18n>Carregando tutoriais…</p>
+    } @else if (loaded()) {
+      <div class="tutorial-editor" [attr.aria-busy]="saving()">
+        <div class="tutorial-selection">
+          <div class="tutorial-field">
+            <label for="tutorial-screen" i18n>Tela</label>
+            <select
+              appBdoSelect
+              id="tutorial-screen"
+              name="screen"
+              [ngModel]="screenKey()"
+              (ngModelChange)="selectScreen($event)"
+              [disabled]="saving()"
+            >
+              @for (screen of screens; track screen.screenKey) {
+                <option [value]="screen.screenKey">{{ screenLabels[screen.screenKey] }}</option>
+              }
+            </select>
+          </div>
+          <div class="tutorial-field">
+            <label for="tutorial-locale" i18n>Idioma</label>
+            <select
+              appBdoSelect
+              id="tutorial-locale"
+              name="locale"
+              [ngModel]="locale()"
+              (ngModelChange)="selectLocale($event)"
+              [disabled]="saving()"
+            >
+              @for (value of locales; track value) {
+                <option [value]="value">{{ value }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="tutorial-publication">
+          <label class="tutorial-enabled"
+            ><input
+              type="checkbox"
+              name="enabled"
+              [ngModel]="enabled()"
+              (ngModelChange)="setEnabled($event)"
+              [disabled]="saving()"
+            /><span i18n>Tutorial ativado</span></label
+          >
+          <p class="tutorial-revision">
+            <span i18n>Revisão salva:</span> {{ updatedAt() ?? newGuideLabel }}
+          </p>
+        </div>
+        <p role="status" aria-live="polite">
+          @if (saving()) {
+            <span i18n>Salvando tutorial…</span>
+          } @else if (message()) {
+            {{ message() }}
+          } @else if (dirty()) {
+            <span i18n>Alterações não salvas.</span>
+          } @else {
+            <span i18n>Nenhuma alteração pendente.</span>
+          }
+        </p>
+        @if (errors()['steps']) {
+          <p class="tutorial-field-error" id="tutorial-steps-error" data-error="steps">
+            {{ errors()['steps'] }}
+          </p>
+        }
+        <ol class="tutorial-step-list" aria-label="Passos do tutorial" i18n-aria-label>
+          @for (step of steps(); track $index; let index = $index) {
+            <li>
+              <fieldset class="bdo-window" [disabled]="saving()">
+                <legend><span i18n>Passo</span> {{ index + 1 }}</legend>
+                <div class="tutorial-step-actions">
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    [disabled]="index === 0 || saving()"
+                    (click)="moveStep(index, -1)"
+                    [attr.aria-label]="moveUpLabel + ' ' + (index + 1)"
+                    i18n
+                  >
+                    Mover acima
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    [disabled]="index === steps().length - 1 || saving()"
+                    (click)="moveStep(index, 1)"
+                    [attr.aria-label]="moveDownLabel + ' ' + (index + 1)"
+                    i18n
+                  >
+                    Mover abaixo
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="destructive"
+                    type="button"
+                    (click)="removeStep(index)"
+                    [attr.aria-label]="removeLabel + ' ' + (index + 1)"
+                    i18n
+                  >
+                    Remover
+                  </button>
+                </div>
+                <div class="tutorial-field">
+                  <label [for]="'tutorial-title-' + index" i18n>Título</label>
+                  <input
+                    hlmInput
+                    type="text"
+                    [id]="'tutorial-title-' + index"
+                    [name]="'title-' + index"
+                    [ngModel]="step.title"
+                    (ngModelChange)="patchStep(index, { title: $event })"
+                    maxlength="100"
+                    required
+                    [attr.aria-invalid]="!!fieldError(index, 'title')"
+                    [attr.aria-describedby]="'title-error-' + index"
+                  />
+                  <p
+                    class="tutorial-field-error"
+                    [id]="'title-error-' + index"
+                    [attr.data-error]="'steps.' + index + '.title'"
+                  >
+                    {{ fieldError(index, 'title') }}
+                  </p>
+                </div>
+                <div class="tutorial-field">
+                  <label [for]="'tutorial-body-' + index" i18n>Texto</label>
+                  <textarea
+                    hlmTextarea
+                    [id]="'tutorial-body-' + index"
+                    [name]="'body-' + index"
+                    [ngModel]="step.body"
+                    (ngModelChange)="patchStep(index, { body: $event })"
+                    maxlength="360"
+                    required
+                    rows="4"
+                    [attr.aria-invalid]="!!fieldError(index, 'body')"
+                    [attr.aria-describedby]="'body-error-' + index + ' body-count-' + index"
+                  ></textarea>
+                  <span class="tutorial-count" [id]="'body-count-' + index"
+                    >{{ step.body.length }} / 360</span
+                  >
+                  <p
+                    class="tutorial-field-error"
+                    [id]="'body-error-' + index"
+                    [attr.data-error]="'steps.' + index + '.body'"
+                  >
+                    {{ fieldError(index, 'body') }}
+                  </p>
+                </div>
+                <div class="tutorial-field">
+                  <label [for]="'tutorial-anchor-' + index" i18n>Área em destaque</label>
+                  <select
+                    appBdoSelect
+                    [id]="'tutorial-anchor-' + index"
+                    [name]="'anchor-' + index"
+                    [ngModel]="step.anchorKey"
+                    (ngModelChange)="patchStep(index, { anchorKey: $event })"
+                    [attr.aria-invalid]="!!fieldError(index, 'anchorKey')"
+                    [attr.aria-describedby]="'anchor-error-' + index"
+                  >
+                    <option [ngValue]="null" i18n>Etapa geral, sem destaque</option>
+                    @if (!isValidAnchor(step.anchorKey)) {
+                      <option [ngValue]="step.anchorKey" disabled i18n>Âncora indisponível</option>
+                    }
+                    @for (anchor of anchors(); track anchor.key) {
+                      <option [ngValue]="anchor.key">{{ anchorLabels[anchor.key] }}</option>
+                    }
+                  </select>
+                  <p
+                    class="tutorial-field-error"
+                    [id]="'anchor-error-' + index"
+                    [attr.data-error]="'steps.' + index + '.anchorKey'"
+                  >
+                    {{ fieldError(index, 'anchorKey') }}
+                  </p>
+                </div>
+              </fieldset>
+            </li>
+          }
+        </ol>
+        <footer class="tutorial-actions">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            [disabled]="saving() || steps().length >= 8"
+            (click)="addStep()"
+            i18n
+          >
+            Adicionar passo
+          </button>
+          <button
+            hlmBtn
+            class="tutorial-save"
+            type="button"
+            [disabled]="saving() || !dirty() || !valid()"
+            (click)="save()"
+            i18n
+          >
+            Salvar tutorial
+          </button>
+          <button
+            hlmBtn
+            variant="ghost"
+            type="button"
+            [disabled]="saving()"
+            (click)="anyDirty() ? confirmingReload.set(true) : load()"
+            i18n
+          >
+            Recarregar conteúdo salvo
+          </button>
+        </footer>
+        @if (confirmingReload()) {
+          <div class="tutorial-feedback" role="alert">
+            <p i18n>Recarregar descarta os rascunhos de todas as telas e idiomas desta página.</p>
+            <button hlmBtn variant="destructive" type="button" (click)="load()" i18n>
+              Descartar rascunhos e recarregar
+            </button>
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="confirmingReload.set(false)"
+              i18n
+            >
+              Continuar editando
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

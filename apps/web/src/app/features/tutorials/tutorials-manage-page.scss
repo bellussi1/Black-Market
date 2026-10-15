@@ -1,0 +1,133 @@
+:host {
+  display: block;
+}
+.tutorials-manage-page {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.tutorial-selection {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+.tutorial-field {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.tutorial-field label,
+legend {
+  color: var(--bm-text);
+  font-weight: 600;
+}
+.tutorial-publication,
+.tutorial-actions,
+.tutorial-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.tutorial-publication {
+  justify-content: space-between;
+  margin-block: 1rem;
+}
+.tutorial-enabled {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.tutorial-enabled input {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: auto;
+  accent-color: var(--bm-accent);
+}
+.tutorial-step-list {
+  display: grid;
+  gap: 1.5rem;
+  padding: 0;
+  list-style: none;
+  margin-block: 1.5rem;
+}
+fieldset {
+  display: grid;
+  gap: 0.875rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+  border-radius: 2px;
+}
+legend {
+  padding-inline: 0.5rem;
+  color: var(--bm-accent);
+}
+.tutorial-step-actions {
+  justify-content: flex-end;
+}
+.tutorial-field-error {
+  color: var(--bm-danger, var(--destructive));
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.tutorial-field-error:empty {
+  display: none;
+}
+.tutorial-count,
+.tutorial-revision {
+  font-size: 0.875rem;
+  color: var(--bm-text-muted);
+  overflow-wrap: anywhere;
+}
+.tutorial-count {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+.tutorial-feedback {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+.tutorial-feedback button {
+  margin: 0.25rem;
+}
+input,
+textarea,
+select {
+  min-height: 44px;
+  max-width: 100%;
+}
+textarea {
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+button,
+a {
+  min-height: 44px;
+  min-width: 44px;
+  white-space: normal;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--bm-accent);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .tutorial-selection {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tutorial-step-actions {
+    justify-content: flex-start;
+  }
+  fieldset {
+    padding: 0.75rem;
+  }
+}
