@@ -1308,3 +1308,11 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Revisão**: especificação self-review concluída, com limites e telas iniciais definidos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
 - **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
 - **Próximo passo**: após aprovação da especificação, escrever plano e implementar editor/API/armazenamento e tours em fatias verificáveis, com commits separados por funcionalidade.
+
+## 119. Plano de implementação da Home e Roadmap (Codex, 15/10/2026)
+
+- **Plano**: `docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md`, baseado na especificação aprovada da seção 117. Divide a entrega em migração/ordem global, validação API, trilha pública, editor, Home dinâmica e revisão integrada.
+- **TDD e commits**: cada tarefa define testes focados antes da implementação, comando de verificação e commit atômico. Preserva várias entradas `featured`, não fixa quantidade de cards nem duplica conteúdo editorial no frontend.
+- **Revisão do plano**: self-review de cobertura feita; `prettier` formatou o documento. A migração exige PostgreSQL descartável para validar preservação; viewport e teclado exigem inspeção manual pois não há harness E2E instalado.
+- **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
+- **Próximo passo**: após aprovação, executar na ordem descrita, integrar migrações/API/Web e registrar cada mudança em commits separados.
