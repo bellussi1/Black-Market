@@ -70,7 +70,14 @@ describe('RoadmapPage', () => {
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Roadmap');
     expect(fixture.nativeElement.querySelectorAll('.roadmap-flow li')).toHaveLength(1);
-    expect(fixture.nativeElement.querySelectorAll('.roadmap-card')).toHaveLength(2);
+    const pathSteps = fixture.nativeElement.querySelectorAll('.roadmap-path-step');
+    expect(pathSteps).toHaveLength(2);
+    expect(
+      [...pathSteps].map((step) => step.querySelector('.roadmap-card h3')?.textContent.trim()),
+    ).toEqual(['Mercado', 'O que fazer?']);
+    expect(
+      [...pathSteps].map((step) => step.querySelector('.roadmap-path-marker')?.textContent.trim()),
+    ).toEqual(['1', '2']);
     expect(fixture.nativeElement.textContent).toContain('Em evolução');
     expect(fixture.nativeElement.querySelector('a[href="/market"]')?.textContent).toContain(
       'Abrir mercado',

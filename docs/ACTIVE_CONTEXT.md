@@ -1258,3 +1258,13 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Validação**: processo `cloudflared` corresponde ao estado salvo; a linha de comando contém as duas autorizações. Requisição sem sessão à URL pública retornou `302` para o fluxo de autenticação `login.trycloudflare.com`. `pnpm test:staging` passou (HTTP, SSR, catálogo, ícone e bloqueio de indexação).
 - **Operação**: manter a sessão PowerShell do script `Share`, Docker, computador e conexão ativos. O link expira quando o túnel é encerrado. A proteção Cloudflare libera acesso ao staging, mas não ativa Google/Steam dentro do app; Firebase de staging continua pendente.
 - **Próximo passo**: tester abre o link e conclui o desafio de acesso enviado ao e-mail autorizado. Recriar o túnel com a lista atualizada se outro tester for incluído.
+
+## 114. Roadmap em trilha dinâmica (Codex, 15/10/2026)
+
+- **Solicitação aprovada**: conectar visualmente as features do Roadmap em uma trilha, sem prazos fixos nem quantidade predeterminada de cartões.
+- **Implementação**: pilares continuam vindo da API e respeitam `sortOrder`, filtros de autenticação e conteúdo editável existente. A lista agora usa um eixo central com cartões alternados nas duas margens em desktop e uma linha vertical única em telas estreitas. Os marcadores são numerados pelo índice atual dos dados; o fluxo de contexto também usa colunas `auto-fit` para se adaptar à quantidade e largura disponível.
+- **Acessibilidade e identidade**: mantida a lista ordenada semântica, os marcadores visuais são ocultos de leitores de tela, títulos longos podem quebrar linha, foco destaca o cartão e `prefers-reduced-motion` remove movimento de hover.
+- **Arquivos**: `apps/web/src/app/features/roadmap/roadmap-page.html`, `roadmap-page.scss`, `roadmap-page.spec.ts` e este handoff.
+- **Validação**: rota `/roadmap` revisada no navegador com quatro pilares reais em desktop e viewport de 760 px; cartões alternados/empilhados conforme esperado e sem overflow horizontal. Console sem erros. `pnpm check` passou; `pnpm test` passou com 902 testes (66 calculadoras, 216 API, 547 Web e 73 scripts). Persiste apenas o aviso conhecido do locale `pt-BR` com fallback para `pt`.
+- **Commit atômico**: `feat(roadmap): connect features in dynamic path` (local, sem push).
+- **Próximo passo**: manter o conteúdo dos pilares e estados editáveis pelo administrador do Roadmap; não preencher ou ordenar dados diretamente no frontend.

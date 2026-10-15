@@ -58,30 +58,33 @@
           <p class="tool-kicker" i18n>FOCOS PRINCIPAIS</p>
           <h2 id="roadmap-pillars-title" i18n>O que estamos construindo</h2>
         </div>
-        <div class="roadmap-pillars">
-          @for (entry of pillars(); track entry.id) {
-            <article class="roadmap-card" [class.featured]="entry.featured">
-              <div class="roadmap-card-top">
-                <ng-icon [name]="entry.icon" aria-hidden="true" />
-                @if (entry.statusLabel) {
-                  <span class="roadmap-state">{{ entry.statusLabel }}</span>
-                }
-              </div>
-              <h3>{{ entry.title }}</h3>
-              <p class="roadmap-summary">{{ entry.summary }}</p>
-              @if (entry.description) {
-                <p class="roadmap-description">{{ entry.description }}</p>
-              }
-              @if (entry.links.length) {
-                <nav class="roadmap-links" [attr.aria-label]="entry.title">
-                  @for (link of entry.links; track link.path) {
-                    <a class="btn subtle" [routerLink]="link.path">{{ link.label }}</a>
+        <ol class="roadmap-path" aria-labelledby="roadmap-pillars-title">
+          @for (entry of pillars(); track entry.id; let index = $index) {
+            <li class="roadmap-path-step">
+              <span class="roadmap-path-marker" aria-hidden="true">{{ index + 1 }}</span>
+              <article class="roadmap-card" [class.featured]="entry.featured">
+                <div class="roadmap-card-top">
+                  <ng-icon [name]="entry.icon" aria-hidden="true" />
+                  @if (entry.statusLabel) {
+                    <span class="roadmap-state">{{ entry.statusLabel }}</span>
                   }
-                </nav>
-              }
-            </article>
+                </div>
+                <h3>{{ entry.title }}</h3>
+                <p class="roadmap-summary">{{ entry.summary }}</p>
+                @if (entry.description) {
+                  <p class="roadmap-description">{{ entry.description }}</p>
+                }
+                @if (entry.links.length) {
+                  <nav class="roadmap-links" [attr.aria-label]="entry.title">
+                    @for (link of entry.links; track link.path) {
+                      <a class="btn subtle" [routerLink]="link.path">{{ link.label }}</a>
+                    }
+                  </nav>
+                }
+              </article>
+            </li>
           }
-        </div>
+        </ol>
       </section>
     }
   }
