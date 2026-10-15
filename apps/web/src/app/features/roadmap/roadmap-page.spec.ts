@@ -83,7 +83,7 @@ describe('RoadmapPage', () => {
     http
       .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
       .flush({
-        entries,
+        entries: [entries[2], entries[0], entries[3], entries[1]],
         updatedAt: '2026-10-13T12:00:00.000Z',
       });
     await fixture.whenStable();
