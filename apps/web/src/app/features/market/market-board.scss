@@ -41,10 +41,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 10px;
-  background: var(--bm-input);
-  border: 1px solid var(--bm-border);
-  border-radius: 2px;
+  padding: 0;
   font-size: 12px;
   color: var(--bm-muted);
 }
@@ -71,7 +68,7 @@
 }
 .market-directory {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 144px minmax(0, 1fr);
 }
 .market-categories {
   background: var(--bm-input);
@@ -255,27 +252,34 @@
 }
 .market-board-table {
   width: 100%;
-  min-width: 820px;
+  min-width: 860px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 14px;
   line-height: 1.35;
 }
-.market-board-table thead th:first-child {
-  width: 35%;
-  text-align: left;
+.market-column-item {
+  width: 27%;
 }
-.market-board-table thead th:nth-child(2) {
-  width: 15%;
+.market-column-price {
+  width: 19%;
 }
-.market-board-table tbody th {
-  width: 35%;
+.market-column-stock {
+  width: 12%;
+}
+.market-column-volume {
+  width: 14%;
 }
 .board-identity {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
+}
+.board-identity app-item-icon {
+  flex: 0 0 44px;
 }
 .market-board-table thead th {
   position: sticky;
@@ -333,7 +337,7 @@
 .market-board-table th,
 .market-board-table td {
   border-bottom: 1px solid var(--bm-border);
-  padding: 10px;
+  padding: 12px 10px;
 }
 .market-board-table tbody th {
   text-align: left;
@@ -378,10 +382,14 @@
   min-height: 44px;
   cursor: pointer;
 }
+.board-row-item {
+  min-width: 0;
+}
 .board-item:active {
   transform: none;
 }
 .item-meta {
+  flex: 1 1 auto;
   min-width: 0;
 }
 .item-meta strong {
@@ -401,6 +409,12 @@
   text-align: right;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+.market-board-table thead .numeric {
+  text-align: right;
+}
+.market-board-table .col-reference-price {
+  white-space: normal;
 }
 .current-price {
   display: block;

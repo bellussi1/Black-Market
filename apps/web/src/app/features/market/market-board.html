@@ -241,6 +241,14 @@
             Itens do mercado: preços em prata por unidade, estoque observado e contagem acumulada de
             negociações registrada. Clique no cabeçalho das colunas para ordenar.
           </caption>
+          <colgroup>
+            <col class="market-column-item" />
+            <col class="market-column-price" />
+            <col class="market-column-stock" />
+            <col class="market-column-volume" />
+            <col class="market-column-volume" />
+            <col class="market-column-volume" />
+          </colgroup>
           <thead>
             <tr>
               <th
@@ -426,61 +434,6 @@
                           }
                         </small>
                       </span>
-                    </span>
-                    <span
-                      class="numeric col-price col-reference-price"
-                      [attr.title]="'Fonte: Arsha · ' + priceReferenceLabel(item)"
-                    >
-                      <span class="reference-value">{{ silver(priceReference(item).value) }}</span>
-                      <small class="reference-basis">{{ priceReferenceLabel(item) }}</small>
-                      <span
-                        class="mean-price"
-                        [attr.title]="
-                          item.meanPrice === null
-                            ? 'Histórico insuficiente para a média de 30 dias'
-                            : item.observationCount + ' observações de preço'
-                        "
-                        >Média 30d: {{ silver(item.meanPrice) }}</span
-                      >
-                    </span>
-                    <span class="numeric col-stock">
-                      @if (item.stock === null) {
-                        —
-                      } @else if (item.stock === 0) {
-                        <span class="stock-badge stock-zero">0 un (Zerado)</span>
-                      } @else {
-                        {{ number(item.stock, 0) }}
-                      }
-                    </span>
-                    <span
-                      class="numeric col-volume"
-                      [attr.title]="
-                        item.volume24h === null
-                          ? 'Histórico insuficiente para 24 horas'
-                          : 'Diferença do contador total de negociações em 24 horas; unidade não confirmada'
-                      "
-                    >
-                      {{ silver(item.volume24h) }}
-                    </span>
-                    <span
-                      class="numeric col-volume"
-                      [attr.title]="
-                        item.volume15d === null
-                          ? 'Histórico insuficiente para 15 dias'
-                          : 'Diferença do contador total de negociações em 15 dias; unidade não confirmada'
-                      "
-                    >
-                      {{ silver(item.volume15d) }}
-                    </span>
-                    <span
-                      class="numeric col-volume"
-                      [attr.title]="
-                        item.volume30d === null
-                          ? 'Histórico insuficiente para 30 dias'
-                          : 'Diferença do contador total de negociações em 30 dias; unidade não confirmada'
-                      "
-                    >
-                      {{ silver(item.volume30d) }}
                     </span>
                   </button>
                 </th>
