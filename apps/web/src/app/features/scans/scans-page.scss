@@ -678,8 +678,12 @@ figure {
   font-size: 14px;
 }
 
-.analysis-progress p {
-  margin: 6px 0 0;
+.analysis-progress-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
   color: var(--bm-muted);
 }
 

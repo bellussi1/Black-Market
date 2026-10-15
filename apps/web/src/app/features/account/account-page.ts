@@ -20,11 +20,12 @@ import { AUTH_RETURN_URL_KEY, safeInternalReturnUrl } from '../../core/auth-retu
 import { IdentityService } from '../../core/identity.service';
 import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 
 @Component({
   selector: 'app-account-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, FormsModule],
+  imports: [HlmCard, HlmButton, FormsModule, LoadingSkeleton],
   templateUrl: './account-page.html',
 })
 export class AccountPage {

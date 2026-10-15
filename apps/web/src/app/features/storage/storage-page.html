@@ -122,7 +122,11 @@
         <input type="file" accept=".csv,text/csv" (change)="readImport($event)" />
       </label>
       @if (importLoading()) {
-        <p role="status" i18n>Validando os itens no catálogo…</p>
+        <app-loading-skeleton
+          variant="table"
+          [count]="6"
+          label="Validando os itens importados no catálogo"
+        />
       }
       @if (importMessage()) {
         <p role="status" aria-live="polite">{{ importMessage() }}</p>

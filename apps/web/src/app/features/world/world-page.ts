@@ -22,6 +22,7 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { connectionRoute, type WorldNode } from './node-routing';
 import { WorkerEmpireComponent } from './worker-empire';
@@ -36,6 +37,7 @@ import { WorkerEmpireComponent } from './worker-empire';
     RouterLink,
     CatalogItemPicker,
     WorkerEmpireComponent,
+    LoadingSkeleton,
   ],
   templateUrl: './world-page.html',
   styleUrl: './world-page.scss',
@@ -46,7 +48,7 @@ export class WorldPage implements OnDestroy {
   private request?: Subscription;
   readonly nodes = signal<WorldNode[]>([]);
   readonly message = signal('');
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly start = signal('');
   readonly destination = signal('');
   readonly search = signal('');
@@ -130,9 +132,6 @@ export class WorldPage implements OnDestroy {
     this.request?.unsubscribe();
     this.loading.set(true);
     this.message.set('');
-    this.nodes.set([]);
-    this.start.set('');
-    this.destination.set('');
     this.request = this.http
       .get<{
         nodes: WorldNode[];
@@ -142,6 +141,9 @@ export class WorldPage implements OnDestroy {
       .subscribe({
         next: (result) => {
           this.nodes.set(result.nodes);
+          const availableNodeIds = new Set(result.nodes.map((node) => node.id));
+          if (!availableNodeIds.has(this.start())) this.start.set('');
+          if (!availableNodeIds.has(this.destination())) this.destination.set('');
           this.loading.set(false);
         },
         error: () => {

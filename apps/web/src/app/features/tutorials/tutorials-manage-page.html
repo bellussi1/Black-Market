@@ -33,12 +33,12 @@
     </div>
   }
   @if (!accessVerified() && !error()) {
-    <p role="status" i18n>Verificando acesso administrativo…</p>
+    <app-loading-skeleton variant="form" [count]="4" label="Verificando acesso administrativo" />
   } @else if (accessVerified() && !authorized()) {
     <p role="status" i18n>Sua conta não tem permissão para editar tutoriais.</p>
   } @else if (authorized()) {
     @if (loading()) {
-      <p role="status" i18n>Carregando tutoriais…</p>
+      <app-loading-skeleton variant="form" [count]="5" label="Carregando tutoriais" />
     } @else if (loaded()) {
       <div class="tutorial-editor" [attr.aria-busy]="saving()">
         <div class="tutorial-selection">
@@ -87,17 +87,19 @@
             <span i18n>Revisão salva:</span> {{ updatedAt() ?? newGuideLabel }}
           </p>
         </div>
-        <p role="status" aria-live="polite">
-          @if (saving()) {
-            <span i18n>Salvando tutorial…</span>
-          } @else if (message()) {
-            {{ message() }}
-          } @else if (dirty()) {
-            <span i18n>Alterações não salvas.</span>
-          } @else {
-            <span i18n>Nenhuma alteração pendente.</span>
-          }
-        </p>
+        @if (saving()) {
+          <app-loading-skeleton variant="inline" label="Salvando tutorial" />
+        } @else {
+          <div role="status" aria-live="polite">
+            @if (message()) {
+              {{ message() }}
+            } @else if (dirty()) {
+              <span i18n>Alterações não salvas.</span>
+            } @else {
+              <span i18n>Nenhuma alteração pendente.</span>
+            }
+          </div>
+        }
         @if (errors()['steps']) {
           <p class="tutorial-field-error" id="tutorial-steps-error" data-error="steps">
             {{ errors()['steps'] }}

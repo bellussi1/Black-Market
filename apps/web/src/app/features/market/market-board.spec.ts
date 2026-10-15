@@ -62,6 +62,27 @@ async function renderMarketBoard(categories: CatalogCategory[] = []) {
 
 describe('MarketBoard', () => {
   useMemoryStorage();
+  it('reserves the table rows while the first market response is loading', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const http = TestBed.inject(HttpTestingController);
+    const categories = http.expectOne((request) => request.url.endsWith('/categories'));
+    const market = http.expectOne((request) => request.url.endsWith('/market/board'));
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.market-skeleton-row')).not.toBeNull();
+    expect(element.querySelector('.market-list [role="status"]')?.textContent).toContain(
+      'Carregando mercado',
+    );
+    expect(element.querySelector('.board-empty')).toBeNull();
+
+    categories.flush({ categories: [], dataset: null });
+    market.flush(response());
+    fixture.detectChanges();
+    expect(element.querySelector('.market-skeleton-row')).toBeNull();
+    expect(element.querySelector('.board-item')?.textContent).toContain('Cerveja');
+    http.verify();
+  });
+
   it('shows only the observed mean price and opens details with the row button', async () => {
     const fixture = await renderMarketBoard();
     const data = response();

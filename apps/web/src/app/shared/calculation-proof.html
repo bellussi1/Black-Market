@@ -8,5 +8,11 @@
   >
     Conferir resultado
   </button>
-  <span aria-live="polite">{{ message() }}</span>
+  @if (status() === 'loading') {
+    <app-loading-skeleton variant="inline" label="Conferindo o cálculo" />
+  } @else {
+    <div role="status" aria-live="polite">
+      {{ message() }}
+    </div>
+  }
 </div>

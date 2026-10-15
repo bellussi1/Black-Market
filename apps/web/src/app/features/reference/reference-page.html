@@ -34,7 +34,11 @@
     </button>
   </section>
   @if (loading()) {
-    <p role="status" i18n>Carregando…</p>
+    <app-loading-skeleton
+      [variant]="selected() ? 'detail' : 'cards'"
+      [count]="selected() ? 8 : 12"
+      label="Carregando referência do jogo"
+    />
   }
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>

@@ -289,7 +289,12 @@
         <div class="analysis-progress">
           <div>
             <strong>Analisando captura</strong>
-            <p role="status">{{ batchProgress() }} · {{ progress() }}</p>
+            <div class="analysis-progress-status">
+              <span role="status" aria-live="polite">
+                {{ batchProgress() }} · {{ progress() }}
+              </span>
+              <app-loading-skeleton variant="inline" label="Analisando capturas" />
+            </div>
           </div>
           <button hlmBtn variant="outline" type="button" (click)="cancel()" i18n>
             Cancelar análise

@@ -6,9 +6,11 @@ import type { Subscription } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { validationMessage } from '../shared/calculation-feedback';
+import { LoadingSkeleton } from './loading-skeleton/loading-skeleton';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-calculation-proof',
+  imports: [LoadingSkeleton],
   templateUrl: './calculation-proof.html',
 })
 export class CalculationProof implements OnChanges, OnDestroy {

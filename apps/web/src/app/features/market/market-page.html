@@ -152,8 +152,12 @@
         @if (lookupError()) {
           <p class="error-box" role="alert">{{ lookupError() }}</p>
         }
-        @if (lookupLoading()) {
-          <p class="loading-state" role="status" i18n>Consultando preço e estoque do item…</p>
+        @if (lookupLoading() && !live()) {
+          <app-loading-skeleton
+            variant="detail"
+            [count]="6"
+            label="Consultando preço e estoque do item"
+          />
         } @else if (!live() && !lookupError()) {
           <div class="empty-workspace">
             <h3 i18n>Encontre sua próxima compra ou venda</h3>
@@ -167,8 +171,11 @@
       @if (lookupError()) {
         <p role="alert" class="error-box">{{ lookupError() }}</p>
       }
-      @if (lookupLoading()) {
-        <p role="status">Atualizando preço e estoque…</p>
+      @if (lookupLoading() && live()) {
+        <div class="quote-refresh-status">
+          Atualizando preço e estoque ·
+          <app-loading-skeleton variant="inline" label="Atualizando preço e estoque" />
+        </div>
       }
       @if (live(); as response) {
         <div class="market-view-toolbar">
@@ -297,7 +304,9 @@
               }
             </select></label
           >
-          <p role="status">{{ historyMessage() }}</p>
+          @if (historyMessage() && !historyLoading()) {
+            <p role="status">{{ historyMessage() }}</p>
+          }
           <div class="mt-6 grid gap-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -390,7 +399,18 @@
               consecutivas. A fonte não confirma quantas unidades cada registro representa; use como
               atividade observada, não como unidades vendidas nem como estimativa de giro.
             </p>
-            @if (historyChart().samples >= 1) {
+            @if (historyLoading() && history().length) {
+              <app-loading-skeleton
+                variant="inline"
+                label="Atualizando histórico de mercado; dados atuais continuam visíveis"
+              />
+            } @else if (historyLoading()) {
+              <app-loading-skeleton
+                variant="chart"
+                [count]="16"
+                label="Carregando histórico de mercado"
+              />
+            } @else if (historyChart().samples >= 1) {
               <div class="min-w-0" aria-live="polite">
                 <svg
                   class="h-auto w-full overflow-visible text-[var(--accent)]"

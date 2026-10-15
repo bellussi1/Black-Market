@@ -498,7 +498,7 @@
             >
           }
           @if (treeMarketLoading()) {
-            <span role="status" i18n>Atualizando cotações</span>
+            <app-loading-skeleton variant="inline" label="Atualizando cotações da receita" />
           } @else {
             <span
               class="quote-freshness"
@@ -530,9 +530,13 @@
             <span role="status">{{ treeMarketMessage() }}</span>
           }
         </div>
-        <p class="optimization-status" role="status" aria-live="polite">
-          {{ optimizationMessage() }}
-        </p>
+        @if (optimizing()) {
+          <app-loading-skeleton variant="inline" label="Calculando a melhor combinação" />
+        } @else if (optimizationMessage()) {
+          <p class="optimization-status" role="status" aria-live="polite">
+            {{ optimizationMessage() }}
+          </p>
+        }
 
         <details class="tax-config-panel">
           <summary i18n>Opções de impostos e buffs do mercado</summary>
@@ -919,7 +923,11 @@
           </div>
 
           @if (contextLoading()) {
-            <p role="status" class="tray-loading" i18n>Consultando o item e suas fontes…</p>
+            <app-loading-skeleton
+              variant="detail"
+              [count]="4"
+              label="Consultando o item e suas fontes"
+            />
           }
 
           @if (context(); as info) {

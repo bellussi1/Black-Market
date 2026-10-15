@@ -1,7 +1,7 @@
 <div class="tool-page guided-page item-detail-page">
   <a routerLink="/market" i18n>← Mercado</a>
   @if (loading()) {
-    <p class="loading-state" role="status" i18n>Carregando item…</p>
+    <app-loading-skeleton variant="detail" [count]="8" label="Carregando item" />
   }
   @if (message()) {
     <p class="error-box" role="alert">{{ message() }}</p>

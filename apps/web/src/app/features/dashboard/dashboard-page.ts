@@ -25,13 +25,22 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { PlayerOverview } from '../../shared/player-overview/player-overview';
 import { ROADMAP_ICONS } from '../roadmap/roadmap-icons';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-page',
-  imports: [HlmCard, HlmButton, RouterLink, NgIcon, PlayerOverview, CatalogItemPicker],
+  imports: [
+    HlmCard,
+    HlmButton,
+    RouterLink,
+    NgIcon,
+    PlayerOverview,
+    CatalogItemPicker,
+    LoadingSkeleton,
+  ],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
@@ -53,7 +62,7 @@ export class DashboardPage implements OnInit {
   readonly canOpenPath = (path: string) =>
     this.identity.authenticated() || !isLoginRequiredPath(path);
 
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly loaded = signal(false);
   readonly entries = signal<RoadmapEntry[]>([]);
@@ -79,10 +88,10 @@ export class DashboardPage implements OnInit {
   }
 
   load() {
-    if (this.loading()) return;
+    if (this.loading() && this.loaded()) return;
     this.loading.set(true);
     this.error.set('');
-    this.loaded.set(false);
+    // Keep previously loaded focus cards visible while a refresh is in flight.
     this.api
       .getPublic()
       .pipe(

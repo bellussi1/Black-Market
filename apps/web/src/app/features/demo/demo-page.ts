@@ -15,10 +15,11 @@ import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
 import { lifeSkillLabels } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 @Component({
   selector: 'app-demo-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, FormsModule, RouterLink, ItemIcon],
+  imports: [HlmInput, HlmCard, HlmButton, FormsModule, RouterLink, ItemIcon, LoadingSkeleton],
   templateUrl: './demo-page.html',
 })
 export class DemoPage {

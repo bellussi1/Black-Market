@@ -14,15 +14,17 @@
   }
 
   @if (!snapshot()) {
-    <section class="coach-loading" aria-live="polite">
-      <p>
-        {{
-          busy()
-            ? 'Carregando catálogo e dados da sua região…'
-            : 'O catálogo desta região está indisponível.'
-        }}
-      </p>
-    </section>
+    @if (busy()) {
+      <app-loading-skeleton
+        variant="cards"
+        [count]="4"
+        label="Carregando catálogo e dados da sua região"
+      />
+    } @else {
+      <section class="coach-loading" aria-live="polite">
+        <p>O catálogo desta região está indisponível.</p>
+      </section>
+    }
   }
 
   @if (snapshot(); as data) {
@@ -103,10 +105,13 @@
     </section>
 
     @if (busy() && progress().total > 0) {
-      <p class="coach-progress" role="status" aria-live="polite">
-        Atualizando cotações {{ progress().done }} / {{ progress().total }} · cache da região
-        reaproveitado quando disponível.
-      </p>
+      <div class="coach-progress">
+        <span role="status" aria-live="polite">
+          Atualizando cotações {{ progress().done }} / {{ progress().total }} · cache da região
+          reaproveitado quando disponível.
+        </span>
+        <app-loading-skeleton variant="inline" label="Atualizando cotações das recomendações" />
+      </div>
     }
 
     <section
@@ -132,7 +137,11 @@
           Cadastre ou selecione um personagem para calcular as oportunidades.
         </p>
       } @else if (busy() && !plans()) {
-        <p class="coach-empty" role="status">Organizando receitas, estoque e preços da região…</p>
+        <app-loading-skeleton
+          variant="rows"
+          [count]="5"
+          label="Organizando receitas, estoque e preços da região"
+        />
       } @else if (plans(); as result) {
         @if (topPlans().length) {
           <ol class="opportunity-list">

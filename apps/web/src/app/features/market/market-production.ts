@@ -8,6 +8,7 @@ import { catchError, combineLatest, forkJoin, of, switchMap } from 'rxjs';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { recipeTypeLabel } from '../../shared/game-labels';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { recipeFamilies } from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
@@ -15,7 +16,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-market-production',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RecipeTree, RouterLink, HlmButton, BdoSelect],
+  imports: [RecipeTree, RouterLink, HlmButton, BdoSelect, LoadingSkeleton],
   template: `
     <section aria-labelledby="market-production-title" class="grid min-w-0 gap-4">
       <header class="flex flex-wrap items-center justify-between gap-3">
@@ -25,7 +26,11 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
         >
       </header>
       @if (loading()) {
-        <p role="status">Carregando fórmulas de produção…</p>
+        <app-loading-skeleton
+          variant="recipe"
+          [count]="4"
+          label="Carregando fórmulas de produção"
+        />
       } @else if (message()) {
         <p role="status">{{ message() }}</p>
       } @else if (recipe()) {
@@ -60,7 +65,7 @@ export class MarketProduction {
   readonly recipes = signal<CatalogRecipe[]>([]);
   readonly methods = computed(() => recipeFamilies(this.recipes()).map((family) => family[0]));
   readonly version = signal('');
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly message = signal('');
   readonly typeLabel = recipeTypeLabel;
   private readonly api = inject(CatalogApiService);

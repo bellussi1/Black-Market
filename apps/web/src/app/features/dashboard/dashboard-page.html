@@ -16,9 +16,9 @@
     </div>
     <section class="home-focuses" aria-labelledby="focus-title">
       <h2 id="focus-title" i18n>Focos atuais</h2>
-      @if (loading()) {
-        <p class="focus-message" role="status" i18n>Carregando focos atuais…</p>
-      } @else if (error()) {
+      @if (loading() && !loaded()) {
+        <app-loading-skeleton variant="cards" [count]="2" label="Carregando focos atuais" />
+      } @else if (error() && !loaded()) {
         <div class="focus-message" role="alert">
           <p>{{ error() }}</p>
           <button
@@ -36,6 +36,24 @@
         <p class="focus-message" role="status" i18n>Nenhum foco em destaque no momento.</p>
         <a hlmBtn variant="outline" class="btn subtle" routerLink="/roadmap" i18n>Ver Roadmap</a>
       } @else if (loaded()) {
+        @if (error()) {
+          <div class="focus-message" role="alert">
+            <p>{{ error() }}</p>
+            <button
+              hlmBtn
+              variant="outline"
+              class="btn subtle focus-retry"
+              type="button"
+              (click)="load()"
+              i18n
+            >
+              Tentar novamente
+            </button>
+          </div>
+        }
+        @if (loading()) {
+          <app-loading-skeleton variant="inline" label="Atualizando focos atuais" />
+        }
         <div class="home-focus-list">
           @for (focus of homeFocuses(); track focus.entry.id) {
             <article class="home-focus-card">

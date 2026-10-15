@@ -11,9 +11,6 @@
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
-  @if (loading()) {
-    <p role="status" i18n>Carregando conexões…</p>
-  }
   <section hlmCard class="panel">
     <div class="form-grid">
       <label class="field"
@@ -25,7 +22,13 @@
           (ngModelChange)="search.set($event)" /></label
       ><label class="field"
         ><span i18n>Partida</span
-        ><select appBdoSelect [ngModel]="start()" (ngModelChange)="start.set($event)">
+        ><select
+          appBdoSelect
+          id="world-start"
+          [ngModel]="start()"
+          (ngModelChange)="start.set($event)"
+          [disabled]="loading()"
+        >
           <option value="" i18n>Escolha uma base</option>
           @for (node of filtered(); track node.id) {
             <option [value]="node.id">{{ node.name }}</option>
@@ -33,7 +36,13 @@
         </select></label
       ><label class="field"
         ><span i18n>Destino</span
-        ><select appBdoSelect [ngModel]="destination()" (ngModelChange)="destination.set($event)">
+        ><select
+          appBdoSelect
+          id="world-destination"
+          [ngModel]="destination()"
+          (ngModelChange)="destination.set($event)"
+          [disabled]="loading()"
+        >
           <option value="" i18n>Escolha uma base</option>
           @for (node of filtered(); track node.id) {
             <option [value]="node.id">{{ node.name }}</option>
@@ -41,26 +50,39 @@
         </select></label
       >
     </div>
-    <svg
-      viewBox="0 0 1000 1000"
-      role="img"
-      aria-label="Mapa das conexões entre bases; a rota selecionada fica destacada"
-      i18n-aria-label
-    >
-      @for (edge of edges(); track $index) {
-        <line [attr.x1]="edge.x1" [attr.y1]="edge.y1" [attr.x2]="edge.x2" [attr.y2]="edge.y2" />
+    <div class="world-map-refresh-slot">
+      @if (loading() && nodes().length) {
+        <app-loading-skeleton variant="inline" label="Atualizando conexões do mundo" />
       }
-      @for (node of markers(); track node.id) {
-        <circle
-          [attr.cx]="node.px"
-          [attr.cy]="node.py"
-          [attr.r]="inRoute(node.id) ? 5 : node.main ? 2.5 : 1.5"
-          [class.selected]="inRoute(node.id)"
-        >
-          <title>{{ node.name }}</title>
-        </circle>
-      }
-    </svg>
+    </div>
+    @if (loading() && !nodes().length) {
+      <div class="world-map-skeleton">
+        <app-loading-skeleton variant="map" [count]="18" label="Carregando conexões do mundo" />
+      </div>
+    } @else if (nodes().length) {
+      <svg
+        viewBox="0 0 1000 1000"
+        role="img"
+        aria-label="Mapa das conexões entre bases; a rota selecionada fica destacada"
+        i18n-aria-label
+      >
+        @for (edge of edges(); track $index) {
+          <line [attr.x1]="edge.x1" [attr.y1]="edge.y1" [attr.x2]="edge.x2" [attr.y2]="edge.y2" />
+        }
+        @for (node of markers(); track node.id) {
+          <circle
+            [attr.cx]="node.px"
+            [attr.cy]="node.py"
+            [attr.r]="inRoute(node.id) ? 5 : node.main ? 2.5 : 1.5"
+            [class.selected]="inRoute(node.id)"
+          >
+            <title>{{ node.name }}</title>
+          </circle>
+        }
+      </svg>
+    } @else if (!nodes().length && !loading() && !message()) {
+      <p class="notice" role="status" i18n>Não há conexões de base disponíveis nesta região.</p>
+    }
     @if (route(); as route) {
       <h2 i18n>{{ route.contribution }} pontos de contribuição na rota</h2>
       <ol>

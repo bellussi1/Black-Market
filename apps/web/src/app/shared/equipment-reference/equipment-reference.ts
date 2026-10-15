@@ -23,6 +23,7 @@ import { referenceFields } from '../../features/reference/reference-fields';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { CatalogItemPicker } from '../catalog-item-picker/catalog-item-picker';
 import { silver } from '../formatters';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 
 const enhancement = z.object({
   levels: z.array(
@@ -53,7 +54,15 @@ const caphras = z.object({
 @Component({
   selector: 'app-equipment-reference',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, BdoSelect, FormsModule, RouterLink, CatalogItemPicker],
+  imports: [
+    HlmInput,
+    HlmCard,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    LoadingSkeleton,
+  ],
   templateUrl: './equipment-reference.html',
 })
 export class EquipmentReference implements OnDestroy {
@@ -66,6 +75,7 @@ export class EquipmentReference implements OnDestroy {
   readonly enhancements = signal<z.infer<typeof enhancement> | null>(null);
   readonly caphras = signal<z.infer<typeof caphras> | null>(null);
   readonly message = signal('');
+  readonly loading = signal(false);
   readonly level = signal(0);
   readonly from = signal(0);
   readonly to = signal(1);
@@ -110,12 +120,13 @@ export class EquipmentReference implements OnDestroy {
     this.enhancements.set(null);
     this.caphras.set(null);
     this.message.set('');
+    this.loading.set(false);
     this.level.set(0);
     this.from.set(0);
     this.to.set(1);
     this.stonePrice.set('0');
     if (!item) return;
-    this.message.set('Carregando informações…');
+    this.loading.set(true);
     this.request = this.catalog
       .getItem(item.id)
       .pipe(
@@ -138,6 +149,7 @@ export class EquipmentReference implements OnDestroy {
       )
       .subscribe({
         next: (result) => {
+          this.loading.set(false);
           const parsed = enhancement.safeParse(result.enhancement?.data);
           const cap = caphras.safeParse(result.caphras?.data);
           if (parsed.success) {
@@ -149,8 +161,10 @@ export class EquipmentReference implements OnDestroy {
             parsed.success ? '' : 'Este item não tem uma tabela de aprimoramento disponível.',
           );
         },
-        error: () =>
-          this.message.set('Não foi possível carregar esta referência. Escolha novamente o item.'),
+        error: () => {
+          this.loading.set(false);
+          this.message.set('Não foi possível carregar esta referência. Escolha novamente o item.');
+        },
       });
   }
   ngOnDestroy() {

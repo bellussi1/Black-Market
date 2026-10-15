@@ -96,6 +96,9 @@
             }}</strong></span
           >
         </button>
+        @if (entry.node.loading) {
+          <app-loading-skeleton variant="inline" label="Carregando fontes da receita" />
+        }
         <button
           type="button"
           class="node-details"

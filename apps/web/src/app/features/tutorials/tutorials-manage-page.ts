@@ -30,6 +30,7 @@ import { HlmTextarea } from '@bdo/ui/textarea';
 
 import { IdentityService } from '../../core/identity.service';
 import { TutorialApiService } from '../../core/tutorial-api.service';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type Step = TutorialGuideUpdateRequest['steps'][number];
@@ -41,7 +42,7 @@ const snapshot = (draft: Pick<Draft, 'enabled' | 'steps'>) =>
 @Component({
   selector: 'app-tutorials-manage-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, HlmButton, HlmInput, HlmTextarea, BdoSelect],
+  imports: [FormsModule, RouterLink, HlmButton, HlmInput, HlmTextarea, BdoSelect, LoadingSkeleton],
   templateUrl: './tutorials-manage-page.html',
   styleUrl: './tutorials-manage-page.scss',
 })

@@ -192,9 +192,7 @@
             }
           </div>
           @if (detailLoading()) {
-            <small class="detail-loading"
-              ><ng-container i18n>Atualizando detalhes…</ng-container></small
-            >
+            <app-loading-skeleton variant="inline" label="Atualizando detalhes do item" />
           }
           @if (detailError()) {
             <small class="detail-loading"

@@ -17,7 +17,7 @@
     <p class="notice" role="status">{{ message() }}</p>
   }
   @if (!identity.ready()) {
-    <p role="status" i18n>Consultando sua conta…</p>
+    <app-loading-skeleton variant="form" [count]="4" label="Consultando sua conta" />
   } @else if (!identity.enabled()) {
     <section hlmCard class="panel">
       <h2 i18n>Continue como visitante</h2>
@@ -188,5 +188,8 @@
         </details>
       </section>
     }
+  }
+  @if (loading() && identity.ready()) {
+    <app-loading-skeleton variant="inline" label="Processando ação da conta" />
   }
 </div>

@@ -16,6 +16,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 
 import { IdentityService } from '../../core/identity.service';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { ROADMAP_ICON_OPTIONS, ROADMAP_ICONS } from './roadmap-icons';
 
 type DraftEntry = RoadmapEntryInput & { draftKey: string };
@@ -23,7 +24,7 @@ type DraftEntry = RoadmapEntryInput & { draftKey: string };
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-roadmap-manage-page',
-  imports: [FormsModule, NgIcon, RouterLink],
+  imports: [FormsModule, NgIcon, RouterLink, LoadingSkeleton],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './roadmap-manage-page.html',
   styleUrl: './roadmap-manage-page.scss',

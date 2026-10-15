@@ -6,6 +6,7 @@ import type { calculateProduction } from '@bdo/calculators';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 import { recipeBonusProducts } from './recipe-bonus-products';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
@@ -19,7 +20,7 @@ export interface BranchAction {
 @Component({
   selector: 'app-recipe-branch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ItemIcon, RecipeIngredientAlternatives],
+  imports: [FormsModule, ItemIcon, RecipeIngredientAlternatives, LoadingSkeleton],
   templateUrl: './recipe-branch.html',
   styleUrl: './recipe-branch.scss',
 })

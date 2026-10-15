@@ -11,6 +11,21 @@ svg {
   border-radius: 2px;
   margin-block: 20px;
 }
+.world-map-skeleton {
+  height: min(64vw, 640px);
+  min-height: 320px;
+  margin-block: 20px;
+}
+.world-map-skeleton app-loading-skeleton,
+.world-map-skeleton .skeleton-status,
+.world-map-skeleton .skeleton-visual {
+  height: 100%;
+}
+.world-map-refresh-slot {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+}
 
 line {
   stroke: var(--bm-border);

@@ -14,10 +14,12 @@ import { finalize } from 'rxjs';
 import { uiLocale } from '../../core/locale';
 import { TutorialService } from '../../core/tutorial.service';
 import { TutorialApiService } from '../../core/tutorial-api.service';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 
 @Component({
   selector: 'app-tutorial-launcher',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LoadingSkeleton],
   templateUrl: './tutorial-launcher.html',
   styleUrl: './tutorial-launcher.scss',
 })
@@ -30,6 +32,7 @@ export class TutorialLauncher implements OnInit {
 
   readonly guide = signal<TutorialPublicGuide | null>(null);
   readonly loading = signal(false);
+  readonly starting = signal(false);
   readonly requestFailed = signal(false);
   readonly needsUpdate = signal(false);
   readonly startFailed = signal(false);
@@ -61,12 +64,19 @@ export class TutorialLauncher implements OnInit {
 
   async start(launcher: HTMLButtonElement): Promise<void> {
     const guide = this.guide();
-    if (!guide || this.loading()) return;
+    if (!guide || this.loading() || this.starting()) return;
 
     this.needsUpdate.set(false);
     this.startFailed.set(false);
-    const result = await this.tutorial.startTour(guide, launcher);
-    this.needsUpdate.set(result === 'needs-update');
-    this.startFailed.set(result === 'unavailable');
+    this.starting.set(true);
+    try {
+      const result = await this.tutorial.startTour(guide, launcher);
+      this.needsUpdate.set(result === 'needs-update');
+      this.startFailed.set(result === 'unavailable');
+    } catch {
+      this.startFailed.set(true);
+    } finally {
+      this.starting.set(false);
+    }
   }
 }

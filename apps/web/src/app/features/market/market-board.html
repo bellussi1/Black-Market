@@ -46,9 +46,11 @@
       </button>
       <div class="category-list" [attr.aria-busy]="taxonomyLoading()">
         @if (!categoryRoots().length) {
-          <p class="category-loading" role="status">
-            {{ taxonomyLoading() ? 'Carregando categorias…' : 'Categorias indisponíveis' }}
-          </p>
+          @if (taxonomyLoading()) {
+            <app-loading-skeleton variant="rows" [count]="5" label="Carregando categorias" />
+          } @else {
+            <p class="category-loading" role="status">Categorias indisponíveis</p>
+          }
         }
         @for (entry of categoryRoots(); track entry.id) {
           <button
@@ -214,6 +216,14 @@
             }}
             · {{ date(response.fetchedAt) }}
           </span>
+        }
+      </div>
+      <div class="refresh-slot">
+        @if (loading() && result()) {
+          <div class="refresh-loading">
+            Atualizando cotações ·
+            <app-loading-skeleton variant="inline" label="Atualizando cotações" />
+          </div>
         }
       </div>
 
@@ -500,17 +510,27 @@
                 </td>
               </tr>
             } @empty {
-              <tr>
-                <td colspan="6" class="board-empty">
-                  {{
-                    loading()
-                      ? 'Consultando mercado…'
-                      : error()
+              @if (loading() && !result()) {
+                <tr class="market-skeleton-row">
+                  <td colspan="6">
+                    <app-loading-skeleton
+                      variant="table"
+                      [count]="pageSize()"
+                      label="Carregando mercado"
+                    />
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td colspan="6" class="board-empty">
+                    {{
+                      error()
                         ? 'O mercado está temporariamente indisponível.'
                         : 'Nenhum item corresponde a esta pesquisa.'
-                  }}
-                </td>
-              </tr>
+                    }}
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>

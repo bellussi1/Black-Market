@@ -62,6 +62,7 @@ import { MarketApi, type MarketHistoryPoint } from '../../features/market/market
 import { date, silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 import { TaxOptionsComponent } from '../tax-options';
 import { ALCHEMY_EXTRA_ITEM_IDS } from './recipe-alchemy-extra-items';
 import {
@@ -143,6 +144,7 @@ function usableOptimizedPlan(
     ItemIcon,
     TaxOptionsComponent,
     HlmButton,
+    LoadingSkeleton,
   ],
   templateUrl: './recipe-tree.html',
   styleUrl: './recipe-tree.scss',

@@ -18,12 +18,13 @@ import { finalize } from 'rxjs';
 import { isLoginRequiredPath } from '../../core/auth.guard';
 import { IdentityService } from '../../core/identity.service';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { ROADMAP_ICONS } from './roadmap-icons';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-roadmap-page',
-  imports: [NgIcon, RouterLink],
+  imports: [NgIcon, RouterLink, LoadingSkeleton],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './roadmap-page.html',
   styleUrl: './roadmap-page.scss',
@@ -35,7 +36,7 @@ export class RoadmapPage implements OnInit {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly entries = signal<RoadmapEntry[]>([]);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly loaded = signal(false);
   readonly orderedEntries = computed(() =>
@@ -69,7 +70,6 @@ export class RoadmapPage implements OnInit {
         },
         error: () => {
           this.error.set('Não foi possível carregar o Roadmap agora. Tente novamente.');
-          this.loaded.set(false);
         },
       });
   }

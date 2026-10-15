@@ -9,7 +9,7 @@
   </header>
 
   @if (!accessVerified()) {
-    <p class="roadmap-admin-notice" role="status" i18n>Verificando sua permissão…</p>
+    <app-loading-skeleton variant="form" [count]="4" label="Verificando sua permissão" />
   } @else if (!authorized()) {
     <section class="roadmap-admin-notice roadmap-access-denied" role="alert">
       @if (error()) {
@@ -21,7 +21,7 @@
       }
     </section>
   } @else if (loading()) {
-    <p class="roadmap-admin-notice" role="status" i18n>Carregando conteúdo salvo…</p>
+    <app-loading-skeleton variant="cards" [count]="3" label="Carregando conteúdo salvo" />
   } @else {
     <div class="roadmap-admin-toolbar">
       <div>
@@ -56,6 +56,9 @@
 
     @if (message()) {
       <p class="roadmap-admin-notice roadmap-admin-success" role="status">{{ message() }}</p>
+    }
+    @if (saving()) {
+      <app-loading-skeleton variant="inline" label="Salvando alterações do Roadmap" />
     }
     @if (error()) {
       <div class="roadmap-admin-notice roadmap-admin-error" role="alert">

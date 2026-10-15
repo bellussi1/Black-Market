@@ -18,7 +18,7 @@
       Preparar demonstração
     </button>
     @if (loading()) {
-      <p role="status" i18n>Conferindo os itens do catálogo…</p>
+      <app-loading-skeleton variant="form" [count]="4" label="Conferindo os itens do catálogo" />
     }
     @if (message()) {
       <p role="alert">{{ message() }}</p>

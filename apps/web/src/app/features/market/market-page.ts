@@ -44,6 +44,7 @@ import { CalculationProof } from '../../shared/calculation-proof';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { TutorialLauncher } from '../../shared/tutorial-launcher/tutorial-launcher';
@@ -82,6 +83,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     CalculationProof,
     CatalogItemPicker,
     ItemIcon,
+    LoadingSkeleton,
     MarketBoard,
     MarketProduction,
   ],
@@ -178,6 +180,7 @@ export class MarketPage implements OnDestroy {
   draft = { name: '', category: '', price: '0', stock: 0, itemId: null as number | null };
   readonly catalogItem = signal<CatalogItem | null>(null);
   readonly history = signal<MarketHistoryPoint[]>([]);
+  readonly historyLoading = signal(false);
   readonly historyMessage = signal('');
   private historyRequest?: Subscription;
   historySubId = 0;
@@ -233,20 +236,24 @@ export class MarketPage implements OnDestroy {
     }
     this.historyRequest?.unsubscribe();
     if (!preserve) this.history.set([]);
+    this.historyLoading.set(true);
     this.historyMessage.set('Carregando histórico…');
     this.historyRequest = this.api
       .history(id, this.store.data().region, this.historySubId)
       .subscribe({
         next: (response) => {
           this.history.set(response.points);
+          this.historyLoading.set(false);
           this.historyMessage.set(
             response.points.length
               ? ''
               : 'Ainda não há observações guardadas para este item e variante.',
           );
         },
-        error: () =>
-          this.historyMessage.set('Não foi possível carregar o histórico. Tente novamente.'),
+        error: () => {
+          this.historyLoading.set(false);
+          this.historyMessage.set('Não foi possível carregar o histórico. Tente novamente.');
+        },
       });
   }
 
@@ -257,6 +264,7 @@ export class MarketPage implements OnDestroy {
     this.lookupLoading.set(false);
     this.historyRequest?.unsubscribe();
     this.history.set([]);
+    this.historyLoading.set(false);
     this.historyMessage.set('');
     this.historySubId = subId;
     this.catalogItem.set(item);

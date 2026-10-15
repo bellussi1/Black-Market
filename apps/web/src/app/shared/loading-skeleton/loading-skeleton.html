@@ -1,0 +1,149 @@
+<div
+  class="skeleton-status"
+  [class.inline-status]="variant() === 'inline'"
+  role="status"
+  aria-live="polite"
+  aria-busy="true"
+>
+  <span class="visually-hidden">{{ label() }}</span>
+  <div class="skeleton-visual" aria-hidden="true" [class]="'skeleton-visual ' + variant()">
+    @switch (variant()) {
+      @case ('rows') {
+        @for (index of indices(); track index) {
+          <div class="skeleton-row">
+            <span class="skeleton-block row-icon"></span>
+            <span class="skeleton-lines">
+              <span class="skeleton-block line line-primary"></span>
+              <span class="skeleton-block line line-secondary"></span>
+            </span>
+            <span class="skeleton-block row-value"></span>
+          </div>
+        }
+      }
+      @case ('cards') {
+        <div class="skeleton-card-grid">
+          @for (index of indices(); track index) {
+            <div class="skeleton-card">
+              <span class="skeleton-block card-icon"></span>
+              <span class="skeleton-lines">
+                <span class="skeleton-block line line-primary"></span>
+                <span class="skeleton-block line line-secondary"></span>
+                <span class="skeleton-block line line-tertiary"></span>
+              </span>
+            </div>
+          }
+        </div>
+      }
+      @case ('table') {
+        @for (index of indices(); track index) {
+          <div class="skeleton-table-row">
+            <span class="skeleton-block table-name"></span>
+            @for (cell of [0, 1, 2, 3, 4]; track cell) {
+              <span class="skeleton-block table-cell"></span>
+            }
+          </div>
+        }
+      }
+      @case ('detail') {
+        <div class="skeleton-detail-heading">
+          <span class="skeleton-block detail-icon"></span>
+          <span class="skeleton-lines">
+            <span class="skeleton-block line line-primary"></span>
+            <span class="skeleton-block line line-secondary"></span>
+          </span>
+        </div>
+        <div class="skeleton-detail-grid">
+          @for (index of indices(); track index) {
+            <div class="skeleton-fact">
+              <span class="skeleton-block line line-label"></span>
+              <span class="skeleton-block line line-value"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('chart') {
+        <div class="skeleton-chart">
+          @for (index of indices(); track index) {
+            <span class="skeleton-block chart-bar" [style.height.%]="chartBarHeight(index)"></span>
+          }
+        </div>
+        <span class="skeleton-block chart-axis"></span>
+      }
+      @case ('map') {
+        <div class="skeleton-map">
+          <span class="skeleton-block skeleton-map-land land-north"></span>
+          <span class="skeleton-block skeleton-map-land land-center"></span>
+          <span class="skeleton-block skeleton-map-land land-east"></span>
+          <span class="skeleton-block skeleton-map-land land-south"></span>
+          <span class="skeleton-block skeleton-map-route route-main"></span>
+          <span class="skeleton-block skeleton-map-route route-branch"></span>
+          @for (index of indices(); track index) {
+            <span
+              class="skeleton-block skeleton-map-marker"
+              [style.left.%]="mapMarkerPosition(index)[0]"
+              [style.top.%]="mapMarkerPosition(index)[1]"
+            ></span>
+          }
+        </div>
+      }
+      @case ('metrics') {
+        <div class="skeleton-metrics">
+          @for (index of indices(); track index) {
+            <div class="skeleton-metric">
+              <span class="skeleton-block line line-label"></span>
+              <span class="skeleton-block metric-value"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('recipe') {
+        <div class="skeleton-recipe-layout">
+          <div class="skeleton-recipe-controls">
+            @for (index of [0, 1, 2, 3]; track index) {
+              <div class="skeleton-field">
+                <span class="skeleton-block line line-label"></span>
+                <span class="skeleton-block field-control"></span>
+              </div>
+            }
+          </div>
+          <div class="skeleton-recipe-result">
+            <div class="skeleton-metrics">
+              @for (index of [0, 1, 2, 3]; track index) {
+                <div class="skeleton-metric">
+                  <span class="skeleton-block line line-label"></span>
+                  <span class="skeleton-block metric-value"></span>
+                </div>
+              }
+            </div>
+            @for (index of indices(); track index) {
+              <div class="skeleton-row">
+                <span class="skeleton-block row-icon"></span>
+                <span class="skeleton-lines">
+                  <span class="skeleton-block line line-primary"></span>
+                  <span class="skeleton-block line line-secondary"></span>
+                </span>
+                <span class="skeleton-block row-value"></span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @case ('form') {
+        <div class="skeleton-form">
+          @for (index of indices(); track index) {
+            <div class="skeleton-field">
+              <span class="skeleton-block line line-label"></span>
+              <span class="skeleton-block field-control"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('inline') {
+        <span class="skeleton-block inline-bar"></span>
+      }
+      @case ('button') {
+        <span class="skeleton-block button-bar"></span>
+      }
+    }
+  </div>
+</div>

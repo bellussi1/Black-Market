@@ -14,12 +14,13 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { referenceFields } from '../reference/reference-fields';
 
 @Component({
   selector: 'app-item-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, RouterLink, ItemIcon],
+  imports: [HlmCard, HlmButton, RouterLink, ItemIcon, LoadingSkeleton],
   templateUrl: './item-detail-page.html',
 })
 export class ItemDetailPage {

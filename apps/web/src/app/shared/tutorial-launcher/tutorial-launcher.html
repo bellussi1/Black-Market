@@ -1,14 +1,17 @@
 @if (guide(); as publishedGuide) {
-  <div class="tutorial-launcher">
+  <div class="tutorial-launcher" [attr.aria-busy]="loading() || starting()">
     <button
       #launcher
       class="tutorial-launcher__button"
       type="button"
-      [disabled]="loading()"
+      [disabled]="loading() || starting()"
       (click)="start(launcher)"
     >
       <span>Tutorial desta tela</span>
     </button>
+    @if (starting()) {
+      <app-loading-skeleton variant="inline" label="Iniciando tutorial desta tela" />
+    }
     @if (needsUpdate()) {
       <p class="tutorial-launcher__status" role="status" aria-live="polite">
         Este guia precisa ser atualizado antes de ser exibido.
@@ -33,5 +36,9 @@
     >
       Tentar novamente
     </button>
+  </div>
+} @else if (loading()) {
+  <div class="tutorial-launcher" aria-busy="true">
+    <app-loading-skeleton variant="button" label="Carregando tutorial desta tela" />
   </div>
 }

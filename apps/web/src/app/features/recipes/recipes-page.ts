@@ -39,6 +39,7 @@ import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import {
   batchAlternatives,
   recipeFamilies,
@@ -58,6 +59,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     RouteIntentPrefetchDirective,
     CatalogItemPicker,
     ItemIcon,
+    LoadingSkeleton,
     RecipeTree,
   ],
   templateUrl: './recipes-page.html',

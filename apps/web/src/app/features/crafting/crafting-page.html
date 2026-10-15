@@ -41,7 +41,7 @@
           (selected)="chooseRecipeProduct($event)"
         />
         @if (recipeLoading()) {
-          <p role="status" i18n>Buscando receitas…</p>
+          <app-loading-skeleton variant="rows" [count]="3" label="Buscando receitas" />
         }
         @if (recipeMessage()) {
           <p class="help" role="status">{{ recipeMessage() }}</p>

@@ -58,7 +58,7 @@
       [attr.aria-busy]="loading()"
     >
       @if (loading()) {
-        <p role="status" i18n>Buscando itens…</p>
+        <app-loading-skeleton variant="rows" [count]="4" label="Buscando itens" />
       } @else if (error()) {
         <p role="alert">
           {{ error() }}

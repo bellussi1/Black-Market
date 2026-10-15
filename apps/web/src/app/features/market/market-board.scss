@@ -237,6 +237,22 @@
   font-size: 13px;
   background: transparent;
 }
+.market-skeleton-row > td {
+  padding: 0 !important;
+}
+.refresh-slot {
+  min-height: 28px;
+}
+.refresh-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 18px;
+  color: var(--bm-muted);
+  font-size: 12px;
+}
 .summary-total {
   color: var(--bm-accent);
   font-weight: 500;

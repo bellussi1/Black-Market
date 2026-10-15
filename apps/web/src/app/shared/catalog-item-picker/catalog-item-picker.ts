@@ -18,11 +18,12 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { ItemIcon } from '../item-icon/item-icon';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 
 @Component({
   selector: 'app-catalog-item-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon, LoadingSkeleton],
   templateUrl: './catalog-item-picker.html',
   styleUrl: './catalog-item-picker.scss',
 })

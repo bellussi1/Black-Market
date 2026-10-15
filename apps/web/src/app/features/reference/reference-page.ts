@@ -20,12 +20,13 @@ import type { Subscription } from 'rxjs';
 import { ReferenceApi, type ReferenceEntry } from '../../core/reference-api.service';
 import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { referenceFields } from './reference-fields';
 @Component({
   selector: 'app-reference-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
+  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink, LoadingSkeleton],
   templateUrl: './reference-page.html',
 })
 export class ReferencePage implements OnDestroy {
@@ -39,7 +40,7 @@ export class ReferencePage implements OnDestroy {
   readonly entries = signal<ReferenceEntry[]>([]);
   readonly selected = signal<ReferenceEntry | null>(null);
   readonly total = signal(0);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly message = signal('');
   kind = 'npcs';
   search = '';

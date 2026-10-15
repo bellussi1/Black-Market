@@ -35,6 +35,7 @@ import { CalculationProof } from '../../shared/calculation-proof';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { number, silver } from '../../shared/formatters';
 import { recipeTypeLabel } from '../../shared/game-labels';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
@@ -51,6 +52,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     PresetBar,
     CalculationProof,
     CatalogItemPicker,
+    LoadingSkeleton,
   ],
   templateUrl: './crafting-page.html',
 })

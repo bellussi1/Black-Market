@@ -28,13 +28,14 @@ import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-item-catalog-page',
   standalone: true,
-  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, ItemIcon, LoadingSkeleton],
   templateUrl: './item-catalog-page.html',
   styleUrl: './item-catalog-page.scss',
 })

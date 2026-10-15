@@ -29,6 +29,7 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { download } from '../../shared/download';
 import { number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { TutorialLauncher } from '../../shared/tutorial-launcher/tutorial-launcher';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 type Stock = Workspace['inventory'][number];
@@ -46,6 +47,7 @@ type Project = Workspace['projects'][number];
     RouterLink,
     CatalogItemPicker,
     ItemIcon,
+    LoadingSkeleton,
   ],
   templateUrl: './storage-page.html',
 })

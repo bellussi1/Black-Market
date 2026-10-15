@@ -25,6 +25,7 @@ import { SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import {
   confirmedEquipmentStatistics,
@@ -183,6 +184,7 @@ export function hasConfidentIconMatch(
     RouterLink,
     CatalogItemPicker,
     ItemIcon,
+    LoadingSkeleton,
   ],
   templateUrl: './scans-page.html',
   styleUrl: './scans-page.scss',

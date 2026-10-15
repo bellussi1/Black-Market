@@ -35,6 +35,7 @@ import {
 import { type Region, RegionPreferences } from '../../core/region-preferences';
 import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { MarketRefresh } from './market-refresh';
 
@@ -55,7 +56,7 @@ export interface PriceRangePosition {
 @Component({
   selector: 'app-market-board',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, ItemIcon],
+  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, ItemIcon, LoadingSkeleton],
   templateUrl: './market-board.html',
   styleUrl: './market-board.scss',
 })
@@ -69,7 +70,7 @@ export class MarketBoard implements OnDestroy {
   readonly fullCatalog = computed(() => !!this.search().trim() || !!this.category());
   readonly result = signal<MarketBoardResponse | null>(null);
   readonly cacheEntry = signal<CachedBoardEntry | null>(null);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly taxonomy = signal<CatalogCategory[]>([]);
   readonly taxonomyLoading = signal(true);

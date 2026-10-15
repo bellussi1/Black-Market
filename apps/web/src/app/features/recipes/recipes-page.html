@@ -25,9 +25,11 @@
     </p>
   </details>
   @if (loading()) {
-    <p class="loading-state" [class.refresh-status]="!!result()" role="status" i18n>
-      Carregando item e receitas…
-    </p>
+    <app-loading-skeleton
+      variant="recipe"
+      [count]="6"
+      [label]="result() ? 'Atualizando receitas' : 'Carregando item e receitas'"
+    />
   }
   @if (message()) {
     <p class="error-box" role="alert">

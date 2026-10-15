@@ -38,6 +38,7 @@ import { ProductionApi } from '../../core/production-api';
 import type { Region } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
+import { LoadingSkeleton } from '../../shared/loading-skeleton/loading-skeleton';
 import { fixedRecipeYield } from '../../shared/recipe-tree/recipe-fixed-yields';
 import { recipeMarketPrice } from '../../shared/recipe-tree/recipe-market-price';
 import {
@@ -185,7 +186,15 @@ export function productionRecipes(
 @Component({
   selector: 'app-recommendations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, RouterLink, TutorialLauncher],
+  imports: [
+    HlmInput,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    TutorialLauncher,
+    LoadingSkeleton,
+  ],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',
 })

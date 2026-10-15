@@ -16,9 +16,9 @@
     }
   </header>
 
-  @if (loading()) {
-    <p class="roadmap-message" role="status" i18n>Carregando Roadmap…</p>
-  } @else if (error()) {
+  @if (loading() && !loaded()) {
+    <app-loading-skeleton variant="cards" [count]="4" label="Carregando Roadmap" />
+  } @else if (error() && !loaded()) {
     <div class="roadmap-message roadmap-error" role="alert">
       <p>{{ error() }}</p>
       <button class="btn subtle roadmap-retry" type="button" (click)="load()" i18n>
@@ -30,6 +30,17 @@
       O Roadmap ainda não tem conteúdo.
     </p>
   } @else if (loaded()) {
+    @if (error()) {
+      <div class="roadmap-message roadmap-error" role="alert">
+        <p>{{ error() }}</p>
+        <button class="btn subtle roadmap-retry" type="button" (click)="load()" i18n>
+          Tentar novamente
+        </button>
+      </div>
+    }
+    @if (loading()) {
+      <app-loading-skeleton variant="inline" label="Atualizando Roadmap" />
+    }
     <ol class="roadmap-path" aria-labelledby="roadmap-title">
       @for (entry of orderedEntries(); track entry.id; let index = $index) {
         <li class="roadmap-path-step">
