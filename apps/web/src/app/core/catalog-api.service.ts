@@ -12,6 +12,7 @@ import type {
   LifeSkillRecipeGroup,
   NpcPurchasePrice,
   NpcPurchasePricesResponse,
+  ProductionCatalogResponse,
   RecipeListResponse,
   RecipeMarketEquivalent,
   RecipeMarketEquivalentsResponse,
@@ -379,6 +380,24 @@ export class CatalogApiService {
     );
   }
 
+  getProductionCatalog(region: Region = this.preferences.region()) {
+    const params = new HttpParams()
+      .set('region', region)
+      .set('preferredLocale', preferredDataLocale());
+    return this.cachedPublicRead(
+      '/production/catalog',
+      params,
+      () =>
+        this.http.get<ProductionCatalogResponse>(`${this.baseUrl}/production/catalog`, { params }),
+      (response) => response.dataset,
+    ).pipe(
+      tap((response) => {
+        this.rememberItemIcons(response.items, response.dataset);
+        this.rememberRecipeIcons(response.recipes, response.dataset);
+      }),
+    );
+  }
+
   getRecipe(key: string) {
     const params = new HttpParams()
       .set('region', this.preferences.region())
@@ -406,15 +425,21 @@ export class CatalogApiService {
     const batches = Array.from({ length: Math.ceil(uniqueIds.length / 100) }, (_, index) =>
       uniqueIds.slice(index * 100, (index + 1) * 100),
     );
-    const requests = batches.map((ids) =>
-      this.http.get<NpcPurchasePricesResponse>(`${this.baseUrl}/npc-purchase-prices`, {
-        params: {
-          ids: ids.join(','),
-          region,
-          preferredLocale: preferredDataLocale(),
-        },
-      }),
-    );
+    const requests = batches.map((ids) => {
+      const params = new HttpParams()
+        .set('ids', ids.join(','))
+        .set('region', region)
+        .set('preferredLocale', preferredDataLocale());
+      return this.cachedPublicRead(
+        '/npc-purchase-prices',
+        params,
+        () =>
+          this.http.get<NpcPurchasePricesResponse>(`${this.baseUrl}/npc-purchase-prices`, {
+            params,
+          }),
+        (response) => response.dataset,
+      );
+    });
     return forkJoin(requests).pipe(
       map((responses) => {
         const versions = responses

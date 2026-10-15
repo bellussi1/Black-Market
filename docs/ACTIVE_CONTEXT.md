@@ -1297,8 +1297,8 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Pedido e aprovações**: refatorar Home/Roadmap, retirar CTAs duplicados e ligar as fases e pilares em trilha dinâmica sem prazos. A Home consumirá os focos ativos do Roadmap; conteúdo e ordem devem vir da API/banco, sem arrays fixos de jornadas ou ferramentas.
 - **Desenho**: `docs/superpowers/specs/2026-10-15-home-roadmap-dynamic-flow-design.md`. A trilha usa uma ordenação global para fases e pilares; a Home mostra todas as entradas `featured` em ordem, permite zero ou vários focos e mantém busca contextual por item e retomada do workspace. Visitantes não recebem links diretos para rotas protegidas.
 - **Revisão**: especificação self-review concluída; estados de carregamento, vazio, falha, responsividade, acessibilidade, migração/editor e critérios de aceite estão descritos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
-- **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
-- **Próximo passo**: após aprovação da especificação, preparar plano e implementar Home/Roadmap em fatias verificáveis, registrando commits separados conforme escopo.
+- **Estado à época**: a especificação aguardava aprovação; ela foi aprovada depois e implementada, conforme as seções 124 e 127. Registro histórico, não pendência atual.
+- **Desfecho posterior**: plano e implementação foram concluídos em commits por funcionalidade, conforme a seção 123.
 
 ## 118. Especificação da biblioteca de tutorial guiado (Codex, 15/10/2026)
 
@@ -1306,16 +1306,16 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Desenho**: `docs/superpowers/specs/2026-10-15-guided-tutorial-library-design.md`. Define guias no PostgreSQL/API, editor administrativo protegido pela allowlist existente, chaves de tela e âncoras permitidas pelo código, Driver.js carregado sob demanda no browser e suporte a SSR. Conteúdo inicial do fluxo central é semeado uma vez, de forma idempotente, e alterações administrativas são preservadas; não haverá fallback de cópia no bundle.
 - **Segurança e UX**: texto editorial é renderizado como texto simples; o banco não escolhe seletores, rotas ou comandos. O tour não inicia sozinho, permite sair e replay, respeita `authGuard`, teclado, foco, leitor de tela, telas estreitas e `prefers-reduced-motion`. Analytics agregados dependem do consentimento já existente e não incluem dados pessoais.
 - **Revisão**: especificação self-review concluída, com limites e telas iniciais definidos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
-- **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
-- **Próximo passo**: após aprovação da especificação, escrever plano e implementar editor/API/armazenamento e tours em fatias verificáveis, com commits separados por funcionalidade.
+- **Estado à época**: a especificação aguardava aprovação; ela foi aprovada depois e implementada, conforme as seções 124 e 127. Registro histórico, não pendência atual.
+- **Desfecho posterior**: plano, API, editor e tours foram implementados em commits por funcionalidade, conforme a seção 127.
 
 ## 119. Plano de implementação da Home e Roadmap (Codex, 15/10/2026)
 
 - **Plano**: `docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md`, baseado na especificação aprovada da seção 117. Divide a entrega em migração/ordem global, validação API, trilha pública, editor, Home dinâmica e revisão integrada.
 - **TDD e commits**: cada tarefa define testes focados antes da implementação, comando de verificação e commit atômico. Preserva várias entradas `featured`, não fixa quantidade de cards nem duplica conteúdo editorial no frontend.
 - **Revisão do plano**: self-review de cobertura feita; `prettier` formatou o documento. A migração exige PostgreSQL descartável para validar preservação; viewport e teclado exigem inspeção manual pois não há harness E2E instalado.
-- **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
-- **Próximo passo**: após aprovação, executar na ordem descrita, integrar migrações/API/Web e registrar cada mudança em commits separados.
+- **Estado à época**: aguardava aprovação; Home e Roadmap foram implementados depois, conforme as seções 123 e 127.
+- **Desfecho posterior**: tarefas de implementação foram concluídas. A aplicação das migrações em staging segue pendente, descrita na seção 127.
 
 ## 120. Plano de implementação da biblioteca de tutorial (Codex, 15/10/2026)
 
@@ -1323,8 +1323,8 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Conteúdo dinâmico**: os textos iniciais serão redigidos a partir dos controles reais e salvos apenas como bootstrap versionado no banco. Reexecuções preservam alterações administrativas; a aplicação sempre carrega guias pela API, sem cópia de fallback no bundle.
 - **TDD e commits**: cada tarefa inclui testes primeiro, comandos de verificação e commits atômicos. Guia e passo são públicos e compartilhados; acesso de gestão reutiliza a validação administrativa server-side do Roadmap.
 - **Revisão do plano**: self-review cobre os requisitos da especificação. Prettier foi executado nos dois planos; o plano do Tutorial passou sem alterações e o de Home foi formatado. Ainda não houve implementação ou testes funcionais.
-- **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
-- **Próximo passo**: após aprovação, seguir as tarefas com os subagents já solicitados, respeitando a dependência sequencial das migrações do banco e fechando com revisão integrada.
+- **Estado à época**: aguardava aprovação; Home e Roadmap foram implementados depois, conforme as seções 123 e 127.
+- **Desfecho posterior**: tarefas de implementação do tutorial foram concluídas. Verificação integrada e requisitos ainda pendentes de staging estão na seção 127.
 
 ## 121. Home/Roadmap: migração de ordenação global (Codex, 15/10/2026)
 
@@ -1357,7 +1357,7 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Limites da verificação integrada**: `pnpm check` parou na formatação de artefatos/documentos preexistentes fora do escopo. `pnpm build` falhou nos budgets do bundle inicial (1,07 MB; limite 1 MB; excesso 68,21 kB) e de `recipe-tree.scss` (38,77 kB; limite 20 kB). Nenhum budget ou arquivo de receitas foi alterado pela Task 5; não declarar build de produção ou check integral aprovados.
 - **Revisão visual da Home**: sessão CLI isolada `home-task5`, origem `http://127.0.0.1:4201/`, capturas inspecionadas em 1440/390 px. Focos ao lado do hero no desktop e em coluna no mobile; sem overflow também com múltiplos focos e textos extremos aplicados temporariamente aos sinais da aba e restaurados por reload. Alvos medidos com pelo menos 44 px; foco de 2 px; Tab da ação à busca e Shift+Tab de volta. Movimento reduzido emulado, sem deslocamento. CORS bloqueou `identity/config`; sessão autenticada real não foi validada no navegador, mas a transição está coberta na spec.
 - **Arquivos desta tarefa**: `apps/web/src/app/features/dashboard/dashboard-page.ts`, `.html`, `.scss`, `.spec.ts` e este handoff. Relatório local: `.superpowers/sdd/2026-10-15-home-roadmap-dynamic-flow/task-5-report.md`. Capturas em `output/playwright/task5-*.png`; logs `output/task5-*.log`.
-- **Próximo agente**: fazer revisão independente/integrada das Tasks 1–5; resolver a formatação pendente e os budgets de produção em escopo apropriado. Antes de liberar, aplicar a migração no ambiente autorizado e liberar API/Web juntas, validando sessão real e persistência com CORS correto. Implementação do tutorial guiado é uma entrega separada e continua pendente.
+- **Estado posterior**: implementação e revisão integrada estão consolidadas na seção 127. A migração ainda precisa ser aplicada no banco autorizado antes de liberar as telas que dependem dela; não houve deploy nesta etapa.
 
 ## 124. Tutorial: schema, migração e privilégios runtime (Codex, 15/10/2026)
 
@@ -1367,4 +1367,39 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **TDD e verificações**: RED com três falhas esperadas; GREEN com 7/7 testes focados. Builds de database/API, typecheck da API, ESLint dos quatro arquivos TS alterados, Prettier e `pnpm db:check` passaram. `pnpm test` passou com 66 testes de calculadoras, 225 API, 561 Web e 73 scripts; integração de migração ignorada sem `ROADMAP_MIGRATION_TEST_URL`. Aviso conhecido de locale `pt-BR` usa `pt`.
 - **Limite de qualidade**: `pnpm check` parou no erro preexistente `packages/shared/src/index.ts:168` (`simple-import-sort/exports`), introduzido no registro compartilhado da etapa anterior; não foi corrigido nesta tarefa de banco. SQL e grants não foram executados contra PostgreSQL; nenhuma conexão a banco persistente/staging ocorreu.
 - **Arquivos**: `packages/database/src/schema.ts`, SQL/snapshot/journal 0012, `deploy/runtime-role.sql`, `apps/api/src/database/runtime-role.ts`, sua spec e `apps/api/src/tutorials/tutorial-schema.spec.ts`. Relatório local: `.superpowers/sdd/2026-10-15-guided-tutorial-library/task-2-report.md`; logs em `output/tutorial-task2-*.log`.
-- **Próximo agente**: continuar a Task 3 de validação API e depois serviço/seed. A publicação da API com a nova verificação de privilégios exige que a migração 0012 e o script de grants sejam aplicados primeiro no ambiente autorizado; esta tarefa deixou ambos pendentes nos bancos persistentes. Corrigir a ordenação dos exports compartilhados na revisão integrada.
+- **Estado posterior**: Tasks 3–11 estão implementadas e revisadas conforme a seção 127. A migração 0012 e os grants continuam pendentes em bancos persistentes; não foram executados nesta etapa.
+
+## 125. Coach de Atividades — refatoração de Recomendações (Codex, 15/10/2026)
+
+- **Pedido aprovado**: usar o formulário da comunidade como parâmetro forte e refazer por completo `/recommendations`, pois o fluxo atual exige muitas etapas manuais antes de revelar recomendações.
+- **Pesquisa**: 31 respostas; calculadora de custo/lucro 20, mapa de coleta 18, receitas claras 17 e comparação de atividades/hora 10. A resposta aberta mais detalhada propõe combinar preferências, gear/maestria, armazém, produção/compra, liquidez e grind. É evidência exploratória, não amostra representativa.
+- **Diagnóstico do fluxo atual**: clique para carregar catálogo; tempo manual por método e por receita; consulta de mercado separada; grade paginada para editar preços; buscar/selecionar receita e iniciar comparação. O perfil, estoque e motor econômico já existem, mas a recomendação vem depois da configuração.
+- **Especificação**: `docs/superpowers/specs/2026-10-15-activity-coach-recommendations-design.md` define resumo primeiro, carregamento cache-first, perfil/estoque automáticos, preferências persistidas, calibração opcional reutilizável, detalhes sob demanda e pendências sem números inventados.
+- **Limites mantidos**: volume/liquidez e preços têm cobertura variável; nenhuma fonte persistente de mercado está aprovada. Ainda não há modelo confiável de lucro/hora por gear para Grind/PvE/coleta/pesca. O MVP permanece em Life Skill de produção; comparação comunitária/atividade e API Pearl Abyss ficam fora deste plano.
+- **Estado à época**: aguardava revisão; especificação/plano foram aprovados e o Coach foi implementado em seguida, conforme a seção 126.
+- **Desfecho posterior**: o plano aprovado e a implementação do Coach estão registrados na seção 126.
+
+## 126. Coach de Atividades — implementação inicial (Codex, 15/10/2026)
+
+- **Atualização da seção 121**: a especificação e o plano foram seguidos, e a implementação inicial descrita aqui substitui o status de “aguardando revisão” registrado naquela seção.
+- **Direção confirmada**: gerar prata com Life Skills para financiar gear de Life Skill e PvPvE. A rota não trata isso como aviso genérico de cautela; mostra lucro líquido estimado/hora e do lote com custos, quantidades, duração, uso de armazém, cenário de compra/produção e proveniência dos preços.
+- **Implementado**: `/recommendations` carrega sem ação manual; o resolver aquece o catálogo público por região/idioma e a rota reutiliza o cache. Preços NPC também passam a usar o cache público por dataset; cotações de mercado seguem `MarketCacheService`. Nenhum dado privado do workspace entra no resolver/cache público.
+- **Experiência**: resumo com personagem e maestrias, preferências persistidas de Culinária/Alquimia/Processamento, ranking automático, materiais/fonte/horário sob demanda, lista de pendências e ajuste manual pontual de preço. Calibração de tempo fica recolhida e persiste por personagem/método. Mudanças de contexto e preço manual disparam atualização sem botão Comparar.
+- **Arquivos principais**: `apps/web/src/app/features/recommendations/recommendations-page.{ts,html,scss,spec.ts}`, `apps/web/src/app/core/catalog-api.service{.ts,.spec.ts}`, `apps/web/src/app/core/public-route-data.ts`, `apps/web/src/app/app.routes.ts`, `packages/calculators/src/workspace.ts` e seus testes; especificação/plano e revisão concorrencial em `docs/superpowers/` e `docs/research/activity-coach-competitive-review.md`.
+- **Pesquisa competitiva**: comparadas BDOLytics, Garmoth, BDO Workshop, `bdo-viewer`, `bdo-empire` e Workerman com base nas páginas públicas e documentos de referência já presentes no repositório. Usadas como orientação de UX/escopo; não foram incorporados código, dados ou endpoints.
+- **Limites**: ranking atual cobre apenas receitas de produção sustentadas pelo catálogo e modelo existentes. Sem calibração de tempo ou preço suficiente, oportunidades permanecem pendentes. Grind/PvE, coleta, pesca, caça e benchmarks comunitários seguem fora do ranking por falta de sessões/revisão/cobertura confiáveis. Gear aparece como meta de progressão, sem multiplicador não validado.
+- **Verificação final**: `pnpm check` passou (lint, Prettier e typecheck/build do monorepo). `pnpm test` passou com 909 testes: calculadoras 67, API 216, Web 553 e OCR/scripts 73. Os testes focados de cache, resolver, rotas e página passaram (46/46). O Angular ainda avisa que usa locale `pt` como fallback para `pt-BR`.
+- **Commits locais**: estado de preferência/calibração, resolver/cache da rota e UI permanecem separados por responsabilidade; nenhum push ou deploy.
+- **Próximo passo**: acompanhar cobertura de preço/tempo na região e então especificar registro revisável de sessões para avaliar extensão a coleta ou PvPvE. Não inferir gear/h nem liquidez a partir de prints ou ferramentas concorrentes.
+
+## 127. Handoff integrado — Home, Roadmap, Tutorial e Coach (Codex, 15/10/2026)
+
+- **Revisão solicitada**: retomar a implementação aprovada e conferir as mensagens recentes para não perder frentes. O branch `codex/home-roadmap-tutorial` agora integra `main`, incluindo o Coach de Atividades, e conserva as entregas Home/Roadmap e Tutorial guiado. As seções 121–126 registram o histórico de ambas as frentes e do Coach.
+- **Conflito resolvido**: a versão atual do Coach de Atividades substitui o formulário antigo de Recomendações; foram preservados seu carregamento automático, ranking, preferências e calibrações. O launcher Driver.js foi reintegrado ao cabeçalho, com âncoras dinâmicas `recommendations.conditions` e `recommendations.ranking`. A spec confirma launcher único e âncoras únicas nos estados sem personagem/com personagem.
+- **Escopo implementado no código**: Home usa focos ativos da API do Roadmap; Roadmap é uma trilha global editável, sem datas; tutoriais por tela usam Driver.js sob demanda e conteúdo administrável pela API/banco. O editor exige autorização server-side. O Coach recomenda atividades Life Skill com dados do perfil, maestrias, armazém e cotações disponíveis. Textos de produto vêm da API/bootstrap, não de uma lista fixa de cards no frontend.
+- **Validação desta integração**: sete specs focadas de Home, Roadmap, gestão, rotas, Coach e Tutorial passaram, 64/64; lint de todo o Web passou; typecheck do Web concluiu compilação de browser e servidor; Prettier dos arquivos integrados e do handoff passou. `pt-BR` emite aviso e usa dados `pt`.
+- **Limites de verificação**: a compilação de produção continua falhando nos budgets existentes (bundle inicial e `recipe-tree.scss`). O smoke SSR de desenvolvimento chega às rotas públicas e falha numa expectativa antiga de redirect para `/crafting`, rota que o escopo atual permite. A suíte Web integral teve duas falhas intermitentes em testes de cookie de privacidade, que passaram isoladamente; portanto, não declará-la integralmente verde. A inspeção manual recente cobriu o tour na página pública em viewport estreita, mas não substitui a validação visual/teclado de todas as telas, zoom alto, leitor de tela, movimento reduzido e rotas autenticadas.
+- **Revisão independente**: revisões independentes das tarefas anteriores aprovaram as fatias. Os revisores integrados solicitados nesta retomada não puderam concluir por limite de uso da conta; foi feita revisão manual de integração e os testes direcionados acima.
+- **Banco e staging ainda pendentes**: migrações 0011/0012 e grants do Tutorial não foram aplicados a bancos persistentes; seed do Tutorial e seed sintético do usuário de teste não foram executados. Firebase de staging continua sem Google/Steam ativos; R2 ainda não foi provisionado. CORS do host isolado impediu autenticação real durante verificações locais. O provedor de mercado ainda apresentou 503/429, então receitas com essas cotações não têm lucro certificado. Esses itens continuam separados da implementação de Home/Roadmap/Tutorial e requerem validação/configuração de staging.
+- **Commits**: os commits atômicos por funcionalidade foram preservados. O merge de `main` neste branch é registrado no histórico Git como merge, sem push ou deploy.
+- **Próximo passo**: antes de liberar staging, aplicar 0011/0012 e grants num banco staging autorizado, configurar autenticação social apenas com credenciais próprias desse ambiente, executar seed sintético e validar login, isolamento, cotações e backup cifrado. Repetir a inspeção visual ampla em origem com CORS correto. Não tratar as limitações de build, SSR ou cotações como resolvidas por este merge.

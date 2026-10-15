@@ -1,106 +1,373 @@
 :host {
   display: block;
 }
-.production-page {
-  max-width: 1500px;
+
+.coach-page {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1380px;
+  padding-bottom: 2rem;
 }
-.panel {
-  margin-block: 1rem;
+
+.coach-heading {
+  margin-bottom: 0;
 }
-.panel-heading,
-.profile-stats,
-.pagination {
+
+.coach-heading p:last-child {
+  max-width: 58rem;
+}
+
+.coach-context,
+.activity-preferences,
+.recommendations-section,
+.calibration-section,
+.coach-empty,
+.coach-loading {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 24%, transparent);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--color-surface, #1b1a17) 92%, #000);
+  padding: clamp(0.85rem, 2vw, 1.25rem);
+}
+
+.coach-context {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.75fr) minmax(0, 2fr);
+  align-items: end;
+  gap: 0.75rem 1.5rem;
+}
+
+.context-character {
+  display: grid;
+  align-content: end;
+  gap: 0.55rem;
+}
+
+.context-character > a,
+.opportunity-title a {
+  color: var(--color-gold, #e4c989);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.65rem 1rem;
+  color: var(--color-gold, #ceb789);
+}
+
+.profile-summary span,
+.opportunity-metrics span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.profile-summary small,
+.opportunity-metrics small,
+.hourly-profit span,
+.opportunity-title small,
+.material-line small {
+  color: var(--color-muted, #b8ad98);
+  font-size: 0.8rem;
+}
+
+.gear-context {
+  grid-column: 1 / -1;
+  border-top: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 16%, transparent);
+  padding-top: 0.65rem;
+}
+
+.gear-context summary,
+.opportunity-details summary,
+.pending-section > summary,
+.pending-row > summary,
+.calibration-section > summary {
+  cursor: pointer;
+  color: var(--color-gold, #e4c989);
+  font-weight: 600;
+}
+
+.gear-context p {
+  margin-bottom: 0;
+}
+
+.gear-context small {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.activity-preferences {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
 }
-.panel-heading h2 {
-  flex: 1;
+
+.activity-preferences h2,
+.recommendations-section h2 {
+  margin: 0;
+  font-size: 1.2rem;
 }
-.profile-stats {
-  margin-block: 1rem;
-  color: var(--color-gold, #ceb789);
+
+.activity-preferences p {
+  margin: 0.3rem 0 0;
+  color: var(--color-muted, #b8ad98);
 }
-.demo-panel {
-  border-color: #a38650;
-}
-.calibration-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0.75rem;
-}
-fieldset {
-  min-width: 0;
-  border: 1px solid #66573e;
-  padding: 0.8rem;
-}
-legend {
-  color: #d2be98;
-  padding-inline: 0.4rem;
-}
-.filter-grid,
-.custom-materials {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-.table-scroll {
-  width: 100%;
-  overflow: auto;
-}
-.data-table {
-  width: 100%;
-}
-.results-table {
-  min-width: 950px;
-}
-.item-name {
+
+.skill-options {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-option {
+  display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
-}
-.item-name img {
-  object-fit: contain;
-  flex: none;
-}
-small {
-  display: block;
-  color: #bda77e;
-}
-.profit {
-  color: #e1c689;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.pagination {
-  justify-content: center;
-  margin-top: 1rem;
-}
-.pending {
-  padding: 0.7rem;
-  border-bottom: 1px solid #514937;
-}
-summary {
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 32%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
   cursor: pointer;
 }
-.dataset-note {
-  overflow-wrap: anywhere;
-  font-size: 0.85rem;
-  opacity: 0.7;
+
+.skill-option:has(input:checked) {
+  background: color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
+  border-color: var(--color-gold, #ceb789);
 }
+
+.skill-option input {
+  accent-color: var(--color-gold, #ceb789);
+}
+
+.coach-progress,
+.coverage-summary,
+.coverage-note {
+  color: var(--color-muted, #b8ad98);
+}
+
+.coach-progress {
+  margin: 0;
+}
+
+.recommendations-section {
+  padding: 0;
+  overflow: hidden;
+}
+
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 0.75rem;
+  padding: clamp(0.85rem, 2vw, 1.25rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 20%, transparent);
+}
+
+.section-heading .tool-kicker {
+  margin: 0 0 0.25rem;
+}
+
+.coverage-summary {
+  margin: 0;
+}
+
+.opportunity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.opportunity {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1.2fr) minmax(13rem, 0.8fr);
+  gap: 0.85rem 1.25rem;
+  padding: clamp(0.85rem, 2vw, 1.25rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
+}
+
+.opportunity:last-child {
+  border-bottom: 0;
+}
+
+.opportunity-title {
+  display: flex;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.rank-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
+  color: var(--color-gold, #e4c989);
+  font-weight: 700;
+}
+
+.opportunity-title h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.08rem;
+}
+
+.opportunity-title p {
+  margin: 0.35rem 0;
+  color: var(--color-muted, #c3b9a6);
+}
+
+.hourly-profit {
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: 0.2rem;
+  text-align: right;
+}
+
+.hourly-profit strong {
+  color: var(--color-gold, #f0d597);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.opportunity-metrics {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.7rem 1rem;
+  padding: 0.7rem 0;
+  border-block: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 12%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.opportunity-details,
+.pending-section,
+.calibration-section {
+  grid-column: 1 / -1;
+}
+
+.opportunity-details p {
+  margin: 0.6rem 0;
+}
+
+.material-line {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.5fr);
+  gap: 0.2rem 0.75rem;
+  padding-block: 0.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 10%, transparent);
+}
+
+.material-line small {
+  grid-column: 2;
+}
+
+.assumption {
+  color: var(--color-muted, #b8ad98);
+}
+
+.pending-section {
+  margin: 0 clamp(0.85rem, 2vw, 1.25rem) 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 20%, transparent);
+  padding-top: 0.9rem;
+}
+
+.pending-row {
+  margin-top: 0.7rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 12%, transparent);
+}
+
+.pending-issue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.pending-issue p {
+  margin: 0.5rem 0;
+}
+
+.manual-price-field {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) minmax(8rem, 12rem);
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  width: min(100%, 32rem);
+  font-size: 0.85rem;
+}
+
+.manual-price-field span {
+  color: var(--color-muted, #b8ad98);
+}
+
+.calibration-section > p {
+  max-width: 60rem;
+  color: var(--color-muted, #b8ad98);
+}
+
+.calibration-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.coverage-note {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.coverage-note span {
+  display: block;
+  margin-top: 0.25rem;
+}
+
 input:not([type='checkbox']),
 select {
   max-width: 100%;
 }
-@media (max-width: 600px) {
-  .panel {
-    padding: 0.8rem;
-  }
-  .calibration-grid {
+
+@media (max-width: 760px) {
+  .coach-context {
     grid-template-columns: 1fr;
   }
-  .action-row {
-    align-items: stretch;
+
+  .opportunity {
+    grid-template-columns: 1fr;
+  }
+
+  .hourly-profit {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .opportunity-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .opportunity-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .material-line {
+    grid-template-columns: 1fr;
+  }
+
+  .material-line small {
+    grid-column: 1;
+  }
+
+  .manual-price-field {
+    grid-template-columns: 1fr;
   }
 }

@@ -16,6 +16,7 @@ import {
   PublicRouteData,
   type PublicRouteWarmResult,
   recipesRouteResolver,
+  recommendationsRouteResolver,
 } from './public-route-data';
 import { RegionPreferences } from './region-preferences';
 
@@ -30,6 +31,7 @@ const recipe = (itemId: number): CatalogRecipe => ({
 function setup() {
   const catalog = {
     getCategories: vi.fn(() => of({ categories: [], dataset: null })),
+    getProductionCatalog: vi.fn(() => of({ recipes: [], items: [], dataset: { version: 'v1' } })),
     getRecipes: vi.fn(() => of({ recipes: [], page: 1, pageSize: 24, total: 0, dataset: null })),
     getItem: vi.fn(() => of({ item: { id: 1407 }, dataset: { version: 'v1' } })),
     getItemRecipes: vi.fn(() =>
@@ -75,6 +77,15 @@ describe('Public route data warming', () => {
     await firstValueFrom(
       TestBed.runInInjectionContext(
         () =>
+          recommendationsRouteResolver(
+            snapshot({}),
+            {} as RouterStateSnapshot,
+          ) as Observable<PublicRouteWarmResult>,
+      ),
+    );
+    await firstValueFrom(
+      TestBed.runInInjectionContext(
+        () =>
           recipesRouteResolver(
             snapshot({ id: '1407' }),
             {} as RouterStateSnapshot,
@@ -93,9 +104,19 @@ describe('Public route data warming', () => {
 
     expect(prefetchPath.mock.calls.map(([path]) => path)).toEqual([
       '/market',
+      '/recommendations',
       '/recipes/items/1407',
       `/recipes/${'b'.repeat(64)}`,
     ]);
+  });
+
+  it('warms the production snapshot for the active region without accessing workspace data', async () => {
+    const { service, catalog } = setup();
+
+    await expect(firstValueFrom(service.prefetchPath('/recommendations'))).resolves.toEqual({
+      status: 'ready',
+    });
+    expect(catalog.getProductionCatalog).toHaveBeenCalledWith('sa');
   });
 
   it('warms the default market board and stable catalog taxonomy', async () => {

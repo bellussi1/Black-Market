@@ -1,7 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { ActiveDatasetSummary, CatalogPage, CatalogRecipe } from '@bdo/shared';
+import type {
+  ActiveDatasetSummary,
+  CatalogPage,
+  CatalogRecipe,
+  ProductionCatalogResponse,
+} from '@bdo/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from './catalog-api.service';
@@ -90,6 +95,96 @@ describe('Complete item recipe lookup', () => {
     flush(1, recipes(0, 100), 101);
     flush(2, recipes(0, 1), 101);
     expect(message).toContain('incompleta');
+  });
+});
+
+describe('Cached production catalog', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
+  );
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    TestBed.resetTestingModule();
+  });
+
+  it('shares an in-flight request and reuses the region/locale snapshot from cache', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const response: ProductionCatalogResponse = {
+      recipes: [],
+      items: [],
+      dataset: {
+        version: 'v1',
+        region: 'sa',
+        locale: 'pt',
+        checksum: 'checksum-v1',
+        itemCount: 0,
+        recipeCount: 0,
+        importedAt: '2026-10-15T12:00:00.000Z',
+      },
+    };
+    const first: ProductionCatalogResponse[] = [];
+    const second: ProductionCatalogResponse[] = [];
+    service.getProductionCatalog('sa').subscribe((value) => first.push(value));
+    service.getProductionCatalog('sa').subscribe((value) => second.push(value));
+
+    const request = http.expectOne((row) => row.url.endsWith('/production/catalog'));
+    expect(request.request.params.get('region')).toBe('sa');
+    expect(request.request.params.get('preferredLocale')).toBeTruthy();
+    request.flush(response);
+    expect(first).toEqual([response]);
+    expect(second).toEqual([response]);
+
+    let cached: ProductionCatalogResponse | undefined;
+    service.getProductionCatalog('sa').subscribe((value) => (cached = value));
+    expect(cached).toEqual(response);
+    http.expectNone((row) => row.url.endsWith('/production/catalog'));
+  });
+});
+
+describe('Cached NPC prices', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
+  );
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    TestBed.resetTestingModule();
+  });
+
+  it('reuses dataset-scoped NPC prices on the same region and locale', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    const price = {
+      itemId: 1,
+      unitPrice: '20',
+      vendor: 'Fornecedor do catálogo',
+      verifiedAt: '2026-10-15T12:00:00.000Z',
+    };
+    let first: Map<number, unknown> | undefined;
+    let second: Map<number, unknown> | undefined;
+    service.getNpcPurchasePrices([1], 'v1', 'sa').subscribe((value) => (first = value));
+    const request = http.expectOne((row) => row.url.endsWith('/npc-purchase-prices'));
+    request.flush({
+      prices: [price],
+      dataset: {
+        version: 'v1',
+        region: 'sa',
+        locale: 'pt',
+        checksum: 'checksum-v1',
+        itemCount: 1,
+        recipeCount: 1,
+        importedAt: '2026-10-15T12:00:00.000Z',
+      },
+    });
+    service.getNpcPurchasePrices([1], 'v1', 'sa').subscribe((value) => (second = value));
+
+    expect(first?.get(1)).toEqual(price);
+    expect(second?.get(1)).toEqual(price);
+    http.expectNone((row) => row.url.endsWith('/npc-purchase-prices'));
   });
 });
 

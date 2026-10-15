@@ -3,7 +3,11 @@ import { type RedirectFunction, Router, type Routes } from '@angular/router';
 
 import { authGuard } from './core/auth.guard';
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
-import { marketRouteResolver, recipesRouteResolver } from './core/public-route-data';
+import {
+  marketRouteResolver,
+  recipesRouteResolver,
+  recommendationsRouteResolver,
+} from './core/public-route-data';
 import { WorkspaceLayout } from './layout/workspace-layout';
 
 const personalRedirect =
@@ -169,6 +173,7 @@ export const routes: Routes = [
 
         data: { private: true },
         canActivate: [authGuard],
+        resolve: { productionCatalog: recommendationsRouteResolver },
 
         loadComponent: () =>
           import('./features/recommendations/recommendations-page').then(

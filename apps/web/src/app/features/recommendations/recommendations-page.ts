@@ -29,19 +29,12 @@ import type {
   ProductionCatalogResponse,
 } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
-import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
 import { firstValueFrom, takeLast } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService } from '../../core/market-cache.service';
 import { ProductionApi } from '../../core/production-api';
-import {
-  createProductionDemoWorkspace,
-  productionDemoCalibrations,
-  productionDemoExplanation,
-  productionDemoItemIds,
-} from '../../core/production-demo';
 import type { Region } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
@@ -192,7 +185,7 @@ export function productionRecipes(
 @Component({
   selector: 'app-recommendations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TutorialLauncher, HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
+  imports: [HlmInput, HlmButton, BdoSelect, FormsModule, RouterLink, TutorialLauncher],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',
 })
@@ -216,7 +209,12 @@ export class RecommendationsPage implements OnDestroy {
   readonly search = signal('');
   readonly method = signal('');
   readonly silver = silver;
-  readonly demoExplanation = productionDemoExplanation;
+  readonly activityOptions = [
+    { id: 'cooking', label: 'Culinária' },
+    { id: 'alchemy', label: 'Alquimia' },
+    { id: 'processing', label: 'Processamento' },
+  ] as const;
+  readonly preferredSkills = computed(() => this.store.data().activityCoach.preferredSkills);
   readonly scenarioNames = {
     'buy-all': 'Comprar ingredientes',
     'produce-all': 'Produzir ingredientes',
@@ -230,7 +228,10 @@ export class RecommendationsPage implements OnDestroy {
     () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter(),
   );
   readonly recipes = computed(() =>
-    productionRecipes(this.snapshot()?.recipes ?? [], this.profile()?.mastery),
+    productionRecipes(this.snapshot()?.recipes ?? [], this.profile()?.mastery).filter((row) => {
+      const skill = lifeSkillForRecipe(row.method);
+      return this.preferredSkills().includes(skill as (typeof this.activityOptions)[number]['id']);
+    }),
   );
   readonly methods = computed(() => [...new Set(this.recipes().map((row) => row.method))].sort());
   readonly candidates = computed(() =>
@@ -254,6 +255,16 @@ export class RecommendationsPage implements OnDestroy {
   readonly visiblePlans = computed(
     () => this.plans()?.ranked.slice((this.page() - 1) * 20, this.page() * 20) ?? [],
   );
+  readonly topPlans = computed(() => {
+    const seen = new Set<string>();
+    return (this.plans()?.ranked ?? [])
+      .filter((row) => {
+        if (seen.has(row.recipeId)) return false;
+        seen.add(row.recipeId);
+        return true;
+      })
+      .slice(0, 10);
+  });
   readonly visibleIncomplete = computed(() => {
     const incomplete = this.plans()?.incomplete ?? [];
     const focusedOptimization = incomplete.find(
@@ -301,8 +312,9 @@ export class RecommendationsPage implements OnDestroy {
   customRecipes: Record<number, string> = {};
   useOwned = true;
   optimizationCrafts = 1;
-  valuePack = false;
   private quoteQueue: number[] = [];
+  private loadInFlight: Promise<void> | null = null;
+  private manualPriceTimer: ReturnType<typeof setTimeout> | null = null;
   private loadedRegion = '';
   private comparisonRun = 0;
 
@@ -332,14 +344,29 @@ export class RecommendationsPage implements OnDestroy {
       if (previousContext && previousContext !== context) {
         this.plans.set(null);
         this.message.set(
-          'O personagem ou o estoque mudou. Confira os tempos e rendimentos e compare novamente.',
+          'O personagem ou o estoque mudou. Atualizando as oportunidades com esses dados.',
         );
+        queueMicrotask(() => {
+          if (this.snapshot()) void this.compare();
+        });
       }
       previousContext = context;
     });
+    void this.load();
   }
 
   async load() {
+    if (this.loadInFlight) return this.loadInFlight;
+    const task = this.loadCatalogAndRecommend();
+    this.loadInFlight = task;
+    try {
+      await task;
+    } finally {
+      if (this.loadInFlight === task) this.loadInFlight = null;
+    }
+  }
+
+  private async loadCatalogAndRecommend() {
     if (this.busy()) return;
     this.busy.set(true);
     this.message.set('Carregando todas as receitas de Life Skill…');
@@ -377,51 +404,16 @@ export class RecommendationsPage implements OnDestroy {
           // Keep the market and manual quote paths available when NPC data cannot be verified.
         }
       }
-      this.message.set(
-        `${this.recipes().length} receitas carregadas. A maestria estima rendimentos e lotes; preços NPC do catálogo ficam disponíveis como custo alternativo. Informe o tempo para comparar lucro por hora.`,
-      );
+      this.restoreCalibrations();
+      this.message.set(`${this.recipes().length} receitas das atividades selecionadas carregadas.`);
     } catch {
       this.message.set('Não foi possível carregar as receitas. Tente novamente.');
     } finally {
       this.busy.set(false);
     }
-  }
-  async startDemo() {
-    if (this.busy()) return;
-    this.busy.set(true);
-    try {
-      const data = await firstValueFrom(
-        this.catalogApi.getItems({ ids: productionDemoItemIds, page: 1, pageSize: 100 }),
-      );
-      if (
-        !this.store.startDemo(createProductionDemoWorkspace(data.items, this.store.data().region))
-      )
-        throw new Error('Falha ao iniciar teste.');
-      this.selected.set('production-demo-main');
-    } catch {
-      this.message.set('Não foi possível preparar o personagem de teste. Confira o catálogo.');
-      this.busy.set(false);
-      return;
+    if (this.snapshot() && this.loadedRegion === this.store.data().region) {
+      await this.refreshQuotes();
     }
-    this.busy.set(false);
-    await this.load();
-    // A global exit control can restore the real workspace while the catalogue loads.
-    if (!this.store.demoActive()) return;
-    for (const method of this.methods()) {
-      const demo =
-        method === 'ALCHEMY'
-          ? productionDemoCalibrations.alchemy
-          : method === 'COOK'
-            ? productionDemoCalibrations.cooking
-            : productionDemoCalibrations.processing;
-      this.calibration[method] = {
-        seconds: demo.seconds,
-      };
-    }
-    this.search.set('Edania');
-    this.message.set(
-      productionDemoExplanation + ' O tempo preenchido é uma premissa de teste ajustável.',
-    );
   }
   async refreshQuotes(resume = false) {
     if (this.busy() || !this.snapshot()) return;
@@ -466,15 +458,72 @@ export class RecommendationsPage implements OnDestroy {
       );
     } catch {
       this.message.set(
-        'Consulta pausada: mercado indisponível ou limite atingido. Retome depois ou informe preços manuais.',
+        'Parte das cotações não está disponível agora. O cache e as premissas manuais continuam identificados; itens sem preço ficam pendentes.',
       );
     } finally {
       this.busy.set(false);
       this.plans.set(null);
     }
+    if (this.profile()) await this.compare();
   }
   get resumable() {
     return this.quoteQueue.length > 0;
+  }
+  toggleSkill(skill: (typeof this.activityOptions)[number]['id'], enabled: boolean) {
+    const preferred = new Set(this.preferredSkills());
+    if (enabled) preferred.add(skill);
+    else preferred.delete(skill);
+    this.store.update((state) => ({
+      ...state,
+      activityCoach: { ...state.activityCoach, preferredSkills: [...preferred] },
+    }));
+    this.restoreCalibrations();
+    this.plans.set(null);
+    void this.refreshQuotes();
+  }
+  selectProfile(id: string) {
+    if (!this.profiles().some((row) => row.id === id)) return;
+    this.store.update((state) => ({ ...state, activeCharacterId: id }));
+    this.selected.set(id);
+    this.restoreCalibrations();
+    this.plans.set(null);
+    void this.compare();
+  }
+  saveCalibration(method: string) {
+    const player = this.profile();
+    if (!player) return;
+    const seconds = this.calibration[method]?.seconds;
+    const isValid = typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0;
+    const updatedAt = new Date().toISOString();
+    this.store.update((state) => {
+      const calibrations = state.activityCoach.calibrations.filter(
+        (row) => row.characterId !== player.id || row.method !== method,
+      );
+      if (isValid)
+        calibrations.push({ characterId: player.id, method, seconds: seconds!, updatedAt });
+      return { ...state, activityCoach: { ...state.activityCoach, calibrations } };
+    });
+    this.plans.set(null);
+    void this.compare();
+  }
+  setCalibrationDraft(method: string, value: number | null) {
+    this.calibration[method] = {
+      seconds: value !== null && Number.isFinite(value) && value > 0 ? value : null,
+    };
+  }
+  private restoreCalibrations() {
+    const player = this.profile();
+    if (!player) return;
+    this.calibration = Object.fromEntries(
+      this.methods().map((method) => {
+        const stored = this.store
+          .data()
+          .activityCoach.calibrations.find(
+            (row) => row.characterId === player.id && row.method === method,
+          );
+        return [method, { seconds: stored?.seconds ?? null }];
+      }),
+    );
   }
   manualPrice(itemId: number, value: string) {
     this.quotes.update((previous) => {
@@ -490,40 +539,18 @@ export class RecommendationsPage implements OnDestroy {
       else delete next[itemId];
       return next;
     });
-    this.plans.set(null);
-  }
-  applyMockPrices() {
-    if (this.busy() || !this.store.demoActive()) return;
-    const prices: Record<number, string> = {
-      1399: '2000000',
-      1407: '6000000',
-      1409: '190000',
-      1410: '450000',
-      702: '100000',
-      703: '300000',
-      4986: '10000',
-      820936: '1000000',
-      821372: '10000000',
-      6354: '50000',
-      5960: '20000',
-      5008: '5000',
-      5301: '10000',
-      5025: '5000',
-      9001: '20',
-      5401: '2000',
-      6656: '5000',
-      5439: '1000',
-    };
-    for (const [id, price] of Object.entries(prices)) this.manualPrice(Number(id), price);
-    this.message.set(
-      'Preços fictícios aplicados apenas neste teste; não são cotações atuais. Edite os valores ou consulte o mercado.',
-    );
+    if (this.manualPriceTimer) clearTimeout(this.manualPriceTimer);
+    this.manualPriceTimer = setTimeout(() => {
+      this.manualPriceTimer = null;
+      this.plans.set(null);
+      void this.compare();
+    }, 400);
   }
   async compare() {
     if (this.busy()) return;
     const player = this.profile();
     if (!player || !this.snapshot() || this.loadedRegion !== this.store.data().region) {
-      this.message.set('Selecione um personagem e carregue o catálogo da região atual.');
+      this.message.set('Selecione um personagem para calcular as atividades desta região.');
       return;
     }
     const recipes = this.recipes().map((row) => ({ ...row, output: { ...row.output } }));
@@ -548,6 +575,7 @@ export class RecommendationsPage implements OnDestroy {
       ...(row.id === focusedId ? { optimizeCrafts: this.optimizationCrafts } : {}),
     }));
     const context = this.comparisonContext();
+    const workspaceContext = this.workspaceComparisonContext();
     const run = ++this.comparisonRun;
     const input: ProductionPlannerInput = {
       recipes,
@@ -567,7 +595,7 @@ export class RecommendationsPage implements OnDestroy {
       customChoices: { ...this.choices },
       customRecipes: { ...this.customRecipes },
       useOwnedInProduction: this.useOwned,
-      tax: { ...this.store.data().taxOptions, valuePack: this.valuePack },
+      tax: this.store.data().taxOptions,
       now: new Date().toISOString(),
       maxCrafts: 10000,
       enforceMarketAvailability: false,
@@ -605,6 +633,13 @@ export class RecommendationsPage implements OnDestroy {
       );
     } finally {
       if (run === this.comparisonRun) this.busy.set(false);
+      if (
+        run === this.comparisonRun &&
+        workspaceContext !== this.workspaceComparisonContext() &&
+        this.profile() &&
+        this.snapshot()
+      )
+        queueMicrotask(() => void this.compare());
     }
   }
   quoteFor(itemId: number): RecommendationQuote | undefined {
@@ -628,6 +663,26 @@ export class RecommendationsPage implements OnDestroy {
     if (quote.source === 'manual') return 'Premissa manual';
     if (quote.basis === 'maximum') return 'Máxima do mercado · sem estoque';
     return `Mercado · ${quote.available ?? 'estoque não informado'}`;
+  }
+  quoteDetails(itemId: number): string {
+    const quote = this.quoteFor(itemId);
+    if (!quote) return 'Sem cotação disponível';
+    const date = Number.isFinite(Date.parse(quote.observedAt))
+      ? new Date(quote.observedAt).toLocaleString('pt-BR')
+      : 'horário desconhecido';
+    return `${this.quoteOrigin(itemId)} · observado em ${date}`;
+  }
+  recommendationReason(row: ProductionPlan): string {
+    const recipe = this.recipes().find((candidate) => candidate.id === row.recipeId);
+    if (!recipe) return 'Receita disponível no catálogo selecionado.';
+    const skill = lifeSkillForRecipe(recipe.method);
+    const label = this.activityOptions.find((option) => option.id === skill)?.label ?? skill;
+    const mastery = productionMastery(recipe.method, this.profile()?.mastery);
+    const owned = row.materials.filter((material) => material.owned > 0).length;
+    const materialSummary = owned
+      ? `${owned} materiais podem sair do armazém`
+      : 'insumos calculados com preços disponíveis';
+    return `${label} · maestria ${mastery} · ${materialSummary}.`;
   }
   private comparisonQuotes(): Quotes {
     const quotes = { ...this.quotes() };
@@ -657,14 +712,21 @@ export class RecommendationsPage implements OnDestroy {
       useOwned: this.useOwned,
       optimizationCrafts: this.optimizationCrafts,
       focus: this.focus(),
-      valuePack: this.valuePack,
       search: this.search(),
       method: this.method(),
       dataset: this.snapshot()?.dataset,
     });
   }
+  private workspaceComparisonContext() {
+    return JSON.stringify({
+      workspace: this.store.data(),
+      player: this.profile(),
+      demo: this.store.demoActive(),
+    });
+  }
   ngOnDestroy() {
     this.comparisonRun++;
+    if (this.manualPriceTimer) clearTimeout(this.manualPriceTimer);
   }
   name(itemId: number) {
     return this.snapshot()?.items.find((item) => item.id === itemId)?.name ?? `Item ${itemId}`;

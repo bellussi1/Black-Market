@@ -1,22 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import type { MarketLookupResponse, ProductionCatalogResponse } from '@bdo/shared';
+import type { MarketLookupResponse } from '@bdo/shared';
 
 import { environment } from '../../environments/environment';
+import { CatalogApiService } from './catalog-api.service';
 import { preferredDataLocale } from './locale';
+import type { Region } from './region-preferences';
 
 @Injectable({ providedIn: 'root' })
 export class ProductionApi {
   private readonly http = inject(HttpClient);
-  catalog(region: string) {
-    return this.http.get<ProductionCatalogResponse>(
-      `${environment.apiBaseUrl}/api/v1/production/catalog`,
-      {
-        params: { region, preferredLocale: preferredDataLocale() },
-      },
-    );
+  private readonly catalogApi = inject(CatalogApiService);
+  catalog(region: Region) {
+    return this.catalogApi.getProductionCatalog(region);
   }
-  quotes(region: string, ids: number[]) {
+  quotes(region: Region, ids: number[]) {
     return this.http.get<MarketLookupResponse>(
       `${environment.apiBaseUrl}/api/v1/market/production-quotes`,
       {

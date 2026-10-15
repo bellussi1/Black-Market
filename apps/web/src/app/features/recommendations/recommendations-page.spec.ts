@@ -1,13 +1,12 @@
 import { characterSchema } from '@bdo/calculators';
 import type { ProductionCatalogResponse } from '@bdo/shared';
-import { of, Subject, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService } from '../../core/market-cache.service';
 import { ProductionApi } from '../../core/production-api';
-import { productionDemoItemIds } from '../../core/production-demo';
-import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { renderComponent as renderRawComponent, useMemoryStorage } from '../../testing/test-setup';
 import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import {
   canRequestProductionQuote,
@@ -45,113 +44,113 @@ const api = () => ({
   catalog: vi.fn(() => of(snapshot)),
   quotes: vi.fn(() => throwError(() => new Error('off'))),
 });
+async function renderComponent<T>(
+  component: Parameters<typeof renderRawComponent<T>>[0],
+  inputs: Record<string, unknown> = {},
+  providers: Parameters<typeof renderRawComponent<T>>[2] = [],
+) {
+  return renderRawComponent(component, inputs, [
+    {
+      provide: MarketCacheService,
+      useValue: {
+        resolveProductionQuotes: vi.fn(() => of(new Map())),
+        getCachedQuoteEntry: vi.fn(() => null),
+      },
+    },
+    ...providers,
+  ]);
+}
 describe('production recommendations', () => {
   useMemoryStorage();
   useTutorialGuideStub();
+  it('loads the catalogue automatically and presents recommendations without manual action buttons', async () => {
+    const production = api();
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: production },
+    ]);
+
+    expect(production.catalog).toHaveBeenCalledOnce();
+    expect(fixture.componentInstance.snapshot()).toEqual(snapshot);
+    expect(fixture.nativeElement.textContent).toContain('Faça prata com suas Life Skills');
+    expect(
+      fixture.nativeElement.querySelectorAll('button:not(.tutorial-launcher__button)'),
+    ).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('Carregar catálogo');
+    expect(fixture.nativeElement.textContent).not.toContain('Consultar mercado');
+    expect(fixture.nativeElement.textContent).not.toContain('Comparar lucro por hora');
+  });
   it('registers only unique tutorial anchors for the active page state', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },
     ]);
-    expectTutorialAnchors(fixture, 'recommendations', []);
+    await fixture.componentInstance.load();
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'recommendations', ['recommendations.ranking']);
+
     fixture.componentInstance.store.update((state) => ({
       ...state,
       characters: [characterSchema.parse({ id: 'tour', name: 'Aventureiro', region: 'sa' })],
     }));
     fixture.componentInstance.selected.set('tour');
     fixture.detectChanges();
-    expectTutorialAnchors(fixture, 'recommendations', ['recommendations.conditions']);
-    await fixture.componentInstance.load();
-    fixture.detectChanges();
-    fixture.componentInstance.plans.set({ ranked: [], incomplete: [] });
-    fixture.detectChanges();
+
     expectTutorialAnchors(fixture, 'recommendations', [
       'recommendations.conditions',
       'recommendations.ranking',
     ]);
   });
-  it('does not restore demo measurements if the global exit is clicked while the catalogue loads', async () => {
-    const pending = new Subject<ProductionCatalogResponse>();
+  it('persists activity preferences and time calibration by character', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
-      { provide: ProductionApi, useValue: { catalog: () => pending, quotes: vi.fn() } },
-      {
-        provide: CatalogApiService,
-        useValue: {
-          getItems: () =>
-            of({
-              items: productionDemoItemIds.map((id) => ({
-                ...snapshot.items[0],
-                id,
-                name: 'Item ' + id,
-              })),
-            }),
-        },
-      },
+      { provide: ProductionApi, useValue: api() },
     ]);
     const page = fixture.componentInstance;
-    const loading = page.startDemo();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(page.store.demoActive()).toBe(true);
-    expect(page.busy()).toBe(true);
-    page.applyMockPrices();
-    expect(page.quotes()).toEqual({});
-    page.store.exitDemo();
-    pending.next(snapshot);
-    pending.complete();
-    await loading;
-    expect(page.store.demoActive()).toBe(false);
-    expect(page.calibration['ALCHEMY']).toEqual({ seconds: null });
-    expect(page.quotes()).toEqual({});
-  });
-  it('runs a complete Edania demo in all three scenarios and restores the original workspace', async () => {
-    const items = productionDemoItemIds.map((id) => ({
-      ...snapshot.items[0],
-      id,
-      name: 'Item ' + id,
+    const player = characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' });
+    page.store.update((state) => ({
+      ...state,
+      characters: [player],
+      activeCharacterId: player.id,
     }));
-    const data: ProductionCatalogResponse = {
-      dataset: null,
-      items,
-      recipes: [
-        {
-          key: 'edania-elixir',
-          type: 'ALCHEMY',
-          station: null,
-          inputs: [
-            { itemId: 6354, name: 'Sangue do Pecador', quantity: '2.0000' },
-            { itemId: 5960, name: 'Vestígio da Natureza', quantity: '4.0000' },
-            { itemId: 5008, name: 'Casca de Árvore Velha', quantity: '5.0000' },
-            { itemId: 5301, name: 'Reagente Líquido Limpo', quantity: '5.0000' },
-            { itemId: 5025, name: 'Seiva de Caphras', quantity: '6.0000' },
-          ],
-          outputs: [{ itemId: 1409, name: 'Elixir de Edania', quantity: null }],
-        },
-      ],
-    };
+    page.toggleSkill('alchemy', true);
+    page.calibration['ALCHEMY'] = { seconds: 4.5 };
+    page.saveCalibration('ALCHEMY');
+
+    expect(page.store.data().activityCoach.preferredSkills).toContain('alchemy');
+    expect(page.store.data().activityCoach.calibrations).toEqual([
+      expect.objectContaining({ characterId: 'main', method: 'ALCHEMY', seconds: 4.5 }),
+    ]);
+  });
+  it('recalculates after workspace context changes without a manual compare action', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
-      { provide: ProductionApi, useValue: { ...api(), catalog: () => of(data) } },
-      {
-        provide: CatalogApiService,
-        useValue: { getItems: () => of({ items }), resolveIconUrl: () => null },
-      },
+      { provide: ProductionApi, useValue: api() },
     ]);
     const page = fixture.componentInstance;
-    page.store.update((state) => ({ ...state, familySilver: '123456' }));
-    const original = localStorage.getItem('black-market.workspace.v1');
-    await page.startDemo();
+    const compare = vi.spyOn(page, 'compare').mockResolvedValue();
+
+    page.store.update((state) => ({
+      ...state,
+      characters: [characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' })],
+      activeCharacterId: 'main',
+    }));
     fixture.detectChanges();
-    page.applyMockPrices();
-    await page.compare();
-    fixture.detectChanges();
-    expect(new Set(page.plans()?.ranked.map((row) => row.scenario)).size).toBe(3);
-    expect(page.plans()?.ranked.every((row) => BigInt(row.profitPerHour!) > 0n)).toBe(true);
-    expect(localStorage.getItem('black-market.workspace.v1')).toBe(original);
-    page.store.exitDemo();
-    fixture.detectChanges();
-    expect(page.store.data().familySilver).toBe('123456');
-    expect(page.quotes()).toEqual({});
-    expect(page.plans()).toBeNull();
-    expect(page.calibration['ALCHEMY']).toEqual({ seconds: null });
+    await fixture.whenStable();
+
+    expect(compare).toHaveBeenCalled();
+  });
+  it('debounces manual price edits and recalculates the recommendation', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    const compare = vi.spyOn(page, 'compare').mockResolvedValue();
+    vi.useFakeTimers();
+    try {
+      page.manualPrice(1, '50');
+      expect(compare).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(500);
+      expect(compare).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('keeps uncertain recipe quantities unknown', () => {
     expect(productionQuantity(null)).toBeNull();
@@ -616,7 +615,7 @@ describe('production recommendations', () => {
     expect(custom?.materials[0].owned).toBe(48);
     expect(page.store.data().inventory[0].quantity).toBe(80);
   });
-  it('pauses failed market queries and retains clearly manual prices without fabricated freshness', async () => {
+  it('keeps failed market queries pending and retains manual prices without fabricated freshness', async () => {
     const service = api();
     const cache = { resolveProductionQuotes: () => throwError(() => new Error('off')) };
     const fixture = await renderComponent(RecommendationsPage, {}, [
@@ -630,8 +629,7 @@ describe('production recommendations', () => {
     expect(page.resumable).toBe(true);
     expect(page.progress()).toEqual({ done: 0, total: 2 });
     expect(page.quotes()[1].source).toBe('manual');
-    expect(page.message()).toContain('pausada');
-    page.applyMockPrices();
+    expect(page.message()).toContain('Parte das cotações');
     expect(page.quotes()[1407]).toBeUndefined();
   });
   it('discards an asynchronous comparison when its workspace changes', async () => {

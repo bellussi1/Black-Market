@@ -121,6 +121,32 @@ export const workspaceSchema = z
       )
       .nullable()
       .default(null),
+    activityCoach: z
+      .object({
+        preferredSkills: z
+          .array(z.enum(['cooking', 'alchemy', 'processing']))
+          .max(3)
+          .default(['cooking', 'alchemy', 'processing']),
+        calibrations: z
+          .array(
+            z.object({
+              characterId: id,
+              method: z.string().regex(/^[A-Z_]{2,40}$/),
+              seconds: z.number().positive().max(86_400),
+              updatedAt: timestamp,
+            }),
+          )
+          .max(90)
+          .default([]),
+      })
+      .default(() => ({
+        preferredSkills: ['cooking', 'alchemy', 'processing'] as (
+          | 'cooking'
+          | 'alchemy'
+          | 'processing'
+        )[],
+        calibrations: [],
+      })),
     characters: z.array(characterSchema).max(30).default([]),
     personalPlans: z.array(personalPlanSchema).max(200).default([]),
     workerEmpires: z.array(workerEmpireSchema).max(30).default([]),
@@ -250,6 +276,7 @@ export const emptyWorkspace = (): Workspace => ({
   taxOptions: { ...defaultTax },
   demonstration: null,
   familyLifeSkills: null,
+  activityCoach: { preferredSkills: ['cooking', 'alchemy', 'processing'], calibrations: [] },
   characters: [],
   personalPlans: [],
   workerEmpires: [],
