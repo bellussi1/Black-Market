@@ -87,6 +87,8 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
       value: bigint;
       intervalMinutes?: number;
     }[],
+    valueTicks: [] as { y: number; value: bigint }[],
+    timeTicks: [] as { x: number; fetchedAt: string }[],
     min: null as bigint | null,
     max: null as bigint | null,
     samples: valid.length,
@@ -104,6 +106,19 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
   const firstAt = Date.parse(valid[0].fetchedAt),
     lastAt = Date.parse(valid.at(-1)!.fetchedAt),
     span = Math.max(lastAt - firstAt, 1);
+  const valueTicks =
+    min === max
+      ? [{ y: 108, value: min }]
+      : [
+          { y: 176, value: min },
+          { y: 108, value: min + (max - min) / 2n },
+          { y: 40, value: max },
+        ];
+  const timeIndexes = [...new Set([0, Math.floor((valid.length - 1) / 2), valid.length - 1])];
+  const timeTicks = timeIndexes.map((index) => ({
+    x: 72 + Math.round(((Date.parse(valid[index].fetchedAt) - firstAt) / span) * 612),
+    fetchedAt: valid[index].fetchedAt,
+  }));
   const segments: string[][] = [];
   const dots: typeof empty.dots = [];
   let segment: string[] | null = null;
@@ -112,7 +127,7 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
       segment = null;
       continue;
     }
-    const x = 44 + Math.round(((Date.parse(point.fetchedAt) - firstAt) / span) * 640);
+    const x = 72 + Math.round(((Date.parse(point.fetchedAt) - firstAt) / span) * 612);
     const relative =
       max === min
         ? zeroBaseline
@@ -136,6 +151,8 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
   return {
     segments: segments.map((segment) => segment.join(' ')),
     dots,
+    valueTicks,
+    timeTicks,
     min,
     max,
     samples: valid.length,

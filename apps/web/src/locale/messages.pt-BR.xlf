@@ -653,7 +653,7 @@
     <unit id="2332180001770133395">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:28</note>
-        <note category="location">src/app/features/market/market-page.html:639</note>
+        <note category="location">src/app/features/market/market-page.html:704</note>
       </notes>
       <segment>
         <source>Nome</source>
@@ -835,7 +835,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:423</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:448</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:275</note>
-        <note category="location">src/app/features/market/market-page.html:711</note>
+        <note category="location">src/app/features/market/market-page.html:776</note>
         <note category="location">src/app/features/storage/storage-page.html:411</note>
       </notes>
       <segment>
@@ -898,7 +898,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:397</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:429</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:246</note>
-        <note category="location">src/app/features/market/market-page.html:657</note>
+        <note category="location">src/app/features/market/market-page.html:722</note>
         <note category="location">src/app/features/storage/storage-page.html:375</note>
       </notes>
       <segment>
@@ -990,9 +990,9 @@
     <unit id="5923041569817566400">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:49,50</note>
-        <note category="location">src/app/features/market/market-page.html:597</note>
-        <note category="location">src/app/features/market/market-page.html:629</note>
-        <note category="location">src/app/features/market/market-page.html:653</note>
+        <note category="location">src/app/features/market/market-page.html:662</note>
+        <note category="location">src/app/features/market/market-page.html:694</note>
+        <note category="location">src/app/features/market/market-page.html:718</note>
         <note category="location">src/app/shared/catalog-item-picker/catalog-item-picker.html:20</note>
       </notes>
       <segment>
@@ -1179,7 +1179,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:147</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:149</note>
-        <note category="location">src/app/features/market/market-page.html:600</note>
+        <note category="location">src/app/features/market/market-page.html:665</note>
         <note category="location">src/app/features/world/world-page.html:115,116</note>
       </notes>
       <segment>
@@ -1552,7 +1552,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:473</note>
         <note category="location">src/app/features/demo/demo-page.html:179,180</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:141</note>
-        <note category="location">src/app/features/market/market-page.html:504</note>
+        <note category="location">src/app/features/market/market-page.html:569</note>
         <note category="location">src/app/features/scans/scans-page.html:831,832</note>
         <note category="location">src/app/features/storage/storage-page.html:143,144</note>
       </notes>
@@ -2439,8 +2439,8 @@
     <unit id="8075168556531069883">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:177,178</note>
-        <note category="location">src/app/features/market/market-page.html:594</note>
-        <note category="location">src/app/features/market/market-page.html:652</note>
+        <note category="location">src/app/features/market/market-page.html:659</note>
+        <note category="location">src/app/features/market/market-page.html:717</note>
         <note category="location">src/app/features/scans/scans-page.html:797,798</note>
         <note category="location">src/app/features/storage/storage-page.html:141,142</note>
         <note category="location">src/app/features/storage/storage-page.html:245</note>
@@ -2973,7 +2973,7 @@
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:425</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:243</note>
-        <note category="location">src/app/features/market/market-page.html:759</note>
+        <note category="location">src/app/features/market/market-page.html:824</note>
       </notes>
       <segment>
         <source>Data</source>
@@ -3748,6 +3748,7 @@
     <unit id="8074558424399998896">
       <notes>
         <note category="location">src/app/features/market/market-page.html:41,42</note>
+        <note category="location">src/app/features/market/market-page.html:243</note>
       </notes>
       <segment>
         <source> Calcular venda </source>
@@ -3888,9 +3889,43 @@
             }}"/>. Cache informado pela fonte: <ph id="4" equiv="INTERPOLATION_4" disp="{{ response.upstreamCacheMinutes }}"/> minutos. </source>
       </segment>
     </unit>
+    <unit id="7177950249241691718">
+      <notes>
+        <note category="location">src/app/features/market/market-page.html:233,234</note>
+      </notes>
+      <segment>
+        <source>Ações da cotação atual</source>
+      </segment>
+    </unit>
+    <unit id="7708270344948043036">
+      <notes>
+        <note category="location">src/app/features/market/market-page.html:253,260</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:54,55</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:340,342</note>
+        <note category="location">src/app/features/scans/scans-page.html:588,589</note>
+        <note category="location">src/app/features/scans/scans-page.html:1143,1144</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{
+                liveQuoteSaved(item)
+                  ? &apos;Cotação salva&apos;
+                  : canSaveLive(item)
+                    ? &apos;Salvar cotação&apos;
+                    : &apos;Atualize para salvar&apos;
+              }}"/> </source>
+      </segment>
+    </unit>
+    <unit id="7280825933834867689">
+      <notes>
+        <note category="location">src/app/features/market/market-page.html:264,265</note>
+      </notes>
+      <segment>
+        <source> Salve apenas uma cotação atualizada da região selecionada. Dados antigos ou sem preço continuam disponíveis para consulta, mas não entram no histórico salvo. </source>
+      </segment>
+    </unit>
     <unit id="249869117279220410">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:247,248</note>
+        <note category="location">src/app/features/market/market-page.html:285,286</note>
       </notes>
       <segment>
         <source>Preços, estoque e negociações observadas</source>
@@ -3898,7 +3933,7 @@
     </unit>
     <unit id="3099786700666908725">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:249,250</note>
+        <note category="location">src/app/features/market/market-page.html:287,288</note>
       </notes>
       <segment>
         <source>Variante do item selecionado</source>
@@ -3906,7 +3941,7 @@
     </unit>
     <unit id="3937585497124856235">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:264,265</note>
+        <note category="location">src/app/features/market/market-page.html:302,303</note>
       </notes>
       <segment>
         <source>Evolução das observações</source>
@@ -3914,7 +3949,7 @@
     </unit>
     <unit id="8423143494094442446">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:265,266</note>
+        <note category="location">src/app/features/market/market-page.html:303,304</note>
       </notes>
       <segment>
         <source>Veja o que foi registrado pelo Black Market neste item.</source>
@@ -3922,7 +3957,7 @@
     </unit>
     <unit id="8701433791820000375">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:270,271</note>
+        <note category="location">src/app/features/market/market-page.html:308,309</note>
       </notes>
       <segment>
         <source>Período do histórico</source>
@@ -3930,7 +3965,7 @@
     </unit>
     <unit id="7401404971387018025">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:282</note>
+        <note category="location">src/app/features/market/market-page.html:320</note>
       </notes>
       <segment>
         <source> 24 horas </source>
@@ -3938,7 +3973,7 @@
     </unit>
     <unit id="8178316023794471075">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:293</note>
+        <note category="location">src/app/features/market/market-page.html:331</note>
       </notes>
       <segment>
         <source> 7 dias </source>
@@ -3946,7 +3981,7 @@
     </unit>
     <unit id="101379979004783225">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:304</note>
+        <note category="location">src/app/features/market/market-page.html:342</note>
       </notes>
       <segment>
         <source> 30 dias </source>
@@ -3954,7 +3989,7 @@
     </unit>
     <unit id="6391191141582996612">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:311,312</note>
+        <note category="location">src/app/features/market/market-page.html:349,350</note>
       </notes>
       <segment>
         <source>Indicador do gráfico</source>
@@ -3962,7 +3997,7 @@
     </unit>
     <unit id="7672594612233435342">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:323</note>
+        <note category="location">src/app/features/market/market-page.html:361</note>
       </notes>
       <segment>
         <source> Preço </source>
@@ -3970,7 +4005,7 @@
     </unit>
     <unit id="6638343486040544704">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:334</note>
+        <note category="location">src/app/features/market/market-page.html:372</note>
       </notes>
       <segment>
         <source> Estoque </source>
@@ -3978,7 +4013,7 @@
     </unit>
     <unit id="6921807735401932069">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:345</note>
+        <note category="location">src/app/features/market/market-page.html:383</note>
       </notes>
       <segment>
         <source> Negociações por intervalo </source>
@@ -3986,7 +4021,7 @@
     </unit>
     <unit id="2356451325982668381">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:349,351</note>
+        <note category="location">src/app/features/market/market-page.html:387,389</note>
       </notes>
       <segment>
         <source> O gráfico mostra a diferença do contador total de negociações entre consultas consecutivas. A fonte não confirma quantas unidades cada registro representa; use como atividade observada, não como unidades vendidas nem como estimativa de giro. </source>
@@ -3994,31 +4029,15 @@
     </unit>
     <unit id="6796338454180322425">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:362,363</note>
+        <note category="location">src/app/features/market/market-page.html:400,401</note>
       </notes>
       <segment>
         <source>Gráfico das observações armazenadas no período selecionado.</source>
       </segment>
     </unit>
-    <unit id="1956575616349236554">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:404</note>
-      </notes>
-      <segment>
-        <source>Mínimo</source>
-      </segment>
-    </unit>
-    <unit id="3247133465095072852">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:405</note>
-      </notes>
-      <segment>
-        <source>Máximo</source>
-      </segment>
-    </unit>
     <unit id="7978142690549531276">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:411,412</note>
+        <note category="location">src/app/features/market/market-page.html:473,474</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ historyChart().samples }}"/> observações no período.</source>
@@ -4026,7 +4045,7 @@
     </unit>
     <unit id="2348635113040761125">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:415,417</note>
+        <note category="location">src/app/features/market/market-page.html:477,479</note>
       </notes>
       <segment>
         <source> Ainda não há observações válidas neste período para desenhar o gráfico. O histórico de negociações exige duas consultas consecutivas válidas. As consultas começam a formar histórico depois que são registradas. </source>
@@ -4034,7 +4053,7 @@
     </unit>
     <unit id="5884792371063339367">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:424,428</note>
+        <note category="location">src/app/features/market/market-page.html:486,490</note>
       </notes>
       <segment>
         <source> Preço e estoque são observações no horário da consulta. A série de negociações é a diferença do contador total entre consultas, com duração indicada ao passar o cursor. A fonte não confirma que esses registros correspondam a unidades vendidas; por isso, não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem o gráfico. A média de cotações não representa uma média ponderada das vendas. </source>
@@ -4042,7 +4061,7 @@
     </unit>
     <unit id="8111708682975908729">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:436</note>
+        <note category="location">src/app/features/market/market-page.html:498</note>
       </notes>
       <segment>
         <source> Últimas 50 observações do período. O gráfico usa todas as observações disponíveis. </source>
@@ -4050,7 +4069,7 @@
     </unit>
     <unit id="8735549703481409024">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:442,443</note>
+        <note category="location">src/app/features/market/market-page.html:504,505</note>
       </notes>
       <segment>
         <source>Consulta</source>
@@ -4058,9 +4077,9 @@
     </unit>
     <unit id="8788236719253964164">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:443,444</note>
-        <note category="location">src/app/features/market/market-page.html:654</note>
-        <note category="location">src/app/features/market/market-page.html:760</note>
+        <note category="location">src/app/features/market/market-page.html:505,506</note>
+        <note category="location">src/app/features/market/market-page.html:719</note>
+        <note category="location">src/app/features/market/market-page.html:825</note>
         <note category="location">src/app/features/storage/storage-page.html:374</note>
       </notes>
       <segment>
@@ -4069,9 +4088,9 @@
     </unit>
     <unit id="5310365591817659665">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:444,445</note>
-        <note category="location">src/app/features/market/market-page.html:655</note>
-        <note category="location">src/app/features/market/market-page.html:761</note>
+        <note category="location">src/app/features/market/market-page.html:506,507</note>
+        <note category="location">src/app/features/market/market-page.html:720</note>
+        <note category="location">src/app/features/market/market-page.html:826</note>
       </notes>
       <segment>
         <source>Estoque</source>
@@ -4079,7 +4098,7 @@
     </unit>
     <unit id="422192921440020006">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:445,446</note>
+        <note category="location">src/app/features/market/market-page.html:507,508</note>
       </notes>
       <segment>
         <source>Transações (contador)</source>
@@ -4087,15 +4106,23 @@
     </unit>
     <unit id="4626854302844650537">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:472</note>
+        <note category="location">src/app/features/market/market-page.html:534</note>
       </notes>
       <segment>
         <source>COTAÇÃO EM USO</source>
       </segment>
     </unit>
+    <unit id="1406303006276424602">
+      <notes>
+        <note category="location">src/app/features/market/market-page.html:539,540</note>
+      </notes>
+      <segment>
+        <source>cotação desatualizada</source>
+      </segment>
+    </unit>
     <unit id="5721394485706821735">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:486,487</note>
+        <note category="location">src/app/features/market/market-page.html:551,552</note>
       </notes>
       <segment>
         <source> Consultar outro item </source>
@@ -4103,7 +4130,7 @@
     </unit>
     <unit id="7453154888884477085">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:494</note>
+        <note category="location">src/app/features/market/market-page.html:559</note>
       </notes>
       <segment>
         <source>Calculadora de imposto</source>
@@ -4111,7 +4138,7 @@
     </unit>
     <unit id="1609107690500144555">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:497</note>
+        <note category="location">src/app/features/market/market-page.html:562</note>
       </notes>
       <segment>
         <source>Preço por unidade</source>
@@ -4119,7 +4146,7 @@
     </unit>
     <unit id="4359991899627078496">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:512</note>
+        <note category="location">src/app/features/market/market-page.html:577</note>
       </notes>
       <segment>
         <source>Custo total de aquisição</source>
@@ -4127,7 +4154,7 @@
     </unit>
     <unit id="7395913447556051815">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:521,522</note>
+        <note category="location">src/app/features/market/market-page.html:586,587</note>
       </notes>
       <segment>
         <source>Taxas, benefícios e configurações salvas</source>
@@ -4135,7 +4162,7 @@
     </unit>
     <unit id="6794038841878699401">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:527</note>
+        <note category="location">src/app/features/market/market-page.html:592</note>
       </notes>
       <segment>
         <source>Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. </source>
@@ -4143,7 +4170,7 @@
     </unit>
     <unit id="2617496686434668492">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:532</note>
+        <note category="location">src/app/features/market/market-page.html:597</note>
       </notes>
       <segment>
         <source>Guia oficial</source>
@@ -4151,7 +4178,7 @@
     </unit>
     <unit id="4507372915135672800">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:533</note>
+        <note category="location">src/app/features/market/market-page.html:598</note>
       </notes>
       <segment>
         <source>. Ajuste imposto e isenção para o tipo de venda. </source>
@@ -4159,7 +4186,7 @@
     </unit>
     <unit id="5266129531413454647">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:541</note>
+        <note category="location">src/app/features/market/market-page.html:606</note>
       </notes>
       <segment>
         <source>Prata líquida</source>
@@ -4167,7 +4194,7 @@
     </unit>
     <unit id="1310762442287993211">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:545,546</note>
+        <note category="location">src/app/features/market/market-page.html:610,611</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(r.retentionPercent, 3) }}"/>% do valor bruto</source>
@@ -4175,7 +4202,7 @@
     </unit>
     <unit id="7348274636007235284">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:550</note>
+        <note category="location">src/app/features/market/market-page.html:615</note>
       </notes>
       <segment>
         <source>Imposto efetivo</source>
@@ -4183,7 +4210,7 @@
     </unit>
     <unit id="2322395245583365035">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:554</note>
+        <note category="location">src/app/features/market/market-page.html:619</note>
       </notes>
       <segment>
         <source>Lucro após aquisição</source>
@@ -4191,7 +4218,7 @@
     </unit>
     <unit id="1931834351682235099">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:558</note>
+        <note category="location">src/app/features/market/market-page.html:623</note>
       </notes>
       <segment>
         <source>Sem Value Pack</source>
@@ -4199,7 +4226,7 @@
     </unit>
     <unit id="1091039017859064153">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:562</note>
+        <note category="location">src/app/features/market/market-page.html:627</note>
       </notes>
       <segment>
         <source>Com Value Pack</source>
@@ -4207,7 +4234,7 @@
     </unit>
     <unit id="1993502475412526999">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:566</note>
+        <note category="location">src/app/features/market/market-page.html:631</note>
       </notes>
       <segment>
         <source>Venda bruta</source>
@@ -4215,7 +4242,7 @@
     </unit>
     <unit id="8360100029363116652">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:570</note>
+        <note category="location">src/app/features/market/market-page.html:635</note>
       </notes>
       <segment>
         <source>Preço mínimo para empatar</source>
@@ -4223,7 +4250,7 @@
     </unit>
     <unit id="5318446860994828461">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:572</note>
+        <note category="location">src/app/features/market/market-page.html:637</note>
       </notes>
       <segment>
         <source>Por unidade</source>
@@ -4231,7 +4258,7 @@
     </unit>
     <unit id="6168088396667686758">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:586,587</note>
+        <note category="location">src/app/features/market/market-page.html:651,652</note>
       </notes>
       <segment>
         <source>Minhas cotações · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/></source>
@@ -4239,7 +4266,7 @@
     </unit>
     <unit id="5673023361258794932">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:589</note>
+        <note category="location">src/app/features/market/market-page.html:654</note>
       </notes>
       <segment>
         <source>MEUS DADOS</source>
@@ -4247,7 +4274,7 @@
     </unit>
     <unit id="9134675884968306580">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:603</note>
+        <note category="location">src/app/features/market/market-page.html:668</note>
       </notes>
       <segment>
         <source>Estoque observado</source>
@@ -4255,7 +4282,7 @@
     </unit>
     <unit id="2485808646117915455">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:609</note>
+        <note category="location">src/app/features/market/market-page.html:674</note>
       </notes>
       <segment>
         <source>Registrar cotação</source>
@@ -4263,7 +4290,7 @@
     </unit>
     <unit id="8520121261881767662">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:612</note>
+        <note category="location">src/app/features/market/market-page.html:677</note>
       </notes>
       <segment>
         <source>Registrar o mesmo item adiciona um ponto ao histórico.</source>
@@ -4271,7 +4298,7 @@
     </unit>
     <unit id="8713073708350341933">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:622</note>
+        <note category="location">src/app/features/market/market-page.html:687</note>
       </notes>
       <segment>
         <source>Buscar</source>
@@ -4279,7 +4306,7 @@
     </unit>
     <unit id="8984411036822240574">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:626,627</note>
+        <note category="location">src/app/features/market/market-page.html:691,692</note>
       </notes>
       <segment>
         <source>Nome do item</source>
@@ -4287,7 +4314,7 @@
     </unit>
     <unit id="4030076799559469157">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:631</note>
+        <note category="location">src/app/features/market/market-page.html:696</note>
         <note category="location">src/app/features/world/worker-empire.html:442,443</note>
         <note category="location">src/app/shared/catalog-item-picker/catalog-item-picker.html:28,29</note>
       </notes>
@@ -4297,7 +4324,7 @@
     </unit>
     <unit id="5368042189439962963">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:637</note>
+        <note category="location">src/app/features/market/market-page.html:702</note>
       </notes>
       <segment>
         <source>Ordenar</source>
@@ -4305,7 +4332,7 @@
     </unit>
     <unit id="3003942307958583176">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:640</note>
+        <note category="location">src/app/features/market/market-page.html:705</note>
       </notes>
       <segment>
         <source>Menor preço</source>
@@ -4313,7 +4340,7 @@
     </unit>
     <unit id="7317333658355224141">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:644</note>
+        <note category="location">src/app/features/market/market-page.html:709</note>
       </notes>
       <segment>
         <source>Somente favoritos</source>
@@ -4321,7 +4348,7 @@
     </unit>
     <unit id="7969157691322945974">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:656</note>
+        <note category="location">src/app/features/market/market-page.html:721</note>
       </notes>
       <segment>
         <source>Registrado / consultado</source>
@@ -4329,7 +4356,7 @@
     </unit>
     <unit id="7605723731873327478">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:672,673</note>
+        <note category="location">src/app/features/market/market-page.html:737,738</note>
       </notes>
       <segment>
         <source>Favorito</source>
@@ -4337,7 +4364,7 @@
     </unit>
     <unit id="360460582882405766">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:695</note>
+        <note category="location">src/app/features/market/market-page.html:760</note>
       </notes>
       <segment>
         <source>Calcular</source>
@@ -4345,7 +4372,7 @@
     </unit>
     <unit id="7668640276908116800">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:722</note>
+        <note category="location">src/app/features/market/market-page.html:787</note>
       </notes>
       <segment>
         <source>Sua lista de cotações ainda está vazia.</source>
@@ -4353,7 +4380,7 @@
     </unit>
     <unit id="6506951062688659055">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:723</note>
+        <note category="location">src/app/features/market/market-page.html:788</note>
       </notes>
       <segment>
         <source>Registre um preço acima ou ajuste os filtros. </source>
@@ -4361,7 +4388,7 @@
     </unit>
     <unit id="8953858760316497523">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:731,732</note>
+        <note category="location">src/app/features/market/market-page.html:796,797</note>
       </notes>
       <segment>
         <source>Histórico pessoal · <ph id="0" equiv="INTERPOLATION" disp="{{ q.name }}"/></source>
@@ -4369,7 +4396,7 @@
     </unit>
     <unit id="7737470903533692241">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:752,753</note>
+        <note category="location">src/app/features/market/market-page.html:817,818</note>
       </notes>
       <segment>
         <source>Pontos igualmente espaçados por registro. A tabela preserva os horários reais. </source>
@@ -4377,7 +4404,7 @@
     </unit>
     <unit id="9220224634464402723">
       <notes>
-        <note category="location">src/app/features/market/market-page.ts:177</note>
+        <note category="location">src/app/features/market/market-page.ts:185</note>
       </notes>
       <segment>
         <source>Preço de venda</source>
@@ -4385,7 +4412,7 @@
     </unit>
     <unit id="1241642666459699598">
       <notes>
-        <note category="location">src/app/features/market/market-page.ts:179</note>
+        <note category="location">src/app/features/market/market-page.ts:187</note>
       </notes>
       <segment>
         <source>Estoque disponível</source>
@@ -4393,7 +4420,7 @@
     </unit>
     <unit id="3319713412631551607">
       <notes>
-        <note category="location">src/app/features/market/market-page.ts:181</note>
+        <note category="location">src/app/features/market/market-page.ts:189</note>
       </notes>
       <segment>
         <source>Negociações registradas por intervalo</source>
@@ -4401,9 +4428,9 @@
     </unit>
     <unit id="2718485426143941113">
       <notes>
-        <note category="location">src/app/features/market/market-page.ts:260</note>
-        <note category="location">src/app/features/market/market-page.ts:495</note>
-        <note category="location">src/app/features/market/market-page.ts:496</note>
+        <note category="location">src/app/features/market/market-page.ts:263</note>
+        <note category="location">src/app/features/market/market-page.ts:514</note>
+        <note category="location">src/app/features/market/market-page.ts:515</note>
       </notes>
       <segment>
         <source>Sem categoria</source>
@@ -5159,17 +5186,6 @@
       </notes>
       <segment>
         <source> Recarregar conteúdo </source>
-      </segment>
-    </unit>
-    <unit id="7708270344948043036">
-      <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:54,55</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:340,342</note>
-        <note category="location">src/app/features/scans/scans-page.html:588,589</note>
-        <note category="location">src/app/features/scans/scans-page.html:1143,1144</note>
-      </notes>
-      <segment>
-        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ saving() ? &apos;Salvando…&apos; : &apos;Salvar alterações&apos; }}"/> </source>
       </segment>
     </unit>
     <unit id="3600964635451066033">

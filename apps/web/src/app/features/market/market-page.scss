@@ -32,6 +32,18 @@
   color: var(--bm-text);
   font-variant-numeric: tabular-nums;
 }
+.quote-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bm-border);
+}
+.quote-save-note {
+  margin: 8px 0 0;
+  max-width: 720px;
+}
 .item-detail-heading h2 {
   margin: 0;
   flex: 1;
@@ -69,8 +81,17 @@
 .market-history-panel svg {
   max-height: 250px;
   color: var(--bm-accent);
-  background: var(--bm-input);
-  border: 1px solid var(--bm-border);
+  background: transparent;
+  border: 0;
+}
+.chart-axis-label {
+  fill: var(--bm-muted);
+  font-size: 11px;
+}
+.chart-point:focus-visible {
+  outline: none;
+  stroke: var(--bm-text);
+  stroke-width: 2px;
 }
 .auto-sync-row {
   display: flex;

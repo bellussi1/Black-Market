@@ -1127,3 +1127,15 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos**: helper em `packages/shared/src/market-board.ts`, ordenação e montagem da resposta na API, exibição/ordenação do quadro e testes, plano e este contexto.
 - **Commit atômico**: `feat(market): show dynamic reference prices`.
 - **Próximo passo**: separar a linha em células correspondentes aos cabeçalhos, manter a seleção só no botão do item, corrigir o estado acessível dos filtros e aplicar espaçamento/divisórias à área do Mercado.
+
+## 101. Semântica do quadro e fluxo de cotação (Codex, 15/10/2026)
+
+- **Tabela**: cada linha agora tem cabeçalho de item e células associadas às seis colunas; a ação selecionável fica no botão da célula de item, com foco padrão de teclado. Filtros usam grupo semântico e estado `aria-pressed`.
+- **Hierarquia visual**: reduzidas molduras aninhadas no quadro/detalhe e usados espaçamento e divisórias para separar grupos internos. Moldura da janela, controles e slots permanecem.
+- **Gráfico**: escala de preço com rótulos de valor e tempo; pontos acessíveis por teclado/leitor de tela. A geometria continua usando apenas observações válidas e não atravessa lacunas.
+- **Cotação → cálculo/salvamento**: o detalhe oferece `Calcular venda` e `Salvar cotação`. Calcular preenche o preço e mostra o item/horário em uso sem gravar; uma cotação desatualizada ainda pode ser calculada quando tem preço, com aviso no resumo. Observações desatualizadas ou sem preço não são salvas. Salvar registra a observação e mantém o detalhe aberto; a ação passa a mostrar `Cotação salva` para a mesma observação.
+- **Internacionalização**: catálogo pt-BR extraído novamente, total de 1.454 mensagens.
+- **Verificação**: testes focados de Mercado 33/33; após reforçar a asserção de foco de teclado, spec do quadro 18/18. `pnpm check` passou (lint, Prettier, typecheck e build development); `pnpm test` passou: calculators 66, API 210, Web 521 e OCR/scripts 73 (870 total). Permanece aviso de fallback `pt-BR` para `pt`.
+- **Conferência visual**: build/servidor temporário da worktree abriu em 4201 e exibiu o layout desktop, mas a API local rejeitou CORS porque sua origem permitida é 4200. Não foi possível visualizar dados do quadro nem testar o detalhe com resposta real nesta origem; ações foram verificadas com testes de componente. A repetição em viewport menor não estabilizou por uma tarefa HTTP pendente durante SSR, então a revisão mobile continua pendente. O servidor temporário foi encerrado e a aba original restaurada.
+- **Arquivos**: `market-board.html`, `market-board.scss` e spec; `market-history.ts` e spec; `market-page.html`, `market-page.scss`, `market-page.ts` e spec; `messages.pt-BR.xlf`; plano e este contexto.
+- **Próximo passo**: continuar a migração visual aprovada nas superfícies de Crafting/Receitas, Scan/Armazém e “O que fazer?” em fatias pequenas, mantendo dados dinâmicos e validando qualquer cálculo financeiro contra a mesma região e parâmetros.

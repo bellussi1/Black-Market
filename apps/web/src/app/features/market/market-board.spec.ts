@@ -125,6 +125,33 @@ describe('MarketBoard', () => {
     expect(element.querySelector('.pill-btn.active')?.getAttribute('aria-pressed')).toBe('true');
     TestBed.inject(HttpTestingController).verify();
   });
+  it('aligns market values with table headers and confines selection to the item cell', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    takeRequest().flush(response());
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const headers = element.querySelectorAll('thead th');
+    const row = element.querySelector('tbody tr.board-row')!;
+    expect(row.querySelectorAll(':scope > th, :scope > td')).toHaveLength(headers.length);
+    const selectItem = row.querySelector<HTMLButtonElement>('th[scope="row"] .board-item');
+    expect(selectItem).not.toBeNull();
+    expect(selectItem?.tabIndex).toBe(0);
+    selectItem?.focus();
+    expect(document.activeElement).toBe(selectItem);
+    expect(row.querySelectorAll('button')).toHaveLength(1);
+    expect(row.querySelector('td[colspan]')).toBeNull();
+
+    const filters = [...element.querySelectorAll<HTMLButtonElement>('.filter-pills button')];
+    expect(element.querySelector('.filter-pills')?.getAttribute('role')).toBe('group');
+    expect(filters.map((button) => button.getAttribute('aria-pressed'))).toEqual([
+      'true',
+      'false',
+      'false',
+      'false',
+    ]);
+    TestBed.inject(HttpTestingController).verify();
+  });
   it('keeps catalogue results visible and explains unavailable provider quotes', async () => {
     const fixture = await renderComponent(MarketBoard);
     const data = response();

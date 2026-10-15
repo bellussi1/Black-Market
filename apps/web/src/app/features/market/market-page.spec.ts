@@ -117,6 +117,7 @@ describe('MarketPage', () => {
       items: [item],
     });
     http.expectOne((request) => request.url.endsWith('/676/history')).flush({ points: [] });
+    page.workspaceView.set('quote');
     page.saveLive(item);
     fixture.detectChanges();
     const quote = TestBed.inject(WorkspaceStore).data().quotes[0];
@@ -124,7 +125,7 @@ describe('MarketPage', () => {
     expect(quote.itemId).toBe(676);
     expect(quote.history[0].source).toBe('arsha');
     expect(page.form().price).toBe('340000');
-    expect(page.workspaceView()).toBe('calculator');
+    expect(page.workspaceView()).toBe('quote');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Example');
     page.workspaceView.set('quote');
     fixture.detectChanges();
@@ -138,6 +139,95 @@ describe('MarketPage', () => {
       .expectOne((r) => r.url.endsWith('/items/676/recipes'))
       .flush({ recipes: [], total: 0, dataset });
     http.verify();
+  });
+
+  it('calculates directly from the current quote without saving it first', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    const observedAt = '2026-10-14T12:00:00.000Z';
+    page.live.set({
+      source: 'arsha',
+      region: 'sa',
+      locale: 'pt',
+      fetchedAt: observedAt,
+      cacheStatus: 'fetched',
+      upstreamCacheMinutes: 30,
+      items: [
+        {
+          itemId: 676,
+          subId: 0,
+          name: 'Example',
+          price: '340000',
+          stock: 3,
+          totalTrades: '50',
+          minPrice: '1',
+          maxPrice: '500000',
+          lastSoldPrice: null,
+          lastSoldAt: null,
+        },
+      ],
+    });
+    page.workspaceView.set('quote');
+    fixture.detectChanges();
+
+    const calculate = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.quote-actions button',
+    );
+    expect(calculate).toBeTruthy();
+    calculate?.click();
+    fixture.detectChanges();
+
+    expect(page.workspaceView()).toBe('calculator');
+    expect(page.form().price).toBe('340000');
+    expect(page.store.data().quotes).toHaveLength(0);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Example');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('340.000');
+  });
+
+  it('saves a fresh market quote from its detail without leaving the quote view', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    page.live.set({
+      source: 'arsha',
+      region: 'sa',
+      locale: 'pt',
+      fetchedAt: '2026-10-14T12:00:00.000Z',
+      cacheStatus: 'fetched',
+      upstreamCacheMinutes: 30,
+      items: [
+        {
+          itemId: 676,
+          subId: 0,
+          name: 'Example',
+          price: '340000',
+          stock: 3,
+          totalTrades: '50',
+          minPrice: '1',
+          maxPrice: '500000',
+          lastSoldPrice: null,
+          lastSoldAt: null,
+        },
+      ],
+    });
+    page.workspaceView.set('quote');
+    fixture.detectChanges();
+
+    const save = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.quote-actions button:last-child',
+    );
+    expect(save).toBeTruthy();
+    save?.click();
+    fixture.detectChanges();
+
+    expect(page.workspaceView()).toBe('quote');
+    expect(page.store.data().quotes).toHaveLength(1);
+    expect(page.store.data().quotes[0]).toMatchObject({
+      itemId: 676,
+      price: '340000',
+      region: 'sa',
+      source: 'arsha',
+    });
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Cotação salva');
   });
 
   it('keeps the calculation and search when switching tools through the navigation', async () => {
@@ -187,6 +277,9 @@ describe('MarketPage', () => {
     expect(page.historyChart().samples).toBe(2);
     expect(page.historyChart().segments).toHaveLength(2);
     expect(page.historyMetricLabel()).toBe('Preço de venda');
+    const chart = (fixture.nativeElement as HTMLElement).querySelector('svg[role="group"]');
+    expect(chart?.querySelectorAll('.chart-axis-label').length).toBe(5);
+    expect(chart?.querySelectorAll('.chart-point[tabindex="0"]').length).toBe(2);
 
     page.historyRange.set('day');
     page.historyMetric.set('volume');

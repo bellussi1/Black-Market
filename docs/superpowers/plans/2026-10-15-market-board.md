@@ -43,10 +43,11 @@
 
 **Arquivos:** `apps/web/src/app/features/market/market-board.html`, `market-board.scss`, specs de mercado, `market-page.html`, `market-page.scss`, `docs/ACTIVE_CONTEXT.md`.
 
-- [ ] Escreva testes DOM para colunas reais, células associadas, seleção por teclado e estados acessíveis do filtro.
-- [ ] Rode os testes e confirme falha na estrutura atual de botão/célula `colspan` e filtro sem estado semântico.
-- [ ] Faça da seleção um botão somente na célula do item e apresente os dados nas células correspondentes aos cabeçalhos.
-- [ ] Retire molduras internas redundantes no piloto; use espaçamento e divisórias discretas entre grupos.
-- [ ] Mantenha o gráfico fiel às observações e melhore rótulos de escala/tempo sem interpolar lacunas.
-- [ ] Rode testes direcionados, `pnpm check` e `pnpm test`; confira a tela em desktop e teclado.
-- [ ] Atualize handoff e commit `fix(market): make board semantic and streamline quote flow`.
+- [x] Escreva testes DOM para colunas reais, células associadas, seleção por teclado e estados acessíveis do filtro.
+- [x] Rode os testes e confirme falha na estrutura atual de botão/célula `colspan` e filtro sem estado semântico.
+- [x] Faça da seleção um botão somente na célula do item e apresente os dados nas células correspondentes aos cabeçalhos.
+- [x] Retire molduras internas redundantes no piloto; use espaçamento e divisórias discretas entre grupos.
+- [x] Mantenha o gráfico fiel às observações e melhore rótulos de escala/tempo sem interpolar lacunas.
+- [x] Coloque cálculo e salvamento de cotação junto do detalhe; salvar não muda de tela, calcular não persiste a cotação.
+- [x] Rode testes direcionados, `pnpm check` e `pnpm test`; confira a hierarquia desktop e o foco por teclado. Registro manual de cotação ficou limitado por CORS no servidor temporário, conforme handoff.
+- [x] Atualize handoff e commit atômico `fix(market): make board semantic and streamline quote flow`.

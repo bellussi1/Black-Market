@@ -22,6 +22,31 @@ describe('observed market activity', () => {
     ]);
   });
 
+  it('exposes value and time ticks for interpreting the chart axes', () => {
+    const points = [
+      { ...point(0, '10'), price: '100' },
+      { ...point(30, '20'), price: '200' },
+      { ...point(60, '30'), price: '300' },
+    ];
+    const chart = marketChart(historyObservations(points, 'price'));
+
+    expect(chart.valueTicks).toEqual([
+      { y: 176, value: 100n },
+      { y: 108, value: 200n },
+      { y: 40, value: 300n },
+    ]);
+    expect(chart.timeTicks.map((tick) => tick.x)).toEqual([72, 378, 684]);
+    expect(chart.timeTicks.map((tick) => tick.fetchedAt)).toEqual(
+      points.map((entry) => entry.fetchedAt),
+    );
+  });
+
+  it('uses one readable value tick when the observed metric is constant', () => {
+    const chart = marketChart(historyObservations([point(0, '10'), point(8, '11')], 'price'));
+
+    expect(chart.valueTicks).toEqual([{ y: 108, value: 1000n }]);
+  });
+
   it('uses counter differences without connecting missing intervals or counter resets', () => {
     const points = [
       point(0, '100'),

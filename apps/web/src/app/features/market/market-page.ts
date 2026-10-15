@@ -46,6 +46,14 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
+
+type CalculationQuoteContext = {
+  name: string;
+  price: string;
+  region: string;
+  observedAt: string;
+  stale: boolean;
+};
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
 import { type HistoryMetric, historyObservations, marketChart } from './market-history';
@@ -206,12 +214,7 @@ export class MarketPage implements OnDestroy {
     const observations = historyObservations(this.history(), this.historyMetric()).filter(
       (point) => Date.parse(point.fetchedAt) >= Date.now() - duration,
     );
-    const chart = marketChart(observations, this.historyMetric() === 'volume');
-    return {
-      ...chart,
-      min: chart.min === null ? '—' : this.historyValueLabel(chart.min),
-      max: chart.max === null ? '—' : this.historyValueLabel(chart.max),
-    };
+    return marketChart(observations, this.historyMetric() === 'volume');
   });
   readonly historyValueLabel = (value: bigint): string =>
     new Intl.NumberFormat(uiLocale()).format(value);
@@ -309,6 +312,21 @@ export class MarketPage implements OnDestroy {
   readonly selected = computed(() =>
     this.store.data().quotes.find((q) => q.id === this.selectedId()),
   );
+  readonly calculationContext = signal<CalculationQuoteContext | null>(null);
+  readonly calculationQuote = computed(() => {
+    const context = this.calculationContext();
+    if (context) return context;
+    const quote = this.selected();
+    return quote
+      ? {
+          name: quote.name,
+          price: quote.price,
+          region: quote.region,
+          observedAt: quote.observedAt,
+          stale: false,
+        }
+      : null;
+  });
   readonly silver = silver;
   readonly number = number;
   readonly date = date;
@@ -396,6 +414,7 @@ export class MarketPage implements OnDestroy {
     if (this.selectedId() === id) this.selectedId.set('');
   }
   use(q: Quote): void {
+    this.calculationContext.set(null);
     this.patch({ price: q.price });
     this.selectedId.set(q.id);
     this.workspaceView.set('calculator');
@@ -514,6 +533,46 @@ export class MarketPage implements OnDestroy {
     }));
     this.patch({ price: item.price });
     this.selectedId.set(parsed.data.id);
+  }
+  canCalculateLive(item: MarketItemQuote): boolean {
+    const response = this.live();
+    return Boolean(
+      response &&
+      response.region === this.store.data().region &&
+      item.price !== null &&
+      /^[1-9]\d*$/.test(item.price),
+    );
+  }
+  canSaveLive(item: MarketItemQuote): boolean {
+    const response = this.live();
+    return Boolean(this.canCalculateLive(item) && response && response.cacheStatus !== 'stale');
+  }
+  liveQuoteSaved(item: MarketItemQuote): boolean {
+    const response = this.live();
+    if (!response || item.price === null) return false;
+    return this.store
+      .data()
+      .quotes.some(
+        (quote) =>
+          quote.region === response.region &&
+          quote.itemId === item.itemId &&
+          quote.subId === item.subId &&
+          quote.observedAt === response.fetchedAt &&
+          quote.price === item.price,
+      );
+  }
+  calculateLive(item: MarketItemQuote): void {
+    const response = this.live();
+    if (!response || !this.canCalculateLive(item) || item.price === null) return;
+    this.calculationContext.set({
+      name: item.name + (item.subId ? ' · variante ' + item.subId : ''),
+      price: item.price,
+      region: response.region,
+      observedAt: response.fetchedAt,
+      stale: response.cacheStatus === 'stale',
+    });
+    this.selectedId.set('');
+    this.patch({ price: item.price });
     this.workspaceView.set('calculator');
   }
   ngOnDestroy(): void {

@@ -227,6 +227,44 @@
               <dd>{{ silver(item.lastSoldPrice) }}</dd>
             </div>
           </dl>
+          <div
+            class="quote-actions"
+            role="group"
+            aria-label="Ações da cotação atual"
+            i18n-aria-label
+          >
+            <button
+              hlmBtn
+              type="button"
+              [disabled]="!canCalculateLive(item)"
+              (click)="calculateLive(item)"
+              i18n
+            >
+              Calcular venda
+            </button>
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              [disabled]="!canSaveLive(item) || liveQuoteSaved(item)"
+              (click)="saveLive(item)"
+              i18n
+            >
+              {{
+                liveQuoteSaved(item)
+                  ? 'Cotação salva'
+                  : canSaveLive(item)
+                    ? 'Salvar cotação'
+                    : 'Atualize para salvar'
+              }}
+            </button>
+          </div>
+          @if (!canSaveLive(item) && !liveQuoteSaved(item)) {
+            <p class="help quote-save-note" i18n>
+              Salve apenas uma cotação atualizada da região selecionada. Dados antigos ou sem preço
+              continuam disponíveis para consulta, mas não entram no histórico salvo.
+            </p>
+          }
         }
       }
     </section>
@@ -355,14 +393,19 @@
                 <svg
                   class="h-auto w-full overflow-visible text-[var(--accent)]"
                   viewBox="0 0 720 220"
-                  role="img"
+                  role="group"
                   [attr.aria-label]="'Histórico de ' + historyMetricLabel()"
                 >
                   <title>{{ historyMetricLabel() }}</title>
                   <desc i18n>Gráfico das observações armazenadas no período selecionado.</desc>
-                  <line x1="44" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
-                  <line x1="44" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
-                  <line x1="44" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
+                  <line x1="72" y1="40" x2="684" y2="40" class="stroke-current opacity-15" />
+                  <line x1="72" y1="108" x2="684" y2="108" class="stroke-current opacity-15" />
+                  <line x1="72" y1="176" x2="684" y2="176" class="stroke-current opacity-15" />
+                  @for (tick of historyChart().valueTicks; track tick.y) {
+                    <text x="66" [attr.y]="tick.y + 4" text-anchor="end" class="chart-axis-label">
+                      {{ historyValueLabel(tick.value) }}
+                    </text>
+                  }
                   @if (historyMetric() !== 'volume') {
                     @for (segment of historyChart().segments; track $index) {
                       <polyline
@@ -388,7 +431,22 @@
                         vector-effect="non-scaling-stroke"
                       />
                     }
-                    <circle [attr.cx]="point.x" [attr.cy]="point.y" r="3" fill="currentColor">
+                    <circle
+                      class="chart-point"
+                      [attr.cx]="point.x"
+                      [attr.cy]="point.y"
+                      r="3"
+                      fill="currentColor"
+                      tabindex="0"
+                      [attr.aria-label]="
+                        date(point.fetchedAt) +
+                        ' · ' +
+                        historyValueLabel(point.value) +
+                        (historyMetric() === 'volume'
+                          ? ' registros em ' + intervalLabel(point.intervalMinutes)
+                          : '')
+                      "
+                    >
                       <title>
                         {{ date(point.fetchedAt) }} · {{ historyValueLabel(point.value)
                         }}{{
@@ -399,15 +457,19 @@
                       </title>
                     </circle>
                   }
+                  @for (tick of historyChart().timeTicks; track tick.x) {
+                    <text
+                      [attr.x]="tick.x"
+                      y="210"
+                      [attr.text-anchor]="
+                        tick.x === 72 ? 'start' : tick.x === 684 ? 'end' : 'middle'
+                      "
+                      class="chart-axis-label"
+                    >
+                      {{ date(tick.fetchedAt) }}
+                    </text>
+                  }
                 </svg>
-                <div class="flex justify-between text-xs text-[var(--text-muted)]">
-                  <span><ng-container i18n>Mínimo</ng-container> · {{ historyChart().min }}</span>
-                  <span><ng-container i18n>Máximo</ng-container> · {{ historyChart().max }}</span>
-                </div>
-                <div class="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
-                  <span>{{ date(historyChart().startAt) }}</span>
-                  <span>{{ date(historyChart().endAt) }}</span>
-                </div>
                 <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
               </div>
             } @else {
@@ -466,14 +528,17 @@
     </div>
   }
   @if (workspaceView() === 'calculator') {
-    @if (selected(); as quote) {
+    @if (calculationQuote(); as quote) {
       <div class="workspace-summary">
         <div>
           <small i18n>COTAÇÃO EM USO</small><strong>{{ quote.name }}</strong
           ><small
             >{{ silver(quote.price) }} / unidade · {{ quote.region.toUpperCase() }} ·
-            {{ date(quote.observedAt) }}</small
-          >
+            {{ date(quote.observedAt) }}
+            @if (quote.stale) {
+              · <span class="warning-text" i18n>cotação desatualizada</span>
+            }
+          </small>
         </div>
         <button
           hlmBtn

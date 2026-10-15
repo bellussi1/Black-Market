@@ -397,12 +397,12 @@
           <tbody>
             @for (item of displayItems(); track item.itemId + ':' + item.subId) {
               <tr class="board-row">
-                <td colspan="6" class="board-row-cell">
+                <th scope="row" class="board-row-item">
                   <button
                     hlmBtn
                     variant="outline"
                     type="button"
-                    class="board-item board-full-row"
+                    class="board-item"
                     (click)="selected.emit(item)"
                     [attr.aria-label]="
                       'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
@@ -483,6 +483,61 @@
                       {{ silver(item.volume30d) }}
                     </span>
                   </button>
+                </th>
+                <td
+                  class="numeric col-price col-reference-price"
+                  [attr.title]="'Fonte: Arsha · ' + priceReferenceLabel(item)"
+                >
+                  <span class="reference-value">{{ silver(priceReference(item).value) }}</span>
+                  <small class="reference-basis">{{ priceReferenceLabel(item) }}</small>
+                  <span
+                    class="mean-price"
+                    [attr.title]="
+                      item.meanPrice === null
+                        ? 'Histórico insuficiente para a média de 30 dias'
+                        : item.observationCount + ' observações de preço'
+                    "
+                    >Média 30d: {{ silver(item.meanPrice) }}</span
+                  >
+                </td>
+                <td class="numeric col-stock">
+                  @if (item.stock === null) {
+                    —
+                  } @else if (item.stock === 0) {
+                    <span class="stock-badge stock-zero">0 un (Zerado)</span>
+                  } @else {
+                    {{ number(item.stock, 0) }}
+                  }
+                </td>
+                <td
+                  class="numeric col-volume"
+                  [attr.title]="
+                    item.volume24h === null
+                      ? 'Histórico insuficiente para 24 horas'
+                      : 'Diferença do contador total de negociações em 24 horas; unidade não confirmada'
+                  "
+                >
+                  {{ silver(item.volume24h) }}
+                </td>
+                <td
+                  class="numeric col-volume"
+                  [attr.title]="
+                    item.volume15d === null
+                      ? 'Histórico insuficiente para 15 dias'
+                      : 'Diferença do contador total de negociações em 15 dias; unidade não confirmada'
+                  "
+                >
+                  {{ silver(item.volume15d) }}
+                </td>
+                <td
+                  class="numeric col-volume"
+                  [attr.title]="
+                    item.volume30d === null
+                      ? 'Histórico insuficiente para 30 dias'
+                      : 'Diferença do contador total de negociações em 30 dias; unidade não confirmada'
+                  "
+                >
+                  {{ silver(item.volume30d) }}
                 </td>
               </tr>
             } @empty {
