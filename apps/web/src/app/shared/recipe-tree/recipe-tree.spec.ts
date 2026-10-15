@@ -191,6 +191,15 @@ function configureProduction(tree: RecipeTree, prices: Record<number, string>) {
 }
 
 describe('Interactive recipe tree', () => {
+  it('uses the requested 2:1 desktop decision panels and stacks them at 900px', () => {
+    const styles = (
+      RecipeTree as unknown as { ɵcmp: { styles: readonly string[] } }
+    ).ɵcmp.styles.join('\n');
+    expect(styles).toMatch(/grid-template-columns:\s*minmax\(0,\s*2fr\)\s+minmax\(0,\s*1fr\)/);
+    expect(styles).toContain('@media (max-width: 900px)');
+    expect(styles).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  });
+
   useMemoryStorage();
   it('loads quotes for every item reachable from the active recipe', async () => {
     const mocks = providers();
