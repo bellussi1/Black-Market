@@ -48,11 +48,11 @@
 - Produce MarketCacheService.boardKey(query) and resolveBoard(query, forceRefresh?) returning the matching MarketBoardResponse.
 - Taxonomy is loaded independently of the filtered board result and stays available through loading, empty, and error states.
 
-- [ ] Step 1: Add four tests: empty/error filtered responses keep the taxonomy visible; changing category, search, stock filter, sort, page, page size, or region changes the canonical key; two simultaneous identical queries issue one HTTP request; an expired query emits its matching cached response first and retains it after refresh failure.
-- [ ] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts --include=app/features/market/market-board.spec.ts and confirm the new assertions fail.
-- [ ] Step 3: Implement the canonical query key, shared in-flight request, stale revalidation, and independent category state using the API taxonomy response.
-- [ ] Step 4: Update the board to use resolveBoard and preserve the existing row dimensions while data is loading or unavailable; keep parent selection inclusive of its children and child selection visibly nested.
-- [ ] Step 5: Run the same focused specs and commit the six Task 1 files as fix(market): stabilize taxonomy and cache board queries.
+- [x] Step 1: Add four tests: empty/error filtered responses keep the taxonomy visible; changing category, search, stock filter, sort, page, page size, or region changes the canonical key; two simultaneous identical queries issue one HTTP request; an expired query emits its matching cached response first and retains it after refresh failure.
+- [x] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/market-cache.service.spec.ts --include=app/features/market/market-board.spec.ts and confirm the new assertions fail.
+- [x] Step 3: Implement the canonical query key, shared in-flight request, stale revalidation, and independent category state using the API taxonomy response.
+- [x] Step 4: Update the board to use resolveBoard and preserve the existing row dimensions while data is loading or unavailable; keep parent selection inclusive of its children and child selection visibly nested.
+- [x] Step 5: Run the same focused specs and commit the six Task 1 files as fix(market): stabilize taxonomy and cache board queries.
 
 ### Task 2: In-memory cache for public catalog reads
 
@@ -68,11 +68,11 @@
 - Cache identity includes region, preferred data locale, endpoint, effective parameters, and the active dataset version/checksum learned from responses.
 - Identical requests share an in-flight observable; expired entries remain available while one refresh runs.
 
-- [ ] Step 1: Add tests asserting that a fresh response avoids a second HTTP request, duplicate calls issue one request, region/locale/endpoint/parameters produce separate entries, a changed dataset version cannot return the previous dataset, and a failed refresh leaves stale data available.
-- [ ] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/catalog-api.service.spec.ts and confirm the new assertions fail.
-- [ ] Step 3: Add bounded in-memory cache behavior to categories, item pages, item detail, recipe list, recipe detail, and item recipe lookups. Use the existing five-minute market cache TTL as the public catalog freshness interval.
-- [ ] Step 4: Keep icons/dataset metadata tied to the same response version; do not persist catalog data or include private workspace endpoints.
-- [ ] Step 5: Run the service and affected page specs, then commit the service and its spec as feat(web): cache public catalog reads in memory.
+- [x] Step 1: Add tests asserting that a fresh response avoids a second HTTP request, duplicate calls issue one request, region/locale/endpoint/parameters produce separate entries, a changed dataset version cannot return the previous dataset, and a failed refresh leaves stale data available.
+- [x] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/catalog-api.service.spec.ts and confirm the new assertions fail.
+- [x] Step 3: Add bounded in-memory cache behavior to categories, item pages, item detail, recipe list, recipe detail, and item recipe lookups. Use the existing five-minute market cache TTL as the public catalog freshness interval.
+- [x] Step 4: Keep icons/dataset metadata tied to the same response version; do not persist catalog data or include private workspace endpoints.
+- [x] Step 5: Run the service and affected page specs, then commit the service and its spec as feat(web): cache public catalog reads in memory.
 
 ### Task 3: Route resolvers and intent prefetch
 
@@ -95,12 +95,12 @@
 - Produce recipesRouteResolver for the first recipe list, a selected item plus its producing recipes, or a selected recipe plus its product and producing methods.
 - Produce RouteIntentPrefetchDirective with a route URL input; focus and pointerenter call the same public route data service used by resolvers.
 
-- [ ] Step 1: Add resolver tests asserting route-specific endpoint calls for /market, /recipes, /recipes/items/:id, and /recipes/:key; invalid IDs/keys return a recoverable not-found state; upstream failures do not leave navigation stuck.
-- [ ] Step 2: Add directive tests asserting focus and pointerenter each warm the same route service, repeated intent creates one request, and private routes create no prefetch; run pnpm --dir apps/web exec ng test --watch=false --include=app/core/public-route-data.spec.ts --include=app/core/route-intent-prefetch.directive.spec.ts and confirm the new assertions fail.
-- [ ] Step 3: Implement lightweight resolvers that request only route-critical public data and rely on the caches from Tasks 1 and 2.
-- [ ] Step 4: Add the directive to the Mercado/Receitas navigation links and relevant item/recipe links; ensure route activation and prefetch share request identity.
-- [ ] Step 5: Make pages reuse resolved/cached data without clearing the current view before a same-route refresh; expose stale/error freshness concisely and keep retry behavior.
-- [ ] Step 6: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/public-route-data.spec.ts --include=app/core/route-intent-prefetch.directive.spec.ts --include=app/features/market/market-page.spec.ts --include=app/features/recipes/recipes-page.spec.ts; commit the resolver, directive, route, layout, and page changes as feat(web): resolve and prefetch public market routes.
+- [x] Step 1: Add resolver tests asserting route-specific endpoint calls for /market, /recipes, /recipes/items/:id, and /recipes/:key; invalid IDs/keys return a recoverable not-found state; upstream failures do not leave navigation stuck.
+- [x] Step 2: Add directive tests asserting focus and pointerenter each warm the same route service, repeated intent creates one request, and private routes create no prefetch; run pnpm --dir apps/web exec ng test --watch=false --include=app/core/public-route-data.spec.ts --include=app/core/route-intent-prefetch.directive.spec.ts and confirm the new assertions fail.
+- [x] Step 3: Implement lightweight resolvers that request only route-critical public data and rely on the caches from Tasks 1 and 2.
+- [x] Step 4: Add the directive to the Mercado/Receitas navigation links and relevant item/recipe links; ensure route activation and prefetch share request identity.
+- [x] Step 5: Make pages reuse resolved/cached data without clearing the current view before a same-route refresh; expose stale/error freshness concisely and keep retry behavior.
+- [x] Step 6: Run pnpm --dir apps/web exec ng test --watch=false --include=app/core/public-route-data.spec.ts --include=app/core/route-intent-prefetch.directive.spec.ts --include=app/features/market/market-page.spec.ts --include=app/features/recipes/recipes-page.spec.ts; commit the resolver, directive, route, layout, and page changes as feat(web): resolve and prefetch public market routes.
 
 ### Task 4: Desktop-first recipe workbench and mastery placement
 
@@ -115,11 +115,11 @@
 - Keep existing temporary mastery signals, profession detection, calculation adapter, and profile fallback behavior.
 - Place the product/configuration panel in the left 2fr column and the result panel in the right 1fr column; keep the production tree full-width below.
 
-- [ ] Step 1: Add assertions for a desktop 2fr/1fr grid, controls inside the product/configuration panel, one-column stacking at 900px and below, and Processing mastery shown only for a variable-yield Processing step; assert edited mastery changes simulated output but not active-character mastery.
-- [ ] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-tree.spec.ts and confirm the new layout assertion fails against the current 1:1 grid.
-- [ ] Step 3: Change the top-level desktop grid to 2fr/1fr with safe min-widths; keep the internal configuration readable and the result actions within its panel.
-- [ ] Step 4: Verify temporary profession and Processing overrides still recalculate yields/revenue/profit and do not mutate the active character; adjust the template only if the current grouping fails the approved reference.
-- [ ] Step 5: Run the RecipeTree spec and production-adapter spec, then commit the template/style/spec changes as feat(recipes): balance workbench panels and mastery controls.
+- [x] Step 1: Add assertions for a desktop 2fr/1fr grid, controls inside the product/configuration panel, one-column stacking at 900px and below, and Processing mastery shown only for a variable-yield Processing step; assert edited mastery changes simulated output but not active-character mastery.
+- [x] Step 2: Run pnpm --dir apps/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-tree.spec.ts and confirm the new layout assertion fails against the current 1:1 grid.
+- [x] Step 3: Change the top-level desktop grid to 2fr/1fr with safe min-widths; keep the internal configuration readable and the result actions within its panel.
+- [x] Step 4: Verify temporary profession and Processing overrides still recalculate yields/revenue/profit and do not mutate the active character; adjust the template only if the current grouping fails the approved reference.
+- [x] Step 5: Run the RecipeTree spec and production-adapter spec, then commit the template/style/spec changes as feat(recipes): balance workbench panels and mastery controls.
 
 ### Task 5: Integrated verification and handoff
 
@@ -128,8 +128,8 @@
 - Modify: docs/ACTIVE_CONTEXT.md
 - Update: docs/superpowers/plans/2026-10-15-market-recipe-cache-workbench.md checkboxes as tasks finish
 
-- [ ] Step 1: Run the four focused ng test commands from Tasks 1–4 after all commits are present.
-- [ ] Step 2: Run pnpm check and pnpm test; record any pre-existing or environment-only failures distinctly.
-- [ ] Step 3: Run the staging smoke test and verify local /market, /recipes, /recipes/items/9609, and /recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0 in a desktop browser.
-- [ ] Step 4: Verify category stability, no full-page reload on recipe selection, stale-cache labeling, no console errors, and the 2:1 panel proportions after data loads.
-- [ ] Step 5: Update ACTIVE_CONTEXT with commits, verification, and remaining staging-provider blockers; commit as docs: record market and recipe route improvements.
+- [x] Step 1: Run the focused specs from Tasks 1–4. The latest relevant checks include the MarketCacheService spec, RecipeTree (56/56), routes (4/4), and the earlier market/category/resolver/prefetch specs.
+- [ ] Step 2: `pnpm check` passed. A fresh `pnpm test` run had 3 Analytics failures; Analytics passed alone (7/7). A second Web run had two 5-second test timeouts; both specs passed alone. Scripts passed 73/73, API 216/216, Calculators 66/66, and 544/547 Web tests passed in the first grouped run. An earlier full Web run passed 547/547. Keep this open because a stable full-suite pass was not reproduced in the final run.
+- [x] Step 3: `pnpm test:staging` passed. Desktop browser opened /market, /recipes, /recipes/items/9609, and /recipes/5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0.
+- [ ] Step 4: Market categories remained visible and at a stable top position while filtering; the recipe grid was 846px/423px and mastery 1000→3000 changed expected yield from 2.77→3.65. SPA formula selection had been verified without a document reload earlier. Leave this step open: the quote provider returned HTTP 503/429 and the page correctly displayed incomplete pricing, so the no-console-error and reliable market-data criteria did not pass.
+- [x] Step 5: Update ACTIVE_CONTEXT with commits, verification, and remaining staging-provider blockers; commit as docs: record market and recipe route improvements.

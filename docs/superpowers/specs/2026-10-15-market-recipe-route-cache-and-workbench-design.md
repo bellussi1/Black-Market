@@ -1,7 +1,7 @@
 # Mercado e Oficina de Receitas: cache de rota e layout
 
 **Data:** 15/10/2026  
-**Estado:** proposta para revisão do usuário  
+**Estado:** implementado parcialmente; validação concluída em staging local em 15/10/2026
 **Escopo:** experiência de navegação e apresentação em Mercado e Receitas; manter os cálculos de domínio existentes.
 
 ## Objetivo
@@ -76,6 +76,13 @@ Os testes incluirão:
 - Aquecer em massa o catálogo, histórico de mercado, todos os ramos de receitas ou áreas autenticadas.
 - Alterar os fluxos de autenticação, menu, staging ou banco de dados.
 
+## Resultado da implementação e limite observado
+
+- Categorias, cache de navegação, resolvers, prefetch por foco/ponteiro e a oficina 2:1 com maestrias temporárias foram implementados e verificados.
+- Uma falha no endpoint de cotações em lote não deve acionar uma consulta individual para cada ingrediente ausente; o cache existente é preservado e a receita permanece marcada como incompleta.
+- Para resumos válidos sem estoque e sem `maxPrice`, o cliente ainda busca o detalhe por item para manter a regra de preço máximo. Essa etapa pode receber HTTP 429, e o endpoint em lote pode receber HTTP 503; nesses casos, a UI deixa a cotação pendente. A validação não certifica lucro dessas receitas até o provedor devolver o dado necessário.
+- Firebase Google/Steam, perfil seedado após login real, bucket R2 e cópia externa cifrada não fazem parte desta especificação de UI e continuam bloqueados por configuração externa do staging.
+
 ## Arquivos previstos
 
 - `apps/web/src/app/app.routes.ts` e novos resolvedores/repositórios no núcleo Web.
@@ -83,4 +90,3 @@ Os testes incluirão:
 - `apps/web/src/app/features/market/market-board.ts`, `market-board.html`, estilos e testes.
 - `apps/web/src/app/features/recipes/recipes-page.ts`, `recipes-page.html`, estilos e testes.
 - `apps/web/src/app/shared/recipe-tree/recipe-tree.html`, `recipe-tree.scss`, `recipe-tree.ts` e testes quando necessários para os dois campos e para o layout.
-
