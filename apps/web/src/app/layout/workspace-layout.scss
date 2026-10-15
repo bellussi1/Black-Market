@@ -309,6 +309,18 @@
   padding-left: 18px;
 }
 
+.topbar-account {
+  color: var(--bm-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topbar-account:hover,
+.topbar-account:focus-visible {
+  color: var(--bm-text);
+  text-decoration: underline;
+}
+
 .global-item-search {
   position: relative;
   z-index: 20;

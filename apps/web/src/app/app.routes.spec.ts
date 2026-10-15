@@ -25,6 +25,7 @@ describe('Unified personal workspace routes', () => {
               component: RouteDestination,
               loadComponent: undefined,
               canMatch: undefined,
+              canActivate: undefined,
             },
       );
     TestBed.configureTestingModule({ providers: [provideRouter(catalogueRoutes)] });
@@ -48,6 +49,7 @@ describe('Unified personal workspace routes', () => {
               component: RouteDestination,
               loadComponent: undefined,
               canMatch: undefined,
+              canActivate: undefined,
             },
       );
     TestBed.configureTestingModule({ providers: [provideRouter(personalRoutes)] });
@@ -61,6 +63,12 @@ describe('Unified personal workspace routes', () => {
     ]) {
       await harness.navigateByUrl(legacy, RouteDestination);
       expect(router.url).toBe(canonical);
+    }
+  });
+  it('requires social sessions only on Scan, recommendations, and storage routes', () => {
+    const sessionRoutes = new Set(['scans', 'scans/profile', 'recommendations', 'storage']);
+    for (const route of routes[0].children ?? []) {
+      expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
     }
   });
 });

@@ -7,6 +7,12 @@
       usamos a conta ou a senha do jogo.
     </p>
   </header>
+  @if (returnUrl() && identity.ready() && !identity.enabled()) {
+    <p class="error-box" role="alert" i18n>
+      O login social ainda não está configurado. Entre com Google ou Steam para continuar quando
+      estiver disponível.
+    </p>
+  }
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }

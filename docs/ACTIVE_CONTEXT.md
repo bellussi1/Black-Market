@@ -1105,3 +1105,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Arquivos funcionais**: `apps/web/src/app/features/market/market-board.html`, `market-board.spec.ts`, `market-history.ts`, `market-history.spec.ts`, `market-page.html`, `market-page.scss`, `market-page.spec.ts`, `market-page.ts`; mock atualizado em `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts`.
 - **Commits atômicos desta verificação**: `c0ec213 fix(market): label trade counters accurately`; `ca13b12 test(recipes): align catalog mocks with bulk lookup`.
 - **Próximos passos**: adquirir uma métrica pública/documentada de unidades vendidas antes de exibir giro ou demanda; adicionar preço corrente e origem ao quadro do Mercado; corrigir estrutura de tabela acessível; validar mais receitas/profissões com mesma região e parâmetros e manter alertas de cotação incompleta. Configurar Firebase de staging para validar login Google/Steam real. Não enviar commits ao remoto sem pedido.
+
+## 99. Acesso social nas áreas pessoais (Codex, 15/10/2026)
+
+- **Implementação**: guard Angular aguarda a restauração Firebase e protege apenas `/scans`, `/scans/profile`, `/recommendations` e `/storage`. Sem sessão, a navegação vai à conta pública com o destino solicitado.
+- **Retorno seguro**: caminho, query e fragmento são preservados para os fluxos Google e Steam. O retorno é persistido em `sessionStorage` para atravessar a ida e volta da Steam; só destinos locais das áreas protegidas são aceitos.
+- **Descoberta e MVP**: `/account` está habilitada no escopo MVP e há um atalho “Conta” no cabeçalho. Quando a autenticação ainda não está configurada, a conta explica que o destino pessoal exige login social. O restante do Mercado, Receitas e Crafting segue acessível como visitante.
+- **Testes e qualidade**: cinco specs Angular direcionados passaram (22/22); `pnpm check` passou (lint, Prettier, typecheck e build development); `pnpm --filter @bdo/web i18n:extract` completou com 1.451 mensagens. Continua o aviso conhecido de locale `pt-BR` com fallback para `pt`.
+- **Limite externo**: o comportamento usa o Firebase Web SDK e rotas existentes, mas não foi possível autenticar contra Google/Steam reais sem configurar projeto, domínios e credenciais Firebase.
+- **Arquivos**: guard e retorno seguro com testes, rotas e escopo MVP, página de conta, cabeçalho e tradução; especificação/plano e este contexto.
+- **Commit atômico**: `feat(auth): gate personal workspaces with social login`.
+- **Próximo passo**: iniciar o corte de Mercado: calcular uma referência dinâmica baseada em preço atual com estoque e preço máximo quando sem estoque, depois corrigir semântica da tabela e organizar os grupos internos da janela.

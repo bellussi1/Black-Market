@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { type RedirectFunction, Router, type Routes } from '@angular/router';
 
+import { authGuard } from './core/auth.guard';
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
 import { WorkspaceLayout } from './layout/workspace-layout';
 
@@ -65,6 +66,7 @@ export const routes: Routes = [
         title: $localize`Black Market · Importar dados do personagem`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           import('./features/scans/profile-screen-import').then(
@@ -78,6 +80,7 @@ export const routes: Routes = [
         title: $localize`Black Market · Importar por print`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           import('./features/scans/automatic-scan-page').then((module) => module.AutomaticScanPage),
@@ -151,6 +154,7 @@ export const routes: Routes = [
         title: $localize`Black Market · O que fazer`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           import('./features/recommendations/recommendations-page').then(
@@ -281,6 +285,7 @@ export const routes: Routes = [
         title: $localize`Black Market · Armazém`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           SCREENSHOT_MVP

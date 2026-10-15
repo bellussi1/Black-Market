@@ -9,12 +9,14 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AnalyticsService } from '../../core/analytics.service';
+import { AUTH_RETURN_URL_KEY, safeInternalReturnUrl } from '../../core/auth-return-url';
 import { IdentityService } from '../../core/identity.service';
 import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -29,6 +31,9 @@ export class AccountPage {
   private readonly analytics = inject(AnalyticsService);
   readonly identity = inject(IdentityService);
   private readonly document = inject(DOCUMENT);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  readonly returnUrl = signal<string | null>(null);
   readonly store = inject(WorkspaceStore);
   private readonly http = inject(HttpClient);
   readonly loading = signal(false);
@@ -40,6 +45,7 @@ export class AccountPage {
   confirmUpload = false;
   confirmDelete = false;
   constructor() {
+    this.restoreReturnUrl();
     effect(() => {
       this.identity.userId();
       untracked(() => {
@@ -81,7 +87,10 @@ export class AccountPage {
     }
   }
   async google() {
-    await this.perform(() => this.identity.google(), false);
+    await this.perform(async () => {
+      await this.identity.google();
+      await this.continueAfterLogin();
+    }, false);
   }
   async steam() {
     await this.perform(() => this.identity.steam(), false);
@@ -100,6 +109,37 @@ export class AccountPage {
       await this.identity.signOut();
       this.message.set('Você saiu da sua conta.');
     }, false);
+  }
+  private restoreReturnUrl(): void {
+    const browser = this.document.defaultView;
+    const requested = this.route.snapshot.queryParamMap.get('returnUrl');
+    let destination = safeInternalReturnUrl(requested);
+
+    try {
+      if (requested === null && browser)
+        destination = safeInternalReturnUrl(browser.sessionStorage.getItem(AUTH_RETURN_URL_KEY));
+      if (browser) {
+        if (destination) browser.sessionStorage.setItem(AUTH_RETURN_URL_KEY, destination);
+        else browser.sessionStorage.removeItem(AUTH_RETURN_URL_KEY);
+      }
+    } catch {
+      destination = null;
+    }
+
+    this.returnUrl.set(destination);
+  }
+
+  private async continueAfterLogin(): Promise<void> {
+    const destination = this.returnUrl();
+    if (!destination) return;
+
+    try {
+      this.document.defaultView?.sessionStorage.removeItem(AUTH_RETURN_URL_KEY);
+    } catch {
+      // A browser privacy setting may block storage; the in-memory destination still works.
+    }
+    this.returnUrl.set(null);
+    await this.router.navigateByUrl(destination, { replaceUrl: true });
   }
   private consumeSteamCallback(): { kind: 'code'; code: string } | { kind: string } | null {
     const browser = this.document.defaultView;
@@ -135,6 +175,7 @@ export class AccountPage {
     await this.perform(async () => {
       await this.identity.exchangeSteamCode(callback.code!);
       this.message.set('Login Steam concluído.');
+      await this.continueAfterLogin();
     }, false);
   }
   async load() {

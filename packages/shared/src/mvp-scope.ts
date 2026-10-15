@@ -2,7 +2,6 @@
 export const SCREENSHOT_MVP = true;
 export const SUSPENDED_MVP_ROOTS = [
   'world',
-  'account',
   'plans',
   'reference',
   'enhancement',
@@ -33,6 +32,7 @@ const enabledRoots = new Set([
   'profile',
   'shopping',
   'settings',
+  'account',
   'termos',
   'privacidade',
   'cookies',

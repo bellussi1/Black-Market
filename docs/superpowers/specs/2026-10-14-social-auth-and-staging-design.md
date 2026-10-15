@@ -130,3 +130,11 @@ Não há evidência de usuários reais no staging que exija migração. Antes de
 - [x] Não inclui credenciais, e-mails de testers ou UID de conta no documento.
 
 **Após a aprovação do usuário:** plano criado em `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md`; implementação isolada em worktree, com um commit por tarefa.
+
+## Limite de acesso por funcionalidade (definição aprovada pelo usuário)
+
+- Exigir sessão social apenas para Scan (`/scans` e `/scans/profile`), “O que fazer?” (`/recommendations`) e Armazém (`/storage`).
+- Mercado, Receitas/Crafting e demais ferramentas permanecem públicas e utilizáveis como visitante.
+- `/account` é uma rota pública de autenticação/gerenciamento da conta e deve estar acessível como destino de redirecionamento.
+- O guard de rota serve à experiência; toda leitura/gravação de dados sincronizados continua protegida pela validação Firebase no servidor.
+- Após Google ou Steam, retornar ao destino interno permitido; nunca navegar para URL externa.

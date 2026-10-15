@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from '../../core/analytics.service';
@@ -33,9 +34,10 @@ function createIdentity(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createPage(identity = createIdentity(), hash = '') {
+function createPage(identity = createIdentity(), hash = '', returnUrl: string | null = null) {
   let scrubbed = false;
   const browser = window;
+  window.sessionStorage.removeItem('black-market.auth.return-url.v1');
   window.history.replaceState({}, '', window.location.pathname + window.location.search + hash);
   const originalReplace = window.history.replaceState.bind(window.history);
   vi.spyOn(window.history, 'replaceState').mockImplementation((state, title, url) => {
@@ -47,20 +49,31 @@ function createPage(identity = createIdentity(), hash = '') {
     demoActive: signal(false),
     replace: vi.fn(() => true),
   };
+  const router = { navigateByUrl: vi.fn(async () => true) };
   TestBed.configureTestingModule({
     providers: [
       provideHttpClient(),
+      { provide: Router, useValue: router },
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          snapshot: { queryParamMap: convertToParamMap(returnUrl ? { returnUrl } : {}) },
+        },
+      },
       { provide: IdentityService, useValue: identity },
       { provide: WorkspaceStore, useValue: workspace },
       { provide: AnalyticsService, useValue: { capture: vi.fn() } },
     ],
   });
   const fixture: ComponentFixture<AccountPage> = TestBed.createComponent(AccountPage);
-  return { fixture, identity, browser, wasScrubbed: () => scrubbed };
+  return { fixture, identity, browser, router, wasScrubbed: () => scrubbed };
 }
 
 describe('AccountPage social sign-in', () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    window.sessionStorage.removeItem('black-market.auth.return-url.v1');
+    vi.restoreAllMocks();
+  });
 
   it('offers only Google and Steam when signed out', async () => {
     const { fixture } = createPage();
@@ -103,5 +116,30 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     expect(identity.exchangeSteamCode).toHaveBeenCalledWith('c'.repeat(43));
+  });
+
+  it('returns to the requested private route after Google sign-in', async () => {
+    const { fixture, router } = createPage(createIdentity(), '', '/scans?tab=review#space-4');
+    await fixture.whenStable();
+
+    const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
+      (candidate) => candidate.textContent?.includes('Entrar com Google'),
+    );
+    button?.click();
+    await fixture.whenStable();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/scans?tab=review#space-4', {
+      replaceUrl: true,
+    });
+  });
+
+  it('explains that social login is required but unavailable for a gated route', async () => {
+    const identity = createIdentity({ enabled: signal(false) });
+    const { fixture } = createPage(identity, '', '/storage?tab=inventory');
+    await fixture.whenStable();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'O login social ainda não está configurado',
+    );
   });
 });
