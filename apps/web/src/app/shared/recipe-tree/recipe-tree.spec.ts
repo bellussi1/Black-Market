@@ -1837,6 +1837,26 @@ describe('Interactive recipe tree', () => {
     expect(el.textContent).toContain('Resultado da receita');
   });
 
+  it('keeps secondary production and tax controls in one collapsed recipe disclosure', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      dependencies.list,
+    );
+    const el: HTMLElement = fixture.nativeElement;
+    const settings = el.querySelector('.production-options') as HTMLDetailsElement | null;
+
+    expect(settings).not.toBeNull();
+    expect(settings?.open).toBe(false);
+    expect(settings?.querySelector('input[aria-label="Maestria de Alquimia"]')).toBeTruthy();
+    expect(settings?.querySelector('.tax-config-panel')).toBeTruthy();
+    expect(
+      el.querySelector('.craft-count-card input[type="number"]')?.closest('.production-options'),
+    ).toBeNull();
+    expect(el.querySelector('.economic-dashboard .tax-config-panel')).toBeNull();
+  });
+
   it('preserves production calculations in the compact market summary without rendering the graph', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(

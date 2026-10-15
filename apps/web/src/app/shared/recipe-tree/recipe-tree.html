@@ -111,62 +111,10 @@
                 </button>
               </div>
             </div>
-
-            @for (skill of masterySkills(); track skill) {
-              <div class="craft-param-col">
-                <label class="craft-count-control">
-                  <span class="control-label-text">
-                    Maestria ({{ masterySkillLabel(skill) }})
-                  </span>
-                  <div class="craft-input-box">
-                    <input
-                      type="number"
-                      min="0"
-                      max="3000"
-                      step="10"
-                      class="craft-count-input"
-                      placeholder="Ex: 1250"
-                      [attr.aria-label]="'Maestria de ' + masterySkillLabel(skill)"
-                      [ngModel]="displayedMasteryForSkill(skill)"
-                      (ngModelChange)="setMasteryForSkill(skill, $event)"
-                    />
-                    <span class="craft-count-unit">pts</span>
-                  </div>
-                </label>
-                <div class="craft-param-hint" i18n>
-                  Usada no rendimento das receitas produzidas e nas alternativas do otimizador.
-                </div>
-              </div>
-            } @empty {
-              <div class="craft-param-col">
-                <label class="craft-count-control">
-                  <span class="control-label-text">Maestria ({{ primarySkillLabel() }})</span>
-                  <div class="craft-input-box">
-                    <input
-                      type="number"
-                      min="0"
-                      max="3000"
-                      step="10"
-                      class="craft-count-input"
-                      placeholder="Ex: 1250"
-                      aria-label="Maestria da profissão"
-                      disabled
-                      [ngModel]="displayedMastery()"
-                    />
-                    <span class="craft-count-unit">pts</span>
-                  </div>
-                </label>
-                <div class="craft-param-hint" i18n>Maestria sem efeito nesta fórmula</div>
-              </div>
-            }
-            <div class="craft-param-col">
-              <div class="craft-param-hint">
-                <span class="yield-badge">{{ yieldDescription() }}</span>
-              </div>
-            </div>
           </div>
 
           <div class="craft-yield-meta">
+            <span class="yield-badge">{{ yieldDescription() }}</span>
             <span class="produced-badge" i18n>
               Estimativa do produto: <strong>{{ formattedProducedQuantity() }}</strong> unidades
             </span>
@@ -176,8 +124,60 @@
           </div>
         </div>
 
-        <details class="production-options">
-          <summary>Configurações de produção</summary>
+        <details class="production-options recipe-settings-disclosure">
+          <summary i18n>Ajustes de produção, estoque e mercado</summary>
+          <div class="recipe-mastery-settings">
+            <p class="eyebrow" i18n>MAESTRIA E RENDIMENTO</p>
+            <div class="craft-parameters-grid">
+              @for (skill of masterySkills(); track skill) {
+                <div class="craft-param-col">
+                  <label class="craft-count-control">
+                    <span class="control-label-text">
+                      Maestria ({{ masterySkillLabel(skill) }})
+                    </span>
+                    <div class="craft-input-box">
+                      <input
+                        type="number"
+                        min="0"
+                        max="3000"
+                        step="10"
+                        class="craft-count-input"
+                        placeholder="Ex: 1250"
+                        [attr.aria-label]="'Maestria de ' + masterySkillLabel(skill)"
+                        [ngModel]="displayedMasteryForSkill(skill)"
+                        (ngModelChange)="setMasteryForSkill(skill, $event)"
+                      />
+                      <span class="craft-count-unit">pts</span>
+                    </div>
+                  </label>
+                  <div class="craft-param-hint" i18n>
+                    Usada no rendimento das receitas produzidas e nas alternativas do otimizador.
+                  </div>
+                </div>
+              } @empty {
+                <div class="craft-param-col">
+                  <label class="craft-count-control">
+                    <span class="control-label-text">Maestria ({{ primarySkillLabel() }})</span>
+                    <div class="craft-input-box">
+                      <input
+                        type="number"
+                        min="0"
+                        max="3000"
+                        step="10"
+                        class="craft-count-input"
+                        placeholder="Ex: 1250"
+                        aria-label="Maestria da profissão"
+                        disabled
+                        [ngModel]="displayedMastery()"
+                      />
+                      <span class="craft-count-unit">pts</span>
+                    </div>
+                  </label>
+                  <div class="craft-param-hint" i18n>Maestria sem efeito nesta fórmula</div>
+                </div>
+              }
+            </div>
+          </div>
           @if (!store.data().characters.length) {
             <p class="help">
               Insumos sem receita são comprados por padrão. Coleta exige rendimento e tempo
@@ -274,6 +274,10 @@
               parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao
               simular.
             </p>
+          </details>
+          <details class="tax-config-panel">
+            <summary i18n>Opções de impostos e buffs do mercado</summary>
+            <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
           </details>
         </details>
       </div>
@@ -533,11 +537,6 @@
         <p class="optimization-status" role="status" aria-live="polite">
           {{ optimizationMessage() }}
         </p>
-
-        <details class="tax-config-panel">
-          <summary i18n>Opções de impostos e buffs do mercado</summary>
-          <app-tax-options [value]="store.data().taxOptions" (changed)="setTax($event)" />
-        </details>
       </section>
     }
 
