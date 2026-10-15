@@ -16,6 +16,9 @@
   align-items: stretch;
   gap: 16px;
 }
+.scan-workspace > app-tutorial-launcher {
+  grid-column: 1 / -1;
+}
 .scan-workspace.reviewing {
   grid-template-columns: minmax(0, 1fr);
 }

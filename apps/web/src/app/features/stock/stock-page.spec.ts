@@ -4,9 +4,22 @@ import { BehaviorSubject } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  useTutorialGuideStub();
+  it('registers only unique tutorial anchors for the active page state', async () => {
+    const fixture = await renderComponent(StockPage);
+    for (const kind of ['storage', 'inventory'] as const) {
+      fixture.componentInstance.kind.set(kind);
+      for (const view of ['grid', 'list'] as const) {
+        fixture.componentInstance.view.set(view);
+        fixture.detectChanges();
+        expectTutorialAnchors(fixture, 'storage', ['storage.items']);
+      }
+    }
+  });
   it('switches storage and character inventories in the same page without moving an open edit', async () => {
     const params = new BehaviorSubject(convertToParamMap({}));
     const fixture = await renderComponent(StockPage, {}, [

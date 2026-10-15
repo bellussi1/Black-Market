@@ -57,6 +57,7 @@ import {
   recipeMasteryCanChangeOutput,
   resolveDefaultYield,
 } from '../../shared/recipe-tree/recipe-yield';
+import { TutorialLauncher } from '../../shared/tutorial-launcher/tutorial-launcher';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
@@ -191,7 +192,7 @@ export function productionRecipes(
 @Component({
   selector: 'app-recommendations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
+  imports: [TutorialLauncher, HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',
 })

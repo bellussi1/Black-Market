@@ -8,6 +8,7 @@ import { MarketCacheService } from '../../core/market-cache.service';
 import { ProductionApi } from '../../core/production-api';
 import { productionDemoItemIds } from '../../core/production-demo';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import {
   canRequestProductionQuote,
   hasNpcPurchaseEvidence,
@@ -46,6 +47,28 @@ const api = () => ({
 });
 describe('production recommendations', () => {
   useMemoryStorage();
+  useTutorialGuideStub();
+  it('registers only unique tutorial anchors for the active page state', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    expectTutorialAnchors(fixture, 'recommendations', []);
+    fixture.componentInstance.store.update((state) => ({
+      ...state,
+      characters: [characterSchema.parse({ id: 'tour', name: 'Aventureiro', region: 'sa' })],
+    }));
+    fixture.componentInstance.selected.set('tour');
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'recommendations', ['recommendations.conditions']);
+    await fixture.componentInstance.load();
+    fixture.detectChanges();
+    fixture.componentInstance.plans.set({ ranked: [], incomplete: [] });
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'recommendations', [
+      'recommendations.conditions',
+      'recommendations.ranking',
+    ]);
+  });
   it('does not restore demo measurements if the global exit is clicked while the catalogue loads', async () => {
     const pending = new Subject<ProductionCatalogResponse>();
     const fixture = await renderComponent(RecommendationsPage, {}, [

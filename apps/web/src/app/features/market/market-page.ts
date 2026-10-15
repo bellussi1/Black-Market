@@ -46,6 +46,7 @@ import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { TutorialLauncher } from '../../shared/tutorial-launcher/tutorial-launcher';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type CalculationQuoteContext = {
@@ -68,6 +69,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
   imports: [
+    TutorialLauncher,
     HlmInput,
     HlmCard,
     HlmButton,

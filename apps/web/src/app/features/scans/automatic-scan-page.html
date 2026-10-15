@@ -1,6 +1,7 @@
 <main class="scan-workspace" [class.reviewing]="kind()">
+  <app-tutorial-launcher screenKey="scans" />
   @if (!kind()) {
-    <section class="capture-panel" aria-labelledby="capture-title">
+    <section data-tour="scans.capture" class="capture-panel" aria-labelledby="capture-title">
       <header>
         <p class="eyebrow">IMPORTAR CAPTURAS</p>
         <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
@@ -128,10 +129,12 @@
   </section>
 
   @if (kind()) {
-    @if (profile()) {
-      <app-profile-screen-import />
-    } @else {
-      <app-scans-page />
-    }
+    <section data-tour="scans.review" aria-label="Revisar dados reconhecidos" i18n-aria-label>
+      @if (profile()) {
+        <app-profile-screen-import />
+      } @else {
+        <app-scans-page />
+      }
+    </section>
   }
 </main>

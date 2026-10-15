@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import { RecipesPage } from './recipes-page';
 const dataset = {
   region: 'sa',
@@ -19,6 +20,32 @@ const dataset = {
 };
 describe('Universal recipe explorer', () => {
   useMemoryStorage();
+  useTutorialGuideStub();
+  it('registers only unique tutorial anchors for the active page state', async () => {
+    const fixture = await renderComponent(RecipesPage);
+    expectTutorialAnchors(fixture, 'recipes', ['recipes.search']);
+    fixture.componentInstance.item.set({
+      id: 5301,
+      name: 'Produto',
+      categories: [],
+      sourceData: {},
+    } as never);
+    fixture.componentInstance.alternatives.set([
+      {
+        key: '1'.repeat(64),
+        type: 'ALCHEMY',
+        station: null,
+        inputs: [],
+        outputs: [{ itemId: 5301, name: 'Produto', quantity: '1' }],
+      },
+    ]);
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'recipes', [
+      'recipes.search',
+      'recipes.methods',
+      'recipes.tree',
+    ]);
+  });
   const route = (id: string) => ({
     provide: ActivatedRoute,
     useValue: { paramMap: of(convertToParamMap({ id })), queryParamMap: of(convertToParamMap({})) },

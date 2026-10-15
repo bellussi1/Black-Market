@@ -45,11 +45,13 @@ import {
   withVerifiedIngredientSubstitutions,
 } from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
+import { TutorialLauncher } from '../../shared/tutorial-launcher/tutorial-launcher';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-recipes-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    TutorialLauncher,
     HlmButton,
     BdoSelect,
     RouterLink,

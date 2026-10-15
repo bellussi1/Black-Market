@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import { MarketPage } from './market-page';
 
 async function render(component: typeof MarketPage) {
@@ -31,6 +32,14 @@ async function render(component: typeof MarketPage) {
 
 describe('MarketPage', () => {
   useMemoryStorage();
+  useTutorialGuideStub();
+  it('registers only unique tutorial anchors for the active page state', async () => {
+    const fixture = await render(MarketPage);
+    expectTutorialAnchors(fixture, 'market', ['market.search', 'market.filters', 'market.results']);
+    fixture.componentInstance.workspaceView.set('quote');
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'market', []);
+  });
   it('targets the local API on the published port for market queries', async () => {
     await renderComponent(MarketPage);
     const request = TestBed.inject(HttpTestingController).expectOne(
