@@ -10,14 +10,17 @@ import { DatabaseService } from '../database/database.service';
 export class WorkspaceService {
   constructor(private readonly database: DatabaseService) {}
   async get(owner: string) {
-    const [row] = await this.database.db
-      .select()
-      .from(userWorkspaces)
-      .where(eq(userWorkspaces.userId, owner))
-      .limit(1);
-    return row
-      ? { version: row.version, updatedAt: row.updatedAt, data: row.data }
-      : { version: 0, updatedAt: null, data: null };
+    return this.database.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.user_id', ${owner}, true)`);
+      const [row] = await tx
+        .select()
+        .from(userWorkspaces)
+        .where(eq(userWorkspaces.userId, owner))
+        .limit(1);
+      return row
+        ? { version: row.version, updatedAt: row.updatedAt, data: row.data }
+        : { version: 0, updatedAt: null, data: null };
+    });
   }
   async save(owner: string, input: unknown) {
     const parsed = z
@@ -25,6 +28,7 @@ export class WorkspaceService {
       .safeParse(input);
     if (!parsed.success) throw new BadRequestException('Confira os dados antes de sincronizar.');
     return this.database.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.user_id', ${owner}, true)`);
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${owner},0))`);
       const [held] = await tx
         .select()
@@ -49,6 +53,7 @@ export class WorkspaceService {
   }
   async remove(owner: string) {
     return this.database.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.user_id', ${owner}, true)`);
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${owner},0))`);
       const [held] = await tx
         .select({ version: userWorkspaces.version })

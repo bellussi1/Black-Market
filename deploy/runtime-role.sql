@@ -18,6 +18,10 @@ GRANT USAGE ON SCHEMA public TO black_market_app;
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM black_market_app;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO black_market_app;
 GRANT INSERT,UPDATE ON public.user_workspaces TO black_market_app;
+GRANT INSERT ON public.auth_users TO black_market_app;
+GRANT INSERT ON public.auth_identities TO black_market_app;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.steam_auth_attempts TO black_market_app;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.steam_auth_exchanges TO black_market_app;
 GRANT INSERT,DELETE ON public.market_snapshots TO black_market_app;
 GRANT INSERT,DELETE ON public.roadmap_entries TO black_market_app;
 SELECT format('REVOKE ALL ON DATABASE %I FROM black_market_app', current_database()) \gexec

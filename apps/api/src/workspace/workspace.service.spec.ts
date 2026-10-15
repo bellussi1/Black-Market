@@ -21,7 +21,7 @@ function fixture() {
       },
     };
   });
-  const execute = vi.fn().mockResolvedValue(undefined);
+  const execute = vi.fn((_query: SQL) => Promise.resolve(undefined));
   const tx = {
     execute,
     select: () => ({
@@ -50,8 +50,20 @@ describe('workspace deletion and stale-device protection', () => {
     const value = fixture();
     expect(await value.service.remove(owner)).toEqual({ deleted: true, version: 4 });
     expect(value.row().data).toBeNull();
-    expect(value.execute).toHaveBeenCalledOnce();
+    expect(value.execute).toHaveBeenCalledTimes(2);
     expect(value.set).toHaveBeenCalledWith(expect.objectContaining({ data: null, version: 4 }));
+  });
+  it('sets the owner as transaction-local RLS context before reading private rows', async () => {
+    const value = fixture();
+
+    await value.service.get(owner);
+    expect(value.execute).toHaveBeenCalledOnce();
+
+    const dialect = new PgDialect();
+    const [query] = value.execute.mock.calls[0];
+    const compiled = dialect.sqlToQuery(query);
+    expect(compiled.params).toEqual([owner]);
+    expect(compiled.sql).toContain('set_config');
   });
   it('rejects the pre-deletion revision instead of recreating outdated contents', async () => {
     const value = fixture();

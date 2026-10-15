@@ -41,6 +41,7 @@ export class TestWorkspaceSeeder {
           'A conta de staging ainda não existe. Entre uma vez com Google ou Steam e tente novamente.',
         );
 
+      await transaction.execute(sql`select set_config('app.user_id', ${user.id}, true)`);
       await transaction.execute(sql`select pg_advisory_xact_lock(hashtextextended(${user.id},0))`);
       const [row] = await transaction
         .select({ version: userWorkspaces.version, data: userWorkspaces.data })

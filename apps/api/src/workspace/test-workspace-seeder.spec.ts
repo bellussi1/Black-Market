@@ -2,6 +2,8 @@ import { emptyWorkspace } from '@bdo/calculators/workspace';
 import { authUsers, userWorkspaces } from '@bdo/database/schema';
 import { stagingTestCharacter, stagingTestFamily } from '@bdo/shared';
 import { ConfigService } from '@nestjs/config';
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TestWorkspaceSeeder } from './test-workspace-seeder';
@@ -16,7 +18,7 @@ function fakeDatabase(
     ? { userId: ownerId, version: 4, data: options.data, updatedAt: new Date(0) }
     : null;
   const transaction = {
-    execute: vi.fn(),
+    execute: vi.fn((_query: SQL) => Promise.resolve(undefined)),
     select: () => ({
       from: (table: unknown) => ({
         where: () => ({
@@ -79,7 +81,10 @@ describe('TestWorkspaceSeeder', () => {
       characters: [stagingTestCharacter],
       families: { [stagingTestCharacter.region]: stagingTestFamily },
     });
-    expect(database.transaction.execute).toHaveBeenCalledOnce();
+    expect(database.transaction.execute).toHaveBeenCalledTimes(2);
+    const contextQuery = new PgDialect().sqlToQuery(database.transaction.execute.mock.calls[0][0]);
+    expect(contextQuery.sql).toContain('set_config');
+    expect(contextQuery.params).toEqual([ownerId]);
   });
 
   it('does not duplicate the profile or increment the version on a repeated seed', async () => {

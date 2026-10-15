@@ -40,7 +40,7 @@ export class DatabaseService implements OnModuleDestroy {
     if (!runtimeRoleIsRestricted(result.rows[0])) {
       await this.pool.end();
       throw new Error(
-        'A aplicação de produção exige uma conta restrita do banco. Use credenciais separadas para migrações.',
+        'A aplicação exige uma conta de banco com privilégios mínimos e permissões de dados esperadas. Use credenciais separadas para migrações.',
       );
     }
   }
