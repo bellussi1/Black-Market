@@ -1422,3 +1422,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Limite de `pnpm check`**: lint do monorepo passou; a checagem global parou em `format:check` por 15 documentos preexistentes não alterados em `.superpowers/sdd`. O typecheck Web foi executado separadamente e passou; não declarar `pnpm check` integralmente verde.
 - **Arquivos**: componente novo em `apps/web/src/app/shared/loading-skeleton/`; templates, estilos, sinais de estado e specs nas telas e componentes listados acima, incluindo `world-page.spec.ts`.
 - **Próximo passo**: validar visualmente os estados de carregamento em navegador com rede lenta quando houver um ambiente local/staging adequado. Esta entrega é local, sem deploy.
+
+## 130. Histórico de mercado com linhas observadas (Codex, 15/10/2026)
+
+- **Pedido**: o gráfico de `[Grupo] Fármaco da Harmonia - Edania` mostrava pontos sem uma linha legível.
+- **Causa**: o cálculo interrompia a linha quando duas observações passavam de 16 minutos. Históricos esparsos ficavam com polylines de um ponto, invisíveis no SVG.
+- **Implementado**: preço/estoque conectam observações próximas com linha sólida e mostram intervalos longos como segmentos tracejados. Valores ausentes continuam separando a série; nenhuma observação ou valor intermediário é criado. O aviso sobre a unidade não confirmada de `totalTrades` agora aparece apenas em “Negociações por intervalo”.
+- **Arquivos**: `apps/web/src/app/features/market/market-history.ts`, `market-page.html`, `market-page.scss`.
+- **Verificação**: `pnpm --filter @bdo/web typecheck` concluiu o build Angular de desenvolvimento. Locale `pt-BR` ainda usa fallback `pt`. A revisão visual via Chrome DevTools/Playwright não abriu porque as instâncias conectadas já estavam em uso; nenhum teste automatizado foi executado nesta mudança.
+- **Próximo passo**: revisar o histórico em navegador quando a sessão estiver disponível e confirmar a aparência dos trechos tracejados com o histórico real do item.

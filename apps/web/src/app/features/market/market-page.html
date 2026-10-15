@@ -394,11 +394,18 @@
                 Negociações por intervalo
               </button>
             </div>
-            <p class="help" i18n>
-              O gráfico mostra a diferença do contador total de negociações entre consultas
-              consecutivas. A fonte não confirma quantas unidades cada registro representa; use como
-              atividade observada, não como unidades vendidas nem como estimativa de giro.
-            </p>
+            @if (historyMetric() === 'volume') {
+              <p class="help" i18n>
+                O gráfico mostra a diferença do contador total de negociações entre consultas
+                consecutivas. A fonte não confirma quantas unidades cada registro representa; use
+                como atividade observada, não como unidades vendidas nem como estimativa de giro.
+              </p>
+            } @else {
+              <p class="help" i18n>
+                As linhas conectam observações registradas. Trechos tracejados indicam intervalos
+                longos sem consulta intermediária.
+              </p>
+            }
             @if (historyLoading() && history().length) {
               <app-loading-skeleton
                 variant="inline"
@@ -437,6 +444,18 @@
                         stroke-width="3"
                         stroke-linecap="round"
                         stroke-linejoin="round"
+                        vector-effect="non-scaling-stroke"
+                      />
+                    }
+                    @for (segment of historyChart().gapSegments; track $index) {
+                      <polyline
+                        class="chart-gap-segment"
+                        [attr.points]="segment"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-dasharray="5 5"
+                        stroke-linecap="round"
                         vector-effect="non-scaling-stroke"
                       />
                     }

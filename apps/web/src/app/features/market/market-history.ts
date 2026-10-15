@@ -80,6 +80,7 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
   );
   const empty = {
     segments: [] as string[],
+    gapSegments: [] as string[],
     dots: [] as {
       x: number;
       y: number;
@@ -120,11 +121,14 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
     fetchedAt: valid[index].fetchedAt,
   }));
   const segments: string[][] = [];
+  const gapSegments: string[] = [];
   const dots: typeof empty.dots = [];
   let segment: string[] | null = null;
+  let previousCoordinate: string | null = null;
   for (const point of observations) {
     if (point.value === null) {
       segment = null;
+      previousCoordinate = null;
       continue;
     }
     const x = 72 + Math.round(((Date.parse(point.fetchedAt) - firstAt) / span) * 612);
@@ -135,11 +139,17 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
           : 0.5
         : Number(((point.value - min) * 1000n) / (max - min)) / 1000;
     const y = 176 - Math.round(relative * 136);
+    const coordinate = `${x},${y}`;
+    if (previousCoordinate && !point.connected) {
+      // Keep sparse historical prices readable while making the unobserved interval explicit.
+      gapSegments.push(`${previousCoordinate} ${coordinate}`);
+    }
     if (!segment || !point.connected) {
       segment = [];
       segments.push(segment);
     }
-    segment.push(`${x},${y}`);
+    segment.push(coordinate);
+    previousCoordinate = coordinate;
     dots.push({
       x,
       y,
@@ -150,6 +160,7 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
   }
   return {
     segments: segments.map((segment) => segment.join(' ')),
+    gapSegments,
     dots,
     valueTicks,
     timeTicks,
