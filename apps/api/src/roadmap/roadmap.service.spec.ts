@@ -53,14 +53,18 @@ describe('RoadmapService', () => {
     service = new RoadmapService(database as never);
   });
 
-  it('returns persisted entries sorted by their group and display order', async () => {
+  it('returnsPersistedEntriesInGlobalSortOrderRegardlessOfKind', async () => {
     rows = [
-      { ...row, slug: 'second', sortOrder: 1 },
-      { ...row, slug: 'flow', kind: 'flow' as const, sortOrder: 0 },
-      row,
+      { ...row, slug: 'pillar-later', sortOrder: 2 },
+      { ...row, slug: 'flow-middle', kind: 'flow' as const, sortOrder: 1 },
+      { ...row, slug: 'pillar-first', sortOrder: 0 },
     ];
     const response = await service.list();
-    expect(response.entries.map((entry) => entry.slug)).toEqual(['flow', 'market', 'second']);
+    expect(response.entries.map((entry) => entry.slug)).toEqual([
+      'pillar-first',
+      'flow-middle',
+      'pillar-later',
+    ]);
     expect(response.updatedAt).toBe(updatedAt.toISOString());
   });
 

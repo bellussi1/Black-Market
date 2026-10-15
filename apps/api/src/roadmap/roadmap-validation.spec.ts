@@ -23,11 +23,46 @@ describe('roadmap update validation', () => {
     });
   });
 
-  it('rejects duplicate slugs and order positions within the same kind', () => {
-    expect(() => parseRoadmapUpdate({ entries: [entry, { ...entry, sortOrder: 1 }] })).toThrow();
+  it('rejects duplicate slugs', () => {
     expect(() =>
       parseRoadmapUpdate({ entries: [entry, { ...entry, slug: 'crafting' }] }),
     ).toThrow();
+  });
+
+  it('acceptsMoreThan32EntriesAndSortOrderAbove1000', () => {
+    const entries = Array.from({ length: 33 }, (_, index) => ({
+      ...entry,
+      slug: `entry-${index}`,
+      sortOrder: index === 32 ? 1001 : index,
+      featured: index < 2,
+    }));
+
+    expect(parseRoadmapUpdate({ entries }).entries).toHaveLength(33);
+    expect(parseRoadmapUpdate({ entries }).entries[32]?.sortOrder).toBe(1001);
+    expect(parseRoadmapUpdate({ entries }).entries.filter(({ featured }) => featured)).toHaveLength(
+      2,
+    );
+  });
+
+  it('rejectsDuplicateSortOrdersAcrossKinds', () => {
+    expect(() =>
+      parseRoadmapUpdate({
+        entries: [entry, { ...entry, slug: 'flow-intro', kind: 'flow' }],
+      }),
+    ).toThrow();
+  });
+
+  it('rejectsRepeatedPathsInOneEntryButAllowsTheSamePathAcrossEntries', () => {
+    expect(() =>
+      parseRoadmapUpdate({
+        entries: [{ ...entry, links: [...entry.links, ...entry.links] }],
+      }),
+    ).toThrow();
+    expect(() =>
+      parseRoadmapUpdate({
+        entries: [entry, { ...entry, slug: 'market-second', sortOrder: 1 }],
+      }),
+    ).not.toThrow();
   });
 
   it('accepts only internal paths and plain text content', () => {

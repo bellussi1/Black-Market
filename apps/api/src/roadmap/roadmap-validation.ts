@@ -17,7 +17,7 @@ const roadmapEntrySchema = z.object({
     .max(64)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use um identificador em letras minúsculas e hífens.'),
   kind: z.enum(['flow', 'pillar']),
-  sortOrder: z.number().int().min(0).max(1000),
+  sortOrder: z.number().int().min(0),
   title: z.string().trim().min(1).max(120),
   summary: z.string().trim().min(1).max(280),
   description: z.string().trim().max(1600).default(''),
@@ -38,12 +38,12 @@ const roadmapEntrySchema = z.object({
 const roadmapUpdateSchema = z
   .object({
     expectedUpdatedAt: z.string().datetime({ offset: true }).nullable().default(null),
-    entries: z.array(roadmapEntrySchema).max(32),
+    entries: z.array(roadmapEntrySchema),
   })
   .superRefine(({ entries }, context) => {
     const slugs = new Set<string>();
     const ids = new Set<string>();
-    const positions = new Set<string>();
+    const positions = new Set<number>();
     entries.forEach((entry, index) => {
       if (slugs.has(entry.slug))
         context.addIssue({
@@ -61,14 +61,23 @@ const roadmapUpdateSchema = z
           });
         ids.add(entry.id);
       }
-      const position = `${entry.kind}:${entry.sortOrder}`;
-      if (positions.has(position))
+      if (positions.has(entry.sortOrder))
         context.addIssue({
           code: 'custom',
           path: ['entries', index, 'sortOrder'],
-          message: 'A ordem deve ser única dentro de cada grupo.',
+          message: 'A ordem deve ser única em todo o Roadmap.',
         });
-      positions.add(position);
+      positions.add(entry.sortOrder);
+      const paths = new Set<string>();
+      entry.links.forEach((link, linkIndex) => {
+        if (paths.has(link.path))
+          context.addIssue({
+            code: 'custom',
+            path: ['entries', index, 'links', linkIndex, 'path'],
+            message: 'Cada caminho deve ser único dentro da entrada.',
+          });
+        paths.add(link.path);
+      });
       if (/<\/?[a-z][^>]*>/i.test(`${entry.title}\n${entry.summary}\n${entry.description}`))
         context.addIssue({
           code: 'custom',
