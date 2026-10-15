@@ -9,7 +9,8 @@ import { MarketPage } from './market-page';
 
 async function render(component: typeof MarketPage) {
   const fixture = await renderComponent(component);
-  TestBed.inject(HttpTestingController)
+  const http = TestBed.inject(HttpTestingController);
+  http
     .expectOne((request) => request.url.endsWith('/market/board'))
     .flush({
       source: 'arsha',
@@ -23,6 +24,7 @@ async function render(component: typeof MarketPage) {
       pageSize: 20,
       categories: [],
     });
+  http.expectOne((request) => request.url.endsWith('/categories')).flush({ categories: [] });
   fixture.detectChanges();
   return fixture;
 }

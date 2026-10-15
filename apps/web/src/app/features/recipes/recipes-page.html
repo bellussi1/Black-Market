@@ -103,7 +103,10 @@
       </label>
       <div class="recipe-cards">
         @for (row of list.recipes; track row.key) {
-          <a class="recipe-card" [routerLink]="['/recipes', row.key]"
+          <a
+            class="recipe-card"
+            [routerLink]="['/recipes', row.key]"
+            [appRouteIntentPrefetch]="'/recipes/' + row.key"
             ><app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" /><span
               ><small>{{ typeLabel(row.type) }}</small
               ><strong>{{ row.name }}</strong></span

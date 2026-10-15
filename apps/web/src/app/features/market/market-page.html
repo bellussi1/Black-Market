@@ -100,6 +100,7 @@
             variant="outline"
             class="btn subtle"
             [routerLink]="['/recipes/items', selected.id]"
+            [appRouteIntentPrefetch]="'/recipes/items/' + selected.id"
             i18n
             >Explorar receitas e origens</a
           >

@@ -33,6 +33,7 @@ import { ADVERTISING } from '../core/advertising';
 import { IdentityService } from '../core/identity.service';
 import { visibleMarkets } from '../core/market-configuration';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
+import { RouteIntentPrefetchDirective } from '../core/route-intent-prefetch.directive';
 import { RegionPreferences } from '../core/region-preferences';
 import { WorkspaceStore } from '../core/workspace-store';
 import { AdSlot } from '../shared/ad-slot/ad-slot';
@@ -58,6 +59,7 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
     RouterLinkActive,
 
     RouterOutlet,
+    RouteIntentPrefetchDirective,
 
     FormsModule,
 

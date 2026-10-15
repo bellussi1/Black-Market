@@ -33,6 +33,7 @@ import {
 } from 'rxjs';
 
 import { CatalogApiService, type CatalogItemResponse } from '../../core/catalog-api.service';
+import { RouteIntentPrefetchDirective } from '../../core/route-intent-prefetch.directive';
 import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
@@ -48,7 +49,15 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-recipes-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmButton, BdoSelect, RouterLink, CatalogItemPicker, ItemIcon, RecipeTree],
+  imports: [
+    HlmButton,
+    BdoSelect,
+    RouterLink,
+    RouteIntentPrefetchDirective,
+    CatalogItemPicker,
+    ItemIcon,
+    RecipeTree,
+  ],
   templateUrl: './recipes-page.html',
   styleUrl: './recipes-page.scss',
 })

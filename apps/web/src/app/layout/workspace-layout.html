@@ -48,6 +48,7 @@
         @for (link of primaryLinks(); track link.path) {
           <a
             [routerLink]="link.path"
+            [appRouteIntentPrefetch]="link.path"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: link.path === '/' }"
             ariaCurrentWhenActive="page"
@@ -70,7 +71,11 @@
             </summary>
             <div class="group-links">
               @for (link of group.links; track link.path) {
-                <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page"
+                <a
+                  [routerLink]="link.path"
+                  [appRouteIntentPrefetch]="link.path"
+                  routerLinkActive="active"
+                  ariaCurrentWhenActive="page"
                   ><ng-icon class="nav-mark" [name]="link.icon" aria-hidden="true" />
                   <span>{{ link.label }}</span></a
                 >

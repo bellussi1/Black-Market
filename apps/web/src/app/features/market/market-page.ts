@@ -36,6 +36,7 @@ import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { uiLocale } from '../../core/locale';
 import { MarketCacheService } from '../../core/market-cache.service';
+import { RouteIntentPrefetchDirective } from '../../core/route-intent-prefetch.directive';
 import { type Quote, quoteSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
@@ -73,6 +74,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     BdoSelect,
     FormsModule,
     RouterLink,
+    RouteIntentPrefetchDirective,
     TaxOptionsComponent,
     PresetBar,
     CalculationProof,

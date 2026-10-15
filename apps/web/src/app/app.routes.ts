@@ -3,6 +3,7 @@ import { type RedirectFunction, Router, type Routes } from '@angular/router';
 
 import { authGuard } from './core/auth.guard';
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
+import { marketRouteResolver, recipesRouteResolver } from './core/public-route-data';
 import { WorkspaceLayout } from './layout/workspace-layout';
 
 const personalRedirect =
@@ -89,6 +90,7 @@ export const routes: Routes = [
       {
         path: 'recipes/items/:id',
         title: $localize`Black Market · Explorar produção e obtenção`,
+        resolve: { publicRoute: recipesRouteResolver },
         loadComponent: () =>
           import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
       },
@@ -96,6 +98,7 @@ export const routes: Routes = [
         path: 'recipes/:key',
 
         title: $localize`Black Market · Receita`,
+        resolve: { publicRoute: recipesRouteResolver },
 
         loadComponent: () =>
           import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
@@ -105,6 +108,7 @@ export const routes: Routes = [
         path: 'recipes',
 
         title: $localize`Black Market · Receitas`,
+        resolve: { publicRoute: recipesRouteResolver },
 
         loadComponent: () =>
           import('./features/recipes/recipes-page').then((module) => module.RecipesPage),
@@ -244,6 +248,7 @@ export const routes: Routes = [
         path: 'market',
 
         title: $localize`Black Market · Mercado`,
+        resolve: { publicRoute: marketRouteResolver },
 
         loadComponent: () => import('./features/market/market-page').then((m) => m.MarketPage),
       },
