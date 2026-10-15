@@ -74,6 +74,9 @@
 .roadmap-editor-list {
   display: grid;
   gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .roadmap-editor-entry {
@@ -117,9 +120,13 @@
 }
 
 .icon-button {
-  min-width: 38px;
+  min-width: 44px;
   padding-inline: 10px;
   font-size: 18px;
+}
+
+.roadmap-admin .btn {
+  min-height: 44px;
 }
 
 .roadmap-editor-fields {
@@ -142,6 +149,7 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
+  min-height: 44px;
   border: 1px solid var(--bm-control-border);
   border-radius: 2px;
   background: var(--bm-input);
@@ -158,6 +166,7 @@
 .roadmap-field input:focus-visible,
 .roadmap-field textarea:focus-visible,
 .roadmap-field select:focus-visible,
+.roadmap-featured-field input:focus-visible,
 .roadmap-admin button:focus-visible,
 .roadmap-admin a:focus-visible {
   outline: 2px solid var(--bm-accent);
@@ -182,7 +191,14 @@
   align-items: center;
   gap: 8px;
   width: fit-content;
+  min-height: 44px;
+  overflow-wrap: anywhere;
   color: var(--bm-text);
+}
+
+.roadmap-featured-field input {
+  flex: none;
+  accent-color: var(--bm-accent);
 }
 
 .roadmap-link-editor {
