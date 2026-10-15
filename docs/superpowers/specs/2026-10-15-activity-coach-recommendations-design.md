@@ -1,120 +1,122 @@
 # Coach de Atividades — refatoração de Recomendações
 
-## Objetivo
+## Objetivo do produto
 
-Refazer a experiência completa da rota `/recommendations` para responder primeiro à decisão do jogador: **o que vale mais a pena fazer agora, dentro das atividades que ele prefere?** O Coach deve reaproveitar perfil, maestria, armazém, receitas, planejador de produção e cotações já disponíveis, reduzindo a configuração manual e explicando por que cada recomendação aparece.
+Refazer `/recommendations` como um Coach de Atividades que ajude a **gerar prata com Life Skills para evoluir o gear de Life Skill e de PvPvE**. A pergunta principal passa a ser: “dentro das atividades que escolhi, o que oferece o melhor retorno líquido por hora com meu perfil e meus recursos atuais?”
 
-O resultado é uma estimativa para planejamento e progressão de gear. Não garante preço, liquidez, disponibilidade de compra nem lucro realizado.
+O resultado deve destacar prata líquida/hora, custos, quantidade, duração, estoque aproveitado e fonte/idade dos dados. A tela não deve abrir com um aviso genérico que enfraqueça a finalidade econômica; deve explicar a base de cada valor no próprio resultado. Preço cotado, volume histórico e estoque observado continuam sendo sinais com escopo e horário, sem serem apresentados como uma venda executada.
 
-## Evidência da pesquisa
+## Sinal da comunidade
 
-- A pesquisa tem 31 respostas e é exploratória, sem pretensão de representar toda a comunidade.
-- Calculadora de custo/lucro foi escolhida por 20 pessoas; mapa de coleta por 18; receitas com etapas claras por 17; comparação de atividades por retorno/hora por 10.
-- Coleta, Alquimia, Grind/PvE e Pesca aparecem com maior frequência na rotina (19, 16, 14 e 13 respostas, respectivamente).
-- Dez pessoas apontaram, cada uma, dificuldade com dados atualizados, entendimento de cálculos ou localização de informações/filtros. Dezessete disseram perder tempo procurando ou conferindo dados.
-- Uma resposta aberta propôs integrar preferências, gear, maestria, armazém, compra/produção, liquidez e alternativas de grind. Outra pediu recomendações de Life Skill ou Grind a partir dos materiais no armazém.
-- Vinte pessoas preferiram uma tela equilibrada, com resumo e detalhes quando necessários; 25 consultam essas ferramentas no computador enquanto jogam.
+- A pesquisa tem 31 respostas e é exploratória, não representa estatisticamente toda a comunidade.
+- Calculadora de custo/lucro foi escolhida por 20 pessoas; mapa de coleta por 18; receitas claras por 17; comparação de atividades por retorno/hora por 10.
+- Coleta, Alquimia, Grind/PvE e Pesca aparecem com maior frequência na rotina (19, 16, 14 e 13 respostas).
+- Dez pessoas apontaram dificuldade com atualização, explicação dos cálculos ou localização de informações/filtros; 17 disseram perder tempo buscando ou conferindo dados.
+- Uma resposta aberta propôs integrar rotina, gear, maestria, armazém, produção/compra, liquidez e alternativas de grind; outra pediu recomendações de Life Skill ou Grind a partir do armazém.
+- Vinte preferem uma tela equilibrada, com resumo e detalhes quando necessários; 25 usam essas ferramentas no computador enquanto jogam.
 
-Esses sinais orientam a experiência, mas não substituem validação de uso nem autorizam afirmar que a maioria exige uma funcionalidade específica.
+Esses dados orientam o produto, mas não justificam generalizar preferências para a comunidade toda.
 
-## Diagnóstico do checkout
+## Pesquisa de concorrentes e projetos abertos
 
-A rota atual já implementa uma comparação econômica extensa, mas a ordem e os controles colocam o custo de preparação no jogador:
+Fontes consultadas em 15/10/2026 e pesquisas anteriores do próprio repositório registradas em `docs/research/lytics-workshop.md`, `docs/research/garmoth-workerman-arsha.md`, `docs/research/master-bdo-knowledge-base.md` e `docs/research/repository-review-calculators-maps.md`. O registro desta rodada está em [`docs/research/activity-coach-competitive-review.md`](../../research/activity-coach-competitive-review.md).
 
-1. É preciso acionar `Carregar catálogo`.
-2. Tempos por método precisam ser informados para classificar lucro/hora; calibrações específicas de fórmula são editadas na página.
-3. A consulta de preços é uma ação separada, seguida por uma tabela paginada de preços manuais.
-4. A pessoa pesquisa/filtra milhares de fórmulas, seleciona uma receita para ajustes adicionais e só então aciona a comparação.
-5. Teste com personagem fictício e preços de demonstração ocupam o fluxo normal da página.
+- **BDOLytics**: a calculadora de Processamento apresenta receitas em tabela comparável, com silver/h, preço e média de volume de 14 dias; a página de uma receita detalha ingredientes, custo e lucro. Inspira o resumo comparativo e o caminho explicável. O conteúdo interativo atual nem sempre pôde ser confirmado fora do resultado indexado.
+- **Garmoth**: reúne maestria, gear, grind tracker e sessões de Life Skill; a documentação do app declara leitura de loot em tela, revisão antes do envio e estimativa de silver/h. Serve de referência para uma futura coleta manual/OCR revisável de sessões, não como fonte autorizada de rendimento ou API.
+- **BDO Workshop**: declara calculadoras de crafting/mercado, scanner de screenshots de inventário/armazém/gear e ferramentas de gathering/mastery. Reforça o fluxo único e a revisão de importação; não se deve presumir acurácia de OCR nem copiar dados, imagens ou interface.
+- **`iDevelopThings/bdo-viewer`**: projeto aberto com árvore de crafting, comparação de comprar/fabricar, rendimento por maestria e custos locais. A referência útil é conceitual; o próprio projeto descreve uso pessoal/educacional/não comercial, então não transplantar código ou dados.
+- **`Thell/bdo-empire` e Workerman**: otimizam império de trabalhadores por CP e oferecem importação/exportação de configurações. São fora do ranking de produção manual desta primeira entrega; ajudam a separar lucro passivo de worker empire das sessões Life Skill.
+- Os outros projetos analisados nas notas do repositório cobrem extração local, mapas, mercado e enhancement, mas não fornecem uma base comunitária validada de loot/hora para este Coach. Reutilização de código, dados ou imagens exige revisar licença e origem separadamente.
 
-O resultado existe depois de várias tarefas de configuração; a rota não começa pela recomendação. Perfil e estoque já estão no workspace; `activeMinutes`, prata, peso e maestrias fazem parte do perfil. O motor compara cenários de produção e pode otimizar origens de materiais no grafo da fórmula. A tela de receita já possui otimizador próprio.
+## Estado real do repositório
 
-Restrições verificadas:
+`/recommendations` já possui o motor de planejamento de produção, mestreias temporárias, inventário/reservas, orçamento, peso, preço NPC, cotação de mercado e calibração de tempo. O otimizador da árvore de receitas já compara compra/produção dentro do grafo selecionado. A página atual, porém, exige carregar catálogo, preencher tempos, pedir cotações, navegar a grade de preços, localizar receitas e apertar comparar.
 
-- Não há fonte automática persistente de preços aprovada. Arsha é candidato comunitário para consultas sob demanda, sem permissão/licença e SLA confirmados; coletores ficam desligados.
-- Volume de negociação só é conhecido quando a cobertura e a série são suficientes. Estoque/cotação pontual não provam venda provável ou imediata.
-- Faltam modelos validados de loot/hora por spot, gear e atividade para comparar Grind/PvE com produção. Maestria ou gear não podem ser convertidos por multiplicador genérico.
-- Tempos não disponíveis e cotações ausentes devem impedir a classificação econômica correspondente; não podem ser completados com zero ou suposições silenciosas.
+O catálogo de produção vem de `ProductionApi.catalog()` e não participa hoje do cache público usado por `/recipes`. `PublicRouteData` aquece catálogo e mercado apenas nas rotas públicas. Já `CatalogApiService` e `MarketCacheService` fornecem cache por região/locale, deduplicação de chamadas, uso de valores em cache e revalidação conforme seus contratos. O personagem, o armazém e as preferências são privados e devem continuar no workspace local.
 
-## Decisões de produto
+Limites encontrados:
 
-1. **Substituir o fluxo inteiro da página.** Não empilhar um painel Coach acima da oficina/formulário atual. Preservar a rota e reaproveitar serviços, contratos e cálculo onde forem adequados.
-2. **Começar pelo resultado.** Ao abrir a rota, carregar em segundo plano o catálogo necessário e selecionar o personagem ativo da região. Se não existir personagem, apresentar uma ação direta para cadastrar/selecionar um; a demonstração permanece secundária.
-3. **Preferências não bloqueiam a primeira recomendação.** Na primeira visita, considerar os métodos de produção Life Skill que o catálogo realmente suporta. A pessoa pode marcar as atividades favoritas em um controle compacto; salvar essa preferência no workspace e aplicá-la nas próximas visitas.
-4. **Usar os dados que já pertencem à pessoa.** Estoque livre, personagem ativo, maestria, orçamento, tempo de jogo (`activeMinutes`), peso, região e opções de imposto vêm do workspace. Seleção de personagem continua disponível, mas não é uma etapa obrigatória em cada visita.
-5. **Eliminar entrada repetida.** Calibrações manuais existentes passam a ser opcionais e persistidas no workspace, associadas ao personagem e à atividade/fórmula. Uma ausência só solicita entrada contextual quando for necessária para completar um resultado; não exibir previamente um formulário para todas as atividades e receitas.
-6. **Resolver cotações no fluxo.** Consultar primeiro o cache da mesma região/chave e buscar em segundo plano somente cotações necessárias ao conjunto de candidatos habilitado, obedecendo os limites existentes. Preservar resultados do cache com origem e idade durante atualização/erro. Preços manuais continuam disponíveis como ajuste opcional nos detalhes.
-7. **Ranking somente com dados suficientes.** Uma oportunidade entra no ranking de lucro/hora quando a conta tem saída, custos, tempo e cotações necessários. Resultados parciais e pendências aparecem em um grupo separado com causa explícita; não são pontuados como zero nem ordenados como piores oportunidades.
-8. **Liquidez não é garantia de venda.** Exibir preço, estoque e volume apenas quando cada campo tiver origem e cobertura identificáveis. Volume desconhecido permanece desconhecido. Um preço cotado não implica que toda a produção poderá ser vendida no lote ou no tempo planejado.
-9. **Gear só entra em modelos verificados.** Para Life Skills, aplicar maestrias conforme os calculadores existentes. Presets de gear não alteram lucro/hora sem modelo comprovado por atividade. A comparação entre produção e Grind/Coleta/Pesca aguarda uma etapa separada de dados de sessão.
-10. **Sem nova dependência de servidor nesta etapa.** Preferências e calibrações permanecem no workspace local e seguem o mecanismo existente de backup/exportação. Não criar tabelas, coletores ou APIs comunitárias para o MVP do Coach.
+- O dataset de staging tem 6.813 receitas de Life Skill depois do filtro aplicado em Recomendações; buscar cotações de todo o universo sem critério pode gerar muitas chamadas. A pesquisa de fontes informa 429/503 recentes; o Coach deve limitar consultas ao escopo habilitado, reaproveitar cache, atualizar em lotes suportados e manter resultados/cache em falha.
+- O volume histórico só pode aparecer se a série e a fonte tiverem cobertura identificável; não prova liquidez futura.
+- Preço desconhecido, zero observado, indisponível, antigo e estimado precisam continuar distintos.
+- O perfil contém equipamentos, mas não existe relação validada para converter equipamento em rendimento de produção nem em loot/hora de Grind/PvE.
+- Não há ainda benchmarks comunitários revisados de rendimento por região, atividade, duração, maestria/gear e loot.
+- O formulário `/lifeskills` já registra sessões manuais, mas integrá-las ao ranking de produção requer uma etapa própria de associação entre método, perfil e proveniência.
 
-## Experiência proposta
+## Decisões
 
-### Cabeçalho e controles rápidos
+1. **Refatorar a rota completa**, sem adicionar um painel isolado à oficina atual.
+2. **Carregar o catálogo automaticamente com resolver de rota.** O resolver aquece somente o snapshot público de produção para região/locale; a página consome o mesmo valor do cache. Remover por completo o botão “Carregar catálogo”. Não passar personagem, armazém, prata ou outras informações pessoais pelo resolver.
+3. **Usar o perfil ativo automaticamente.** Exibir troca de personagem e editar duração da sessão apenas como controles compactos. Ler maestria, inventário livre, reservas, prata, peso, região e imposto do workspace atual.
+4. **Dar prioridade às atividades preferidas.** Permitir selecionar Culinária, Alquimia e Processamento, as áreas com modelo de produção no catálogo e calculadores atuais. Persistir seleção no workspace com defaults compatíveis para backups antigos. Não mostrar Grind/PvE, coleta, pesca ou caça como oportunidades ranqueadas sem rendimento/dados sustentáveis.
+5. **Calcular assim que houver dados**, sem exigir um botão “Comparar”. A primeira tela mostra recomendações completas disponíveis e pendências acionáveis. As preferências, perfil e alterações de calibração atualizam o resultado automaticamente.
+6. **Carregar tempos com parcimônia.** Reutilizar as calibrações existentes quando informadas, persistir uma medição por personagem e método, e pedir somente a medição que falta para os métodos escolhidos. Não inferir tempos a partir de gear ou valores de demonstração. Mostrar lucro por lote quando possível; não fabricar lucro/hora quando o tempo é desconhecido.
+7. **Consultar mercado automaticamente no escopo ativo**, priorizando cache da mesma região, preservando valores antigos enquanto revalida em segundo plano e respeitando lotes/limites existentes. Não varrer nem solicitar preços de todo o catálogo indiscriminadamente. Ao entrar na rota, resolver os itens efetivamente necessários às candidatas habilitadas; se o provedor falhar, manter cache e declarar cobertura pendente.
+8. **Manter preços manuais em detalhes**, como correção pontual, sem uma tabela de preço como etapa principal. Identificar claramente preço manual, NPC, mercado atual/máximo e horário observado.
+9. **Reaproveitar o calculador atual** para saldo após impostos, custo econômico do estoque, orçamento, peso, rendimento de maestria e escolhas de compra/produção/estoque. Não recriar o otimizador de receita; ligar à rota da receita para exploração profunda.
+10. **Usar o gear como destino econômico, não como multiplicador sem modelo.** A tela pode explicitar que a prata das recomendações ajuda a financiar gear de Life Skill e PvPvE; só aplicar efeito de equipamento quando uma relação verificada existir.
+11. **Não criar fonte de mercado, tabela pública, integração de conta ou comunidade nesta entrega.** Seguir a política atual de fonte; nenhum endpoint interno de concorrente ou código/dado externo entra no produto.
 
-- Título em linguagem de decisão, como “O que vale mais a pena fazer?” e uma frase curta de contexto.
-- Usar automaticamente o personagem ativo. Troca de personagem fica disponível junto do nome e de indicadores essenciais, sem um painel inicial longo com todas as estatísticas.
-- Mostrar o tempo disponível do perfil de forma compacta e editável no contexto; não duplicar `activeMinutes` com uma segunda configuração sem fonte definida.
-- Atividades favoritas aparecem como opções compactas e editáveis. Sem preferência salva, todas as categorias Life Skill suportadas entram no primeiro cálculo, evitando uma configuração obrigatória antes de ver valor.
-- Atualização de preços é automática/cache-first. Ação de atualizar pode existir como controle secundário, nunca como pré-requisito para exibir conteúdo já válido.
+## Experiência da página
 
-### Resultados
+### Resumo primeiro
 
-- A primeira área de conteúdo mostra as melhores oportunidades completas dentro das atividades habilitadas, com lucro líquido estimado por hora como métrica principal.
-- Cada resultado mostra também, de forma compacta, lucro do lote/tempo, desembolso necessário, custo econômico do estoque próprio, quantidade e disponibilidade de venda conhecida.
-- Um motivo curto explica a recomendação, por exemplo: atividade selecionada, maestria aplicada, insumos disponíveis, compra necessária e vantagem relativa aos demais cenários completos.
-- Detalhes sob demanda contêm etapas, materiais, origem/data das cotações, volume/cobertura quando disponível, escolhas comprar/produzir/estoque, impostos, tempos e calibrações.
-- Candidatos incompletos ficam em “Dados pendentes” com causas acionáveis (preço, estoque/volume desconhecido, tempo ou rendimento); podem oferecer ajuste manual pontual sem transformar a tabela inteira de insumos na tela inicial.
-- A comparação mostra quantos candidatos foram avaliados e quantos ficaram incompletos, sem chamar uma busca parcial de ótimo global.
+- Título direto: “Faça prata com suas Life Skills” ou equivalente, com a finalidade de evoluir gear de Life Skill e PvPvE.
+- Linha compacta do personagem ativo, prata disponível, tempo de sessão, maestrias relevantes e estado do armazém.
+- Seletor compacto das atividades preferidas, com defaults compatíveis e persistência local/workspace.
+- Ranking principal de oportunidades completas, ordenado por lucro líquido/hora; quantidade, tempo, gasto em prata e custo econômico ficam visíveis junto ao resultado.
+- O resumo informa quantas receitas entraram na comparação, quantas têm dados completos e quantas aguardam dados. Não chama o catálogo inteiro de examinado se a cobertura efetiva for menor.
 
-### Estados
+### Explicação sob demanda
 
-- **Carregando:** manter o resumo e o progresso no fluxo; não bloquear a página inteira nem remover conteúdo válido.
-- **Sem personagem:** orientar cadastro/seleção na Família; não criar um personagem fictício automaticamente.
-- **Sem preços atuais:** usar fontes alternativas válidas quando existirem, identificar preço antigo/manual/NPC e separar candidatos sem base suficiente.
-- **Sem tempos calibrados:** conservar calibração já salva; se faltar, solicitar somente a medição necessária para aquele candidato e salvar no workspace. Não atribuir lucro/hora sem duração válida.
-- **Sem resultados completos:** explicar quais dados faltam e oferecer próximo passo. Não preencher com listas falsas, preços simulados ou cartões de atividades sem modelo.
-- **Falha no provedor:** manter dados de cache marcados com idade e mostrar a indisponibilidade; não refazer consultas individuais indiscriminadamente para cada material ausente.
+- Cada oportunidade explica, em uma frase, por que aparece: atividade preferida, maestria usada, material do armazém, compra necessária ou diferença para a próxima opção completa.
+- Detalhes incluem fórmula/árvore, quantidades, escolhas comprar/produzir/estoque, impostos, custo de oportunidade dos materiais próprios, preço e origem, timestamp, disponibilidade observada, volume e cobertura quando disponíveis, e tempo usado.
+- Dados incompletos ficam numa lista compacta de pendências com a ação que pode completá-los. Valores indisponíveis não se tornam zero.
+- Ajuste manual aparece junto ao item ou premissa afetada. Controles de calibração ficam recolhidos e contextualizados; sem simulações fictícias no caminho principal.
 
-## Persistência e compatibilidade
+### Estados e acessibilidade
 
-- Preferências de atividades pertencem ao workspace do jogador, não a uma recomendação efêmera.
-- Tempos/rendimentos que o jogador calibrar pertencem ao personagem e à chave de método/fórmula, pois podem mudar conforme personagem/equipamento/contexto.
-- Novos campos precisam aceitar backups locais anteriores por meio de defaults/validação compatível; preservar todos os dados existentes ao carregar e salvar.
-- Nenhum dado de armazém, preços manuais ou perfil é enviado para uma tabela pública/comunitária nesta etapa.
-- Manter SSR, guard da rota e estado de demonstração sem permitir que a demonstração sobrescreva o workspace real.
+- Carregamento automático: exibir cache válido/antigo já disponível e indicar atualização, sem bloquear a página inteira.
+- Sem personagem: oferecer caminho curto para cadastrar personagem na Família; não criar um fictício.
+- Sem calibração: permitir informá-la no contexto, salvar, e calcular lucro/hora depois.
+- Sem preço/volume: indicar fonte/idade/ausência e deixar a receita fora do ranking completo quando o campo for necessário.
+- Erro/limite do provedor: preservar valores em cache e permitir seguir com dados disponíveis.
+- Detalhes com `<details>` ou padrão acessível equivalente, rótulos e foco claros, teclado, textos longos, zoom e layout móvel.
+
+## Etapas posteriores
+
+### Comparação de atividades e dados comunitários
+
+Antes de comparar produção com Grind/PvE, coleta, pesca, caça ou outras atividades:
+
+1. Definir registro manual da sessão como fonte inicial: atividade/rota, região/servidor se relevante, duração, perfil, maestria/gear equipado, buffs, consumíveis, loot, custos e preço de valorização.
+2. Guardar valores brutos, horário, origem e versão de regra separadamente de correções. Exigir revisão do jogador para importação; permitir corrigir/excluir; nunca publicar armazém ou dados pessoais por padrão.
+3. Tratar OCR só como assistente: guardar candidatos e confiança, mostrar revisão explícita e não promover leituras automaticamente a benchmark.
+4. Para benchmarks comunitários, documentar consentimento, moderação, deduplicação, outliers, patch/região, amostra por faixa de maestria/gear, cobertura mínima e intervalo de confiança antes de publicar rankings.
+5. Integrar com conta/armazém apenas por API oficial autorizada, de leitura, escopo mínimo, opção de adesão e revogação clara. Não solicitar senha.
 
 ## Fora do escopo inicial
 
-- Ranking entre lucro de produção e Grind/PvE, coleta, pesca, caça ou barter.
-- Cálculo de AP/DP ou gear score como prova de rendimento por spot.
-- Coleta ou armazenamento automático persistente de preços de todo o catálogo.
-- Submissão comunitária de logs, OCR de loot, agregação de benchmarks e moderação.
-- Integração oficial de armazém/conta Pearl Abyss. Só considerar após autorização formal e desenho de consentimento/revogação.
-- Overlay dentro do jogo.
+- Comparar produção com grind, PvE, coleta, pesca, caça ou dados de sessões comunitárias.
+- Inferir lucro/hora a partir de gear, ranking de spot ou screenshot sem revisão.
+- Criar base comunitária, coletores persistentes, novas APIs ou uso de endpoints internos de concorrentes.
+- Importar código, ativos ou dados externos sem revisão de licença/direitos.
+- Integração automática com conta Pearl Abyss.
 
-Essas áreas podem ser especificadas depois com origem, licença, validação, cobertura e regras de privacidade próprias. A experiência inicial não deve insinuar que já compara tais atividades.
+## Critérios de aceite
 
-## Critérios de aceite do redesenho
+1. `/recommendations` carrega automaticamente; não há botão “Carregar catálogo”, “Consultar mercado” ou “Comparar lucro por hora” como pré-requisito para a primeira recomendação.
+2. O resolver aquece e reutiliza o catálogo de produção cacheado por região/locale; a página não faz uma segunda chamada sem necessidade.
+3. O estado privado não entra no resolver nem em cache público. Trocar região/personagem invalida ou atualiza apenas a comparação correta.
+4. Personagem, inventário livre/reservas, maestria, prata, duração, peso e imposto vêm do workspace; preferências/calibrações persistem e backups antigos continuam carregáveis.
+5. O resumo mostra lucro líquido estimado/hora e prata líquida do lote, custos, duração, quantidade, estado do estoque e uma explicação curta; os detalhes mostram premissas e fontes.
+6. Apenas cálculos completos entram no ranking; tempo/rendimento/preço ausente produz pendência contextual, nunca zero ou pior colocação.
+7. Consultas de cotação são automáticas, usam `MarketCacheService`, chaveiam por região e reaproveitam cache; erros preservam os valores já disponíveis. Não existe fan-out por item individual.
+8. Volume só é mostrado com cobertura e fonte reconhecíveis. Nenhum texto transforma histórico em venda garantida ou previsão.
+9. Equipamento aparece como contexto/progresso para gear, mas não altera cálculo sem modelo verificado.
+10. Não há controles de demonstração ou preços fictícios no fluxo principal.
+11. Página responsiva, acessível e alinhada às skills de UI do projeto; controles extensos e breakdowns ficam sob demanda.
 
-1. O primeiro uso não exige botões separados para carregar o catálogo e iniciar a consulta de mercado.
-2. Com personagem existente, a rota abre o Coach já associado ao personagem ativo e reaproveita estoque, maestria, orçamento, tempo, peso e região.
-3. A tela inicial não pede preço manual de cada ingrediente, calibração de todos os métodos nem pesquisa de uma receita específica para mostrar as primeiras recomendações possíveis.
-4. Filtros de atividades preferidas são editáveis, persistidos no workspace e afetam quais candidatos entram no cálculo.
-5. Mercado usa cache e fonte já configurados, busca apenas o conjunto necessário e mostra idade/origem. Uma falha ou resposta incompleta não gera fan-out de chamadas por ingrediente nem lucro inventado.
-6. Resultado completo mostra lucro líquido/hora e custo/tempo/lote; a explicação revela dados, premissas e limitações. Estoque próprio tem custo econômico separado do desembolso.
-7. Cenários sem custo, tempo ou rendimento necessários aparecem em pendências explicadas e nunca em um ranking completo.
-8. Volume desconhecido não é interpretado como zero, e nenhum texto promete venda ou rentabilidade garantida.
-9. Ajustes manuais permanecem disponíveis no contexto do item/resultado e persistem quando apropriado, sem serem requisito para preencher uma grade inteira antes do cálculo.
-10. Nenhum resultado usa gear para prever produção ou Grind/PvE sem um modelo verificável.
-11. Backups existentes continuam carregáveis, e dados reais são preservados ao entrar/sair da demonstração.
-12. A página comunica sua cobertura: Life Skill de produção nesta etapa; demais atividades sem ranking até haver dados adequados.
-13. Composição BDO segue resumo primeiro e detalhes no contexto, sem excesso de cartões aninhados; a tela funciona com teclado, leitor de tela, conteúdo longo, desktop e viewport móvel.
+## Revisão do escopo
 
-## Pontos de atenção para o plano
-
-- O maior risco não é o layout: é conseguir candidatos suficientes com cotação e tempo confiáveis sem voltar a solicitar toda a configuração manual. O plano deve identificar como o catálogo e o cache limitam esse conjunto e como a UI comunica cobertura parcial.
-- O índice de volume observado não prova venda realizável. Se o contrato disponível não fornecer um volume confiável, a saída deve dizê-lo e continuar sem esse fator.
-- O otimizador por fórmula e o ranking do catálogo têm escopos/limites diferentes; a interface deve declarar o escopo de cada um sem inferir ótimo global.
-- A lista de métodos deve derivar do catálogo e do mapeamento existente, sem hardcode de métodos ausentes.
+O MVP continua em produção Life Skill porque é onde o repositório já tem receita, rendimento por maestria, estoque e cálculo econômico reutilizáveis. A intenção de produto é gerar prata para gear; a limitação é que hoje não existem dados que sustentem a comparação de combate/coleta por rendimento. Para que o Coach seja útil já no primeiro uso, resolver automaticamente o catálogo e as cotações da seleção ativa, usar o cache existente e pedir no máximo as medições de tempo ainda ausentes para a atividade escolhida.
