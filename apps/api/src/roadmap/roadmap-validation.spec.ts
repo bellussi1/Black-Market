@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
 import { parseRoadmapUpdate } from './roadmap-validation';
@@ -24,9 +25,22 @@ describe('roadmap update validation', () => {
   });
 
   it('rejects duplicate slugs', () => {
-    expect(() =>
-      parseRoadmapUpdate({ entries: [entry, { ...entry, slug: 'crafting' }] }),
-    ).toThrow();
+    let error: unknown;
+    try {
+      parseRoadmapUpdate({ entries: [entry, { ...entry, sortOrder: 1 }] });
+    } catch (caught) {
+      error = caught;
+    }
+
+    if (!(error instanceof BadRequestException)) throw new Error('Expected slug validation error.');
+    expect(error.getResponse()).toMatchObject({
+      issues: [
+        {
+          path: ['entries', 1, 'slug'],
+          message: 'Cada identificador deve ser único.',
+        },
+      ],
+    });
   });
 
   it('acceptsMoreThan32EntriesAndSortOrderAbove1000', () => {
