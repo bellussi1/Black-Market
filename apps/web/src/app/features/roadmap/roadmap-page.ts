@@ -15,6 +15,7 @@ import type { RoadmapEntry } from '@bdo/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { finalize } from 'rxjs';
 
+import { isLoginRequiredPath } from '../../core/auth.guard';
 import { IdentityService } from '../../core/identity.service';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
 import { ROADMAP_ICONS } from './roadmap-icons';
@@ -45,7 +46,13 @@ export class RoadmapPage implements OnInit {
   readonly pillars = computed(() =>
     this.entries()
       .filter((entry) => entry.kind === 'pillar')
-      .sort((left, right) => left.sortOrder - right.sortOrder),
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => ({
+        ...entry,
+        links: entry.links.filter(
+          (link) => this.identity.authenticated() || !isLoginRequiredPath(link.path),
+        ),
+      })),
   );
 
   ngOnInit() {

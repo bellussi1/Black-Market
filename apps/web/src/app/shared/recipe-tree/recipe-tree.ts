@@ -55,6 +55,7 @@ import {
 } from 'rxjs';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { IdentityService } from '../../core/identity.service';
 import { DEFAULT_MARKET_CACHE_TTL_MS, MarketCacheService } from '../../core/market-cache.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { MarketApi, type MarketHistoryPoint } from '../../features/market/market-api';
@@ -202,6 +203,7 @@ export class RecipeTree {
   readonly advanced = signal(false);
   readonly detailsOpen = signal(false);
   readonly store = inject(WorkspaceStore);
+  readonly identity = inject(IdentityService);
   readonly catalog = inject(CatalogApiService);
   private readonly knowledge = inject(RecipeKnowledge);
   private readonly sessions = inject(RecipeSessions);

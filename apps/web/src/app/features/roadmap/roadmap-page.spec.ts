@@ -53,6 +53,7 @@ describe('RoadmapPage', () => {
   it('renders the flow, pillars, status, and internal links from the API', async () => {
     const identity = {
       canManageRoadmap: signal(false),
+      authenticated: signal(false),
       initialize: vi.fn().mockResolvedValue(undefined),
     };
     const fixture = await renderComponent(RoadmapPage, {}, [
@@ -74,6 +75,7 @@ describe('RoadmapPage', () => {
     expect(fixture.nativeElement.querySelector('a[href="/market"]')?.textContent).toContain(
       'Abrir mercado',
     );
+    expect(fixture.nativeElement.querySelector('a[href="/recommendations"]')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toMatch(/\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b/);
     http.verify();
   });

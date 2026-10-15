@@ -38,6 +38,14 @@ describe('Progressive player workspace', () => {
     expect(page.message()).toContain('Valor inválido');
     expect(page.store.data().families).toBeUndefined();
   });
+  it('hides scan and storage shortcuts from signed-out visitors', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')].map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(links).not.toContain('/scans');
+    expect(links).not.toContain('/storage');
+  });
   it('keeps family data per region and does not invent unknown life skill levels', async () => {
     const fixture = await renderComponent(PlayerPage),
       page = fixture.componentInstance;

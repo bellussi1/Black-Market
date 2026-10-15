@@ -30,6 +30,7 @@ import {
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
+import { IdentityService } from '../core/identity.service';
 import { visibleMarkets } from '../core/market-configuration';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
 import { RegionPreferences } from '../core/region-preferences';
@@ -39,6 +40,9 @@ import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-pi
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
 import { BdoSelect } from '../ui/native-select/bdo-select';
+
+type NavigationLink = { path: string; label: string; icon?: string; requiresAuth?: boolean };
+type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -107,6 +111,8 @@ export class WorkspaceLayout {
 
   private readonly router = inject(Router);
 
+  readonly identity = inject(IdentityService);
+
   private readonly path = signal(this.router.url);
 
   readonly showAds = computed(
@@ -133,6 +139,7 @@ export class WorkspaceLayout {
   );
 
   constructor() {
+    void this.identity.initialize().catch(() => undefined);
     this.router.events
 
       .pipe(
@@ -155,15 +162,20 @@ export class WorkspaceLayout {
 
   readonly mobileNavOpen = signal(false);
 
-  readonly primaryLinks = SCREENSHOT_MVP
+  private readonly primaryLinkOptions: NavigationLink[] = SCREENSHOT_MVP
     ? [
         { path: '/', label: 'Início', icon: 'lucideHouse' },
-        { path: '/scans', label: 'Importar capturas', icon: 'lucideScanLine' },
+        { path: '/scans', label: 'Importar capturas', icon: 'lucideScanLine', requiresAuth: true },
         { path: '/market', label: 'Mercado', icon: 'lucideStore' },
         { path: '/recipes', label: 'Explorar receitas', icon: 'lucideBookOpenText' },
         { path: '/crafting', label: 'Calcular produção', icon: 'lucideHammer' },
-        { path: '/recommendations', label: 'O que fazer', icon: 'lucideCompass' },
-        { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse' },
+        {
+          path: '/recommendations',
+          label: 'O que fazer',
+          icon: 'lucideCompass',
+          requiresAuth: true,
+        },
+        { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true },
         { path: '/family', label: 'Família', icon: 'lucideUsersRound' },
         { path: '/shopping', label: 'Lista de materiais', icon: 'lucideListChecks' },
         { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
@@ -171,14 +183,23 @@ export class WorkspaceLayout {
     : [
         { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
 
-        { path: '/recommendations', label: $localize`Ganhar prata`, icon: 'lucideCompass' },
+        {
+          path: '/recommendations',
+          label: $localize`Ganhar prata`,
+          icon: 'lucideCompass',
+          requiresAuth: true,
+        },
       ].filter((link) => isMvpPathEnabled(link.path));
 
-  readonly navGroups = [
+  readonly primaryLinks = computed(() =>
+    this.primaryLinkOptions.filter((link) => !link.requiresAuth || this.identity.authenticated()),
+  );
+
+  private readonly navGroupOptions: NavigationGroup[] = [
     {
       title: 'Seus itens',
       icon: 'lucideBoxes',
-      links: [{ path: '/storage', label: 'Armazém', icon: 'lucideWarehouse' }],
+      links: [{ path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true }],
     },
 
     {
@@ -218,9 +239,19 @@ export class WorkspaceLayout {
       icon: 'lucideBoxes',
 
       links: [
-        { path: '/storage', label: $localize`Armazém`, icon: 'lucideWarehouse' },
+        {
+          path: '/storage',
+          label: $localize`Armazém`,
+          icon: 'lucideWarehouse',
+          requiresAuth: true,
+        },
 
-        { path: '/scans', label: $localize`Importar por captura`, icon: 'lucideScanLine' },
+        {
+          path: '/scans',
+          label: $localize`Importar por captura`,
+          icon: 'lucideScanLine',
+          requiresAuth: true,
+        },
 
         { path: '/world', label: $localize`Bases e trabalhadores`, icon: 'lucideMap' },
 
@@ -242,12 +273,19 @@ export class WorkspaceLayout {
         { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
       ],
     },
-  ]
-    .map((group) => ({
-      ...group,
-      links: group.links.filter((link) => isMvpPathEnabled(link.path)),
-    }))
-    .filter((group) => !SCREENSHOT_MVP && group.links.length);
+  ];
+
+  readonly navGroups = computed(() =>
+    this.navGroupOptions
+      .map((group) => ({
+        ...group,
+        links: group.links.filter(
+          (link) =>
+            isMvpPathEnabled(link.path) && (!link.requiresAuth || this.identity.authenticated()),
+        ),
+      }))
+      .filter((group) => !SCREENSHOT_MVP && group.links.length),
+  );
 
   readonly utilityLinks = [
     { path: '/termos', label: $localize`Termos de Uso` },
@@ -259,18 +297,16 @@ export class WorkspaceLayout {
     { path: '/contato', label: $localize`Contato e suporte` },
   ];
 
-  readonly allLinks = [
-    ...this.primaryLinks,
-
-    ...this.navGroups.flatMap((group) => group.links),
-
+  readonly allLinks = computed(() => [
+    ...this.primaryLinks(),
+    ...this.navGroups().flatMap((group) => group.links),
     ...this.utilityLinks,
-  ];
+  ]);
 
   readonly currentPage = computed(() => {
     const currentPath = this.path().split(/[?#]/, 1)[0];
 
-    const link = this.allLinks.find(
+    const link = this.allLinks().find(
       (candidate) =>
         currentPath === candidate.path ||
         (candidate.path !== '/' && currentPath.startsWith(`${candidate.path}/`)),
@@ -279,7 +315,7 @@ export class WorkspaceLayout {
     return link?.label ?? $localize`Black Market`;
   });
 
-  groupIsActive(group: (typeof this.navGroups)[number]): boolean {
+  groupIsActive(group: NavigationGroup): boolean {
     const currentPath = this.path().split(/[?#]/, 1)[0];
 
     return group.links.some(

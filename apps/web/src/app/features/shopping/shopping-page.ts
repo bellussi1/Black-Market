@@ -5,6 +5,7 @@ import { availableInventory } from '@bdo/calculators';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 
+import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
 
@@ -16,6 +17,7 @@ import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
 })
 export class ShoppingPage {
   readonly store = inject(WorkspaceStore);
+  readonly identity = inject(IdentityService);
   readonly message = signal('');
   readonly page = signal(0);
   readonly pageSize = 48;

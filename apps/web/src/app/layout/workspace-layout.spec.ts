@@ -1,13 +1,24 @@
+import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import { IdentityService } from '../core/identity.service';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
 import { WorkspaceLayout } from './workspace-layout';
 
 describe('workspace navigation', () => {
   useMemoryStorage();
 
+  function identity(authenticated = false) {
+    return {
+      initialize: async () => undefined,
+      authenticated: signal(authenticated),
+    };
+  }
+
   it('uses the supplied logo and preserves the separate wordmark', async () => {
-    const fixture = await renderComponent(WorkspaceLayout);
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
     const brand = (fixture.nativeElement as HTMLElement).querySelector('.brand')!;
     const wordmark = brand.querySelector('.brand-wordmark')!;
 
@@ -23,10 +34,14 @@ describe('workspace navigation', () => {
   });
 
   it('offers one destination for storage, family and market', async () => {
-    const fixture = await renderComponent(WorkspaceLayout);
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity(true) },
+    ]);
     const nav = (fixture.nativeElement as HTMLElement).querySelector('#workspace-navigation')!;
     const paths = [...nav.querySelectorAll('a')].map((link) => link.getAttribute('href'));
     expect(paths.filter((path) => path === '/storage')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/scans')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/recommendations')).toHaveLength(1);
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
     expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
@@ -38,5 +53,17 @@ describe('workspace navigation', () => {
     expect(nav.textContent).toContain('Família');
     expect(nav.textContent).toContain('Calcular produção');
     expect(nav.textContent).toContain('Roadmap');
+  });
+
+  it('hides login-required navigation from signed-out visitors', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')].map((link) =>
+      link.getAttribute('href'),
+    );
+
+    for (const path of ['/scans', '/storage', '/recommendations'])
+      expect(links).not.toContain(path);
   });
 });

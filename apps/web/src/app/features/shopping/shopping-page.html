@@ -26,7 +26,9 @@
         <small>ESTOQUE CONSIDERADO</small
         ><strong>{{ store.data().region.toUpperCase() }} · confirmado</strong>
       </div>
-      <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans">Atualizar por captura</a>
+      @if (identity.authenticated()) {
+        <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans">Atualizar por captura</a>
+      }
     </div>
     <div class="shopping-workbench">
       <section hlmCard class="panel">

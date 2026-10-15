@@ -12,15 +12,17 @@
     </p>
     @if (!embedded()) {
       <div class="action-row">
-        <a
-          hlmBtn
-          variant="outline"
-          class="btn"
-          routerLink="/scans"
-          [queryParams]="{ type: 'gear' }"
-          i18n
-          >Importar equipamentos por captura</a
-        ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventário</a>
+        @if (identity.authenticated()) {
+          <a
+            hlmBtn
+            variant="outline"
+            class="btn"
+            routerLink="/scans"
+            [queryParams]="{ type: 'gear' }"
+            i18n
+            >Importar equipamentos por captura</a
+          ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventário</a>
+        }
       </div>
     }
   </header>

@@ -261,7 +261,12 @@
                   }
                 </label>
               } @empty {
-                <p i18n>Nenhum estoque importado. <a routerLink="/scans">Importar capturas</a></p>
+                <p i18n>
+                  Nenhum estoque importado.
+                  @if (identity.authenticated()) {
+                    <a routerLink="/scans">Importar capturas</a>
+                  }
+                </p>
               }
             </div>
             <p class="help" i18n>

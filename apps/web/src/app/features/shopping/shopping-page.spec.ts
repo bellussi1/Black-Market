@@ -34,6 +34,8 @@ describe('Integrated shopping list', () => {
         },
       ],
     }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/scans"]')).toBeNull();
     expect(page.rows()[0]).toMatchObject({ required: 20, available: 12, missing: 8 });
     page.store.update((state) => ({
       ...state,

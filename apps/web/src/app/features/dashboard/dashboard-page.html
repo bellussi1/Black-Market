@@ -14,9 +14,11 @@
       </p>
       <div class="action-row hero-actions">
         <a hlmBtn variant="outline" class="btn" routerLink="/market" i18n>Consultar preço</a>
-        <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans" i18n
-          >Importar capturas</a
-        >
+        @if (identity.authenticated()) {
+          <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans" i18n
+            >Importar capturas</a
+          >
+        }
         @if (!screenshotMvp) {
           <a hlmBtn variant="outline" class="btn subtle" routerLink="/demo" i18n
             >Experimentar com um personagem</a
@@ -43,20 +45,22 @@
             ><span i18n>Veja preço, estoque e região</span>
           </div>
         </li>
-        <li>
-          <span class="flow-number">3</span>
-          <div>
-            <a routerLink="/scans" i18n>Importe seus itens</a
-            ><span i18n>Enviar, revisar e confirmar</span>
-          </div>
-        </li>
-        <li>
-          <span class="flow-number">4</span>
-          <div>
-            <a routerLink="/storage" i18n>Use o que já possui</a
-            ><span i18n>Confira armazém, inventário e equipamentos</span>
-          </div>
-        </li>
+        @if (identity.authenticated()) {
+          <li>
+            <span class="flow-number">3</span>
+            <div>
+              <a routerLink="/scans" i18n>Importe seus itens</a
+              ><span i18n>Enviar, revisar e confirmar</span>
+            </div>
+          </li>
+          <li>
+            <span class="flow-number">4</span>
+            <div>
+              <a routerLink="/storage" i18n>Use o que já possui</a
+              ><span i18n>Confira armazém, inventário e equipamentos</span>
+            </div>
+          </li>
+        }
       </ol>
     </aside>
   </section>
@@ -109,7 +113,7 @@
       </div>
     </div>
     <div class="journey-grid">
-      @for (journey of journeys; track journey.number) {
+      @for (journey of journeys(); track journey.number) {
         <a [routerLink]="journey.path" class="journey-card" [attr.data-type]="journey.icon">
           <div class="journey-card-top">
             <span class="journey-icon" aria-hidden="true">
@@ -166,7 +170,7 @@
       </div>
       <div class="home-stats">
         @for (stat of counts(); track stat.label) {
-          @if (stat.value > 0 && isEnabled(stat.path)) {
+          @if (stat.value > 0 && isEnabled(stat.path) && canOpenPath(stat.path)) {
             <a [routerLink]="stat.path">
               <span>{{ stat.label }}</span>
               <strong>{{ stat.value }}</strong>

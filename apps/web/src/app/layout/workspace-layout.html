@@ -45,7 +45,7 @@
       i18n-aria-label
     >
       <div class="primary-links">
-        @for (link of primaryLinks; track link.path) {
+        @for (link of primaryLinks(); track link.path) {
           <a
             [routerLink]="link.path"
             routerLinkActive="active"
@@ -57,7 +57,7 @@
         }
       </div>
       <div class="nav-groups">
-        @for (group of navGroups; track group.title) {
+        @for (group of navGroups(); track group.title) {
           <details
             class="nav-group"
             [class.current-section]="groupIsActive(group)"
@@ -158,8 +158,11 @@
           <span i18n
             >Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão;
             seus dados anteriores estão preservados.</span
-          ><a routerLink="/recommendations" i18n>Comparar produção</a
-          ><button hlmBtn variant="outline" class="btn subtle" (click)="store.exitDemo()" i18n>
+          >
+          @if (identity.authenticated()) {
+            <a routerLink="/recommendations" i18n>Comparar produção</a>
+          }
+          <button hlmBtn variant="outline" class="btn subtle" (click)="store.exitDemo()" i18n>
             Sair da demonstração
           </button>
         </aside>

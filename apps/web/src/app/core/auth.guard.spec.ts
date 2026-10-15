@@ -3,10 +3,19 @@ import type { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/route
 import { Router } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
-import { authGuard } from './auth.guard';
+import { authGuard, isLoginRequiredPath } from './auth.guard';
 import { IdentityService } from './identity.service';
 
 describe('authGuard', () => {
+  it('recognizes only the authenticated workspace destinations', () => {
+    expect(isLoginRequiredPath('/scans?type=gear')).toBe(true);
+    expect(isLoginRequiredPath('/scans/profile')).toBe(true);
+    expect(isLoginRequiredPath('/recommendations')).toBe(true);
+    expect(isLoginRequiredPath('/storage?tab=inventory')).toBe(true);
+    expect(isLoginRequiredPath('/recipes')).toBe(false);
+    expect(isLoginRequiredPath('/family')).toBe(false);
+  });
+
   function evaluate(
     authenticated: boolean,
     url: string,

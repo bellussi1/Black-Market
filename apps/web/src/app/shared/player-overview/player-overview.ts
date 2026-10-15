@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { recommend } from '@bdo/calculators';
 
+import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../formatters';
 @Component({
@@ -47,9 +48,11 @@ import { silver } from '../formatters';
           avaliados ficam fora. Preços salvos podem estar desatualizados.
         </p>
         <div class="action-row">
-          <a class="btn" routerLink="/recipes" i18n>Planejar uma produção</a
-          ><a class="btn subtle" routerLink="/storage" i18n>Ver meus materiais</a
-          ><a class="btn subtle" routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n
+          <a class="btn" routerLink="/recipes" i18n>Planejar uma produção</a>
+          @if (identity.authenticated()) {
+            <a class="btn subtle" routerLink="/storage" i18n>Ver meus materiais</a>
+          }
+          <a class="btn subtle" routerLink="/family" [queryParams]="{ tab: 'equipment' }" i18n
             >Revisar equipamentos</a
           >
         </div>
@@ -62,7 +65,9 @@ import { silver } from '../formatters';
             Estimativa com os seus registros e o tempo disponível, não uma promessa de rendimento. A
             sessão do exemplo é simulada.
           </p>
-          <a routerLink="/recommendations" i18n>Ver cálculo e limitações →</a>
+          @if (identity.authenticated()) {
+            <a routerLink="/recommendations" i18n>Ver cálculo e limitações →</a>
+          }
         } @else {
           <p i18n>
             Registre uma atividade ou prepare uma receita para receber comparações específicas.
@@ -90,6 +95,7 @@ import { silver } from '../formatters';
 })
 export class PlayerOverview {
   readonly store = inject(WorkspaceStore);
+  readonly identity = inject(IdentityService);
   readonly silver = silver;
   readonly skillNames = [
     { id: 'cooking', label: 'Culinária' },

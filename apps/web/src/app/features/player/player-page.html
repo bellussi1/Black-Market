@@ -47,16 +47,19 @@
               <option [value]="profile.id">{{ profile.name }}</option>
             }
           </select></label
-        ><a
-          hlmBtn
-          variant="outline"
-          class="btn"
-          routerLink="/scans"
-          [queryParams]="{ type: 'gear' }"
-          >Importar equipamentos</a
-        ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }"
-          >Inventário do personagem →</a
         >
+        @if (identity.authenticated()) {
+          <a
+            hlmBtn
+            variant="outline"
+            class="btn"
+            routerLink="/scans"
+            [queryParams]="{ type: 'gear' }"
+            >Importar equipamentos</a
+          ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }"
+            >Inventário do personagem →</a
+          >
+        }
       </div>
       <details [open]="!profiles().length">
         <summary>Adicionar personagem · somente o nome</summary>

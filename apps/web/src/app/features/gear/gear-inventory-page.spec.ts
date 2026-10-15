@@ -25,6 +25,14 @@ describe('Character equipment management', () => {
     page.store.update((state) => ({ ...state, activeCharacterId: 'one' }));
     expect(page.profile()?.id).toBe('one');
   });
+  it('hides scan and storage shortcuts when no account is signed in', async () => {
+    const fixture = await renderComponent(GearInventoryPage);
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')].map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(links).not.toContain('/scans');
+    expect(links).not.toContain('/storage');
+  });
   it('creates a character and saves manual equipment without calculating attributes', async () => {
     const fixture = await renderComponent(GearInventoryPage),
       page = fixture.componentInstance;

@@ -4,6 +4,8 @@ import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 
+import { isLoginRequiredPath } from '../../core/auth.guard';
+import { IdentityService } from '../../core/identity.service';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -22,12 +24,13 @@ export class DashboardPage {
   readonly screenshotMvp = SCREENSHOT_MVP;
   readonly isEnabled = isMvpPathEnabled;
   readonly store = inject(WorkspaceStore);
+  readonly identity = inject(IdentityService);
   readonly preferences = inject(RegionPreferences);
   readonly counts = this.preferences.counts;
   readonly hasWorkspaceData = computed(() =>
     this.counts().some((stat) => stat.value > 0 && isMvpPathEnabled(stat.path)),
   );
-  readonly journeys = SCREENSHOT_MVP
+  private readonly journeyOptions = SCREENSHOT_MVP
     ? [
         {
           number: '00',
@@ -35,6 +38,7 @@ export class DashboardPage {
           title: 'Comparar valores',
           description: 'Consulte preço e estoque. Alterne entre valor bruto e recebimento líquido.',
           path: '/market',
+          requiresAuth: false,
           tag: 'MERCADO CENTRAL',
           steps: 'Selecionar item · conferir cotação',
         },
@@ -44,6 +48,7 @@ export class DashboardPage {
           title: 'Explorar uma receita',
           description: 'Abra os ingredientes, confira o estoque e descubra fontes conhecidas.',
           path: '/recipes',
+          requiresAuth: false,
           tag: 'PRODUÇÃO',
           steps: 'Buscar item · escolher método · explorar',
         },
@@ -53,6 +58,7 @@ export class DashboardPage {
           title: 'Importar minhas capturas',
           description: 'Selecione até oito imagens. Confira itens e quantidades antes de salvar.',
           path: '/scans',
+          requiresAuth: true,
           tag: 'IMPORTAÇÃO',
           steps: 'Enviar · conferir · salvar',
         },
@@ -62,6 +68,7 @@ export class DashboardPage {
           title: 'Consultar meu armazém',
           description: 'Encontre seus itens por cidade ou personagem e ajuste as quantidades.',
           path: '/storage',
+          requiresAuth: true,
           tag: 'ARMAZÉM',
           steps: 'Armazéns e inventários · pesquisar · editar',
         },
@@ -71,6 +78,7 @@ export class DashboardPage {
           title: 'Gerenciar minha família',
           description: 'Reúna personagens, equipamentos, profissões e bônus da família.',
           path: '/family',
+          requiresAuth: false,
           tag: 'FAMÍLIA',
           steps: 'Escolher personagem · revisar ficha e equipamentos',
         },
@@ -82,6 +90,7 @@ export class DashboardPage {
           title: $localize`Consultar um preço`,
           description: $localize`Veja preço e estoque da região e descubra quanto recebe depois do imposto.`,
           path: '/market',
+          requiresAuth: false,
           tag: $localize`MERCADO`,
           steps: $localize`Buscar item · conferir cotação · guardar`,
         },
@@ -91,6 +100,7 @@ export class DashboardPage {
           title: $localize`Produzir ou comprar`,
           description: $localize`Confira os materiais e compare o custo da receita com o valor de venda.`,
           path: '/crafting',
+          requiresAuth: false,
           tag: $localize`PRODUÇÃO`,
           steps: $localize`Escolher produto · revisar materiais · comparar`,
         },
@@ -100,6 +110,7 @@ export class DashboardPage {
           title: $localize`Encontrar uma atividade lucrativa`,
           description: $localize`Compare suas opções com o tempo, a energia e os recursos do personagem.`,
           path: '/recommendations',
+          requiresAuth: true,
           tag: $localize`PRATA POR HORA`,
           steps: $localize`Informar personagem · comparar · salvar plano`,
         },
@@ -109,10 +120,16 @@ export class DashboardPage {
           title: $localize`Organizar meus materiais`,
           description: $localize`Importe uma captura ou cadastre itens para usar nas receitas e nos planos.`,
           path: '/storage',
+          requiresAuth: true,
           tag: $localize`ARMAZÉM`,
           steps: $localize`Adicionar itens · revisar estoque · planejar uso`,
         },
       ];
+  readonly journeys = computed(() =>
+    this.journeyOptions.filter((journey) => !journey.requiresAuth || this.identity.authenticated()),
+  );
+  readonly canOpenPath = (path: string) =>
+    this.identity.authenticated() || !isLoginRequiredPath(path);
   readonly tools = [
     {
       title: $localize`Buscar itens no mercado`,
@@ -162,5 +179,5 @@ export class DashboardPage {
       path: '/reference',
       tag: $localize`REFERÊNCIA`,
     },
-  ].filter((tool) => isMvpPathEnabled(tool.path));
+  ].filter((tool) => isMvpPathEnabled(tool.path) && this.canOpenPath(tool.path));
 }

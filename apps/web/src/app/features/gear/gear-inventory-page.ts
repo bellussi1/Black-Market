@@ -7,6 +7,7 @@ import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
 
+import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
@@ -28,6 +29,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
 })
 export class GearInventoryPage {
   readonly store = inject(WorkspaceStore);
+  readonly identity = inject(IdentityService);
   readonly embedded = input(false);
   readonly message = signal('');
   readonly slots = gearSlots;
