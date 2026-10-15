@@ -70,6 +70,20 @@
               ],
               "outputHashing": "all"
             },
+            "staging": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1.1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "16kB",
+                  "maximumError": "40kB"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,

@@ -19,11 +19,13 @@ pwsh -File scripts/staging.ps1 Seed
 pwsh -File scripts/staging.ps1 Start
 ```
 
-`Seed` exige o PostgreSQL de desenvolvimento ligado e `.env` existente. Copia schema, journal de migrations e catálogo; exclui dados de `user_workspaces`, `market_snapshots`, `market_current_prices` e `market_price_points`. Recusa banco de staging com tabelas existentes. Nunca substitui o banco de desenvolvimento. Se a restauração falhar, preservar o estado e investigar antes de tentar novamente.
+`Seed` exige o PostgreSQL de desenvolvimento ligado e `.env` existente. Copia schema, journal de migrations e catálogo; exclui dados de workspaces, identidades Google/Steam, tentativas/trocas de autenticação e histórico/cotações de mercado. Recusa banco de staging com tabelas existentes. Nunca substitui o banco de desenvolvimento. Se a restauração falhar, preservar o estado e investigar antes de tentar novamente.
 
 Os assets dos catálogos ativos em `data/assets` são copiados na inicialização para o volume exclusivo `black-market-staging-assets`, com permissões de leitura para o runtime. O diretório de origem é montado somente para leitura na tarefa de cópia; a API recebe somente o volume de staging em leitura. A cópia é incremental e preserva versões anteriores. Git e imagem Docker não incluem o catálogo nem os assets.
 
 O comando cria `.env.staging` ignorado pelo Git, com senhas aleatórias distintas para proprietário e runtime. Usa o projeto `black-market-staging`, volume `black-market-staging-data` e gateway em `127.0.0.1:8081`. Nenhuma porta do banco ou API fica publicada. Login, analytics e coleta agendada ficam desativados.
+
+O build de staging usa otimização de produção e limites de tamanho próprios para não bloquear a validação dos testers; os limites estritos do build de produção não são alterados. Avisos atuais de bundle e estilos permanecem visíveis durante o build.
 
 ## Uso
 
@@ -31,10 +33,7 @@ O comando cria `.env.staging` ignorado pelo Git, com senhas aleatórias distinta
 # Abrir localmente: http://localhost:8081
 pwsh -File scripts/staging.ps1 Start
 
-# Link HTTPS aberto a quem tiver o endereço
-pwsh -File scripts/staging.ps1 Share
-
-# Restringir a lista de convite a até dez endereços únicos
+# Link HTTPS restrito a 1–10 pessoas convidadas
 pwsh -File scripts/staging.ps1 Share -AllowedEmail pessoa1@example.com,pessoa2@example.com
 ```
 
@@ -64,7 +63,7 @@ docker compose --env-file .env.staging -f docker-compose.staging.yml exec -T api
 
 Esse comando somente funciona em `APP_ENV=staging` e para a UID explicitamente configurada. Ele acrescenta AuroraVale/ValeDourado se ainda não existirem, sem substituir personagem, família, seleção ou dados já existentes. Repetir o comando não duplica o perfil nem incrementa a versão quando nada muda. O seed não cria conta Firebase e não é um endpoint HTTP.
 
-A lista `Share -AllowedEmail` é independente do login do produto: ela restringe quem pode abrir o túnel e aceita no máximo dez e-mails válidos distintos. Não compartilhe e-mails de testers no Git ou em mensagens do produto. O staging local e o quick tunnel dependem do computador do mantenedor; para disponibilidade persistente, use domínio/túnel nomeado ou hospedagem.
+A lista `Share -AllowedEmail` é obrigatória e aceita de um a dez e-mails válidos distintos; sem ela, o túnel não inicia. Essa barreira é independente do login do produto. Não compartilhe e-mails de testers no Git ou em mensagens do produto. O staging local e o quick tunnel dependem do computador do mantenedor; para disponibilidade persistente, use domínio/túnel nomeado ou hospedagem.
 
 ## Atualização, backup e retorno
 

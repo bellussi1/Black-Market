@@ -39,8 +39,9 @@ jobs:
       - name: Validate staging PowerShell syntax
         shell: pwsh
         run: |
-          foreach ($file in @('scripts/staging.ps1', 'scripts/staging-backup.ps1')) {
+          foreach ($file in @('scripts/staging.ps1', 'scripts/staging-backup.ps1', 'scripts/staging-guards.ps1', 'scripts/test-staging-guards.ps1')) {
             $tokens = $null; $parseErrors = $null
             [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$parseErrors) | Out-Null
             if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
           }
+          & (Join-Path $PWD 'scripts/test-staging-guards.ps1')

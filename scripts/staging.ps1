@@ -4,6 +4,7 @@ param(
   [string[]]$AllowedEmail = @()
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'staging-guards.ps1')
 $taskRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Set-Location -LiteralPath $taskRoot
 $taskEnv = Join-Path $taskRoot '.env.staging'
@@ -118,7 +119,9 @@ switch ($Action) {
     $remote = '/tmp/black-market-staging-seed.dump'
     $dump = Join-Path $taskStateDir 'catalog-seed.dump'
     $dev = @('compose', '--env-file', '.env', '-f', 'docker-compose.yml')
-    Invoke-Docker ($dev + @('exec', '-T', 'postgres', 'sh', '-c', 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-acl --exclude-table-data=public.user_workspaces --exclude-table-data=public.market_snapshots --exclude-table-data=public.market_current_prices --exclude-table-data=public.market_price_points -f /tmp/black-market-staging-seed.dump'))
+    $exclusions = (Get-StagingSeedDumpExclusionArguments) -join ' '
+    $dumpCommand = 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-acl ' + $exclusions + ' -f /tmp/black-market-staging-seed.dump'
+    Invoke-Docker ($dev + @('exec', '-T', 'postgres', 'sh', '-c', $dumpCommand))
     $source = (Invoke-Docker ($dev + @('ps', '-q', 'postgres'))).Trim()
     Invoke-Docker @('cp', "${source}:$remote", $dump)
     Invoke-Docker ($dev + @('exec', '-T', 'postgres', 'rm', $remote))
@@ -150,16 +153,7 @@ switch ($Action) {
     return
   }
   'Share' {
-    if ($AllowedEmail.Count -gt 10) { throw 'O staging aceita no máximo dez e-mails de tester.' }
-    $seenAllowedEmails = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $normalizedAllowedEmails = @(
-      foreach ($email in $AllowedEmail) {
-        $normalizedEmail = $email.Trim()
-        if ($normalizedEmail -notmatch '^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$') { throw 'E-mail autorizado inválido.' }
-        if (-not $seenAllowedEmails.Add($normalizedEmail)) { throw 'A lista de testers não pode repetir e-mails.' }
-        $normalizedEmail
-      }
-    )
+    $normalizedAllowedEmails = @(Normalize-StagingAllowedEmails -Email $AllowedEmail)
     $cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
     $cloudflaredPath = $(if ($cloudflared) { $cloudflared.Source } else { Join-Path ${env:ProgramFiles(x86)} 'cloudflared/cloudflared.exe' })
     if (-not (Test-Path -LiteralPath $cloudflaredPath)) { throw 'Instale cloudflared: winget install --id Cloudflare.cloudflared --exact. Depois reabra o terminal.' }
@@ -203,7 +197,7 @@ switch ($Action) {
         if ($null -eq $previousStagingUrl) { Remove-Item Env:STAGING_URL -ErrorAction SilentlyContinue }
         else { $env:STAGING_URL = $previousStagingUrl }
       }
-      $access = $(if ($AllowedEmail.Count -gt 0) { 'restrito aos e-mails informados' } else { 'acesso aberto a quem receber o link' })
+      $access = 'restrito aos e-mails autorizados'
       if ($firebaseProject) {
         $hostName = ([uri]$url).Host
         Write-Output "Firebase Authentication > Settings > Authorized domains: adicione $hostName."
@@ -230,7 +224,7 @@ if ($Action -eq 'Update' -or -not $hasImage) {
     Backup-Stage
   }
   $tag = 'black-market:staging-' + (Get-Date).ToUniversalTime().ToString('yyyyMMddHHmmss')
-  Invoke-Docker @('build', '-t', $tag, '.')
+  Invoke-Docker @('build', '--build-arg', 'WEB_BUILD_CONFIGURATION=production,staging', '-t', $tag, '.')
   Set-StageValue 'APP_IMAGE' $tag
   try { Start-Stage } catch {
     Set-StageValue 'APP_IMAGE' $current
@@ -238,4 +232,4 @@ if ($Action -eq 'Update' -or -not $hasImage) {
   }
   @{ current = $tag; previous = $(if ($hasImage) { $current } else { $null }) } | ConvertTo-Json | Set-Content -LiteralPath $taskState
 } else { Start-Stage }
-Write-Output 'Staging pronto: http://localhost:8081. Para compartilhar, use Share. -AllowedEmail é opcional.'
+Write-Output 'Staging pronto: http://localhost:8081. Para compartilhar, use Share com -AllowedEmail (1 a 10 endereços únicos).'
