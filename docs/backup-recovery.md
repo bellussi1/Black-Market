@@ -29,3 +29,15 @@ Copiar dump/manifesto e `data/assets/<checksum>` para armazenamento externo priv
 ## Helper Linux e controles adicionais
 
 `scripts/backup-database.sh` usa Docker Compose e coreutils, sem exigir PowerShell. Gera dump e manifesto, protege gravação com lock/arquivo parcial e aplica retenção opcional com APPLY_RETENTION=1. Ver [agendamento e evidências de restauração](security-hardening.md). Agendamento e cópia externa permanecem pendentes.
+
+## Plano para cópias externas cifradas
+
+As cópias remotas devem receber o dump PostgreSQL e os assets por checksum. O destino será um bucket privado compatível com S3, escolhido e configurado por ambiente; endpoint, bucket, região e credencial de escrita não entram no código nem no Git. A identidade de upload terá acesso restrito ao prefixo de backup, sem leitura do banco e sem permissão para alterar a configuração de retenção.
+
+Antes do upload, cifrar cada arquivo no host com `age` usando um destinatário público configurado fora do repositório. O arquivo privado de recuperação fica em um gerenciador de segredos e em uma cópia offline separada do host de backup. O serviço de backup não recebe a chave privada. TLS protege o transporte; a criptografia do objeto no provedor pode ser habilitada como camada adicional. O manifesto remoto registra nomes, horários, revisão e SHA-256 do arquivo cifrado, sem IDs de usuário, nomes de personagem ou conteúdo do workspace.
+
+Manter a retenção atual de 7 cópias diárias e 4 semanais, com versionamento e proteção contra exclusão no bucket quando disponíveis. Monitorar idade e resultado do último upload; falha ou cópia vencida deve gerar alerta operacional. Aplicar o mesmo fluxo ao conjunto de assets, com verificação do checksum antes e depois da transferência.
+
+O ensaio de restauração deve baixar e validar os objetos, decifrá-los em ambiente temporário isolado e conferir a restauração antes de apagar o ambiente. Backups de produção não devem ser restaurados no staging: ele permanece com dados sintéticos. Alvos iniciais de recuperação são RPO de 24 horas e RTO de 2 horas; ainda precisam ser medidos e não constituem SLA.
+
+Este é o desenho operacional, não uma configuração ativa. O provedor, destino, credenciais e destinatário de criptografia ainda não foram definidos, e não há configuração real de deploy produtivo disponível para confirmar frequência, retenção ou cobertura. O backup local de staging continua sem criptografia externa até essas decisões e credenciais existirem.
