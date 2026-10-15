@@ -29,6 +29,12 @@ Pesquisa de escopo em **15/10/2026**, cruzando páginas públicas atuais com as 
 4. Priorizar as Life Skills suportadas pelo modelo atual. Comparação com coleta, combate/grind e outras atividades vem depois da especificação e instrumentação de sessões.
 5. Reusar os módulos do Black Market; concorrentes e projetos abertos são referência de produto/arquitetura, não dependências nem fonte de verdade.
 
+## Verificação na validação visual e de valores
+
+Consulta pública em **15/10/2026** confirmou o padrão funcional das referências: o [BDOLytics Processing Calculator](https://bdolytics.com/en/NA/processing/market) separa silver/h, preço e volume médio de 14 dias; o [Garmoth App](https://garmoth.com/app/) apresenta duração, ganho e silver/h da sessão, incluindo Life Skills; o [BDO Workshop](https://bdoworkshop.com/) reúne calculadoras e leitura por screenshot de inventário, armazém e gear. Os sites não fornecem uma entrada equivalente e reproduzível, com o mesmo snapshot SA, perfil, maestria, impostos, estoque e tempo calibrado do Black Market; portanto a consulta serviu para validar cobertura e fluxo, não para declarar um cálculo vencedor.
+
+A comparação numérica pareada já registrada para Refeição de Valência continua divergente: **292,3M/h** no Black Market e **163,8M/h** no snapshot do BDOLytics, apesar de preço unitário e rendimento médio próximos. Os snapshots têm tempos e premissas diferentes; ver [validação de volume e valores](../superpowers/specs/2026-10-13-recipe-sales-volume-and-e2e-validation.md). Manter essa divergência como pendência do modelo até repetir o cálculo com premissas controladas, sem calibrar o produto para reproduzir um valor indexado volátil.
+
 ## Fontes consultadas
 
 - [Pesquisa BDOLytics/Workshop do projeto](lytics-workshop.md)
