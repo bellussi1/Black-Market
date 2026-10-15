@@ -139,7 +139,14 @@ export const workspaceSchema = z
           .max(90)
           .default([]),
       })
-      .default(() => ({ preferredSkills: ['cooking', 'alchemy', 'processing'], calibrations: [] })),
+      .default(() => ({
+        preferredSkills: ['cooking', 'alchemy', 'processing'] as (
+          | 'cooking'
+          | 'alchemy'
+          | 'processing'
+        )[],
+        calibrations: [],
+      })),
     characters: z.array(characterSchema).max(30).default([]),
     personalPlans: z.array(personalPlanSchema).max(200).default([]),
     workerEmpires: z.array(workerEmpireSchema).max(30).default([]),
