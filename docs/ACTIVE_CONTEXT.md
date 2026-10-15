@@ -1325,3 +1325,13 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Revisão do plano**: self-review cobre os requisitos da especificação. Prettier foi executado nos dois planos; o plano do Tutorial passou sem alterações e o de Home foi formatado. Ainda não houve implementação ou testes funcionais.
 - **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
 - **Próximo passo**: após aprovação, seguir as tarefas com os subagents já solicitados, respeitando a dependência sequencial das migrações do banco e fechando com revisão integrada.
+
+## 121. Coach de Atividades — refatoração de Recomendações (Codex, 15/10/2026)
+
+- **Pedido aprovado**: usar o formulário da comunidade como parâmetro forte e refazer por completo `/recommendations`, pois o fluxo atual exige muitas etapas manuais antes de revelar recomendações.
+- **Pesquisa**: 31 respostas; calculadora de custo/lucro 20, mapa de coleta 18, receitas claras 17 e comparação de atividades/hora 10. A resposta aberta mais detalhada propõe combinar preferências, gear/maestria, armazém, produção/compra, liquidez e grind. É evidência exploratória, não amostra representativa.
+- **Diagnóstico do fluxo atual**: clique para carregar catálogo; tempo manual por método e por receita; consulta de mercado separada; grade paginada para editar preços; buscar/selecionar receita e iniciar comparação. O perfil, estoque e motor econômico já existem, mas a recomendação vem depois da configuração.
+- **Especificação**: `docs/superpowers/specs/2026-10-15-activity-coach-recommendations-design.md` define resumo primeiro, carregamento cache-first, perfil/estoque automáticos, preferências persistidas, calibração opcional reutilizável, detalhes sob demanda e pendências sem números inventados.
+- **Limites mantidos**: volume/liquidez e preços têm cobertura variável; nenhuma fonte persistente de mercado está aprovada. Ainda não há modelo confiável de lucro/hora por gear para Grind/PvE/coleta/pesca. O MVP permanece em Life Skill de produção; comparação comunitária/atividade e API Pearl Abyss ficam fora deste plano.
+- **Estado**: especificação documental criada e revisada; código funcional ainda não alterado. Aguardando revisão do documento antes de criar o plano de implementação.
+- **Próximo agente**: revisar a especificação com o usuário, ajustar se necessário e, após aprovação, escrever um plano executável para substituir o fluxo manual da rota reutilizando o motor atual. Implementar em commits atômicos e atualizar este handoff.
