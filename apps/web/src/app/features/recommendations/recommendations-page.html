@@ -26,7 +26,10 @@
 
   @if (snapshot(); as data) {
     @if (profile(); as player) {
-      <section class="coach-context" aria-label="Perfil usado nas recomendações">
+      <section class="coach-context panel" aria-label="Perfil usado nas recomendações">
+        <div class="panel-heading">
+          <h2>Perfil da sessão</h2>
+        </div>
         <div class="context-character">
           <label class="field">
             <span>Personagem</span>
@@ -68,19 +71,23 @@
         </details>
       </section>
     } @else {
-      <section class="coach-empty">
-        <h2>Escolha o personagem que vai produzir</h2>
+      <section class="coach-empty panel">
+        <div class="panel-heading">
+          <h2>Escolha o personagem que vai produzir</h2>
+        </div>
         <p>O Coach usa maestria, prata, duração da sessão e estoque do perfil.</p>
         <a hlmBtn variant="outline" class="btn" routerLink="/family">Abrir Família</a>
       </section>
     }
 
-    <section class="activity-preferences" aria-labelledby="activity-preferences-title">
-      <div>
-        <h2 id="activity-preferences-title">Quais atividades você quer priorizar?</h2>
-        <p>
-          As opções iniciais usam as receitas e modelos de produção disponíveis no Black Market.
-        </p>
+    <section class="activity-preferences panel" aria-labelledby="activity-preferences-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="activity-preferences-title">Quais atividades você quer priorizar?</h2>
+          <p>
+            As opções iniciais usam as receitas e modelos de produção disponíveis no Black Market.
+          </p>
+        </div>
       </div>
       <div class="skill-options">
         @for (skill of activityOptions; track skill.id) {
@@ -104,8 +111,8 @@
       </p>
     }
 
-    <section class="recommendations-section" aria-labelledby="recommendations-title">
-      <div class="section-heading">
+    <section class="recommendations-section panel" aria-labelledby="recommendations-title">
+      <div class="panel-heading section-heading">
         <div>
           <p class="tool-kicker">PRIORIDADE AGORA</p>
           <h2 id="recommendations-title">Melhores retornos completos</h2>
@@ -263,7 +270,7 @@
     </section>
 
     @if (profile() && methods().length) {
-      <details class="calibration-section">
+      <details class="calibration-section panel">
         <summary>Revisar tempos medidos por atividade</summary>
         <p>
           Informe uma vez o tempo médio por operação observado no seu setup. A maestria de Culinária

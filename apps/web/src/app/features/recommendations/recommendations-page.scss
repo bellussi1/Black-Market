@@ -20,13 +20,16 @@
 .coach-context,
 .activity-preferences,
 .recommendations-section,
-.calibration-section,
-.coach-empty,
+.calibration-section {
+  min-width: 0;
+}
+
+.coach-empty:not(.panel),
 .coach-loading {
   min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 24%, transparent);
-  border-radius: 0.65rem;
-  background: color-mix(in srgb, var(--color-surface, #1b1a17) 92%, #000);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
   padding: clamp(0.85rem, 2vw, 1.25rem);
 }
 
@@ -37,6 +40,11 @@
   gap: 0.75rem 1.5rem;
 }
 
+.coach-context > .panel-heading {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
 .context-character {
   display: grid;
   align-content: end;
@@ -45,7 +53,7 @@
 
 .context-character > a,
 .opportunity-title a {
-  color: var(--color-gold, #e4c989);
+  color: var(--bm-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -54,7 +62,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
   gap: 0.65rem 1rem;
-  color: var(--color-gold, #ceb789);
+  color: var(--bm-accent);
 }
 
 .profile-summary span,
@@ -70,13 +78,13 @@
 .hourly-profit span,
 .opportunity-title small,
 .material-line small {
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
   font-size: 0.8rem;
 }
 
 .gear-context {
   grid-column: 1 / -1;
-  border-top: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 16%, transparent);
+  border-top: 1px solid var(--bm-border);
   padding-top: 0.65rem;
 }
 
@@ -86,7 +94,7 @@
 .pending-row > summary,
 .calibration-section > summary {
   cursor: pointer;
-  color: var(--color-gold, #e4c989);
+  color: var(--bm-accent);
   font-weight: 600;
 }
 
@@ -100,11 +108,8 @@
 }
 
 .activity-preferences {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  gap: 0;
 }
 
 .activity-preferences h2,
@@ -114,8 +119,8 @@
 }
 
 .activity-preferences p {
-  margin: 0.3rem 0 0;
-  color: var(--color-muted, #b8ad98);
+  margin: 0.35rem 0 0;
+  color: var(--bm-muted);
 }
 
 .skill-options {
@@ -129,44 +134,39 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 2.75rem;
-  border: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 32%, transparent);
-  border-radius: 999px;
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
   padding: 0.45rem 0.85rem;
   cursor: pointer;
 }
 
 .skill-option:has(input:checked) {
-  background: color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
-  border-color: var(--color-gold, #ceb789);
+  background: var(--bm-accent-soft);
+  border-color: var(--bm-accent);
 }
 
 .skill-option input {
-  accent-color: var(--color-gold, #ceb789);
+  accent-color: var(--bm-accent);
 }
 
 .coach-progress,
 .coverage-summary,
 .coverage-note {
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
 }
 
 .coach-progress {
   margin: 0;
 }
 
-.recommendations-section {
+.recommendations-section.panel {
   padding: 0;
   overflow: hidden;
 }
 
-.section-heading {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: end;
-  gap: 0.75rem;
+.recommendations-section > .section-heading.panel-heading {
+  margin: 0;
   padding: clamp(0.85rem, 2vw, 1.25rem);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 20%, transparent);
 }
 
 .section-heading .tool-kicker {
@@ -188,7 +188,7 @@
   grid-template-columns: minmax(16rem, 1.2fr) minmax(13rem, 0.8fr);
   gap: 0.85rem 1.25rem;
   padding: clamp(0.85rem, 2vw, 1.25rem);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
+  border-bottom: 1px solid var(--bm-border);
 }
 
 .opportunity:last-child {
@@ -207,9 +207,9 @@
   flex: 0 0 2rem;
   width: 2rem;
   height: 2rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-gold, #ceb789) 15%, transparent);
-  color: var(--color-gold, #e4c989);
+  border-radius: 2px;
+  background: var(--bm-accent-soft);
+  color: var(--bm-accent);
   font-weight: 700;
 }
 
@@ -221,7 +221,7 @@
 
 .opportunity-title p {
   margin: 0.35rem 0;
-  color: var(--color-muted, #c3b9a6);
+  color: var(--bm-muted);
 }
 
 .hourly-profit {
@@ -233,7 +233,7 @@
 }
 
 .hourly-profit strong {
-  color: var(--color-gold, #f0d597);
+  color: var(--bm-accent);
   font-size: clamp(1.4rem, 2.6vw, 2rem);
   font-variant-numeric: tabular-nums;
 }
@@ -244,7 +244,7 @@
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 0.7rem 1rem;
   padding: 0.7rem 0;
-  border-block: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 12%, transparent);
+  border-block: 1px solid var(--bm-border);
   font-variant-numeric: tabular-nums;
 }
 
@@ -263,7 +263,7 @@
   grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.5fr);
   gap: 0.2rem 0.75rem;
   padding-block: 0.35rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 10%, transparent);
+  border-bottom: 1px solid var(--bm-border);
 }
 
 .material-line small {
@@ -271,23 +271,23 @@
 }
 
 .assumption {
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
 }
 
 .pending-section {
   margin: 0 clamp(0.85rem, 2vw, 1.25rem) 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 20%, transparent);
+  border-top: 1px solid var(--bm-border);
   padding-top: 0.9rem;
 }
 
 .pending-row {
   margin-top: 0.7rem;
   padding: 0.65rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-gold, #ceb789) 12%, transparent);
+  border-bottom: 1px solid var(--bm-border);
 }
 
 .pending-intro {
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
 }
 
 .pending-issue {
@@ -305,7 +305,7 @@
 .pending-row > small {
   display: block;
   margin-top: 0.45rem;
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
 }
 
 .pending-pagination {
@@ -332,12 +332,22 @@
 }
 
 .manual-price-field span {
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
+}
+
+.calibration-section > summary {
+  display: block;
+  margin: -20px -20px 1rem;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--bm-border);
+  border-radius: 0;
+  background: var(--bm-titlebar);
+  color: var(--bm-text);
 }
 
 .calibration-section > p {
   max-width: 60rem;
-  color: var(--color-muted, #b8ad98);
+  color: var(--bm-muted);
 }
 
 .calibration-fields {
@@ -349,6 +359,14 @@
 .coverage-note {
   margin: 0;
   font-size: 0.85rem;
+}
+
+.recommendations-section > .coach-empty {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 1.25rem;
 }
 
 .coverage-note span {
