@@ -1,5 +1,13 @@
 # Estado implementado e lacunas verificadas
 
+### Coach de Atividades — atualização em 15/10/2026
+
+- `/recommendations` foi substituída por um resumo de oportunidades de produção para gerar prata e financiar gear de Life Skill e PvPvE. Culinária, Alquimia e Processamento podem ser priorizadas; perfil, maestria, prata, duração, peso, estoque livre/reservado e impostos vêm do workspace.
+- Catálogo de produção e preços NPC são carregados automaticamente e usam cache público por região/locale/dataset. Cotações de mercado reutilizam `MarketCacheService` por região e lotes de até 100. O resolver não recebe perfil, armazém nem outras informações privadas.
+- O ranking só inclui cenários completos e mostra lucro líquido/hora, lucro do lote, desembolso, custo econômico, quantidade, duração, plano de compra/produção/estoque e origem/horário dos preços sob demanda. Preferências e uma calibração de tempo por personagem/método persistem no workspace.
+- Ainda não há comparação confiável com Grind/PvE, coleta, pesca ou caça; benchmarks comunitários de sessão, associação validada de gear/rendimento e uma fonte de mercado persistente continuam ausentes. Preço e estoque observados não confirmam execução de compra/venda. A pesquisa de 31 respostas é exploratória, não estatística.
+- A pesquisa concorrencial e de projetos abertos está em [activity-coach-competitive-review.md](activity-coach-competitive-review.md). As referências orientaram hierarquia e fluxo, sem reutilizar serviços internos, código, dados ou ativos.
+
 Auditoria estática do checkout em **10/10/2026**, cruzada com o inventário de dados e as revisões dos repositórios. Este é um retrato do código local, não uma confirmação de disponibilidade de serviços externos ou de regras atuais do jogo. O staging local ativo usa o dataset de 10.685 receitas: o endpoint expõe 7.016 fórmulas de Life Skills, e a tela de Recomendações mostra 6.813 após excluir 203 relações de subproduto. O número histórico 4.406 vem da extração inicial de 08/10. Veja as [definições e a reprodução](../recipe-counts.md).
 
 ### Atualização do escopo em 13/10/2026
