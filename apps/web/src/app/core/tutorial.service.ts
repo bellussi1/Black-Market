@@ -163,21 +163,27 @@ export class TutorialService {
     popover.title.style.display = 'block';
     popover.description.style.display = 'block';
     popover.progress.textContent = `${activeIndex + 1} de ${this.activeSteps.length}`;
-    popover.progress.setAttribute('role', 'status');
-    popover.progress.setAttribute('aria-live', 'polite');
     popover.wrapper.setAttribute('role', 'group');
     popover.wrapper.setAttribute('aria-label', 'Tutorial desta tela');
     popover.wrapper.setAttribute('aria-labelledby', 'bm-tutorial-title');
-    popover.wrapper.setAttribute('aria-describedby', 'bm-tutorial-description');
+    popover.wrapper.setAttribute(
+      'aria-describedby',
+      'bm-tutorial-description bm-tutorial-progress',
+    );
     popover.wrapper.tabIndex = -1;
     popover.title.id = 'bm-tutorial-title';
     popover.description.id = 'bm-tutorial-description';
+    popover.progress.id = 'bm-tutorial-progress';
     popover.previousButton.textContent = 'Voltar';
     popover.nextButton.textContent =
       activeIndex === this.activeSteps.length - 1 ? 'Concluir' : 'Avançar';
     popover.closeButton.textContent = '×';
     popover.closeButton.setAttribute('aria-label', 'Sair do tutorial');
-    popover.wrapper.focus({ preventScroll: true });
+    // Driver.js focuses its first button after this render hook. Focus the complete
+    // step once that finishes so its title, body and progress share one announcement.
+    queueMicrotask(() => {
+      if (popover.wrapper.isConnected) popover.wrapper.focus({ preventScroll: true });
+    });
   }
 
   private async advance(instance: Driver, activeIndex: number): Promise<void> {
