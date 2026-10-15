@@ -1325,3 +1325,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Revisão do plano**: self-review cobre os requisitos da especificação. Prettier foi executado nos dois planos; o plano do Tutorial passou sem alterações e o de Home foi formatado. Ainda não houve implementação ou testes funcionais.
 - **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
 - **Próximo passo**: após aprovação, seguir as tarefas com os subagents já solicitados, respeitando a dependência sequencial das migrações do banco e fechando com revisão integrada.
+
+## 121. Home/Roadmap: migração de ordenação global (Codex, 15/10/2026)
+
+- **Task 1 implementada no worktree de Home/Roadmap**: `roadmap_entries` passa a ter índice único global em `sort_order`. A migração `0011_global_roadmap_order.sql` ordena fases antes de pilares, preserva a ordem anterior por tipo e usa `id` como desempate; atualiza somente `sort_order`, sem alterar conteúdo ou restringir `featured`.
+- **Estado Drizzle**: journal acrescenta a migração 0011. O snapshot gerado é `0011_snapshot.json`, encadeado ao `0009_snapshot.json`; a migração manual 0010 de RLS não tinha snapshot. O nome gerado prevalece sobre a hipótese `0010_snapshot.json` do plano, conforme revisão da execução.
+- **Verificação**: RED confirmou SQL ausente; GREEN executou o SQL real sobre tabela temporária em PostgreSQL descartável e validou posições, preservação de todas as demais colunas e rejeição de colisão entre tipos. Sem `ROADMAP_MIGRATION_TEST_URL`, o teste é ignorado. `pnpm db:check`, build de database, ESLint do spec e Prettier passaram. Nenhuma migração aplicada a staging ou banco persistente.
+- **Suíte integral**: primeiro run falhou porque `@bdo/shared` ainda não tinha build neste worktree; após construí-lo, Calculadoras passaram 66/66 e API 216/216 (integração ignorada sem variável). Web teve 544 testes passando e três falhas no spec de Analytics já relatadas na seção 112; scripts não foram executados após essa falha. Não declarar suíte integral verde.
+- **Arquivos**: schema de database, SQL 0011, snapshot 0011, journal, `apps/api/src/roadmap/roadmap-migration.integration.spec.ts` e este handoff. Evidências completas no relatório local `.superpowers/sdd/2026-10-15-home-roadmap-dynamic-flow/task-1-report.md`.
+- **Próximo passo**: continuar a Task 2 do plano para validar unicidade global e reordenação na API; manter a nova migração como pendente em bancos persistentes até a etapa autorizada de implantação.

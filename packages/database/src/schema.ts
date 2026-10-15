@@ -417,7 +417,7 @@ export const roadmapEntries = pgTable(
   },
   (table) => [
     uniqueIndex('roadmap_entries_slug_uidx').on(table.slug),
-    uniqueIndex('roadmap_entries_kind_order_uidx').on(table.kind, table.sortOrder),
+    uniqueIndex('roadmap_entries_sort_order_uidx').on(table.sortOrder),
     check('roadmap_entries_order_check', sql`${table.sortOrder} >= 0`),
     check('roadmap_entries_slug_check', sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
   ],
