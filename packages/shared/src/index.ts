@@ -166,5 +166,4 @@ export interface MarketLookupResponse {
 }
 
 export { isMvpPathEnabled, isMvpPathSuspended, SCREENSHOT_MVP } from './mvp-scope';
-
 export * from './tutorials';
