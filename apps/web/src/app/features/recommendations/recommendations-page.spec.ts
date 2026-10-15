@@ -1,4 +1,4 @@
-import { characterSchema } from '@bdo/calculators';
+import { characterSchema, type ProductionIssue, type ProductionPlan } from '@bdo/calculators';
 import type { ProductionCatalogResponse } from '@bdo/shared';
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
@@ -75,6 +75,97 @@ describe('production recommendations', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Consultar mercado');
     expect(fixture.nativeElement.textContent).not.toContain('Comparar lucro por hora');
   });
+  it('waits for a character before fetching market quotes, then loads them automatically', async () => {
+    const resolveProductionQuotes = vi.fn(() => of(new Map()));
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+      {
+        provide: MarketCacheService,
+        useValue: { resolveProductionQuotes, getCachedQuoteEntry: () => null },
+      },
+    ]);
+    const page = fixture.componentInstance;
+    await fixture.whenStable();
+
+    expect(page.snapshot()).toEqual(snapshot);
+    expect(resolveProductionQuotes).not.toHaveBeenCalled();
+
+    page.store.update((state) => ({
+      ...state,
+      characters: [characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' })],
+      activeCharacterId: 'main',
+    }));
+    await page.load();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(resolveProductionQuotes).toHaveBeenCalled();
+  });
+  it('groups shared pending inputs and paginates unique fixes rather than repeated scenarios', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    const plan = (
+      recipeId: string,
+      scenario: ProductionPlan['scenario'],
+      issues: ProductionIssue[],
+    ): ProductionPlan => ({
+      recipeId,
+      name: recipeId,
+      scenario,
+      crafts: 1,
+      output: null,
+      seconds: null,
+      durationMilliseconds: null,
+      cashCost: null,
+      economicCost: null,
+      grossRevenue: null,
+      netRevenue: null,
+      profit: null,
+      profitPerHour: null,
+      peakWeight: null,
+      issues,
+      assumptions: [],
+      materials: [],
+      returns: [],
+      steps: [],
+    });
+    const sharedQuoteIssue: ProductionIssue = {
+      code: 'missing-quote',
+      message: 'Sem preço',
+      itemId: 1,
+    };
+    const sharedTimeIssue: ProductionIssue = { code: 'missing-time', message: 'Sem tempo' };
+    page.plans.set({
+      ranked: [],
+      incomplete: [
+        plan('elixir', 'buy-all', [sharedQuoteIssue, sharedTimeIssue]),
+        plan('elixir', 'produce-all', [sharedQuoteIssue, sharedTimeIssue]),
+        ...Array.from({ length: 35 }, (_, index) =>
+          plan(`recipe-${index}`, 'buy-all', [
+            { code: 'missing-quote', message: 'Sem preço', itemId: index + 10 },
+          ]),
+        ),
+      ],
+    });
+
+    expect(page.pendingActions().find((row) => row.key === 'item:1')).toMatchObject({
+      affectedRecipes: 1,
+      affectedScenarios: 2,
+    });
+    expect(
+      page.pendingActions().find((row) => row.key === 'missing-time:method:ALCHEMY'),
+    ).toMatchObject({
+      affectedRecipes: 1,
+      affectedScenarios: 2,
+    });
+    expect(page.pendingActions()).toHaveLength(37);
+    expect(page.visibleIncomplete()).toHaveLength(30);
+
+    page.pendingPage.set(2);
+    expect(page.visibleIncomplete()).toHaveLength(7);
+  });
   it('persists activity preferences and time calibration by character', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },
@@ -107,6 +198,7 @@ describe('production recommendations', () => {
       characters: [characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' })],
       activeCharacterId: 'main',
     }));
+    await page.load();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -529,10 +621,9 @@ describe('production recommendations', () => {
 
     expect(page.plans()?.incomplete).toHaveLength(121);
     expect(page.visibleIncomplete()).toHaveLength(30);
-    expect(page.visibleIncomplete().at(-1)).toMatchObject({
-      recipeId: 'formula-39',
-      scenario: 'optimized',
-    });
+    expect(
+      page.visibleIncomplete().some((row) => row.focusedRecipe && row.name === 'Item 41'),
+    ).toBe(true);
   });
   it('uses only stock remaining after reservations and counts its economic cost', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
@@ -599,6 +690,11 @@ describe('production recommendations', () => {
       { provide: MarketCacheService, useValue: cache },
     ]);
     const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' })],
+      activeCharacterId: 'main',
+    }));
     await page.load();
     page.manualPrice(1, '99');
     await page.refreshQuotes();

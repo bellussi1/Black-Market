@@ -16,6 +16,7 @@ import {
   planProduction,
   type ProductionChoice,
   type ProductionEstimate,
+  type ProductionIssue,
   type ProductionPlan,
   type ProductionPlannerInput,
   type ProductionQuantity,
@@ -56,6 +57,15 @@ type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
   basis?: 'market' | 'maximum' | 'manual' | 'npc';
 };
 type Quotes = Record<number, RecommendationQuote>;
+interface PendingCoachAction {
+  key: string;
+  name: string;
+  focusedRecipe: boolean;
+  itemId?: number;
+  issues: ProductionIssue[];
+  affectedRecipes: number;
+  affectedScenarios: number;
+}
 export function hasNpcPurchaseEvidence(item: Pick<CatalogItemDetail, 'sourceData'>): boolean {
   const rawPrice = item.sourceData['buyPrice'];
   const validPrice =
@@ -202,6 +212,8 @@ export class RecommendationsPage implements OnDestroy {
   readonly plans = signal<{ ranked: ProductionPlan[]; incomplete: ProductionPlan[] } | null>(null);
   readonly progress = signal({ done: 0, total: 0 });
   readonly page = signal(1);
+  readonly pendingPage = signal(1);
+  readonly pendingPageSize = 30;
   readonly pricePage = signal(1);
   readonly priceSearch = signal('');
   readonly focus = signal<string | null>(null);
@@ -264,15 +276,81 @@ export class RecommendationsPage implements OnDestroy {
       })
       .slice(0, 10);
   });
+  readonly pendingActions = computed(() => {
+    const recipesById = new Map(this.recipes().map((recipe) => [recipe.id, recipe]));
+    const grouped = new Map<
+      string,
+      {
+        name: string;
+        itemId?: number;
+        focusedRecipe: boolean;
+        issues: Map<string, ProductionIssue>;
+        recipeIds: Set<string>;
+        scenarioIds: Set<string>;
+      }
+    >();
+
+    for (const plan of this.plans()?.incomplete ?? []) {
+      for (const issue of plan.issues) {
+        const issueRecipeId = issue.recipeId ?? plan.recipeId;
+        const recipe = recipesById.get(issueRecipeId);
+        const key =
+          issue.itemId !== undefined
+            ? `item:${issue.itemId}`
+            : issue.code === 'missing-time'
+              ? `missing-time:method:${recipe?.method ?? 'unknown'}`
+              : `${issue.code}:recipe:${issueRecipeId}`;
+        const group = grouped.get(key) ?? {
+          name:
+            issue.itemId !== undefined
+              ? this.name(issue.itemId)
+              : issue.code === 'missing-time' && recipe
+                ? this.methodLabel(recipe.method)
+                : plan.name,
+          ...(issue.itemId !== undefined ? { itemId: issue.itemId } : {}),
+          focusedRecipe: false,
+          issues: new Map<string, ProductionIssue>(),
+          recipeIds: new Set<string>(),
+          scenarioIds: new Set<string>(),
+        };
+        group.issues.set(issue.code, issue);
+        group.focusedRecipe ||= plan.recipeId === this.focus() || issueRecipeId === this.focus();
+        group.recipeIds.add(plan.recipeId);
+        group.scenarioIds.add(`${plan.recipeId}:${plan.scenario}`);
+        grouped.set(key, group);
+      }
+    }
+
+    return [...grouped.entries()]
+      .map(
+        ([key, group]): PendingCoachAction => ({
+          key,
+          name: group.name,
+          focusedRecipe: group.focusedRecipe,
+          ...(group.itemId !== undefined ? { itemId: group.itemId } : {}),
+          issues: [...group.issues.values()],
+          affectedRecipes: group.recipeIds.size,
+          affectedScenarios: group.scenarioIds.size,
+        }),
+      )
+      .sort((left, right) => {
+        const priority = (action: PendingCoachAction) =>
+          action.focusedRecipe
+            ? 0
+            : action.itemId !== undefined
+              ? 1
+              : action.key.startsWith('missing-time:')
+                ? 2
+                : 3;
+        return priority(left) - priority(right) || left.name.localeCompare(right.name, 'pt-BR');
+      });
+  });
+  readonly pendingPages = computed(() =>
+    Math.max(1, Math.ceil(this.pendingActions().length / this.pendingPageSize)),
+  );
   readonly visibleIncomplete = computed(() => {
-    const incomplete = this.plans()?.incomplete ?? [];
-    const focusedOptimization = incomplete.find(
-      (row) => row.scenario === 'optimized' && row.recipeId === this.focus(),
-    );
-    const visible = incomplete.slice(0, 30);
-    return focusedOptimization && !visible.includes(focusedOptimization)
-      ? [...visible.slice(0, 29), focusedOptimization]
-      : visible;
+    const start = (this.pendingPage() - 1) * this.pendingPageSize;
+    return this.pendingActions().slice(start, start + this.pendingPageSize);
   });
   readonly materialItems = computed(() => {
     const ids = new Set(
@@ -315,10 +393,13 @@ export class RecommendationsPage implements OnDestroy {
   private loadInFlight: Promise<void> | null = null;
   private manualPriceTimer: ReturnType<typeof setTimeout> | null = null;
   private loadedRegion = '';
+  private loadedNpcContext = '';
+  private marketDataInFlight: Promise<void> | null = null;
   private comparisonRun = 0;
 
   constructor() {
     let previousContext = '';
+    let previousProfileId = this.profile()?.id ?? '';
     let previousDemo = this.store.demoActive();
     effect(() => {
       const currentDemo = this.store.demoActive();
@@ -340,22 +421,31 @@ export class RecommendationsPage implements OnDestroy {
         inventory: this.store.data().inventory,
         reservations: this.store.data().personalPlans,
       });
+      const currentProfileId = this.profile()?.id ?? '';
+      const profileBecameAvailable = !previousProfileId && !!currentProfileId;
       if (previousContext && previousContext !== context) {
         this.plans.set(null);
         this.message.set(
           'O personagem ou o estoque mudou. Atualizando as oportunidades com esses dados.',
         );
         queueMicrotask(() => {
-          if (this.snapshot()) void this.compare();
+          if (this.snapshot() && this.profile() && !profileBecameAvailable) void this.compare();
         });
       }
+      if (profileBecameAvailable && this.snapshot() && !this.busy())
+        queueMicrotask(() => void this.loadMarketInputs());
+      previousProfileId = currentProfileId;
       previousContext = context;
     });
     void this.load();
   }
 
   async load() {
-    if (this.loadInFlight) return this.loadInFlight;
+    if (this.loadInFlight) {
+      await this.loadInFlight;
+      if (this.profile() && this.snapshot()) await this.loadMarketInputs();
+      return;
+    }
     const task = this.loadCatalogAndRecommend();
     this.loadInFlight = task;
     try {
@@ -379,6 +469,7 @@ export class RecommendationsPage implements OnDestroy {
       this.snapshot.set(result);
       this.loadedRegion = region;
       this.plans.set(null);
+      this.pendingPage.set(1);
       this.quotes.set({});
       this.npcPrices.set(new Map());
       this.quoteQueue = [];
@@ -386,23 +477,6 @@ export class RecommendationsPage implements OnDestroy {
       this.calibration = Object.fromEntries(
         this.methods().map((method) => [method, { seconds: null }]),
       );
-      if (result.dataset?.version) {
-        const itemIds = this.materialItems()
-          .filter(hasNpcPurchaseEvidence)
-          .map((item) => item.id);
-        try {
-          const prices = await firstValueFrom(
-            this.catalogApi.getNpcPurchasePrices(itemIds, result.dataset.version, region),
-          );
-          if (this.store.data().region !== region) {
-            this.message.set('A região mudou durante a consulta. Carregue o catálogo novamente.');
-            return;
-          }
-          this.npcPrices.set(prices);
-        } catch {
-          // Keep the market and manual quote paths available when NPC data cannot be verified.
-        }
-      }
       this.restoreCalibrations();
       this.message.set(`${this.recipes().length} receitas das atividades selecionadas carregadas.`);
     } catch {
@@ -410,12 +484,53 @@ export class RecommendationsPage implements OnDestroy {
     } finally {
       this.busy.set(false);
     }
-    if (this.snapshot() && this.loadedRegion === this.store.data().region) {
-      await this.refreshQuotes();
+    if (this.snapshot() && this.loadedRegion === this.store.data().region && this.profile())
+      await this.loadMarketInputs();
+  }
+  private async loadMarketInputs() {
+    if (this.marketDataInFlight) return this.marketDataInFlight;
+    const region = this.store.data().region;
+    const snapshot = this.snapshot();
+    if (!this.profile() || !snapshot || this.loadedRegion !== region) return;
+
+    const task = (async () => {
+      const datasetVersion = snapshot.dataset?.version;
+      const npcContext = datasetVersion ? `${region}:${datasetVersion}` : '';
+      if (npcContext && this.loadedNpcContext !== npcContext) {
+        const itemIds = this.materialItems()
+          .filter(hasNpcPurchaseEvidence)
+          .map((item) => item.id);
+        if (!itemIds.length) {
+          this.loadedNpcContext = npcContext;
+        } else {
+          try {
+            const prices = await firstValueFrom(
+              this.catalogApi.getNpcPurchasePrices(itemIds, datasetVersion!, region),
+            );
+            if (this.store.data().region !== region || this.snapshot() !== snapshot) return;
+            this.npcPrices.set(prices);
+            this.loadedNpcContext = npcContext;
+          } catch {
+            // Keep the market and manual quote paths available when NPC data cannot be verified.
+          }
+        }
+      }
+      if (this.profile() && this.store.data().region === region) await this.refreshQuotes();
+    })();
+    this.marketDataInFlight = task;
+    try {
+      await task;
+    } finally {
+      if (this.marketDataInFlight === task) this.marketDataInFlight = null;
     }
   }
   async refreshQuotes(resume = false) {
     if (this.busy() || !this.snapshot()) return;
+    if (!this.profile()) {
+      this.quoteQueue = [];
+      this.progress.set({ done: 0, total: 0 });
+      return;
+    }
     if (this.loadedRegion !== this.store.data().region) {
       this.message.set('A região mudou. Recarregue o catálogo.');
       return;
@@ -427,6 +542,7 @@ export class RecommendationsPage implements OnDestroy {
       this.progress.set({ done: 0, total: this.quoteQueue.length });
     }
     this.busy.set(true);
+    let quoteFailureMessage = '';
     try {
       while (this.quoteQueue.length) {
         const batch = this.quoteQueue.slice(0, 100);
@@ -456,14 +572,15 @@ export class RecommendationsPage implements OnDestroy {
         `Consulta concluída: ${Object.keys(this.quotes()).length} preços de mercado disponíveis. O cache foi reutilizado; itens sem cotação, máxima ou preço NPC permanecem pendentes.`,
       );
     } catch {
-      this.message.set(
-        'Parte das cotações não está disponível agora. O cache e as premissas manuais continuam identificados; itens sem preço ficam pendentes.',
-      );
+      quoteFailureMessage =
+        'Parte das cotações não está disponível agora. O cache e as premissas manuais continuam identificados; itens sem preço ficam pendentes.';
+      this.message.set(quoteFailureMessage);
     } finally {
       this.busy.set(false);
       this.plans.set(null);
     }
     if (this.profile()) await this.compare();
+    if (quoteFailureMessage) this.message.set(quoteFailureMessage);
   }
   get resumable() {
     return this.quoteQueue.length > 0;
@@ -478,7 +595,7 @@ export class RecommendationsPage implements OnDestroy {
     }));
     this.restoreCalibrations();
     this.plans.set(null);
-    void this.refreshQuotes();
+    if (this.profile()) void this.refreshQuotes();
   }
   selectProfile(id: string) {
     if (!this.profiles().some((row) => row.id === id)) return;
@@ -623,6 +740,7 @@ export class RecommendationsPage implements OnDestroy {
       result.ranked.sort(compareProductionPlans);
       this.plans.set(result);
       this.page.set(1);
+      this.pendingPage.set(1);
       this.message.set(
         `${candidates.length} receitas comparadas. ${result.ranked.length} cenários completos; ${result.incomplete.length} pendentes. Ranking limitado à busca e ao catálogo carregado, com até 10.000 operações por cenário.`,
       );
@@ -640,6 +758,9 @@ export class RecommendationsPage implements OnDestroy {
       )
         queueMicrotask(() => void this.compare());
     }
+  }
+  setPendingPage(page: number) {
+    this.pendingPage.set(Math.min(Math.max(1, page), this.pendingPages()));
   }
   quoteFor(itemId: number): RecommendationQuote | undefined {
     const quote = this.quotes()[itemId];

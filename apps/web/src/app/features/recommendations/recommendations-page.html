@@ -190,41 +190,68 @@
 
         @if (result.incomplete.length) {
           <details class="pending-section">
-            <summary>O que falta para comparar · {{ result.incomplete.length }} cenários</summary>
-            @for (row of visibleIncomplete(); track row.recipeId + row.scenario) {
-              <details class="pending-row">
-                <summary>
-                  {{ row.name }} · {{ scenarioNames[row.scenario] }} ·
-                  {{ row.issues.length }} pendências
-                </summary>
-                @for (issue of row.issues; track $index) {
-                  <div class="pending-issue">
-                    <p>
-                      {{ issue.message }}
-                      @if (issue.itemId) {
-                        <strong>{{ name(issue.itemId) }}</strong>
-                      }
-                    </p>
-                    @if (issue.itemId) {
-                      <label class="manual-price-field">
-                        <span>Premissa manual (prata/un.) · {{ quoteOrigin(issue.itemId) }}</span>
-                        <input
-                          hlmInput
-                          inputmode="numeric"
-                          [attr.aria-label]="'Preço manual de ' + name(issue.itemId)"
-                          [ngModel]="
-                            quotes()[issue.itemId]?.source === 'manual'
-                              ? (quoteFor(issue.itemId)?.unitPrice ?? '')
-                              : ''
-                          "
-                          (ngModelChange)="manualPrice(issue.itemId, $event)"
-                          placeholder="Deixe em branco para remover"
-                        />
-                      </label>
+            <summary>
+              O que falta para comparar · {{ result.incomplete.length }} cenários ·
+              {{ pendingActions().length }} ajustes únicos
+            </summary>
+            <p class="pending-intro">
+              Um ajuste de preço ou tempo atualiza todas as receitas e cenários que dependem dele.
+            </p>
+            @for (row of visibleIncomplete(); track row.key) {
+              <article class="pending-row">
+                <div class="pending-issue">
+                  <div>
+                    <strong>{{ row.name }}</strong>
+                    @for (issue of row.issues; track issue.code) {
+                      <p>{{ issue.message }}</p>
                     }
                   </div>
-                }
-              </details>
+                  @if (row.itemId !== undefined) {
+                    <label class="manual-price-field">
+                      <span>Premissa manual (prata/un.) · {{ quoteOrigin(row.itemId) }}</span>
+                      <input
+                        hlmInput
+                        inputmode="numeric"
+                        [attr.aria-label]="'Preço manual de ' + name(row.itemId)"
+                        [ngModel]="
+                          quotes()[row.itemId]?.source === 'manual'
+                            ? (quoteFor(row.itemId)?.unitPrice ?? '')
+                            : ''
+                        "
+                        (ngModelChange)="manualPrice(row.itemId, $event)"
+                        placeholder="Deixe em branco para remover"
+                      />
+                    </label>
+                  }
+                </div>
+                <small>
+                  Usado por {{ row.affectedRecipes }} receitas em {{ row.affectedScenarios }}
+                  cenários
+                </small>
+              </article>
+            }
+            @if (pendingPages() > 1) {
+              <nav class="pending-pagination" aria-label="Navegação das pendências">
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  [disabled]="pendingPage() === 1"
+                  (click)="setPendingPage(pendingPage() - 1)"
+                >
+                  Anterior
+                </button>
+                <span aria-live="polite">Página {{ pendingPage() }} de {{ pendingPages() }}</span>
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  [disabled]="pendingPage() === pendingPages()"
+                  (click)="setPendingPage(pendingPage() + 1)"
+                >
+                  Próxima
+                </button>
+              </nav>
             }
           </details>
         }
