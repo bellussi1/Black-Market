@@ -1139,3 +1139,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Conferência visual**: build/servidor temporário da worktree abriu em 4201 e exibiu o layout desktop, mas a API local rejeitou CORS porque sua origem permitida é 4200. Não foi possível visualizar dados do quadro nem testar o detalhe com resposta real nesta origem; ações foram verificadas com testes de componente. A repetição em viewport menor não estabilizou por uma tarefa HTTP pendente durante SSR, então a revisão mobile continua pendente. O servidor temporário foi encerrado e a aba original restaurada.
 - **Arquivos**: `market-board.html`, `market-board.scss` e spec; `market-history.ts` e spec; `market-page.html`, `market-page.scss`, `market-page.ts` e spec; `messages.pt-BR.xlf`; plano e este contexto.
 - **Próximo passo**: continuar a migração visual aprovada nas superfícies de Crafting/Receitas, Scan/Armazém e “O que fazer?” em fatias pequenas, mantendo dados dinâmicos e validando qualquer cálculo financeiro contra a mesma região e parâmetros.
+
+## 102. Integração do Mercado e rebuild local (Codex, 15/10/2026)
+
+- **Integração**: os três commits atômicos do Mercado e acesso social foram aplicados em `main` por fast-forward; `main` está localmente três commits à frente de `origin/main`. Nenhum push foi feito.
+- **Verificação no código integrado**: `pnpm check` passou; `pnpm test` passou com 870 testes (calculators 66, API 210, Web 521 e OCR/scripts 73). Permanece o aviso de fallback do locale `pt-BR` para `pt`.
+- **Mercado no navegador**: localhost exibiu o quadro com dados Arsha e o detalhe de Cabeça de Rinoceronte-Grama Empalhada Especial do Artesão. A cotação sem estoque mostrou o preço máximo como referência; detalhe abriu com histórico/gráfico, ações Calcular venda e Salvar cotação. Console sem erros ou avisos.
+- **Rebuild local**: `docker compose --profile web up --build -d` concluiu. API `localhost:3000/ready` e página `localhost:4200/market` responderam HTTP 200; API e PostgreSQL estão saudáveis, e o volume PostgreSQL existente foi preservado.
+- **Revisão visual restante**: a inspeção desktop do fluxo com dados reais foi concluída. A verificação em viewport mobile continua pendente por instabilidade do SSR na execução temporária anterior.
+- **Próximo passo**: continuar a migração aprovada de linguagem visual em Crafting/Receitas, Scan/Armazém e “O que fazer?”, em commits atômicos por fatia.
