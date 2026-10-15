@@ -33,8 +33,8 @@ import {
 } from 'rxjs';
 
 import { CatalogApiService, type CatalogItemResponse } from '../../core/catalog-api.service';
-import { RouteIntentPrefetchDirective } from '../../core/route-intent-prefetch.directive';
 import { RegionPreferences } from '../../core/region-preferences';
+import { RouteIntentPrefetchDirective } from '../../core/route-intent-prefetch.directive';
 import { SeoService } from '../../core/seo.service';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { recipeTypeLabel } from '../../shared/game-labels';

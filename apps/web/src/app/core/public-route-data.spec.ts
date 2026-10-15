@@ -1,23 +1,23 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import {
-  convertToParamMap,
   type ActivatedRouteSnapshot,
+  convertToParamMap,
   type RouterStateSnapshot,
 } from '@angular/router';
 import type { CatalogRecipe } from '@bdo/shared';
-import { firstValueFrom, of, Subject, throwError, type Observable } from 'rxjs';
+import { firstValueFrom, type Observable, of, Subject, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from './catalog-api.service';
 import { MarketCacheService } from './market-cache.service';
-import { RegionPreferences } from './region-preferences';
 import {
   marketRouteResolver,
   PublicRouteData,
   type PublicRouteWarmResult,
   recipesRouteResolver,
 } from './public-route-data';
+import { RegionPreferences } from './region-preferences';
 
 const recipe = (itemId: number): CatalogRecipe => ({
   key: 'a'.repeat(64),

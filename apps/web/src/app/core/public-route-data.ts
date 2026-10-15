@@ -6,10 +6,10 @@ import {
   finalize,
   forkJoin,
   map,
+  type Observable,
   of,
   shareReplay,
   switchMap,
-  type Observable,
 } from 'rxjs';
 
 import { CatalogApiService } from './catalog-api.service';
@@ -37,8 +37,7 @@ export class PublicRouteData {
 
     let request = this.routeLoads.get(path);
     if (!request) {
-      let sharedRequest!: Observable<PublicRouteWarmResult>;
-      sharedRequest = this.loadPath(path).pipe(
+      const sharedRequest = this.loadPath(path).pipe(
         catchError((error: unknown) =>
           of(error instanceof HttpErrorResponse && error.status === 404 ? notFound : unavailable),
         ),

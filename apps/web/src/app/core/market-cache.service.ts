@@ -138,8 +138,7 @@ export class MarketCacheService implements OnDestroy {
 
     let refresh = this.boardRequests.get(key);
     if (!refresh) {
-      let request!: Observable<CachedBoardEntry>;
-      request = this.api
+      const request = this.api
         .board({
           region: query.region,
           q: query.search.trim(),

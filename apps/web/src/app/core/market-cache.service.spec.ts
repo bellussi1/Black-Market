@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import type { MarketBoardResponse, MarketLookupResponse } from '@bdo/shared';
+import type { Observable } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useMemoryStorage } from '../testing/test-setup';
@@ -471,10 +472,7 @@ describe('MarketCacheService', () => {
     };
     const resolver = (
       service as unknown as {
-        resolveBoard?: (
-          value: typeof query,
-          forceRefresh?: boolean,
-        ) => import('rxjs').Observable<unknown>;
+        resolveBoard?: (value: typeof query, forceRefresh?: boolean) => Observable<unknown>;
       }
     ).resolveBoard;
     expect(resolver).toBeTypeOf('function');
@@ -506,10 +504,7 @@ describe('MarketCacheService', () => {
     const boardKey = (service as unknown as { boardKey?: (value: unknown) => string }).boardKey;
     const resolver = (
       service as unknown as {
-        resolveBoard?: (
-          value: typeof query,
-          forceRefresh?: boolean,
-        ) => import('rxjs').Observable<unknown>;
+        resolveBoard?: (value: typeof query, forceRefresh?: boolean) => Observable<unknown>;
       }
     ).resolveBoard;
     expect(boardKey).toBeTypeOf('function');

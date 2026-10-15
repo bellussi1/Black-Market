@@ -229,7 +229,7 @@ describe('Public catalog in-memory cache', () => {
     const service = TestBed.inject(CatalogApiService);
     const http = TestBed.inject(HttpTestingController);
     const params = { page: 1, pageSize: 24 };
-    let results: CatalogPage[] = [];
+    const results: CatalogPage[] = [];
     service.getItems(params).subscribe((page) => results.push(page));
     http.expectOne((request) => request.url.endsWith('/items')).flush(itemPage());
 
