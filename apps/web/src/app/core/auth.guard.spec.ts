@@ -7,13 +7,16 @@ import { authGuard, isLoginRequiredPath } from './auth.guard';
 import { IdentityService } from './identity.service';
 
 describe('authGuard', () => {
-  it('recognizes only the authenticated workspace destinations', () => {
+  it('recognizes every personal data destination that requires authentication', () => {
     expect(isLoginRequiredPath('/scans?type=gear')).toBe(true);
     expect(isLoginRequiredPath('/scans/profile')).toBe(true);
     expect(isLoginRequiredPath('/recommendations')).toBe(true);
     expect(isLoginRequiredPath('/storage?tab=inventory')).toBe(true);
+    expect(isLoginRequiredPath('/family')).toBe(true);
+    expect(isLoginRequiredPath('/family?tab=equipment')).toBe(true);
+    expect(isLoginRequiredPath('/shopping')).toBe(true);
     expect(isLoginRequiredPath('/recipes')).toBe(false);
-    expect(isLoginRequiredPath('/family')).toBe(false);
+    expect(isLoginRequiredPath('/market')).toBe(false);
   });
 
   function evaluate(

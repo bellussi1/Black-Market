@@ -3,7 +3,7 @@ import { type CanActivateFn, Router } from '@angular/router';
 
 import { IdentityService } from './identity.service';
 
-const loginRequiredPaths = ['scans', 'recommendations', 'storage'] as const;
+const loginRequiredPaths = ['scans', 'recommendations', 'storage', 'family', 'shopping'] as const;
 
 export function isLoginRequiredPath(path: string): boolean {
   const normalized = path.split(/[?#]/, 1)[0].replace(/^\/+|\/+$/g, '');

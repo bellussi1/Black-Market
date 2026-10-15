@@ -176,8 +176,18 @@ export class WorkspaceLayout {
           requiresAuth: true,
         },
         { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true },
-        { path: '/family', label: 'Família', icon: 'lucideUsersRound' },
-        { path: '/shopping', label: 'Lista de materiais', icon: 'lucideListChecks' },
+        {
+          path: '/family',
+          label: 'Família',
+          icon: 'lucideUsersRound',
+          requiresAuth: true,
+        },
+        {
+          path: '/shopping',
+          label: 'Lista de materiais',
+          icon: 'lucideListChecks',
+          requiresAuth: true,
+        },
         { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
       ]
     : [
@@ -220,7 +230,12 @@ export class WorkspaceLayout {
       icon: 'lucideUsersRound',
 
       links: [
-        { path: '/family', label: $localize`Família`, icon: 'lucideUsersRound' },
+        {
+          path: '/family',
+          label: $localize`Família`,
+          icon: 'lucideUsersRound',
+          requiresAuth: true,
+        },
 
         {
           path: '/enhancement',
@@ -250,6 +265,13 @@ export class WorkspaceLayout {
           path: '/scans',
           label: $localize`Importar por captura`,
           icon: 'lucideScanLine',
+          requiresAuth: true,
+        },
+
+        {
+          path: '/shopping',
+          label: $localize`Lista de materiais`,
+          icon: 'lucideListChecks',
           requiresAuth: true,
         },
 

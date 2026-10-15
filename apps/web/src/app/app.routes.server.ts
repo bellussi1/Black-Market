@@ -31,6 +31,7 @@ const privateRoutes = [
   'account',
   'profile',
   'family',
+  'shopping',
   'plans',
   'storage',
   'inventory',

@@ -877,13 +877,17 @@
           }
 
           <div class="sidebar-footer">
-            <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>
-              Salvar lista de compras
-            </button>
+            @if (identity.authenticated()) {
+              <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>
+                Salvar lista de compras
+              </button>
+            }
             @if (planMessage()) {
               <p role="status" class="plan-feedback">{{ planMessage() }}</p>
             }
-            <a routerLink="/shopping" class="footer-link" i18n>Abrir planejamento</a>
+            @if (identity.authenticated()) {
+              <a routerLink="/shopping" class="footer-link" i18n>Abrir planejamento</a>
+            }
           </div>
         </aside>
       </div>

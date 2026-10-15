@@ -110,9 +110,11 @@
         >
           Buscar item <span aria-hidden="true">⌕</span>
         </button>
-        <a class="topbar-character" routerLink="/family">{{
-          store.activeCharacter()?.name ?? 'Meu espaço'
-        }}</a>
+        @if (identity.authenticated()) {
+          <a class="topbar-character" routerLink="/family">{{
+            store.activeCharacter()?.name ?? 'Meu espaço'
+          }}</a>
+        }
         <a class="topbar-account" routerLink="/account" i18n>Conta</a>
         <label for="market-region"
           ><ng-container i18n>Região do mercado</ng-container

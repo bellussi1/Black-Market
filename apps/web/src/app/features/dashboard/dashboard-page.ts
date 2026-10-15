@@ -78,7 +78,7 @@ export class DashboardPage {
           title: 'Gerenciar minha família',
           description: 'Reúna personagens, equipamentos, profissões e bônus da família.',
           path: '/family',
-          requiresAuth: false,
+          requiresAuth: true,
           tag: 'FAMÍLIA',
           steps: 'Escolher personagem · revisar ficha e equipamentos',
         },

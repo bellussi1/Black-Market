@@ -151,6 +151,7 @@ function usableOptimizedPlan(
 export class RecipeTree {
   readonly planMessage = signal('');
   saveShoppingList() {
+    if (!this.identity.authenticated()) return;
     const result = this.currentProductionPlan(),
       root = this.root();
     if (!result || !root) return;

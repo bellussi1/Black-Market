@@ -33,7 +33,7 @@ describe('workspace navigation', () => {
     expect(brand.querySelector('.brand-market')?.textContent?.trim()).toBe('MARKET');
   });
 
-  it('offers one destination for storage, family and market', async () => {
+  it('offers one destination for authenticated personal areas and public market tools', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity(true) },
     ]);
@@ -43,6 +43,7 @@ describe('workspace navigation', () => {
     expect(paths.filter((path) => path === '/scans')).toHaveLength(1);
     expect(paths.filter((path) => path === '/recommendations')).toHaveLength(1);
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/shopping')).toHaveLength(1);
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
     expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
     expect(paths.filter((path) => path === '/roadmap')).toHaveLength(1);
@@ -63,7 +64,7 @@ describe('workspace navigation', () => {
       link.getAttribute('href'),
     );
 
-    for (const path of ['/scans', '/storage', '/recommendations'])
+    for (const path of ['/scans', '/storage', '/recommendations', '/family', '/shopping'])
       expect(links).not.toContain(path);
   });
 });

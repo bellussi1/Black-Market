@@ -181,6 +181,7 @@ export const routes: Routes = [
       {
         path: 'family',
         title: $localize`Black Market · Família`,
+        canActivate: [authGuard],
         data: { private: true },
         loadComponent: () => import('./features/player/player-page').then((m) => m.PlayerPage),
       },
@@ -188,6 +189,7 @@ export const routes: Routes = [
       {
         path: 'shopping',
         title: 'Black Market · Lista de materiais',
+        canActivate: [authGuard],
         data: { private: true },
         loadComponent: () =>
           import('./features/shopping/shopping-page').then((m) => m.ShoppingPage),

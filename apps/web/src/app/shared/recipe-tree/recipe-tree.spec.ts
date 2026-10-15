@@ -13,6 +13,7 @@ import { of, Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { IdentityService } from '../../core/identity.service';
 import { type CachedQuoteEntry, MarketCacheService } from '../../core/market-cache.service';
 import { MarketApi } from '../../features/market/market-api';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
@@ -1607,11 +1608,10 @@ describe('Interactive recipe tree', () => {
   });
   it('saves external material requirements with the estimated yield and updates the same draft', async () => {
     const dependencies = providers();
-    const fixture = await renderComponent(
-      RecipeTree,
-      { recipe, selectedItem: item },
-      dependencies.list,
-    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, [
+      ...dependencies.list,
+      { provide: IdentityService, useValue: { authenticated: signal(true) } },
+    ]);
     const tree = fixture.componentInstance;
     configureProduction(tree, { 5301: '1000', 9001: '5' });
     tree.setMethodTime('ALCHEMY', 1);
@@ -1630,6 +1630,23 @@ describe('Interactive recipe tree', () => {
     tree.saveShoppingList();
     expect(tree.store.data().personalPlans).toHaveLength(1);
     expect(tree.store.data().personalPlans[0].materials[0].quantity).toBe(200);
+  });
+  it('hides and blocks shopping-list persistence for signed-out visitors', async () => {
+    const dependencies = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, [
+      ...dependencies.list,
+      { provide: IdentityService, useValue: { authenticated: signal(false) } },
+    ]);
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.setCraftCount(40);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.btn-save-shopping')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.footer-link[href="/shopping"]')).toBeNull();
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans).toHaveLength(0);
   });
   it('preserves pan, zoom and focused branch when switching to the consolidated list', async () => {
     const dependencies = providers();

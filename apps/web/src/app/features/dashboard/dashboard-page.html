@@ -194,14 +194,16 @@
     </summary>
     <div class="more-tools-grid">
       @for (tool of tools; track tool.path) {
-        <a [routerLink]="tool.path" class="home-tool">
-          <span class="home-tool-tag">{{ tool.tag }}</span>
-          <h3>{{ tool.title }}</h3>
-          <p>{{ tool.description }}</p>
-          <span class="tool-open"
-            ><ng-container i18n>Abrir ferramenta</ng-container><b aria-hidden="true">↗</b></span
-          >
-        </a>
+        @if (canOpenPath(tool.path)) {
+          <a [routerLink]="tool.path" class="home-tool">
+            <span class="home-tool-tag">{{ tool.tag }}</span>
+            <h3>{{ tool.title }}</h3>
+            <p>{{ tool.description }}</p>
+            <span class="tool-open"
+              ><ng-container i18n>Abrir ferramenta</ng-container><b aria-hidden="true">↗</b></span
+            >
+          </a>
+        }
       }
     </div>
   </details>

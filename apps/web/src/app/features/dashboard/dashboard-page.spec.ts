@@ -17,7 +17,7 @@ describe('DashboardPage navigation', () => {
       (link) => new URL(link.getAttribute('href') ?? '/', 'http://localhost').pathname,
     );
 
-    for (const path of ['/scans', '/storage', '/recommendations'])
+    for (const path of ['/scans', '/storage', '/recommendations', '/family', '/shopping'])
       expect(paths).not.toContain(path);
   });
 });

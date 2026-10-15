@@ -2,9 +2,11 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { RenderMode } from '@angular/ssr';
 import { describe, expect, it } from 'vitest';
 
 import { routes } from './app.routes';
+import { serverRoutes } from './app.routes.server';
 
 @Component({ template: '' })
 class RouteDestination {}
@@ -65,10 +67,28 @@ describe('Unified personal workspace routes', () => {
       expect(router.url).toBe(canonical);
     }
   });
-  it('requires social sessions only on Scan, recommendations, and storage routes', () => {
-    const sessionRoutes = new Set(['scans', 'scans/profile', 'recommendations', 'storage']);
+  it('requires social sessions on every personal data route', () => {
+    const sessionRoutes = new Set([
+      'scans',
+      'scans/profile',
+      'recommendations',
+      'storage',
+      'family',
+      'shopping',
+    ]);
     for (const route of routes[0].children ?? []) {
       expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
+    }
+  });
+
+  it('keeps personal data routes client-rendered and non-cacheable', () => {
+    for (const path of ['family', 'shopping']) {
+      const route = serverRoutes.find((candidate) => candidate.path === path);
+      expect(route?.renderMode).toBe(RenderMode.Client);
+      expect(route?.headers).toMatchObject({
+        'Cache-Control': 'private,no-store',
+        'X-Robots-Tag': 'noindex,nofollow',
+      });
     }
   });
 });
