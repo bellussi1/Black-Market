@@ -1,0 +1,98 @@
+.driver-popover.bm-tutorial-popover {
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  min-width: min(250px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  font-family: var(--bm-font-body);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 42%);
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-title {
+  padding-right: 2.25rem;
+  color: var(--bm-accent);
+  font: 700 1.25rem/1.25 var(--bm-font-display);
+  overflow-wrap: anywhere;
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-description {
+  color: var(--bm-text);
+  font: 400 1rem/1.5 var(--bm-font-body);
+  overflow-wrap: anywhere;
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-progress-text {
+  color: var(--bm-muted);
+  font: 500 0.875rem/1.4 var(--bm-font-body);
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-close-btn,
+.driver-popover.bm-tutorial-popover .driver-popover-footer-btn {
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
+  background: var(--bm-background);
+  color: var(--bm-text);
+  font: 600 0.9375rem/1.2 var(--bm-font-body);
+  text-align: center;
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-close-btn {
+  top: 0.35rem;
+  right: 0.35rem;
+  color: var(--bm-accent);
+  font-size: 1.25rem;
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-footer-btn:hover,
+.driver-popover.bm-tutorial-popover .driver-popover-close-btn:hover {
+  border-color: var(--bm-accent);
+  background: var(--bm-surface-raised);
+  color: var(--bm-text);
+}
+
+.driver-popover.bm-tutorial-popover :is(button, [role='button']):focus-visible {
+  outline: 3px solid var(--bm-focus);
+  outline-offset: 2px;
+}
+
+.driver-popover.bm-tutorial-popover .driver-popover-btn-disabled {
+  color: var(--bm-muted);
+  opacity: 0.65;
+}
+
+@media (max-width: 480px) {
+  .driver-popover.bm-tutorial-popover {
+    width: calc(100vw - 16px);
+    min-width: min(230px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+    padding: 0.875rem;
+  }
+
+  .driver-popover.bm-tutorial-popover .driver-popover-footer {
+    gap: 0.5rem;
+  }
+
+  .driver-popover.bm-tutorial-popover .driver-popover-navigation-btns {
+    gap: 0.5rem;
+  }
+
+  .driver-popover.bm-tutorial-popover .driver-popover-navigation-btns button + button {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-popover.bm-tutorial-popover,
+  .driver-popover.bm-tutorial-popover *,
+  .driver-overlay {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

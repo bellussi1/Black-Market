@@ -1,0 +1,58 @@
+.tutorial-launcher {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.tutorial-launcher__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
+  padding: 0.5rem 0.875rem;
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  font: 600 0.9375rem/1.2 var(--bm-font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tutorial-launcher__button:hover:not(:disabled) {
+  border-color: var(--bm-accent);
+  background: var(--bm-accent-soft);
+}
+
+.tutorial-launcher__button:focus-visible {
+  outline: 3px solid var(--bm-focus);
+  outline-offset: 3px;
+}
+
+.tutorial-launcher__button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.tutorial-launcher__status {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--bm-muted);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tutorial-launcher--error {
+  justify-items: start;
+}
+
+@media (max-width: 480px) {
+  .tutorial-launcher__button {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,3 +1,4 @@
+@use 'driver.js/dist/driver.css';
 @use 'styles/tokens';
 @use 'styles/fonts';
 @use 'styles/base';
@@ -11,6 +12,7 @@
 @use 'styles/guided';
 @use 'styles/workstation';
 @use 'styles/responsive';
+@use 'app/features/tutorials/tutorial-popover';
 /* Interactive controls expose their action consistently across the application. */
 :where(
     a[href],

@@ -1,0 +1,37 @@
+@if (guide(); as publishedGuide) {
+  <div class="tutorial-launcher">
+    <button
+      #launcher
+      class="tutorial-launcher__button"
+      type="button"
+      [disabled]="loading()"
+      (click)="start(launcher)"
+    >
+      <span>Tutorial desta tela</span>
+    </button>
+    @if (needsUpdate()) {
+      <p class="tutorial-launcher__status" role="status" aria-live="polite">
+        Este guia precisa ser atualizado antes de ser exibido.
+      </p>
+    } @else if (startFailed()) {
+      <p class="tutorial-launcher__status" role="status" aria-live="polite">
+        Não foi possível abrir o tutorial agora. Tente novamente.
+      </p>
+    }
+    <span class="sr-only">{{ publishedGuide.steps.length }} etapas</span>
+  </div>
+} @else if (requestFailed()) {
+  <div class="tutorial-launcher tutorial-launcher--error">
+    <p class="tutorial-launcher__status" role="status" aria-live="polite">
+      Não foi possível carregar o tutorial agora.
+    </p>
+    <button
+      class="tutorial-launcher__button"
+      type="button"
+      [disabled]="loading()"
+      (click)="loadGuide()"
+    >
+      Tentar novamente
+    </button>
+  </div>
+}
