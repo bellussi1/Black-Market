@@ -92,7 +92,7 @@ git commit -m "feat(tutorials): define shared screen registry"
 **Files:**
 
 - Modify: `packages/database/src/schema.ts`
-- Create: `packages/database/drizzle/0011_tutorial_guides.sql`
+- Create: `packages/database/drizzle/0012_tutorial_guides.sql` (the Roadmap plan already uses migration `0011`)
 - Modify: `packages/database/drizzle/meta/_journal.json` e snapshot Drizzle gerado
 - Modify: `deploy/runtime-role.sql`
 - Modify: `apps/api/src/database/runtime-role.ts`, `runtime-role.spec.ts`
