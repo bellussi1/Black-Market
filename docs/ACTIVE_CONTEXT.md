@@ -1299,3 +1299,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Revisão**: especificação self-review concluída; estados de carregamento, vazio, falha, responsividade, acessibilidade, migração/editor e critérios de aceite estão descritos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
 - **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
 - **Próximo passo**: após aprovação da especificação, preparar plano e implementar Home/Roadmap em fatias verificáveis, registrando commits separados conforme escopo.
+
+## 118. Especificação da biblioteca de tutorial guiado (Codex, 15/10/2026)
+
+- **Pedido e aprovações**: implementar tutorial guiado leve, responsivo, acessível e fácil de iniciar por ação do usuário. A biblioteca aprovada é Driver.js, com guias curtos por tela e conteúdo editável no banco.
+- **Desenho**: `docs/superpowers/specs/2026-10-15-guided-tutorial-library-design.md`. Define guias no PostgreSQL/API, editor administrativo protegido pela allowlist existente, chaves de tela e âncoras permitidas pelo código, Driver.js carregado sob demanda no browser e suporte a SSR. Conteúdo inicial do fluxo central é semeado uma vez, de forma idempotente, e alterações administrativas são preservadas; não haverá fallback de cópia no bundle.
+- **Segurança e UX**: texto editorial é renderizado como texto simples; o banco não escolhe seletores, rotas ou comandos. O tour não inicia sozinho, permite sair e replay, respeita `authGuard`, teclado, foco, leitor de tela, telas estreitas e `prefers-reduced-motion`. Analytics agregados dependem do consentimento já existente e não incluem dados pessoais.
+- **Revisão**: especificação self-review concluída, com limites e telas iniciais definidos. Nenhum código funcional foi alterado nem testes foram executados nesta etapa documental.
+- **Estado**: aguardando revisão/aprovação do documento pelo usuário antes de escrever plano de implementação. Commit documental atômico local; sem push.
+- **Próximo passo**: após aprovação da especificação, escrever plano e implementar editor/API/armazenamento e tours em fatias verificáveis, com commits separados por funcionalidade.
