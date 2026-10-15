@@ -1316,3 +1316,12 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Revisão do plano**: self-review de cobertura feita; `prettier` formatou o documento. A migração exige PostgreSQL descartável para validar preservação; viewport e teclado exigem inspeção manual pois não há harness E2E instalado.
 - **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
 - **Próximo passo**: após aprovação, executar na ordem descrita, integrar migrações/API/Web e registrar cada mudança em commits separados.
+
+## 120. Plano de implementação da biblioteca de tutorial (Codex, 15/10/2026)
+
+- **Plano**: `docs/superpowers/plans/2026-10-15-guided-tutorial-library.md`, baseado na especificação aprovada da seção 118. Divide a entrega em registro compartilhado, schema/permissões, validação, serviço/seed, endpoints, cliente/resolução, runtime Driver.js, telas iniciais, editor, analytics e revisão de acessibilidade/SSR.
+- **Conteúdo dinâmico**: os textos iniciais serão redigidos a partir dos controles reais e salvos apenas como bootstrap versionado no banco. Reexecuções preservam alterações administrativas; a aplicação sempre carrega guias pela API, sem cópia de fallback no bundle.
+- **TDD e commits**: cada tarefa inclui testes primeiro, comandos de verificação e commits atômicos. Guia e passo são públicos e compartilhados; acesso de gestão reutiliza a validação administrativa server-side do Roadmap.
+- **Revisão do plano**: self-review cobre os requisitos da especificação. Prettier foi executado nos dois planos; o plano do Tutorial passou sem alterações e o de Home foi formatado. Ainda não houve implementação ou testes funcionais.
+- **Estado**: aguardando revisão/aprovação do plano pelo usuário antes de executar.
+- **Próximo passo**: após aprovação, seguir as tarefas com os subagents já solicitados, respeitando a dependência sequencial das migrações do banco e fechando com revisão integrada.
