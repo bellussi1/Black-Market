@@ -78,21 +78,6 @@
     order: -1;
   }
 }
-.market-history-panel svg {
-  max-height: 250px;
-  color: var(--bm-accent);
-  background: transparent;
-  border: 0;
-}
-.chart-axis-label {
-  fill: var(--bm-muted);
-  font-size: 11px;
-}
-.chart-point:focus-visible {
-  outline: none;
-  stroke: var(--bm-text);
-  stroke-width: 2px;
-}
 .auto-sync-row {
   display: flex;
   align-items: center;

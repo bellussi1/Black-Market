@@ -9,6 +9,28 @@ export interface HistoryObservation {
   connected: boolean;
   intervalMinutes?: number;
 }
+export interface MarketChartPoint extends HistoryObservation {
+  x: number;
+  y: number | null;
+}
+export interface MarketChart {
+  segments: string[];
+  chartPoints: MarketChartPoint[];
+  dots: {
+    x: number;
+    y: number;
+    fetchedAt: string;
+    value: bigint;
+    intervalMinutes?: number;
+  }[];
+  valueTicks: { y: number; value: bigint }[];
+  timeTicks: { x: number; fetchedAt: string }[];
+  min: bigint | null;
+  max: bigint | null;
+  samples: number;
+  startAt: string;
+  endAt: string;
+}
 
 const integer = (value: unknown): bigint | null =>
   typeof value === 'string' && /^\d{1,24}$/.test(value)
@@ -74,12 +96,13 @@ export function historyObservations(
   });
 }
 
-export function marketChart(observations: HistoryObservation[], zeroBaseline = false) {
+export function marketChart(observations: HistoryObservation[], zeroBaseline = false): MarketChart {
   const valid = observations.filter(
     (point): point is HistoryObservation & { value: bigint } => point.value !== null,
   );
   const empty = {
     segments: [] as string[],
+    chartPoints: [] as MarketChartPoint[],
     dots: [] as {
       x: number;
       y: number;
@@ -119,6 +142,20 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
     x: 72 + Math.round(((Date.parse(valid[index].fetchedAt) - firstAt) / span) * 612),
     fetchedAt: valid[index].fetchedAt,
   }));
+  const chartPoints = observations.map(
+    (point): MarketChartPoint => ({
+      ...point,
+      x: Date.parse(point.fetchedAt),
+      y:
+        point.value === null
+          ? null
+          : max === min
+            ? zeroBaseline
+              ? 0
+              : 500
+            : Number(((point.value - min) * 1000n) / (max - min)),
+    }),
+  );
   const segments: string[][] = [];
   const dots: typeof empty.dots = [];
   let segment: string[] | null = null;
@@ -150,6 +187,7 @@ export function marketChart(observations: HistoryObservation[], zeroBaseline = f
   }
   return {
     segments: segments.map((segment) => segment.join(' ')),
+    chartPoints,
     dots,
     valueTicks,
     timeTicks,

@@ -1,0 +1,24 @@
+<div class="market-history-chart-frame" [attr.aria-busy]="!chartReady() && !chartFailed()">
+  @if (!chartReady() && !chartFailed()) {
+    <div class="market-history-chart-loading" role="status" aria-live="polite">
+      <div class="market-history-chart-loading-grid" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <span i18n>Carregando gráfico…</span>
+    </div>
+  }
+  @if (chartFailed()) {
+    <p class="market-history-chart-error" role="alert" i18n>
+      Não foi possível carregar o gráfico. Atualize a página para tentar novamente.
+    </p>
+  }
+  <canvas
+    #chartCanvas
+    role="img"
+    [attr.aria-label]="label() + ': ' + chartData().samples + ' observações no período'"
+    [attr.aria-hidden]="!chartReady()"
+    [class.market-history-chart-hidden]="!chartReady()"
+  >
+    <span i18n>Histórico do item</span>
+  </canvas>
+</div>

@@ -58,6 +58,7 @@ type CalculationQuoteContext = {
 import { MarketApi, type MarketHistoryPoint } from './market-api';
 import { MarketBoard } from './market-board';
 import { type HistoryMetric, historyObservations, marketChart } from './market-history';
+import { MarketHistoryChart } from './market-history-chart';
 import { MarketProduction } from './market-production';
 import { MarketRefresh } from './market-refresh';
 
@@ -81,6 +82,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
     CatalogItemPicker,
     ItemIcon,
     MarketBoard,
+    MarketHistoryChart,
     MarketProduction,
   ],
   templateUrl: './market-page.html',
