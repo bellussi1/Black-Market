@@ -7,6 +7,43 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('groups storage context, primary actions and filters before the item list', async () => {
+    const fixture = await renderComponent(StockPage);
+    const element: HTMLElement = fixture.nativeElement;
+    const pageHeading = element.querySelector('.stock-page > header.tool-heading');
+    const workspace = element.querySelector('.stock-workspace');
+    const sequence = [
+      workspace?.querySelector('.panel-heading'),
+      workspace?.querySelector('.form-grid'),
+      workspace?.querySelector('.stock-toolbar'),
+      workspace?.querySelector('.stock-items'),
+      workspace?.querySelector('.pagination-bar'),
+    ];
+
+    expect(pageHeading).not.toBeNull();
+    expect(pageHeading?.getAttribute('aria-labelledby')).toBe('stock-page-title');
+    expect(pageHeading?.querySelector('#stock-page-title')?.textContent).toContain('Armazém');
+    expect(pageHeading?.querySelector('.tool-kicker')?.textContent).toContain('SEUS ITENS');
+    expect(pageHeading?.querySelector('.action-row')?.textContent).toContain('Importar capturas');
+    expect(pageHeading?.querySelector('.action-row')?.textContent).toContain(
+      'Adicionar item manualmente',
+    );
+    expect(workspace?.getAttribute('aria-labelledby')).toBe('stock-items-title');
+    expect(sequence.every(Boolean)).toBe(true);
+    expect(workspace?.querySelector('.form-grid')?.textContent).toContain('Pesquisar item');
+    expect(workspace?.querySelector('.stock-toolbar')?.textContent).toContain('0 registros');
+    expect(
+      workspace?.querySelector('.stock-toolbar [role="group"]')?.getAttribute('aria-label'),
+    ).toBe('Visualização dos itens');
+    for (let index = 0; index < sequence.length - 1; index++) {
+      expect(
+        Boolean(
+          sequence[index]!.compareDocumentPosition(sequence[index + 1]!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      ).toBe(true);
+    }
+  });
   it('switches storage and character inventories in the same page without moving an open edit', async () => {
     const params = new BehaviorSubject(convertToParamMap({}));
     const fixture = await renderComponent(StockPage, {}, [

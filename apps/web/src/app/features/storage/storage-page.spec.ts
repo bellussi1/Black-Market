@@ -12,6 +12,12 @@ describe('Storage import guidance', () => {
   it('offers screenshots first, explains CSV provenance and retains manual entry', async () => {
     const fixture = await renderComponent(StoragePage);
     const element: HTMLElement = fixture.nativeElement;
+    const heading = element.querySelector('.tool-page > header.tool-heading');
+    expect(heading?.getAttribute('aria-labelledby')).toBe('storage-page-title');
+    expect(heading?.querySelector('#storage-page-title')?.textContent).toContain('O que você tem');
+    expect(heading?.querySelector('.tool-kicker')?.textContent).toContain('ARMAZÉM');
+    expect(heading?.querySelector('h1')?.textContent).toContain('O que você tem');
+    expect(element.querySelector('section[aria-labelledby="storage-start-title"]')).not.toBeNull();
     expect(element.querySelector('a[href="/scans"]')?.textContent).toContain('Importar por print');
     expect(element.textContent).toContain('O BDO não exporta seu armazém em CSV');
     expect(element.querySelector('a[href="#storage-manual-title"]')).not.toBeNull();

@@ -1,10 +1,10 @@
 <div class="tool-page stock-page">
   <app-tutorial-launcher screenKey="storage" />
-  <header class="page-heading">
-    <p class="eyebrow" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
-    <h1 i18n>Armazém</h1>
+  <header class="tool-heading" aria-labelledby="stock-page-title">
+    <p class="tool-kicker" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
+    <h1 id="stock-page-title" i18n>Armazém</h1>
     <p i18n>Importe capturas, confira o que já possui e corrija quantidades quando precisar.</p>
-    <div class="action-row">
+    <div class="action-row stock-primary-actions">
       <a
         hlmBtn
         variant="outline"
@@ -40,7 +40,12 @@
       Inventários dos personagens
     </button>
   </div>
-  <section hlmCard class="panel">
+  <section hlmCard class="panel stock-workspace" aria-labelledby="stock-items-title">
+    <div class="panel-heading">
+      <h2 id="stock-items-title" i18n>
+        {{ kind() === 'storage' ? 'Itens nos armazéns' : 'Itens do inventário' }}
+      </h2>
+    </div>
     <div class="form-grid">
       <label i18n
         >Pesquisar item<input
