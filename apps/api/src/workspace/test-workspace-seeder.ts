@@ -59,6 +59,7 @@ export class TestWorkspaceSeeder {
     const fixture = await this.loadFixture();
 
     return this.database.db.transaction(async (transaction) => {
+      await transaction.execute(sql`select set_config('app.firebase_uid', ${configuredUid}, true)`);
       const [user] = await transaction
         .select({ id: authUsers.id })
         .from(authUsers)

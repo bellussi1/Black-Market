@@ -256,10 +256,14 @@ describe('TestWorkspaceSeeder', () => {
     expect(workspace?.characters[0]?.gear).toHaveLength(15);
     expect(workspace?.gear).toHaveLength(2);
     expect(workspace?.presets).toHaveLength(3);
-    expect(database.transaction.execute).toHaveBeenCalledTimes(2);
+    expect(database.transaction.execute).toHaveBeenCalledTimes(3);
     const contextQuery = new PgDialect().sqlToQuery(database.transaction.execute.mock.calls[0][0]);
     expect(contextQuery.sql).toContain('set_config');
-    expect(contextQuery.params).toEqual([ownerId]);
+    expect(contextQuery.params).toEqual([firebaseUid]);
+    const ownerContextQuery = new PgDialect().sqlToQuery(
+      database.transaction.execute.mock.calls[1][0],
+    );
+    expect(ownerContextQuery.params).toEqual([ownerId]);
   });
 
   it('does not duplicate the profile or increment the version on a repeated seed', async () => {

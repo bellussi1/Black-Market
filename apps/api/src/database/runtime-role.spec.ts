@@ -20,10 +20,14 @@ const restricted: RuntimePrivileges = {
   auth_users_insert: true,
   auth_users_update: false,
   auth_users_delete: false,
+  auth_users_rls: true,
+  auth_users_force_rls: true,
   auth_identities_select: true,
   auth_identities_insert: true,
   auth_identities_update: false,
   auth_identities_delete: false,
+  auth_identities_rls: true,
+  auth_identities_force_rls: true,
   steam_attempts_select: true,
   steam_attempts_insert: true,
   steam_attempts_update: true,
@@ -63,6 +67,15 @@ describe('Runtime database privileges', () => {
         key.startsWith('workspace_') || key.startsWith('auth_') || key.startsWith('steam_'),
     ))
       expect(runtimeRoleIsRestricted({ ...restricted, [key]: !value })).toBe(false);
+  });
+  it('requires RLS enabled and forced on identity mappings', () => {
+    for (const key of [
+      'auth_users_rls',
+      'auth_users_force_rls',
+      'auth_identities_rls',
+      'auth_identities_force_rls',
+    ] as const)
+      expect(runtimeRoleIsRestricted({ ...restricted, [key]: false })).toBe(false);
   });
   it('requires only the four tutorial table privileges used by the API', () => {
     for (const [key, value] of Object.entries(restricted).filter(([key]) =>

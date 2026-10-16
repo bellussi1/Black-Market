@@ -1,6 +1,8 @@
 import { authUsers } from '@bdo/database/schema';
 import { ConflictException } from '@nestjs/common';
-import { describe, expect, it } from 'vitest';
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
+import { describe, expect, it, vi } from 'vitest';
 
 import { assertSteamLinkAvailable, DatabaseSteamAuthStore } from './steam-auth.store';
 
@@ -17,6 +19,7 @@ function storeWith(
   const users = [...(seed.users ?? [])];
   const identities = [...(seed.identities ?? [])];
   const transaction = {
+    execute: vi.fn((_query: SQL) => Promise.resolve()),
     select: () => ({
       from: (table: unknown) => ({
         where: () => ({
@@ -55,6 +58,7 @@ function storeWith(
   return {
     store: new DatabaseSteamAuthStore(database as never),
     records: { users, identities },
+    contexts: transaction.execute,
   };
 }
 
@@ -84,11 +88,13 @@ describe('Steam identity linking rules', () => {
   });
 
   it('logs into the canonical account already linked to Steam', async () => {
-    const { store } = storeWith({
+    const { store, contexts } = storeWith({
       users: [{ id: ownerId, firebaseUid: 'firebase-google-uid' }],
       identities: [{ userId: ownerId, provider: 'steam', subject: steamId }],
     });
     await expect(store.loginSteam(steamId)).resolves.toBe('firebase-google-uid');
+    expect(contexts).toHaveBeenCalledTimes(3);
+    expect(new PgDialect().sqlToQuery(contexts.mock.calls[1][0]).params).toEqual([steamId]);
   });
 
   it('creates one deterministic Steam identity on first login and reuses it', async () => {

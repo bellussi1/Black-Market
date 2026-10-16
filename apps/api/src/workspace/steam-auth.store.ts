@@ -5,7 +5,7 @@ import {
   steamAuthExchanges,
 } from '@bdo/database/schema';
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { and, eq, gt, isNull, lt } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, sql } from 'drizzle-orm';
 
 import { DatabaseService } from '../database/database.service';
 
@@ -88,12 +88,15 @@ export class DatabaseSteamAuthStore implements SteamAuthStore {
 
   async loginSteam(steamId: string): Promise<string> {
     return this.database.db.transaction(async (transaction) => {
+      await transaction.execute(sql`select set_config('app.identity_provider', 'steam', true)`);
+      await transaction.execute(sql`select set_config('app.identity_subject', ${steamId}, true)`);
       const [linked] = await transaction
         .select()
         .from(authIdentities)
         .where(and(eq(authIdentities.provider, 'steam'), eq(authIdentities.subject, steamId)))
         .limit(1);
       if (linked) {
+        await transaction.execute(sql`select set_config('app.user_id', ${linked.userId}, true)`);
         const [user] = await transaction
           .select()
           .from(authUsers)
@@ -104,6 +107,7 @@ export class DatabaseSteamAuthStore implements SteamAuthStore {
       }
 
       const firebaseUid = `steam:${steamId}`;
+      await transaction.execute(sql`select set_config('app.firebase_uid', ${firebaseUid}, true)`);
       await transaction.insert(authUsers).values({ firebaseUid }).onConflictDoNothing();
       const [user] = await transaction
         .select()
@@ -111,6 +115,7 @@ export class DatabaseSteamAuthStore implements SteamAuthStore {
         .where(eq(authUsers.firebaseUid, firebaseUid))
         .limit(1);
       if (!user) throw new UnauthorizedException('Não foi possível criar a conta Steam.');
+      await transaction.execute(sql`select set_config('app.user_id', ${user.id}, true)`);
 
       const [currentSteam] = await transaction
         .select()
@@ -136,12 +141,16 @@ export class DatabaseSteamAuthStore implements SteamAuthStore {
 
   async linkSteam(firebaseUid: string, steamId: string): Promise<void> {
     await this.database.db.transaction(async (transaction) => {
+      await transaction.execute(sql`select set_config('app.firebase_uid', ${firebaseUid}, true)`);
       const [user] = await transaction
         .select()
         .from(authUsers)
         .where(eq(authUsers.firebaseUid, firebaseUid))
         .limit(1);
       if (!user) throw new UnauthorizedException('Entre na sua conta para vincular a Steam.');
+      await transaction.execute(sql`select set_config('app.user_id', ${user.id}, true)`);
+      await transaction.execute(sql`select set_config('app.identity_provider', 'steam', true)`);
+      await transaction.execute(sql`select set_config('app.identity_subject', ${steamId}, true)`);
 
       const [steamIdentity] = await transaction
         .select()

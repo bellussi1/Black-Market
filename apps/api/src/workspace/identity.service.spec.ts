@@ -1,5 +1,7 @@
 import { authUsers } from '@bdo/database/schema';
 import { ConfigService } from '@nestjs/config';
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { assertGoogleLinkAvailable, IdentityService } from './identity.service';
@@ -15,6 +17,7 @@ function fakeDatabase(seed: { users?: FakeUser[]; identities?: FakeIdentity[] } 
   const identities = [...(seed.identities ?? [])];
   let nextId = ownerId;
   const tx = {
+    execute: vi.fn((_query: SQL) => Promise.resolve()),
     select: () => ({
       from: (table: unknown) => ({
         where: () => ({
@@ -92,6 +95,9 @@ describe('Identity boundary', () => {
     expect(database.records.identities).toEqual([
       { userId: ownerId, provider: 'google', subject: 'google-subject-1' },
     ]);
+    expect(
+      database.db.execute.mock.calls.map(([query]) => new PgDialect().sqlToQuery(query).params),
+    ).toEqual([['firebase-google-uid'], [], ['google-subject-1'], [ownerId]]);
   });
 
   it('reuses the Google mapping on subsequent requests', async () => {
@@ -146,20 +152,27 @@ describe('Identity boundary', () => {
       identities: [{ userId: ownerId, provider: 'steam', subject: '76561198000000000' }],
     });
     const identities = database.records.identities;
+    let transactionCount = 0;
     database.db.transaction = async <T>(operation: (tx: never) => Promise<T>) => {
+      transactionCount++;
       let reads = 0;
       const tx = {
+        execute: vi.fn((_query: SQL) => Promise.resolve()),
         select: () => ({
-          from: () => ({
+          from: (table: unknown) => ({
             where: () => ({
               limit: () => {
                 reads++;
                 return Promise.resolve(
-                  reads <= 2
-                    ? []
-                    : identities.filter(
-                        (row) => row.provider === 'google' && row.userId === ownerId,
-                      ),
+                  transactionCount === 1
+                    ? table === authUsers
+                      ? database.records.users
+                      : identities
+                    : reads <= 2
+                      ? []
+                      : identities.filter(
+                          (row) => row.provider === 'google' && row.userId === ownerId,
+                        ),
                 );
               },
             }),

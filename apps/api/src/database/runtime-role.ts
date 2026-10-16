@@ -16,10 +16,14 @@ export interface RuntimePrivileges {
   auth_users_insert: boolean;
   auth_users_update: boolean;
   auth_users_delete: boolean;
+  auth_users_rls: boolean;
+  auth_users_force_rls: boolean;
   auth_identities_select: boolean;
   auth_identities_insert: boolean;
   auth_identities_update: boolean;
   auth_identities_delete: boolean;
+  auth_identities_rls: boolean;
+  auth_identities_force_rls: boolean;
   steam_attempts_select: boolean;
   steam_attempts_insert: boolean;
   steam_attempts_update: boolean;
@@ -58,10 +62,14 @@ const expectedTablePrivileges: Omit<RuntimePrivileges, (typeof forbiddenRolePriv
   auth_users_insert: true,
   auth_users_update: false,
   auth_users_delete: false,
+  auth_users_rls: true,
+  auth_users_force_rls: true,
   auth_identities_select: true,
   auth_identities_insert: true,
   auth_identities_update: false,
   auth_identities_delete: false,
+  auth_identities_rls: true,
+  auth_identities_force_rls: true,
   steam_attempts_select: true,
   steam_attempts_insert: true,
   steam_attempts_update: true,
@@ -104,10 +112,14 @@ has_table_privilege(current_user,'public.auth_users','SELECT') AS auth_users_sel
 has_table_privilege(current_user,'public.auth_users','INSERT') AS auth_users_insert,
 has_table_privilege(current_user,'public.auth_users','UPDATE') AS auth_users_update,
 has_table_privilege(current_user,'public.auth_users','DELETE') AS auth_users_delete,
+(SELECT relrowsecurity FROM pg_class WHERE oid='public.auth_users'::regclass) AS auth_users_rls,
+(SELECT relforcerowsecurity FROM pg_class WHERE oid='public.auth_users'::regclass) AS auth_users_force_rls,
 has_table_privilege(current_user,'public.auth_identities','SELECT') AS auth_identities_select,
 has_table_privilege(current_user,'public.auth_identities','INSERT') AS auth_identities_insert,
 has_table_privilege(current_user,'public.auth_identities','UPDATE') AS auth_identities_update,
 has_table_privilege(current_user,'public.auth_identities','DELETE') AS auth_identities_delete,
+(SELECT relrowsecurity FROM pg_class WHERE oid='public.auth_identities'::regclass) AS auth_identities_rls,
+(SELECT relforcerowsecurity FROM pg_class WHERE oid='public.auth_identities'::regclass) AS auth_identities_force_rls,
 has_table_privilege(current_user,'public.steam_auth_attempts','SELECT') AS steam_attempts_select,
 has_table_privilege(current_user,'public.steam_auth_attempts','INSERT') AS steam_attempts_insert,
 has_table_privilege(current_user,'public.steam_auth_attempts','UPDATE') AS steam_attempts_update,

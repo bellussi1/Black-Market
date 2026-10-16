@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { DatabaseService } from '../database/database.service';
 import { FirebaseAuthService } from './firebase-auth.service';
@@ -66,6 +66,11 @@ export class IdentityService {
       throw new UnauthorizedException('Conclua a autenticação Google antes de vincular a conta.');
 
     return this.database.db.transaction(async (transaction) => {
+      await transaction.execute(sql`select set_config('app.user_id', ${current.ownerId}, true)`);
+      await transaction.execute(sql`select set_config('app.identity_provider', 'google', true)`);
+      await transaction.execute(
+        sql`select set_config('app.identity_subject', ${googleIdentity.uid}, true)`,
+      );
       const [identityForGoogleSubject] = await transaction
         .select()
         .from(authIdentities)
@@ -116,11 +121,14 @@ export class IdentityService {
     const identity = await this.verifiedIdentity(authorization);
     const [user, linkedIdentities] = await Promise.all([
       this.firebase.getUser(identity.firebaseUid),
-      this.database.db
-        .select({ provider: authIdentities.provider })
-        .from(authIdentities)
-        .where(eq(authIdentities.userId, identity.ownerId))
-        .limit(2),
+      this.database.db.transaction(async (transaction) => {
+        await transaction.execute(sql`select set_config('app.user_id', ${identity.ownerId}, true)`);
+        return transaction
+          .select({ provider: authIdentities.provider })
+          .from(authIdentities)
+          .where(eq(authIdentities.userId, identity.ownerId))
+          .limit(2);
+      }),
     ]);
     return {
       authenticated: true,
@@ -161,19 +169,25 @@ export class IdentityService {
       }
 
       if (signInProvider === 'custom') {
-        const [user] = await this.database.db
-          .select()
-          .from(authUsers)
-          .where(eq(authUsers.firebaseUid, decoded.uid))
-          .limit(1);
-        if (!user) throw new Error('Unknown Firebase custom-token UID');
-        const [steamIdentity] = await this.database.db
-          .select()
-          .from(authIdentities)
-          .where(and(eq(authIdentities.userId, user.id), eq(authIdentities.provider, 'steam')))
-          .limit(1);
-        if (!steamIdentity) throw new Error('Custom-token UID has no Steam identity');
-        return { firebaseUid: decoded.uid, ownerId: user.id };
+        return await this.database.db.transaction(async (transaction) => {
+          await transaction.execute(
+            sql`select set_config('app.firebase_uid', ${decoded.uid}, true)`,
+          );
+          const [user] = await transaction
+            .select()
+            .from(authUsers)
+            .where(eq(authUsers.firebaseUid, decoded.uid))
+            .limit(1);
+          if (!user) throw new Error('Unknown Firebase custom-token UID');
+          await transaction.execute(sql`select set_config('app.user_id', ${user.id}, true)`);
+          const [steamIdentity] = await transaction
+            .select()
+            .from(authIdentities)
+            .where(and(eq(authIdentities.userId, user.id), eq(authIdentities.provider, 'steam')))
+            .limit(1);
+          if (!steamIdentity) throw new Error('Custom-token UID has no Steam identity');
+          return { firebaseUid: decoded.uid, ownerId: user.id };
+        });
       }
 
       throw new Error('Unsupported Firebase sign-in provider');
@@ -184,6 +198,11 @@ export class IdentityService {
 
   private async provisionGoogleIdentity(firebaseUid: string, googleSubject: string) {
     return this.database.db.transaction(async (transaction) => {
+      await transaction.execute(sql`select set_config('app.firebase_uid', ${firebaseUid}, true)`);
+      await transaction.execute(sql`select set_config('app.identity_provider', 'google', true)`);
+      await transaction.execute(
+        sql`select set_config('app.identity_subject', ${googleSubject}, true)`,
+      );
       const [currentUser] = await transaction
         .select()
         .from(authUsers)
@@ -198,6 +217,7 @@ export class IdentityService {
         .where(eq(authUsers.firebaseUid, firebaseUid))
         .limit(1);
       if (!user) throw new UnauthorizedException('Não foi possível criar sua conta.');
+      await transaction.execute(sql`select set_config('app.user_id', ${user.id}, true)`);
 
       const [identityForGoogleSubject] = await transaction
         .select()
