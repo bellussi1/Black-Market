@@ -27,3 +27,9 @@ Implementação de 12/10/2026 baseada nas observações de `bdo-workshop-plan-14
 A busca certifica o melhor resultado da cadeia/fórmulas selecionadas quando conclui dentro do limite. Não compara todas as fórmulas alternativas do catálogo; limite excedido permanece inconclusivo. Proc padrão de alquimia/culinária usa o modelo registrado; produtos especiais/aleatórios, trocas de subprodutos e redução de tempo por produção em massa ainda precisam de modelos e fontes próprias. Apenas preços NPC registrados com fonte entram automaticamente.
 
 Na visita local, faltavam cotações: 1407 apresentou cinco grupos de preços ausentes, 1408 três e 1409 seis. Nenhum preço ausente foi inventado. Validação da aritmética e da UI não comprova lucro realizável sem cobertura de mercado autorizada e atual.
+
+## Estado do otimizador — 16/10/2026
+
+- A busca exata tem orçamento default e máximo de **10.000 estados** (`maxOptimizationStates`); valores maiores recebidos são limitados. Se o orçamento for atingido, o candidato permanece incompleto e nenhum ótimo é certificado. O escopo é a fórmula selecionada e o grafo alcançável, sem busca automática entre todas as fórmulas do catálogo.
+- A entrada do Worker inclui estimativas confirmadas de coleta dos materiais alcançáveis mesmo quando o mesmo material também tem receita produtora. A escolha manual permanece na entrada para preservar a decisão já aplicada.
+- As regressões em `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts` e `packages/calculators/src/production-planner.spec.ts` cobrem o payload e o caso em que coletar vence comprar/produzir. A suite completa passou; esta correção remove uma omissão de alternativa, mas não certifica lucro realizável sem preço, quantidade disponível e tempo confiáveis.

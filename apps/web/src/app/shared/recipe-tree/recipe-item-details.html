@@ -1,0 +1,260 @@
+<button
+  type="button"
+  class="details-backdrop"
+  aria-label="Fechar detalhes do item"
+  (click)="tree().closeDetails()"
+></button>
+<aside
+  class="context-panel panel bottom-details-tray"
+  aria-label="Detalhes do item selecionado"
+  i18n-aria-label
+>
+  <div class="context-titlebar">
+    <div class="tray-title-text">
+      <span class="bdo-diamond">◇</span>
+      <strong i18n
+        >Informações do item:
+        {{ tree().context()?.node?.part?.name ?? tree().selectedNode()?.part?.name }}</strong
+      >
+    </div>
+    <button type="button" class="context-close" (click)="tree().closeDetails()" i18n>Fechar</button>
+  </div>
+
+  @if (tree().contextLoading()) {
+    <p role="status" class="tray-loading" i18n>Consultando o item e suas fontes…</p>
+  }
+
+  @if (tree().context(); as info) {
+    <div class="bottom-tray-grid">
+      <!-- Coluna 1: Identidade & Métodos -->
+      <div class="tray-column">
+        <h4 class="tray-col-title" i18n>Identidade & Métodos</h4>
+        <div class="context-heading">
+          <app-item-icon
+            [url]="tree().catalog.resolveIconUrl(info.item ?? info.node.part)"
+            [name]="info.node.part.name"
+          />
+          <div>
+            <small
+              >#{{ info.node.part.itemId }} ·
+              {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
+            >
+            <h3>{{ info.node.part.name }}</h3>
+          </div>
+        </div>
+        @if (info.incomplete) {
+          <p role="status" class="notice" i18n>
+            Parte das informações não pôde ser carregada.
+            <button type="button" (click)="tree().showContext(info.node)">Tentar novamente</button>
+          </p>
+        }
+        <div class="action-row">
+          <button type="button" (click)="tree().graph()?.center(info.node.path)" i18n>
+            Centralizar no mapa
+          </button>
+          <a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
+            >Explorar como produto →</a
+          >
+        </div>
+
+        @if (tree().selectedNode(); as current) {
+          @if (current.path !== 'root' && current.part.quantity === null) {
+            <label i18n
+              >Unidades por operação<input
+                type="number"
+                min="1"
+                max="1000000"
+                [ngModel]="current.part.quantity"
+                (ngModelChange)="
+                  tree().action({ path: current.path, action: 'quantity', value: $event })
+                "
+            /></label>
+          }
+          <label i18n
+            >Método de produção<select
+              [ngModel]="tree().methodKey(current, info.recipes)"
+              (ngModelChange)="
+                tree().action({ path: current.path, action: 'choose', value: $event })
+              "
+            >
+              <option value="">Escolha uma receita</option>
+              @for (
+                method of tree().productionMethods(info.recipes);
+                track method.key;
+                let index = $index
+              ) {
+                <option [value]="method.key">
+                  {{ tree().methodLabel(method, index) }}
+                </option>
+              }
+            </select></label
+          >
+          @if (current.yield) {
+            <label i18n
+              >Rendimento por operação<input
+                type="number"
+                min=".001"
+                max="1000000"
+                step=".0001"
+                [ngModel]="current.yield"
+                (ngModelChange)="
+                  tree().action({ path: current.path, action: 'yield', value: $event })
+                "
+            /></label>
+          }
+        }
+
+        <details>
+          <summary i18n>Descrição informada pelo jogo</summary>
+          <p class="item-description">
+            {{ tree().plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
+          </p>
+        </details>
+      </div>
+
+      <!-- Coluna 2: Estoque do Jogador -->
+      <div class="tray-column">
+        <h4 class="tray-col-title" i18n>Estoque nos Armazéns</h4>
+        @if (tree().selectedAllocation(); as allocation) {
+          <div class="alloc-box">
+            <p>
+              Necessário: <strong>{{ allocation.required }}</strong> · do estoque:
+              <strong>{{ allocation.fromStock }}</strong> · faltam:
+              <strong>{{ allocation.missing }}</strong>
+            </p>
+          </div>
+        }
+        <div class="holdings-box">
+          <span class="sub-heading" i18n>Quantidades cadastradas:</span>
+          <ul class="tray-holdings-list">
+            @for (row of tree().holdings(info.node.part.itemId); track row.id) {
+              <li>
+                <span>{{ row.location }}</span>
+                <strong>{{ row.quantity.toLocaleString('pt-BR') }} un</strong>
+              </li>
+            } @empty {
+              <li class="empty-item" i18n>Sem quantidade nos armazéns selecionados.</li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- Coluna 3: Mercado Central & Preço Personalizado -->
+      <div class="tray-column">
+        <h4 class="tray-col-title" i18n>Mercado Central & Cotação</h4>
+        <div class="market-quote-card">
+          @if (tree().marketQuotes().get(info.node.part.itemId); as market) {
+            <div class="quote-stat-row">
+              <span>Preço de venda:</span>
+              <strong>{{ tree().silver(market.price) }}</strong>
+            </div>
+            <div class="quote-stat-row">
+              <span>Última venda:</span>
+              <strong>{{ tree().silver(market.lastSoldPrice) }}</strong>
+            </div>
+            <div class="quote-stat-row">
+              <span>Estoque:</span>
+              <strong>{{ market.stock.toLocaleString('pt-BR') }} un</strong>
+            </div>
+          } @else {
+            <p class="empty-item" i18n>Sem cotação ativa no Mercado Central.</p>
+          }
+          <p
+            class="quote-freshness"
+            [class.is-stale]="tree().quoteFreshness(info.node.part.itemId).stale"
+          >
+            {{ tree().quoteFreshness(info.node.part.itemId).label }}
+          </p>
+        </div>
+
+        <a
+          routerLink="/market"
+          [queryParams]="{ item: info.node.part.itemId }"
+          class="market-external-link"
+          i18n
+        >
+          Abrir mercado completo →
+        </a>
+
+        <details>
+          <summary i18n>Histórico observado</summary>
+          <button type="button" (click)="tree().consultHistory()" i18n>Consultar histórico</button>
+          <p role="status">{{ tree().historyMessage() }}</p>
+          <ul>
+            @for (point of tree().history().slice(-20); track $index) {
+              <li>
+                {{ tree().date(point.fetchedAt) }} · {{ tree().silver(point.price) }} · estoque
+                {{ point.stock ?? '—' }}
+              </li>
+            }
+          </ul>
+        </details>
+      </div>
+
+      <!-- Coluna 4: Obtenção no Mundo & Trabalhadores -->
+      <div class="tray-column">
+        <h4 class="tray-col-title" i18n>Obtenção no Mundo</h4>
+        <div class="origins-scroll-box">
+          <span class="sub-heading" i18n>Trabalhadores · bases conhecidas:</span>
+          @for (source of info.origins.nodes; track source.id) {
+            <button
+              type="button"
+              class="source-option"
+              (click)="tree().selectedLocation.set(source)"
+            >
+              <strong>{{ source.managerNodeName ?? source.name }}</strong
+              ><small
+                >{{ source.name }} · {{ source.territoryName ?? 'Território não identificado' }} ·
+                {{ source.contribution ?? '—' }} CP</small
+              >
+            </button>
+          } @empty {
+            <p class="empty-item" i18n>Sem produção de trabalhadores vinculada.</p>
+          }
+
+          @if (info.origins.spots?.length) {
+            <span class="sub-heading" i18n>Combate convencional · spots de grind:</span>
+            @for (source of info.origins.spots; track source.id) {
+              <button
+                type="button"
+                class="source-option"
+                (click)="tree().selectedLocation.set(source)"
+              >
+                <strong>{{ source.name }}</strong
+                ><small>{{ source.territoryName ?? 'Território não identificado' }} · drops</small>
+              </button>
+            }
+          }
+        </div>
+
+        @if (tree().selectedLocation(); as location) {
+          <section class="location-detail">
+            <h4>
+              {{
+                location.activity === 'grinding'
+                  ? location.name
+                  : (location.managerNodeName ?? location.name)
+              }}
+            </h4>
+            <p>
+              {{ location.territoryName ?? 'Território não identificado' }} ·
+              {{ location.name }}
+            </p>
+            @if (location.activity === 'grinding') {
+              <p i18n>
+                Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas.
+              </p>
+              <p>
+                AP: {{ location.sheetAP ?? 'não informado' }} · DP:
+                {{ location.sheetDP ?? 'não informado' }}
+              </p>
+            } @else {
+              <p>CP: {{ location.contribution ?? 'não informado' }}</p>
+            }
+            <p>Material: {{ info.node.part.name }}.</p>
+          </section>
+        }
+      </div>
+    </div>
+  }
+</aside>

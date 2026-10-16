@@ -1,0 +1,207 @@
+<ng-template #returnedProductRow let-returned="returned">
+  <div class="returned-product-row" animate.enter="returned-product-enter">
+    <app-item-icon class="returned-product-icon" [name]="returned.name" [url]="returned.iconUrl" />
+    <div class="returned-product-details">
+      <strong>{{ returned.name }}</strong>
+      <small>
+        <ng-container i18n>Quantidade esperada no lote:</ng-container>
+        {{ quantityLabel(returned.quantity) }}
+      </small>
+      @if (returned.unitPrice !== null) {
+        <small
+          ><ng-container i18n>Preço un.:</ng-container> {{ silver(returned.unitPrice) }} ·
+          {{ returned.quote.label }}</small
+        >
+      } @else {
+        <small i18n>Sem cotação de mercado; venda não incluída.</small>
+      }
+    </div>
+    <label class="returned-product-choice">
+      <input
+        type="checkbox"
+        [checked]="returned.sell"
+        (change)="
+          returnSaleChanged.emit({ itemId: returned.itemId, sell: $any($event.target).checked })
+        "
+      />
+      @if (returned.sell) {
+        <span i18n>Vender</span>
+      } @else {
+        <span i18n>Guardar</span>
+      }
+    </label>
+  </div>
+</ng-template>
+
+<aside
+  class="workspace-materials-sidebar panel"
+  data-tour="recipe-workshop.materials-returns"
+  aria-label="Plano da receita"
+  i18n-aria-label
+>
+  <div class="sidebar-header">
+    <div class="sidebar-title-row">
+      <h3 i18n>Plano da receita</h3>
+      <span class="sidebar-item-count-badge"
+        >{{ materials().length }} insumos · {{ returns().length }} retornos</span
+      >
+    </div>
+    <p class="sidebar-hint" i18n>Escolha o que fazer, comprar, vender ou guardar.</p>
+  </div>
+
+  <div class="sidebar-section-heading">
+    <h4 i18n>Materiais da receita</h4>
+    <span>{{ materials().length }}</span>
+  </div>
+
+  <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
+  <div class="sidebar-materials-list">
+    @for (item of materials(); track item.itemId) {
+      <div
+        class="sidebar-material-row"
+        [attr.data-item-id]="item.itemId"
+        [class.is-crafting]="item.source !== 'buy'"
+        [class.is-buying]="item.source === 'buy'"
+        [class.is-selected]="selectedItemId() === item.itemId"
+      >
+        <label
+          class="material-source-checkbox bdo-checkbox-container"
+          [title]="
+            item.source === 'buy'
+              ? 'Comprar no Mercado Central'
+              : 'Fazer ou coletar por conta própria'
+          "
+        >
+          <input
+            type="checkbox"
+            [checked]="item.source !== 'buy'"
+            (change)="toggleSource.emit(item.itemId)"
+            [attr.aria-label]="
+              (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') + item.name
+            "
+          />
+          <span class="bdo-checkbox-visual"></span>
+        </label>
+
+        <button
+          type="button"
+          class="sidebar-material-details"
+          (click)="selectMaterial.emit(item.itemId)"
+          [attr.aria-label]="'Ver detalhes de ' + item.name"
+        >
+          <span class="sidebar-item-slot">
+            <app-item-icon [url]="item.iconUrl" [name]="item.name" />
+          </span>
+          <span class="sidebar-item-info">
+            <span class="sidebar-item-name-line">
+              <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
+              <span class="sidebar-item-qty">
+                @if (item.quantityPending) {
+                  Quantidade pendente
+                } @else {
+                  {{ item.required.toLocaleString('pt-BR') }} un
+                }
+              </span>
+            </span>
+            <span class="sidebar-item-price-line">
+              @if (item.unitPrice !== null) {
+                <span class="sidebar-price"
+                  >{{
+                    item.unitPriceSource === 'npc'
+                      ? 'NPC · '
+                      : item.unitPriceSource === 'equivalent'
+                        ? 'Equivalente' +
+                          (item.equivalentPriceSource === 'maximum' ? ' · Máxima · ' : ' · ')
+                        : item.unitPriceSource === 'maximum'
+                          ? 'Máxima · '
+                          : ''
+                  }}{{ silver(item.unitPrice) }}</span
+                >
+                @if (item.stock !== null) {
+                  <span class="sidebar-stock">· Est: {{ item.stock.toLocaleString('pt-BR') }}</span>
+                }
+              } @else {
+                <span class="sidebar-unlisted" i18n>Sem cotação</span>
+              }
+            </span>
+            @if (item.equivalentItem; as equivalent) {
+              <span class="sidebar-equivalent" [title]="'Preço de referência: ' + equivalent.name">
+                <app-item-icon
+                  style="--item-icon-size: 20px"
+                  [url]="catalog.resolveIconUrl(equivalent)"
+                  [name]="equivalent.name"
+                />
+                <span>
+                  {{ equivalent.quantityRatio.toLocaleString('pt-BR') }} un. de
+                  {{ equivalent.name }} por unidade
+                </span>
+              </span>
+            }
+          </span>
+        </button>
+
+        <div
+          class="sidebar-source-badge"
+          [class.is-make]="item.source !== 'buy'"
+          [class.is-buy]="item.source === 'buy'"
+        >
+          {{
+            item.source === 'buy' ? 'Comprar' : item.sourceLabel === 'Coletar' ? 'Coletar' : 'Fazer'
+          }}
+        </div>
+      </div>
+    } @empty {
+      <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
+    }
+  </div>
+
+  @if (returns().length) {
+    <section class="returned-product-panel" aria-label="Retornos previstos" i18n-aria-label>
+      <div class="sidebar-section-heading returned-product-intro">
+        <h4 i18n>Retornos previstos</h4>
+        <span>{{ returns().length }}</span>
+      </div>
+      <p class="sidebar-hint" i18n>
+        Venda marcada entra no faturamento; itens guardados ficam fora.
+      </p>
+      <div class="returned-product-list" id="returned-product-list">
+        @for (returned of visibleReturns(); track returned.itemId) {
+          <ng-container
+            [ngTemplateOutlet]="returnedProductRow"
+            [ngTemplateOutletContext]="{ returned: returned }"
+          />
+        }
+      </div>
+      @if (returns().length > 2) {
+        <button
+          type="button"
+          class="returned-product-toggle"
+          (click)="toggleReturns.emit()"
+          [attr.aria-expanded]="expanded()"
+          aria-controls="returned-product-list"
+        >
+          @if (expanded()) {
+            <span i18n>Mostrar menos</span>
+          } @else {
+            <span i18n>Mostrar mais ({{ returns().length - 2 }})</span>
+          }
+          <span class="returned-product-chevron" aria-hidden="true"></span>
+        </button>
+      }
+    </section>
+  }
+
+  <div class="sidebar-footer">
+    @if (authenticated()) {
+      <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList.emit()" i18n>
+        Salvar lista de compras
+      </button>
+    }
+    @if (planMessage()) {
+      <p role="status" class="plan-feedback">{{ planMessage() }}</p>
+    }
+    @if (authenticated()) {
+      <a routerLink="/shopping" class="footer-link" i18n>Abrir planejamento</a>
+    }
+  </div>
+</aside>

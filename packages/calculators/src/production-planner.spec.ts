@@ -182,6 +182,23 @@ describe('production planner', () => {
     expect(optimized?.sourceChoices).toEqual({ 2: 'buy', 4: 'produce', 5: 'buy' });
   });
 
+  it('selects confirmed gathering when it beats buying or producing an available intermediate', () => {
+    const input = fixture();
+    input.candidates = [{ recipeId: 'final', optimizeCrafts: 1 }];
+    input.gatheringEstimates = {
+      2: { expectedYield: 1, craftSeconds: 1, source: 'user-confirmed' },
+    };
+
+    const optimized = planProduction(input).ranked.find((plan) => plan.scenario === 'optimized');
+
+    expect(optimized).toMatchObject({
+      sourceChoices: { 2: 'gather' },
+      profit: '130',
+      seconds: 62,
+      issues: [],
+    });
+  });
+
   it('optimizes nested buy and produce decisions for 1000 recipes including all time and revenue', () => {
     const input = fixture();
     input.enforcePurchaseLimits = false;

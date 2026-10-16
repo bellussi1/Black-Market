@@ -40,6 +40,7 @@ describe('TutorialsManagePage', () => {
     expect(page.screens.map((screen) => screen.screenKey)).toEqual([
       'market',
       'recipes',
+      'recipe-workshop',
       'scans',
       'storage',
       'recommendations',

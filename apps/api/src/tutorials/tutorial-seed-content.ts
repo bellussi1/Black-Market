@@ -7,7 +7,7 @@ export interface TutorialSeedEntry {
   steps: readonly TutorialGuideStepInput[];
 }
 
-export const TUTORIAL_SEED_REVISION = '2026-10-15-v1';
+export const TUTORIAL_SEED_REVISION = '2026-10-16-workshop-v1';
 
 export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
   {
@@ -57,6 +57,37 @@ export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
         anchorKey: 'recipes.tree',
         title: 'Explorar árvore de materiais',
         body: 'Expanda etapas para verificar ingredientes, quantidades, subprodutos e origens conhecidas.',
+      },
+    ],
+  },
+  {
+    screenKey: 'recipe-workshop',
+    locale: 'pt-BR',
+    enabled: true,
+    steps: [
+      {
+        sortOrder: 0,
+        anchorKey: 'recipe-workshop.batch-mastery',
+        title: 'Definir lote e maestria',
+        body: 'Ajuste a quantidade de receitas e a maestria da profissão. O rendimento estimado aparece no mesmo painel; valores sem cobertura continuam identificados como pendentes.',
+      },
+      {
+        sortOrder: 1,
+        anchorKey: 'recipe-workshop.financial',
+        title: 'Ler o resultado financeiro',
+        body: 'Compare faturamento líquido, custo, lucro do lote e lucro por hora. Sem preços ou tempo suficientes, a oficina mostra o que falta confirmar antes de concluir o resultado.',
+      },
+      {
+        sortOrder: 2,
+        anchorKey: 'recipe-workshop.strategy',
+        title: 'Comparar estratégias',
+        body: 'Escolha comprar subreceitas, fazer ou coletar, ou peça uma proposta ao otimizador. Confira a prévia e seus limites antes de aplicar qualquer combinação.',
+      },
+      {
+        sortOrder: 3,
+        anchorKey: 'recipe-workshop.materials-returns',
+        title: 'Revisar materiais e retornos',
+        body: 'No plano da receita, confira quantidades e origens dos materiais. Decida quais retornos vender ou guardar; só a venda marcada entra no faturamento.',
       },
     ],
   },

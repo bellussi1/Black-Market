@@ -6,12 +6,12 @@ Use este protocolo antes de desenhar ou alterar uma funcionalidade do Black Mark
 
 Para cada feature de produto, consulte os quatro sites e registre evidência, ausência de equivalente ou limite de acesso. A feature pode não existir em um deles; marque “sem equivalente encontrado” depois de uma busca razoável na área pública, sem inventar capacidade.
 
-| Fonte | Áreas para priorizar conforme a feature |
-| --- | --- |
-| [BDO Workshop](https://bdoworkshop.com/) | Crafting Workshop, compra/produção/coleta, lucro por hora, armazém, tutorials e calculadoras públicas. |
-| [BDO Codex](https://bdocodex.com/us/) | Catálogo de itens, receitas/relações, conhecimento, NPCs, quests e mapas. Trate-o principalmente como referência de dados e navegação. |
-| [BDOLytics](https://bdolytics.com/) | Mercado, receitas de Culinária/Alquimia, custos, XP, contribuição, mapas e relações entre itens. |
-| [Garmoth](https://garmoth.com/) | Mercado, histórico, maestria, personagem/gear, grind e ferramentas de atividades. |
+| Fonte                                    | Áreas para priorizar conforme a feature                                                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [BDO Workshop](https://bdoworkshop.com/) | Crafting Workshop, compra/produção/coleta, lucro por hora, armazém, tutorials e calculadoras públicas.                                 |
+| [BDO Codex](https://bdocodex.com/us/)    | Catálogo de itens, receitas/relações, conhecimento, NPCs, quests e mapas. Trate-o principalmente como referência de dados e navegação. |
+| [BDOLytics](https://bdolytics.com/)      | Mercado, receitas de Culinária/Alquimia, custos, XP, contribuição, mapas e relações entre itens.                                       |
+| [Garmoth](https://garmoth.com/)          | Mercado, histórico, maestria, personagem/gear, grind e ferramentas de atividades.                                                      |
 
 Comece pelos links de `useful-links.md` e pelas auditorias existentes em `docs/research/`. Para a feature escolhida, abra as páginas públicas atuais relevantes em cada site; não presuma que os relatórios históricos refletem a versão de hoje.
 

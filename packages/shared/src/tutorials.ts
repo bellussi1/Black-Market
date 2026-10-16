@@ -4,7 +4,13 @@ export type TutorialLocale = (typeof TUTORIAL_LOCALES)[number];
 
 export type TutorialAccessLevel = 'public' | 'authenticated';
 
-export type TutorialScreenKey = 'market' | 'recipes' | 'scans' | 'storage' | 'recommendations';
+export type TutorialScreenKey =
+  | 'market'
+  | 'recipes'
+  | 'recipe-workshop'
+  | 'scans'
+  | 'storage'
+  | 'recommendations';
 
 export type TutorialAnchorKey =
   | 'market.search'
@@ -13,6 +19,10 @@ export type TutorialAnchorKey =
   | 'recipes.search'
   | 'recipes.methods'
   | 'recipes.tree'
+  | 'recipe-workshop.batch-mastery'
+  | 'recipe-workshop.financial'
+  | 'recipe-workshop.strategy'
+  | 'recipe-workshop.materials-returns'
   | 'scans.capture'
   | 'scans.review'
   | 'storage.items'
@@ -51,6 +61,23 @@ export const TUTORIAL_SCREEN_REGISTRY: readonly TutorialScreenDefinition[] = [
       { key: 'recipes.search', labelKey: 'tutorial.anchor.recipes.search' },
       { key: 'recipes.methods', labelKey: 'tutorial.anchor.recipes.methods' },
       { key: 'recipes.tree', labelKey: 'tutorial.anchor.recipes.tree' },
+    ],
+  },
+  {
+    screenKey: 'recipe-workshop',
+    route: '/recipes/items/:id',
+    access: 'public',
+    anchors: [
+      {
+        key: 'recipe-workshop.batch-mastery',
+        labelKey: 'tutorial.anchor.recipe-workshop.batch-mastery',
+      },
+      { key: 'recipe-workshop.financial', labelKey: 'tutorial.anchor.recipe-workshop.financial' },
+      { key: 'recipe-workshop.strategy', labelKey: 'tutorial.anchor.recipe-workshop.strategy' },
+      {
+        key: 'recipe-workshop.materials-returns',
+        labelKey: 'tutorial.anchor.recipe-workshop.materials-returns',
+      },
     ],
   },
   {

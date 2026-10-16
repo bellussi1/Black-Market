@@ -7,7 +7,11 @@
       aproveite o que já está no seu armazém.
     </p>
   </header>
-  <app-tutorial-launcher screenKey="recipes" />
+  @if (workshopRoute()) {
+    <app-tutorial-launcher screenKey="recipe-workshop" />
+  } @else {
+    <app-tutorial-launcher screenKey="recipes" />
+  }
   <details data-tour="recipes.search" class="panel search-panel" [open]="!item()">
     <summary>
       <span i18n>Pesquisar item</span

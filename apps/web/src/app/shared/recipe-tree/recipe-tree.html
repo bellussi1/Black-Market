@@ -1,36 +1,3 @@
-<ng-template #returnedProductRow let-returned="returned">
-  <div class="returned-product-row" animate.enter="returned-product-enter">
-    <app-item-icon class="returned-product-icon" [name]="returned.name" [url]="returned.iconUrl" />
-    <div class="returned-product-details">
-      <strong>{{ returned.name }}</strong>
-      <small>
-        <ng-container i18n>Quantidade esperada no lote:</ng-container>
-        {{ quantityLabel(returned.quantity) }}
-      </small>
-      @if (returned.unitPrice !== null) {
-        <small
-          ><ng-container i18n>Preço un.:</ng-container> {{ silver(returned.unitPrice) }} ·
-          {{ returned.quote.label }}</small
-        >
-      } @else {
-        <small i18n>Sem cotação de mercado; venda não incluída.</small>
-      }
-    </div>
-    <label class="returned-product-choice">
-      <input
-        type="checkbox"
-        [checked]="returned.sell"
-        (change)="setReturnProductSale(returned.itemId, $any($event.target).checked)"
-      />
-      @if (returned.sell) {
-        <span i18n>Vender</span>
-      } @else {
-        <span i18n>Guardar</span>
-      }
-    </label>
-  </div>
-</ng-template>
-
 @if (root(); as product) {
   <section class="production-settings panel">
     <div class="panel-heading production-heading">
@@ -53,7 +20,10 @@
     <div class="production-configuration">
       <div class="production-method"><ng-content select="[recipe-method]" /></div>
       <div class="scenario-settings">
-        <div class="craft-count-card craft-parameters-card">
+        <div
+          class="craft-count-card craft-parameters-card"
+          data-tour="recipe-workshop.batch-mastery"
+        >
           <div class="craft-parameters-grid">
             <!-- Coluna 1: Quantia de receitas -->
             <div class="craft-param-col">
@@ -281,7 +251,11 @@
   </section>
   @if (plan(); as result) {
     @if (result.warnings.length && !result.value) {
-      <details class="notice calculation-notices" [open]="!result.value">
+      <details
+        class="notice calculation-notices"
+        data-tour="recipe-workshop.financial"
+        [open]="!result.value"
+      >
         <summary>
           {{ result.warnings.length }} dados a confirmar ·
           {{ result.value ? 'totais conhecidos já calculados' : 'confira os dados para calcular' }}
@@ -294,6 +268,7 @@
     @if (result.value; as calculated) {
       <section
         class="economic-dashboard panel"
+        data-tour="recipe-workshop.financial"
         aria-label="Rentabilidade e mercado central"
         i18n-aria-label
       >
@@ -308,7 +283,12 @@
               Preço atual do mercado · sem estoque, usa o preço máximo
             </p>
           </div>
-          <div class="flex flex-wrap gap-2" role="group" aria-label="Cenário de produção">
+          <div
+            class="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Cenário de produção"
+            data-tour="recipe-workshop.strategy"
+          >
             <button
               hlmBtn
               variant="outline"
@@ -701,466 +681,24 @@
         </div>
 
         <!-- Coluna da Direita: Sidebar de Insumos da Receita (30%) -->
-        <aside
-          class="workspace-materials-sidebar panel"
-          aria-label="Plano da receita"
-          i18n-aria-label
-        >
-          <div class="sidebar-header">
-            <div class="sidebar-title-row">
-              <h3 i18n>Plano da receita</h3>
-              <span class="sidebar-item-count-badge"
-                >{{ materialDecisions().length }} insumos ·
-                {{ returnedProductRows().length }} retornos</span
-              >
-            </div>
-            <p class="sidebar-hint" i18n>Escolha o que fazer, comprar, vender ou guardar.</p>
-          </div>
-
-          <div class="sidebar-section-heading">
-            <h4 i18n>Materiais da receita</h4>
-            <span>{{ materialDecisions().length }}</span>
-          </div>
-
-          <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
-          <div class="sidebar-materials-list">
-            @for (item of materialDecisions(); track item.itemId) {
-              <div
-                class="sidebar-material-row"
-                [attr.data-item-id]="item.itemId"
-                [class.is-crafting]="item.source !== 'buy'"
-                [class.is-buying]="item.source === 'buy'"
-                [class.is-selected]="selectedNode()?.part?.itemId === item.itemId"
-              >
-                <label
-                  class="material-source-checkbox bdo-checkbox-container"
-                  [title]="
-                    item.source === 'buy'
-                      ? 'Comprar no Mercado Central'
-                      : 'Fazer ou coletar por conta própria'
-                  "
-                >
-                  <input
-                    type="checkbox"
-                    [checked]="item.source !== 'buy'"
-                    (change)="
-                      setMaterialSource(
-                        item.itemId,
-                        item.source === 'buy' ? makeChoice(item.itemId) : 'buy'
-                      )
-                    "
-                    [attr.aria-label]="
-                      (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') +
-                      item.name
-                    "
-                  />
-                  <span class="bdo-checkbox-visual"></span>
-                </label>
-
-                <button
-                  type="button"
-                  class="sidebar-material-details"
-                  (click)="selectMaterial(item.itemId)"
-                  [attr.aria-label]="'Ver detalhes de ' + item.name"
-                >
-                  <span class="sidebar-item-slot">
-                    <app-item-icon [url]="item.iconUrl" [name]="item.name" />
-                  </span>
-                  <span class="sidebar-item-info">
-                    <span class="sidebar-item-name-line">
-                      <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
-                      <span class="sidebar-item-qty">
-                        @if (item.quantityPending) {
-                          Quantidade pendente
-                        } @else {
-                          {{ item.required.toLocaleString('pt-BR') }} un
-                        }
-                      </span>
-                    </span>
-                    <span class="sidebar-item-price-line">
-                      @if (item.unitPrice !== null) {
-                        <span class="sidebar-price"
-                          >{{
-                            item.unitPriceSource === 'npc'
-                              ? 'NPC · '
-                              : item.unitPriceSource === 'equivalent'
-                                ? 'Equivalente' +
-                                  (item.equivalentPriceSource === 'maximum'
-                                    ? ' · Máxima · '
-                                    : ' · ')
-                                : item.unitPriceSource === 'maximum'
-                                  ? 'Máxima · '
-                                  : ''
-                          }}{{ silver(item.unitPrice) }}</span
-                        >
-                        @if (item.stock !== null) {
-                          <span class="sidebar-stock"
-                            >· Est: {{ item.stock.toLocaleString('pt-BR') }}</span
-                          >
-                        }
-                      } @else {
-                        <span class="sidebar-unlisted" i18n>Sem cotação</span>
-                      }
-                    </span>
-                    @if (item.equivalentItem; as equivalent) {
-                      <span
-                        class="sidebar-equivalent"
-                        [title]="'Preço de referência: ' + equivalent.name"
-                      >
-                        <app-item-icon
-                          style="--item-icon-size: 20px"
-                          [url]="catalog.resolveIconUrl(equivalent)"
-                          [name]="equivalent.name"
-                        />
-                        <span>
-                          {{ equivalent.quantityRatio.toLocaleString('pt-BR') }} un. de
-                          {{ equivalent.name }} por unidade
-                        </span>
-                      </span>
-                    }
-                  </span>
-                </button>
-
-                <div
-                  class="sidebar-source-badge"
-                  [class.is-make]="item.source !== 'buy'"
-                  [class.is-buy]="item.source === 'buy'"
-                >
-                  {{
-                    item.source === 'buy'
-                      ? 'Comprar'
-                      : item.sourceLabel === 'Coletar' || makeChoice(item.itemId) === 'gather'
-                        ? 'Coletar'
-                        : 'Fazer'
-                  }}
-                </div>
-              </div>
-            } @empty {
-              <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
-            }
-          </div>
-
-          @if (returnedProductRows().length) {
-            <section class="returned-product-panel" aria-label="Retornos previstos" i18n-aria-label>
-              <div class="sidebar-section-heading returned-product-intro">
-                <h4 i18n>Retornos previstos</h4>
-                <span>{{ returnedProductRows().length }}</span>
-              </div>
-              <p class="sidebar-hint" i18n>
-                Venda marcada entra no faturamento; itens guardados ficam fora.
-              </p>
-              <div class="returned-product-list" id="returned-product-list">
-                @for (returned of visibleReturnedProductRows(); track returned.itemId) {
-                  <ng-container
-                    [ngTemplateOutlet]="returnedProductRow"
-                    [ngTemplateOutletContext]="{ returned: returned }"
-                  />
-                }
-              </div>
-              @if (returnedProductRows().length > 2) {
-                <button
-                  type="button"
-                  class="returned-product-toggle"
-                  (click)="toggleReturnedProducts()"
-                  [attr.aria-expanded]="showAllReturnedProducts()"
-                  aria-controls="returned-product-list"
-                >
-                  @if (showAllReturnedProducts()) {
-                    <span i18n>Mostrar menos</span>
-                  } @else {
-                    <span i18n>Mostrar mais ({{ returnedProductRows().length - 2 }})</span>
-                  }
-                  <span class="returned-product-chevron" aria-hidden="true"></span>
-                </button>
-              }
-            </section>
-          }
-
-          <div class="sidebar-footer">
-            @if (identity.authenticated()) {
-              <button type="button" class="btn btn-save-shopping" (click)="saveShoppingList()" i18n>
-                Salvar lista de compras
-              </button>
-            }
-            @if (planMessage()) {
-              <p role="status" class="plan-feedback">{{ planMessage() }}</p>
-            }
-            @if (identity.authenticated()) {
-              <a routerLink="/shopping" class="footer-link" i18n>Abrir planejamento</a>
-            }
-          </div>
-        </aside>
+        <app-recipe-materials-sidebar
+          [materials]="materialDecisions()"
+          [returns]="returnedProductRows()"
+          [selectedItemId]="selectedNode()?.part?.itemId ?? null"
+          [expanded]="showAllReturnedProducts()"
+          [authenticated]="identity.authenticated()"
+          [planMessage]="planMessage()"
+          (toggleSource)="toggleMaterialSource($event)"
+          (selectMaterial)="selectMaterial($event)"
+          (returnSaleChanged)="setReturnProductSale($event.itemId, $event.sell)"
+          (toggleReturns)="toggleReturnedProducts()"
+          (saveShoppingList)="saveShoppingList()"
+        />
       </div>
 
       <!-- BANDEJA HORIZONTAL INFERIOR DE DETALHES (100% de largura, abaixo do Canvas e Sidebar) -->
       @if (detailsOpen()) {
-        <button
-          type="button"
-          class="details-backdrop"
-          aria-label="Fechar detalhes do item"
-          (click)="closeDetails()"
-        ></button>
-        <aside
-          class="context-panel panel bottom-details-tray"
-          aria-label="Detalhes do item selecionado"
-          i18n-aria-label
-        >
-          <div class="context-titlebar">
-            <div class="tray-title-text">
-              <span class="bdo-diamond">◇</span>
-              <strong i18n
-                >Informações do item:
-                {{ context()?.node?.part?.name ?? selectedNode()?.part?.name }}</strong
-              >
-            </div>
-            <button type="button" class="context-close" (click)="closeDetails()" i18n>
-              Fechar
-            </button>
-          </div>
-
-          @if (contextLoading()) {
-            <p role="status" class="tray-loading" i18n>Consultando o item e suas fontes…</p>
-          }
-
-          @if (context(); as info) {
-            <div class="bottom-tray-grid">
-              <!-- Coluna 1: Identidade & Métodos -->
-              <div class="tray-column">
-                <h4 class="tray-col-title" i18n>Identidade & Métodos</h4>
-                <div class="context-heading">
-                  <app-item-icon
-                    [url]="catalog.resolveIconUrl(info.item ?? info.node.part)"
-                    [name]="info.node.part.name"
-                  />
-                  <div>
-                    <small
-                      >#{{ info.node.part.itemId }} ·
-                      {{ info.item?.categories?.[0]?.name ?? 'Categoria não informada' }}</small
-                    >
-                    <h3>{{ info.node.part.name }}</h3>
-                  </div>
-                </div>
-                @if (info.incomplete) {
-                  <p role="status" class="notice" i18n>
-                    Parte das informações não pôde ser carregada.
-                    <button type="button" (click)="showContext(info.node)">Tentar novamente</button>
-                  </p>
-                }
-                <div class="action-row">
-                  <button type="button" (click)="graph()?.center(info.node.path)" i18n>
-                    Centralizar no mapa
-                  </button>
-                  <a [routerLink]="['/recipes/items', info.node.part.itemId]" i18n
-                    >Explorar como produto →</a
-                  >
-                </div>
-
-                @if (selectedNode(); as current) {
-                  @if (current.path !== 'root' && current.part.quantity === null) {
-                    <label i18n
-                      >Unidades por operação<input
-                        type="number"
-                        min="1"
-                        max="1000000"
-                        [ngModel]="current.part.quantity"
-                        (ngModelChange)="
-                          action({ path: current.path, action: 'quantity', value: $event })
-                        "
-                    /></label>
-                  }
-                  <label i18n
-                    >Método de produção<select
-                      [ngModel]="methodKey(current, info.recipes)"
-                      (ngModelChange)="
-                        action({ path: current.path, action: 'choose', value: $event })
-                      "
-                    >
-                      <option value="">Escolha uma receita</option>
-                      @for (
-                        method of productionMethods(info.recipes);
-                        track method.key;
-                        let index = $index
-                      ) {
-                        <option [value]="method.key">
-                          {{ methodLabel(method, index) }}
-                        </option>
-                      }
-                    </select></label
-                  >
-                  @if (current.yield) {
-                    <label i18n
-                      >Rendimento por operação<input
-                        type="number"
-                        min=".001"
-                        max="1000000"
-                        step=".0001"
-                        [ngModel]="current.yield"
-                        (ngModelChange)="
-                          action({ path: current.path, action: 'yield', value: $event })
-                        "
-                    /></label>
-                  }
-                }
-
-                <details>
-                  <summary i18n>Descrição informada pelo jogo</summary>
-                  <p class="item-description">
-                    {{ plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
-                  </p>
-                </details>
-              </div>
-
-              <!-- Coluna 2: Estoque do Jogador -->
-              <div class="tray-column">
-                <h4 class="tray-col-title" i18n>Estoque nos Armazéns</h4>
-                @if (selectedAllocation(); as allocation) {
-                  <div class="alloc-box">
-                    <p>
-                      Necessário: <strong>{{ allocation.required }}</strong> · do estoque:
-                      <strong>{{ allocation.fromStock }}</strong> · faltam:
-                      <strong>{{ allocation.missing }}</strong>
-                    </p>
-                  </div>
-                }
-                <div class="holdings-box">
-                  <span class="sub-heading" i18n>Quantidades cadastradas:</span>
-                  <ul class="tray-holdings-list">
-                    @for (row of holdings(info.node.part.itemId); track row.id) {
-                      <li>
-                        <span>{{ row.location }}</span>
-                        <strong>{{ row.quantity.toLocaleString('pt-BR') }} un</strong>
-                      </li>
-                    } @empty {
-                      <li class="empty-item" i18n>Sem quantidade nos armazéns selecionados.</li>
-                    }
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Coluna 3: Mercado Central & Preço Personalizado -->
-              <div class="tray-column">
-                <h4 class="tray-col-title" i18n>Mercado Central & Cotação</h4>
-                <div class="market-quote-card">
-                  @if (marketQuotes().get(info.node.part.itemId); as market) {
-                    <div class="quote-stat-row">
-                      <span>Preço de venda:</span>
-                      <strong>{{ silver(market.price) }}</strong>
-                    </div>
-                    <div class="quote-stat-row">
-                      <span>Última venda:</span>
-                      <strong>{{ silver(market.lastSoldPrice) }}</strong>
-                    </div>
-                    <div class="quote-stat-row">
-                      <span>Estoque:</span>
-                      <strong>{{ market.stock.toLocaleString('pt-BR') }} un</strong>
-                    </div>
-                  } @else {
-                    <p class="empty-item" i18n>Sem cotação ativa no Mercado Central.</p>
-                  }
-                  <p
-                    class="quote-freshness"
-                    [class.is-stale]="quoteFreshness(info.node.part.itemId).stale"
-                  >
-                    {{ quoteFreshness(info.node.part.itemId).label }}
-                  </p>
-                </div>
-
-                <a
-                  routerLink="/market"
-                  [queryParams]="{ item: info.node.part.itemId }"
-                  class="market-external-link"
-                  i18n
-                >
-                  Abrir mercado completo →
-                </a>
-
-                <details>
-                  <summary i18n>Histórico observado</summary>
-                  <button type="button" (click)="consultHistory()" i18n>Consultar histórico</button>
-                  <p role="status">{{ historyMessage() }}</p>
-                  <ul>
-                    @for (point of history().slice(-20); track $index) {
-                      <li>
-                        {{ date(point.fetchedAt) }} · {{ silver(point.price) }} · estoque
-                        {{ point.stock ?? '—' }}
-                      </li>
-                    }
-                  </ul>
-                </details>
-              </div>
-
-              <!-- Coluna 4: Obtenção no Mundo & Trabalhadores -->
-              <div class="tray-column">
-                <h4 class="tray-col-title" i18n>Obtenção no Mundo</h4>
-                <div class="origins-scroll-box">
-                  <span class="sub-heading" i18n>Trabalhadores · bases conhecidas:</span>
-                  @for (source of info.origins.nodes; track source.id) {
-                    <button
-                      type="button"
-                      class="source-option"
-                      (click)="selectedLocation.set(source)"
-                    >
-                      <strong>{{ source.managerNodeName ?? source.name }}</strong
-                      ><small
-                        >{{ source.name }} ·
-                        {{ source.territoryName ?? 'Território não identificado' }} ·
-                        {{ source.contribution ?? '—' }} CP</small
-                      >
-                    </button>
-                  } @empty {
-                    <p class="empty-item" i18n>Sem produção de trabalhadores vinculada.</p>
-                  }
-
-                  @if (info.origins.spots?.length) {
-                    <span class="sub-heading" i18n>Combate convencional · spots de grind:</span>
-                    @for (source of info.origins.spots; track source.id) {
-                      <button
-                        type="button"
-                        class="source-option"
-                        (click)="selectedLocation.set(source)"
-                      >
-                        <strong>{{ source.name }}</strong
-                        ><small
-                          >{{ source.territoryName ?? 'Território não identificado' }} ·
-                          drops</small
-                        >
-                      </button>
-                    }
-                  }
-                </div>
-
-                @if (selectedLocation(); as location) {
-                  <section class="location-detail">
-                    <h4>
-                      {{
-                        location.activity === 'grinding'
-                          ? location.name
-                          : (location.managerNodeName ?? location.name)
-                      }}
-                    </h4>
-                    <p>
-                      {{ location.territoryName ?? 'Território não identificado' }} ·
-                      {{ location.name }}
-                    </p>
-                    @if (location.activity === 'grinding') {
-                      <p i18n>
-                        Atividade: combate convencional. Não é Hunting nem coleta de criaturas
-                        abatidas.
-                      </p>
-                      <p>
-                        AP: {{ location.sheetAP ?? 'não informado' }} · DP:
-                        {{ location.sheetDP ?? 'não informado' }}
-                      </p>
-                    } @else {
-                      <p>CP: {{ location.contribution ?? 'não informado' }}</p>
-                    }
-                    <p>Material: {{ info.node.part.name }}.</p>
-                  </section>
-                }
-              </div>
-            </div>
-          }
-        </aside>
+        <app-recipe-item-details [tree]="detailHost" />
       }
     }
   }

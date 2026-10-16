@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
@@ -74,10 +73,12 @@ import { type BranchAction, RecipeBranch } from './recipe-branch';
 import { recipeFamilies, verifiedIngredientSubstitutionItemIds } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
+import { RecipeItemDetails } from './recipe-item-details';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { resolveRecipeMaterialPrice } from './recipe-market-equivalent-price';
 import { recipeMarketPrice } from './recipe-market-price';
 import { processingBatchCount } from './recipe-mastery';
+import { RecipeMaterialsSidebar } from './recipe-materials-sidebar';
 import {
   buildRecipeProductionInput,
   defaultRecipeMethodSeconds,
@@ -137,9 +138,10 @@ function usableOptimizedPlan(
   imports: [
     FormsModule,
     RouterLink,
-    NgTemplateOutlet,
     RecipeBranch,
     RecipeGraph,
+    RecipeItemDetails,
+    RecipeMaterialsSidebar,
     ItemIcon,
     TaxOptionsComponent,
     HlmButton,
@@ -149,6 +151,7 @@ function usableOptimizedPlan(
   host: { '[class.summary-only]': 'summaryOnly()' },
 })
 export class RecipeTree {
+  readonly detailHost = this;
   readonly planMessage = signal('');
   saveShoppingList() {
     if (!this.identity.authenticated()) return;
@@ -585,10 +588,13 @@ export class RecipeTree {
       this.cancelOptimization();
       this.optimizationMessage.set('Falha na otimização. Tente novamente.');
     };
+    const reachableMaterialIds = new Set(this.materialItemIds());
     worker.postMessage({
       ...input,
       gatheringEstimates: Object.fromEntries(
-        [...this.gatherEstimates()].filter(([itemId]) => this.makeChoice(itemId) === 'gather'),
+        Object.entries(input.gatheringEstimates ?? {}).filter(([itemId]) =>
+          reachableMaterialIds.has(Number(itemId)),
+        ),
       ),
       candidates: input.candidates.map((candidate) => ({
         ...candidate,

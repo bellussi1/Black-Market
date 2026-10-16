@@ -166,6 +166,7 @@ describe('TutorialsService', () => {
     expect(management.screens.map((screen) => screen.screenKey)).toEqual([
       'market',
       'recipes',
+      'recipe-workshop',
       'scans',
       'storage',
       'recommendations',

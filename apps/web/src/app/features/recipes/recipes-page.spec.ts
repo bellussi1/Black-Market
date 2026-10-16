@@ -6,6 +6,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { RecipesPage } from './recipes-page';
 const dataset = {
@@ -21,7 +22,10 @@ describe('Universal recipe explorer', () => {
   useMemoryStorage();
   const route = (id: string) => ({
     provide: ActivatedRoute,
-    useValue: { paramMap: of(convertToParamMap({ id })), queryParamMap: of(convertToParamMap({})) },
+    useValue: {
+      paramMap: of(convertToParamMap(id ? { id } : {})),
+      queryParamMap: of(convertToParamMap({})),
+    },
   });
   it('loads an item by stable ID and supports alternatives without adding mutually exclusive inputs', async () => {
     const fixture = await renderComponent(RecipesPage, {}, [route('5301')]),
@@ -51,6 +55,16 @@ describe('Universal recipe explorer', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.componentInstance.item()?.id).toBe(5301);
+    expect(
+      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
+    ).toBe('recipe-workshop');
+    for (const anchor of [
+      'recipe-workshop.batch-mastery',
+      'recipe-workshop.financial',
+      'recipe-workshop.strategy',
+      'recipe-workshop.materials-returns',
+    ])
+      expect(fixture.nativeElement.querySelectorAll(`[data-tour="${anchor}"]`)).toHaveLength(1);
     expect(fixture.componentInstance.alternatives()).toHaveLength(2);
     expect(fixture.componentInstance.methods()).toHaveLength(1);
     const methodSelector = fixture.nativeElement.querySelector(
@@ -197,6 +211,9 @@ describe('Universal recipe explorer', () => {
     };
     flushList(1, null);
     fixture.detectChanges();
+    expect(
+      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
+    ).toBe('recipes');
     const picker = fixture.debugElement.query(By.directive(CatalogItemPicker))
       .componentInstance as CatalogItemPicker;
     picker.query.set('carne');

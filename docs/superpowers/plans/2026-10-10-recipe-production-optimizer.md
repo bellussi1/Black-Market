@@ -22,6 +22,12 @@
 - Não alterar o perfil salvo, não adicionar dependências, sem emojis.
 - Executar após `2026-10-10-recipe-market-cache.md`, no mesmo branch `codex/recipe-market-autoresolver`.
 
+## Estado implementado — 16/10/2026
+
+O código atual usa `maxOptimizationStates` com default **10.000** e teto rígido de **10.000** estados. A proposta anterior abaixo de 100.000 default/1.000.000 teto e 250.000 no adaptador era planejamento e não corresponde ao produto implementado. O adaptador da árvore não substitui o limite. Ao alcançar o orçamento, o resultado fica incompleto e não certifica um ótimo. A otimização é exata para as escolhas de receita e materiais alcançáveis no grafo selecionado; não pesquisa fórmulas alternativas de todo o catálogo.
+
+Em 16/10/2026, a entrada do Worker foi corrigida para carregar estimativas confirmadas de coleta de todo item alcançável, mesmo quando aquele item também pode ser produzido. A spec da árvore verifica que a estimativa permanece no payload e a spec do solver verifica que coletar pode superar comprar/produzir. Escolhas manuais seguem preservadas.
+
 ## Review Focus
 
 - Lucro negativo: dominância de custo/tempo simples pode inverter a melhor taxa; teste contra uma enumeração exaustiva pequena.
@@ -42,7 +48,7 @@
 **Interfaces:**
 
 - Keep `planProduction(input: ProductionPlannerInput): ProductionPlannerResult` and the existing ranked/incomplete result shape.
-- Replace `maxOptimizationBranches` with `maxOptimizationStates?: number`; use a default budget of 100,000 visited states and a hard cap of 1,000,000. The recipe adapter sets a 250,000-state budget for the selected Edania graph snapshot.
+- Current implementation: `maxOptimizationStates?: number`, default and hard cap 10,000 visited states. Do not read the earlier 100,000/1,000,000/250,000 values in older planning notes as runtime limits.
 - Extend `ProductionChoice` with `gather` and `ProductionPlannerInput` with `gatheringEstimates?: Record<number, ProductionEstimate>`; estimated gathering is a virtual step, while missing yield/time produces an incomplete plan.
 - Add an internal `OptimizationSearchResult` carrying `best`, `bestPending`, `visitedStates`, `prunedStates`, and `complete`.
 - A returned optimum is ranked only when every branch is evaluated or removed by a proof-safe dominance rule. On budget exhaustion, set `optimization-limit`, null out `profit` and `profitPerHour`, and put the candidate in `incomplete`.

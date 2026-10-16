@@ -1245,6 +1245,54 @@ describe('Interactive recipe tree', () => {
     fixture.destroy();
   });
 
+  it('sends a confirmed gathering option even when the item also has a producer recipe', async () => {
+    const posted: ProductionPlannerInput[] = [];
+    vi.stubGlobal(
+      'Worker',
+      class {
+        onmessage?: (event: { data: { result: ReturnType<typeof planProduction> } }) => void;
+        terminate() {}
+        postMessage(input: ProductionPlannerInput) {
+          posted.push(input);
+        }
+      },
+    );
+    const rootRecipe: CatalogRecipe = { ...recipe, key: 'gather-or-produce-root' };
+    const producer: CatalogRecipe = {
+      ...recipe,
+      key: 'make-salt',
+      type: 'PROCESSING',
+      inputs: [{ itemId: 8001, name: 'Matéria-prima', quantity: '1' }],
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: rootRecipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    tree.recipeGraph.set({
+      rootRecipe,
+      producerRecipes: [producer],
+      itemIds: [5301, 9001, 8001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
+    tree.setGatherEstimate(9001, 4, 30);
+
+    tree.optimizeAcquisition();
+
+    expect(posted).toHaveLength(1);
+    expect(posted[0]?.gatheringEstimates).toMatchObject({
+      9001: {
+        expectedYield: 4,
+        craftSeconds: 30,
+        origin: 'user-confirmed',
+      },
+    });
+    fixture.destroy();
+  });
+
   it('shows an item icon beside each material in gathering calibration', async () => {
     const mocks = providers();
     const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
@@ -1862,6 +1910,87 @@ describe('Interactive recipe tree', () => {
     expect(el.querySelectorAll('.economic-summary-header button[hlmBtn]')).toHaveLength(3);
     expect(el.textContent).toContain('Resultado da receita');
   });
+
+  it.each([
+    { skill: 'cooking', type: 'COOK' },
+    { skill: 'alchemy', type: 'ALCHEMY' },
+    { skill: 'processing', type: 'PROCESSING' },
+  ] as const)(
+    'recalculates sales and profit when the $skill mastery changes',
+    async ({ skill, type }) => {
+      const isBalenosMeal = type === 'COOK';
+      const outputId = isBalenosMeal ? 9601 : 5301;
+      const inputs = isBalenosMeal
+        ? [
+            { itemId: 9203, name: 'Meat', quantity: '1' },
+            { itemId: 9213, name: 'Fish', quantity: '2' },
+            { itemId: 9241, name: 'Vegetables', quantity: '2' },
+            { itemId: 9404, name: 'Seasoning', quantity: '1' },
+            { itemId: 9417, name: 'Cooking Wine', quantity: '1' },
+          ]
+        : [{ itemId: 9001, name: 'Salt', quantity: '1' }];
+      const productionRecipe: CatalogRecipe = {
+        key: `${skill}-finance`,
+        type,
+        station: null,
+        inputs,
+        outputs: [
+          {
+            itemId: outputId,
+            name: isBalenosMeal ? 'Refeição de Balenos' : item.name,
+            quantity: '1',
+          },
+        ],
+      };
+      const selectedItem =
+        outputId === 9601
+          ? ({ ...item, id: outputId, name: 'Refeição de Balenos' } as unknown as CatalogItemDetail)
+          : item;
+      const fixture = await renderComponent(
+        RecipeTree,
+        { recipe: productionRecipe, selectedItem },
+        providers().list,
+      );
+      const tree = fixture.componentInstance;
+      const prices: Record<number, string> = isBalenosMeal
+        ? { 9601: '1000', 9203: '100', 9213: '100', 9241: '100', 9404: '100', 9417: '100' }
+        : { 5301: '1000', 9001: '100' };
+      configureProduction(tree, prices);
+      tree.setCraftCount(isBalenosMeal ? 1000 : 10);
+      tree.setMethodTime(type, isBalenosMeal ? 1.2 : 60);
+      const masteryInput = fixture.nativeElement.querySelector(
+        `input[aria-label="Maestria de ${skill === 'cooking' ? 'Culinária' : skill === 'alchemy' ? 'Alquimia' : 'Processamento'}"]`,
+      ) as HTMLInputElement;
+      masteryInput.value = '0';
+      masteryInput.dispatchEvent(new Event('input', { bubbles: true }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(tree.masteryOverrides()[skill]).toBe(0);
+      const baseline = {
+        grossRevenue: tree.grossRevenue(),
+        netRevenue: tree.netRevenue(),
+        profit: tree.profit(),
+        profitPerHour: tree.profitPerHour(),
+      };
+
+      masteryInput.value = '3000';
+      masteryInput.dispatchEvent(new Event('input', { bubbles: true }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const improved = {
+        grossRevenue: tree.grossRevenue(),
+        netRevenue: tree.netRevenue(),
+        profit: tree.profit(),
+        profitPerHour: tree.profitPerHour(),
+      };
+
+      expect(improved.grossRevenue).not.toBe(baseline.grossRevenue);
+      expect(improved.netRevenue).not.toBe(baseline.netRevenue);
+      expect(improved.profit).not.toBe(baseline.profit);
+      expect(improved.profitPerHour).not.toBe(baseline.profitPerHour);
+      fixture.destroy();
+    },
+  );
 
   it('preserves production calculations in the compact market summary without rendering the graph', async () => {
     const dependencies = providers();

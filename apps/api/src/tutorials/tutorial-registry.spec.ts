@@ -8,7 +8,7 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('tutorial screen and anchor registry', () => {
-  it('lists only the five first-publication screens with the specified access boundary', () => {
+  it('keeps the workshop tour separate from the recipes catalogue', () => {
     expect(TUTORIAL_LOCALES).toEqual(['pt-BR']);
     expect(
       TUTORIAL_SCREEN_REGISTRY.map((entry) => ({
@@ -19,6 +19,7 @@ describe('tutorial screen and anchor registry', () => {
     ).toEqual([
       { screenKey: 'market', route: '/market', access: 'public' },
       { screenKey: 'recipes', route: '/recipes', access: 'public' },
+      { screenKey: 'recipe-workshop', route: '/recipes/items/:id', access: 'public' },
       { screenKey: 'scans', route: '/scans', access: 'authenticated' },
       { screenKey: 'storage', route: '/storage', access: 'authenticated' },
       { screenKey: 'recommendations', route: '/recommendations', access: 'authenticated' },
@@ -41,7 +42,7 @@ describe('tutorial screen and anchor registry', () => {
         }
       }
     }
-    expect(seen.size).toBe(12);
+    expect(seen.size).toBe(16);
   });
 
   it('rejects unknown screen and anchor keys', () => {

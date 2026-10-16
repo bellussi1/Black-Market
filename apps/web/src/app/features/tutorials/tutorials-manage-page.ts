@@ -28,6 +28,7 @@ const MARKUP =
 const SCREEN_LABELS: Record<TutorialScreenKey, string> = {
   market: $localize`Mercado`,
   recipes: $localize`Receitas`,
+  'recipe-workshop': $localize`Oficina de receitas`,
   scans: $localize`Capturas`,
   storage: $localize`Armazém`,
   recommendations: $localize`O que fazer?`,
@@ -39,6 +40,10 @@ const ANCHOR_LABELS: Record<string, string> = {
   'recipes.search': $localize`Busca de receitas`,
   'recipes.methods': $localize`Fórmulas de produção`,
   'recipes.tree': $localize`Árvore de receitas`,
+  'recipe-workshop.batch-mastery': $localize`Lote e maestria`,
+  'recipe-workshop.financial': $localize`Resultado financeiro`,
+  'recipe-workshop.strategy': $localize`Estratégia e otimizador`,
+  'recipe-workshop.materials-returns': $localize`Materiais e retornos`,
   'scans.capture': $localize`Envio de captura`,
   'scans.review': $localize`Revisão da captura`,
   'storage.items': $localize`Itens do armazém`,

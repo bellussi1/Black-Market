@@ -74,6 +74,7 @@ export class RecipesPage {
   readonly result = signal<RecipeListResponse | null>(null);
   readonly recipe = signal<CatalogRecipe | null>(null);
   readonly item = signal<CatalogItemDetail | null>(null);
+  readonly workshopRoute = signal(false);
   readonly alternatives = signal<CatalogRecipe[]>([]);
   readonly methodFamilies = computed(() => recipeFamilies(this.alternatives()));
   readonly methods = computed(() => this.methodFamilies().map((family) => family[0]));
@@ -138,6 +139,7 @@ export class RecipesPage {
     ])
       .pipe(
         switchMap(([params, itemQuery]) => {
+          this.workshopRoute.set(params.has('id'));
           this.loading.set(true);
           this.message.set('');
           this.recipe.set(null);
