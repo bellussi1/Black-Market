@@ -1,7 +1,7 @@
 <div class="tool-page guided-page">
   @if (!jobs().length) {
-    <header class="page-heading">
-      <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+    <header class="tool-heading">
+      <p class="tool-kicker" i18n>SEUS DADOS, COM SUA REVISÃO</p>
       <h1 i18n>Importar capturas</h1>
       <p i18n>
         Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para
@@ -22,7 +22,9 @@
       <li [class.current]="cells().length"><b>03</b><span i18n>Revisar e sincronizar</span></li>
     </ol>
     <section hlmCard class="panel capture-destination" aria-label="Preparar destino da captura">
-      <h2>Destino das novas capturas</h2>
+      <div class="panel-heading">
+        <h2>Destino das novas capturas</h2>
+      </div>
       <div class="action-row">
         <label for="capture-type"
           >O que está na imagem?
@@ -65,6 +67,24 @@
           itens. Nível e Caphras precisam ser conferidos separadamente.
         </p>
       }
+    </section>
+  }
+  @if (jobs().length) {
+    <section class="panel review-context" aria-labelledby="scan-review-context-title">
+      <div class="panel-heading">
+        <div>
+          <p class="tool-kicker" i18n>LOTE EM REVISÃO</p>
+          <h2 id="scan-review-context-title" i18n>Revisar capturas</h2>
+        </div>
+        <span class="badge" i18n>{{ jobs().length }} capturas no lote</span>
+      </div>
+      <p class="review-state" role="status" i18n>
+        Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+      </p>
+      <p class="help" i18n>
+        Compare cada resultado com a imagem, corrija os campos e confirme somente os itens
+        revisados.
+      </p>
     </section>
   }
   @if (captureMode === 'gear' || captureMode === 'inventory') {
@@ -149,7 +169,9 @@
   @if (jobs().length) {
     <section hlmCard class="panel batch-panel" aria-label="Capturas do lote">
       @if (jobs().length > 1) {
-        <h2 id="batch-title" i18n>Capturas do lote · {{ jobs().length }} / 8</h2>
+        <div class="panel-heading">
+          <h2 id="batch-title" i18n>Capturas do lote · {{ jobs().length }} / 8</h2>
+        </div>
       }
       <details class="capture-list">
         <summary i18n>Imagens e destinos · {{ jobs().length }} capturas</summary>
@@ -549,7 +571,10 @@
       </section>
     } @else if (cells().length) {
       <section hlmCard class="panel scan-review">
-        <h2 id="scan-review-title" i18n>Revisar itens</h2>
+        <div class="panel-heading">
+          <h2 id="scan-review-title" i18n>Revisar itens</h2>
+          <span class="badge" i18n>{{ pendingBatchCount() }} pendentes</span>
+        </div>
         <p i18n>Compare com a captura, corrija as dúvidas e inclua os itens conferidos.</p>
         <div class="scan-summary" aria-live="polite">
           <span i18n
@@ -1027,7 +1052,9 @@
   <details class="batch-options">
     <summary>Resumo e opções da importação</summary>
     <section hlmCard class="panel" aria-labelledby="consolidation-title">
-      <h2 id="consolidation-title" i18n>Confirmar importação</h2>
+      <div class="panel-heading">
+        <h2 id="consolidation-title" i18n>Confirmar importação</h2>
+      </div>
       <p i18n>
         {{ importableCount() }} itens prontos para salvar em {{ jobs().length }} capturas. Os
         reconhecimentos confiáveis serão incluídos na confirmação. Resultados duvidosos ficam fora

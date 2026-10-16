@@ -119,12 +119,21 @@ describe('Screenshot entry', () => {
     images();
     const fixture = await renderComponent(ScansPage),
       page = fixture.componentInstance;
+    expect(fixture.nativeElement.querySelector('header.tool-heading h1')?.textContent).toContain(
+      'Importar capturas',
+    );
     await page.file({
       target: { files: [new File(['capture'], 'storage.png', { type: 'image/png' })] },
     } as unknown as Event);
     await fixture.whenStable();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.page-heading')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.review-context .panel-heading h2')?.textContent,
+    ).toContain('Revisar capturas');
+    expect(
+      fixture.nativeElement.querySelector('.review-context .review-state')?.textContent,
+    ).toContain('Aguardando revisão');
     expect(fixture.nativeElement.querySelector('.capture-destination')).toBeNull();
     expect(fixture.nativeElement.querySelector('.upload-tools').open).toBe(false);
     expect(fixture.nativeElement.querySelector('.capture-list').open).toBe(false);
@@ -153,6 +162,7 @@ describe('Screenshot entry', () => {
     expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(false);
     expect(fixture.nativeElement.querySelector('.batch-options').open).toBe(false);
     expect(fixture.nativeElement.querySelector('.scan-review')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.review-context')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('#scan-item-0')).toBeNull();
   });
   it('lets the user choose a destination before uploading and requires an explicit first analysis', async () => {

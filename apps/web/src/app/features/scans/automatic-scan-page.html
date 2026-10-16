@@ -1,15 +1,15 @@
-<main class="scan-workspace" [class.reviewing]="kind()">
-  <app-tutorial-launcher screenKey="scans" />
+<main class="tool-page scan-workspace" [class.reviewing]="kind()">
   @if (!kind()) {
-    <section class="capture-panel" data-tour="scans.capture" aria-labelledby="capture-title">
-      <header>
-        <p class="eyebrow">IMPORTAR CAPTURAS</p>
-        <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
-        <p>
-          Envie uma imagem do armazém, inventário ou informações do personagem. A tela é
-          identificada automaticamente.
-        </p>
-      </header>
+    <header class="tool-heading">
+      <p class="tool-kicker">IMPORTAR CAPTURAS</p>
+      <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
+      <p>
+        Envie uma imagem do armazém, inventário ou informações do personagem. A tela é identificada
+        automaticamente.
+      </p>
+      <app-tutorial-launcher screenKey="scans" />
+    </header>
+    <section class="panel capture-panel" data-tour="scans.capture" aria-labelledby="capture-title">
       <div class="upload-area">
         <button hlmBtn type="button" [disabled]="reading()" (click)="fileInput.click()">
           {{ reading() ? 'Identificando a tela…' : 'Escolher captura' }}
@@ -33,7 +33,11 @@
     </section>
   } @else {
     <div class="review-toolbar">
-      <h1>Revisar captura</h1>
+      <app-tutorial-launcher screenKey="scans" />
+      <div>
+        <p class="tool-kicker">CAPTURA EM REVISÃO</p>
+        <h1>Revisar captura</h1>
+      </div>
       <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
         Importar outra tela
       </button>

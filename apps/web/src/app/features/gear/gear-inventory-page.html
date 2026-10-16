@@ -1,16 +1,23 @@
 <div class="tool-page">
-  <header class="page-heading">
-    @if (embedded()) {
-      <h2 i18n>Equipamentos do personagem</h2>
-    } @else {
-      <p class="eyebrow" i18n>SEU PERSONAGEM</p>
+  @if (embedded()) {
+    <section hlmCard class="panel">
+      <div class="panel-heading">
+        <h2 i18n>Equipamentos do personagem</h2>
+        <span class="badge">{{ profile()?.name || 'Nenhum personagem selecionado' }}</span>
+      </div>
+      <p class="help" i18n>
+        Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
+        precisam ser conferidos no jogo.
+      </p>
+    </section>
+  } @else {
+    <header class="tool-heading">
+      <p class="tool-kicker" i18n>SEU PERSONAGEM</p>
       <h1 i18n>Meus equipamentos</h1>
-    }
-    <p i18n>
-      Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
-      precisam ser conferidos no jogo.
-    </p>
-    @if (!embedded()) {
+      <p i18n>
+        Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
+        precisam ser conferidos no jogo.
+      </p>
       <div class="action-row">
         @if (identity.authenticated()) {
           <a
@@ -24,10 +31,13 @@
           ><a routerLink="/storage" [queryParams]="{ tab: 'inventory' }" i18n>Ver inventário</a>
         }
       </div>
-    }
-  </header>
+    </header>
+  }
   @if (!embedded()) {
     <section hlmCard class="panel">
+      <div class="panel-heading">
+        <h2 i18n>Personagem</h2>
+      </div>
       <label
         ><span i18n>Personagem</span
         ><select appBdoSelect [ngModel]="profile()?.id ?? ''" (ngModelChange)="select($event)">

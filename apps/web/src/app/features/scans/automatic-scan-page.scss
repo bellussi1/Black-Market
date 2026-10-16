@@ -13,19 +13,17 @@
   margin-top: 24px;
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
-  align-items: stretch;
+  align-items: start;
   gap: 16px;
+}
+.scan-workspace > .tool-heading {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-bottom: 0;
 }
 .scan-workspace.reviewing {
   grid-template-columns: minmax(0, 1fr);
 }
-.capture-panel,
-.capture-guide {
-  height: 100%;
-  border: 1px solid var(--bm-border);
-  background: var(--bm-surface);
-}
-
 .capture-panel {
   display: flex;
   flex-direction: column;
@@ -33,10 +31,6 @@
 
 .capture-panel .review-notice {
   margin-top: auto;
-}
-.capture-panel header {
-  padding: 24px 28px 18px;
-  text-align: center;
 }
 .eyebrow {
   font-size: 12px;
@@ -87,7 +81,10 @@ li {
   color: var(--bm-text);
 }
 .capture-guide {
+  min-width: 0;
   padding: 16px 20px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
 }
 h2 {
   font-size: 18px;
@@ -241,5 +238,4 @@ summary {
 .review-toolbar h1 {
   margin: 0;
   font-size: 20px;
-  flex: 1;
 }

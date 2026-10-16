@@ -7,6 +7,26 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('groups storage context, primary actions and filters before the item list', async () => {
+    const fixture = await renderComponent(StockPage);
+    const element: HTMLElement = fixture.nativeElement;
+    const heading = element.querySelector('header.tool-heading');
+    const inventoryPanel = element.querySelector('section.panel');
+    const panelHeading = inventoryPanel?.querySelector('.panel-heading');
+    const filters = inventoryPanel?.querySelector('.form-grid');
+    const items = inventoryPanel?.querySelector('.stock-items');
+
+    expect(heading?.querySelector('h1')?.textContent).toContain('Armazém');
+    expect(heading?.querySelector('a[href^="/scans"]')?.textContent).toContain('Importar capturas');
+    expect(heading?.textContent).toContain('Adicionar item manualmente');
+    expect(panelHeading?.querySelector('h2')?.textContent).toContain('Itens cadastrados');
+    expect(panelHeading?.querySelector('.badge')?.textContent).toContain('0');
+    expect(filters).not.toBeNull();
+    expect(items).not.toBeNull();
+    expect(
+      filters!.compareDocumentPosition(items!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
   it('switches storage and character inventories in the same page without moving an open edit', async () => {
     const params = new BehaviorSubject(convertToParamMap({}));
     const fixture = await renderComponent(StockPage, {}, [

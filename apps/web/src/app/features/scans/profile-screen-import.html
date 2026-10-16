@@ -1,25 +1,30 @@
 <main class="tool-page guided-page profile-screen-import">
-  @if (!imageUrl()) {
-    <header class="page-heading">
-      <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
-      <h1 i18n>Importar dados do personagem</h1>
-      <p i18n>
-        Leia armazém, inventário, peso, maestrias e ficha do personagem. O OCR roda neste navegador;
-        escolha um personagem existente e confirme cada campo antes de salvar.
-      </p>
-      <a routerLink="/scans" class="text-link" i18n>Voltar à importação de itens</a>
-    </header>
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+    <h1 id="profile-import-title" i18n>Importar dados do personagem</h1>
+    <p>
+      @if (imageUrl()) {
+        <ng-container i18n>
+          Confira a captura, selecione os campos válidos e confirme antes de aplicar qualquer dado
+          ao personagem.
+        </ng-container>
+      } @else {
+        <ng-container i18n>
+          Leia armazém, inventário, peso, maestrias e ficha do personagem. O OCR roda neste
+          navegador; escolha um personagem existente e confirme cada campo antes de salvar.
+        </ng-container>
+      }
+    </p>
+    <a routerLink="/scans" class="text-link" i18n>Voltar à importação de itens</a>
+  </header>
 
-    <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
-      <li [class.current]="!imageUrl()"><b>01</b><span i18n>Escolher captura</span></li>
-      <li [class.current]="imageUrl() && !candidates().length">
-        <b>02</b><span i18n>Reconhecer e revisar</span>
-      </li>
-      <li [class.current]="selectedFields().length > 0">
-        <b>03</b><span i18n>Aplicar campos</span>
-      </li>
-    </ol>
-  }
+  <ol class="import-stepper" aria-label="Etapas da importação" i18n-aria-label>
+    <li [class.current]="!imageUrl()"><b>01</b><span i18n>Escolher captura</span></li>
+    <li [class.current]="imageUrl() && !candidates().length">
+      <b>02</b><span i18n>Reconhecer e revisar</span>
+    </li>
+    <li [class.current]="selectedFields().length > 0"><b>03</b><span i18n>Aplicar campos</span></li>
+  </ol>
 
   <details class="profile-capture-tools" [open]="!imageUrl()">
     <summary>Captura original e substituição</summary>
@@ -163,8 +168,16 @@
       </section>
     </details>
 
-    <section hlmCard class="panel">
-      <h2 i18n>Revisar dados do personagem</h2>
+    <section hlmCard class="panel" aria-labelledby="profile-review-title">
+      <div class="panel-heading">
+        <div>
+          <p class="tool-kicker" i18n>CONFIRMAÇÃO MANUAL</p>
+          <h2 id="profile-review-title" i18n>Revisar dados do personagem</h2>
+        </div>
+        @if (selectedFields().length) {
+          <span class="badge" i18n>{{ selectedFields().length }} campos selecionados</span>
+        }
+      </div>
       @if (characters().length) {
         <label for="profile-target" i18n>Personagem existente</label>
         <select

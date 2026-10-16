@@ -6,6 +6,34 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { GearInventoryPage } from './gear-inventory-page';
 describe('Character equipment management', () => {
   useMemoryStorage();
+  it('keeps equipment identity and review actions grouped when embedded and standalone', async () => {
+    const fixture = await renderComponent(GearInventoryPage);
+    const page = fixture.componentInstance;
+    const standaloneElement: HTMLElement = fixture.nativeElement;
+    expect(standaloneElement.querySelector('header.tool-heading h1')?.textContent).toContain(
+      'Meus equipamentos',
+    );
+    expect(
+      standaloneElement.querySelector('section.panel .panel-heading h2')?.textContent,
+    ).toContain('Personagem');
+    expect(standaloneElement.querySelector('details summary')?.textContent).toContain(
+      'Cadastrar personagem',
+    );
+
+    page.name = 'Aventureiro';
+    page.create();
+    fixture.detectChanges();
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+    const embeddedElement: HTMLElement = fixture.nativeElement;
+    expect(embeddedElement.querySelector('.panel-heading h2')?.textContent).toContain(
+      'Equipamentos do personagem',
+    );
+    expect(embeddedElement.querySelector('app-equipment-sheet')).not.toBeNull();
+    expect(embeddedElement.querySelector('details summary')?.textContent).toContain(
+      'Adicionar ou corrigir equipamento manualmente',
+    );
+  });
   it('uses the shared active character when equipment selection changes', async () => {
     const fixture = await renderComponent(GearInventoryPage);
     const page = fixture.componentInstance;

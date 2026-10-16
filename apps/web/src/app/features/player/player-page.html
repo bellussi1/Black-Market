@@ -1,6 +1,6 @@
 <div class="tool-page guided-page player-page">
-  <header class="page-heading">
-    <p class="eyebrow">MEU ESPAÇO · {{ store.data().region.toUpperCase() }}</p>
+  <header class="tool-heading">
+    <p class="tool-kicker">MEU ESPAÇO · {{ store.data().region.toUpperCase() }}</p>
     <h1>Família</h1>
     <p>Organize seus personagens, equipamentos e os benefícios compartilhados da família.</p>
   </header>
@@ -35,6 +35,9 @@
   <p class="save-feedback" role="status">{{ message() || store.message() }}</p>
   @if (tab() !== 'family') {
     <section hlmCard class="panel">
+      <div class="panel-heading">
+        <h2>Personagem ativo</h2>
+      </div>
       <div class="player-selector">
         <label
           >Personagem ativo<select

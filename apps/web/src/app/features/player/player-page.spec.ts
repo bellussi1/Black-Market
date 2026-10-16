@@ -6,6 +6,20 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { PlayerPage } from './player-page';
 describe('Progressive player workspace', () => {
   useMemoryStorage();
+  it('presents family tabs and character selection within the shared page hierarchy', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const element: HTMLElement = fixture.nativeElement;
+    const heading = element.querySelector('header.tool-heading');
+    const tabs = element.querySelector('.workspace-tabs');
+    const selectionPanel = element.querySelector('section.panel');
+    const selection = selectionPanel?.querySelector('.panel-heading');
+
+    expect(heading?.querySelector('h1')?.textContent).toContain('Família');
+    expect(heading?.querySelector('.tool-kicker')?.textContent).toContain('MEU ESPAÇO');
+    expect(tabs?.getAttribute('aria-label')).toContain('Dados pessoais');
+    expect(selection?.querySelector('h2')?.textContent).toContain('Personagem ativo');
+    expect(selectionPanel?.querySelector('select')).not.toBeNull();
+  });
   it('opens equipment inside family while retaining the active character and family data', async () => {
     const params = new BehaviorSubject(convertToParamMap({ tab: 'equipment' }));
     const fixture = await renderComponent(PlayerPage, {}, [

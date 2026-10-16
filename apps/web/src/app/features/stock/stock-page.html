@@ -1,7 +1,7 @@
 <div class="tool-page stock-page">
   <app-tutorial-launcher screenKey="storage" />
-  <header class="page-heading">
-    <p class="eyebrow" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
     <h1 i18n>Armazém</h1>
     <p i18n>Importe capturas, confira o que já possui e corrija quantidades quando precisar.</p>
     <div class="action-row">
@@ -41,6 +41,10 @@
     </button>
   </div>
   <section hlmCard class="panel">
+    <div class="panel-heading">
+      <h2 i18n>Itens cadastrados</h2>
+      <span class="badge" i18n>{{ rows().length }} registros</span>
+    </div>
     <div class="form-grid">
       <label i18n
         >Pesquisar item<input
@@ -69,9 +73,7 @@
       >
     </div>
     <div class="stock-toolbar">
-      <span class="help" i18n
-        >{{ rows().length }} registros · {{ store.data().region.toUpperCase() }}</span
-      >
+      <span class="help" i18n>Região {{ store.data().region.toUpperCase() }}</span>
       <div
         class="segmented-control"
         role="group"
