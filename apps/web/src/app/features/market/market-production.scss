@@ -1,0 +1,79 @@
+.market-production-loading {
+  display: grid;
+  gap: 8px;
+  min-height: 214px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-background);
+}
+
+.market-production-skeleton-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 11px;
+  min-height: 54px;
+  padding: 8px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.market-production-skeleton-row span,
+.market-production-skeleton-row i {
+  display: block;
+  height: 10px;
+  background: linear-gradient(
+    100deg,
+    var(--bm-surface-raised) 20%,
+    color-mix(in srgb, var(--bm-surface-raised) 60%, var(--bm-border)) 45%,
+    var(--bm-surface-raised) 70%
+  );
+  background-size: 220% 100%;
+  animation: market-production-shimmer 1.4s ease-in-out infinite;
+}
+
+.market-production-skeleton-row span:first-child {
+  width: 42px;
+  height: 42px;
+}
+
+.market-production-skeleton-row span:nth-child(2) {
+  width: min(100%, 230px);
+}
+
+.market-production-skeleton-row i {
+  width: 48px;
+  height: 24px;
+  border: 1px solid var(--bm-border);
+}
+
+app-recipe-tree {
+  display: block;
+  animation: market-production-content-enter 180ms ease-out both;
+}
+
+@keyframes market-production-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@keyframes market-production-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-production-skeleton-row span,
+  .market-production-skeleton-row i,
+  app-recipe-tree {
+    animation: none;
+  }
+}

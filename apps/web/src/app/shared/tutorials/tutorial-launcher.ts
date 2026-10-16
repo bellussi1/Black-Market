@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { TutorialPublicGuide, TutorialScreenKey } from '@bdo/shared';
+import { finalize, type Subscription } from 'rxjs';
 
 import { TutorialService } from '../../core/tutorial.service';
 import { TutorialApiService } from '../../core/tutorial-api.service';
@@ -28,9 +29,11 @@ export class TutorialLauncher {
   private readonly destroyRef = inject(DestroyRef);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly guide = signal<TutorialPublicGuide | null>(null);
+  readonly loading = signal(false);
   readonly error = signal(false);
   readonly starting = signal(false);
   readonly message = signal('');
+  private request?: Subscription;
   constructor() {
     effect(() => {
       const key = this.screenKey();
@@ -38,10 +41,14 @@ export class TutorialLauncher {
     });
   }
   load(key = this.screenKey()): void {
+    this.request?.unsubscribe();
+    this.guide.set(null);
     this.error.set(false);
-    this.api
+    this.loading.set(true);
+    this.request = this.api
       .getPublished(key)
       .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (result) => this.guide.set(result.guide),
         error: () => this.error.set(true),
@@ -51,7 +58,7 @@ export class TutorialLauncher {
     const guide = this.guide();
     if (!guide || this.starting()) return;
     this.starting.set(true);
-    this.message.set('');
+    this.message.set($localize`Iniciando tutorial…`);
     try {
       this.message.set(await this.runtime.startTour(guide, launcher));
     } catch {

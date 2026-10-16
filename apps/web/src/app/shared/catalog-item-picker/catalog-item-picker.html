@@ -58,7 +58,19 @@
       [attr.aria-busy]="loading()"
     >
       @if (loading()) {
-        <p role="status" i18n>Buscando itens…</p>
+        <span class="sr-only" role="status" aria-live="polite" i18n>Buscando itens…</span>
+        <div class="picker-loading-skeleton" aria-hidden="true">
+          @for (row of loadingRows; track row) {
+            <div class="picker-result-skeleton">
+              <span class="picker-skeleton-icon"></span>
+              <span class="picker-skeleton-copy">
+                <span class="picker-skeleton-line picker-skeleton-title"></span>
+                <span class="picker-skeleton-line picker-skeleton-meta"></span>
+              </span>
+              <span class="picker-skeleton-line picker-skeleton-action"></span>
+            </div>
+          }
+        </div>
       } @else if (error()) {
         <p role="alert">
           {{ error() }}

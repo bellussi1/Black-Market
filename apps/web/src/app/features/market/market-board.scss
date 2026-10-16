@@ -180,6 +180,32 @@
   font-size: 12px;
   line-height: 1.4;
 }
+.market-category-skeleton {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  padding: 8px;
+}
+.market-category-skeleton-row {
+  display: block;
+  width: 100%;
+  height: 28px;
+  border: 1px solid var(--bm-border);
+  background: linear-gradient(
+    90deg,
+    var(--bm-input) 0%,
+    var(--bm-surface-raised) 45%,
+    var(--bm-input) 100%
+  );
+  background-size: 220% 100%;
+  animation: bm-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.market-category-skeleton-row:nth-child(3n) {
+  width: 72%;
+}
+.market-category-skeleton-row:nth-child(3n + 2) {
+  width: 88%;
+}
 .category-note {
   padding: 8px;
   color: var(--bm-muted);
@@ -844,6 +870,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pagination-skeleton,
   .market-skeleton,
+  .market-category-skeleton-row,
   .board-row {
     animation: none;
   }

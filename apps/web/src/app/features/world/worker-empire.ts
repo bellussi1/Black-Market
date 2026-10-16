@@ -53,6 +53,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
 })
 export class WorkerEmpireComponent {
   readonly nodes = input.required<WorldNode[]>();
+  readonly nodesLoading = input(false);
   readonly store = inject(WorkspaceStore);
   private readonly analytics = inject(AnalyticsService);
   readonly silver = silver;

@@ -551,6 +551,9 @@
   .scan-feedback-enter {
     animation: none;
   }
+  .scan-progress-enter {
+    animation: none;
+  }
 }
 
 .quantity-caution {
@@ -666,6 +669,7 @@ figure {
 }
 
 .analysis-progress {
+  min-height: 5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -678,9 +682,29 @@ figure {
   font-size: 14px;
 }
 
+.scan-progress-enter {
+  animation: scan-progress-enter 180ms ease-out both;
+}
+
+@keyframes scan-progress-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .analysis-progress p {
   margin: 6px 0 0;
   color: var(--bm-muted);
+}
+
+.capture-preparing progress {
+  width: min(16rem, 100%);
+  accent-color: var(--bm-accent);
 }
 
 .capture-area > .panel {

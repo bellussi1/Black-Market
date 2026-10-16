@@ -45,6 +45,7 @@ export class CatalogItemPicker implements OnDestroy {
   readonly category = signal('');
   readonly categories = signal<CatalogCategory[]>([]);
   readonly result = signal<CatalogPage | null>(null);
+  readonly loadingRows = [0, 1, 2, 3];
   readonly loading = signal(false);
   readonly error = signal('');
   readonly open = signal(false);

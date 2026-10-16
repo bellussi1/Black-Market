@@ -201,6 +201,12 @@ describe('production recommendations', () => {
     expect(loading?.getAttribute('role')).toBe('status');
     expect(loading?.getAttribute('aria-busy')).toBe('true');
     expect(loading?.textContent).toContain('Carregando catálogo');
+
+    page.snapshot.set(snapshot);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.recommendations-section')?.getAttribute('aria-busy'),
+    ).toBe('true');
   });
   it('waits for a character before fetching market quotes, then loads them automatically', async () => {
     const resolveProductionQuotes = vi.fn(() => of(new Map()));

@@ -1,4 +1,7 @@
-<div class="tool-page tutorials-manage-page">
+<div
+  class="tool-page tutorials-manage-page"
+  [attr.aria-busy]="loading() || saving() ? 'true' : null"
+>
   <header class="tool-heading">
     <p class="tool-kicker" i18n>ADMINISTRAÇÃO</p>
     <h1 i18n>Editar tutoriais</h1>
@@ -10,15 +13,35 @@
   @if (error()) {
     <p role="alert">{{ error() }}</p>
   }
-  @if (loading()) {
-    <p role="status" i18n>Verificando acesso e carregando tutoriais…</p>
+  @if (loading() && !loaded()) {
+    <section class="tutorials-loading-state" data-tutorials-loading aria-busy="true">
+      <p role="status" i18n>Verificando acesso e carregando tutoriais…</p>
+      <div class="tutorials-skeleton-list" aria-hidden="true">
+        @for (slot of [0, 1, 2]; track slot) {
+          <article class="tutorials-skeleton-step">
+            <span class="tutorials-skeleton-title"></span>
+            <span class="tutorials-skeleton-line"></span>
+            <span class="tutorials-skeleton-line tutorials-skeleton-line-short"></span>
+          </article>
+        }
+      </div>
+    </section>
   } @else if (!authorized()) {
     <p i18n>Acesso reservado à administração.</p>
     <button type="button" (click)="initialize()" i18n>Verificar acesso novamente</button>
   } @else {
-    <button type="button" [disabled]="saving()" (click)="load()" i18n>
+    <button type="button" [disabled]="saving() || loading()" (click)="load()" i18n>
       Recarregar versão salva e descartar rascunhos
     </button>
+    <p
+      class="tutorials-refresh-status"
+      data-tutorials-refresh-status
+      role="status"
+      [attr.aria-hidden]="loading() ? null : 'true'"
+      i18n
+    >
+      {{ loading() ? 'Atualizando versão salva…' : '' }}
+    </p>
     @if (loaded()) {
       <nav aria-label="Tela do tutorial" i18n-aria-label>
         @for (screen of screens; track screen.screenKey) {
@@ -32,7 +55,7 @@
           </button>
         }
       </nav>
-      <section class="panel">
+      <section class="panel tutorials-editor-panel">
         <h2>{{ screenLabel(screenKey()) }} · pt-BR</h2>
         <p i18n>Estado: {{ dirty() ? 'Alterações não salvas' : 'Sem alterações' }}</p>
         @if (draft().expectedUpdatedAt) {
@@ -40,7 +63,7 @@
             <span i18n>Revisão salva:</span> <time>{{ draft().expectedUpdatedAt }}</time>
           </p>
         }
-        <fieldset [disabled]="saving()">
+        <fieldset [disabled]="saving() || loading()">
           <legend i18n>Publicação e etapas</legend>
           <label class="enabled"
             ><input
@@ -146,7 +169,9 @@
           >
             {{ saving() ? 'Salvando…' : 'Salvar tutorial' }}
           </button>
-          <p role="status">{{ message() }}</p>
+          <p class="tutorials-save-status" role="status">
+            {{ saving() ? 'Salvando tutorial…' : message() }}
+          </p>
         </div>
       </section>
     }

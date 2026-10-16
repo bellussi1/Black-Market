@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -51,6 +52,7 @@ export class StockPage {
   readonly view = signal<'grid' | 'list'>('grid');
   readonly page = signal(0);
   readonly message = signal('');
+  readonly loadingItems = signal(false);
   readonly items = signal(new Map<number, CatalogItem>());
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
@@ -76,6 +78,24 @@ export class StockPage {
   readonly visibleRows = computed(() =>
     this.rows().slice(this.page() * 48, (this.page() + 1) * 48),
   );
+  readonly visibleItemLookup = computed(
+    () => ({
+      region: this.store.data().region,
+      ids: [
+        ...new Set(
+          this.visibleRows()
+            .map((row) => row.itemId)
+            .filter((id): id is number => Boolean(id)),
+        ),
+      ].sort((left, right) => left - right),
+    }),
+    {
+      equal: (left, right) =>
+        left.region === right.region &&
+        left.ids.length === right.ids.length &&
+        left.ids.every((id, index) => id === right.ids[index]),
+    },
+  );
   readonly history = computed(() =>
     this.store
       .data()
@@ -87,6 +107,7 @@ export class StockPage {
   readonly nextPage = (page: number) => page + 1;
   draft: Stock | null = null;
   removed: Stock | null = null;
+  private catalogRegion = '';
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const kind = params.get('tab') === 'inventory' ? 'inventory' : 'storage';
@@ -97,21 +118,35 @@ export class StockPage {
       }
     });
     effect((cleanup) => {
-      const ids = [
-        ...new Set(
-          this.visibleRows()
-            .map((row) => row.itemId)
-            .filter((id): id is number => Boolean(id)),
-        ),
-      ];
-      if (!ids.length) {
+      const { ids, region } = this.visibleItemLookup();
+      if (region !== this.catalogRegion) {
+        this.catalogRegion = region;
         this.items.set(new Map());
+      }
+      if (!ids.length) {
+        this.loadingItems.set(false);
         return;
       }
-      const sub = this.catalog.getItems({ ids, page: 1, pageSize: 100 }).subscribe({
-        next: (result) => this.items.set(new Map(result.items.map((item) => [item.id, item]))),
-        error: () =>
-          this.message.set('As imagens não puderam ser carregadas. Seus itens continuam salvos.'),
+      const currentItems = untracked(() => this.items());
+      const missingIds = ids.filter((id) => !currentItems.has(id));
+      if (!missingIds.length) {
+        this.loadingItems.set(false);
+        return;
+      }
+      this.loadingItems.set(true);
+      const sub = this.catalog.getItems({ ids: missingIds, page: 1, pageSize: 100 }).subscribe({
+        next: (result) => {
+          this.items.update((current) => {
+            const updated = new Map(current);
+            for (const item of result.items) updated.set(item.id, item);
+            return updated;
+          });
+          this.loadingItems.set(false);
+        },
+        error: () => {
+          this.loadingItems.set(false);
+          this.message.set('As imagens não puderam ser carregadas. Seus itens continuam salvos.');
+        },
       });
       cleanup(() => sub.unsubscribe());
     });

@@ -14,6 +14,21 @@ const ready = () =>
   });
 describe('Simple expandable production steps', () => {
   useMemoryStorage();
+  it('reserves an accessible skeleton while loading an ingredient recipe', async () => {
+    const node = ready();
+    node.loading = true;
+    const fixture = await renderComponent(RecipeBranch, { node });
+
+    expect(fixture.nativeElement.querySelector('.ingredient')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
+    expect(
+      fixture.nativeElement.querySelector('.step-hint-loading-line')?.getAttribute('aria-hidden'),
+    ).toBe('true');
+    expect(
+      fixture.nativeElement.querySelector('.step-hint-loading [role="status"]'),
+    ).not.toBeNull();
+  });
   it('lets the user finish a decimal yield before applying it on blur', async () => {
     const node = ready();
     node.yield = null;

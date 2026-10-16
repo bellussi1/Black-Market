@@ -1,0 +1,129 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.reference-filter-status,
+.reference-loading-status,
+.reference-refresh-status {
+  display: block;
+  min-height: 1.35rem;
+  margin: 0;
+  color: var(--bm-muted);
+}
+
+.reference-results {
+  min-width: 0;
+  animation: reference-loading-enter 180ms ease-out both;
+}
+
+.reference-results[aria-busy='true'] .reference-skeleton-card span {
+  background-size: 220% 100%;
+  animation: reference-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.reference-skeleton-grid {
+  align-items: stretch;
+}
+
+.reference-loaded-grid {
+  animation: reference-results-enter 180ms ease-out both;
+}
+
+.reference-skeleton-card {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-height: 7rem;
+  padding: 1rem;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.reference-skeleton-card span,
+.reference-detail-skeleton > span {
+  display: block;
+  min-height: 1rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 20%,
+    color-mix(in srgb, var(--bm-accent) 18%, var(--bm-surface)) 42%,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 64%
+  );
+}
+
+.reference-skeleton-card span:first-child {
+  width: 72%;
+  min-height: 1.25rem;
+}
+
+.reference-skeleton-card span:last-child {
+  width: 92%;
+  min-height: 0.85rem;
+}
+
+.reference-detail-loading {
+  display: grid;
+  gap: 1rem;
+  min-height: 22rem;
+  animation: reference-loading-enter 180ms ease-out both;
+}
+
+.reference-detail-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.reference-detail-skeleton > span {
+  min-height: 3rem;
+}
+
+.reference-detail-skeleton-title {
+  grid-column: 1 / -1;
+  min-height: 2rem !important;
+  width: 55%;
+}
+
+.reference-pagination {
+  min-height: 3.25rem;
+  align-items: center;
+}
+
+@keyframes reference-skeleton-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@keyframes reference-loading-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes reference-results-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reference-results,
+  .reference-loaded-grid,
+  .reference-detail-loading,
+  .reference-results[aria-busy='true'] .reference-skeleton-card span,
+  .reference-detail-loading .reference-detail-skeleton > span {
+    animation: none;
+  }
+}

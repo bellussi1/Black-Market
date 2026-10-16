@@ -57,6 +57,11 @@ li {
 }
 .upload-area button {
   min-height: 44px;
+  min-width: 12rem;
+  transition:
+    opacity 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 .upload-area p {
   color: var(--bm-muted);
@@ -65,9 +70,18 @@ li {
 }
 .capture-status {
   min-height: 21px;
+  transition: color 160ms ease;
 }
-.capture-status:empty {
-  display: none;
+
+.upload-area[aria-busy='true'] .capture-status {
+  color: var(--bm-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-area button,
+  .capture-status {
+    transition: none;
+  }
 }
 .review-notice {
   border-top: 1px solid var(--bm-border);

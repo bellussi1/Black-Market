@@ -8,6 +8,7 @@
   class="context-panel panel bottom-details-tray"
   aria-label="Detalhes do item selecionado"
   i18n-aria-label
+  [attr.aria-busy]="tree().contextLoading()"
 >
   <div class="context-titlebar">
     <div class="tray-title-text">
@@ -21,7 +22,21 @@
   </div>
 
   @if (tree().contextLoading()) {
-    <p role="status" class="tray-loading" i18n>Consultando o item e suas fontes…</p>
+    <p class="sr-only" role="status" aria-live="polite" i18n>Consultando o item e suas fontes…</p>
+    <div class="recipe-item-details-loading" aria-hidden="true">
+      @for (column of [0, 1, 2, 3]; track column) {
+        <section class="details-loading-column">
+          <span class="details-skeleton details-skeleton-heading"></span>
+          @if (column === 0) {
+            <span class="details-skeleton details-skeleton-identity"></span>
+          }
+          @for (row of [0, 1, 2]; track row) {
+            <span class="details-skeleton details-skeleton-label"></span>
+            <span class="details-skeleton details-skeleton-field"></span>
+          }
+        </section>
+      }
+    </div>
   }
 
   @if (tree().context(); as info) {

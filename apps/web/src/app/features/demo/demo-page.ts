@@ -20,6 +20,7 @@ import { ItemIcon } from '../../shared/item-icon/item-icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmInput, HlmCard, HlmButton, FormsModule, RouterLink, ItemIcon],
   templateUrl: './demo-page.html',
+  styleUrl: './demo-page.scss',
 })
 export class DemoPage {
   readonly skills = lifeSkills;

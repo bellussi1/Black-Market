@@ -81,6 +81,34 @@ describe('Storage import guidance', () => {
     );
   });
 
+  it('reserves a paged preview with skeleton rows while resolving catalog names', async () => {
+    const fixture = await renderComponent(StoragePage);
+    const page = fixture.componentInstance;
+    const file = new File(
+      ['itemId;quantidade;local;meta;preco\n9001;42;Velia;;\n9002;18;Heidel;;'],
+      'stock.csv',
+      { type: 'text/csv' },
+    );
+    await page.readImport({ target: { files: [file] } } as unknown as Event);
+    fixture.detectChanges();
+
+    const preview = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-storage-import-loading]',
+    );
+    expect(preview?.getAttribute('aria-busy')).toBe('true');
+    expect(preview?.querySelectorAll('.storage-import-skeleton-row')).toHaveLength(2);
+    expect(preview?.querySelector('[role="status"]')?.textContent).toContain('Validando');
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.endsWith('/api/v1/items') && request.params.has('ids'))
+      .flush({
+        items: [
+          { id: 9001, name: 'Sal' },
+          { id: 9002, name: 'Açúcar' },
+        ],
+        total: 2,
+      });
+  });
+
   it('allows switching between detailed list and BDO game-style slot grid', async () => {
     const fixture = await renderComponent(StoragePage);
     const store = TestBed.inject(WorkspaceStore);

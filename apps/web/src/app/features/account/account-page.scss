@@ -1,0 +1,117 @@
+:host {
+  display: block;
+}
+
+.account-loading {
+  min-height: 13rem;
+  display: grid;
+  align-content: center;
+  gap: 1rem;
+}
+
+.account-sync-loading {
+  min-height: 16rem;
+}
+
+.account-loading-status {
+  margin: 0;
+  color: var(--bm-muted);
+}
+
+.account-skeleton {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.account-skeleton-line,
+.account-skeleton-button {
+  display: block;
+  min-height: 0.85rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    var(--bm-surface-raised) 25%,
+    color-mix(in srgb, var(--bm-surface-raised), var(--bm-text) 12%) 45%,
+    var(--bm-surface-raised) 65%
+  );
+  background-size: 220% 100%;
+  animation: account-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.account-skeleton-title {
+  width: min(16rem, 68%);
+  min-height: 1.35rem;
+}
+
+.account-skeleton-copy {
+  width: min(30rem, 92%);
+}
+
+.account-skeleton-copy-short {
+  width: min(22rem, 74%);
+}
+
+.account-skeleton-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.account-skeleton-button {
+  width: 9rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--bm-border);
+}
+
+.account-skeleton-button-short {
+  width: 8rem;
+}
+
+.account-action-status {
+  min-height: 1.35rem;
+  margin: 0 0 0.5rem;
+  color: var(--bm-muted);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.account-action-status.is-active {
+  opacity: 1;
+}
+
+.account-panel-enter {
+  animation: account-panel-enter 180ms ease-out both;
+}
+
+@keyframes account-skeleton-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@keyframes account-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-skeleton-line,
+  .account-skeleton-button {
+    animation: none;
+  }
+
+  .account-action-status {
+    transition: none;
+  }
+
+  .account-panel-enter {
+    animation: none;
+  }
+}

@@ -1,7 +1,23 @@
-<div class="tool-page guided-page item-detail-page">
+<div class="tool-page guided-page item-detail-page" [attr.aria-busy]="loading()">
   <a routerLink="/market" i18n>← Mercado</a>
   @if (loading()) {
-    <p class="loading-state" role="status" i18n>Carregando item…</p>
+    <section class="item-detail-loading-skeleton" role="status" aria-live="polite" aria-busy="true">
+      <span class="sr-only" i18n>Carregando informações e receitas do item…</span>
+      <div class="item-detail-skeleton-heading" aria-hidden="true">
+        <span class="item-detail-skeleton-icon"></span>
+        <span class="item-detail-skeleton-copy"> <i></i><b></b> </span>
+      </div>
+      <div class="item-detail-skeleton-actions" aria-hidden="true"><span></span><span></span></div>
+      <div class="item-detail-skeleton-columns" aria-hidden="true">
+        <div class="item-detail-skeleton-panel"><i></i><b></b><b></b><b></b></div>
+        <div class="item-detail-skeleton-panel">
+          <i></i><span class="item-detail-skeleton-row"></span>
+          <span class="item-detail-skeleton-row"></span>
+          <span class="item-detail-skeleton-row"></span>
+          <span class="item-detail-skeleton-row"></span>
+        </div>
+      </div>
+    </section>
   }
   @if (message()) {
     <p class="error-box" role="alert">{{ message() }}</p>

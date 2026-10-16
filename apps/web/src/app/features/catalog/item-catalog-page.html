@@ -91,7 +91,7 @@
           appBdoSelect
           [value]="categoryId()"
           (change)="onCategory($event)"
-          [disabled]="categoryError()"
+          [disabled]="categoryError() || categoryLoading()"
         >
           <option value=""><ng-container i18n>Todas as categorias</ng-container></option>
           @for (category of categories(); track category.id) {
@@ -100,6 +100,13 @@
             </option>
           }
         </select>
+        <span class="catalog-category-loading-slot" [attr.aria-busy]="categoryLoading()">
+          @if (categoryLoading()) {
+            <small class="catalog-category-loading-status" role="status" aria-live="polite" i18n
+              >Carregando categorias…</small
+            >
+          }
+        </span>
       </label>
 
       <label class="filter-field grade-filter">
@@ -192,9 +199,16 @@
             }
           </div>
           @if (detailLoading()) {
-            <small class="detail-loading"
-              ><ng-container i18n>Atualizando detalhes…</ng-container></small
-            >
+            <div class="detail-recipes-skeleton" role="status" aria-live="polite" aria-busy="true">
+              <span class="sr-only" i18n>Carregando receitas relacionadas…</span>
+              @for (group of [1, 2]; track group) {
+                <div class="detail-recipe-skeleton-group" aria-hidden="true">
+                  <span class="detail-recipe-skeleton-heading"></span>
+                  <span class="detail-recipe-skeleton-row"></span>
+                  <span class="detail-recipe-skeleton-row"></span>
+                </div>
+              }
+            </div>
           }
           @if (detailError()) {
             <small class="detail-loading"
@@ -294,7 +308,12 @@
       </section>
     }
 
-    <section class="catalog-results" aria-labelledby="results-title" aria-live="polite">
+    <section
+      class="catalog-results"
+      aria-labelledby="results-title"
+      aria-live="polite"
+      [attr.aria-busy]="loading()"
+    >
       <div class="results-heading">
         <div>
           <p class="eyebrow"><span></span> <ng-container i18n>COLEÇÃO DE ITENS</ng-container></p>
@@ -313,12 +332,29 @@
         }
       </div>
 
-      @if (loading() && !result()) {
-        <div class="item-grid" aria-label="Carregando catálogo" i18n-aria-label>
-          @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
-            <div class="item-skeleton" aria-hidden="true"><span></span><i></i><b></b></div>
+      @if (loading()) {
+        <p class="sr-only catalog-loading-status" role="status" aria-live="polite" i18n>
+          Carregando itens do catálogo…
+        </p>
+        <div class="item-grid" aria-hidden="true">
+          @for (placeholder of itemSkeletonRows; track placeholder) {
+            <div class="item-skeleton">
+              <span class="item-skeleton-icon"></span>
+              <span class="item-skeleton-copy">
+                <i class="item-skeleton-name"></i>
+                <b class="item-skeleton-category"></b>
+              </span>
+              <span class="item-skeleton-grade"></span>
+              <span class="item-skeleton-weight"></span>
+            </div>
           }
         </div>
+        @if (result()?.dataset) {
+          <nav class="pagination pagination-skeleton" aria-hidden="true">
+            <span class="pagination-placeholder"></span>
+            <div class="pagination-actions"><span></span><span></span><span></span></div>
+          </nav>
+        }
       } @else if (!result() && error()) {
         <div class="empty-state error-state">
           <span class="empty-index">!</span>

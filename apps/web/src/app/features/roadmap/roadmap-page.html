@@ -21,7 +21,33 @@
   </header>
 
   @if (loading()) {
-    <p class="roadmap-message" role="status" i18n>Carregando Roadmap…</p>
+    <section class="roadmap-loading" role="status" aria-live="polite" aria-busy="true">
+      <p class="roadmap-message" i18n>Carregando Roadmap…</p>
+      <ol class="roadmap-path roadmap-skeleton-path" aria-hidden="true">
+        @for (slot of [0, 1, 2, 3]; track slot) {
+          <li class="roadmap-path-step roadmap-skeleton-step">
+            <span class="roadmap-path-marker">{{ slot + 1 }}</span>
+            <article class="roadmap-card roadmap-skeleton-card">
+              <div class="roadmap-skeleton-meta">
+                <span class="roadmap-skeleton roadmap-skeleton-chip"></span>
+                <span
+                  class="roadmap-skeleton roadmap-skeleton-chip roadmap-skeleton-chip-short"
+                ></span>
+              </div>
+              <span class="roadmap-skeleton roadmap-skeleton-title"></span>
+              <span class="roadmap-skeleton roadmap-skeleton-line"></span>
+              <span
+                class="roadmap-skeleton roadmap-skeleton-line roadmap-skeleton-line-medium"
+              ></span>
+              <span
+                class="roadmap-skeleton roadmap-skeleton-line roadmap-skeleton-line-short"
+              ></span>
+              <span class="roadmap-skeleton roadmap-skeleton-action"></span>
+            </article>
+          </li>
+        }
+      </ol>
+    </section>
   } @else if (error()) {
     <div class="roadmap-message roadmap-error" role="alert">
       <p>{{ error() }}</p>

@@ -37,6 +37,7 @@ export class RoadmapManagePage implements OnInit {
   readonly accessVerified = signal(false);
   readonly authorized = signal(false);
   readonly loading = signal(true);
+  readonly loaded = signal(false);
   readonly saving = signal(false);
   readonly entries = signal<DraftEntry[]>([]);
   readonly updatedAt = signal<string | null>(null);
@@ -86,6 +87,7 @@ export class RoadmapManagePage implements OnInit {
       this.updatedAt.set(result.updatedAt);
       this.hasChanges.set(false);
       this.pendingRemoval.set(null);
+      this.loaded.set(true);
     } catch (error) {
       if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403)) {
         this.authorized.set(false);

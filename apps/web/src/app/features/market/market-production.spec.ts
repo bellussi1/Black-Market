@@ -17,6 +17,16 @@ const dataset = {
 
 describe('MarketProduction', () => {
   useMemoryStorage();
+  it('reserves the recipe summary and announces loading while formulas are pending', async () => {
+    const fixture = await renderComponent(MarketProduction, { itemId: '676' });
+    const loading = fixture.nativeElement.querySelector('.market-production-loading');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.market-production-skeleton-row')).toHaveLength(
+      3,
+    );
+  });
+
   it('explains missing formulas without inventing hourly profit', async () => {
     const fixture = await renderComponent(MarketProduction, { itemId: '676' });
     const http = TestBed.inject(HttpTestingController);

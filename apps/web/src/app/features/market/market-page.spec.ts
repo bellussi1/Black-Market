@@ -64,6 +64,41 @@ describe('MarketPage', () => {
     expect(element.textContent).not.toContain('Encontre sua próxima compra ou venda');
   });
 
+  it('reserves quote facts while selected item prices are loading', async () => {
+    const fixture = await render(MarketPage);
+    fixture.componentInstance.selectItem({
+      id: 676,
+      name: 'Example item',
+      description: null,
+      grade: null,
+      weight: null,
+      categories: [],
+      category: 'Material',
+      icon: null,
+      iconUrl: null,
+    } as unknown as CatalogItem);
+    fixture.detectChanges();
+
+    const loading = fixture.nativeElement.querySelector('.market-quote-loading');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.market-quote-skeleton-fact')).toHaveLength(8);
+  });
+
+  it('reserves the history chart area while recorded observations load', async () => {
+    const fixture = await render(MarketPage);
+    const page = fixture.componentInstance;
+    page.lookupId.set('676');
+    page.workspaceView.set('quote');
+    page.showHistory();
+    fixture.detectChanges();
+
+    const loading = fixture.nativeElement.querySelector('.market-history-loading-skeleton');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelector('.market-history-chart-frame')).toBeNull();
+  });
+
   it('explains the purpose of market actions and connects a selected item to crafting and recipes', async () => {
     const fixture = await render(MarketPage);
     const element = fixture.nativeElement as HTMLElement;

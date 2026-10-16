@@ -1,0 +1,126 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.demo-catalog-panel {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.demo-catalog-panel[aria-busy='true'] {
+  border-color: var(--bm-accent);
+}
+
+.demo-loading-state {
+  min-height: 1.35rem;
+  margin-top: 1rem;
+  transition: min-height 180ms ease;
+}
+
+.demo-loading-state.is-active {
+  display: grid;
+  gap: 0.65rem;
+  min-height: 9.35rem;
+  animation: demo-loading-enter 180ms ease-out both;
+}
+
+.demo-loading-status {
+  min-height: 1.35rem;
+  margin: 0;
+  color: var(--bm-muted);
+}
+
+.demo-skeleton-list {
+  display: grid;
+  gap: 0.55rem;
+  min-height: 8rem;
+  animation: demo-skeleton-enter 180ms ease-out both;
+}
+
+.demo-skeleton-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 0.6fr);
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 2.25rem;
+  border-block-end: 1px solid var(--bm-border);
+}
+
+.demo-skeleton-row span {
+  display: block;
+  height: 0.8rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 20%,
+    color-mix(in srgb, var(--bm-accent) 18%, var(--bm-surface)) 42%,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 64%
+  );
+  background-size: 220% 100%;
+  animation: demo-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.demo-skeleton-row span:first-child {
+  width: 84%;
+}
+
+.demo-skeleton-row span:nth-child(2) {
+  width: 72%;
+}
+
+.demo-skeleton-row span:last-child {
+  width: 62%;
+}
+
+.demo-result-panel {
+  animation: demo-loading-enter 180ms ease-out both;
+}
+
+@keyframes demo-skeleton-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@keyframes demo-loading-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes demo-skeleton-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 520px) {
+  .demo-skeleton-row {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .demo-skeleton-row span:last-child {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-catalog-panel,
+  .demo-loading-state,
+  .demo-skeleton-list,
+  .demo-result-panel,
+  .demo-skeleton-row span {
+    animation: none;
+    transition: none;
+  }
+}

@@ -98,6 +98,40 @@ describe('RoadmapManagePage', () => {
     expect(fixture.nativeElement.querySelectorAll('.roadmap-editor-entry')).toHaveLength(0);
   });
 
+  it('shows a reserved skeleton while the initial roadmap content is being read', async () => {
+    const { fixture } = await setup();
+    const page = fixture.componentInstance;
+    page.entries.set([]);
+    page.loaded.set(false);
+    page.loading.set(true);
+    fixture.detectChanges();
+
+    const loading = (fixture.nativeElement as HTMLElement).querySelector('[data-roadmap-loading]');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.querySelectorAll('.roadmap-skeleton-entry').length).toBeGreaterThan(0);
+    expect(loading?.querySelector('[role="status"]')?.textContent).toContain('Carregando');
+  });
+
+  it('keeps the current editor visible and announces its busy state during reload', async () => {
+    const { fixture, api } = await setup();
+    const page = fixture.componentInstance;
+    let finish!: (value: RoadmapResponse) => void;
+    api.getManaged.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+
+    const pending = page.load();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.roadmap-admin')?.getAttribute('aria-busy')).toBe('true');
+    expect(element.querySelectorAll('.roadmap-editor-entry')).toHaveLength(3);
+    expect(element.querySelector('[data-roadmap-refresh-status]')?.textContent).toContain(
+      'Atualizando',
+    );
+
+    finish({ entries: structuredClone(storedEntries), updatedAt: '2026-10-16T12:00:00.000Z' });
+    await pending;
+  });
+
   it('rendersOneEditorListInGlobalOrder', async () => {
     const mixedEntries: RoadmapEntry[] = [
       { ...storedEntries[2]!, sortOrder: 2 },

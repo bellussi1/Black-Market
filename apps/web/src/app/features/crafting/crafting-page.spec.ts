@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { defaultTax } from '@bdo/calculators';
 import type { CatalogItem, CatalogRecipe, MarketLookupResponse } from '@bdo/shared';
+import { Subject } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService } from '../../core/market-cache.service';
 import { emptyWorkspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
@@ -20,6 +22,33 @@ describe('CraftingPage', () => {
     expect(element.textContent).toContain('comparar comprar, produzir e coletar');
     expect(element.textContent).toContain('Descobrir receitas e origens');
     expect(element.querySelector('app-recipe-tree')).toBeNull();
+  });
+
+  it('reserves an accessible recipe-tree skeleton while loading a selected product', async () => {
+    const api = {
+      getItem: () => new Subject<unknown>(),
+      getItemRecipes: () => new Subject<unknown>(),
+    } as unknown as CatalogApiService;
+    const fixture = await render(CraftingPage, {}, [{ provide: CatalogApiService, useValue: api }]);
+    const item = {
+      id: 676,
+      name: 'Produto de exemplo',
+      categories: [],
+      iconUrl: null,
+      icon: null,
+      category: null,
+      grade: null,
+      weight: null,
+      description: null,
+    } as unknown as CatalogItem;
+
+    fixture.componentInstance.selectWorkshopItem(item);
+    fixture.detectChanges();
+
+    const loading = fixture.nativeElement.querySelector('.workshop-loading-skeleton');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.workshop-skeleton-node')).toHaveLength(3);
   });
 
   it('renders economic profit separately from cash needed for owned ingredients', async () => {

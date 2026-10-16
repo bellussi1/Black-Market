@@ -101,14 +101,41 @@
         </button>
       </div>
     </div>
-    <div class="stock-items" data-tour="storage.items" [class.list]="view() === 'list'">
+    <p
+      class="stock-lookup-status"
+      data-stock-lookup-status
+      role="status"
+      [attr.aria-hidden]="loadingItems() ? null : 'true'"
+      i18n
+    >
+      {{ loadingItems() ? 'Carregando imagens do catálogo…' : '' }}
+    </p>
+    <div
+      class="stock-items"
+      data-stock-items
+      data-tour="storage.items"
+      [class.list]="view() === 'list'"
+      [attr.aria-busy]="loadingItems() ? 'true' : null"
+    >
       @for (row of visibleRows(); track row.id) {
         <article class="stock-item">
-          <app-item-icon
-            [url]="catalog.resolveIconUrl(items().get(row.itemId ?? 0) ?? {})"
-            [name]="row.name"
-            [grade]="items().get(row.itemId ?? 0)?.grade ?? null"
-          />
+          <div class="stock-item-icon-slot">
+            <app-item-icon
+              [url]="catalog.resolveIconUrl(items().get(row.itemId ?? 0) ?? {})"
+              [name]="row.name"
+              [grade]="items().get(row.itemId ?? 0)?.grade ?? null"
+            />
+            <span
+              class="stock-icon-skeleton"
+              [class.is-active]="
+                loadingItems() &&
+                row.itemId !== null &&
+                row.itemId !== undefined &&
+                !items().has(row.itemId)
+              "
+              aria-hidden="true"
+            ></span>
+          </div>
           <div>
             <ng-container>
               @if (row.itemId) {

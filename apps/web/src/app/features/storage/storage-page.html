@@ -126,8 +126,42 @@
         ><ng-container i18n>Arquivo CSV · até 500 itens</ng-container>
         <input type="file" accept=".csv,text/csv" (change)="readImport($event)" />
       </label>
+      @if (importPreparing()) {
+        <div class="storage-import-preparing" aria-busy="true">
+          <p class="storage-import-status" role="status" aria-live="polite" i18n>
+            Lendo o arquivo neste navegador…
+          </p>
+        </div>
+      }
       @if (importLoading()) {
-        <p role="status" i18n>Validando os itens no catálogo…</p>
+        <div
+          class="storage-import-loading"
+          data-storage-import-loading
+          aria-busy="true"
+          aria-describedby="storage-import-loading-status"
+        >
+          <p id="storage-import-loading-status" class="storage-import-status" role="status" i18n>
+            Validando os itens no catálogo…
+          </p>
+          <table class="data-table storage-import-skeleton-table" aria-hidden="true">
+            <thead>
+              <tr>
+                <th><ng-container i18n>Item</ng-container></th>
+                <th><ng-container i18n>Local</ng-container></th>
+                <th><ng-container i18n>Quantidade</ng-container></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of importSkeletonRows(); track row) {
+                <tr class="storage-import-skeleton-row">
+                  <td><span class="storage-import-skeleton-bar"></span></td>
+                  <td><span class="storage-import-skeleton-bar"></span></td>
+                  <td><span class="storage-import-skeleton-bar"></span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
       @if (importMessage()) {
         <p role="status" aria-live="polite">{{ importMessage() }}</p>

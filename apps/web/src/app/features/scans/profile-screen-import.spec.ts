@@ -23,6 +23,21 @@ describe('Profile screen import destination', () => {
       'Aplicar campos selecionados',
     );
   });
+  it('marks the profile capture as busy and keeps OCR progress in a live status region', async () => {
+    const fixture = await renderComponent(ProfileScreenImportComponent);
+    const page = fixture.componentInstance;
+    page.imageUrl.set('data:image/png;base64,AA==');
+    page.imageName.set('captura.png');
+    page.imageSize.set({ width: 100, height: 100 });
+    page.reading.set(true);
+    page.progress.set(0.4);
+    fixture.detectChanges();
+
+    const progress = (fixture.nativeElement as HTMLElement).querySelector('.ocr-progress');
+    expect(progress?.getAttribute('aria-busy')).toBe('true');
+    expect(progress?.getAttribute('role')).toBe('status');
+    expect(progress?.querySelector('progress')?.getAttribute('value')).toBe('0.4');
+  });
   it('creates and selects a destination without leaving the import', async () => {
     const fixture = await renderComponent(ProfileScreenImportComponent);
     const component = fixture.componentInstance;

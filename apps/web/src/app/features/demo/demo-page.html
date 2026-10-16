@@ -7,7 +7,12 @@
       explore os cálculos usando esses dados.
     </p>
   </header>
-  <section hlmCard class="panel">
+  <section
+    hlmCard
+    class="panel demo-catalog-panel"
+    data-demo-catalog
+    [attr.aria-busy]="loading() ? 'true' : null"
+  >
     <h2 i18n>1. Preparar o exemplo</h2>
     <p i18n>
       Os itens vêm do catálogo da região. Saldos, preços, resultados de atividades e atributos são
@@ -17,15 +22,29 @@
     <button hlmBtn variant="outline" class="btn" (click)="prepare()" [disabled]="loading()" i18n>
       Preparar demonstração
     </button>
-    @if (loading()) {
-      <p role="status" i18n>Conferindo os itens do catálogo…</p>
-    }
+    <div class="demo-loading-state" [class.is-active]="loading()" aria-live="polite">
+      <p
+        class="demo-loading-status"
+        role="status"
+        [attr.aria-hidden]="loading() ? null : 'true'"
+        i18n
+      >
+        {{ loading() ? 'Conferindo os itens do catálogo…' : '' }}
+      </p>
+      @if (loading() && !draft()) {
+        <div class="demo-skeleton-list" aria-hidden="true">
+          @for (slot of [0, 1, 2]; track slot) {
+            <div class="demo-skeleton-row"><span></span><span></span><span></span></div>
+          }
+        </div>
+      }
+    </div>
     @if (message()) {
       <p role="alert">{{ message() }}</p>
     }
   </section>
   @if (draft(); as data) {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel demo-result-panel">
       <h2 i18n>2. Confira a família e o personagem</h2>
       <p i18n>
         Valores de PA e PD representam uma ficha simulada e não são recalculados pelos equipamentos.

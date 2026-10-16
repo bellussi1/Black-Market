@@ -28,8 +28,10 @@
       Busque produtos e materiais de culinária, alquimia, processamento e entrega imperial.
     </p>
   </details>
-  @if (loading() && !result()) {
-    <p class="loading-state" role="status" i18n>Carregando item e receitas…</p>
+  @if (showListSkeleton()) {
+    <p class="sr-only" role="status" aria-live="polite" i18n>Carregando receitas…</p>
+  } @else if (loading() && !result() && !listMode() && !message()) {
+    <p class="sr-only" role="status" aria-live="polite" i18n>Carregando o item e suas receitas…</p>
   }
   @if (message()) {
     <p class="error-box" role="alert">
@@ -58,6 +60,48 @@
             </span>
           </div>
         }
+      </div>
+      <div class="action-row pagination-bar recipe-pagination-bar-skeleton" aria-hidden="true">
+        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
+        <span class="recipe-skeleton-line recipe-pagination-page-skeleton"></span>
+        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
+      </div>
+    </section>
+  }
+  @if (loading() && !listMode() && !item() && !message()) {
+    <section class="recipe-tree-loading panel" aria-hidden="true">
+      <div class="recipe-tree-loading-heading">
+        <span class="recipe-skeleton-line recipe-skeleton-kicker"></span>
+        <span class="recipe-skeleton-line recipe-skeleton-title"></span>
+      </div>
+      <div class="recipe-tree-loading-layout">
+        <div class="recipe-tree-loading-chain">
+          <div class="recipe-card recipe-tree-skeleton-root">
+            <span class="recipe-skeleton-icon"></span>
+            <span class="recipe-skeleton-copy">
+              <span class="recipe-skeleton-line recipe-skeleton-meta"></span>
+              <span class="recipe-skeleton-line recipe-skeleton-name"></span>
+            </span>
+          </div>
+          @for (row of [0, 1, 2, 3]; track row) {
+            <div class="recipe-card recipe-tree-skeleton-node">
+              <span class="recipe-skeleton-icon"></span>
+              <span class="recipe-skeleton-copy">
+                <span class="recipe-skeleton-line recipe-skeleton-meta"></span>
+                <span class="recipe-skeleton-line recipe-skeleton-name"></span>
+              </span>
+            </div>
+          }
+        </div>
+        <aside class="recipe-tree-loading-summary">
+          @for (row of [0, 1, 2, 3]; track row) {
+            <span
+              class="recipe-skeleton-line"
+              [class.recipe-tree-skeleton-summary-title]="row === 0"
+              [class.recipe-tree-skeleton-summary-value]="row === 1"
+            ></span>
+          }
+        </aside>
       </div>
     </section>
   }
@@ -107,7 +151,11 @@
       </div>
     </app-recipe-tree>
   } @else if (result(); as list) {
-    <section class="recipe-browser panel" aria-labelledby="recipe-browser-title">
+    <section
+      class="recipe-browser panel"
+      aria-labelledby="recipe-browser-title"
+      [attr.aria-busy]="loading()"
+    >
       <div class="panel-heading recipe-browser-heading">
         <div class="recipe-browser-copy">
           <p class="tool-kicker" i18n>CATÁLOGO DE RECEITAS</p>
@@ -135,35 +183,66 @@
           </label>
         </div>
       </div>
-      @if (loading()) {
-        <p class="refresh-status" role="status" i18n>Atualizando a lista de receitas…</p>
-      }
-      <div class="recipe-cards">
-        @for (row of list.recipes; track row.key) {
-          <a
-            class="recipe-card"
-            [routerLink]="['/recipes', row.key]"
-            [appRouteIntentPrefetch]="'/recipes/' + row.key"
-            ><app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" /><span
-              ><small>{{ typeLabel(row.type) }}</small
-              ><strong>{{ row.name }}</strong></span
-            ><span aria-hidden="true">→</span></a
-          >
-        } @empty {
-          <p i18n>
-            Nenhuma receita nesta atividade. Ajuste o filtro ou busque um produto ou material.
-          </p>
+      <p class="refresh-status" role="status" [attr.aria-hidden]="loading() ? null : 'true'">
+        {{ loading() ? 'Atualizando a lista de receitas…' : '' }}
+      </p>
+      <div class="recipe-cards" [attr.aria-busy]="loading()">
+        <div
+          class="recipe-cards-content"
+          [attr.aria-hidden]="loading() ? 'true' : null"
+          [attr.inert]="loading() ? '' : null"
+        >
+          @for (row of list.recipes; track row.key) {
+            <a
+              class="recipe-card"
+              [routerLink]="['/recipes', row.key]"
+              [appRouteIntentPrefetch]="'/recipes/' + row.key"
+              ><app-item-icon [url]="api.resolveIconUrl(row)" [name]="row.name" /><span
+                ><small>{{ typeLabel(row.type) }}</small
+                ><strong>{{ row.name }}</strong></span
+              ><span aria-hidden="true">→</span></a
+            >
+          } @empty {
+            <p i18n>
+              Nenhuma receita nesta atividade. Ajuste o filtro ou busque um produto ou material.
+            </p>
+          }
+        </div>
+        @if (loading()) {
+          <div class="recipe-pagination-skeleton" aria-hidden="true">
+            @for (row of recipePaginationSkeletonRows(); track row) {
+              <div class="recipe-card recipe-skeleton-card recipe-pagination-skeleton-card">
+                <span class="recipe-skeleton-icon"></span>
+                <span class="recipe-skeleton-copy">
+                  <span class="recipe-skeleton-line recipe-skeleton-meta"></span>
+                  <span class="recipe-skeleton-line recipe-skeleton-name"></span>
+                </span>
+                <span class="recipe-skeleton-line recipe-skeleton-arrow"></span>
+              </div>
+            }
+          </div>
         }
       </div>
-      <nav class="action-row pagination-bar" aria-label="Páginas de receitas" i18n-aria-label>
-        <button hlmBtn variant="outline" (click)="move(-1)" [disabled]="page === 1" i18n>
+      <nav
+        class="action-row pagination-bar"
+        aria-label="Páginas de receitas"
+        i18n-aria-label
+        [attr.aria-busy]="loading()"
+      >
+        <button
+          hlmBtn
+          variant="outline"
+          (click)="move(-1)"
+          [disabled]="loading() || page === 1"
+          i18n
+        >
           Anterior</button
         ><span>{{ page }}</span
         ><button
           hlmBtn
           variant="outline"
           (click)="move(1)"
-          [disabled]="page * list.pageSize >= list.total"
+          [disabled]="loading() || page * list.pageSize >= list.total"
           i18n
         >
           Próxima

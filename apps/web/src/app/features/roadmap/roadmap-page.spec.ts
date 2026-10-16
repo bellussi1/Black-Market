@@ -66,6 +66,33 @@ const entries = [
 ];
 
 describe('RoadmapPage', () => {
+  it('reserves the roadmap trail with an accessible skeleton while loading', async () => {
+    const identity = {
+      canManageRoadmap: signal(false),
+      authenticated: signal(false),
+      initialize: vi.fn().mockResolvedValue(undefined),
+    };
+    const fixture = await renderComponent(RoadmapPage, {}, [
+      { provide: IdentityService, useValue: identity },
+    ]);
+
+    const loading = fixture.nativeElement.querySelector('.roadmap-loading');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.querySelectorAll('.roadmap-skeleton-step')).toHaveLength(4);
+    expect(loading?.querySelector('.roadmap-skeleton-path')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
+      .flush({
+        entries: [],
+        updatedAt: null,
+      });
+    http.verify();
+  });
+
   it('rendersMixedKindsInOneOrderedListWithTextualTypeAndFocus', async () => {
     const identity = {
       canManageRoadmap: signal(false),

@@ -1,0 +1,107 @@
+.equipment-reference-panel {
+  min-width: 0;
+}
+
+.equipment-reference-status {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+  margin-block: 0.75rem;
+  color: var(--bm-muted);
+}
+
+.equipment-reference-result-skeleton,
+.equipment-reference-results {
+  display: grid;
+  gap: 1rem;
+}
+
+.equipment-reference-results {
+  animation: equipment-reference-enter 180ms ease-out both;
+}
+
+.equipment-reference-skeleton-table {
+  display: grid;
+  border: 1px solid var(--bm-border);
+}
+
+.equipment-reference-skeleton-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(0, 1.5fr);
+  align-items: center;
+  gap: 1rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.equipment-reference-skeleton-row + .equipment-reference-skeleton-row {
+  border-top: 1px solid var(--bm-border);
+}
+
+.equipment-reference-skeleton-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.equipment-reference-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--bm-input) 0%,
+    var(--bm-surface-raised) 48%,
+    var(--bm-input) 100%
+  );
+  background-size: 220% 100%;
+  animation: equipment-reference-shimmer 1.5s ease-in-out infinite;
+}
+
+.equipment-reference-skeleton-label {
+  width: min(70%, 10rem);
+  height: 0.75rem;
+}
+
+.equipment-reference-skeleton-value {
+  width: min(84%, 16rem);
+  height: 0.9rem;
+}
+
+.equipment-reference-skeleton-control {
+  height: 3rem;
+  border: 1px solid var(--bm-border);
+}
+
+@keyframes equipment-reference-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes equipment-reference-enter {
+  from {
+    opacity: 0.65;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .equipment-reference-skeleton-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .equipment-reference-skeleton,
+  .equipment-reference-results {
+    animation: none;
+  }
+}

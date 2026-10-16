@@ -71,6 +71,7 @@ describe('DashboardPage', () => {
     );
     expect(fixture.nativeElement.querySelector('.home-focus-loading')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.home-focus-skeleton')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.home-focus-skeleton')).toHaveLength(2);
     http
       .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
       .flush({

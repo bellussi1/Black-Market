@@ -17,6 +17,12 @@ describe('CalculationProof', () => {
     (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button')!.click();
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('button')!.disabled).toBe(true);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.proof')?.getAttribute('aria-busy'),
+    ).toBe('true');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.proof-message')?.textContent,
+    ).toContain('Conferindo');
     const http = TestBed.inject(HttpTestingController);
     const request = http.expectOne(url);
     expect(request.request.method).toBe('POST');
@@ -24,6 +30,9 @@ describe('CalculationProof', () => {
     request.flush({ modelVersion: MODEL_VERSION, result: calculateMarket(value) });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Resultado conferido');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.proof')?.hasAttribute('aria-busy'),
+    ).toBe(false);
     http.verify();
   });
 

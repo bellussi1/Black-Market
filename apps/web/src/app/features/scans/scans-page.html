@@ -69,6 +69,18 @@
       }
     </section>
   }
+  @if (preparing()) {
+    <div
+      class="analysis-progress capture-preparing"
+      data-capture-preparing
+      role="status"
+      aria-busy="true"
+      animate.enter="scan-progress-enter"
+    >
+      <strong i18n>Preparando as capturas…</strong>
+      <progress max="1" aria-label="Preparando imagens" i18n-aria-label></progress>
+    </div>
+  }
   @if (jobs().length) {
     <section class="panel review-context" aria-labelledby="scan-review-context-title">
       <div class="panel-heading">
@@ -308,10 +320,10 @@
         </p>
       }
       @if (batchRunning() || busy()) {
-        <div class="analysis-progress">
+        <div class="analysis-progress" aria-busy="true" animate.enter="scan-progress-enter">
           <div>
             <strong>Analisando captura</strong>
-            <p role="status">{{ batchProgress() }} · {{ progress() }}</p>
+            <p role="status" aria-live="polite">{{ batchProgress() }} · {{ progress() }}</p>
           </div>
           <button hlmBtn variant="outline" type="button" (click)="cancel()" i18n>
             Cancelar análise

@@ -26,6 +26,7 @@ import { WorkspaceStore } from '../../core/workspace-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmCard, HlmButton, FormsModule],
   templateUrl: './account-page.html',
+  styleUrl: './account-page.scss',
 })
 export class AccountPage {
   private readonly analytics = inject(AnalyticsService);
@@ -37,6 +38,7 @@ export class AccountPage {
   readonly store = inject(WorkspaceStore);
   private readonly http = inject(HttpClient);
   readonly loading = signal(false);
+  readonly loadingSavedData = signal(false);
   readonly message = signal('');
   readonly snapshot = signal<Workspace | null>(null);
   readonly cloudVersion = signal<number | null>(null);
@@ -179,27 +181,32 @@ export class AccountPage {
     }, false);
   }
   async load() {
-    await this.perform(async () => {
-      const owner = this.identity.userId();
-      const token = await this.identity.token();
-      const result = await firstValueFrom(
-        this.http.get<{ version: number; data: unknown; updatedAt: string | null }>(
-          environment.apiBaseUrl + '/api/v1/workspace',
-          { headers: { Authorization: 'Bearer ' + token } },
-        ),
-      );
-      if (!owner || owner !== this.identity.userId()) return;
-      this.snapshot.set(result.data ? workspaceSchema.parse(result.data) : null);
-      this.cloudVersion.set(result.version);
-      this.updatedAt.set(result.updatedAt ?? '');
-      this.confirmDownload = false;
-      this.confirmUpload = false;
-      this.message.set(
-        result.data
-          ? 'Confira a cópia da conta antes de escolher qual versão usar.'
-          : 'Sua conta ainda não possui dados salvos. Você pode enviar a cópia deste navegador.',
-      );
-    });
+    this.loadingSavedData.set(true);
+    try {
+      await this.perform(async () => {
+        const owner = this.identity.userId();
+        const token = await this.identity.token();
+        const result = await firstValueFrom(
+          this.http.get<{ version: number; data: unknown; updatedAt: string | null }>(
+            environment.apiBaseUrl + '/api/v1/workspace',
+            { headers: { Authorization: 'Bearer ' + token } },
+          ),
+        );
+        if (!owner || owner !== this.identity.userId()) return;
+        this.snapshot.set(result.data ? workspaceSchema.parse(result.data) : null);
+        this.cloudVersion.set(result.version);
+        this.updatedAt.set(result.updatedAt ?? '');
+        this.confirmDownload = false;
+        this.confirmUpload = false;
+        this.message.set(
+          result.data
+            ? 'Confira a cópia da conta antes de escolher qual versão usar.'
+            : 'Sua conta ainda não possui dados salvos. Você pode enviar a cópia deste navegador.',
+        );
+      });
+    } finally {
+      this.loadingSavedData.set(false);
+    }
   }
   async upload() {
     if (this.store.demoActive()) {

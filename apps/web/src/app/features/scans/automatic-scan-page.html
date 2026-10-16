@@ -10,7 +10,7 @@
       <app-tutorial-launcher screenKey="scans" />
     </header>
     <section class="panel capture-panel" data-tour="scans.capture" aria-labelledby="capture-title">
-      <div class="upload-area">
+      <div class="upload-area" [attr.aria-busy]="reading() ? 'true' : null">
         <button hlmBtn type="button" [disabled]="reading()" (click)="fileInput.click()">
           {{ reading() ? 'Identificando a tela…' : 'Escolher captura' }}
         </button>

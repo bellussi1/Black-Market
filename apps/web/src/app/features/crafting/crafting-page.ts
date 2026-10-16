@@ -62,6 +62,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     RouterLink,
   ],
   templateUrl: './crafting-page.html',
+  styleUrl: './crafting-page.scss',
 })
 export class CraftingPage implements OnDestroy {
   private readonly analytics = inject(AnalyticsService);

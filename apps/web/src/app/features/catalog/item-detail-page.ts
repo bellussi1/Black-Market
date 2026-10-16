@@ -21,6 +21,7 @@ import { referenceFields } from '../reference/reference-fields';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmCard, HlmButton, RouterLink, ItemIcon],
   templateUrl: './item-detail-page.html',
+  styleUrl: './item-detail-page.scss',
 })
 export class ItemDetailPage {
   readonly isEnabled = isMvpPathEnabled;

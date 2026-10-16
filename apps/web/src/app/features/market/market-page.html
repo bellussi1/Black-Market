@@ -153,9 +153,7 @@
         @if (lookupError()) {
           <p class="error-box" role="alert">{{ lookupError() }}</p>
         }
-        @if (lookupLoading()) {
-          <p class="loading-state" role="status" i18n>Consultando preço e estoque do item…</p>
-        } @else if (!live() && !lookupError()) {
+        @if (!live() && !lookupLoading() && !lookupError()) {
           <div class="empty-workspace">
             <h3 i18n>Encontre sua próxima compra ou venda</h3>
             <p class="help" i18n>
@@ -168,8 +166,19 @@
       @if (lookupError()) {
         <p role="alert" class="error-box">{{ lookupError() }}</p>
       }
-      @if (lookupLoading()) {
-        <p role="status">Atualizando preço e estoque…</p>
+      @if (lookupLoading() && !live()) {
+        <div class="market-quote-loading" role="status" aria-live="polite" aria-busy="true">
+          <span class="sr-only" i18n>Consultando preço e estoque do item…</span>
+          <div class="market-quote-skeleton-grid" aria-hidden="true">
+            @for (fact of [1, 2, 3, 4, 5, 6, 7, 8]; track fact) {
+              <span class="market-quote-skeleton-fact"><i></i><b></b></span>
+            }
+          </div>
+        </div>
+      } @else if (lookupLoading()) {
+        <p class="quote-refresh-status" role="status" aria-live="polite" i18n>
+          Atualizando preço e estoque; a última cotação continua visível.
+        </p>
       }
       @if (live(); as response) {
         <div class="market-view-toolbar">
@@ -328,7 +337,9 @@
               }
             </select></label
           >
-          <p role="status">{{ historyMessage() }}</p>
+          @if (!historyLoading() && historyMessage()) {
+            <p role="status">{{ historyMessage() }}</p>
+          }
           <div class="mt-6 grid gap-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -428,25 +439,34 @@
                 intervalo longo sem consulta intermediária.
               </p>
             }
-            @if (historyChart().samples >= 1) {
-              <div class="min-w-0" aria-live="polite">
-                <app-market-history-chart
-                  [chartData]="historyChart()"
-                  [metric]="historyMetric()"
-                  [label]="historyMetricLabel()"
-                  [dateLabel]="date"
-                  [valueLabel]="historyValueLabel"
-                  [intervalLabel]="intervalLabel"
-                />
-                <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
-              </div>
-            } @else {
-              <p class="notice" role="status" i18n>
-                Ainda não há observações válidas neste período para desenhar o gráfico. O histórico
-                de negociações exige duas consultas consecutivas válidas. As consultas começam a
-                formar histórico depois que são registradas.
-              </p>
-            }
+            <div class="market-history-visualization" [attr.aria-busy]="historyLoading()">
+              @if (historyLoading()) {
+                <div class="market-history-loading-skeleton" role="status" aria-busy="true">
+                  <span class="sr-only" i18n>Carregando gráfico do histórico…</span>
+                  <div class="market-history-skeleton-lines" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+              } @else if (historyChart().samples >= 1) {
+                <div class="min-w-0" aria-live="polite">
+                  <app-market-history-chart
+                    [chartData]="historyChart()"
+                    [metric]="historyMetric()"
+                    [label]="historyMetricLabel()"
+                    [dateLabel]="date"
+                    [valueLabel]="historyValueLabel"
+                    [intervalLabel]="intervalLabel"
+                  />
+                  <p class="help" i18n>{{ historyChart().samples }} observações no período.</p>
+                </div>
+              } @else {
+                <p class="notice market-history-empty-state" role="status" i18n>
+                  Ainda não há observações válidas neste período para desenhar o gráfico. O
+                  histórico de negociações exige duas consultas consecutivas válidas. As consultas
+                  começam a formar histórico depois que são registradas.
+                </p>
+              }
+            </div>
           </div>
           <details class="mt-4">
             <summary>Como ler estes dados</summary>

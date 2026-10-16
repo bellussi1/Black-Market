@@ -17,6 +17,7 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 | [Política de fonte do mercado](market-source-policy.md)                                                                       | Fonte manual aprovada; Arsha candidato não aprovado; controles e critérios para habilitar coleta                            |
 | [Auditoria inicial de catálogo, receitas e mercado de Culinária/Alquimia](cooking-alchemy-catalog-market-audit-2026-10-16.md) | Cobertura local de peixe seco, ícones e preços NPC; riscos de equivalência; limites para ranquear lucro/volume atuais na SA |
 | [Navegação autenticada e login social](authenticated-navigation-competitive-review-2026-10-16.md)                             | Revisão pública de menus, ferramentas pessoais e chamadas de login em 16/10/2026                                            |
+| [Carregamentos e paginação em Receitas](ui-loading-competitive-review-2026-10-16.md)                                          | Padrões públicos observáveis e limites para comparar filtros, paginação e loading na tela de Receitas                       |
 
 Essas contagens não representam todas as rotas possíveis. Cada site tem entidades, filtros, idiomas e paginações que multiplicam URLs. Áreas autenticadas, respostas apenas com shell JavaScript, páginas indisponíveis e bloqueios estão registrados nos relatórios. Não é correto apresentar a pesquisa como uma cópia integral das bases dos concorrentes.
 

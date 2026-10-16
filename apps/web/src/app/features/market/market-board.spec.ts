@@ -62,6 +62,24 @@ async function renderMarketBoard(categories: CatalogCategory[] = []) {
 
 describe('MarketBoard', () => {
   useMemoryStorage();
+  it('reserves the category tree and announces taxonomy loading', async () => {
+    const fixture = await renderComponent(MarketBoard);
+    const http = TestBed.inject(HttpTestingController);
+    const categories = http.expectOne((request) => request.url.endsWith('/categories'));
+    const board = http.expectOne((request) => request.url.endsWith('/market/board'));
+    const loading = fixture.nativeElement.querySelector('.market-category-skeleton');
+
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.market-category-skeleton-row')).toHaveLength(6);
+
+    categories.flush({ categories: [], dataset: null });
+    board.flush(response());
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.market-category-skeleton')).toBeNull();
+    http.verify();
+  });
+
   it('shows only the observed mean price and opens details with the row button', async () => {
     const fixture = await renderMarketBoard();
     const data = response();

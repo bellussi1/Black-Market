@@ -115,6 +115,36 @@ describe('Icon suggestion ranking', () => {
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('exposes the OCR processing region as busy while keeping progress announced', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.file({
+      target: { files: [new File(['image'], 'capture.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    page.busy.set(true);
+    page.progress.set('Comparando os itens…');
+    fixture.detectChanges();
+
+    const progress = (fixture.nativeElement as HTMLElement).querySelector('.analysis-progress');
+    expect(progress?.getAttribute('aria-busy')).toBe('true');
+    expect(progress?.querySelector('[role="status"]')?.textContent).toContain(
+      'Comparando os itens',
+    );
+  });
+
+  it('announces image preparation before the capture preview is ready', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    fixture.componentInstance.preparing.set(true);
+    fixture.detectChanges();
+
+    const status = (fixture.nativeElement as HTMLElement).querySelector('[data-capture-preparing]');
+    expect(status?.getAttribute('aria-busy')).toBe('true');
+    expect(status?.getAttribute('role')).toBe('status');
+    expect(status?.textContent).toContain('Preparando as capturas');
+  });
+
   it('prioritizes review after upload and keeps setup in collapsed contextual sections', async () => {
     images();
     const fixture = await renderComponent(ScansPage),

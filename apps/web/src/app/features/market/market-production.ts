@@ -16,8 +16,13 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
   selector: 'app-market-production',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RecipeTree, RouterLink, HlmButton, BdoSelect],
+  styleUrl: './market-production.scss',
   template: `
-    <section aria-labelledby="market-production-title" class="grid min-w-0 gap-4">
+    <section
+      aria-labelledby="market-production-title"
+      class="grid min-w-0 gap-4"
+      [attr.aria-busy]="loading()"
+    >
       <header class="flex flex-wrap items-center justify-between gap-3">
         <h2 id="market-production-title">Produzir para vender</h2>
         <a hlmBtn variant="outline" [routerLink]="['/recipes/items', itemId()]"
@@ -25,7 +30,14 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
         >
       </header>
       @if (loading()) {
-        <p role="status">Carregando fórmulas de produção…</p>
+        <div class="market-production-loading" role="status" aria-live="polite" aria-busy="true">
+          <span class="sr-only" i18n>Carregando fórmulas e resumo da produção…</span>
+          @for (row of [1, 2, 3]; track row) {
+            <div class="market-production-skeleton-row" aria-hidden="true">
+              <span></span><span></span><i></i>
+            </div>
+          }
+        </div>
       } @else if (message()) {
         <p role="status">{{ message() }}</p>
       } @else if (recipe()) {

@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
-import { forkJoin, of, type Subscription, switchMap } from 'rxjs';
+import { finalize, forkJoin, of, type Subscription, switchMap } from 'rxjs';
 import { z } from 'zod';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -55,6 +55,7 @@ const caphras = z.object({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmInput, HlmCard, BdoSelect, FormsModule, RouterLink, CatalogItemPicker],
   templateUrl: './equipment-reference.html',
+  styleUrl: './equipment-reference.scss',
 })
 export class EquipmentReference implements OnDestroy {
   private readonly catalog = inject(CatalogApiService);
@@ -65,6 +66,7 @@ export class EquipmentReference implements OnDestroy {
   readonly selected = signal<CatalogItem | null>(null);
   readonly enhancements = signal<z.infer<typeof enhancement> | null>(null);
   readonly caphras = signal<z.infer<typeof caphras> | null>(null);
+  readonly loading = signal(false);
   readonly message = signal('');
   readonly level = signal(0);
   readonly from = signal(0);
@@ -106,6 +108,7 @@ export class EquipmentReference implements OnDestroy {
   }
   select(item: CatalogItem | null) {
     this.request?.unsubscribe();
+    this.loading.set(false);
     this.selected.set(item);
     this.enhancements.set(null);
     this.caphras.set(null);
@@ -115,7 +118,7 @@ export class EquipmentReference implements OnDestroy {
     this.to.set(1);
     this.stonePrice.set('0');
     if (!item) return;
-    this.message.set('Carregando informações…');
+    this.loading.set(true);
     this.request = this.catalog
       .getItem(item.id)
       .pipe(
@@ -135,6 +138,7 @@ export class EquipmentReference implements OnDestroy {
                 : of(null),
           });
         }),
+        finalize(() => this.loading.set(false)),
       )
       .subscribe({
         next: (result) => {

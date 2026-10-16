@@ -1,4 +1,8 @@
-<section class="empire" aria-labelledby="empire-title">
+<section
+  class="empire"
+  aria-labelledby="empire-title"
+  [attr.aria-busy]="nodesLoading() ? 'true' : null"
+>
   <header class="empire-heading">
     <div>
       <p class="tool-kicker" i18n>SEU IMPÉRIO DE PRODUÇÃO</p>
@@ -12,6 +16,13 @@
       Novo império
     </button>
   </header>
+  <div class="empire-loading-slot">
+    @if (nodesLoading()) {
+      <p class="empire-loading" role="status" aria-live="polite" aria-busy="true" i18n>
+        Carregando bases para cidades e trabalhadores…
+      </p>
+    }
+  </div>
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }

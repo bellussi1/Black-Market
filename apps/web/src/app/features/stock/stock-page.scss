@@ -26,6 +26,46 @@
   transition: border-color 160ms;
 }
 
+.stock-item-icon-slot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+
+.stock-icon-skeleton {
+  position: absolute;
+  inset: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 20%,
+    color-mix(in srgb, var(--bm-accent) 18%, var(--bm-surface)) 42%,
+    color-mix(in srgb, var(--bm-border) 55%, transparent) 64%
+  );
+  background-size: 220% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.stock-icon-skeleton.is-active {
+  opacity: 1;
+  animation: stock-icon-shimmer 1.6s ease-in-out infinite;
+}
+
+.stock-lookup-status {
+  min-height: 1.35rem;
+  margin: 1rem 0 0;
+  color: var(--bm-muted);
+}
+
+@keyframes stock-icon-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
 .stock-item > div {
   display: grid;
   gap: 0.35rem;
@@ -104,5 +144,12 @@ li {
   }
   .stock-items.list .stock-item > .stock-actions {
     grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stock-icon-skeleton {
+    animation: none;
+    transition: none;
   }
 }

@@ -9,7 +9,7 @@ import type {
   NpcPurchasePrice,
   RecipeMarketEquivalent,
 } from '@bdo/shared';
-import { of, Subject } from 'rxjs';
+import { NEVER, of, Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
@@ -1281,8 +1281,17 @@ describe('Interactive recipe tree', () => {
     tree.setGatherEstimate(9001, 4, 30);
 
     tree.optimizeAcquisition();
+    fixture.detectChanges();
 
     expect(posted).toHaveLength(1);
+    expect(
+      fixture.nativeElement.querySelector('.optimization-status')?.getAttribute('aria-busy'),
+    ).toBe('true');
+    expect(
+      fixture.nativeElement
+        .querySelector('.optimization-status')
+        ?.classList.contains('loading-state'),
+    ).toBe(true);
     expect(posted[0]?.gatheringEstimates).toMatchObject({
       9001: {
         expectedYield: 4,
@@ -1646,6 +1655,26 @@ describe('Interactive recipe tree', () => {
     tree.showContext(tree.root()!.children[0]);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.context-panel')).not.toBeNull();
+  });
+  it('reserves an accessible skeleton while item details are loading', async () => {
+    const mocks = providers();
+    mocks.knowledge.item.mockReturnValue(NEVER);
+    mocks.knowledge.sources.mockReturnValue(NEVER);
+    mocks.knowledge.produces.mockReturnValue(NEVER);
+    mocks.knowledge.uses.mockReturnValue(NEVER);
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    fixture.componentInstance.showContext(fixture.componentInstance.root()!);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.context-panel')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
+    expect(
+      fixture.nativeElement
+        .querySelector('.recipe-item-details-loading')
+        ?.getAttribute('aria-hidden'),
+    ).toBe('true');
+    expect(fixture.nativeElement.querySelector('.context-panel [role="status"]')).not.toBeNull();
   });
   it('dismisses invalidated descendant details when its parent changes to external acquisition', async () => {
     const fixture = await renderComponent(

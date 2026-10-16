@@ -69,6 +69,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
 
   readonly preferredLocale = preferredDataLocale();
   readonly pageSize = 48;
+  readonly itemSkeletonRows = Array.from({ length: this.pageSize }, (_, index) => index);
   readonly result = signal<CatalogPage | null>(null);
   readonly categories = signal<CatalogCategory[]>([]);
   readonly selectedItem = signal<CatalogItem | null>(null);
@@ -79,6 +80,7 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
   readonly grade = signal('');
   readonly page = signal(1);
   readonly loading = signal(true);
+  readonly categoryLoading = signal(true);
   readonly detailLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly categoryError = signal(false);
@@ -248,9 +250,16 @@ export class ItemCatalogPage implements OnInit, OnDestroy {
   private loadCategories(): void {
     this.categoriesRequest?.unsubscribe();
     this.categoryError.set(false);
+    this.categoryLoading.set(true);
     this.categoriesRequest = this.api.getCategories().subscribe({
-      next: (response) => this.categories.set(response.categories),
-      error: () => this.categoryError.set(true),
+      next: (response) => {
+        this.categories.set(response.categories);
+        this.categoryLoading.set(false);
+      },
+      error: () => {
+        this.categoryError.set(true);
+        this.categoryLoading.set(false);
+      },
     });
   }
 

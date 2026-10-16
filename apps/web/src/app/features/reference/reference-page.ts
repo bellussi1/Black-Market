@@ -27,6 +27,7 @@ import { referenceFields } from './reference-fields';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmInput, HlmCard, HlmButton, BdoSelect, FormsModule, RouterLink],
   templateUrl: './reference-page.html',
+  styleUrl: './reference-page.scss',
 })
 export class ReferencePage implements OnDestroy {
   private readonly seo = inject(SeoService);
@@ -36,10 +37,14 @@ export class ReferencePage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   readonly preferences = inject(RegionPreferences);
   readonly kinds = signal<{ kind: string; label: string; total: number }[]>([]);
+  readonly loadingKinds = signal(true);
   readonly entries = signal<ReferenceEntry[]>([]);
   readonly selected = signal<ReferenceEntry | null>(null);
   readonly total = signal(0);
   readonly loading = signal(false);
+  readonly loadingDetail = signal(false);
+  readonly skeletonCards = Array.from({ length: 24 }, (_, index) => index);
+  readonly detailSkeletonFields = Array.from({ length: 6 }, (_, index) => index);
   readonly message = signal('');
   kind = 'npcs';
   search = '';
@@ -77,9 +82,16 @@ export class ReferencePage implements OnDestroy {
   }
   private loadKinds() {
     this.kindRequest?.unsubscribe();
+    this.loadingKinds.set(true);
     this.kindRequest = this.api.kinds().subscribe({
-      next: (result) => this.kinds.set(result.kinds),
-      error: () => this.message.set('Não foi possível carregar as categorias. Tente novamente.'),
+      next: (result) => {
+        this.kinds.set(result.kinds);
+        this.loadingKinds.set(false);
+      },
+      error: () => {
+        this.loadingKinds.set(false);
+        this.message.set('Não foi possível carregar as categorias. Tente novamente.');
+      },
     });
   }
   changeKind() {
@@ -88,6 +100,7 @@ export class ReferencePage implements OnDestroy {
   load() {
     this.request?.unsubscribe();
     this.loading.set(true);
+    this.loadingDetail.set(false);
     this.message.set('');
     this.selected.set(null);
     this.request = this.api.list(this.kind, this.search, this.page).subscribe({
@@ -108,6 +121,7 @@ export class ReferencePage implements OnDestroy {
   loadDetail(id: string) {
     this.request?.unsubscribe();
     this.loading.set(true);
+    this.loadingDetail.set(true);
     this.message.set('');
     this.request = this.api.detail(this.kind, id).subscribe({
       next: (result) => {
@@ -119,9 +133,11 @@ export class ReferencePage implements OnDestroy {
             ' em Black Desert Online.',
         );
         this.loading.set(false);
+        this.loadingDetail.set(false);
       },
       error: (error: unknown) => {
         this.loading.set(false);
+        this.loadingDetail.set(false);
         this.selected.set(null);
         this.seo.unavailable();
         if (this.response)

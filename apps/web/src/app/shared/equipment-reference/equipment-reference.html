@@ -1,84 +1,122 @@
-<section hlmCard class="panel">
+<section
+  hlmCard
+  class="panel equipment-reference-panel"
+  [attr.aria-busy]="loading() ? 'true' : null"
+>
   <h2 i18n>Consultar equipamento do jogo</h2>
   <app-catalog-item-picker [selectionName]="selected()?.name ?? ''" (selected)="select($event)" />
-  <p role="status">{{ message() }}</p>
-  @if (enhancements(); as table) {
-    <label class="field"
-      ><span i18n>Nível do equipamento</span
-      ><select
-        appBdoSelect
-        [ngModel]="level()"
-        (ngModelChange)="level.set(+$event); from.set(0); to.set(1)"
-      >
-        @for (row of table.levels; track row.level) {
-          <option [ngValue]="row.level">{{ row.name }}</option>
-        }
-      </select></label
-    >
-    <div class="overflow-x-auto">
-      <table class="data-table">
-        <tbody>
-          @for (field of stats(); track $index) {
-            <tr>
-              <th>{{ field.label }}</th>
-              <td>
-                @if (field.link) {
-                  <a [routerLink]="field.link">{{ field.value }}</a>
-                } @else {
-                  {{ field.value }}
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <p class="help" i18n>
-      A chance inicial desta referência não inclui seus acúmulos. Confira a chance final no jogo
-      antes de calcular tentativas. Efeitos de conjunto e outros bônus precisam cumprir seus
-      requisitos.
-    </p>
-  }
-  @if (steps().length) {
-    <h3 i18n>Planejar Caphras</h3>
-    <div class="form-grid">
-      <label class="field"
-        ><span i18n>Nível atual de Caphras</span
-        ><select appBdoSelect [ngModel]="from()" (ngModelChange)="from.set(+$event)">
-          <option [ngValue]="0">0</option>
-          @for (step of steps(); track step.level) {
-            <option [ngValue]="step.level">{{ step.level }}</option>
-          }
-        </select></label
-      ><label class="field"
-        ><span i18n>Nível desejado</span
-        ><select appBdoSelect [ngModel]="to()" (ngModelChange)="to.set(+$event)">
-          @for (step of steps(); track step.level) {
-            <option [ngValue]="step.level">{{ step.level }}</option>
-          }
-        </select></label
-      ><label class="field"
-        ><span i18n>Preço de cada Pedra Caphras</span
-        ><input
-          hlmInput
-          inputmode="numeric"
-          [ngModel]="stonePrice()"
-          (ngModelChange)="stonePrice.set($event)"
-          maxlength="30"
-      /></label>
-    </div>
-    @if (cost(); as result) {
-      <p>
-        <strong>{{ result.stones }}</strong> <ng-container i18n>pedras adicionais</ng-container> ·
-        {{ result.cost === null ? 'Informe o preço para calcular o custo' : silver(result.cost) }}
-      </p>
-      <ul>
-        @for (stat of result.stats; track $index) {
-          <li>{{ stat.label }}: {{ stat.value }}</li>
-        }
-      </ul>
+  <div
+    class="equipment-reference-status"
+    role="status"
+    aria-live="polite"
+    [attr.aria-busy]="loading() ? 'true' : null"
+  >
+    @if (loading()) {
+      <span i18n>Carregando informações do equipamento…</span>
     } @else {
-      <p i18n>Escolha um nível desejado acima do atual.</p>
+      {{ message() }}
     }
+  </div>
+  @if (loading()) {
+    <div class="equipment-reference-result-skeleton" aria-hidden="true">
+      <div class="equipment-reference-skeleton-table">
+        @for (slot of [0, 1, 2, 3, 4]; track slot) {
+          <div class="equipment-reference-skeleton-row">
+            <span class="equipment-reference-skeleton equipment-reference-skeleton-label"></span>
+            <span class="equipment-reference-skeleton equipment-reference-skeleton-value"></span>
+          </div>
+        }
+      </div>
+      <div class="equipment-reference-skeleton-form">
+        <span class="equipment-reference-skeleton equipment-reference-skeleton-control"></span>
+        <span class="equipment-reference-skeleton equipment-reference-skeleton-control"></span>
+        <span class="equipment-reference-skeleton equipment-reference-skeleton-control"></span>
+      </div>
+    </div>
+  } @else {
+    <div class="equipment-reference-results">
+      @if (enhancements(); as table) {
+        <label class="field"
+          ><span i18n>Nível do equipamento</span
+          ><select
+            appBdoSelect
+            [ngModel]="level()"
+            (ngModelChange)="level.set(+$event); from.set(0); to.set(1)"
+          >
+            @for (row of table.levels; track row.level) {
+              <option [ngValue]="row.level">{{ row.name }}</option>
+            }
+          </select></label
+        >
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <tbody>
+              @for (field of stats(); track $index) {
+                <tr>
+                  <th>{{ field.label }}</th>
+                  <td>
+                    @if (field.link) {
+                      <a [routerLink]="field.link">{{ field.value }}</a>
+                    } @else {
+                      {{ field.value }}
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="help" i18n>
+          A chance inicial desta referência não inclui seus acúmulos. Confira a chance final no jogo
+          antes de calcular tentativas. Efeitos de conjunto e outros bônus precisam cumprir seus
+          requisitos.
+        </p>
+      }
+      @if (steps().length) {
+        <h3 i18n>Planejar Caphras</h3>
+        <div class="form-grid">
+          <label class="field"
+            ><span i18n>Nível atual de Caphras</span
+            ><select appBdoSelect [ngModel]="from()" (ngModelChange)="from.set(+$event)">
+              <option [ngValue]="0">0</option>
+              @for (step of steps(); track step.level) {
+                <option [ngValue]="step.level">{{ step.level }}</option>
+              }
+            </select></label
+          ><label class="field"
+            ><span i18n>Nível desejado</span
+            ><select appBdoSelect [ngModel]="to()" (ngModelChange)="to.set(+$event)">
+              @for (step of steps(); track step.level) {
+                <option [ngValue]="step.level">{{ step.level }}</option>
+              }
+            </select></label
+          ><label class="field"
+            ><span i18n>Preço de cada Pedra Caphras</span
+            ><input
+              hlmInput
+              inputmode="numeric"
+              [ngModel]="stonePrice()"
+              (ngModelChange)="stonePrice.set($event)"
+              maxlength="30"
+          /></label>
+        </div>
+        @if (cost(); as result) {
+          <p>
+            <strong>{{ result.stones }}</strong>
+            <ng-container i18n>pedras adicionais</ng-container> ·
+            {{
+              result.cost === null ? 'Informe o preço para calcular o custo' : silver(result.cost)
+            }}
+          </p>
+          <ul>
+            @for (stat of result.stats; track $index) {
+              <li>{{ stat.label }}: {{ stat.value }}</li>
+            }
+          </ul>
+        } @else {
+          <p i18n>Escolha um nível desejado acima do atual.</p>
+        }
+      }
+    </div>
   }
 </section>

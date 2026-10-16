@@ -48,6 +48,7 @@ type Project = Workspace['projects'][number];
     ItemIcon,
   ],
   templateUrl: './storage-page.html',
+  styleUrl: './storage-page.scss',
 })
 export class StoragePage implements OnDestroy {
   readonly catalogApi = inject(CatalogApiService);
@@ -57,6 +58,11 @@ export class StoragePage implements OnDestroy {
   private importGeneration = 0;
   private lastRegion = '';
   readonly importRows = signal<(StorageCsvRow & { name: string })[]>([]);
+  readonly importExpectedRows = signal(1);
+  readonly importSkeletonRows = computed(() =>
+    Array.from({ length: this.importExpectedRows() }, (_, index) => index),
+  );
+  readonly importPreparing = signal(false);
   readonly importLoading = signal(false);
   readonly importMessage = signal('');
   readonly importRegion = signal('');
@@ -87,6 +93,8 @@ export class StoragePage implements OnDestroy {
     this.importGeneration += 1;
     this.importRequest?.unsubscribe();
     this.importRows.set([]);
+    this.importExpectedRows.set(1);
+    this.importPreparing.set(false);
     this.importLoading.set(false);
     this.importConfirmed.set(false);
     this.importPage.set(0);
@@ -101,11 +109,14 @@ export class StoragePage implements OnDestroy {
     const region = this.store.data().region;
     this.analytics.capture('journey_started', { feature: 'storage', action: 'import' });
     this.importRegion.set(region);
-    this.importLoading.set(true);
+    this.importPreparing.set(true);
     try {
       if (file.size > 200_000) throw new StorageCsvError($localize`O CSV aceita até 200 KB.`);
       const rows = parseStorageCsv(await file.text());
       if (generation !== this.importGeneration) return;
+      this.importExpectedRows.set(Math.min(20, Math.max(1, rows.length)));
+      this.importPreparing.set(false);
+      this.importLoading.set(true);
       const ids = [...new Set(rows.map((row) => row.itemId))];
       const batches = [];
       for (let index = 0; index < ids.length; index += 100) {
@@ -148,6 +159,7 @@ export class StoragePage implements OnDestroy {
       });
     } catch (error) {
       if (generation !== this.importGeneration) return;
+      this.importPreparing.set(false);
       this.analytics.capture('journey_failed', {
         feature: 'storage',
         action: 'import',

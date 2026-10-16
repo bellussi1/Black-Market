@@ -357,11 +357,11 @@ export class CatalogApiService {
     );
   }
 
-  getRecipes(q: string, page: number, recipeGroup?: LifeSkillRecipeGroup) {
+  getRecipes(q: string, page: number, recipeGroup?: LifeSkillRecipeGroup, pageSize = 25) {
     let params = new HttpParams()
       .set('q', q)
       .set('page', page)
-      .set('pageSize', 24)
+      .set('pageSize', pageSize)
       .set('region', this.preferences.region())
       .set('preferredLocale', preferredDataLocale());
     if (recipeGroup) params = params.set('recipeGroup', recipeGroup);

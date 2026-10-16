@@ -45,6 +45,56 @@
   max-height: 320px;
   overflow: auto;
 }
+.picker-loading-skeleton {
+  display: grid;
+  animation: picker-open 160ms ease-out;
+}
+.picker-result-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bm-border);
+}
+.picker-skeleton-icon,
+.picker-skeleton-line {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--bm-input) 0%,
+    var(--bm-surface-raised) 45%,
+    var(--bm-input) 100%
+  );
+  background-size: 220% 100%;
+  animation: picker-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.picker-skeleton-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+}
+.picker-skeleton-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+.picker-skeleton-line {
+  height: 10px;
+}
+.picker-skeleton-title {
+  width: min(70%, 240px);
+}
+.picker-skeleton-meta {
+  width: min(48%, 160px);
+  height: 9px;
+}
+.picker-skeleton-action {
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
+}
 
 .results p {
   padding: 14px;
@@ -89,10 +139,20 @@ button:focus-visible {
     transform: translateY(0);
   }
 }
+@keyframes picker-skeleton-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .results {
+  .results,
+  .picker-loading-skeleton {
     animation: none;
     scroll-behavior: auto;
+  }
+  .picker-skeleton-icon,
+  .picker-skeleton-line {
+    animation: none;
   }
   .result-item {
     transition: none;

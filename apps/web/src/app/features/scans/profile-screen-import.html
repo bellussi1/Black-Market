@@ -146,7 +146,13 @@
         </div>
 
         @if (reading()) {
-          <div class="ocr-progress" role="status" aria-live="polite">
+          <div
+            class="ocr-progress"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+            animate.enter="ocr-progress-enter"
+          >
             <span i18n>Lendo texto localmente…</span>
             <progress [value]="progress()" max="1"></progress>
             <button

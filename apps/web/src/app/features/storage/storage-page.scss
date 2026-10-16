@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+.storage-import-status {
+  min-height: 1.4rem;
+  margin: 0 0 0.55rem;
+  color: var(--bm-muted);
+}
+
+.storage-import-preparing {
+  min-height: 1.4rem;
+}
+
+.storage-import-preparing .storage-import-status {
+  margin-bottom: 0;
+}
+
+.storage-import-loading {
+  min-width: 0;
+  animation: storage-import-enter 180ms ease-out both;
+}
+
+.storage-import-skeleton-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.storage-import-skeleton-row td {
+  height: 2.65rem;
+}
+
+.storage-import-skeleton-bar {
+  display: block;
+  width: min(85%, 18rem);
+  height: 0.78rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    var(--bm-surface-raised) 25%,
+    color-mix(in srgb, var(--bm-surface-raised), var(--bm-text) 12%) 45%,
+    var(--bm-surface-raised) 65%
+  );
+  background-size: 220% 100%;
+  animation: storage-import-shimmer 1.35s ease-in-out infinite;
+}
+
+.storage-import-skeleton-row td:nth-child(2) .storage-import-skeleton-bar {
+  width: min(60%, 10rem);
+}
+
+.storage-import-skeleton-row td:nth-child(3) .storage-import-skeleton-bar {
+  width: min(42%, 6rem);
+}
+
+@keyframes storage-import-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@keyframes storage-import-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storage-import-loading,
+  .storage-import-skeleton-bar {
+    animation: none;
+  }
+}

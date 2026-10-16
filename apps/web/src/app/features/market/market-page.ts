@@ -106,6 +106,7 @@ export class MarketPage implements OnDestroy {
         this.historyRequest?.unsubscribe();
         this.live.set(null);
         this.history.set([]);
+        this.historyLoading.set(false);
         this.lookupLoading.set(false);
         if (this.lookupId()) this.lookup();
       });
@@ -181,6 +182,7 @@ export class MarketPage implements OnDestroy {
   readonly catalogItem = signal<CatalogItem | null>(null);
   readonly history = signal<MarketHistoryPoint[]>([]);
   readonly historyMessage = signal('');
+  readonly historyLoading = signal(false);
   private historyRequest?: Subscription;
   historySubId = 0;
   readonly historyMetric = signal<MarketHistoryMetric>('price');
@@ -230,16 +232,19 @@ export class MarketPage implements OnDestroy {
   showHistory(preserve = false) {
     const id = Number(this.lookupId());
     if (!Number.isInteger(id) || id < 1 || id > 2147483647) {
+      this.historyLoading.set(false);
       this.historyMessage.set('Escolha um item para consultar seu histórico.');
       return;
     }
     this.historyRequest?.unsubscribe();
     if (!preserve) this.history.set([]);
     this.historyMessage.set('Carregando histórico…');
+    this.historyLoading.set(true);
     this.historyRequest = this.api
       .history(id, this.store.data().region, this.historySubId)
       .subscribe({
         next: (response) => {
+          this.historyLoading.set(false);
           this.history.set(response.points);
           this.historyMessage.set(
             response.points.length
@@ -247,8 +252,10 @@ export class MarketPage implements OnDestroy {
               : 'Ainda não há observações guardadas para este item e variante.',
           );
         },
-        error: () =>
-          this.historyMessage.set('Não foi possível carregar o histórico. Tente novamente.'),
+        error: () => {
+          this.historyLoading.set(false);
+          this.historyMessage.set('Não foi possível carregar o histórico. Tente novamente.');
+        },
       });
   }
 
@@ -259,6 +266,7 @@ export class MarketPage implements OnDestroy {
     this.lookupLoading.set(false);
     this.historyRequest?.unsubscribe();
     this.history.set([]);
+    this.historyLoading.set(false);
     this.historyMessage.set('');
     this.historySubId = subId;
     this.catalogItem.set(item);
@@ -454,6 +462,7 @@ export class MarketPage implements OnDestroy {
     this.refresh?.markRefreshed();
     this.liveRequest?.unsubscribe();
     this.historyRequest?.unsubscribe();
+    this.historyLoading.set(false);
     if (!preserve) {
       this.history.set([]);
       this.historyMessage.set('');

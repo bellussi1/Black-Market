@@ -15,6 +15,67 @@ nav,
   border: 1px solid var(--bm-border, #715b37);
   border-radius: 2px;
 }
+.tutorials-loading-state {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 18rem;
+  animation: tutorials-loading-enter 180ms ease-out both;
+}
+.tutorials-skeleton-list {
+  display: grid;
+  gap: 0.75rem;
+}
+.tutorials-skeleton-step {
+  display: grid;
+  align-content: start;
+  gap: 0.9rem;
+  min-height: 7rem;
+  padding: 1.25rem;
+  border: 1px solid var(--bm-border, #715b37);
+  background: var(--bm-surface, #242424);
+}
+.tutorials-skeleton-title,
+.tutorials-skeleton-line {
+  display: block;
+  min-height: 1rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bm-border, #715b37) 55%, transparent) 20%,
+    color-mix(in srgb, var(--bm-accent, #c6a66a) 18%, var(--bm-surface, #242424)) 42%,
+    color-mix(in srgb, var(--bm-border, #715b37) 55%, transparent) 64%
+  );
+  background-size: 220% 100%;
+  animation: tutorials-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.tutorials-skeleton-title {
+  width: min(45%, 18rem);
+  min-height: 1.5rem;
+}
+.tutorials-skeleton-line-short {
+  width: 68%;
+}
+.tutorials-refresh-status,
+.tutorials-save-status {
+  min-height: 1.35rem;
+  margin-block: 0.75rem;
+}
+.tutorials-editor-panel {
+  animation: tutorials-loading-enter 180ms ease-out both;
+}
+@keyframes tutorials-skeleton-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+@keyframes tutorials-loading-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 fieldset {
   border: 0;
   padding: 0;
@@ -87,4 +148,12 @@ button[aria-pressed='true'],
 p,
 time {
   overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorials-editor-panel,
+  .tutorials-loading-state,
+  .tutorials-skeleton-title,
+  .tutorials-skeleton-line {
+    animation: none;
+  }
 }

@@ -511,7 +511,13 @@
             <span role="status">{{ treeMarketMessage() }}</span>
           }
         </div>
-        <p class="optimization-status" role="status" aria-live="polite">
+        <p
+          class="optimization-status"
+          [class.loading-state]="optimizing()"
+          role="status"
+          aria-live="polite"
+          [attr.aria-busy]="optimizing() ? 'true' : null"
+        >
           {{ optimizationMessage() }}
         </p>
 

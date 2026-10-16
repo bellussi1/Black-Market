@@ -140,6 +140,7 @@
       class="recommendations-section panel"
       data-tour="recommendations.ranking"
       aria-labelledby="recommendations-title"
+      [attr.aria-busy]="busy() ? 'true' : null"
     >
       <div class="panel-heading section-heading">
         <div>

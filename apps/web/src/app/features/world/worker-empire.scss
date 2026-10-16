@@ -23,6 +23,30 @@
   max-width: 72ch;
 }
 
+.empire-loading-slot {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
+.empire-loading {
+  margin: 0;
+  color: var(--bm-muted);
+  animation: empire-loading-enter 180ms ease-out both;
+}
+
+@keyframes empire-loading-enter {
+  from {
+    opacity: 0.6;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .empire h3 {
   margin-block: 0 1.25rem;
 }
@@ -133,5 +157,11 @@ summary {
   }
   .empire-save button {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empire-loading {
+    animation: none;
   }
 }

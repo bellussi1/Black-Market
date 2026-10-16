@@ -35,6 +35,54 @@ function setup(admin = true) {
   return { page: fixture.componentInstance, fixture, api };
 }
 describe('TutorialsManagePage', () => {
+  it('reserves the tutorial editor while the initial management read is pending', async () => {
+    const { page, fixture, api } = setup();
+    let finish!: (result: { guides: (typeof saved)[]; screens: []; locales: [] }) => void;
+    api.getManagement.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+
+    const pending = page.initialize();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    const loading = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-tutorials-loading]',
+    );
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.querySelectorAll('.tutorials-skeleton-step').length).toBeGreaterThan(0);
+    expect(loading?.querySelector('[role="status"]')?.textContent).toContain('carregando');
+
+    finish({ guides: [saved], screens: [], locales: [] });
+    await pending;
+  });
+
+  it('keeps the loaded editor visible and announces refresh activity', async () => {
+    const { page, fixture, api } = setup();
+    await page.initialize();
+    let finish!: (result: { guides: (typeof saved)[]; screens: []; locales: [] }) => void;
+    api.getManagement.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+
+    const pending = page.load();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.tutorials-manage-page')?.getAttribute('aria-busy')).toBe('true');
+    expect(element.querySelectorAll('.step')).toHaveLength(1);
+    expect(element.querySelector('[data-tutorials-refresh-status]')?.textContent).toContain(
+      'Atualizando',
+    );
+
+    finish({ guides: [saved], screens: [], locales: [] });
+    await pending;
+  });
+
   it('lists only code-registered screens and locales and offers no selector input', () => {
     const { page } = setup();
     expect(page.screens.map((screen) => screen.screenKey)).toEqual([

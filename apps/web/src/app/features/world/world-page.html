@@ -7,14 +7,11 @@
       trabalhadores com o rendimento e a duração que você observa.
     </p>
   </header>
-  <app-worker-empire [nodes]="nodes()" />
+  <app-worker-empire [nodes]="nodes()" [nodesLoading]="loading()" />
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
-  @if (loading()) {
-    <p role="status" i18n>Carregando conexões…</p>
-  }
-  <section hlmCard class="panel">
+  <section hlmCard class="panel world-map-panel" [attr.aria-busy]="loading()">
     <div class="form-grid">
       <label class="field"
         ><span i18n>Filtrar bases pelo nome</span
@@ -41,26 +38,37 @@
         </select></label
       >
     </div>
-    <svg
-      viewBox="0 0 1000 1000"
-      role="img"
-      aria-label="Mapa das conexões entre bases; a rota selecionada fica destacada"
-      i18n-aria-label
-    >
-      @for (edge of edges(); track $index) {
-        <line [attr.x1]="edge.x1" [attr.y1]="edge.y1" [attr.x2]="edge.x2" [attr.y2]="edge.y2" />
-      }
-      @for (node of markers(); track node.id) {
-        <circle
-          [attr.cx]="node.px"
-          [attr.cy]="node.py"
-          [attr.r]="inRoute(node.id) ? 5 : node.main ? 2.5 : 1.5"
-          [class.selected]="inRoute(node.id)"
-        >
-          <title>{{ node.name }}</title>
-        </circle>
-      }
-    </svg>
+    @if (loading()) {
+      <div class="world-map-loading-skeleton" role="status" aria-live="polite" aria-busy="true">
+        <span class="sr-only" i18n>Carregando conexões entre as bases…</span>
+        <span class="world-map-loading-grid" aria-hidden="true"></span>
+        <span class="world-map-loading-point point-one" aria-hidden="true"></span>
+        <span class="world-map-loading-point point-two" aria-hidden="true"></span>
+        <span class="world-map-loading-point point-three" aria-hidden="true"></span>
+        <span class="world-map-loading-point point-four" aria-hidden="true"></span>
+      </div>
+    } @else {
+      <svg
+        viewBox="0 0 1000 1000"
+        role="img"
+        aria-label="Mapa das conexões entre bases; a rota selecionada fica destacada"
+        i18n-aria-label
+      >
+        @for (edge of edges(); track $index) {
+          <line [attr.x1]="edge.x1" [attr.y1]="edge.y1" [attr.x2]="edge.x2" [attr.y2]="edge.y2" />
+        }
+        @for (node of markers(); track node.id) {
+          <circle
+            [attr.cx]="node.px"
+            [attr.cy]="node.py"
+            [attr.r]="inRoute(node.id) ? 5 : node.main ? 2.5 : 1.5"
+            [class.selected]="inRoute(node.id)"
+          >
+            <title>{{ node.name }}</title>
+          </circle>
+        }
+      </svg>
+    }
     @if (route(); as route) {
       <h2 i18n>{{ route.contribution }} pontos de contribuição na rota</h2>
       <ol>

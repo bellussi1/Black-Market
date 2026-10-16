@@ -45,10 +45,15 @@
         {{ search().trim() ? 'Todos os resultados' : 'Itens em alta' }}
       </button>
       <div class="category-list" [attr.aria-busy]="taxonomyLoading()">
-        @if (!categoryRoots().length) {
-          <p class="category-loading" role="status">
-            {{ taxonomyLoading() ? 'Carregando categorias…' : 'Categorias indisponíveis' }}
-          </p>
+        @if (taxonomyLoading()) {
+          <div class="market-category-skeleton" role="status" aria-live="polite" aria-busy="true">
+            <span class="visually-hidden" i18n>Carregando categorias</span>
+            @for (row of skeletonRows.slice(0, 6); track row) {
+              <span class="market-category-skeleton-row" aria-hidden="true"></span>
+            }
+          </div>
+        } @else if (!categoryRoots().length) {
+          <p class="category-loading" role="status">Categorias indisponíveis</p>
         }
         @for (entry of categoryRoots(); track entry.id) {
           <div class="category-group">

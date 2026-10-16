@@ -5,11 +5,69 @@
 svg {
   display: block;
   width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   max-height: 640px;
   background: var(--bm-background);
   border: 1px solid var(--bm-border);
   border-radius: 2px;
   margin-block: 20px;
+  animation: world-map-enter 180ms ease-out both;
+}
+
+.world-map-loading-skeleton {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 640px;
+  overflow: hidden;
+  margin-block: 20px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-background);
+}
+
+.world-map-loading-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--bm-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bm-border) 1px, transparent 1px);
+  background-size: 20% 20%;
+  opacity: 0.3;
+}
+
+.world-map-loading-point {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--bm-accent);
+  border-radius: 50%;
+  background: var(--bm-surface);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--bm-accent) 12%, transparent);
+  animation: world-map-point-pulse 1.5s ease-in-out infinite;
+}
+
+.point-one {
+  top: 22%;
+  left: 24%;
+}
+
+.point-two {
+  top: 38%;
+  left: 62%;
+  animation-delay: 120ms;
+}
+
+.point-three {
+  top: 68%;
+  left: 38%;
+  animation-delay: 240ms;
+}
+
+.point-four {
+  top: 74%;
+  left: 78%;
+  animation-delay: 360ms;
 }
 
 line {
@@ -19,10 +77,43 @@ line {
 
 circle {
   fill: var(--bm-muted);
+  transition:
+    fill 180ms ease,
+    stroke 180ms ease;
 }
 
 circle.selected {
   fill: var(--bm-accent);
   stroke: var(--bm-text);
   stroke-width: 1;
+}
+
+@keyframes world-map-point-pulse {
+  50% {
+    opacity: 0.55;
+    transform: scale(0.86);
+  }
+}
+
+@keyframes world-map-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-map-loading-point {
+    animation: none;
+  }
+
+  svg {
+    animation: none;
+  }
+
+  circle {
+    transition: none;
+  }
 }

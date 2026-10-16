@@ -73,7 +73,10 @@ export class RecipesPage {
   private readonly refresh = new Subject<void>();
   readonly result = signal<RecipeListResponse | null>(null);
   readonly listMode = signal(true);
-  readonly recipeSkeletonRows = [0, 1, 2, 3, 4, 5];
+  readonly recipeSkeletonRows = Array.from({ length: 25 }, (_, index) => index);
+  readonly recipePaginationSkeletonRows = computed(() =>
+    Array.from({ length: Math.min(25, this.result()?.recipes.length ?? 25) }, (_, index) => index),
+  );
   readonly showListSkeleton = computed(() => this.loading() && this.listMode() && !this.result());
   readonly recipe = signal<CatalogRecipe | null>(null);
   readonly item = signal<CatalogItemDetail | null>(null);
@@ -190,7 +193,7 @@ export class RecipesPage {
             : id
               ? itemRequest(id, null)
               : this.api
-                  .getRecipes('', this.page, this.recipeGroup() || undefined)
+                  .getRecipes('', this.page, this.recipeGroup() || undefined, 25)
                   .pipe(map((list) => ({ kind: 'list' as const, list })));
           return request.pipe(
             catchError((error: unknown) => {

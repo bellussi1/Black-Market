@@ -7,6 +7,41 @@ import { CatalogItemPicker } from './catalog-item-picker';
 
 describe('Catalog picker search scope', () => {
   useMemoryStorage();
+  it('reserves compact result rows while the item search is pending', async () => {
+    const fixture = await renderComponent(CatalogItemPicker);
+    fixture.componentInstance.query.set('espada');
+    fixture.componentInstance.open.set(true);
+    fixture.componentInstance.find();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.results')?.getAttribute('aria-busy')).toBe('true');
+    expect(
+      fixture.nativeElement.querySelector('.picker-loading-skeleton')?.getAttribute('aria-hidden'),
+    ).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.picker-result-skeleton')).toHaveLength(4);
+
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.endsWith('/items'))
+      .flush({
+        items: [{ id: 1, name: 'Espada', categories: [] }],
+        total: 1,
+        page: 1,
+        pageSize: 12,
+        dataset: {
+          region: 'sa',
+          locale: 'pt',
+          version: 'picker-loading-fixture',
+          importedAt: null,
+          checksum: null,
+          itemCount: 1,
+          recipeCount: 0,
+        },
+      });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.picker-loading-skeleton')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.result-item')).not.toBeNull();
+    TestBed.inject(HttpTestingController).verify();
+  });
   it('keeps ordinary catalog pickers unrestricted', async () => {
     const fixture = await renderComponent(CatalogItemPicker);
     fixture.componentInstance.query.set('espada');

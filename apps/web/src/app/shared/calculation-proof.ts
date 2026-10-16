@@ -10,6 +10,7 @@ import { validationMessage } from '../shared/calculation-feedback';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-calculation-proof',
   templateUrl: './calculation-proof.html',
+  styleUrl: './calculation-proof.scss',
 })
 export class CalculationProof implements OnChanges, OnDestroy {
   @Input({ required: true }) tool!: CalculatorKey;

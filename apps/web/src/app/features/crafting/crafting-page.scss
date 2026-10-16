@@ -1,0 +1,153 @@
+.workshop-loading-skeleton {
+  display: grid;
+  gap: 15px;
+  min-height: 260px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-background);
+}
+
+.workshop-skeleton-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 28px;
+}
+
+.workshop-skeleton-toolbar i,
+.workshop-skeleton-icon,
+.workshop-skeleton-copy i,
+.workshop-skeleton-copy b,
+.workshop-skeleton-quantity,
+.crafting-recipes-loading span:not(.sr-only) {
+  display: block;
+  background: linear-gradient(
+    100deg,
+    var(--bm-surface-raised) 20%,
+    color-mix(in srgb, var(--bm-surface-raised) 60%, var(--bm-border)) 45%,
+    var(--bm-surface-raised) 70%
+  );
+  background-size: 220% 100%;
+  animation: crafting-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.workshop-skeleton-toolbar i {
+  width: 130px;
+  height: 28px;
+  border: 1px solid var(--bm-border);
+}
+
+.workshop-skeleton-toolbar i:last-child {
+  width: 94px;
+}
+
+.workshop-skeleton-tree {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  max-width: 720px;
+  padding-inline-start: 18px;
+  border-inline-start: 1px solid var(--bm-border);
+}
+
+.workshop-skeleton-node {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 9px 12px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.workshop-skeleton-node:not(.root-node) {
+  margin-inline-start: 18px;
+}
+
+.workshop-skeleton-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid var(--bm-border);
+}
+
+.workshop-skeleton-copy {
+  display: grid;
+  gap: 7px;
+  width: min(65%, 340px);
+}
+
+.workshop-skeleton-copy i,
+.workshop-skeleton-copy b {
+  height: 10px;
+}
+
+.workshop-skeleton-copy b {
+  width: 58%;
+  height: 8px;
+}
+
+.workshop-skeleton-quantity {
+  width: 42px;
+  height: 24px;
+  margin-inline-start: auto;
+  border: 1px solid var(--bm-border);
+}
+
+.crafting-recipes-loading {
+  display: grid;
+  gap: 8px;
+  min-height: 90px;
+  align-content: center;
+  padding: 12px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.crafting-recipes-loading span:not(.sr-only) {
+  width: min(100%, 280px);
+  height: 26px;
+  border: 1px solid var(--bm-border);
+}
+
+.crafting-recipes-loading span:last-child {
+  width: min(78%, 230px);
+}
+
+.crafting-workshop-start app-recipe-tree {
+  display: block;
+  animation: crafting-content-enter 180ms ease-out both;
+}
+
+@keyframes crafting-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes crafting-skeleton-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workshop-skeleton-toolbar i,
+  .workshop-skeleton-icon,
+  .workshop-skeleton-copy i,
+  .workshop-skeleton-copy b,
+  .workshop-skeleton-quantity,
+  .crafting-recipes-loading span:not(.sr-only) {
+    animation: none;
+  }
+
+  .crafting-workshop-start app-recipe-tree {
+    animation: none;
+  }
+}

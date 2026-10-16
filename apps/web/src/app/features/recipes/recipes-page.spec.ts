@@ -30,6 +30,10 @@ describe('Universal recipe explorer', () => {
   it('loads an item by stable ID and supports alternatives without adding mutually exclusive inputs', async () => {
     const fixture = await renderComponent(RecipesPage, {}, [route('5301')]),
       http = TestBed.inject(HttpTestingController);
+    expect(fixture.nativeElement.querySelector('.recipe-tree-loading')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.recipe-tree-loading')?.getAttribute('aria-hidden'),
+    ).toBe('true');
     http
       .expectOne((r) => r.url.endsWith('/items/5301'))
       .flush({
@@ -206,8 +210,9 @@ describe('Universal recipe explorer', () => {
     const flushList = (page: number, group: string | null) => {
       const request = http.expectOne((r) => r.url.endsWith('/recipes'));
       expect(request.request.params.get('page')).toBe(String(page));
+      expect(request.request.params.get('pageSize')).toBe('25');
       expect(request.request.params.get('recipeGroup')).toBe(group);
-      request.flush({ recipes: [], total: 100, page, pageSize: 24, dataset });
+      request.flush({ recipes: [], total: 100, page, pageSize: 25, dataset });
     };
     flushList(1, null);
     fixture.detectChanges();
@@ -238,10 +243,11 @@ describe('Universal recipe explorer', () => {
     const http = TestBed.inject(HttpTestingController);
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelectorAll('.recipe-skeleton-card')).toHaveLength(6);
+    expect(element.querySelectorAll('.recipe-skeleton-card')).toHaveLength(25);
     expect(element.querySelector('.recipe-list-skeleton')?.getAttribute('aria-hidden')).toBe(
       'true',
     );
+    expect(element.querySelector('.recipe-pagination-bar-skeleton')).not.toBeNull();
 
     http
       .expectOne((request) => request.url.endsWith('/recipes'))
@@ -261,6 +267,47 @@ describe('Universal recipe explorer', () => {
     ).not.toBeNull();
     expect(browser.querySelector('.recipe-list-skeleton')).toBeNull();
     expect(browser.textContent).toContain('Comece por uma receita');
+    http.verify();
+  });
+  it('shows an in-place skeleton while paginating and requests one more recipe per page', async () => {
+    const fixture = await renderComponent(RecipesPage, {}, [route('')]);
+    const http = TestBed.inject(HttpTestingController);
+    const makeRecipes = (page: number) =>
+      Array.from({ length: 25 }, (_, index) => ({
+        key: `${page}${String(index).padStart(63, '0')}`,
+        type: 'COOKING',
+        name: `Receita ${page}-${index + 1}`,
+        outputs: [],
+        inputs: [],
+      }));
+    const first = http.expectOne((request) => request.url.endsWith('/recipes'));
+    expect(first.request.params.get('pageSize')).toBe('25');
+    first.flush({ recipes: makeRecipes(1), total: 50, page: 1, pageSize: 25, dataset });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelectorAll('.recipe-card:not(.recipe-skeleton-card)'),
+    ).toHaveLength(25);
+    fixture.componentInstance.move(1);
+    fixture.detectChanges();
+
+    const nextPage = http.expectOne((request) => request.url.endsWith('/recipes'));
+    expect(nextPage.request.params.get('page')).toBe('2');
+    expect(nextPage.request.params.get('pageSize')).toBe('25');
+    expect(fixture.nativeElement.querySelector('.recipe-cards')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
+    expect(fixture.nativeElement.querySelectorAll('.recipe-pagination-skeleton-card')).toHaveLength(
+      25,
+    );
+    expect(
+      fixture.nativeElement.querySelector('.recipe-cards-content')?.getAttribute('inert'),
+    ).not.toBe(null);
+
+    nextPage.flush({ recipes: makeRecipes(2), total: 50, page: 2, pageSize: 25, dataset });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.recipe-pagination-skeleton')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Receita 2-1');
     http.verify();
   });
 });

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TutorialService } from '../../core/tutorial.service';
@@ -19,6 +19,25 @@ describe('TutorialLauncher', () => {
       { provide: TutorialApiService, useValue: { getPublished: () => of({ guide: null }) } },
     ]);
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+  it('reserves an accessible loading state while the guide is fetched', async () => {
+    const response = new Subject<{ guide: typeof guide | null }>();
+    const fixture = await renderComponent(TutorialLauncher, { screenKey: 'market' }, [
+      { provide: TutorialApiService, useValue: { getPublished: () => response } },
+    ]);
+
+    const loading = fixture.nativeElement.querySelector('.tutorial-loading');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.querySelector('.tutorial-sr-only')).not.toBeNull();
+    expect(loading?.textContent).toContain('Carregando tutorial');
+    response.next({ guide });
+    response.complete();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.tutorial-loading')).toBeNull();
+    expect(fixture.nativeElement.querySelector('button')?.textContent).toContain(
+      'Tutorial desta tela',
+    );
   });
   it('shows retry after a failed guide request without blocking the screen', async () => {
     const getPublished = vi
@@ -46,5 +65,30 @@ describe('TutorialLauncher', () => {
     await fixture.whenStable();
     expect(startTour).toHaveBeenCalledWith(guide, button);
     expect(TestBed.inject(TutorialService)).toBeDefined();
+  });
+  it('announces an in-progress tour launch while waiting for the runtime', async () => {
+    let finishStart!: (message: string) => void;
+    const startTour = vi.fn(
+      () =>
+        new Promise<string>((resolve) => {
+          finishStart = resolve;
+        }),
+    );
+    const fixture = await renderComponent(TutorialLauncher, { screenKey: 'market' }, [
+      { provide: TutorialApiService, useValue: { getPublished: () => of({ guide }) } },
+      { provide: TutorialService, useValue: { startTour } },
+    ]);
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.textContent).toContain('Iniciando tutorial');
+    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
+      'Iniciando tutorial',
+    );
+
+    finishStart('');
+    await fixture.whenStable();
   });
 });

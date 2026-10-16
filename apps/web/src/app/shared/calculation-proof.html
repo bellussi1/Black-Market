@@ -1,12 +1,20 @@
-<div class="proof">
+<div class="proof" [attr.aria-busy]="status() === 'loading' ? 'true' : null">
   <button
-    class="btn subtle"
+    class="btn subtle proof-button"
     type="button"
     (click)="verify()"
     [disabled]="status() === 'loading'"
-    i18n
   >
-    Conferir resultado
+    <span
+      class="proof-spinner"
+      [class.is-active]="status() === 'loading'"
+      aria-hidden="true"
+    ></span>
+    @if (status() === 'loading') {
+      <span i18n>Conferindo…</span>
+    } @else {
+      <span i18n>Conferir resultado</span>
+    }
   </button>
-  <span aria-live="polite">{{ message() }}</span>
+  <span class="proof-message" role="status" aria-live="polite">{{ message() }}</span>
 </div>

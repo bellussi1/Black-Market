@@ -1,0 +1,26 @@
+# Pesquisa competitiva: carregamentos e paginação em Receitas
+
+**Consulta:** 16/10/2026. Esta revisão trata de padrões públicos de navegação e carregamento; não infere regras de cálculo nem reutiliza implementação ou dados dos concorrentes.
+
+| Fonte                                                                          | Evidência observada                                                                                                                                                                                                                                                  | Limite                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [BDO Workshop](https://bdoworkshop.com/)                                       | A página pública descreve ferramentas de crafting, mercado e leitura de screenshots para inventário, armazém e gear.                                                                                                                                                 | A home declara que as ferramentas precisam de JavaScript. A ferramenta pública não renderizou o detalhe de `crafting-workshop` nem permitiu observar estados de paginação ou skeleton.                         |
+| [BDO Codex — receitas de Culinária](https://bdocodex.com/us/recipes/culinary/) | A página mostra filtros por nível de profissão, tipo de receita e favoritos, tamanho da lista, busca textual e navegação paginada. A tabela organiza nome, tipo, nível, materiais, peso e produtos; a extração também encontrou o estado “Loading data from server”. | A ferramenta de pesquisa expõe conteúdo textual, não captura visual. Não é possível confirmar pela extração se há skeleton, animação ou altura reservada.                                                      |
+| [BDOLytics — Culinária](https://bdolytics.com/en/cooking/)                     | A URL foi aberta na consulta atual.                                                                                                                                                                                                                                  | A página retornou zero linhas de conteúdo para esta ferramenta; não foi possível verificar lista, paginação ou loading. O histórico desta pesquisa fica como contexto, não como evidência atual.               |
+| [Garmoth — mercado](https://garmoth.com/market)                                | A superfície pública separa itens populares por favoritos/acompanhamento recente, tendências por volume de vendas relativo ao estoque, maiores variações e itens recentes.                                                                                           | O snapshot consultado selecionou EU e não apresentou valores para os indicadores. A página não é uma listagem de receitas; não foi encontrado equivalente direto para o explorador de receitas nesta consulta. |
+
+## Aplicação no Black Market
+
+- `/recipes` continua sendo uma listagem paginada e filtrável, com metadados de catálogo e rotas para detalhes; mantivemos esse fluxo específico em vez de importar a organização de tabela do BDO Codex.
+- A página passou a solicitar 25 receitas por página (antes 24) e a reserva inicial usa a mesma quantidade de cards. O skeleton inicial também reserva a barra de paginação.
+- Durante paginação/filtro, os cards anteriores mantêm a geometria sob os placeholders; o conteúdo oculto fica `inert`, e a lista/pager expõem `aria-busy`. O status acessível não ocupa espaço visual adicional.
+- Os placeholders respeitam `prefers-reduced-motion`. A pesquisa externa não confirmou que qualquer concorrente use esses mesmos detalhes visuais.
+
+## Fontes e limites
+
+- [BDO Workshop — página inicial](https://bdoworkshop.com/) (acesso em 16/10/2026; conteúdo de ferramenta exige JavaScript).
+- [BDO Codex — receitas de Culinária](https://bdocodex.com/us/recipes/culinary/) (acesso em 16/10/2026; idioma EN; filtros/paginação e mensagem de carregamento visíveis na extração textual).
+- [BDOLytics — Culinária](https://bdolytics.com/en/cooking/) (acesso em 16/10/2026; sem conteúdo extraído).
+- [Garmoth — mercado](https://garmoth.com/market) (acesso em 16/10/2026; região EU; campos de mercado sem valores no snapshot).
+
+Sem comparação de preços ou fórmulas nesta revisão. Sem scraping além das páginas públicas, chamadas a endpoint privado, cópia de assets ou contorno de controles de acesso.

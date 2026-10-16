@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.proof {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  min-height: 2.75rem;
+}
+
+.proof-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 12.5rem;
+  min-height: 2.75rem;
+}
+
+.proof-spinner {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+  border: 2px solid color-mix(in srgb, var(--bm-accent) 30%, transparent);
+  border-top-color: var(--bm-accent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.proof-spinner.is-active {
+  opacity: 1;
+  animation: proof-spinner-rotate 750ms linear infinite;
+}
+
+.proof-message {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  color: var(--bm-muted);
+  overflow-wrap: anywhere;
+}
+
+@keyframes proof-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-spinner {
+    transition: none;
+  }
+
+  .proof-spinner.is-active {
+    animation: none;
+  }
+}

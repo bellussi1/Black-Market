@@ -31,20 +31,28 @@
       @if (roadmapLoading()) {
         <div class="home-focus-loading" role="status" aria-live="polite" aria-busy="true">
           <p class="home-focus-loading-copy" i18n>Carregando focos do Roadmap…</p>
-          <article class="home-focus-card home-focus-skeleton" aria-hidden="true">
-            <div class="home-skeleton-row">
-              <span class="home-skeleton home-skeleton-chip"></span>
-              <span class="home-skeleton home-skeleton-chip home-skeleton-chip-short"></span>
-            </div>
-            <span class="home-skeleton home-skeleton-title"></span>
-            <span class="home-skeleton home-skeleton-line"></span>
-            <span class="home-skeleton home-skeleton-line home-skeleton-line-medium"></span>
-            <span class="home-skeleton home-skeleton-line home-skeleton-line-short"></span>
-            <div class="home-skeleton-row">
-              <span class="home-skeleton home-skeleton-action"></span>
-              <span class="home-skeleton home-skeleton-action home-skeleton-action-short"></span>
-            </div>
-          </article>
+          <ol class="home-focus-list" aria-hidden="true">
+            @for (slot of [0, 1]; track slot) {
+              <li class="home-focus-item">
+                <article class="home-focus-card home-focus-skeleton">
+                  <div class="home-skeleton-row">
+                    <span class="home-skeleton home-skeleton-chip"></span>
+                    <span class="home-skeleton home-skeleton-chip home-skeleton-chip-short"></span>
+                  </div>
+                  <span class="home-skeleton home-skeleton-title"></span>
+                  <span class="home-skeleton home-skeleton-line"></span>
+                  <span class="home-skeleton home-skeleton-line home-skeleton-line-medium"></span>
+                  <span class="home-skeleton home-skeleton-line home-skeleton-line-short"></span>
+                  <div class="home-skeleton-row">
+                    <span class="home-skeleton home-skeleton-action"></span>
+                    <span
+                      class="home-skeleton home-skeleton-action home-skeleton-action-short"
+                    ></span>
+                  </div>
+                </article>
+              </li>
+            }
+          </ol>
         </div>
       } @else if (roadmapError()) {
         <div class="home-focus-state home-focus-error" role="alert">

@@ -1,12 +1,107 @@
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { characterSchema } from '@bdo/calculators';
-import { BehaviorSubject } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { describe, expect, it, vi } from 'vitest';
 
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('reserves the item icon slot while catalog metadata is fetched and reuses the lookup for local edits', async () => {
+    const response = new Subject<{ items: { id: number; name: string; grade: number }[] }>();
+    const catalog = {
+      getItems: vi.fn(() => response),
+      resolveIconUrl: vi.fn(() => null),
+    };
+    const fixture = await renderComponent(StockPage, {}, [
+      { provide: CatalogApiService, useValue: catalog },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'row',
+          itemId: 212,
+          name: 'Corda',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 5,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(catalog.getItems).toHaveBeenCalledOnce();
+    expect(element.querySelector('[data-stock-items]')?.getAttribute('aria-busy')).toBe('true');
+    expect(element.querySelector('[data-stock-lookup-status]')?.textContent).toContain(
+      'imagens do catálogo',
+    );
+    expect(element.querySelectorAll('.stock-icon-skeleton.is-active')).toHaveLength(1);
+
+    response.next({ items: [{ id: 212, name: 'Corda', grade: 1 }] });
+    fixture.detectChanges();
+    expect(element.querySelector('[data-stock-items]')?.getAttribute('aria-busy')).toBeNull();
+    expect(element.querySelectorAll('.stock-icon-skeleton.is-active')).toHaveLength(0);
+
+    page.store.update((state) => ({
+      ...state,
+      inventory: state.inventory.map((row) => ({ ...row, quantity: 6 })),
+    }));
+    fixture.detectChanges();
+    expect(catalog.getItems).toHaveBeenCalledOnce();
+    expect(page.loadingItems()).toBe(false);
+  });
+
+  it('settles a partial catalog response without retrying or leaving an icon skeleton behind', async () => {
+    const response = new Subject<{ items: { id: number; name: string; grade: number }[] }>();
+    const catalog = {
+      getItems: vi.fn(() => response),
+      resolveIconUrl: vi.fn(() => null),
+    };
+    const fixture = await renderComponent(StockPage, {}, [
+      { provide: CatalogApiService, useValue: catalog },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'missing',
+          itemId: 212,
+          name: 'Corda local',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 5,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+    response.next({ items: [] });
+    fixture.detectChanges();
+
+    expect(catalog.getItems).toHaveBeenCalledOnce();
+    expect(page.loadingItems()).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.stock-icon-skeleton.is-active')).toHaveLength(
+      0,
+    );
+    expect(fixture.nativeElement.textContent).toContain('Corda local');
+
+    page.store.update((state) => ({
+      ...state,
+      inventory: state.inventory.map((row) => ({ ...row, quantity: 6 })),
+    }));
+    fixture.detectChanges();
+    expect(catalog.getItems).toHaveBeenCalledOnce();
+    expect(page.loadingItems()).toBe(false);
+  });
+
   it('groups storage context, primary actions and filters before the item list', async () => {
     const fixture = await renderComponent(StockPage);
     const element: HTMLElement = fixture.nativeElement;

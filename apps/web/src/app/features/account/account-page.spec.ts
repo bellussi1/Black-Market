@@ -88,6 +88,60 @@ describe('AccountPage social sign-in', () => {
     expect(page.textContent).not.toContain('Receber link de acesso');
   });
 
+  it('reserves the account panel while identity is being resolved', () => {
+    const identity = createIdentity({ ready: signal(false) });
+    const { fixture } = createPage(identity);
+    fixture.detectChanges();
+
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.querySelector('[data-account-loading]')?.getAttribute('aria-busy')).toBe('true');
+    expect(page.querySelectorAll('.account-skeleton-line').length).toBeGreaterThanOrEqual(3);
+    expect(page.querySelector('[data-account-loading] [role="status"]')?.textContent).toContain(
+      'Consultando sua conta',
+    );
+  });
+
+  it('announces social sign-in while an account action is pending', async () => {
+    let finishSignIn!: () => void;
+    const identity = createIdentity({
+      google: vi.fn(() => new Promise<void>((resolve) => (finishSignIn = resolve))),
+    });
+    const { fixture } = createPage(identity);
+    await fixture.whenStable();
+
+    const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
+      (candidate) => candidate.textContent?.includes('Entrar com Google'),
+    )!;
+    button.click();
+    fixture.detectChanges();
+
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.querySelector('[data-account-actions]')?.getAttribute('aria-busy')).toBe('true');
+    expect(page.querySelector('[data-account-action-status]')?.textContent).toContain(
+      'Operação em andamento',
+    );
+
+    finishSignIn();
+    await fixture.whenStable();
+  });
+
+  it('reserves the cloud sync summary while saved account data is being read', async () => {
+    const identity = createIdentity({
+      authenticated: signal(true),
+      displayName: signal('Aventureira'),
+    });
+    const { fixture } = createPage(identity);
+    await fixture.whenStable();
+    fixture.componentInstance.loadingSavedData.set(true);
+    fixture.detectChanges();
+
+    const page = fixture.nativeElement as HTMLElement;
+    const loading = page.querySelector('[data-account-sync-loading]');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.querySelector('[role="status"]')?.textContent).toContain('Consultando');
+    expect(loading?.querySelectorAll('.account-skeleton-line').length).toBeGreaterThanOrEqual(3);
+  });
+
   it('shows a signed-in Steam user without requiring an email', async () => {
     const identity = createIdentity({
       authenticated: signal(true),

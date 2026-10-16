@@ -28,15 +28,22 @@
     <app-item-icon [url]="catalog.resolveIconUrl(node().part)" [name]="node().part.name" />
     <span class="step-identity">
       <strong>{{ node().part.name }}</strong>
-      <span class="step-hint">{{
-        node().loading
-          ? 'Buscando receita…'
-          : node().recipe
-            ? node().expanded
+      <span class="step-hint">
+        @if (node().loading) {
+          <span class="step-hint-loading">
+            <span class="step-hint-loading-line" aria-hidden="true"></span>
+            <span class="sr-only" role="status" i18n>Buscando receita…</span>
+          </span>
+        } @else if (node().recipe) {
+          {{
+            node().expanded
               ? 'Ocultar ingredientes'
               : 'Ver ' + node().children.length + ' ingredientes'
-            : 'Ver como obter'
-      }}</span>
+          }}
+        } @else {
+          <ng-container i18n>Ver como obter</ng-container>
+        }
+      </span>
     </span>
     @if (allocation(); as row) {
       <span class="step-quantity" [id]="'step-count-' + node().path"

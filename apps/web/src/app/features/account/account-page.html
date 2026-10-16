@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page" [attr.aria-busy]="!identity.ready() || loading() ? 'true' : null">
   <header class="tool-heading">
     <p class="tool-kicker" i18n>MINHA CONTA</p>
     <h1 i18n>Seus planos, onde você estiver.</h1>
@@ -16,10 +16,34 @@
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
+  <p
+    class="account-action-status"
+    data-account-action-status
+    role="status"
+    aria-live="polite"
+    [class.is-active]="loading()"
+    [attr.aria-hidden]="!loading()"
+    i18n
+  >
+    {{ loading() ? 'Operação em andamento…' : '' }}
+  </p>
   @if (!identity.ready()) {
-    <p role="status" i18n>Consultando sua conta…</p>
+    <section hlmCard class="panel account-loading" data-account-loading aria-busy="true">
+      <p class="account-loading-status" role="status" i18n>Consultando sua conta…</p>
+      <div class="account-skeleton" aria-hidden="true">
+        <span class="account-skeleton-line account-skeleton-title"></span>
+        <span class="account-skeleton-line account-skeleton-copy"></span>
+        <span
+          class="account-skeleton-line account-skeleton-copy account-skeleton-copy-short"
+        ></span>
+        <div class="account-skeleton-actions">
+          <span class="account-skeleton-button"></span>
+          <span class="account-skeleton-button account-skeleton-button-short"></span>
+        </div>
+      </div>
+    </section>
   } @else if (!identity.enabled()) {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
       <h2 i18n>Continue como visitante</h2>
       <p i18n>
         A sincronização entre dispositivos ainda não está disponível. Você pode usar as ferramentas
@@ -27,12 +51,12 @@
       </p>
     </section>
   } @else if (!identity.authenticated()) {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
       <h2 i18n>Entre com sua conta social</h2>
       <p i18n>
         Use Google ou Steam. O Black Market não cria senha nem pede acesso à sua conta do jogo.
       </p>
-      <div class="action-row">
+      <div class="action-row" data-account-actions [attr.aria-busy]="loading() ? 'true' : null">
         @if (identity.googleEnabled()) {
           <button
             hlmBtn
@@ -62,13 +86,13 @@
       </div>
     </section>
   } @else {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
       <h2>{{ identity.displayName() || identity.email() || 'Conta Steam' }}</h2>
       @if (identity.email()) {
         <p>{{ identity.email() }}</p>
       }
       <p class="help" i18n>Provedores vinculados: {{ linkedProviderLabels() || 'Steam' }}</p>
-      <div class="action-row">
+      <div class="action-row" data-account-actions [attr.aria-busy]="loading() ? 'true' : null">
         <button
           hlmBtn
           variant="outline"
@@ -186,6 +210,31 @@
             Excluir cópia na conta
           </button>
         </details>
+      </section>
+    } @else if (loadingSavedData()) {
+      <section
+        hlmCard
+        class="panel account-sync-loading"
+        data-account-sync-loading
+        aria-busy="true"
+        aria-describedby="account-sync-loading-status"
+        animate.enter="account-panel-enter"
+      >
+        <p id="account-sync-loading-status" class="account-loading-status" role="status" i18n>
+          Consultando seus dados salvos…
+        </p>
+        <div class="account-skeleton" aria-hidden="true">
+          <span class="account-skeleton-line account-skeleton-title"></span>
+          <span class="account-skeleton-line account-skeleton-copy"></span>
+          <span
+            class="account-skeleton-line account-skeleton-copy account-skeleton-copy-short"
+          ></span>
+          <span class="account-skeleton-line account-skeleton-copy"></span>
+          <div class="account-skeleton-actions">
+            <span class="account-skeleton-button"></span>
+            <span class="account-skeleton-button account-skeleton-button-short"></span>
+          </div>
+        </div>
       </section>
     }
   }

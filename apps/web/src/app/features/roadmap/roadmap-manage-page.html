@@ -1,4 +1,8 @@
-<section class="tool-page roadmap-admin" aria-labelledby="roadmap-admin-title">
+<section
+  class="tool-page roadmap-admin"
+  aria-labelledby="roadmap-admin-title"
+  [attr.aria-busy]="loading() || saving() ? 'true' : null"
+>
   <header class="tool-heading roadmap-admin-heading">
     <div>
       <p class="tool-kicker" i18n>CONTEÚDO PERSISTIDO</p>
@@ -13,7 +17,9 @@
   </header>
 
   @if (!accessVerified()) {
-    <p class="roadmap-admin-notice" role="status" i18n>Verificando sua permissão…</p>
+    <p class="roadmap-admin-notice roadmap-access-loading" role="status" aria-busy="true" i18n>
+      Verificando sua permissão…
+    </p>
   } @else if (!authorized()) {
     <section class="roadmap-admin-notice roadmap-access-denied" role="alert">
       @if (error()) {
@@ -24,15 +30,33 @@
         <a class="btn subtle" routerLink="/account" i18n>Ir para minha conta</a>
       }
     </section>
-  } @else if (loading()) {
-    <p class="roadmap-admin-notice" role="status" i18n>Carregando conteúdo salvo…</p>
+  } @else if (loading() && !loaded()) {
+    <div class="roadmap-loading-state" data-roadmap-loading aria-busy="true">
+      <p class="roadmap-admin-notice" role="status" i18n>Carregando conteúdo salvo…</p>
+      <div class="roadmap-loading-list" aria-hidden="true">
+        @for (slot of [0, 1, 2]; track slot) {
+          <article class="roadmap-skeleton-entry">
+            <div class="roadmap-skeleton-heading"></div>
+            <div class="roadmap-skeleton-field-row">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="roadmap-skeleton-field"></div>
+            <div class="roadmap-skeleton-field roadmap-skeleton-field-wide"></div>
+          </article>
+        }
+      </div>
+    </div>
   } @else {
     <div class="roadmap-admin-toolbar">
       <div>
-        @if (hasChanges()) {
+        @if (saving()) {
+          <p class="roadmap-draft-state" role="status" i18n>Salvando alterações…</p>
+        } @else if (hasChanges()) {
           <p class="roadmap-draft-state" role="status" i18n>Há alterações ainda não salvas.</p>
         } @else {
-          <p class="roadmap-draft-state" i18n>Conteúdo conectado ao banco de dados.</p>
+          <p class="roadmap-draft-state" role="status" i18n>
+            Conteúdo conectado ao banco de dados.
+          </p>
         }
       </div>
       <div class="roadmap-admin-actions">
@@ -57,6 +81,16 @@
         </button>
       </div>
     </div>
+
+    <p
+      class="roadmap-refresh-status"
+      data-roadmap-refresh-status
+      role="status"
+      [attr.aria-hidden]="loading() ? null : 'true'"
+      i18n
+    >
+      {{ loading() ? 'Atualizando conteúdo salvo…' : '' }}
+    </p>
 
     @if (message()) {
       <p class="roadmap-admin-notice roadmap-admin-success" role="status">{{ message() }}</p>

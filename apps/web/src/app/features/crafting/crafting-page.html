@@ -43,7 +43,7 @@
     </button>
   </div>
   @if (tab() === 'workshop') {
-    <section hlmCard class="panel crafting-workshop-start">
+    <section hlmCard class="panel crafting-workshop-start" [attr.aria-busy]="workshopLoading()">
       <div class="panel-heading">
         <div>
           <p class="tool-kicker" i18n>OFICINA DE UMA RECEITA</p>
@@ -63,7 +63,21 @@
         (selected)="selectWorkshopItem($event)"
       />
       @if (workshopLoading()) {
-        <p class="loading-state" role="status" i18n>Carregando item e receitas da região…</p>
+        <div class="workshop-loading-skeleton" role="status" aria-live="polite" aria-busy="true">
+          <span class="sr-only" i18n>Carregando item, fórmulas e materiais da região…</span>
+          <div class="workshop-skeleton-toolbar" aria-hidden="true"><i></i><i></i></div>
+          <div class="workshop-skeleton-tree" aria-hidden="true">
+            @for (node of [1, 2, 3]; track node) {
+              <div class="workshop-skeleton-node" [class.root-node]="$first">
+                <span class="workshop-skeleton-icon"></span>
+                <span class="workshop-skeleton-copy"><i></i><b></b></span>
+                @if (!$first) {
+                  <span class="workshop-skeleton-quantity"></span>
+                }
+              </div>
+            }
+          </div>
+        </div>
       }
       @if (workshopMessage()) {
         <p class="help" role="status">{{ workshopMessage() }}</p>
@@ -141,7 +155,10 @@
           (selected)="chooseRecipeProduct($event)"
         />
         @if (recipeLoading()) {
-          <p role="status" i18n>Buscando receitas…</p>
+          <div class="crafting-recipes-loading" role="status" aria-live="polite" aria-busy="true">
+            <span class="sr-only" i18n>Buscando fórmulas para preencher os materiais…</span>
+            <span aria-hidden="true"></span><span aria-hidden="true"></span>
+          </div>
         }
         @if (recipeMessage()) {
           <p class="help" role="status">{{ recipeMessage() }}</p>
