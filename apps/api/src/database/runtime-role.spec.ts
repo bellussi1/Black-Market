@@ -75,4 +75,3 @@ describe('Runtime database privileges', () => {
     expect(runtimeRoleIsRestricted({} as RuntimePrivileges)).toBe(false);
   });
 });
-

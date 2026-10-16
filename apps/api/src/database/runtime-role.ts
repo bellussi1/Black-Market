@@ -125,4 +125,3 @@ has_table_privilege(current_user,'public.tutorial_guide_steps','INSERT') AS tuto
 has_table_privilege(current_user,'public.tutorial_guide_steps','UPDATE') AS tutorial_steps_update,
 has_table_privilege(current_user,'public.tutorial_guide_steps','DELETE') AS tutorial_steps_delete
 FROM pg_roles r WHERE r.rolname=current_user`;
-

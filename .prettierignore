@@ -24,3 +24,4 @@ docs/recipe-supplements/*.json
 tmp/pdfs/
 
 **/.nx/
+.superpowers/sdd/
