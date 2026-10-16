@@ -118,8 +118,12 @@ describe('AccountPage social sign-in', () => {
     expect(identity.exchangeSteamCode).toHaveBeenCalledWith('c'.repeat(43));
   });
 
-  it('returns to the requested private route after Google sign-in', async () => {
-    const { fixture, router } = createPage(createIdentity(), '', '/scans?tab=review#space-4');
+  it.each([
+    '/scans?tab=review#space-4',
+    '/family?tab=equipment#gear',
+    '/shopping?tab=materials#missing',
+  ])('returns to the requested private route after Google sign-in: %s', async (returnUrl) => {
+    const { fixture, router } = createPage(createIdentity(), '', returnUrl);
     await fixture.whenStable();
 
     const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
@@ -128,9 +132,7 @@ describe('AccountPage social sign-in', () => {
     button?.click();
     await fixture.whenStable();
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/scans?tab=review#space-4', {
-      replaceUrl: true,
-    });
+    expect(router.navigateByUrl).toHaveBeenCalledWith(returnUrl, { replaceUrl: true });
   });
 
   it('explains that social login is required but unavailable for a gated route', async () => {

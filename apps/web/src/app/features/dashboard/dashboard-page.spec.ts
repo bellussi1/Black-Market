@@ -178,7 +178,7 @@ describe('DashboardPage', () => {
     http.verify();
   });
 
-  it('filtersProtectedFocusLinksUntilIdentityInitializationCompletes', async () => {
+  it('preservesReturnTargetsForProtectedFocusLinksUntilIdentityInitializationCompletes', async () => {
     let resolveInit!: () => void;
     const authenticated = signal(false);
     const identity = {
@@ -234,7 +234,7 @@ describe('DashboardPage', () => {
     expect(firstAction?.textContent?.trim()).toBe('Entrar para acessar');
     expect(firstAction?.getAttribute('href')).toBe('/account?returnUrl=%2Frecommendations');
     expect(secondAction?.textContent?.trim()).toBe('Entrar para acessar');
-    expect(secondAction?.getAttribute('href')).toBe('/account');
+    expect(secondAction?.getAttribute('href')).toBe('/account?returnUrl=%2Ffamily');
 
     authenticated.set(true);
     resolveInit();

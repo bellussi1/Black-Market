@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlSegment } from '@angular/router';
+import { isMvpPathSuspended } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
 import { isMvpPathEnabled, mvpRouteGuard } from './mvp-scope';
@@ -23,6 +24,7 @@ describe('Screenshot MVP scope', () => {
       '/gear',
       '/database/items/212',
       '/settings',
+      '/plans',
       '/account',
       '/privacidade',
     ])
@@ -40,5 +42,10 @@ describe('Screenshot MVP scope', () => {
         mvpRouteGuard({}, [new UrlSegment('world', {})], {} as Parameters<typeof mvpRouteGuard>[2]),
       ),
     ).toBe(tree);
+  });
+
+  it('keeps the existing authenticated plans route available behind its auth guard', () => {
+    expect(isMvpPathEnabled('/plans')).toBe(true);
+    expect(isMvpPathSuspended('/plans')).toBe(false);
   });
 });

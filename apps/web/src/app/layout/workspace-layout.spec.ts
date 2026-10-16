@@ -45,28 +45,39 @@ describe('workspace navigation', () => {
     expect(paths.filter((path) => path === '/recommendations')).toHaveLength(1);
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
     expect(paths.filter((path) => path === '/shopping')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/plans')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/settings')).toHaveLength(1);
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
     expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
     expect(paths.filter((path) => path === '/roadmap')).toHaveLength(1);
-    for (const path of ['/inventory', '/profile', '/gear', '/database/items', '/settings']) {
+    for (const path of ['/inventory', '/profile', '/gear', '/database/items']) {
       expect(paths).not.toContain(path);
     }
     expect(nav.textContent).toContain('Armazém');
     expect(nav.textContent).toContain('Família');
+    expect(nav.textContent).toContain('Meus planos');
+    expect(nav.textContent).toContain('Dados e backup');
     expect(nav.textContent).toContain('Calcular produção');
     expect(nav.textContent).toContain('Roadmap');
   });
 
-  it('hides login-required navigation from signed-out visitors', async () => {
+  it('shows login-required destinations to signed-out visitors', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity() },
     ]);
-    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')].map((link) =>
-      link.getAttribute('href'),
-    );
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('#workspace-navigation')!;
+    const links = [...nav.querySelectorAll('a')].map((link) => link.getAttribute('href'));
 
-    for (const path of ['/scans', '/storage', '/recommendations', '/family', '/shopping'])
-      expect(links).not.toContain(path);
+    for (const path of [
+      '/scans',
+      '/storage',
+      '/recommendations',
+      '/family',
+      '/shopping',
+      '/plans',
+      '/settings',
+    ])
+      expect(links.filter((href) => href === path)).toHaveLength(1);
   });
 
   it('does not inject the lazy workspace store after the layout is destroyed', async () => {

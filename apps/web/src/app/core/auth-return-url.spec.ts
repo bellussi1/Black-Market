@@ -7,6 +7,10 @@ describe('safeInternalReturnUrl', () => {
     expect(safeInternalReturnUrl('/scans?tab=review#space-4')).toBe('/scans?tab=review#space-4');
     expect(safeInternalReturnUrl('/plans?tab=active#first')).toBe('/plans?tab=active#first');
     expect(safeInternalReturnUrl('/settings#backup')).toBe('/settings#backup');
+    expect(safeInternalReturnUrl('/family?tab=equipment#gear')).toBe('/family?tab=equipment#gear');
+    expect(safeInternalReturnUrl('/shopping?tab=materials#missing')).toBe(
+      '/shopping?tab=materials#missing',
+    );
   });
 
   it.each(['https://example.com', '//example.com', 'javascript:alert(1)', ''])(

@@ -1,7 +1,15 @@
 const INTERNAL_ORIGIN = 'https://black-market.invalid';
 export const AUTH_RETURN_URL_KEY = 'black-market.auth.return-url.v1';
 
-const AUTHENTICATED_PATHS = ['/scans', '/recommendations', '/storage', '/plans', '/settings'];
+const AUTHENTICATED_PATHS = [
+  '/scans',
+  '/recommendations',
+  '/storage',
+  '/family',
+  '/shopping',
+  '/plans',
+  '/settings',
+];
 
 export function safeInternalReturnUrl(candidate: string | null): string | null {
   if (!candidate?.startsWith('/') || candidate.startsWith('//')) return null;

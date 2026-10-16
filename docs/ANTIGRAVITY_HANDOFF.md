@@ -147,6 +147,10 @@ O monorepo usa pnpm e Node `^24.15.0`. `apps/web` é Angular SSR (porta 4200), `
 
 Não rode ou acrescente testes só por causa deste handoff. Ao retomar a refatoração do gráfico ou autenticação, faça as verificações apropriadas e registre resultados e limites em `docs/ACTIVE_CONTEXT.md`.
 
+### Atualização — navegação autenticada (16/10/2026)
+
+Atalhos de áreas protegidas permanecem visíveis para visitantes e levam à tela `/account` via `authGuard`, preservando o destino. `Meus planos` foi reativado no escopo Screenshot MVP; `Dados e backup` foi incluído no menu. Veja `docs/ACTIVE_CONTEXT.md` §147, o checklist e `docs/research/authenticated-navigation-competitive-review-2026-10-16.md`. `pnpm check`, smoke SSR e specs focados passaram; `pnpm test` completo teve timeouts de 5 s em specs pesados diferentes, que passaram isolados. Repetir a suíte global e CI com carga normal. A configuração real Firebase/Google/Steam segue pendente.
+
 ## Instrução direta para o próximo agente
 
 1. Leia `AGENTS.md` e este handoff; depois confira `docs/ACTIVE_CONTEXT.md`, branch, `git status` e os três últimos commits. Preserve mudanças presentes no workspace.

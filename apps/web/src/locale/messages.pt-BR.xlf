@@ -1029,7 +1029,7 @@
     <unit id="5177990394865145565">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:32,33</note>
-        <note category="location">src/app/layout/workspace-layout.ts:252</note>
+        <note category="location">src/app/layout/workspace-layout.ts:264</note>
       </notes>
       <segment>
         <source>Consultar mercado</source>
@@ -2123,7 +2123,7 @@
     <unit id="7330494029236893287">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:36,37</note>
-        <note category="location">src/app/layout/workspace-layout.ts:265</note>
+        <note category="location">src/app/layout/workspace-layout.ts:277</note>
       </notes>
       <segment>
         <source>Família</source>
@@ -3017,7 +3017,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:343</note>
+        <note category="location">src/app/layout/workspace-layout.ts:366</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
@@ -3043,7 +3043,7 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:349</note>
+        <note category="location">src/app/layout/workspace-layout.ts:372</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
@@ -4306,7 +4306,7 @@
       <notes>
         <note category="location">src/app/features/market/market-page.html:756,757</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:30</note>
-        <note category="location">src/app/layout/workspace-layout.ts:250</note>
+        <note category="location">src/app/layout/workspace-layout.ts:262</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -5403,7 +5403,7 @@
     <unit id="6215048040341403789">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-page.html:5,6</note>
-        <note category="location">src/app/layout/workspace-layout.ts:325</note>
+        <note category="location">src/app/layout/workspace-layout.ts:349</note>
       </notes>
       <segment>
         <source>Roadmap</source>
@@ -6086,7 +6086,7 @@
         <note category="location">src/app/features/stock/stock-page.html:5,6</note>
         <note category="location">src/app/features/storage/storage-page.html:24</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:33</note>
-        <note category="location">src/app/layout/workspace-layout.ts:289</note>
+        <note category="location">src/app/layout/workspace-layout.ts:301</note>
       </notes>
       <segment>
         <source>Armazém</source>
@@ -9313,9 +9313,27 @@
         <source> Sair da demonstração </source>
       </segment>
     </unit>
+    <unit id="3031009167976274068">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:225</note>
+        <note category="location">src/app/layout/workspace-layout.ts:324</note>
+      </notes>
+      <segment>
+        <source>Meus planos</source>
+      </segment>
+    </unit>
+    <unit id="8296682803771094999">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:231</note>
+        <note category="location">src/app/layout/workspace-layout.ts:344</note>
+      </notes>
+      <segment>
+        <source>Dados e backup</source>
+      </segment>
+    </unit>
     <unit id="8237522812427434567">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:224</note>
+        <note category="location">src/app/layout/workspace-layout.ts:238</note>
       </notes>
       <segment>
         <source>Início</source>
@@ -9323,7 +9341,7 @@
     </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:228</note>
+        <note category="location">src/app/layout/workspace-layout.ts:242</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
@@ -9331,7 +9349,7 @@
     </unit>
     <unit id="1453134524041735834">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:246</note>
+        <note category="location">src/app/layout/workspace-layout.ts:258</note>
       </notes>
       <segment>
         <source>Mercado e produção</source>
@@ -9339,7 +9357,7 @@
     </unit>
     <unit id="6469027931203119221">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:254</note>
+        <note category="location">src/app/layout/workspace-layout.ts:266</note>
       </notes>
       <segment>
         <source>Calcular produção</source>
@@ -9347,7 +9365,7 @@
     </unit>
     <unit id="6004493327033173129">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:259</note>
+        <note category="location">src/app/layout/workspace-layout.ts:271</note>
       </notes>
       <segment>
         <source>Personagem e evolução</source>
@@ -9355,7 +9373,7 @@
     </unit>
     <unit id="7468173889571751215">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:272</note>
+        <note category="location">src/app/layout/workspace-layout.ts:284</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos</source>
@@ -9363,7 +9381,7 @@
     </unit>
     <unit id="3186839719843195748">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:276</note>
+        <note category="location">src/app/layout/workspace-layout.ts:288</note>
       </notes>
       <segment>
         <source>Profissões e rendimento</source>
@@ -9371,7 +9389,7 @@
     </unit>
     <unit id="1066166934309898114">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:278</note>
+        <note category="location">src/app/layout/workspace-layout.ts:290</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -9379,7 +9397,7 @@
     </unit>
     <unit id="4384711067175333650">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:283</note>
+        <note category="location">src/app/layout/workspace-layout.ts:295</note>
       </notes>
       <segment>
         <source>Materiais e planejamento</source>
@@ -9387,7 +9405,7 @@
     </unit>
     <unit id="2628946056707873008">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:296</note>
+        <note category="location">src/app/layout/workspace-layout.ts:308</note>
       </notes>
       <segment>
         <source>Importar por captura</source>
@@ -9395,7 +9413,7 @@
     </unit>
     <unit id="3051215723242753347">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:303</note>
+        <note category="location">src/app/layout/workspace-layout.ts:315</note>
       </notes>
       <segment>
         <source>Lista de materiais</source>
@@ -9403,23 +9421,15 @@
     </unit>
     <unit id="1012592931481663403">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:308</note>
+        <note category="location">src/app/layout/workspace-layout.ts:320</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
       </segment>
     </unit>
-    <unit id="3031009167976274068">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:310</note>
-      </notes>
-      <segment>
-        <source>Meus planos</source>
-      </segment>
-    </unit>
     <unit id="3487828683297229196">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:312</note>
+        <note category="location">src/app/layout/workspace-layout.ts:329</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
@@ -9427,7 +9437,7 @@
     </unit>
     <unit id="800803655328576309">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:317</note>
+        <note category="location">src/app/layout/workspace-layout.ts:334</note>
       </notes>
       <segment>
         <source>Guias e conta</source>
@@ -9435,7 +9445,7 @@
     </unit>
     <unit id="7338913928758216034">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:321</note>
+        <note category="location">src/app/layout/workspace-layout.ts:338</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -9443,7 +9453,7 @@
     </unit>
     <unit id="6030563743846874138">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:323</note>
+        <note category="location">src/app/layout/workspace-layout.ts:340</note>
       </notes>
       <segment>
         <source>Minha conta</source>
@@ -9451,7 +9461,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:345</note>
+        <note category="location">src/app/layout/workspace-layout.ts:368</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
       </notes>
       <segment>
@@ -9460,7 +9470,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:347</note>
+        <note category="location">src/app/layout/workspace-layout.ts:370</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
       </notes>
       <segment>
@@ -9469,7 +9479,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:367</note>
+        <note category="location">src/app/layout/workspace-layout.ts:390</note>
       </notes>
       <segment>
         <source>Black Market</source>

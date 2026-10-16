@@ -238,6 +238,10 @@ try {
   assert.equal(family.headers.get('cache-control'), 'private,no-store');
   const settings = await request('/settings');
   assert.equal(settings.headers.get('x-robots-tag'), 'noindex,nofollow');
+  const plans = await request('/plans');
+  assert.equal(plans.status, 200);
+  assert.equal(plans.headers.get('x-robots-tag'), 'noindex,nofollow');
+  assert.equal(plans.headers.get('cache-control'), 'private,no-store');
 
   const unknown = await request('/not-a-real-page');
   assert.equal(unknown.status, 404);

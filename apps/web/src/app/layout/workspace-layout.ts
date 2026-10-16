@@ -31,6 +31,7 @@ import {
   lucideMenu,
   lucidePickaxe,
   lucideScanLine,
+  lucideSettings,
   lucideSparkles,
   lucideStore,
   lucideUserRound,
@@ -98,6 +99,7 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
       lucideMenu,
       lucidePickaxe,
       lucideScanLine,
+      lucideSettings,
       lucideSparkles,
       lucideStore,
       lucideUserRound,
@@ -218,6 +220,18 @@ export class WorkspaceLayout {
           icon: 'lucideListChecks',
           requiresAuth: true,
         },
+        {
+          path: '/plans',
+          label: $localize`Meus planos`,
+          icon: 'lucideListChecks',
+          requiresAuth: true,
+        },
+        {
+          path: '/settings',
+          label: $localize`Dados e backup`,
+          icon: 'lucideSettings',
+          requiresAuth: true,
+        },
         { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
       ]
     : [
@@ -231,9 +245,7 @@ export class WorkspaceLayout {
         },
       ].filter((link) => isMvpPathEnabled(link.path));
 
-  readonly primaryLinks = computed(() =>
-    this.primaryLinkOptions.filter((link) => !link.requiresAuth || this.identity.authenticated()),
-  );
+  readonly primaryLinks = computed(() => this.primaryLinkOptions);
 
   private readonly navGroupOptions: NavigationGroup[] = [
     {
@@ -307,7 +319,12 @@ export class WorkspaceLayout {
 
         { path: '/world', label: $localize`Bases e trabalhadores`, icon: 'lucideMap' },
 
-        { path: '/plans', label: $localize`Meus planos`, icon: 'lucideListChecks' },
+        {
+          path: '/plans',
+          label: $localize`Meus planos`,
+          icon: 'lucideListChecks',
+          requiresAuth: true,
+        },
 
         { path: '/rng', label: $localize`Caixas e vendedor noturno`, icon: 'lucideDice5' },
       ],
@@ -322,6 +339,13 @@ export class WorkspaceLayout {
 
         { path: '/account', label: $localize`Minha conta`, icon: 'lucideUserRound' },
 
+        {
+          path: '/settings',
+          label: $localize`Dados e backup`,
+          icon: 'lucideSettings',
+          requiresAuth: true,
+        },
+
         { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
       ],
     },
@@ -331,10 +355,7 @@ export class WorkspaceLayout {
     this.navGroupOptions
       .map((group) => ({
         ...group,
-        links: group.links.filter(
-          (link) =>
-            isMvpPathEnabled(link.path) && (!link.requiresAuth || this.identity.authenticated()),
-        ),
+        links: group.links.filter((link) => isMvpPathEnabled(link.path)),
       }))
       .filter((group) => !SCREENSHOT_MVP && group.links.length),
   );
