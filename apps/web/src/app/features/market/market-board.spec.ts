@@ -236,6 +236,21 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
 
+  it('groups page size and navigation into one pagination action cluster', async () => {
+    const fixture = await renderMarketBoard();
+    const element = fixture.nativeElement as HTMLElement;
+    const pagination = element.querySelector<HTMLElement>('.board-pagination')!;
+    const controls = pagination.querySelector('.board-pagination-controls');
+
+    expect(controls).not.toBeNull();
+    expect(controls?.querySelector('.page-size-control')).not.toBeNull();
+    expect(controls?.querySelector('.page-navigation')).not.toBeNull();
+
+    takeRequest().flush(response());
+    fixture.detectChanges();
+    TestBed.inject(HttpTestingController).verify();
+  });
+
   it('expands market subcategories independently and keeps the active subcategory visible', async () => {
     const categories: CatalogCategory[] = [
       { id: 'materials', parentId: null, name: 'Materiais', sortOrder: 1 },

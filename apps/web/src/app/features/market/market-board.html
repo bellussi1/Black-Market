@@ -268,49 +268,51 @@
               {{ firstItem() }}–{{ lastItem() }} de {{ number(result()?.total ?? 0, 0) }}
             }
           </span>
-          <label class="page-size-control"
-            >Itens por página
-            <select
-              appBdoSelect
-              aria-label="Itens por página"
-              [ngModel]="pageSize()"
-              (ngModelChange)="setPageSize($event)"
+          <div class="board-pagination-controls">
+            <label class="page-size-control"
+              >Itens por página
+              <select
+                appBdoSelect
+                aria-label="Itens por página"
+                [ngModel]="pageSize()"
+                (ngModelChange)="setPageSize($event)"
+              >
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select></label
             >
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select></label
-          >
-          <div class="page-navigation">
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              (click)="move(-1)"
-              [disabled]="loading() || page() === 1"
-              aria-label="Página anterior"
-            >
-              Anterior</button
-            ><span class="page-indicator">
-              @if (loading() && !result()) {
-                <span
-                  class="pagination-skeleton pagination-page-skeleton"
-                  aria-hidden="true"
-                ></span>
-                <span class="visually-hidden">Carregando página</span>
-              } @else {
-                {{ page() }} / {{ pageCount() }}
-              }</span
-            ><button
-              hlmBtn
-              variant="outline"
-              type="button"
-              (click)="move(1)"
-              [disabled]="loading() || page() >= pageCount()"
-              aria-label="Próxima página"
-            >
-              Próxima
-            </button>
+            <div class="page-navigation">
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                (click)="move(-1)"
+                [disabled]="loading() || page() === 1"
+                aria-label="Página anterior"
+              >
+                Anterior</button
+              ><span class="page-indicator">
+                @if (loading() && !result()) {
+                  <span
+                    class="pagination-skeleton pagination-page-skeleton"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="visually-hidden">Carregando página</span>
+                } @else {
+                  {{ page() }} / {{ pageCount() }}
+                }</span
+              ><button
+                hlmBtn
+                variant="outline"
+                type="button"
+                (click)="move(1)"
+                [disabled]="loading() || page() >= pageCount()"
+                aria-label="Próxima página"
+              >
+                Próxima
+              </button>
+            </div>
           </div>
         </nav>
       </div>
