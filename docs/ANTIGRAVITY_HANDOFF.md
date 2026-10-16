@@ -8,17 +8,18 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 
 ## Estado do workspace nesta passagem
 
-- Branch atual: `main`.
-- A continuação atual fechou novas fatias locais em 16/10/2026: otimização de coleta, tour `recipe-workshop`, guards/RLS, ciclo de vida do `WorkspaceStore`, extração CSS e rollout visual das fases 1–2. Leia as seções 134 e 138–139 de `docs/ACTIVE_CONTEXT.md` e confira commits/status antes de agir.
+- A base desta continuação é `main` em `d6db736`. A fase 3 do rollout visual está no worktree/branch `codex/roadmap-visual-phase3`, com commits `5bd298f`, `86a9c1d` e `e9b3800` após essa base; ela ainda não foi integrada à `main`. Consulte `git status` e `git log` no checkout usado antes de prosseguir.
+- A continuação atual fechou novas fatias locais em 16/10/2026: otimização de coleta, tour `recipe-workshop`, guards/RLS, ciclo de vida do `WorkspaceStore`, extração CSS e rollout visual das fases 1–3. Leia as seções 134 e 138–142 de `docs/ACTIVE_CONTEXT.md` e confira commits/status antes de agir.
 - Entregas implementadas nesta continuação: `0185b87` (indexação dos lookups do Coach), `205dee4` (Home/Roadmap dinâmico) e `8cf0283` (Tutoriais guiados com Driver.js). Também foram criados `1308342` (teste do canvas acessível do Mercado) e `53ed17b` (formatação/Prettier). Confira o histórico real antes de agir.
 - Fase 2: `b90f83d` (Mercado) e `bd0140b` (Receitas/oficina). A atualização documental segue em commit próprio. Não faça push/deploy.
 - O gráfico Chart.js do histórico do Mercado está commitado em `6d22a75`; recebeu validação adicional de lacunas e métrica em `128` do `ACTIVE_CONTEXT.md`.
 - Home/Roadmap e a biblioteca de Tutoriais Guiados estão implementados e commitados. Os planos de implementação registram detalhes e pendências; não reimplemente essas entregas do zero.
-- Nesta rodada, `pnpm check` passou; `pnpm test` passou com 1.011 aprovados e 1 ignorado; o build de produção concluiu sem erro de CSS. O bundle inicial é 600,57 kB bruto / 158,90 kB estimados transferidos e excede o aviso de 500 kB. Persistem avisos de dados de locale `pt-BR` usando `pt` e dependências CommonJS no OCR; não aumentar budgets para ocultar custo.
+- Na verificação após fase 3, `pnpm check` passou; `pnpm test` passou com 1.015 aprovados e 1 ignorado por falta de URL para o banco descartável. O build de produção concluiu sem erro de budget CSS. Bundle inicial 600,57 kB bruto / 158,94 kB estimados transferidos, 100,57 kB acima do aviso de 500 kB. Persistem avisos de locale `pt-BR` usando `pt` e dependências CommonJS (`tesseract.js`/`regenerator-runtime`); não aumentar budgets para ocultar custo.
 - A migração de identidade/RLS `0013_identity_rls.sql`, as migrações do tutorial e o seed foram exercitados num PostgreSQL descartável em `tmpfs`. O endpoint isolado retornou quatro etapas do `recipe-workshop`; nenhum seed/migration foi aplicado ao banco local persistente, staging ou produção. A página existente em `4200` continua sem o guia até ativação autorizada nesse ambiente.
 - Prompt reutilizável para a continuidade: `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`; o commit documental mais recente deve ser conferido com `git log`.
 - A seção 128 de `docs/ACTIVE_CONTEXT.md` registra a validação visual do Chart.js em desktop e mobile, para métricas de preço, estoque e negociações por intervalo. A seção 126 é o histórico da implementação inicial, anterior à validação visual.
 - O Market Board tem subcategorias expansíveis, ação para limpar filtros, paginação/itens por página acima da tabela e skeletons no primeiro carregamento. A revisão adicional em 390×844 e por teclado passou sem overflow/falha de foco; a cobertura de liquidez continua parcial porque negociação observada não equivale a unidades vendidas garantidas.
+- Fase 3 da identidade visual: Armazém/estoque, Família/Personagem, Gear e captura/OCR receberam cabeçalhos e agrupamentos alinhados à Roadmap em commits atômicos `5bd298f`, `86a9c1d` e `e9b3800`. Specs focadas passaram 50/50; a suíte total e build também passaram. As etapas, destinos, incertezas e confirmações de OCR foram mantidas. O Chrome disponível está em `localhost:4200` (checkout main), não no worktree da fase 3. As rotas afetadas incluem guardas de autenticação, então não há validação visual autenticada nesta branch. A comparação pública de BDO Workshop, BDO Codex, BDOLytics e Garmoth está em `docs/research/storage-profile-gear-competitive-review-2026-10-16.md`.
 
 ## Prioridades de continuação
 
@@ -26,7 +27,7 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 
 - O usuário aprovou a direção de consistência visual progressiva para as telas principais. A especificação está em `docs/superpowers/specs/2026-10-16-roadmap-inspired-visual-rollout-design.md`.
 - Não copie a timeline da Roadmap para páginas que não sejam sequenciais. Preserve a tabela do Mercado, a árvore de crafting, as decisões financeiras e a revisão explícita do Scan; reutilize a hierarquia, os painéis, os status e a linguagem bronze/carvão.
-- Estado: fases 1 (Home/Recomendações) e 2 (Mercado/Receitas) executadas e documentadas nos planos `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-{1,2}.md`. O usuário já aprovou o rollout progressivo; continuar pelas telas de Armazém/Scan/Personagem/Gear e depois utilitários, sem pedir aprovação repetida. Os desenhos devem preservar o fluxo de revisão do Scan e os componentes específicos das telas.
+- Estado: fases 1 (Home/Recomendações), 2 (Mercado/Receitas) e 3 (Armazém/Scan/Personagem/Gear) foram executadas em commits separados. Os planos e a especificação registram cada fatia. A fase 3 preserva lista pendente, prévia, incerteza e confirmação humana do OCR; as verificações focadas passaram. Próximo passo visual é a fase 4 (utilitários), depois de concluir as verificações gerais do monorepo e atualizar a validação visual autenticada quando houver runtime/identidade válidos. Não pedir outra aprovação para a sequência progressiva já aceita.
 
 ### Estado das entregas aprovadas (16/10/2026)
 
