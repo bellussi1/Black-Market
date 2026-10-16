@@ -47,6 +47,8 @@ O gateway bloqueia indexação por `robots.txt` e `X-Robots-Tag`; isso não cont
 
 Crie um projeto Firebase separado para staging e configure os campos `FIREBASE_PROJECT_ID`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID` e `FIREBASE_ADMIN_CREDENTIALS_BASE64` no `.env.staging` ignorado pelo Git. A credencial Admin fica apenas no container da API. Habilite Google Authentication; mantenha Password, e-mail/link, telefone e login anônimo desativados. Steam é validada pela API via OpenID e troca por custom token Firebase. A UI não oferece outros provedores.
 
+O ambiente local também usa projeto Firebase próprio, separado de staging e produção. Em Authentication → Sign-in method, habilite somente Google; em Settings → Authorized domains, autorize `localhost`. Mantenha a credencial Admin somente em `.env` local e nunca a coloque em `apps/web`, Git ou chat. Para completar o callback Steam local, configure `STEAM_OPENID_CALLBACK_URL=http://localhost:3000/api/v1/identity/steam/callback`; a API valida a resposta OpenID e redireciona de volta à aplicação em `http://localhost:4200`. A credencial Admin é uma chave privada de serviço: gere uma chave exclusiva para o projeto de cada ambiente e guarde-a em local protegido antes de convertê-la para a variável base64. Se o provedor Firebase Console bloquear o download da chave, peça ao mantenedor para completar essa etapa diretamente no Console; não cole a chave em uma conversa.
+
 Ao compartilhar por Quick Tunnel, o script atualiza o callback Steam para a origem HTTPS temporária, recria API/web, verifica o staging e informa o hostname a adicionar em Firebase Authentication → Settings → Authorized domains. No cliente OAuth Google, mantenha o redirect handler do Firebase configurado: `https://<FIREBASE_AUTH_DOMAIN>/__/auth/handler`. A documentação do Firebase exige que o domínio do app esteja autorizado e usa o auth domain como redirect de OAuth ([Google sign-in no Firebase](https://firebase.google.com/docs/auth/web/google-signin)). O hostname de Quick Tunnel muda a cada sessão; adicione o novo domínio em cada sessão que exigir Google.
 
 Para disponibilizar o perfil sintético, primeiro entre uma vez com Google ou Steam na aplicação de staging para criar o mapeamento canônico. Copie a UID Firebase dessa conta para `STAGING_TEST_FIREBASE_UID` em `.env.staging`, recrie a API para carregar a variável e então execute:
@@ -97,6 +99,21 @@ pwsh -File scripts/restore-drill.ps1 -Dump data/staging/backups/black-market-AAA
 ## CI e operação
 
 Execute `pnpm test:staging` para verificar HTTP, SSR, catálogo, ícone e bloqueio de indexação. Para testar pelo túnel: `$env:STAGING_URL='https://endereco.trycloudflare.com'; pnpm test:staging`. Esse smoke exige o catálogo que contém o item 1407, usado como referência no projeto.
+
+Depois de configurar Firebase e reiniciar API/Web, os smokes autenticados exigem que ambos os provedores apareçam ativos no endpoint público de configuração:
+
+```powershell
+# Com pnpm dev:api em execução (verifica providers via API local)
+pnpm test:auth:local
+
+# Com o Compose de staging iniciado em localhost:8081
+pnpm test:auth:staging
+
+# Para um Quick Tunnel, depois de Share
+$env:STAGING_URL='https://endereco.trycloudflare.com'; pnpm test:auth:staging
+```
+
+O smoke local consulta a configuração do BFF em `localhost:3000`; o smoke de staging também verifica HTTP, SSR, catálogo, ícone e `noindex`. Esses comandos confirmam readiness, mas não simulam a autorização junto ao Google/Steam. Complete um login real de cada provedor pelo navegador em cada ambiente e confira `/api/v1/identity/me`, o retorno à rota protegida e `/api/v1/workspace`. O teste autenticado é opt-in; `pnpm test:staging` e o CI comum não precisam de chaves Firebase.
 
 O workflow existente do GitHub valida lint, formatação, tipos, testes, build e smoke SSR. Staging é atualizado pelo comando local após validar o código. Não há runner permanente, secrets de cloud, deploy remoto ou chamada paga de IA por atualização. O CI não publica nem inicializa o computador.
 
