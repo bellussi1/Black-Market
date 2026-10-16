@@ -2028,7 +2028,7 @@ describe('Interactive recipe tree', () => {
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
   });
 
-  it('recalculates gross revenue and profit when cooking mastery changes', async () => {
+  it('recalculates gross revenue and profit when cooking mastery changes from 1000 to 3000', async () => {
     const cookingRecipe: CatalogRecipe = { ...recipe, type: 'COOK' };
     const dependencies = providers();
     const fixture = await renderComponent(
@@ -2039,14 +2039,20 @@ describe('Interactive recipe tree', () => {
     const tree = fixture.componentInstance;
     configureProduction(tree, { 5301: '1000', 9001: '100' });
     tree.setCraftCount(100);
-    tree.masteryOverride.set(0);
+    tree.masteryOverride.set(1000);
     fixture.detectChanges();
+    const yieldAt1000 = tree.effectiveYield() ?? 0;
     const initialRevenue = BigInt(tree.grossRevenue() ?? '0');
     const initialProfit = BigInt(tree.profit() ?? '0');
+
+    expect(yieldAt1000).toBeCloseTo(2.767, 2);
 
     tree.masteryOverride.set(3000);
     fixture.detectChanges();
 
+    const yieldAt3000 = tree.effectiveYield() ?? 0;
+    expect(yieldAt3000).toBeCloseTo(3.65, 2);
+    expect(yieldAt3000).toBeGreaterThan(yieldAt1000);
     expect(BigInt(tree.grossRevenue() ?? '0')).toBeGreaterThan(initialRevenue);
     expect(BigInt(tree.profit() ?? '0')).toBeGreaterThan(initialProfit);
     fixture.destroy();
