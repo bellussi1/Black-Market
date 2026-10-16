@@ -76,12 +76,15 @@ export function historyObservations(
     const prior = samples[index - 1];
     const elapsed = prior ? Date.parse(point.fetchedAt) - Date.parse(prior.fetchedAt) : 0;
     const connected = !!prior && elapsed > 0 && elapsed <= MAX_OBSERVATION_GAP_MS;
-    if (metric !== 'volume')
+    if (metric !== 'volume') {
+      const value = integer(metric === 'price' ? point.price : point.stock);
+      const priorValue = prior ? integer(metric === 'price' ? prior.price : prior.stock) : null;
       return {
         fetchedAt: point.fetchedAt,
-        value: integer(metric === 'price' ? point.price : point.stock),
-        connected,
+        value,
+        connected: connected && value !== null && priorValue !== null,
       };
+    }
     const current = integer(point.totalTrades),
       previous = integer(prior?.totalTrades);
     return {

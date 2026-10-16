@@ -12,18 +12,20 @@ import {
   viewChild,
 } from '@angular/core';
 import type * as ChartJsModule from 'chart.js';
-import type { Chart as ChartInstance, ChartConfiguration, ScatterDataPoint } from 'chart.js';
+import type { Chart as ChartInstance, ChartConfiguration } from 'chart.js';
 
 import type { HistoryMetric, MarketChart, MarketChartPoint } from './market-history';
 
-interface ChartPoint extends ScatterDataPoint {
+interface ChartPoint {
+  x: number;
+  y: number | null;
   fetchedAt: string;
-  value: bigint;
+  value: bigint | null;
   connected: boolean;
   intervalMinutes?: number;
 }
 
-type ChartRows = (ChartPoint | null)[];
+type ChartRows = ChartPoint[];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,8 +89,11 @@ export class MarketHistoryChart implements OnDestroy {
     if (!canvas || !this.chartApi || this.disposed) return;
 
     this.chart?.destroy();
+    this.chart = null;
+    this.chartFailed.set(false);
     const model = this.chartData();
-    const points = this.toChartRows(model.chartPoints);
+    const metric = this.metric();
+    const points = this.toChartRows(model.chartPoints, metric);
     const firstTimestamp = Date.parse(model.startAt);
     const lastTimestamp = Date.parse(model.endAt);
     const styles = getComputedStyle(canvas);
@@ -97,6 +102,7 @@ export class MarketHistoryChart implements OnDestroy {
     const text = styles.getPropertyValue('--bm-text').trim() || '#eee7da';
     const border = styles.getPropertyValue('--bm-border').trim() || '#514b41';
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const denseRadius = model.samples > 180 ? 1 : model.samples > 60 ? 1.75 : 3;
 
     const configuration: ChartConfiguration<'line', ChartRows> = {
       type: 'line',
@@ -109,9 +115,18 @@ export class MarketHistoryChart implements OnDestroy {
             normalized: true,
             borderColor: accent,
             backgroundColor: accent,
-            borderWidth: 2.5,
-            pointRadius: 3,
-            pointHoverRadius: 5,
+            borderWidth: 2,
+            pointRadius: (ctx) => {
+              const idx = ctx.dataIndex;
+              const current = points[idx];
+              if (!current || current.y === null) return 0;
+              const prev = points[idx - 1];
+              const next = points[idx + 1];
+              const prevConnected = !!prev && prev.y !== null && current.connected;
+              const nextConnected = !!next && next.y !== null && next.connected;
+              return !prevConnected || !nextConnected ? 3 : denseRadius;
+            },
+            pointHoverRadius: (ctx) => (points[ctx.dataIndex]?.y === null ? 0 : 5),
             pointHitRadius: 10,
             tension: 0,
             spanGaps: false,
@@ -168,14 +183,18 @@ export class MarketHistoryChart implements OnDestroy {
             borderWidth: 1,
             titleColor: text,
             bodyColor: text,
+            filter: (item) => {
+              const point = item.raw as ChartPoint | undefined;
+              return !!point && point.value !== null && point.y !== null;
+            },
             callbacks: {
               title: (items) => {
-                const point = items[0]?.raw as ChartPoint | null | undefined;
-                return point ? this.dateLabel()(point.fetchedAt) : '';
+                const point = items[0]?.raw as ChartPoint | undefined;
+                return point && point.value !== null ? this.dateLabel()(point.fetchedAt) : '';
               },
               label: (item) => {
-                const point = item.raw as ChartPoint | null;
-                if (!point) return '';
+                const point = item.raw as ChartPoint | undefined;
+                if (!point || point.value === null) return '';
                 const value = this.valueLabel()(point.value);
                 return this.metric() === 'volume'
                   ? `${value} · ${this.intervalLabel()(point.intervalMinutes)}`
@@ -191,23 +210,37 @@ export class MarketHistoryChart implements OnDestroy {
       this.chart = new this.chartApi.Chart(canvas, configuration);
       this.chartReady.set(true);
     } catch {
+      this.chartReady.set(false);
       this.chartFailed.set(true);
     }
   }
 
-  private toChartRows(points: MarketChartPoint[]): ChartRows {
-    return points.map((point) =>
-      point.value === null || point.y === null || !Number.isFinite(point.x)
-        ? null
-        : {
-            x: point.x,
-            y: point.y,
-            fetchedAt: point.fetchedAt,
-            value: point.value,
-            connected: point.connected,
-            intervalMinutes: point.intervalMinutes,
-          },
-    );
+  private toChartRows(points: MarketChartPoint[], metric: HistoryMetric): ChartRows {
+    if (metric !== 'volume') {
+      return points
+        .filter(
+          (point): point is MarketChartPoint & { value: bigint; y: number } =>
+            point.value !== null && point.y !== null && Number.isFinite(point.x),
+        )
+        .map((point) => ({
+          x: point.x,
+          y: point.y,
+          fetchedAt: point.fetchedAt,
+          value: point.value,
+          connected: point.connected,
+          intervalMinutes: point.intervalMinutes,
+        }));
+    }
+    return points
+      .filter((point) => Number.isFinite(point.x))
+      .map((point) => ({
+        x: point.x,
+        y: point.value === null || point.y === null ? null : point.y,
+        fetchedAt: point.fetchedAt,
+        value: point.value,
+        connected: point.connected && point.value !== null,
+        intervalMinutes: point.intervalMinutes,
+      }));
   }
 
   private valueAtTick(tick: number, model: MarketChart): string {

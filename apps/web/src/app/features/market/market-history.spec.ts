@@ -72,8 +72,10 @@ describe('observed market activity', () => {
       point(16, '30'),
       point(24, '40'),
     ];
-    expect(marketChart(historyObservations(points, 'price')).segments).toHaveLength(2);
-    expect(marketChart(historyObservations(points, 'price')).samples).toBe(3);
+    const observations = historyObservations(points, 'price');
+    expect(observations.map((entry) => entry.connected)).toEqual([false, false, false, true]);
+    expect(marketChart(observations).segments).toHaveLength(2);
+    expect(marketChart(observations).samples).toBe(3);
   });
   it('invalidates conflicting duplicate timestamps instead of selecting an arbitrary counter', () => {
     const points = Array.from({ length: 181 }, (_, index) =>

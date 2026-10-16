@@ -52,6 +52,13 @@
 .market-history-panel {
   margin: 0;
   scroll-margin-top: 20px;
+
+  button[aria-pressed='true'] {
+    border-color: var(--bm-accent);
+    background: var(--bm-accent-soft);
+    color: var(--bm-accent);
+    box-shadow: inset 0 -2px var(--bm-accent);
+  }
 }
 .market-analysis-grid {
   display: grid;
