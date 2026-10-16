@@ -1,6 +1,6 @@
 # Design: linguagem visual da Roadmap nas telas principais
 
-**Data:** 16/10/2026 · **Estado:** proposta aprovada em conversa; aguardando revisão do documento antes do plano de implementação.
+**Data:** 16/10/2026 · **Estado:** especificação aprovada pelo pedido do usuário para seguir com as implementações pendentes; fase 1 em execução.
 **Escopo:** consistência visual progressiva das telas existentes do Black Market.
 
 ## Contexto e intenção
@@ -71,4 +71,4 @@ Cada fase deve ser revisada antes de avançar, para limitar regressões e permit
 
 ## Decisões para a próxima etapa
 
-O usuário selecionou rollout progressivo. Este documento especifica a direção visual; ainda não é autorização para modificar telas. Após a revisão/aprovação desta especificação, preparar o plano de implementação da primeira fase (base visual, Home e Recomendações) com arquivos, dependências, sequência TDD, verificações e commits atômicos. A implementação começa somente depois de o plano ser revisado e o método de execução ser escolhido.
+O usuário selecionou rollout progressivo e, em 16/10/2026, instruiu seguir com as implementações que aguardavam confirmação. Essa instrução aprova esta especificação e a execução inline da fase 1. O plano está em `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-1.md`. Alterações visuais posteriores continuam limitadas a cada fase e preservam as regras de domínio acima.
