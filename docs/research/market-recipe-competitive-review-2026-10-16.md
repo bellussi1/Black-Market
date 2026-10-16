@@ -36,3 +36,21 @@ Esta revisão informa a hierarquia visual da fase 2 do rollout. Observações de
 ## Limitações desta consulta
 
 BDO Workshop não carregou interativamente; BDOLytics e Garmoth foram consultados por páginas públicas e snapshots/indexação, com campos incompletos; Codex teve dados dinâmicos não carregados em parte da lista. Não foi feita comparação matemática pareada nesta revisão. Consulte as páginas novamente antes de uma futura feature que dependa da interface atual e atualize `docs/research/competitor-review-playbook.md`.
+
+## Reconsulta para a refatoração de Crafting e Mercado (16/10/2026)
+
+Esta consulta foi feita após o pedido de esclarecer os papéis de `/crafting` e `/market`. Observações públicas orientam fluxo e hierarquia, não provam fórmulas privadas nem autorizam importar preços/dados.
+
+| Fonte e superfície | Observação pública desta consulta | Limite |
+| --- | --- | --- |
+| [BDO Workshop — plano de Crafting 9601](https://bdoworkshop.com/crafting-workshop/plan/9601) e [Crafting Workshop](https://bdoworkshop.com/crafting-workshop) | A tentativa de abrir ambas as rotas falhou nesta consulta web. A captura do usuário e auditorias anteriores registram produto/lote/maestria separados do resumo financeiro, cadeia e estratégias de compra/crafting/otimização. | Evidência histórica de UI; o cálculo atual e estado da rota não foram repetidos nem confirmados. |
+| [BDOLytics — calculadora de Alquimia](https://bdolytics.com/en/alchemy/4076) e [lista de calculadoras](https://bdolytics.com/en/alchemy) | O conteúdo público/indexado organiza quantidade, ingrediente, estoque, preço customizado, taxa e custo; separa itens de retorno/subprodutos, quebra de receita/custo/lucro, crafts e tempo e expõe saída/cadeia. A lista diferencia Culinária/Alquimia/Processamento e dispõe filtros de silver/hour e volume médio de 14 dias. | A lista consultada indica região North America. A página de mercado detalhada abriu sem conteúdo textual nesta ferramenta; dados não foram pareados com SA. |
+| [Garmoth — detalhe público de item 9768](https://garmoth.com/market/item/9768/0) e [Mercado](https://garmoth.com/market) | A ficha distingue região EU, horizonte, preço, estoque, variação semanal, média vendida/dia, total vendido e última venda; separa visualmente Prices, Stock, Daily Sold e order book. | Snapshot consultado estava incompleto: preço/estoque/total/última venda ausentes e média diária 0; resultado indexado de duas semanas antes. Não tratar zeros/campos vazios como disponibilidade ou demanda atual. |
+| [BDO Codex — receitas](https://bdocodex.com/us/recipes/) e [receita 194](https://bdocodex.com/us/recipe/194/) | Busca pública recente descreve tabela com ID, título, tipo, nível de profissão, EXP, materiais, peso e produtos. | A rota direta foi bloqueada pela ferramenta na sessão; usar Codex como referência relacional de catálogo e receita, não como fonte de mercado ou prova do cálculo atual. |
+
+### Implicações para o desenho
+
+- A escolha recomendada para avaliar com o usuário é separar claramente uma **simulação rápida de uma receita** do **planejamento recursivo/otimizado da cadeia**, mantendo atalhos entre elas se os papéis forem confirmados. O contrato deve dizer para cada campo se vem do catálogo, perfil/armazém, cotação de mercado ou ajuste manual, com frescor e edição visíveis.
+- Mercado deve guiar uma decisão concreta: procurar item, ver preço/estoque/origem/frescor, consultar histórico e, se mantida, simular o líquido da venda no contexto. O relatório anterior já identificou que a coleção pessoal de cotações duplica parcialmente o cache/histórico e que seus dados também alimentam formulários de Crafting; decidir visibilidade não pode apagar nem desconectar esses dados sem plano de compatibilidade.
+- Não juntar preço, estoque e atividade em um eixo nem chamar diferença de contador de unidades vendidas. O pedido anterior de gráfico Chart.js preenchido permanece registrado; ele deve respeitar a separação de métricas.
+- O 4200 estava inacessível (`ERR_CONNECTION_REFUSED`) quando a aplicação local foi verificada nesta sessão. A avaliação de fluxo acima deriva de código/documentos e fontes públicas, não de interação visual local.
