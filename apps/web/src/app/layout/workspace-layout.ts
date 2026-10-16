@@ -11,7 +11,6 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
@@ -73,8 +72,6 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
     RouterOutlet,
     RouteIntentPrefetchDirective,
 
-    FormsModule,
-
     AdSlot,
 
     PrivacyControls,
@@ -120,6 +117,11 @@ export class WorkspaceLayout {
     this.quickSearchOpen.set(false);
     void this.router.navigate(['/market/items', item.id]);
   }
+
+  onMarketRegionChange(event: Event): void {
+    this.preferences.setRegion((event.target as HTMLSelectElement).value);
+  }
+
   readonly screenshotMvp = SCREENSHOT_MVP;
 
   readonly store = signal<WorkspaceStore | null>(null);

@@ -126,8 +126,8 @@
           ><select
             appBdoSelect
             id="market-region"
-            [ngModel]="preferences.region()"
-            (ngModelChange)="preferences.setRegion($event)"
+            [value]="preferences.region()"
+            (change)="onMarketRegionChange($event)"
           >
             @for (market of markets(); track market.code) {
               <option [value]="market.code">{{ market.label }}</option>

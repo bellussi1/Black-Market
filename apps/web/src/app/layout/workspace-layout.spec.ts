@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import { IdentityService } from '../core/identity.service';
+import { RegionPreferences } from '../core/region-preferences';
 import { WorkspaceStore } from '../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
 import { WorkspaceLayout } from './workspace-layout';
@@ -78,6 +79,31 @@ describe('workspace navigation', () => {
       '/settings',
     ])
       expect(links.filter((href) => href === path)).toHaveLength(1);
+  });
+
+  it('updates the selected market region from the topbar control', async () => {
+    const setRegion = vi.fn();
+    const preferences = {
+      region: signal('NA'),
+      message: signal(''),
+      setRegion,
+    };
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+      { provide: RegionPreferences, useValue: preferences },
+    ]);
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '#market-region',
+    )!;
+    const nextRegion = [...select.options]
+      .map((option) => option.value)
+      .find((value) => value !== 'NA');
+    expect(nextRegion).toBeDefined();
+
+    select.value = nextRegion!;
+    select.dispatchEvent(new Event('change'));
+
+    expect(setRegion).toHaveBeenCalledWith(nextRegion);
   });
 
   it('does not inject the lazy workspace store after the layout is destroyed', async () => {
