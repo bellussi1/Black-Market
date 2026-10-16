@@ -28,10 +28,8 @@
       Busque produtos e materiais de culinária, alquimia, processamento e entrega imperial.
     </p>
   </details>
-  @if (loading()) {
-    <p class="loading-state" [class.refresh-status]="!!result()" role="status" i18n>
-      Carregando item e receitas…
-    </p>
+  @if (loading() && !result()) {
+    <p class="loading-state" role="status" i18n>Carregando item e receitas…</p>
   }
   @if (message()) {
     <p class="error-box" role="alert">
@@ -40,6 +38,28 @@
         Tentar novamente
       </button>
     </p>
+  }
+  @if (showListSkeleton()) {
+    <section class="recipe-browser recipe-list-skeleton panel" aria-hidden="true">
+      <div class="panel-heading recipe-browser-heading">
+        <div class="recipe-browser-copy">
+          <span class="recipe-skeleton-line recipe-skeleton-kicker"></span>
+          <span class="recipe-skeleton-line recipe-skeleton-title"></span>
+        </div>
+        <span class="recipe-skeleton-line recipe-skeleton-filter"></span>
+      </div>
+      <div class="recipe-cards">
+        @for (row of recipeSkeletonRows; track row) {
+          <div class="recipe-card recipe-skeleton-card">
+            <span class="recipe-skeleton-icon"></span>
+            <span class="recipe-skeleton-copy">
+              <span class="recipe-skeleton-line recipe-skeleton-meta"></span>
+              <span class="recipe-skeleton-line recipe-skeleton-name"></span>
+            </span>
+          </div>
+        }
+      </div>
+    </section>
   }
   @if (item(); as selected) {
     <app-recipe-tree
@@ -87,26 +107,37 @@
       </div>
     </app-recipe-tree>
   } @else if (result(); as list) {
-    <section>
-      <div class="panel-heading">
-        <h2 i18n>Comece por uma receita</h2>
-        <span class="help">{{ list.total }} receitas de profissões</span>
+    <section class="recipe-browser panel" aria-labelledby="recipe-browser-title">
+      <div class="panel-heading recipe-browser-heading">
+        <div class="recipe-browser-copy">
+          <p class="tool-kicker" i18n>CATÁLOGO DE RECEITAS</p>
+          <h2 id="recipe-browser-title" i18n>Comece por uma receita</h2>
+          <p class="help" i18n>
+            Explore receitas por profissão ou abra um produto para conferir sua cadeia de materiais.
+          </p>
+        </div>
+        <div class="recipe-browser-controls">
+          <span class="badge">{{ list.total }} receitas</span>
+          <label class="field recipe-group-filter" for="recipe-group">
+            <ng-container i18n>Atividade</ng-container>
+            <select
+              appBdoSelect
+              id="recipe-group"
+              [value]="recipeGroup()"
+              (change)="filterGroup($event)"
+            >
+              <option value="" i18n>Todas as profissões</option>
+              <option value="cooking" i18n>Culinária</option>
+              <option value="alchemy" i18n>Alquimia</option>
+              <option value="processing" i18n>Processamento</option>
+              <option value="imperial" i18n>Entrega imperial</option>
+            </select>
+          </label>
+        </div>
       </div>
-      <label class="field recipe-group-filter" for="recipe-group">
-        <ng-container i18n>Atividade</ng-container>
-        <select
-          appBdoSelect
-          id="recipe-group"
-          [value]="recipeGroup()"
-          (change)="filterGroup($event)"
-        >
-          <option value="" i18n>Todas as profissões</option>
-          <option value="cooking" i18n>Culinária</option>
-          <option value="alchemy" i18n>Alquimia</option>
-          <option value="processing" i18n>Processamento</option>
-          <option value="imperial" i18n>Entrega imperial</option>
-        </select>
-      </label>
+      @if (loading()) {
+        <p class="refresh-status" role="status" i18n>Atualizando a lista de receitas…</p>
+      }
       <div class="recipe-cards">
         @for (row of list.recipes; track row.key) {
           <a

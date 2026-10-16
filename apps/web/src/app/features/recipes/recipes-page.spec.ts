@@ -233,4 +233,34 @@ describe('Universal recipe explorer', () => {
     expect(fixture.componentInstance.page).toBe(1);
     http.verify();
   });
+  it('reserves the recipe catalogue layout and groups its filter with the results', async () => {
+    const fixture = await renderComponent(RecipesPage, {}, [route('')]);
+    const http = TestBed.inject(HttpTestingController);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('.recipe-skeleton-card')).toHaveLength(6);
+    expect(element.querySelector('.recipe-list-skeleton')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+
+    http
+      .expectOne((request) => request.url.endsWith('/recipes'))
+      .flush({
+        recipes: [],
+        total: 0,
+        page: 1,
+        pageSize: 24,
+        dataset,
+      });
+    fixture.detectChanges();
+
+    const browser = element.querySelector<HTMLElement>('.recipe-browser')!;
+    expect(browser.getAttribute('aria-labelledby')).toBe('recipe-browser-title');
+    expect(
+      browser.querySelector('#recipe-group')?.closest('.recipe-browser-heading'),
+    ).not.toBeNull();
+    expect(browser.querySelector('.recipe-list-skeleton')).toBeNull();
+    expect(browser.textContent).toContain('Comece por uma receita');
+    http.verify();
+  });
 });

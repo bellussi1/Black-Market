@@ -10,9 +10,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--bm-titlebar, var(--bm-surface-raised));
+  background: var(--bm-surface-raised);
   margin: -16px -16px 16px;
   padding: 6px 12px;
+  border-top: 1px solid var(--bm-accent);
   border-bottom: 1px solid var(--bm-border);
 }
 .context-close {
@@ -129,7 +130,8 @@
   .context-titlebar {
     margin: 0;
     padding: 10px 16px;
-    background: var(--bm-titlebar, var(--bm-surface-raised));
+    background: var(--bm-surface-raised);
+    border-top: 1px solid var(--bm-accent);
     border-bottom: 1px solid var(--bm-border);
     display: flex;
     align-items: center;

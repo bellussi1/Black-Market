@@ -2012,6 +2012,11 @@ describe('Interactive recipe tree', () => {
     expect(fixture.nativeElement.querySelectorAll('.economic-summary-header button')).toHaveLength(
       3,
     );
+    expect(
+      [
+        ...fixture.nativeElement.querySelectorAll('.economic-summary-header [role="group"] button'),
+      ].map((button: HTMLButtonElement) => button.getAttribute('aria-pressed')),
+    ).toEqual(['true', 'false', 'false']);
   });
 
   it('shows alchemy returns as sell-or-keep controls and recalculates revenue', async () => {

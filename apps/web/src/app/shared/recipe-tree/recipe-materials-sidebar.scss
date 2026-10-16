@@ -44,8 +44,9 @@
 
   .sidebar-header {
     padding: 12px 14px;
-    background: var(--bm-titlebar, var(--bm-surface-raised));
+    border-top: 1px solid var(--bm-accent);
     border-bottom: 1px solid var(--bm-border);
+    background: var(--bm-surface-raised);
   }
 
   .sidebar-title-row {

@@ -72,6 +72,9 @@ export class RecipesPage {
   private readonly preferences = inject(RegionPreferences);
   private readonly refresh = new Subject<void>();
   readonly result = signal<RecipeListResponse | null>(null);
+  readonly listMode = signal(true);
+  readonly recipeSkeletonRows = [0, 1, 2, 3, 4, 5];
+  readonly showListSkeleton = computed(() => this.loading() && this.listMode() && !this.result());
   readonly recipe = signal<CatalogRecipe | null>(null);
   readonly item = signal<CatalogItemDetail | null>(null);
   readonly workshopRoute = signal(false);
@@ -150,6 +153,7 @@ export class RecipesPage {
           const key = params.get('key'),
             rawId = params.get('id') ?? itemQuery,
             id = rawId ? Number(rawId) : null;
+          this.listMode.set(!key && rawId === null);
           if (
             (key && !/^[a-f0-9]{64}$/i.test(key)) ||
             (rawId && (!Number.isSafeInteger(id) || id! < 1 || id! > 2147483647))
