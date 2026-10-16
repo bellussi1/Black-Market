@@ -39,6 +39,27 @@ const snapshot: ProductionCatalogResponse = {
     sourceData: { marketable: true, maxEnhance: 0 },
   })),
 };
+const completePlan = (recipeId = 'elixir'): ProductionPlan => ({
+  recipeId,
+  name: 'Elixir de teste',
+  scenario: 'buy-all',
+  crafts: 1,
+  output: 1,
+  seconds: 60,
+  durationMilliseconds: '60000',
+  cashCost: '100',
+  economicCost: '100',
+  grossRevenue: '200',
+  netRevenue: '180',
+  profit: '80',
+  profitPerHour: '4800',
+  peakWeight: 0.1,
+  issues: [],
+  assumptions: [],
+  materials: [],
+  returns: [],
+  steps: [],
+});
 const api = () => ({
   catalog: vi.fn(() => of(snapshot)),
   quotes: vi.fn(() => throwError(() => new Error('off'))),
@@ -118,6 +139,68 @@ describe('production recommendations', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Carregar catálogo');
     expect(fixture.nativeElement.textContent).not.toContain('Consultar mercado');
     expect(fixture.nativeElement.textContent).not.toContain('Comparar lucro por hora');
+  });
+  it('emphasizes the leading complete opportunity but not incomplete scenarios', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    vi.spyOn(page, 'compare').mockResolvedValue();
+    const player = characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' });
+    page.store.update((state) => ({
+      ...state,
+      region: 'sa',
+      characters: [player],
+      activeCharacterId: player.id,
+    }));
+    fixture.detectChanges();
+    page.plans.set({ ranked: [completePlan()], incomplete: [] });
+    fixture.detectChanges();
+
+    expect(page.profile()).not.toBeNull();
+    expect(page.topPlans()).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('.opportunity-leading')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.opportunity-leading-label')?.textContent,
+    ).toContain('Maior lucro líquido por hora');
+
+    page.plans.set({
+      ranked: [],
+      incomplete: [
+        {
+          ...completePlan(),
+          scenario: 'produce-all',
+          output: null,
+          seconds: null,
+          durationMilliseconds: null,
+          cashCost: null,
+          economicCost: null,
+          grossRevenue: null,
+          netRevenue: null,
+          profit: null,
+          profitPerHour: null,
+          issues: [{ code: 'missing-time', message: 'Sem tempo medido.' }],
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.opportunity-leading')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.pending-section')).not.toBeNull();
+  });
+  it('shows an accessible reserved skeleton while the first catalogue is loading', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.snapshot.set(null);
+    page.busy.set(true);
+    fixture.detectChanges();
+
+    const loading = fixture.nativeElement.querySelector('.coach-loading-skeleton');
+    expect(loading?.getAttribute('role')).toBe('status');
+    expect(loading?.getAttribute('aria-busy')).toBe('true');
+    expect(loading?.textContent).toContain('Carregando catálogo');
   });
   it('waits for a character before fetching market quotes, then loads them automatically', async () => {
     const resolveProductionQuotes = vi.fn(() => of(new Map()));

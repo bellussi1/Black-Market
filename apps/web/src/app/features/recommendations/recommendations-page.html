@@ -1,6 +1,6 @@
 <main class="tool-page coach-page">
   <header class="tool-heading coach-heading">
-    <p class="tool-kicker">OFICINA DA FAMÍLIA</p>
+    <p class="tool-kicker">RECOMENDAÇÕES DE PRODUÇÃO</p>
     <h1>Faça prata com suas Life Skills</h1>
     <p>
       Priorize produção dentro das atividades que você gosta e use o retorno para evoluir seu gear
@@ -14,15 +14,35 @@
   }
 
   @if (!snapshot()) {
-    <section class="coach-loading" aria-live="polite">
-      <p>
-        {{
-          busy()
-            ? 'Carregando catálogo e dados da sua região…'
-            : 'O catálogo desta região está indisponível.'
-        }}
-      </p>
-    </section>
+    @if (busy()) {
+      <section
+        class="coach-loading coach-loading-skeleton panel"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker">PREPARANDO</p>
+            <h2>Recomendações da região</h2>
+          </div>
+        </div>
+        <p class="coach-loading-copy">Carregando catálogo e dados da sua região…</p>
+        <div class="coach-loading-lines" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </section>
+    } @else {
+      <section class="coach-loading coach-loading-error panel" role="alert">
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker">INDISPONÍVEL</p>
+            <h2>Recomendações da região</h2>
+          </div>
+        </div>
+        <p>O catálogo desta região está indisponível.</p>
+      </section>
+    }
   }
 
   @if (snapshot(); as data) {
@@ -139,12 +159,17 @@
           Cadastre ou selecione um personagem para calcular as oportunidades.
         </p>
       } @else if (busy() && !plans()) {
-        <p class="coach-empty" role="status">Organizando receitas, estoque e preços da região…</p>
+        <div class="coach-empty coach-result-loading" role="status" aria-busy="true">
+          <p>Organizando receitas, estoque e preços da região…</p>
+          <div class="coach-loading-lines" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
       } @else if (plans(); as result) {
         @if (topPlans().length) {
           <ol class="opportunity-list">
             @for (row of topPlans(); track row.recipeId) {
-              <li class="opportunity">
+              <li class="opportunity" [class.opportunity-leading]="$first">
                 <div class="opportunity-title">
                   <span class="rank-number">{{ $index + 1 }}</span>
                   <div>
@@ -153,6 +178,11 @@
                     </h3>
                     <p>{{ recommendationReason(row) }}</p>
                     <small>{{ scenarioNames[row.scenario] }}</small>
+                    @if ($first) {
+                      <small class="opportunity-leading-label">
+                        Maior lucro líquido por hora entre os cenários completos deste recorte
+                      </small>
+                    }
                   </div>
                 </div>
                 <div class="hourly-profit">
