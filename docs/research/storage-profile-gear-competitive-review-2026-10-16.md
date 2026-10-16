@@ -1,7 +1,7 @@
 # Concorrentes: Armazém, Perfil, Equipamentos e OCR
 
-**Consulta:** 16/10/2026  
-**Motivo:** informar a fase 3 do rollout visual da Roadmap em Armazém, Família/Personagem, Gear e importação de capturas.  
+**Consulta:** 16/10/2026
+**Motivo:** informar a fase 3 do rollout visual da Roadmap em Armazém, Família/Personagem, Gear e importação de capturas.
 **Limite:** inspeção pública de páginas e conteúdos indexados; não houve login, chamadas privadas, cópia de código ou tentativa de descobrir endpoints internos.
 
 ## Como ler as observações
@@ -13,7 +13,7 @@
 
 ## BDO Workshop
 
-**Páginas:** [site](https://bdoworkshop.com/), [política de privacidade](https://www.bdoworkshop.com/privacy-policy).  
+**Páginas:** [site](https://bdoworkshop.com/), [política de privacidade](https://www.bdoworkshop.com/privacy-policy).
 **Estado:** a página inicial carregou apenas uma descrição estática, aviso de JavaScript e painel de cookies. A interface interna do plano e do Storage Tracker não ficou acessível nesta consulta. A captura de tela do plano Balenos Meal fornecida pelo usuário em 16/10 mostra os atalhos “Login to save”, “Tutorial”, “Custom prices” e “Storage Tracker”; isso é evidência da captura, não uma inspeção nova do tracker.
 
 **Cobertura encontrada:** a descrição pública indexada anuncia calculadoras de crafting e mercado, progressão de gear e leitura de capturas de inventário, armazém e gear. O texto indexado da política, atualizado em 22/09/2026, afirma que há salvamento de planos, gear, inventário/armazém lidos por captura e preços personalizados: sem login, os dados salvos ficam no armazenamento local do navegador; com conta, ficam associados ao usuário. A mesma política declara que as capturas enviadas e resultados de reconhecimento entram num log de revisão usado para conferir erros e melhorar o reconhecimento. Como a política não pôde ser aberta nesta consulta e o produto depende de JavaScript, esses itens ficam classificados como **declarações indexadas do próprio site**, não como fluxo reproduzido.
@@ -24,7 +24,7 @@
 
 ## BDO Codex
 
-**Páginas:** [catálogo de itens](https://bdocodex.com/us/items/), [receita da Master's Cooking Box](https://bdocodex.com/us/mrecipe/2366/?sl=1).  
+**Páginas:** [catálogo de itens](https://bdocodex.com/us/items/), [receita da Master's Cooking Box](https://bdocodex.com/us/mrecipe/2366/?sl=1).
 **Estado:** a página de itens expôs categorias, classes, raridades e filtros, mas a tabela dizia que carregava os dados do servidor. A página de receita foi renderizada com materiais, resultado base e calculadora.
 
 **Observado na receita:** mostra materiais e produto-base, nível de habilidade, quantidade, seleção de mercado/região, preço do material e do produto, custo, dedução de imposto premium (15,5%) e alternativa de taxa de 35%, lucro e controle para limitar receitas de materiais a resultados garantidos. Também exibe variantes de receita dos materiais. A página avisa que nível de habilidade pode alterar materiais e quantidade de produto e expõe regras gerais de substituição por grau.
@@ -35,7 +35,7 @@
 
 ## BDOLytics
 
-**Páginas:** [mercado e histórico de item](https://bdolytics.com/en/market/item/6719), [calculadora de crafting](https://bdolytics.com/en/crafting/9855%3Adc94e8a443f6), [comparação de Imperial Cooking](https://bdolytics.com/en/NA/cooking/imperial).  
+**Páginas:** [mercado e histórico de item](https://bdolytics.com/en/market/item/6719), [calculadora de crafting](https://bdolytics.com/en/crafting/9855%3Adc94e8a443f6), [comparação de Imperial Cooking](https://bdolytics.com/en/NA/cooking/imperial).
 **Estado:** páginas de mercado e crafting dependem de JavaScript e não expuseram o DOM completo ao abrir diretamente. O índice de busca retornou conteúdo recente dessas páginas. Os detalhes abaixo são, portanto, **indexados**, sem afirmar que a interação foi reproduzida.
 
 **Cobertura indexada no mercado:** região, preço e variação de sete dias, faixa chamada “fair price”, unidades listadas/estoque, volume diário, total de negociações e histórico separado de preço, volume e estoque, com intervalos de 1D, 7D, 30D, 6M e 1Y em exemplos atuais.
@@ -48,7 +48,7 @@
 
 ## Garmoth
 
-**Páginas:** [visão geral do mercado](https://garmoth.com/market), [Gear Planner](https://garmoth.com/character/default), [exemplo público de personagem](https://garmoth.com/character/Choice), [informações de personagem e maestrias](https://garmoth.com/character/dP6D3eCw1f/character-info), [guia do planner](https://garmoth.com/guides/post/garmoth-gear-planner).  
+**Páginas:** [visão geral do mercado](https://garmoth.com/market), [Gear Planner](https://garmoth.com/character/default), [exemplo público de personagem](https://garmoth.com/character/Choice), [informações de personagem e maestrias](https://garmoth.com/character/dP6D3eCw1f/character-info), [guia do planner](https://garmoth.com/guides/post/garmoth-gear-planner).
 **Estado:** a página do Mercado foi renderizada com os agrupamentos, porém os totais principais estavam como “-”. O perfil público expôs abas Character Info, Passives & Fame, Gear Builder, Upgrade Path, Compare, Stats, Silver e calculadoras PvE/PvP. A página de informações de personagem mostra campos de classe/especialização, fitness, masteries de 11 profissões e capítulos de journals. As descrições indexadas do planner relatam editar equipamento, comparar builds, acompanhar stats, valor total do gear e caminho de upgrade.
 
 **Observado/indexado no mercado:** seções de itens populares (favoritos e acompanhamento recentes), tendência definida pela relação entre volume de venda e estoque, maiores altas/baixas e itens adicionados recentemente. A tela de item individual não expôs preço/histórico legível na consulta atual.
