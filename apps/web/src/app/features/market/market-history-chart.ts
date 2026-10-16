@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type * as ChartJsModule from 'chart.js';
-import type { Chart as ChartInstance, ChartConfiguration } from 'chart.js';
+import type { Chart as ChartInstance, ChartConfiguration, Plugin } from 'chart.js';
 
 import type { HistoryMetric, MarketChart, MarketChartPoint } from './market-history';
 
@@ -26,6 +26,55 @@ interface ChartPoint {
 }
 
 type ChartRows = ChartPoint[];
+
+interface MarketChartAreaStyle {
+  fill: 'origin';
+  borderColor: string;
+  gradientTop: string;
+  gradientBottom: string;
+  guideColor: string;
+}
+
+export function marketChartAreaStyle(accent: string): MarketChartAreaStyle {
+  const hex = /^#([\da-f]{3}|[\da-f]{6})$/i.exec(accent.trim())?.[1];
+  const normalized = hex?.length === 3 ? [...hex].map((value) => value + value).join('') : hex;
+  const color = normalized
+    ? [0, 2, 4].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16))
+    : [216, 185, 120];
+  const rgb = color.join(', ');
+  const borderColor = hex ? accent.trim() : '#d8b978';
+
+  return {
+    fill: 'origin',
+    borderColor,
+    gradientTop: `rgba(${rgb}, 0.28)`,
+    gradientBottom: `rgba(${rgb}, 0.02)`,
+    guideColor: `rgba(${rgb}, 0.78)`,
+  };
+}
+
+export function createMarketHistoryCrosshairPlugin(accent: string): Plugin<'line'> {
+  const { guideColor } = marketChartAreaStyle(accent);
+  return {
+    id: 'market-history-crosshair',
+    afterDatasetsDraw(chart) {
+      const active = chart.tooltip?.getActiveElements()[0]?.element as { x?: number } | undefined;
+      const x = active?.x;
+      if (typeof x !== 'number' || !Number.isFinite(x)) return;
+
+      const { ctx, chartArea } = chart;
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([2, 4]);
+      ctx.strokeStyle = guideColor;
+      ctx.lineWidth = 1;
+      ctx.moveTo(x, chartArea.top);
+      ctx.lineTo(x, chartArea.bottom);
+      ctx.stroke();
+      ctx.restore();
+    },
+  };
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,6 +124,7 @@ export class MarketHistoryChart implements OnDestroy {
         chartApi.LineElement,
         chartApi.PointElement,
         chartApi.LinearScale,
+        chartApi.Filler,
         chartApi.Tooltip,
       );
       this.chartApi = chartApi;
@@ -101,6 +151,11 @@ export class MarketHistoryChart implements OnDestroy {
     const muted = styles.getPropertyValue('--bm-muted').trim() || '#b9b2a6';
     const text = styles.getPropertyValue('--bm-text').trim() || '#eee7da';
     const border = styles.getPropertyValue('--bm-border').trim() || '#514b41';
+    const areaStyle = marketChartAreaStyle(accent);
+    const context = canvas.getContext('2d');
+    const gradient = context?.createLinearGradient(0, 0, 0, canvas.clientHeight || 280);
+    gradient?.addColorStop(0, areaStyle.gradientTop);
+    gradient?.addColorStop(1, areaStyle.gradientBottom);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const denseRadius = model.samples > 180 ? 1 : model.samples > 60 ? 1.75 : 3;
 
@@ -113,8 +168,10 @@ export class MarketHistoryChart implements OnDestroy {
             data: points,
             parsing: false,
             normalized: true,
-            borderColor: accent,
-            backgroundColor: accent,
+            borderColor: areaStyle.borderColor,
+            backgroundColor: gradient ?? areaStyle.gradientTop,
+            fill: areaStyle.fill,
+            pointBackgroundColor: areaStyle.borderColor,
             borderWidth: 2,
             pointRadius: (ctx) => {
               const idx = ctx.dataIndex;
@@ -136,6 +193,7 @@ export class MarketHistoryChart implements OnDestroy {
           },
         ],
       },
+      plugins: [createMarketHistoryCrosshairPlugin(accent)],
       options: {
         responsive: true,
         maintainAspectRatio: false,

@@ -4,7 +4,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { MarketHistoryPoint } from './market-api';
 import { type HistoryMetric, historyObservations, marketChart } from './market-history';
-import { MarketHistoryChart } from './market-history-chart';
+import {
+  createMarketHistoryCrosshairPlugin,
+  marketChartAreaStyle,
+  MarketHistoryChart,
+} from './market-history-chart';
 
 const samplePoint = (
   minutes: number,
@@ -47,6 +51,41 @@ class HostComponent {
 }
 
 describe('MarketHistoryChart', () => {
+  it('fills the selected series to its origin with a restrained project-bronze gradient', () => {
+    expect(marketChartAreaStyle('#d8b978')).toEqual({
+      fill: 'origin',
+      borderColor: '#d8b978',
+      gradientTop: 'rgba(216, 185, 120, 0.28)',
+      gradientBottom: 'rgba(216, 185, 120, 0.02)',
+      guideColor: 'rgba(216, 185, 120, 0.78)',
+    });
+  });
+
+  it('draws a dotted guide through the active point and chart plot only', () => {
+    const calls: unknown[][] = [];
+    const context = {
+      save: () => calls.push(['save']),
+      beginPath: () => calls.push(['beginPath']),
+      setLineDash: (dash: number[]) => calls.push(['setLineDash', dash]),
+      moveTo: (x: number, y: number) => calls.push(['moveTo', x, y]),
+      lineTo: (x: number, y: number) => calls.push(['lineTo', x, y]),
+      stroke: () => calls.push(['stroke']),
+      restore: () => calls.push(['restore']),
+    };
+    const plugin = createMarketHistoryCrosshairPlugin('#d8b978');
+    const chart = {
+      ctx: context,
+      chartArea: { top: 14, bottom: 236 },
+      tooltip: { getActiveElements: () => [{ element: { x: 123 } }] },
+    };
+
+    plugin.afterDatasetsDraw?.(chart as never, {} as never, {}, false);
+
+    expect(calls).toContainEqual(['setLineDash', [2, 4]]);
+    expect(calls).toContainEqual(['moveTo', 123, 14]);
+    expect(calls).toContainEqual(['lineTo', 123, 236]);
+  });
+
   it('renders price and volume series including null gap points without throwing', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
