@@ -13,7 +13,7 @@
 
 - `/recipes` continua sendo uma listagem paginada e filtrável, com metadados de catálogo e rotas para detalhes; mantivemos esse fluxo específico em vez de importar a organização de tabela do BDO Codex.
 - A página passou a solicitar 25 receitas por página (antes 24) e a reserva inicial usa a mesma quantidade de cards. O skeleton inicial também reserva a barra de paginação.
-- Durante paginação/filtro, os cards anteriores mantêm a geometria sob os placeholders; o conteúdo oculto fica `inert`, e a lista/pager expõem `aria-busy`. O status acessível não ocupa espaço visual adicional.
+- Durante paginação/filtro, os cards anteriores mantêm a geometria sob os placeholders; o conteúdo oculto fica `inert`, e a lista/pager expõem `aria-busy`. A faixa de status reserva 28 px também quando está vazia; QA browser de 16/10 observou essa área vazia persistente. Compactá-la exige preservar o espaço durante a paginação para não criar novos shifts.
 - Os placeholders respeitam `prefers-reduced-motion`. A pesquisa externa não confirmou que qualquer concorrente use esses mesmos detalhes visuais.
 
 ## Fontes e limites

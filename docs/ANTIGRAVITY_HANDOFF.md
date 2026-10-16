@@ -181,3 +181,13 @@ O rollout também cobre os estados assíncronos auditados em Catálogo, Crafting
 Verificações em 16/10: `pnpm check` passou; `pnpm test` passou com 1.059 testes aprovados e 1 ignorado (PostgreSQL descartável); `pnpm --filter @bdo/web build` passou; XLIFF extraído (1.547 mensagens). O build não reporta estouro dos budgets CSS de Catálogo ou Recipe Tree. Seguem os avisos existentes: bundle inicial Web de 601,37 kB frente ao aviso de 500 kB, locale `pt-BR`→`pt` e módulos CommonJS do OCR. Pesquisa concorrencial e limites em `docs/research/ui-loading-competitive-review-2026-10-16.md`.
 
 Ainda falta inspeção browser em cada rota e medição de CLS em produção; o checklist permanece parcial até essa evidência. Consulte `docs/ACTIVE_CONTEXT.md` §149. Preserve o plano não rastreado `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md`; não inclua no commit.
+
+### Atualização — continuação do checklist (16/10/2026)
+
+A otimização global de fórmulas e alternativas recursivas foi aprovada no escopo. Também foi aprovada uma fórmula única por item intermediário em cada plano (sem dividir demanda entre fórmulas). A análise identificou que o grafo mantém um produtor por item e que a busca não seleciona fórmulas intermediárias. A especificação está em docs/superpowers/specs/2026-10-16-recursive-recipe-alternative-optimizer-design.md para revisão antes de criar o plano e editar o solver. O limite atual de 10.000 estados precisa continuar explícito; não chamar candidato parcial de ótimo certificado.
+
+A revisão de peixe fresco/seco em docs/research/fish-price-equivalence-review-2026-10-16.md não sustenta alterar o ratio 1:1 atual: relações DRY não são equivalências culinárias e os valores públicos divergem num exemplo. Preservar como dado não verificado até obter relação versionada por ID ou validar no cliente SA/PT.
+
+O seletor de região deixou de carregar FormsModule no shell; bundle inicial medido caiu de 601,37 para 553,57 kB, ainda 53,57 kB acima do aviso de 500 kB. QA em 1440×900/390×844 confirmou skeleton na paginação e CLS ~0,050 em Receitas, sem overflow de página em Receitas/Mercado; a tabela do Mercado rola horizontalmente em 390 px. Armazém, Família, Gear e Scans redirecionam para Conta porque o login social está desconfigurado, então suas telas protegidas não puderam ser revistas. Veja docs/ACTIVE_CONTEXT.md §150 e o checklist mestre.
+
+Verificação global desta retomada: pnpm check passou. pnpm test passou (Calculators 68, API 247 + 1 ignorado por banco descartável, Web 672, scripts/OCR 73 — 1.060 aprovados e 1 ignorado). Run remoto CI não foi disparado; build de produção atual do Web em 553,57 kB.
