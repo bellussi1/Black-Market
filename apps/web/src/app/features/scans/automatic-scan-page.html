@@ -2,8 +2,8 @@
   <app-tutorial-launcher screenKey="scans" />
   @if (!kind()) {
     <section class="capture-panel" data-tour="scans.capture" aria-labelledby="capture-title">
-      <header>
-        <p class="eyebrow">IMPORTAR CAPTURAS</p>
+      <header class="tool-heading" aria-labelledby="capture-title">
+        <p class="tool-kicker">IMPORTAR CAPTURAS</p>
         <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
         <p>
           Envie uma imagem do armazém, inventário ou informações do personagem. A tela é
@@ -32,12 +32,15 @@
       </aside>
     </section>
   } @else {
-    <div class="review-toolbar">
-      <h1>Revisar captura</h1>
+    <header class="tool-heading review-toolbar" aria-labelledby="scan-review-heading">
+      <div class="review-heading-copy">
+        <p class="tool-kicker">02 / REVISÃO DA CAPTURA</p>
+        <h1 id="scan-review-heading">Revisar captura</h1>
+      </div>
       <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
         Importar outra tela
       </button>
-    </div>
+    </header>
   }
 
   <section

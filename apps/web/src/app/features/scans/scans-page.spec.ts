@@ -115,7 +115,7 @@ describe('Icon suggestion ranking', () => {
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
-  it('prioritizes review after upload and keeps setup in collapsed contextual sections', async () => {
+  it('keeps capture context and review status visible without hiding the pending review', async () => {
     images();
     const fixture = await renderComponent(ScansPage),
       page = fixture.componentInstance;
@@ -124,7 +124,9 @@ describe('Screenshot entry', () => {
     } as unknown as Event);
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.page-heading')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.tool-heading #scan-page-title')?.textContent,
+    ).toContain('Revisar capturas');
     expect(fixture.nativeElement.querySelector('.capture-destination')).toBeNull();
     expect(fixture.nativeElement.querySelector('.upload-tools').open).toBe(false);
     expect(fixture.nativeElement.querySelector('.capture-list').open).toBe(false);
@@ -152,6 +154,9 @@ describe('Screenshot entry', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.capture-area').open).toBe(false);
     expect(fixture.nativeElement.querySelector('.batch-options').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.scan-review-heading')?.textContent).toContain(
+      '1 item',
+    );
     expect(fixture.nativeElement.querySelector('.scan-review')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('#scan-item-0')).toBeNull();
   });

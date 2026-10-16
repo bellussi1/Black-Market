@@ -1,8 +1,8 @@
 <div class="tool-page guided-page">
   @if (!jobs().length) {
-    <header class="page-heading">
-      <p class="eyebrow" i18n>SEUS DADOS, COM SUA REVISÃO</p>
-      <h1 i18n>Importar capturas</h1>
+    <header class="tool-heading" aria-labelledby="scan-page-title">
+      <p class="tool-kicker" i18n>SEUS DADOS, COM SUA REVISÃO</p>
+      <h1 id="scan-page-title" i18n>Importar capturas</h1>
       <p i18n>
         Selecione até oito capturas do jogo. A imagem é lida neste navegador e não é enviada para
         sua conta. Item e quantidade vêm preenchidos quando reconhecidos. Corrija as dúvidas e
@@ -66,6 +66,17 @@
         </p>
       }
     </section>
+  }
+  @if (jobs().length) {
+    <header class="tool-heading scan-review-heading" aria-labelledby="scan-page-title">
+      <p class="tool-kicker" i18n>02 / REVISÃO DA CAPTURA</p>
+      <h1 id="scan-page-title" i18n>Revisar capturas</h1>
+      <p>
+        {{ jobs().length }} {{ jobs().length === 1 ? 'captura' : 'capturas' }} no lote ·
+        {{ pendingBatchCount() }}
+        {{ pendingBatchCount() === 1 ? 'item aguarda' : 'itens aguardam' }} revisão ou confirmação.
+      </p>
+    </header>
   }
   @if (captureMode === 'gear' || captureMode === 'inventory') {
     <details class="panel" [open]="!profiles().length">

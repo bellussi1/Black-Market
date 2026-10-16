@@ -2,9 +2,15 @@
   display: block;
 }
 
-.profile-screen-import > .panel {
+.profile-import-flow {
   display: grid;
   gap: 1rem;
+}
+
+.profile-import-flow > .panel {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 0;
 }
 
 .text-link {
