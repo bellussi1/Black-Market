@@ -3017,7 +3017,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:366</note>
+        <note category="location">src/app/layout/workspace-layout.ts:364</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
@@ -3043,7 +3043,7 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:372</note>
+        <note category="location">src/app/layout/workspace-layout.ts:370</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
@@ -9461,7 +9461,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:368</note>
+        <note category="location">src/app/layout/workspace-layout.ts:366</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
       </notes>
       <segment>
@@ -9470,7 +9470,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:370</note>
+        <note category="location">src/app/layout/workspace-layout.ts:368</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
       </notes>
       <segment>
@@ -9479,7 +9479,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:390</note>
+        <note category="location">src/app/layout/workspace-layout.ts:388</note>
       </notes>
       <segment>
         <source>Black Market</source>
@@ -10890,12 +10890,12 @@
         <source>Resultado da receita</source>
       </segment>
     </unit>
-    <unit id="8270724522445593573">
+    <unit id="8611877731474274343">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-tree.html:283</note>
       </notes>
       <segment>
-        <source> Preço atual do mercado · sem estoque, usa o preço máximo </source>
+        <source> Preço de venda estimado: cotação atual com estoque; sem estoque, preço máximo anunciado. </source>
       </segment>
     </unit>
     <unit id="2445384171965660751">

@@ -1909,6 +1909,9 @@ describe('Interactive recipe tree', () => {
     expect(metricsGrid?.querySelectorAll(':scope > .metric-card')).toHaveLength(4);
     expect(el.querySelectorAll('.economic-summary-header button[hlmBtn]')).toHaveLength(3);
     expect(el.textContent).toContain('Resultado da receita');
+    expect(el.textContent).toContain(
+      'Preço de venda estimado: cotação atual com estoque; sem estoque, preço máximo anunciado.',
+    );
   });
 
   it.each([
