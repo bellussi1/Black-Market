@@ -9,7 +9,7 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 ## Estado do workspace nesta passagem
 
 - Branch atual: `main`.
-- Último commit funcional antes desta atualização documental: `53ed17b chore(format): exclude scratch plans and normalize files`.
+- A entrega funcional mais recente nesta continuação é a atualização da interface do Market Board em 16/10/2026; consulte a seção 130 de `docs/ACTIVE_CONTEXT.md` e confirme o SHA pelo `git log`.
 - Entregas implementadas nesta continuação: `0185b87` (indexação dos lookups do Coach), `205dee4` (Home/Roadmap dinâmico) e `8cf0283` (Tutoriais guiados com Driver.js). Também foram criados `1308342` (teste do canvas acessível do Mercado) e `53ed17b` (formatação/Prettier). Confira o histórico real antes de agir.
 - Este handoff e a atualização de `docs/ACTIVE_CONTEXT.md` foram registrados juntos em um commit documental local. O workspace estava limpo logo após o commit; confira `git status` ao retomar e preserve qualquer alteração que apareça.
 - O gráfico Chart.js do histórico do Mercado está commitado em `6d22a75`; recebeu validação adicional de lacunas e métrica em `128` do `ACTIVE_CONTEXT.md`.
@@ -18,8 +18,13 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 - As migrações `0011_global_roadmap_order` e `0012_tutorial_guides` estão versionadas, mas não foram aplicadas a banco nesta passagem; o seed de tutoriais também não foi executado.
 - Prompt reutilizável para a continuidade: `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`; o commit documental mais recente deve ser conferido com `git log`.
 - A seção 128 de `docs/ACTIVE_CONTEXT.md` registra a validação visual do Chart.js em desktop e mobile, para métricas de preço, estoque e negociações por intervalo. A seção 126 é o histórico da implementação inicial, anterior à validação visual.
+- O Market Board agora tem subcategorias expansíveis, ação para limpar filtros, paginação/itens por página acima da tabela e skeletons no primeiro carregamento. `pnpm check` e `pnpm test` passaram; a inspeção visual desta passagem ficou pendente porque a instância compartilhada do Playwright estava ocupada. A cobertura total de mercado continua parcial enquanto não houver fonte externa autorizada e volume confiável.
 
 ## Prioridades de continuação
+
+### 0. Validar visualmente o Market Board
+
+A implementação e as verificações automatizadas estão registradas na seção 130 de `docs/ACTIVE_CONTEXT.md`. Quando o Playwright estiver disponível, revisar `/market` em desktop, viewport estreita e teclado, conferindo expansão/seleção de categorias, foco, skeletons e ausência de overflow. A tentativa anterior encontrou uma instância Playwright já em uso; não assuma a sessão ocupada.
 
 ### 1. Tratar os limites do build de produção
 

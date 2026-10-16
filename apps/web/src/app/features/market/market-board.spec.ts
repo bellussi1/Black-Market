@@ -251,6 +251,12 @@ describe('MarketBoard', () => {
     const toggle = group.querySelector<HTMLButtonElement>('.category-expand-toggle')!;
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
 
+    group.querySelector<HTMLButtonElement>('.category-filter-button')!.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    takeRequest().flush({ ...response(), categories });
+    fixture.detectChanges();
+
     toggle.click();
     fixture.detectChanges();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
