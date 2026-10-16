@@ -2,6 +2,8 @@
 
 Para consulta por funcionalidade, veja [links úteis e anexos de referência](useful-links.md), incluindo os 21 links fornecidos em 9 de outubro de 2026 e a planilha de subprodutos de alquimia.
 
+Antes de desenhar ou alterar qualquer feature de produto, siga o [protocolo de análise competitiva](competitor-review-playbook.md): consultar BDO Workshop, BDO Codex, BDOLytics e Garmoth, registrar evidências e limites e comparar cálculos com entradas pareadas.
+
 Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram consultadas páginas públicas e fontes de código/documentação acessíveis; não houve login, upload de prints, coleta de dados pessoais nem contorno de bloqueios.
 
 ## Relatórios e cobertura

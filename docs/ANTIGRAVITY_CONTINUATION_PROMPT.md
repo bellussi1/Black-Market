@@ -30,6 +30,7 @@ Antes de alterar arquivos:
 4. Leia skills do repositório em .agents/skills/ que se aplicam à tarefa, em especial o padrão visual BDO e Angular/Spartan.
 5. Faça uma matriz curta com status (concluído, parcial, pendente ou bloqueado), evidência em código/docs, dependências e próximo passo. A matriz é uma verificação do estado, não uma razão para parar: avance nas tarefas já autorizadas e sem bloqueios externos.
 6. Use agentes em paralelo para frentes independentes quando disponíveis, com escopos de arquivo claros. Não deixe agentes editarem os mesmos arquivos sem coordenação.
+7. Antes de cada feature de produto, analise a área correspondente nos quatro sites: BDO Workshop, BDO Codex, BDOLytics e Garmoth. Para cada site, anote recurso comparável, ausência de equivalente ou limite de acesso. Siga o protocolo e a ficha comparativa em `docs/research/competitor-review-playbook.md`; não pare a implementação quando uma página estiver indisponível.
 
 Não trate a lista deste prompt como um backlog totalmente pendente. Confira o estado atual e não reimplemente o que já está concluído.
 

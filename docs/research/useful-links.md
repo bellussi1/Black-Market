@@ -2,6 +2,8 @@
 
 Referências fornecidas pelo usuário em **9 de outubro de 2026** para consulta e pesquisa do Black Market. Os links completos, idiomas, filtros e identificadores compartilhados foram preservados. A organização abaixo indica o uso na pesquisa; não representa funcionalidades já implementadas.
 
+Para toda nova feature de produto, a consulta destes concorrentes é uma etapa obrigatória, não uma autorização para reutilizar suas saídas. Consulte os quatro — BDO Workshop, BDO Codex, BDOLytics e Garmoth — na área mais próxima da feature e registre ausências/limites. O procedimento está em [protocolo de revisão competitiva](competitor-review-playbook.md).
+
 ## Armazéns e inventário
 
 | Fonte                                                                                       | Consulta e aplicação                                                                                                                                                                |

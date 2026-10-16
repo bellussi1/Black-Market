@@ -76,6 +76,7 @@ Antes de estender o comparador para atividades de combate ou coleta, use registr
 - O CSV original está na pasta Downloads do usuário, em `BlackMarket — Pesquisa da comunidade BDO.csv/BlackMarket — Pesquisa da comunidade BDO.csv`; ele não foi copiado para o repositório por este handoff. Os resultados e a interpretação de produto devem permanecer sem dados pessoais dos respondentes.
 - A integração de armazém/conta do jogo só deve usar API oficial e autorizada, opcional e de leitura, com escopo mínimo e revogação. Nunca solicitar senha do jogo nem presumir que exista API disponível.
 - Concorrentes e repositórios open source são referências para comparar fluxo e cobertura, não para copiar código, dados ou endpoints. Separar informação observada de hipótese e registrar fonte/data.
+- **Pesquisa competitiva contínua**: em toda feature de produto, consulte as áreas públicas relevantes de BDO Workshop, BDO Codex, BDOLytics e Garmoth. Registre também quando não houver equivalente ou quando a página não puder ser verificada. Para cálculo, alinhe entradas e cotações e não conclua fórmula interna só pela semelhança da interface. Use `docs/research/competitor-review-playbook.md`.
 - Estimativas de infraestrutura feitas em chats são históricas; conferir os documentos operacionais atuais e preços antes de decidir ou provisionar recursos.
 
 ## Mapa de documentação para trabalho por área
