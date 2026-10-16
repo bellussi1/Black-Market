@@ -1534,3 +1534,10 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Endpoint**: API de teste em `localhost:3301`, ligada exclusivamente à base descartável, retornou HTTP 200 e quatro etapas em português para `GET /api/v1/tutorials/recipe-workshop?locale=pt-BR`. Cabeçalhos CORS autorizaram a origem já configurada `http://localhost:4200`.
 - **Limites/limpeza**: seed não foi executado na base local persistente, staging ou produção; a página existente em `4200` ainda não recebe esses dados. A API de teste foi encerrada e o container `--rm` removido; portas 3301/55432 ficaram livres. O serviço local habitual em 3000/4200 e o staging 8081 não foram reiniciados nem alterados.
 - **Continuidade**: registrar smoke funcional como concluído, mas manter a ativação em bancos persistentes pendente. A tela local só deixa de exibir “Tutorial indisponível” depois de uma decisão explícita sobre seed no ambiente pretendido. Checklist atualizado em `docs/project-feature-checklist.md`.
+
+## 141. Regra contínua para registrar pedidos no checklist (Codex, 16/10/2026)
+
+- **Pedido**: o usuário determinou que toda feature solicitada, comentário que altere/complete requisitos e correção deve entrar em `docs/project-feature-checklist.md`, para preservar o contexto entre sessões e quando os créditos acabarem.
+- **Regra incorporada**: a seção “Regra permanente para novos pedidos” no checklist instrui atualizar a entrada existente ou criar uma nova, registrar data/origem/estado/evidência/próximo passo/bloqueios, refletir aprovações que alterem o escopo e reconciliar a implementação ao encerrar cada tarefa. Evitar entradas duplicadas; não tratar pedidos como entrega concluída.
+- **Estado**: a instrução foi registrada como regra de continuidade na seção 10 do checklist. O próprio pedido é considerado atendido pela alteração documental; nenhuma feature de produto foi implementada nesta tarefa.
+- **Próximo agente**: ao iniciar trabalho no Black Market, leia o checklist antes de agir e acrescente nele cada nova solicitação elegível no momento em que chegar. Preserve alterações locais de outras frentes.
