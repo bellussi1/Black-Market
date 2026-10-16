@@ -162,6 +162,18 @@ describe('MarketBoard', () => {
     ]);
     TestBed.inject(HttpTestingController).verify();
   });
+  it('shows market context and labels the visible stock filters', async () => {
+    const fixture = await renderMarketBoard();
+    takeRequest().flush(response());
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.titlebar-kicker')?.textContent).toContain('MERCADO CENTRAL');
+    expect(element.querySelector('.titlebar-cache')?.textContent).toContain('Cotações em cache');
+    expect(element.querySelector('.filter-group-label')?.textContent).toContain('Disponibilidade');
+    expect(element.querySelector('.filter-actions button.btn-refresh-market')).not.toBeNull();
+    TestBed.inject(HttpTestingController).verify();
+  });
   it('keeps catalogue results visible and explains unavailable provider quotes', async () => {
     const fixture = await renderMarketBoard();
     const data = response();
@@ -350,6 +362,7 @@ describe('MarketBoard', () => {
       'contagem acumulada de negociações',
     );
     expect(element.querySelector('thead')?.textContent).toContain('Registros 24h');
+    expect(element.querySelector('.filter-pills')?.textContent).toContain('Com registros 24h');
     expect(
       element.querySelector('[title*="contador total de negociações"]')?.textContent,
     ).toContain('35');

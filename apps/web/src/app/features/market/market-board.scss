@@ -12,19 +12,27 @@
 }
 .market-titlebar {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--bm-titlebar);
+  background: var(--bm-surface-raised);
+  border-top: 1px solid var(--bm-accent);
   border-bottom: 1px solid var(--bm-border);
 }
 .titlebar-main {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.titlebar-kicker {
+  color: var(--bm-accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
 }
 .titlebar-main h2 {
   margin: 0;
@@ -33,17 +41,17 @@
   color: var(--bm-text);
   letter-spacing: -0.01em;
 }
-.titlebar-region {
-  font-size: 13px;
-  color: var(--bm-muted);
-}
 .titlebar-cache {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
   font-size: 12px;
   color: var(--bm-muted);
+  overflow-wrap: anywhere;
 }
 .cache-indicator-dot {
   width: 7px;
@@ -231,15 +239,35 @@
 }
 .board-filters-group {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+}
+.availability-filter {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+.filter-group-label {
+  color: var(--bm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .filter-pills {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+.filter-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
 }
 .pill-btn {
   min-height: 44px;
@@ -775,6 +803,17 @@
   .board-filters-group {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .availability-filter,
+  .filter-pills {
+    width: 100%;
+  }
+  .filter-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+  .filter-actions > button {
+    flex: 1 1 auto;
   }
   .board-pagination {
     display: grid;

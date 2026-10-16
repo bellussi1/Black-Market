@@ -1,10 +1,10 @@
 <section class="market-window" aria-labelledby="market-board-title">
   <header class="market-titlebar">
     <div class="titlebar-main">
-      <h2 id="market-board-title">{{ fullCatalog() ? 'Catálogo do mercado' : 'Itens em alta' }}</h2>
-      <span class="titlebar-region"
-        >Mercado Central · {{ preferences.region().toUpperCase() }}</span
+      <span class="titlebar-kicker"
+        >MERCADO CENTRAL · {{ preferences.region().toUpperCase() }}</span
       >
+      <h2 id="market-board-title">{{ fullCatalog() ? 'Catálogo do mercado' : 'Itens em alta' }}</h2>
     </div>
     <div class="titlebar-cache">
       <span class="cache-indicator-dot" [class.syncing]="cache.isSyncing()"></span>
@@ -142,76 +142,81 @@
         </div>
 
         <div class="board-filters-group" data-tour="market.filters">
-          <div class="filter-pills" role="group" aria-label="Filtro rápido de estoque">
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="pill-btn"
-              [class.active]="stockFilter() === 'all'"
-              [attr.aria-pressed]="stockFilter() === 'all'"
-              (click)="setStockFilter('all')"
-            >
-              Todos
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="pill-btn"
-              [class.active]="stockFilter() === 'in_stock'"
-              [attr.aria-pressed]="stockFilter() === 'in_stock'"
-              (click)="setStockFilter('in_stock')"
-            >
-              Com estoque
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="pill-btn"
-              [class.active]="stockFilter() === 'out_of_stock'"
-              [attr.aria-pressed]="stockFilter() === 'out_of_stock'"
-              (click)="setStockFilter('out_of_stock')"
-            >
-              Estoque zerado
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              type="button"
-              class="pill-btn"
-              [class.active]="stockFilter() === 'with_volume'"
-              [attr.aria-pressed]="stockFilter() === 'with_volume'"
-              (click)="setStockFilter('with_volume')"
-            >
-              Com volume 24h
-            </button>
+          <div class="availability-filter">
+            <span class="filter-group-label">Disponibilidade</span>
+            <div class="filter-pills" role="group" aria-label="Filtro rápido de estoque">
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="pill-btn"
+                [class.active]="stockFilter() === 'all'"
+                [attr.aria-pressed]="stockFilter() === 'all'"
+                (click)="setStockFilter('all')"
+              >
+                Todos
+              </button>
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="pill-btn"
+                [class.active]="stockFilter() === 'in_stock'"
+                [attr.aria-pressed]="stockFilter() === 'in_stock'"
+                (click)="setStockFilter('in_stock')"
+              >
+                Com estoque
+              </button>
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="pill-btn"
+                [class.active]="stockFilter() === 'out_of_stock'"
+                [attr.aria-pressed]="stockFilter() === 'out_of_stock'"
+                (click)="setStockFilter('out_of_stock')"
+              >
+                Estoque zerado
+              </button>
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="pill-btn"
+                [class.active]="stockFilter() === 'with_volume'"
+                [attr.aria-pressed]="stockFilter() === 'with_volume'"
+                (click)="setStockFilter('with_volume')"
+              >
+                Com registros 24h
+              </button>
+            </div>
           </div>
 
-          @if (hasActiveFilters()) {
+          <div class="filter-actions">
+            @if (hasActiveFilters()) {
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                class="btn-clear-filters"
+                (click)="clearFilters()"
+              >
+                Limpar filtros
+              </button>
+            }
+
             <button
               hlmBtn
               variant="outline"
               type="button"
-              class="btn-clear-filters"
-              (click)="clearFilters()"
+              class="btn-refresh-market"
+              (click)="refreshBoard()"
+              [disabled]="loading()"
+              aria-label="Atualizar cotações do mercado"
             >
-              Limpar filtros
+              Atualizar
             </button>
-          }
-
-          <button
-            hlmBtn
-            variant="outline"
-            type="button"
-            class="btn-refresh-market"
-            (click)="refreshBoard()"
-            [disabled]="loading()"
-            aria-label="Atualizar cotações do mercado"
-          >
-            Atualizar
-          </button>
+          </div>
         </div>
       </div>
 
