@@ -6,6 +6,34 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { PlayerPage } from './player-page';
 describe('Progressive player workspace', () => {
   useMemoryStorage();
+  it('presents family tabs and character selection within the shared page hierarchy', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const heading = element.querySelector('.player-page > header.tool-heading');
+    const tabs = element.querySelector('.player-page > .workspace-tabs');
+    const characterContext = element.querySelector('.player-context');
+
+    expect(heading).not.toBeNull();
+    expect(heading?.getAttribute('aria-labelledby')).toBe('player-page-title');
+    expect(heading?.querySelector('#player-page-title')?.textContent).toContain('Família');
+    expect(heading?.querySelector('.tool-kicker')?.textContent).toContain('MEU ESPAÇO');
+    expect(tabs?.getAttribute('aria-label')).toBe('Dados pessoais');
+    expect(tabs?.textContent).toContain('Personagens');
+    expect(tabs?.textContent).toContain('Equipamentos');
+    expect(characterContext?.getAttribute('aria-labelledby')).toBe('player-context-title');
+    expect(characterContext?.querySelector('#player-context-title')?.textContent).toContain(
+      'Personagem ativo',
+    );
+    expect(characterContext?.querySelector('select')?.value).toBe(page.current()?.id);
+    expect(
+      Boolean(tabs!.compareDocumentPosition(characterContext!) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
+  });
   it('opens equipment inside family while retaining the active character and family data', async () => {
     const params = new BehaviorSubject(convertToParamMap({ tab: 'equipment' }));
     const fixture = await renderComponent(PlayerPage, {}, [

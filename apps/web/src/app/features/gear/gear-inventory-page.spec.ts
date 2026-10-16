@@ -2,10 +2,55 @@ import { characterSchema } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
+import { IdentityService } from '../../core/identity.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { GearInventoryPage } from './gear-inventory-page';
 describe('Character equipment management', () => {
   useMemoryStorage();
+  it('keeps equipment identity and review actions grouped when embedded and standalone', async () => {
+    const fixture = await renderComponent(GearInventoryPage, {}, [
+      { provide: IdentityService, useValue: { authenticated: () => true } },
+    ]);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const standaloneHeading = element.querySelector('.tool-page > header.tool-heading');
+
+    expect(standaloneHeading).not.toBeNull();
+    expect(standaloneHeading?.getAttribute('aria-labelledby')).toBe('gear-page-title');
+    expect(standaloneHeading?.querySelector('#gear-page-title')?.textContent).toContain(
+      'Meus equipamentos',
+    );
+    expect(standaloneHeading?.querySelector('.action-row')?.textContent).toContain(
+      'Importar equipamentos por captura',
+    );
+    expect(standaloneHeading?.querySelector('.action-row')?.textContent).toContain(
+      'Ver inventário',
+    );
+    expect(element.querySelector('.gear-character-context')?.getAttribute('aria-labelledby')).toBe(
+      'gear-character-title',
+    );
+    expect(element.querySelector('#gear-character-title')?.textContent).toContain(
+      'Personagem ativo',
+    );
+    expect(element.querySelector('app-equipment-sheet')).not.toBeNull();
+    expect(element.textContent).toContain('Adicionar ou corrigir equipamento manualmente');
+
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+    const embeddedHeading = element.querySelector(
+      '.tool-page > header.page-heading[aria-labelledby="gear-embedded-title"]',
+    );
+    expect(embeddedHeading?.querySelector('#gear-embedded-title')?.textContent).toContain(
+      'Equipamentos do personagem',
+    );
+    expect(embeddedHeading?.querySelector('.action-row')).toBeNull();
+    expect(element.querySelector('.gear-character-context')).toBeNull();
+    expect(element.querySelector('app-equipment-sheet')).not.toBeNull();
+    expect(page.profile()?.name).toBe('Aventureiro');
+  });
   it('uses the shared active character when equipment selection changes', async () => {
     const fixture = await renderComponent(GearInventoryPage);
     const page = fixture.componentInstance;
