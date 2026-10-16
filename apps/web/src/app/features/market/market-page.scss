@@ -10,6 +10,38 @@
     word-break: normal;
   }
 }
+.market-page .workspace-tabs button {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+  align-content: center;
+  text-align: left;
+}
+.market-tab-title {
+  color: inherit;
+  font-weight: 600;
+}
+.market-tab-description {
+  color: var(--bm-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.market-page .workspace-tabs button[aria-pressed='true'] .market-tab-description {
+  color: var(--bm-text-muted, var(--bm-muted));
+}
+.quote-provenance-heading {
+  margin: 14px 0 2px;
+  color: var(--bm-accent);
+  font-weight: 600;
+}
+.market-trade-count-note {
+  margin: 10px 0 0;
+  max-width: 820px;
+}
+.market-related-actions {
+  margin-top: 12px;
+}
 .item-detail-heading {
   display: flex;
   align-items: center;

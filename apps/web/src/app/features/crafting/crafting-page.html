@@ -1,36 +1,136 @@
 <div class="tool-page">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>03 / OFICINA DE PRODUÇÃO</ng-container></p>
-    <h1><ng-container i18n>Produzir, comprar, planejar.</ng-container></h1>
+    <h1><ng-container i18n>Planeje uma receita.</ng-container></h1>
     <p>
       <ng-container i18n
-        >Compare custos reais, defina rendimentos e transforme receitas em uma lista de materiais
-        integrada ao seu armazém.
+        >Configure lote, maestria e recursos para comparar comprar, produzir e coletar. Use Receitas
+        para descobrir produtos e origens; use a Oficina para decidir como executar uma receita.
       </ng-container>
     </p>
+    <div class="action-row" aria-label="Atalhos de trabalho" i18n-aria-label>
+      <a hlmBtn variant="outline" routerLink="/recipes" i18n>Descobrir receitas e origens</a>
+      <a hlmBtn variant="outline" routerLink="/market" i18n>Consultar preços do mercado</a>
+    </div>
   </header>
-  <div class="tabs" aria-label="Modos da oficina" i18n-aria-label>
+  <div class="workspace-tabs" role="group" aria-label="Espaços da oficina" i18n-aria-label>
     <button
       hlmBtn
       variant="outline"
       type="button"
-      [class.active]="tab() === 'profit'"
-      [attr.aria-pressed]="tab() === 'profit'"
-      (click)="tab.set('profit')"
+      [attr.aria-pressed]="tab() === 'workshop'"
+      (click)="tab.set('workshop')"
     >
-      <ng-container i18n>Lucro da receita</ng-container></button
-    ><button
+      <ng-container i18n>Planejar uma receita</ng-container>
+    </button>
+    <button
       hlmBtn
       variant="outline"
       type="button"
-      [class.active]="tab() === 'chain'"
-      [attr.aria-pressed]="tab() === 'chain'"
-      (click)="tab.set('chain')"
+      [attr.aria-pressed]="tab() === 'manual'"
+      (click)="tab.set('manual')"
     >
-      <ng-container i18n>Cadeia de materiais </ng-container>
+      <ng-container i18n>Simulação manual</ng-container>
+    </button>
+    <button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [attr.aria-pressed]="tab() === 'library'"
+      (click)="tab.set('library')"
+    >
+      <ng-container i18n>Minhas receitas</ng-container>
     </button>
   </div>
-  @if (tab() === 'profit') {
+  @if (tab() === 'workshop') {
+    <section hlmCard class="panel crafting-workshop-start">
+      <div class="panel-heading">
+        <div>
+          <p class="tool-kicker" i18n>OFICINA DE UMA RECEITA</p>
+          <h2 i18n>Escolha o produto que você quer planejar</h2>
+        </div>
+        <span class="badge" i18n>LOTE · MAESTRIA · RECURSOS</span>
+      </div>
+      <p class="help" i18n>
+        A oficina usa o catálogo e o cache do Mercado da região ativa. Confira a origem e a idade de
+        preços e materiais antes de confiar no resultado; valores ausentes ficam pendentes.
+      </p>
+      <app-catalog-item-picker
+        label="Qual produto você quer produzir?"
+        i18n-label
+        scope="life-skill"
+        [selectionName]="workshopItem()?.name ?? ''"
+        (selected)="selectWorkshopItem($event)"
+      />
+      @if (workshopLoading()) {
+        <p class="loading-state" role="status" i18n>Carregando item e receitas da região…</p>
+      }
+      @if (workshopMessage()) {
+        <p class="help" role="status">{{ workshopMessage() }}</p>
+      }
+      @if (workshopItem(); as selected) {
+        @if (workshopMethods().length) {
+          <div class="production-methods">
+            <label class="field" for="crafting-root-recipe" i18n>Fórmula da receita</label>
+            <select
+              appBdoSelect
+              id="crafting-root-recipe"
+              [value]="workshopMethodFamily()[0]?.key ?? ''"
+              (change)="chooseWorkshopMethod($event)"
+            >
+              @for (method of workshopMethods(); track method.key) {
+                <option [value]="method.key">{{ workshopMethodLabel(method) }}</option>
+              }
+            </select>
+            @if (workshopBatchOptions().length > 1) {
+              <label class="field" for="crafting-root-batch" i18n>Produção por operação</label>
+              <select
+                appBdoSelect
+                id="crafting-root-batch"
+                [value]="workshopRecipe()?.key ?? ''"
+                (change)="chooseWorkshopBatch($event)"
+              >
+                @for (batch of workshopBatchOptions(); track batch.recipe.key) {
+                  <option [value]="batch.recipe.key">
+                    {{ batch.quantity }} unidades por operação
+                  </option>
+                }
+              </select>
+            }
+          </div>
+        }
+        <app-recipe-tree
+          [recipe]="workshopRecipe()"
+          [recipes]="workshopRecipes()"
+          [selectedItem]="selected"
+          [datasetVersion]="workshopDatasetVersion()"
+          (rootMethod)="setWorkshopMethod($event)"
+        />
+        <div class="action-row">
+          <a hlmBtn variant="outline" [routerLink]="['/recipes/items', selected.id]" i18n
+            >Explorar catálogo e origens</a
+          >
+          <a
+            hlmBtn
+            variant="outline"
+            [routerLink]="['/market']"
+            [queryParams]="{ item: selected.id }"
+            i18n
+            >Consultar preço deste item</a
+          >
+        </div>
+      } @else if (!workshopLoading()) {
+        <div class="empty-workspace">
+          <h3 i18n>Comece pelo produto final</h3>
+          <p class="help" i18n>
+            A seleção abre a receita, os materiais e as escolhas de aquisição. O planejamento não
+            altera o estoque salvo.
+          </p>
+          <a hlmBtn variant="outline" routerLink="/recipes" i18n>Explorar receitas</a>
+        </div>
+      }
+    </section>
+  } @else if (tab() === 'manual') {
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >

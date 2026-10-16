@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   availableInventory,
   calculateCrafting,
@@ -21,14 +21,15 @@ import {
   type ManualRecipe,
   recipeSchema,
 } from '@bdo/calculators';
-import type { CatalogItem, CatalogRecipe } from '@bdo/shared';
+import type { CatalogItem, CatalogItemDetail, CatalogRecipe } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
-import type { Subscription } from 'rxjs';
+import { forkJoin, type Subscription } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { MarketCacheService } from '../../core/market-cache.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate, validationMessage } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
@@ -36,6 +37,12 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { number, silver } from '../../shared/formatters';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { PresetBar } from '../../shared/preset-bar';
+import {
+  batchAlternatives,
+  recipeFamilies,
+  withVerifiedIngredientSubstitutions,
+} from '../../shared/recipe-tree/recipe-equivalents';
+import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
@@ -51,16 +58,26 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     PresetBar,
     CalculationProof,
     CatalogItemPicker,
+    RecipeTree,
+    RouterLink,
   ],
   templateUrl: './crafting-page.html',
 })
 export class CraftingPage implements OnDestroy {
   private readonly analytics = inject(AnalyticsService);
   private readonly catalog = inject(CatalogApiService);
+  private readonly marketCache = inject(MarketCacheService);
   private recipeRequest?: Subscription;
+  private workshopRequest?: Subscription;
   private lastRegion = '';
   readonly recipeProduct = signal<CatalogItem | null>(null);
   readonly catalogRecipes = signal<CatalogRecipe[]>([]);
+  readonly workshopItem = signal<CatalogItemDetail | null>(null);
+  readonly workshopRecipes = signal<CatalogRecipe[]>([]);
+  readonly workshopRecipe = signal<CatalogRecipe | null>(null);
+  readonly workshopDatasetVersion = signal('');
+  readonly workshopLoading = signal(false);
+  readonly workshopMessage = signal('');
   readonly recipeLoading = signal(false);
   readonly recipeMessage = signal('');
   readonly missingYield = signal(false);
@@ -74,23 +91,7 @@ export class CraftingPage implements OnDestroy {
         const id = Number(params.get('item'));
         if (Number.isInteger(id) && id > 0 && id <= 2147483647) {
           this.recipeRequest?.unsubscribe();
-          this.recipeRequest = this.catalog.getItem(id).subscribe({
-            next: (response) => {
-              this.chooseRecipeProduct(response.item);
-              const key = params.get('recipe');
-              if (key) {
-                this.recipeRequest?.unsubscribe();
-                this.recipeRequest = this.catalog.getRecipe(key).subscribe({
-                  next: (result) => this.useCatalogRecipe(result.recipe),
-                  error: () =>
-                    this.recipeMessage.set(
-                      'Não foi possível abrir esta receita. Escolha uma receita disponível.',
-                    ),
-                });
-              }
-            },
-            error: () => this.recipeMessage.set('Não encontramos este item na região selecionada.'),
-          });
+          this.selectWorkshopItemById(id, params.get('recipe'));
         }
       });
     effect(() => {
@@ -102,6 +103,14 @@ export class CraftingPage implements OnDestroy {
           this.recipeProduct.set(null);
           this.recipeLoading.set(false);
           this.recipeMessage.set('');
+          const selectedItem = this.workshopItem();
+          this.workshopRequest?.unsubscribe();
+          this.workshopItem.set(null);
+          this.workshopRecipes.set([]);
+          this.workshopRecipe.set(null);
+          this.workshopDatasetVersion.set('');
+          this.workshopMessage.set('');
+          if (selectedItem) this.selectWorkshopItem(selectedItem);
           this.form.update((form) => ({
             ...form,
             salePrice: '0',
@@ -114,29 +123,220 @@ export class CraftingPage implements OnDestroy {
   }
 
   chooseRecipeProduct(item: CatalogItem | null): void {
+    this.selectWorkshopItem(item);
+  }
+
+  private selectWorkshopItemById(itemId: number, recipeKey: string | null): void {
+    this.workshopLoading.set(true);
+    this.recipeLoading.set(true);
+    this.workshopMessage.set('');
+    this.catalogRecipes.set([]);
+    this.workshopRecipes.set([]);
+    this.workshopRecipe.set(null);
+    this.workshopItem.set(null);
+    this.workshopRequest?.unsubscribe();
+    this.workshopRequest = this.catalog.getItem(itemId).subscribe({
+      next: (response) => {
+        this.recipeProduct.set(response.item);
+        this.recipeLoading.set(true);
+        this.workshopItem.set(response.item);
+        this.loadWorkshopRecipes(response.item, response.dataset.version, recipeKey);
+      },
+      error: () => {
+        this.workshopLoading.set(false);
+        this.recipeMessage.set('Não encontramos este item na região selecionada.');
+        this.workshopMessage.set('Não encontramos este item na região selecionada.');
+      },
+    });
+  }
+
+  selectWorkshopItem(item: CatalogItem | null): void {
     this.recipeRequest?.unsubscribe();
+    this.workshopRequest?.unsubscribe();
     this.recipeProduct.set(item);
     this.catalogRecipes.set([]);
+    this.workshopItem.set(null);
+    this.workshopRecipes.set([]);
+    this.workshopRecipe.set(null);
+    this.workshopDatasetVersion.set('');
     this.recipeMessage.set('');
+    this.workshopMessage.set('');
     this.recipeLoading.set(Boolean(item));
+    this.workshopLoading.set(Boolean(item));
     if (!item) return;
-    this.recipeRequest = this.catalog.getItemRecipes(item.id, 'produces').subscribe({
-      next: (response) => {
-        this.catalogRecipes.set(response.recipes);
-        this.recipeLoading.set(false);
-        if (!response.recipes.length)
-          this.recipeMessage.set(
-            $localize`Ainda não temos uma receita de produção para este item. Você pode montar seu cenário abaixo.`,
+
+    this.workshopRequest = forkJoin({
+      item: this.catalog.getItem(item.id),
+      recipes: this.catalog.getItemRecipes(item.id, 'produces'),
+    }).subscribe({
+      next: ({ item: itemResponse, recipes }) => {
+        if (recipes.dataset?.version !== itemResponse.dataset.version) {
+          this.recipeLoading.set(false);
+          this.workshopLoading.set(false);
+          this.workshopMessage.set(
+            'O catálogo mudou durante a consulta. Selecione o item novamente para carregar a mesma versão.',
           );
-        else if (response.recipes.length === 1) this.useCatalogRecipe(response.recipes[0]);
+          return;
+        }
+        this.recipeProduct.set(itemResponse.item);
+        this.catalogRecipes.set(recipes.recipes);
+        this.workshopItem.set(itemResponse.item);
+        this.workshopDatasetVersion.set(itemResponse.dataset.version);
+        this.setWorkshopRecipes(recipes.recipes, null);
       },
       error: () => {
         this.recipeLoading.set(false);
+        this.workshopLoading.set(false);
         this.recipeMessage.set(
-          $localize`Não foi possível carregar as receitas. Tente selecionar o item novamente.`,
+          'Não foi possível carregar as receitas. Tente selecionar o item novamente.',
+        );
+        this.workshopMessage.set(
+          'Não foi possível carregar as receitas. Tente selecionar o item novamente.',
         );
       },
     });
+  }
+
+  private loadWorkshopRecipes(
+    item: CatalogItemDetail,
+    datasetVersion: string,
+    recipeKey: string | null,
+  ): void {
+    this.workshopRequest?.unsubscribe();
+    this.workshopRequest = this.catalog.getItemRecipes(item.id, 'produces').subscribe({
+      next: (response) => {
+        if (response.dataset?.version !== datasetVersion) {
+          this.recipeLoading.set(false);
+          this.workshopLoading.set(false);
+          this.workshopMessage.set(
+            'O catálogo mudou durante a consulta. Abra o item novamente para atualizar a oficina.',
+          );
+          return;
+        }
+        this.catalogRecipes.set(response.recipes);
+        this.recipeProduct.set(item);
+        this.workshopDatasetVersion.set(datasetVersion);
+        this.workshopItem.set(item);
+        this.setWorkshopRecipes(response.recipes, recipeKey);
+      },
+      error: () => {
+        this.recipeLoading.set(false);
+        this.workshopLoading.set(false);
+        this.workshopMessage.set('Não foi possível carregar as receitas deste item.');
+      },
+    });
+  }
+
+  private setWorkshopRecipes(recipes: CatalogRecipe[], selectedKey: string | null): void {
+    const alternatives = withVerifiedIngredientSubstitutions(recipes);
+    this.workshopRecipes.set(alternatives);
+    const requested = selectedKey
+      ? alternatives.find((recipe) => recipe.key === selectedKey)
+      : null;
+    if (selectedKey && selectedKey !== 'external' && !requested) {
+      const item = this.workshopItem();
+      const datasetVersion = this.workshopDatasetVersion();
+      if (!item || !datasetVersion) {
+        this.recipeLoading.set(false);
+        this.workshopLoading.set(false);
+        this.workshopMessage.set('Não há dados suficientes para abrir esta receita.');
+        return;
+      }
+      this.recipeLoading.set(true);
+      this.workshopLoading.set(true);
+      this.workshopRequest = this.catalog.getRecipe(selectedKey).subscribe({
+        next: (response) => {
+          if (
+            response.dataset?.version !== datasetVersion ||
+            !response.recipe.outputs.some((output) => output.itemId === item.id)
+          ) {
+            this.recipeLoading.set(false);
+            this.workshopLoading.set(false);
+            this.workshopMessage.set(
+              'A receita solicitada não corresponde a este produto ou a versão atual do catálogo. Escolha uma fórmula disponível.',
+            );
+            return;
+          }
+          const extended = withVerifiedIngredientSubstitutions([...alternatives, response.recipe]);
+          const selected = extended.find((recipe) => recipe.key === selectedKey) ?? response.recipe;
+          this.workshopRecipes.set(extended);
+          this.workshopRecipe.set(selected);
+          this.recipeLoading.set(false);
+          this.workshopLoading.set(false);
+          this.useCatalogRecipe(selected);
+          this.workshopMessage.set(
+            'Receita carregada do catálogo. Confira rendimento, preços, região e idade das cotações.',
+          );
+        },
+        error: () => {
+          this.recipeLoading.set(false);
+          this.workshopLoading.set(false);
+          this.workshopMessage.set(
+            'Não foi possível abrir esta receita. Escolha uma fórmula disponível.',
+          );
+        },
+      });
+      return;
+    }
+    const selected =
+      selectedKey === 'external' ? null : (requested ?? this.workshopMethods()[0] ?? null);
+    this.workshopRecipe.set(selected);
+    this.recipeLoading.set(false);
+    this.workshopLoading.set(false);
+    if (selected) this.useCatalogRecipe(selected);
+    this.workshopMessage.set(
+      alternatives.length
+        ? 'Ajuste lote, maestria e recursos; a oficina compara as formas de aquisição com os preços disponíveis para a região selecionada.'
+        : 'Este item não tem uma receita de produção vinculada na versão atual do catálogo. A oficina ainda pode mostrar fontes conhecidas do item.',
+    );
+  }
+
+  readonly workshopFamilies = computed(() => recipeFamilies(this.workshopRecipes()));
+  readonly workshopMethods = computed(() => this.workshopFamilies().map((family) => family[0]!));
+  readonly workshopMethodFamily = computed(() => {
+    const recipe = this.workshopRecipe();
+    return (
+      this.workshopFamilies().find((family) =>
+        family.some((candidate) => candidate.key === recipe?.key),
+      ) ?? (recipe ? [recipe] : [])
+    );
+  });
+  readonly workshopBatchOptions = computed(() => {
+    const recipe = this.workshopRecipe();
+    return recipe ? batchAlternatives(recipe, this.workshopMethodFamily()) : [];
+  });
+
+  workshopMethodLabel(recipe: CatalogRecipe): string {
+    const family = this.workshopFamilies().find((group) =>
+      group.some((candidate) => candidate.key === recipe.key),
+    );
+    const representative = family?.[0];
+    return (
+      (recipe.byproductOfItemId ? 'Subproduto · ' : '') +
+      recipeTypeLabel(recipe.type) +
+      ' · método ' +
+      (this.workshopMethods().findIndex((row) => row.key === representative?.key) + 1) +
+      ' · ' +
+      recipe.inputs.length +
+      ' materiais'
+    );
+  }
+
+  chooseWorkshopMethod(event: Event): void {
+    const key = (event.target as HTMLSelectElement).value;
+    this.setWorkshopMethod(this.workshopMethods().find((recipe) => recipe.key === key) ?? null);
+  }
+
+  chooseWorkshopBatch(event: Event): void {
+    const key = (event.target as HTMLSelectElement).value;
+    this.setWorkshopMethod(
+      this.workshopBatchOptions().find((batch) => batch.recipe.key === key)?.recipe ?? null,
+    );
+  }
+
+  setWorkshopMethod(recipe: CatalogRecipe | null): void {
+    this.workshopRecipe.set(recipe);
+    if (recipe) this.useCatalogRecipe(recipe);
   }
 
   useCatalogRecipe(recipe: CatalogRecipe): void {
@@ -160,7 +360,7 @@ export class CraftingPage implements OnDestroy {
       ...this.form(),
       crafts: 1,
       yield: output?.quantity && Number(output.quantity) > 0 ? Number(output.quantity) : 1,
-      salePrice: savedQuote(product.id)?.price ?? '0',
+      salePrice: this.cachedMarketPrice(product.id) ?? savedQuote(product.id)?.price ?? '0',
       ingredients: recipe.inputs.map((part) => ({
         itemId: part.itemId,
         name: part.name,
@@ -170,16 +370,22 @@ export class CraftingPage implements OnDestroy {
             (entry) => entry.region === this.store.data().region && entry.itemId === part.itemId,
           )
           .reduce((sum, entry) => sum + entry.quantity, 0),
-        price: savedQuote(part.itemId)?.price ?? '0',
+        price: this.cachedMarketPrice(part.itemId) ?? savedQuote(part.itemId)?.price ?? '0',
       })),
     });
     this.recipeMessage.set(
-      $localize`Materiais preenchidos. Confira rendimento, tempo e preços antes de usar o resultado. Cotações salvas podem estar desatualizadas.`,
+      $localize`Materiais preenchidos. O cache local dura 5 min, mas a fonte pode informar dados mais antigos. Confira origem e horário no Mercado; cotações pessoais também podem estar desatualizadas.`,
     );
+  }
+
+  private cachedMarketPrice(itemId: number): string | null {
+    const entry = this.marketCache.getCachedQuoteEntry(itemId, this.store.data().region);
+    return entry && entry.expiresAt > Date.now() ? entry.quote.price : null;
   }
 
   ngOnDestroy(): void {
     this.recipeRequest?.unsubscribe();
+    this.workshopRequest?.unsubscribe();
   }
   selectProduct(item: CatalogItem | null): void {
     this.draft = { ...this.draft, name: item?.name || '', itemId: item?.id };
@@ -192,7 +398,7 @@ export class CraftingPage implements OnDestroy {
     };
   }
   readonly store = inject(WorkspaceStore);
-  readonly tab = signal('profit');
+  readonly tab = signal<'workshop' | 'manual' | 'library'>('workshop');
   readonly form = signal<CraftingInput>({
     ...defaultTax,
     crafts: 1,
@@ -281,9 +487,10 @@ export class CraftingPage implements OnDestroy {
             ? row.itemId === r.itemId
             : r.name.trim().toLocaleLowerCase() === name),
       );
+    const marketPrice = row.itemId ? this.cachedMarketPrice(row.itemId) : null;
     this.ingredient(index, {
       owned: stock.reduce((n, r) => n + r.quantity, 0),
-      price: quote?.price ?? stock[0]?.price ?? row.price,
+      price: marketPrice ?? quote?.price ?? stock[0]?.price ?? row.price,
     });
   }
   newRecipe(): ManualRecipe {
@@ -321,7 +528,7 @@ export class CraftingPage implements OnDestroy {
         };
       }),
     };
-    this.tab.set('chain');
+    this.tab.set('library');
     this.recipeMessage.set(
       'Receita preparada para revisão. Salve-a na biblioteca para planejar a cadeia de produção.',
     );

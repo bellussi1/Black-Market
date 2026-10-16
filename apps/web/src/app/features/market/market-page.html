@@ -4,8 +4,9 @@
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
     <p>
       <ng-container i18n
-        >Busque itens do catálogo, acompanhe preços, atividade do mercado e estoque. Selecione um
-        item para consultar suas variantes ou calcular o valor recebido depois das taxas.
+        >Consulte observações de preço e estoque por região, simule o líquido de uma venda e guarde
+        cotações pessoais com histórico. Preços e atividade são estimativas baseadas nas consultas
+        disponíveis; não representam garantia de venda nem unidades negociadas.
       </ng-container>
     </p>
     <app-tutorial-launcher screenKey="market" />
@@ -17,9 +18,9 @@
       type="button"
       [attr.aria-pressed]="workspaceView() === 'board'"
       (click)="workspaceView.set('board')"
-      i18n
     >
-      Mercado
+      <span class="market-tab-title" i18n>Encontrar item</span>
+      <small class="market-tab-description" i18n>Preço, estoque e atividade</small>
     </button>
     <button
       hlmBtn
@@ -27,9 +28,9 @@
       type="button"
       [attr.aria-pressed]="workspaceView() === 'quote'"
       (click)="workspaceView.set('quote')"
-      i18n
     >
-      Cotação do item
+      <span class="market-tab-title" i18n>Detalhes do item</span>
+      <small class="market-tab-description" i18n>Origem e histórico</small>
     </button>
     <button
       hlmBtn
@@ -37,9 +38,9 @@
       type="button"
       [attr.aria-pressed]="workspaceView() === 'calculator'"
       (click)="workspaceView.set('calculator')"
-      i18n
     >
-      Calcular venda
+      <span class="market-tab-title" i18n>Simular venda líquida</span>
+      <small class="market-tab-description" i18n>Quantidade e taxas</small>
     </button>
     <button
       hlmBtn
@@ -47,9 +48,9 @@
       type="button"
       [attr.aria-pressed]="workspaceView() === 'saved'"
       (click)="workspaceView.set('saved')"
-      i18n
     >
-      Minhas cotações
+      <span class="market-tab-title" i18n>Cotações pessoais</span>
+      <small class="market-tab-description" i18n>Seus registros e histórico</small>
     </button>
   </nav>
   <app-market-board
@@ -181,6 +182,7 @@
             Value Pack</label
           >
         </div>
+        <p class="help quote-provenance-heading" i18n>Origem, região e idade da consulta</p>
         <p class="help">
           <ng-container i18n
             >Fonte: Arsha · {{ response.region.toUpperCase() }} · idioma solicitado:
@@ -201,7 +203,7 @@
               <dd>{{ silver(item.price) }}</dd>
             </div>
             <div>
-              <dt>Líquido após taxas</dt>
+              <dt>Estimativa líquida após taxas</dt>
               <dd>{{ silver(netPrice(item.price)) }}</dd>
             </div>
             <div>
@@ -209,8 +211,8 @@
               <dd>{{ number(item.stock, 0) }}</dd>
             </div>
             <div>
-              <dt>Transações registradas</dt>
-              <dd>{{ silver(item.totalTrades) }}</dd>
+              <dt>Negociações registradas (contador)</dt>
+              <dd>{{ tradeCount(item.totalTrades) }}</dd>
             </div>
             <div>
               <dt>Limite mínimo</dt>
@@ -229,6 +231,10 @@
               <dd>{{ silver(item.lastSoldPrice) }}</dd>
             </div>
           </dl>
+          <p class="help market-trade-count-note" i18n>
+            Negociações registradas não são unidades vendidas. Estoque e contagem acumulada ajudam a
+            acompanhar a atividade observada, mas não confirmam liquidez nem o tempo de venda.
+          </p>
           <div
             class="quote-actions"
             role="group"
@@ -242,7 +248,7 @@
               (click)="calculateLive(item)"
               i18n
             >
-              Calcular venda
+              Simular recebimento líquido
             </button>
             <button
               hlmBtn
@@ -261,6 +267,31 @@
               }}
             </button>
           </div>
+          @if (catalogItem(); as selected) {
+            <div
+              class="action-row market-related-actions"
+              aria-label="Continuar com este item"
+              i18n-aria-label
+            >
+              <a
+                hlmBtn
+                variant="outline"
+                class="btn subtle"
+                [routerLink]="['/recipes/items', selected.id]"
+                i18n
+                >Explorar receitas</a
+              >
+              <a
+                hlmBtn
+                variant="outline"
+                class="btn subtle"
+                [routerLink]="['/crafting']"
+                [queryParams]="{ item: selected.id }"
+                i18n
+                >Abrir na oficina</a
+              >
+            </div>
+          }
           @if (!canSaveLive(item) && !liveQuoteSaved(item)) {
             <p class="help quote-save-note" i18n>
               Salve apenas uma cotação atualizada da região selecionada. Dados antigos ou sem preço
@@ -453,7 +484,7 @@
                         <td>
                           {{ point.stock === null ? 'Não informado' : number(point.stock, 0) }}
                         </td>
-                        <td>{{ silver(point.totalTrades) }}</td>
+                        <td>{{ tradeCount(point.totalTrades) }}</td>
                       </tr>
                     }
                   </tbody>
@@ -495,6 +526,11 @@
     >
       <section hlmCard class="panel">
         <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
+        <p class="help" i18n>
+          Simule o recebimento líquido para uma quantidade e um custo de aquisição. A cotação só é
+          preenchida quando você veio de um item consultado ou escolheu uma cotação pessoal; revise
+          região, horário e taxas antes de usar o valor como premissa.
+        </p>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Preço por unidade</ng-container
@@ -591,6 +627,11 @@
         </h2>
         <span class="badge"><ng-container i18n>MEUS DADOS</ng-container></span>
       </div>
+      <p class="help" i18n>
+        Cotações pessoais ficam salvas neste workspace e filtradas pela região ativa. Elas guardam
+        observações e histórico para consulta; use “Calcular” para simular venda ou abra a receita e
+        a oficina para continuar o planejamento.
+      </p>
       <div class="row-editor">
         <div class="form-grid">
           <label class="field"
@@ -703,8 +744,28 @@
                         type="button"
                         (click)="toggle(q)"
                       >
-                        {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}</button
-                      ><button
+                        {{ q.favorite ? 'Desfavoritar' : 'Favoritar' }}
+                      </button>
+                      @if (q.itemId) {
+                        <a
+                          hlmBtn
+                          variant="outline"
+                          class="btn subtle"
+                          [routerLink]="['/recipes/items', q.itemId]"
+                          i18n
+                          >Receitas</a
+                        >
+                        <a
+                          hlmBtn
+                          variant="outline"
+                          class="btn subtle"
+                          [routerLink]="['/crafting']"
+                          [queryParams]="{ item: q.itemId }"
+                          i18n
+                          >Oficina</a
+                        >
+                      }
+                      <button
                         hlmBtn
                         variant="outline"
                         class="btn danger"

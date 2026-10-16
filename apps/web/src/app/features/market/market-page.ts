@@ -300,6 +300,14 @@ export class MarketPage implements OnDestroy {
     );
     return result.value?.net ?? null;
   }
+  tradeCount(value: string | null | undefined): string {
+    if (value === null || value === undefined) return '—';
+    try {
+      return new Intl.NumberFormat(uiLocale()).format(BigInt(value));
+    } catch {
+      return '—';
+    }
+  }
   setTaxes(value: MarketInput | TaxOptions) {
     this.patch(value);
     const parsed = marketSchema.safeParse(this.form());

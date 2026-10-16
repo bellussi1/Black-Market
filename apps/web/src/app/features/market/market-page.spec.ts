@@ -63,6 +63,74 @@ describe('MarketPage', () => {
     ).toEqual(['20', '50', '100']);
     expect(element.textContent).not.toContain('Encontre sua próxima compra ou venda');
   });
+
+  it('explains the purpose of market actions and connects a selected item to crafting and recipes', async () => {
+    const fixture = await render(MarketPage);
+    const element = fixture.nativeElement as HTMLElement;
+    const page = fixture.componentInstance;
+    const item = {
+      id: 676,
+      name: 'Example',
+      description: null,
+      grade: null,
+      weight: null,
+      categories: [],
+      category: 'Material',
+      icon: null,
+      iconUrl: null,
+    } as unknown as CatalogItem;
+
+    page.catalogItem.set(item);
+    page.live.set({
+      source: 'arsha',
+      region: 'sa',
+      locale: 'pt',
+      fetchedAt: '2026-10-16T12:00:00.000Z',
+      cacheStatus: 'fetched',
+      upstreamCacheMinutes: 30,
+      items: [
+        {
+          itemId: 676,
+          subId: 0,
+          name: 'Example',
+          price: '340000',
+          stock: 3,
+          totalTrades: '50',
+          minPrice: '1',
+          maxPrice: '500000',
+          lastSoldPrice: null,
+          lastSoldAt: null,
+        },
+      ],
+    });
+    page.workspaceView.set('quote');
+    fixture.detectChanges();
+
+    expect(element.textContent).toContain('Origem, região e idade da consulta');
+    expect(element.textContent).toContain('Estimativa líquida após taxas');
+    expect(element.textContent).toContain('Negociações registradas não são unidades vendidas');
+    expect(
+      Array.from(element.querySelectorAll<HTMLElement>('.market-tab-title'), (label) =>
+        label.textContent?.trim(),
+      ),
+    ).toEqual(['Encontrar item', 'Detalhes do item', 'Simular venda líquida', 'Cotações pessoais']);
+    expect(
+      Array.from(element.querySelectorAll<HTMLElement>('.market-tab-description'), (label) =>
+        label.textContent?.trim(),
+      ),
+    ).toEqual([
+      'Preço, estoque e atividade',
+      'Origem e histórico',
+      'Quantidade e taxas',
+      'Seus registros e histórico',
+    ]);
+    expect(element.querySelector('a[href="/recipes/items/676"]')?.textContent).toContain(
+      'Explorar receitas',
+    );
+    expect(element.querySelector('a[href="/crafting?item=676"]')?.textContent).toContain(
+      'Abrir na oficina',
+    );
+  });
   it('consults selected items automatically and shares tax preferences without losing the search', async () => {
     const fixture = await render(MarketPage),
       page = fixture.componentInstance;
