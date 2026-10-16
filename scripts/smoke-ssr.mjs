@@ -165,6 +165,7 @@ try {
     ['/', 'BLACK MARKET'],
     ['/market', 'Mercado Central'],
     ['/recipes', 'Oficina de produção'],
+    ['/crafting', 'Planeje uma receita.'],
     ['/recipes/items/5301', 'Reagente Líquido Limpo'],
     ['/market/items/5301', 'Reagente Líquido Limpo'],
     ['/contato', 'Contato'],
@@ -214,7 +215,7 @@ try {
     }
   }
 
-  for (const path of ['/reference/npcs', '/world', '/crafting', '/demo', '/account']) {
+  for (const path of ['/reference/npcs', '/world', '/demo']) {
     const response = await request(path, { redirect: 'manual' });
     assert.ok(
       [301, 302, 303, 307, 308].includes(response.status),
@@ -224,6 +225,10 @@ try {
   }
   const inventory = await request('/inventory');
   assert.equal(inventory.headers.get('x-robots-tag'), 'noindex,nofollow');
+  const account = await request('/account');
+  assert.equal(account.status, 200);
+  assert.equal(account.headers.get('x-robots-tag'), 'noindex,nofollow');
+  assert.equal(account.headers.get('cache-control'), 'private,no-store');
   const personal = await request('/profile');
   assert.equal(personal.status, 200);
   assert.equal(personal.headers.get('x-robots-tag'), 'noindex,nofollow');
