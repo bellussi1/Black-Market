@@ -69,6 +69,8 @@ describe('DashboardPage', () => {
     expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
       'Carregando focos',
     );
+    expect(fixture.nativeElement.querySelector('.home-focus-loading')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.home-focus-skeleton')).not.toBeNull();
     http
       .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
       .flush({
@@ -85,6 +87,8 @@ describe('DashboardPage', () => {
         updatedAt: null,
       });
     fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.home-focus-section.panel')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.home-focus-heading.panel-heading')).not.toBeNull();
     const cards = fixture.nativeElement.querySelectorAll('.home-focus-card');
     expect(cards[0].querySelectorAll('a')).toHaveLength(1);
     expect(cards[0].querySelector('a')?.getAttribute('href')).toBe('/roadmap');

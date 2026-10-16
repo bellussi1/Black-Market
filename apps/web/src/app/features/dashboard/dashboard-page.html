@@ -15,8 +15,8 @@
       <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
     </div>
 
-    <section class="home-focus-section" aria-labelledby="home-focus-title">
-      <div class="home-focus-heading">
+    <section class="home-focus-section panel" aria-labelledby="home-focus-title">
+      <div class="home-focus-heading panel-heading">
         <div>
           <p class="tool-kicker" i18n>TRILHA ATIVA DO PRODUTO</p>
           <h2 id="home-focus-title" i18n>Focos atuais</h2>
@@ -29,7 +29,23 @@
       </div>
 
       @if (roadmapLoading()) {
-        <p class="home-focus-state" role="status" i18n>Carregando focos do Roadmap…</p>
+        <div class="home-focus-loading" role="status" aria-live="polite" aria-busy="true">
+          <p class="home-focus-loading-copy" i18n>Carregando focos do Roadmap…</p>
+          <article class="home-focus-card home-focus-skeleton" aria-hidden="true">
+            <div class="home-skeleton-row">
+              <span class="home-skeleton home-skeleton-chip"></span>
+              <span class="home-skeleton home-skeleton-chip home-skeleton-chip-short"></span>
+            </div>
+            <span class="home-skeleton home-skeleton-title"></span>
+            <span class="home-skeleton home-skeleton-line"></span>
+            <span class="home-skeleton home-skeleton-line home-skeleton-line-medium"></span>
+            <span class="home-skeleton home-skeleton-line home-skeleton-line-short"></span>
+            <div class="home-skeleton-row">
+              <span class="home-skeleton home-skeleton-action"></span>
+              <span class="home-skeleton home-skeleton-action home-skeleton-action-short"></span>
+            </div>
+          </article>
+        </div>
       } @else if (roadmapError()) {
         <div class="home-focus-state home-focus-error" role="alert">
           <p>{{ roadmapError() }}</p>
@@ -139,8 +155,8 @@
   </section>
 
   @if (hasWorkspaceData()) {
-    <section class="continue-section" aria-labelledby="continue-title">
-      <div class="home-section-head">
+    <section class="continue-section panel" aria-labelledby="continue-title">
+      <div class="home-section-head panel-heading">
         <div>
           <p class="tool-kicker" i18n>SEU ESPAÇO</p>
           <h2 id="continue-title" i18n>Continue de onde parou</h2>
