@@ -121,6 +121,7 @@ A tela de mercado consulta por ID a API comunitária Arsha nas regiões SA/NA/EU
 - [API REST](docs/api.md)
 - [Pipeline e fontes](docs/data-pipeline.md)
 - [Funcionalidades e cobertura](docs/feature-coverage.md)
+- [Checklist mestre de funcionalidades, origem e pendências](docs/project-feature-checklist.md)
 - [Roadmap e prioridades de funcionalidades](docs/roadmap.md)
 - [Fila de implementação e próximos prompts](docs/implementation-queue.md)
 - [Império de nodes e trabalhadores](docs/worker-empire.md)

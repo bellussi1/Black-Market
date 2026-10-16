@@ -1,5 +1,7 @@
 # Funcionalidades principais — estado de implementação
 
+> **Snapshot histórico iniciado em 08/10/2026.** Para a lista transversal mais recente de pedidos, origens, evidências e pendências, consulte o [checklist mestre](project-feature-checklist.md).
+
 Em 08/10/2026, o código implementa os seguintes escopos MVP:
 
 - Referências: receitas pesquisáveis, fichas compartilháveis e dados de NPCs, missões, conhecimento, habilidades, classes, locais, aprimoramento e Caphras.

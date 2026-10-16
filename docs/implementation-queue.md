@@ -2,6 +2,8 @@
 
 Esta é a fila persistente do projeto. Não há uma ferramenta de fila/Queue conectada a esta conversa; as instruções ficam registradas aqui para manter ordem e critérios no repositório. A fila abaixo organiza as solicitações anteriores: itens já implementados seguem como validações, e as funcionalidades ainda não construídas ficam depois dos controles necessários para lançamento.
 
+> Para reconciliar esta fila com todos os chats acessíveis, ver estado e localizar evidências atuais, consulte o [checklist mestre de funcionalidades](project-feature-checklist.md). Esta fila preserva a ordenação e critérios registrados em 13/10/2026; confirme a implementação antes de tratar qualquer item como pendente.
+
 ## Fila atual
 
 **Atualização de escopo em 13/10/2026:** os quatro pilares principais estão ativos no MVP: Mercado; Crafting/receitas; Scan e Armazém; e Recomendações (“O que fazer?”) com dados de armazém e maestria. O [Roadmap](roadmap.md) já está publicado em `/roadmap`, sem prazos, com conteúdo editável no banco por `/roadmap/manage`. A fila abaixo acompanha as lacunas verificadas, não suspende os pilares. Interfaces não substituem cobertura de dados: reconhecimento de itens/quantidades, fontes de mercado contínuas e rendimentos variáveis ainda precisam de evidência real e revisão explícita.
