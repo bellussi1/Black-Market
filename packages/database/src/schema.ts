@@ -417,7 +417,7 @@ export const roadmapEntries = pgTable(
   },
   (table) => [
     uniqueIndex('roadmap_entries_slug_uidx').on(table.slug),
-    uniqueIndex('roadmap_entries_kind_order_uidx').on(table.kind, table.sortOrder),
+    uniqueIndex('roadmap_entries_sort_order_uidx').on(table.sortOrder),
     check('roadmap_entries_order_check', sql`${table.sortOrder} >= 0`),
     check('roadmap_entries_slug_check', sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
   ],
@@ -446,6 +446,36 @@ export const marketSnapshots = pgTable(
   ],
 );
 
+export const tutorialGuides = pgTable(
+  'tutorial_guides',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    screenKey: varchar('screen_key', { length: 64 }).notNull(),
+    locale: varchar('locale', { length: 16 }).notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('tutorial_guides_screen_locale_uidx').on(table.screenKey, table.locale)],
+);
+
+export const tutorialGuideSteps = pgTable(
+  'tutorial_guide_steps',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    guideId: uuid('guide_id')
+      .notNull()
+      .references(() => tutorialGuides.id, { onDelete: 'cascade' }),
+    sortOrder: integer('sort_order').notNull(),
+    anchorKey: varchar('anchor_key', { length: 120 }),
+    title: varchar('title', { length: 100 }).notNull(),
+    body: varchar('body', { length: 360 }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('tutorial_guide_steps_guide_order_uidx').on(table.guideId, table.sortOrder),
+    check('tutorial_guide_steps_order_check', sql`${table.sortOrder} >= 0`),
+  ],
+);
+
 export const schema = {
   authUsers,
   authIdentities,
@@ -455,6 +485,8 @@ export const schema = {
   referenceCollections,
   userWorkspaces,
   roadmapEntries,
+  tutorialGuides,
+  tutorialGuideSteps,
   marketSnapshots,
   categories,
   categoryTranslations,
@@ -473,6 +505,8 @@ export const schema = {
 export type DatasetVersion = typeof datasetVersions.$inferSelect;
 export type Item = typeof items.$inferSelect;
 export type RoadmapEntryRecord = typeof roadmapEntries.$inferSelect;
+export type TutorialGuideRecord = typeof tutorialGuides.$inferSelect;
+export type TutorialGuideStepRecord = typeof tutorialGuideSteps.$inferSelect;
 export type ItemVersion = typeof itemVersions.$inferSelect;
 export type ItemTranslation = typeof itemTranslations.$inferSelect;
 export type Recipe = typeof recipes.$inferSelect;

@@ -32,6 +32,14 @@ const restricted: RuntimePrivileges = {
   steam_exchanges_insert: true,
   steam_exchanges_update: true,
   steam_exchanges_delete: true,
+  tutorial_guides_select: true,
+  tutorial_guides_insert: true,
+  tutorial_guides_update: true,
+  tutorial_guides_delete: true,
+  tutorial_steps_select: true,
+  tutorial_steps_insert: true,
+  tutorial_steps_update: true,
+  tutorial_steps_delete: true,
 };
 describe('Runtime database privileges', () => {
   it('accepts a restricted role', () => expect(runtimeRoleIsRestricted(restricted)).toBe(true));
@@ -56,8 +64,15 @@ describe('Runtime database privileges', () => {
     ))
       expect(runtimeRoleIsRestricted({ ...restricted, [key]: !value })).toBe(false);
   });
+  it('requires only the four tutorial table privileges used by the API', () => {
+    for (const [key, value] of Object.entries(restricted).filter(([key]) =>
+      key.startsWith('tutorial_'),
+    ))
+      expect(runtimeRoleIsRestricted({ ...restricted, [key]: !value })).toBe(false);
+  });
   it('fails closed for missing privilege results', () => {
     expect(runtimeRoleIsRestricted(undefined)).toBe(false);
     expect(runtimeRoleIsRestricted({} as RuntimePrivileges)).toBe(false);
   });
 });
+

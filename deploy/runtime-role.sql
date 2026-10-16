@@ -24,6 +24,8 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON public.steam_auth_attempts TO black_market_
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.steam_auth_exchanges TO black_market_app;
 GRANT INSERT,DELETE ON public.market_snapshots TO black_market_app;
 GRANT INSERT,DELETE ON public.roadmap_entries TO black_market_app;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.tutorial_guides TO black_market_app;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.tutorial_guide_steps TO black_market_app;
 SELECT format('REVOKE ALL ON DATABASE %I FROM black_market_app', current_database()) \gexec
 SELECT format('GRANT CONNECT ON DATABASE %I TO black_market_app', current_database()) \gexec
 COMMIT;
