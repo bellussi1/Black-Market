@@ -55,6 +55,14 @@ Para staging local, configure os cinco campos do projeto `black-market-bdo-stagi
 
 Gere uma chave privada Admin exclusiva para cada projeto pelo próprio Console, baixe-a diretamente para um local protegido e não a cole na conversa.
 
+### Estado da tentativa de setup (16/10/2026)
+
+A pasta `%LOCALAPPDATA%\BlackMarket\firebase-admin\` foi criada com ACL restrita ao usuário atual do Windows e `SYSTEM`. O Console Firebase emitiu chaves para as contas Admin, mas o navegador embutido do Codex não disponibilizou os arquivos no diretório local nem em Downloads; nenhum JSON foi aberto e nenhum `.env` foi alterado. A primeira chave criada em staging foi correlacionada por Cloud Audit e revogada; a confirmação do Console mostrou a exclusão. Restam 2 chaves geradas ativas no IAM de staging e 1 no local, mas seus JSONs não estão acessíveis nem podem ser baixados novamente. `identity/config` ainda retorna `enabled: false`, `googleEnabled: false` e `steamEnabled: false` em `localhost:3000` e `localhost:8081`.
+
+Para continuar, gere e baixe novas chaves Admin de cada projeto em um navegador que grave os arquivos no disco, salve-as na pasta protegida acima e avise que estão prontas. Não cole o JSON ou seu conteúdo no chat. Em seguida, configurar todos os campos de uma vez, reconstruir/reiniciar os serviços e executar os smokes autenticados. As duas chaves staging remanescentes e a chave local permanecem inalteradas até haver credenciais substitutas acessíveis; não revogue nenhuma outra chave sem autorização específica.
+
+`pnpm check` e o build serial completo do monorepo passaram. `pnpm test:staging` verificou HTTP, SSR, catálogo, ícone e noindex. `pnpm test:auth:local` e `pnpm test:auth:staging` falharam corretamente em `Firebase Authentication está desativado`; nenhum container ou processo API em execução foi reconstruído/reiniciado com Firebase incompleto. A build Web mantém bundle inicial de 553,57 kB (53,57 kB acima do limite de aviso), fallback de locale `pt-BR`→`pt` e avisos CommonJS do Tesseract.
+
 Ao compartilhar por Quick Tunnel, o script atualiza o callback Steam para a origem HTTPS temporária, recria API/web, verifica o staging e informa o hostname a adicionar em Firebase Authentication → Settings → Authorized domains. No cliente OAuth Google, mantenha o redirect handler do Firebase configurado: `https://<FIREBASE_AUTH_DOMAIN>/__/auth/handler`. A documentação do Firebase exige que o domínio do app esteja autorizado e usa o auth domain como redirect de OAuth ([Google sign-in no Firebase](https://firebase.google.com/docs/auth/web/google-signin)). O hostname de Quick Tunnel muda a cada sessão; adicione o novo domínio em cada sessão que exigir Google.
 
 Para disponibilizar o perfil sintético, primeiro entre uma vez com Google ou Steam na aplicação de staging para criar o mapeamento canônico. Copie a UID Firebase dessa conta para `STAGING_TEST_FIREBASE_UID` em `.env.staging`, recrie a API para carregar a variável e então execute:
