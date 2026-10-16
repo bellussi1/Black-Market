@@ -22,6 +22,14 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 
 ## Prioridades de continuação
 
+### Prioridade imediata — oficina de receitas e lucro (pedido aprovado em 16/10/2026)
+
+O usuário aprovou as regressões financeiras de maestria, a correção de alternativas de coleta omitidas pelo otimizador e a documentação das limitações observadas no BDO Workshop. Também pediu um tour contextual para a oficina, usando a biblioteca Driver.js já existente. Leia o escopo reproduzível em `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`, seção “Escopo mais recente já aprovado”. Confirme todos os diagnósticos no código atual, implemente por fatias e não refaça a biblioteca de tutoriais.
+
+Na referência pública do Workshop, o plano 9601 do Balenos Meal mudou de aproximadamente 2.500 para 3.647 produtos ao mudar Culinária de 0 para 3.000, afetando vendas líquidas, lucro e tempo; Processamento 0 não alterou essa receita. A política “Best profit/hour” expôs decisões para itens esgotados e informações de estoque/vendas/reposição. Esses números são observações datadas e aproximadas de UI, não a fórmula interna comprovada nem um padrão fixo. Use comparação pareada, sem endpoints privados ou reutilização de dados/código/assets. Documente incertezas.
+
+Para a extensão do tour, considere que o seed atual preserva guias já existentes; adicionar etapas à chave `recipes` não atualiza automaticamente bancos semeados. Verifique se uma chave contextual nova para a oficina é necessária. Confirme banco local descartável antes de qualquer migração ou seed. Depois desse escopo, continue as prioridades abaixo.
+
 ### 0. Validar visualmente o Market Board
 
 A implementação e as verificações automatizadas estão registradas na seção 130 de `docs/ACTIVE_CONTEXT.md`. Quando o Playwright estiver disponível, revisar `/market` em desktop, viewport estreita e teclado, conferindo expansão/seleção de categorias, foco, skeletons e ausência de overflow. A tentativa anterior encontrou uma instância Playwright já em uso; não assuma a sessão ocupada.
