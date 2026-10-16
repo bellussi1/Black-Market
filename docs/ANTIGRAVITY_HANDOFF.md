@@ -4,47 +4,64 @@
 - **Projeto:** Black Market — planejador para Black Desert Online
 - **Objetivo:** permitir que o Antigravity retome o trabalho sem depender do histórico dos chats do Codex.
 
-Este é um índice de retomada, não substitui as instruções nem os documentos detalhados do projeto. Leia primeiro `AGENTS.md` e `docs/ACTIVE_CONTEXT.md`; depois confira `git status`, `git log -n 3 --oneline` e o código atual. Os documentos de especificação e implementação listados abaixo são a fonte de detalhes.
+Este é um índice de retomada, não substitui as instruções nem os documentos detalhados do projeto. Leia primeiro `AGENTS.md`, `docs/ACTIVE_CONTEXT.md` e [`docs/project-feature-checklist.md`](project-feature-checklist.md); depois confira `git status`, `git log -n 3 --oneline` e o código atual. O checklist mestre relaciona pedidos, origem nos chats, status e próximos passos; os documentos de especificação e implementação listados abaixo são a fonte de detalhes.
 
 ## Estado do workspace nesta passagem
 
 - Branch atual: `main`.
-- A entrega funcional mais recente nesta continuação é a atualização da interface do Market Board em 16/10/2026; consulte a seção 130 de `docs/ACTIVE_CONTEXT.md` e confirme o SHA pelo `git log`.
+- A continuação atual fechou novas fatias locais em 16/10/2026: otimização de coleta, tour `recipe-workshop`, guards/RLS, ciclo de vida do `WorkspaceStore`, extração CSS e rollout visual das fases 1–2. Leia as seções 134 e 138–139 de `docs/ACTIVE_CONTEXT.md` e confira commits/status antes de agir.
 - Entregas implementadas nesta continuação: `0185b87` (indexação dos lookups do Coach), `205dee4` (Home/Roadmap dinâmico) e `8cf0283` (Tutoriais guiados com Driver.js). Também foram criados `1308342` (teste do canvas acessível do Mercado) e `53ed17b` (formatação/Prettier). Confira o histórico real antes de agir.
-- Este handoff e a atualização de `docs/ACTIVE_CONTEXT.md` foram registrados juntos em um commit documental local. O workspace estava limpo logo após o commit; confira `git status` ao retomar e preserve qualquer alteração que apareça.
+- Fase 2: `b90f83d` (Mercado) e `bd0140b` (Receitas/oficina). A atualização documental segue em commit próprio. Não faça push/deploy.
 - O gráfico Chart.js do histórico do Mercado está commitado em `6d22a75`; recebeu validação adicional de lacunas e métrica em `128` do `ACTIVE_CONTEXT.md`.
 - Home/Roadmap e a biblioteca de Tutoriais Guiados estão implementados e commitados. Os planos de implementação registram detalhes e pendências; não reimplemente essas entregas do zero.
-- `pnpm check` e `pnpm test` passaram nesta continuação. O build de produção ainda falha nos budgets atuais: bundle inicial 1,08 MB (limite 1 MB) e `recipe-tree.scss` 38,77 kB (limite 20 kB). Não aumente os budgets sem reduzir e justificar o custo real.
-- As migrações `0011_global_roadmap_order` e `0012_tutorial_guides` estão versionadas, mas não foram aplicadas a banco nesta passagem; o seed de tutoriais também não foi executado.
+- Nesta rodada, `pnpm check` passou; `pnpm test` passou com 1.011 aprovados e 1 ignorado; o build de produção concluiu sem erro de CSS. O bundle inicial é 600,57 kB bruto / 158,90 kB estimados transferidos e excede o aviso de 500 kB. Persistem avisos de dados de locale `pt-BR` usando `pt` e dependências CommonJS no OCR; não aumentar budgets para ocultar custo.
+- A migração de identidade/RLS `0013_identity_rls.sql` está versionada e foi testada apenas num PostgreSQL efêmero. Nenhuma migração ou seed foi aplicada ao banco local persistente, staging ou produção. A chave `recipe-workshop` existe no código; o runtime mostra “Tutorial indisponível” até um seed seguro.
 - Prompt reutilizável para a continuidade: `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`; o commit documental mais recente deve ser conferido com `git log`.
 - A seção 128 de `docs/ACTIVE_CONTEXT.md` registra a validação visual do Chart.js em desktop e mobile, para métricas de preço, estoque e negociações por intervalo. A seção 126 é o histórico da implementação inicial, anterior à validação visual.
-- O Market Board agora tem subcategorias expansíveis, ação para limpar filtros, paginação/itens por página acima da tabela e skeletons no primeiro carregamento. `pnpm check` e `pnpm test` passaram; a inspeção visual desta passagem ficou pendente porque a instância compartilhada do Playwright estava ocupada. A cobertura total de mercado continua parcial enquanto não houver fonte externa autorizada e volume confiável.
+- O Market Board tem subcategorias expansíveis, ação para limpar filtros, paginação/itens por página acima da tabela e skeletons no primeiro carregamento. A revisão adicional em 390×844 e por teclado passou sem overflow/falha de foco; a cobertura de liquidez continua parcial porque negociação observada não equivale a unidades vendidas garantidas.
 
 ## Prioridades de continuação
 
-### Prioridade imediata — oficina de receitas e lucro (pedido aprovado em 16/10/2026)
+### Rollout visual inspirado na Roadmap
 
-O usuário aprovou as regressões financeiras de maestria, a correção de alternativas de coleta omitidas pelo otimizador e a documentação das limitações observadas no BDO Workshop. Também pediu um tour contextual para a oficina, usando a biblioteca Driver.js já existente. Leia o escopo reproduzível em `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`, seção “Escopo mais recente já aprovado”. Confirme todos os diagnósticos no código atual, implemente por fatias e não refaça a biblioteca de tutoriais.
+- O usuário aprovou a direção de consistência visual progressiva para as telas principais. A especificação está em `docs/superpowers/specs/2026-10-16-roadmap-inspired-visual-rollout-design.md`.
+- Não copie a timeline da Roadmap para páginas que não sejam sequenciais. Preserve a tabela do Mercado, a árvore de crafting, as decisões financeiras e a revisão explícita do Scan; reutilize a hierarquia, os painéis, os status e a linguagem bronze/carvão.
+- Estado: fases 1 (Home/Recomendações) e 2 (Mercado/Receitas) executadas e documentadas nos planos `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-{1,2}.md`. O usuário já aprovou o rollout progressivo; continuar pelas telas de Armazém/Scan/Personagem/Gear e depois utilitários, sem pedir aprovação repetida. Os desenhos devem preservar o fluxo de revisão do Scan e os componentes específicos das telas.
 
-Na referência pública do Workshop, o plano 9601 do Balenos Meal mudou de aproximadamente 2.500 para 3.647 produtos ao mudar Culinária de 0 para 3.000, afetando vendas líquidas, lucro e tempo; Processamento 0 não alterou essa receita. A política “Best profit/hour” expôs decisões para itens esgotados e informações de estoque/vendas/reposição. Esses números são observações datadas e aproximadas de UI, não a fórmula interna comprovada nem um padrão fixo. Use comparação pareada, sem endpoints privados ou reutilização de dados/código/assets. Documente incertezas.
+### Estado das entregas aprovadas (16/10/2026)
 
-Para a extensão do tour, considere que o seed atual preserva guias já existentes; adicionar etapas à chave `recipes` não atualiza automaticamente bancos semeados. Verifique se uma chave contextual nova para a oficina é necessária. Confirme banco local descartável antes de qualquer migração ou seed. Depois desse escopo, continue as prioridades abaixo.
+- **Otimizador**: a entrada do worker agora preserva estimativas de coleta confirmadas para materiais alcançáveis mesmo quando há receita produtora. Regressões Web e do solver passaram. O limite real é de 10.000 estados; se excedido, nenhum ótimo é certificado.
+- **Maestria**: testes pareados em Culinária, Alquimia e Processamento confirmam que as métricas financeiras mudam nos caminhos testados, mas o relato do usuário não foi reproduzido com o fixture/sessão local disponível. Se persistir, pedir/registrar receita, valores antigo/novo, profissão, quantidade, rendimento manual, estratégia e dados de preço.
+- **Tour da oficina**: guia separado `recipe-workshop`, quatro etapas e seed idempotente independente. Não repetir a implementação nem executar seed antes de provar que o banco é descartável.
+- **Autorização**: `/plans` e `/settings` ganharam guards; tabelas de identidade têm RLS/`FORCE ROW LEVEL SECURITY`, contexto de identidade é definido dentro das transações e a migração `0013` passou num banco efêmero. Isto reduz leituras/escritas acidentais no banco, mas não protege contra comprometimento das credenciais da API, que pode forjar GUCs.
+- **Mercado/OCR**: viewport estreito/teclado e fluxos de perfil, gear e armazém foram auditados sem defeito funcional reproduzido. O corpus OCR tem 13 capturas/29 rótulos todos em calibração; ainda não existe split independente de avaliação, portanto não há declaração de acurácia.
+- **Dados de teste**: `/demo` já monta um workspace demonstrativo em memória com personagem/família, gear de 15 slots, maestrias, materiais por armazém/inventário, cotações simuladas e cenários de sessão/equipamento. A identidade vem do catálogo; preços/atributos sintéticos são rotulados como demonstração e as alterações duram a sessão. O CLI de staging `pnpm --filter @bdo/api workspace:seed-test-profile` também já existe, mas exige `APP_ENV=staging`, conta social allowlisted e `STAGING_TEST_FIREBASE_UID`; não foi executado.
+
+### Próximas etapas — dependências locais e externas
+
+- **Build**: o budget CSS deixou de falhar após extrações por subcomponente. Continuar reduzindo o bundle inicial de 600,57 kB com otimização segura; observar warnings de locale e CommonJS.
+- **Execução local**: o preview `4203` não é permitido por `WEB_ORIGIN` e não deve ser adicionado ao CORS por causa deste teste. Na origem `4200`, o Mercado carregou 407 itens em cache (API 200). `production-quotes` retornou 503; o upstream Arsha respondeu 500 com mensagem de bloqueio Imperva, portanto não contornar. O tutorial `recipe-workshop` retornou `guide: null`, pois não foi semeado. Não limpar localStorage nem aplicar migrations/seeds a banco persistente.
+- **Banco/tutorial**: para validar o tour real e a gestão, criar/confirmar PostgreSQL descartável dedicado, aplicar migrações pendentes inclusive `0013` e executar seed. Não usar o volume persistente atual, staging nem produção.
+- **Google/Steam**: login end-to-end segue bloqueado por configuração Firebase Console/credencial Admin não disponível; não inventar segredo nem mexer em IAM.
+- **Maestria/Valência**: manter aberto até obter reprodução concreta ou premissas pareadas confiáveis para a divergência histórica.
+- **OCR**: obter capturas independentes autorizadas e revisadas para avaliação; não pontuar nem promover modelo a partir apenas do conjunto de calibração.
+- **Dados do mercado**: não tratar contagem de negociações como volume líquido; novas fontes exigem licença/cobertura autorizada.
 
 ### 0. Validar visualmente o Market Board
 
-A implementação e as verificações automatizadas estão registradas na seção 130 de `docs/ACTIVE_CONTEXT.md`. Quando o Playwright estiver disponível, revisar `/market` em desktop, viewport estreita e teclado, conferindo expansão/seleção de categorias, foco, skeletons e ausência de overflow. A tentativa anterior encontrou uma instância Playwright já em uso; não assuma a sessão ocupada.
+A inspeção da fase 2 em 390×844 não encontrou overflow horizontal em Mercado, catálogo de Receitas ou oficina; a tabela mantém rolagem interna própria. O resumo visual da fase 2 está em `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-2.md`. Requests de Mercado/cotações falharam no preview e não permitem validar dados reais nesta rodada; o tour não foi semeado.
 
-### 1. Tratar os limites do build de produção
+### 1. Bundle de produção — CSS aprovado; bundle segue em otimização
 
-O último build de produção concluiu a compilação, mas falhou nos budgets Angular: bundle inicial de 1,08 MB contra 1 MB e `recipe-tree.scss` com 38,77 kB contra 20 kB. Não elevar o limite para fazer o build ficar verde. Investigue quais módulos e regras CSS causam o peso, proponha cortes mensuráveis e mantenha recursos de rota lazy. O Driver.js está em chunk lazy (~27 kB); preserve esse carregamento sob demanda.
+`pnpm --filter @bdo/web build` concluiu sem erro de budget CSS. O bundle inicial é 600,57 kB bruto / 158,90 kB estimados transferidos, acima do aviso de 500 kB; `pt-BR` usa fallback `pt`, e Tesseract/`regenerator-runtime` geram warnings CommonJS. Otimize sem elevar budgets ou remover regras ativas. Driver.js continua lazy (~27 kB).
 
-### 2. Preparar e validar o Tutorial Guiado em banco local
+### 2. Validar o Tutorial Guiado em banco descartável
 
-Antes de qualquer escrita, confirme que a URL resolve para um banco local descartável. Aplique somente as migrações pendentes (`0011`/`0012`) e execute `pnpm --filter @bdo/api tutorials:seed` nesse banco. Confira `/tutorials/manage` com identidade de admin e as guias públicas; nunca use uma URL remota por suposição. Seed de tutorial não foi executado nesta passagem.
+O tour `recipe-workshop` está implementado, mas seu guia não foi semeado. Antes de escrever, confirme que a URL resolve para um PostgreSQL descartável; aplique migrações pendentes (`0011`–`0013`) e execute `pnpm --filter @bdo/api tutorials:seed` nesse banco. Confira `/tutorials/manage` com identidade admin e a execução do tour. O banco local persistente, staging e produção não foram alterados.
 
-### 3. Conferir visualmente o gráfico do Mercado
+### 3. Gráfico do Mercado — entregue
 
-O pedido recente era fazer um gráfico conectado, não deixar apenas pontos. A implementação já está commitada. Inspecione a tela com dados reais disponíveis e os estados sem amostras, SSR, acessibilidade, escalas e lacunas de coleta; corrija o que for necessário. Não apresente uma linha contínua como se houvesse observações durante períodos sem consulta; a linha tracejada indica um intervalo longo. Não converta contador de negociações em unidades vendidas nem em liquidez garantida.
+O gráfico conectado já foi validado visualmente com preço, estoque e negociações, incluindo lacunas e estados sem dados, conforme seção 128 de `ACTIVE_CONTEXT.md`. Preserve a interpretação de intervalo; não converta contagem de negociações em unidades vendidas nem em liquidez garantida.
 
 O histórico técnico está na seção 126 de `docs/ACTIVE_CONTEXT.md` e a política de fontes do Mercado em `docs/research/market-source-policy.md` e `docs/research/competitor-market-crafting-audit-2026-10-14.md`.
 
@@ -96,14 +113,14 @@ Antes de estender o comparador para atividades de combate ou coleta, use registr
 
 Os planos de Home/Roadmap e Tutorial Guiado foram aprovados e implementados nesta continuação. Consulte os registros de execução no final de `docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md` e `docs/superpowers/plans/2026-10-15-guided-tutorial-library.md`; não repita essas implementações sem conferir o estado atual.
 
-## Pendências confirmadas em 16/10/2026
+## Pendências e limitações confirmadas em 16/10/2026
 
-- **Build produção**: bundle inicial excede o limite em 76,9 kB e `recipe-tree.scss` excede o limite de estilo em 18,77 kB. Reduzir o custo real e manter recursos lazy; não aumentar os budgets como atalho. Driver.js está em chunk lazy (~27 kB).
-- **Tutorial em banco local**: migrações estão versionadas, mas ainda não aplicadas; o seed idempotente não foi executado. Confirmar destino local descartável antes de migrar/semear e validar a tela administrativa e os tours. Script: `pnpm --filter @bdo/api tutorials:seed`.
+- **Build produção**: a verificação de 16/10 concluiu sem erro de budget CSS; bundle inicial 600,57 kB excede o aviso de 500 kB, mas não o erro de 1 MB. Otimização segura do bundle continua aberta.
+- **Tutorial em banco local**: `recipe-workshop` está no código, mas não foi semeado. Migrações `0011`–`0013` não foram aplicadas ao banco persistente; confirmar destino local descartável antes de migrar/semear e validar a tela administrativa e os tours. Script: `pnpm --filter @bdo/api tutorials:seed`.
 - **Coach**: o Map acelerou busca de rótulos/ícones, não o cálculo de cenários. A medição sintética foi ~11,06 s para 4.222 receitas e 12.666 cenários pendentes. A divergência de lucro/h da Refeição de Valência segue sem comparação pareada; conferir `docs/research/activity-coach-competitive-review.md` antes de mudar fórmulas.
-- **Autenticação e dados locais**: o login Google real segue bloqueado pelo Firebase Console. Personagem, gear, armazém e staging precisam de dados locais de teste controlados; não preencher dados remotos nem compartilhar credenciais.
+- **Autenticação e staging**: login Google real segue bloqueado pelo Firebase Console/credencial Admin. A demonstração local e o seed sintético seguro de staging já existem, mas o segundo requer credenciais e identidade de teste do staging; não preencher dados remotos nem compartilhar segredos.
 - **OCR**: seguir os documentos de corpus/calibração e manter revisão humana do resultado extraído para armazenamento, inventário, maestria, peso e personagens.
-- **Verificação**: a suíte completa e `pnpm check` passaram. A build de produção falha nos budgets atuais e `pnpm test:ssr` foi tentado com build de desenvolvimento; não declarar produção ou SSR de produção validados até rodar o smoke na configuração correta.
+- **Verificação**: em 16/10, `pnpm check` e `pnpm test` passaram (1.011 aprovados, 1 ignorado); build de produção concluiu com warning de bundle inicial, locale `pt-BR`→`pt` e CommonJS OCR, sem erro de CSS. SSR de produção ainda não foi validado.
 
 ## Contexto recuperado dos chats referenciados
 
@@ -133,8 +150,8 @@ Não rode ou acrescente testes só por causa deste handoff. Ao retomar a refator
 ## Instrução direta para o próximo agente
 
 1. Leia `AGENTS.md` e este handoff; depois confira `docs/ACTIVE_CONTEXT.md`, branch, `git status` e os três últimos commits. Preserve mudanças presentes no workspace.
-2. Confira o estado local. Preserve quaisquer alterações que existam e inspecione o diff antes de editar.
-3. Investigue e reduza os budgets de produção sem elevá-los por conveniência; documente tamanhos antes/depois e preserve carregamento lazy. A validação visual do Chart.js já está registrada na seção 128 do `ACTIVE_CONTEXT.md`.
-4. Aplique migrações e seed de tutoriais apenas após confirmar um banco local descartável; depois valide o editor/tours com estado local.
-5. Retome login Google somente quando o Firebase Console permitir listar/configurar o projeto; não altere IAM nem exponha credenciais. Continue as pendências de personagem, gear, armazém e OCR com dados temporários locais e revisão humana.
-6. Mantenha as decisões de produto acima e trate dados faltantes como pendentes, sem inventar preços, liquidez, loot ou rendimento.
+2. Não reimplemente itens concluídos: Mercado responsivo, gráfico Chart.js, correção de coleta no otimizador, tour de oficina no código e guards/RLS. Confira a seção 134 de `ACTIVE_CONTEXT.md`.
+3. Se houver banco PostgreSQL realmente descartável, aplique migrações e seed do tour nesse destino isolado e valide o editor/execução; nunca use o volume persistente/staging/produção nesta tarefa.
+4. Retome login Google somente quando o Firebase Console permitir listar/configurar o projeto; não altere IAM nem exponha credenciais. Mantenha personagem, gear, armazém e OCR em dados de teste locais com revisão humana.
+5. Para CSS do Recipe Tree, proponha extração em subcomponentes e evidência visual antes de alterar estilos ativos; não elevar budgets nem remover estados funcionais para satisfazê-los.
+6. Mantenha as decisões de produto e compare BDO Workshop, BDO Codex, BDOLytics e Garmoth antes de futuras features. Trate dados faltantes como pendentes, sem inventar preços, liquidez, loot ou rendimento.
