@@ -204,6 +204,14 @@ export class RecommendationsPage implements OnDestroy {
   readonly catalogApi = inject(CatalogApiService);
   private readonly marketCache = inject(MarketCacheService);
   readonly snapshot = signal<ProductionCatalogResponse | null>(null);
+  private readonly itemsById = computed(() => {
+    const items = new Map<number, CatalogItemDetail>();
+    for (const item of this.snapshot()?.items ?? []) {
+      // Match Array.find: the first occurrence wins if a catalogue repeats an ID.
+      if (!items.has(item.id)) items.set(item.id, item);
+    }
+    return items;
+  });
   readonly selected = signal('');
   readonly message = signal('');
   readonly busy = signal(false);
@@ -849,10 +857,10 @@ export class RecommendationsPage implements OnDestroy {
     if (this.manualPriceTimer) clearTimeout(this.manualPriceTimer);
   }
   name(itemId: number) {
-    return this.snapshot()?.items.find((item) => item.id === itemId)?.name ?? `Item ${itemId}`;
+    return this.itemsById().get(itemId)?.name ?? `Item ${itemId}`;
   }
   icon(itemId: number) {
-    const item = this.snapshot()?.items.find((row) => row.id === itemId);
+    const item = this.itemsById().get(itemId);
     return item ? this.catalogApi.resolveIconUrl(item) : null;
   }
   producers(itemId: number) {

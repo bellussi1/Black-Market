@@ -35,7 +35,37 @@ Consulta pública em **15/10/2026** confirmou o padrão funcional das referênci
 
 A comparação numérica pareada já registrada para Refeição de Valência continua divergente: **292,3M/h** no Black Market e **163,8M/h** no snapshot do BDOLytics, apesar de preço unitário e rendimento médio próximos. Os snapshots têm tempos e premissas diferentes; ver [validação de volume e valores](../superpowers/specs/2026-10-13-recipe-sales-volume-and-e2e-validation.md). Manter essa divergência como pendência do modelo até repetir o cálculo com premissas controladas, sem calibrar o produto para reproduzir um valor indexado volátil.
 
-## Fontes consultadas
+## Auditoria pareada de Valência (15/10/2026)
+
+O snapshot de [13/10/2026](../superpowers/specs/2026-10-13-recipe-sales-volume-and-e2e-validation.md) permite conferir a aritmética agregada, mas não reproduzir a cadeia entre ferramentas. Ambos registram SA, Culinária 3.000, Processamento 1.200, tempo configurado de Culinária 1,2 s e preço do produto comum 29.300. O lote local tem 100 operações; o concorrente tem 1.000. A alternativa exata da fórmula, preços individuais, estoques, origem de cada intermediário, procs vendidos/guardados e taxa efetiva não foram preservados nos dois lados. Value Pack aparece na configuração BDOLytics; não há fator líquido completo pareado.
+
+| Medida                 | Black Market: snapshot × 10 |          BDOLytics: snapshot |
+| ---------------------- | --------------------------: | ---------------------------: |
+| Operações finais       |                       1.000 |                        1.000 |
+| Produto comum esperado |                       3.640 |                        3.647 |
+| Custo agregado         |                 268.638.000 |                  145.505.702 |
+| Recebimento líquido    |                 337.804.370 |                 237.809.567¹ |
+| Lucro líquido          |                  69.166.370 |                   92.303.865 |
+| Tempo                  |      aproximadamente 852 s² |                      2.028 s |
+| Lucro/h                |                 292.252.267 | aproximadamente 163.853.015³ |
+
+¹ Inferência aritmética: custo + lucro, não leitura independente de receita líquida. ² Inferido por `lucro × 3600 / lucroPorHora`; a UI local arredondou para 1m25s no lote de 100. Multiplicar por dez normaliza os agregados registrados e não afirma que rerodar 1.000 operações reproduziria todos os arredondamentos. ³ `92.303.865 × 3600 / 2028`; compatível com 163,8M/h abreviado.
+
+O rendimento comum difere aproximadamente 0,192%. O recebimento local normalizado excede o concorrente em 99.994.803, mas seu custo excede em 123.132.298: `Δlucro = Δrecebimento − Δcusto = −23.137.495`. Portanto o lucro local por lote é 25,07% menor. A razão de duração é `2028 / 852 ≈ 2,3803`; a razão de lucro é `69.166.370 / 92.303.865 ≈ 0,74933`; juntas dão aproximadamente `1,7836` na taxa por hora. Mantendo apenas o lucro local e usando o tempo concorrente, seriam 122,78M/h. Essa troca é uma decomposição matemática, não uma calibração recomendada.
+
+A venda apenas do produto comum local daria `3.640 × 29.300 = 106.652.000` bruto, abaixo dos 337.804.370 líquidos agregados registrados. Assim o snapshot contém retornos adicionais ou um escopo de resumo que não foi preservado. Não é possível atribuir esse excedente a especiais, leite, excedentes da cadeia ou imposto com os dados disponíveis. O tempo local registrado de aproximadamente 85,2 s também é menor que `100 × 1,2 = 120 s`; produção em massa é uma hipótese a conferir nas etapas registradas, não uma explicação comprovada de todo o desvio.
+
+Nova consulta pública em 15/10/2026 à [receita BDOLytics](https://bdolytics.com/en/cooking/9609) encontrou uma página indexada com materiais e saídas, mas a abertura não expôs conteúdo interativo; a [URL com região SA](https://bdolytics.com/en/SA/cooking/9609) não pôde ser aberta pela ferramenta. Não se confirmou a região/maestria desse índice e nenhum preço atual foi misturado ao snapshot histórico. Não foram usados endpoints privados.
+
+**Conclusão:** a comparação econômica permanece inválida como teste de equivalência. Antes de alterar fórmula, capturar simultaneamente nos dois lados a receita/alternativa completa, operações por etapa e tempos efetivos (incluindo produção em massa), maestrias/rendimentos, todos os preços e respectivos horários/região, imposto/buffs, estoque, escolhas de aquisição, e retornos vendidos/guardados. A auditoria de rendimento em 1.000 de maestria registrada em 14/10 continua válida apenas para aquele parâmetro.
+
+## Perfil de desempenho do Coach (15/10/2026)
+
+O catálogo público SA atual reproduziu 4.222 receitas elegíveis e 12.666 cenários pendentes com 4.000 linhas sintéticas de inventário, 1.440 minutos e ausência de cotações/calibração. No Node 24.19.0, o motor em lotes de cinco levou 11,06 s; uma repetição instrumentada levou 11,04 s. Amostragem de CPU concentrou aproximadamente 5,87 s em `evaluate`, 2,89 s em `scaled` e 1,61 s em `planProduction`. Essa medição isola o motor; não reproduz SSR, navegador, timers, resolução de cotações ou renderização e não prova a causa dos aproximadamente 150 s históricos.
+
+Uma única otimização foi aplicada: índice reativo de itens por ID para nomes e ícones, preservando o primeiro ID repetido e reconstruindo após mudança de snapshot. Resolver 2.480 nomes custou 45,71 ms por busca linear e 0,99 ms com índice, incluindo sua construção; as saídas foram iguais. É uma melhoria de apresentação, sem alterar busca, ranking, cobertura ou limite de 10.000 operações. O teste observou RED por 4.000 leituras de IDs, acima do limite de 202, e depois GREEN com 22 testes focados. Método reproduzível, perfil e limitações estão em `.superpowers/sdd/coach-performance-audit/implementer-report.md`.
+
+## Referências anteriores
 
 - [Pesquisa BDOLytics/Workshop do projeto](lytics-workshop.md)
 - [Pesquisa Garmoth/Workerman/Arsha do projeto](garmoth-workerman-arsha.md)

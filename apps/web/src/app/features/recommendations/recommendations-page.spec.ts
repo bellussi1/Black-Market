@@ -61,6 +61,50 @@ async function renderComponent<T>(
 }
 describe('production recommendations', () => {
   useMemoryStorage();
+  it('resolves names and icons in one catalogue pass, preserving first matches and snapshot changes', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+      {
+        provide: CatalogApiService,
+        useValue: { resolveIconUrl: (item: { icon: string | null }) => item.icon },
+      },
+    ]);
+    const page = fixture.componentInstance;
+    let reads = 0;
+    const items = Array.from({ length: 100 }, (_, index) => {
+      const item = {
+        ...snapshot.items[0],
+        id: index + 1,
+        name: `Name ${index + 1}`,
+        icon: `icon-${index + 1}`,
+      };
+      return {
+        ...item,
+        get id() {
+          reads++;
+          return item.id;
+        },
+      };
+    });
+    items.push({ ...snapshot.items[0], id: 100, name: 'Duplicate', icon: 'duplicate' });
+    page.snapshot.set({ ...snapshot, items });
+    for (let repeat = 0; repeat < 10; repeat++) {
+      expect(page.name(100)).toBe('Name 100');
+      expect(page.icon(100)).toBe('icon-100');
+      expect(page.name(999)).toBe('Item 999');
+      expect(page.icon(999)).toBeNull();
+    }
+    expect(reads).toBeLessThanOrEqual(2 * items.length);
+    page.snapshot.set({
+      ...snapshot,
+      items: [{ ...snapshot.items[0], id: 100, name: 'New name', icon: 'new-icon' }],
+    });
+    expect(page.name(100)).toBe('New name');
+    expect(page.icon(100)).toBe('new-icon');
+    page.snapshot.set(null);
+    expect(page.name(100)).toBe('Item 100');
+    expect(page.icon(100)).toBeNull();
+  });
   it('loads the catalogue automatically and presents recommendations without manual action buttons', async () => {
     const production = api();
     const fixture = await renderComponent(RecommendationsPage, {}, [
