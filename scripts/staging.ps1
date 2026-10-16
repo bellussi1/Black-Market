@@ -84,7 +84,7 @@ if (-not (Test-Path -LiteralPath $taskEnv)) {
     "POSTGRES_PASSWORD=$owner", "POSTGRES_APP_PASSWORD=$runtime",
     "CONTAINER_DATABASE_URL=postgresql://black_market_staging:${owner}@postgres:5432/black_market_staging",
     "RUNTIME_DATABASE_URL=postgresql://black_market_app:${runtime}@postgres:5432/black_market_staging",
-    'PUBLIC_SITE_URL=https://localhost:8081', 'APP_IMAGE=black-market:staging', 'ASSET_CHECKSUMS=not-initialized',
+    'PUBLIC_SITE_URL=http://localhost:8081', 'APP_IMAGE=black-market:staging', 'ASSET_CHECKSUMS=not-initialized',
     'FIREBASE_PROJECT_ID=', 'FIREBASE_AUTH_DOMAIN=', 'FIREBASE_API_KEY=', 'FIREBASE_APP_ID=',
     'FIREBASE_ADMIN_CREDENTIALS_BASE64=', 'STEAM_OPENID_CALLBACK_URL=', 'STAGING_TEST_FIREBASE_UID=',
     'ANALYTICS_ENABLED=false', 'MARKET_COLLECTOR_ENABLED=false', 'MARKET_BOARD_COLLECTOR_ENABLED=false'
@@ -208,13 +208,20 @@ switch ($Action) {
       while (-not $process.HasExited) { Start-Sleep -Seconds 2 }
     } finally {
       if (-not $process.HasExited) { Stop-Process -Id $process.Id -ErrorAction SilentlyContinue }
-      Set-StageValue 'PUBLIC_SITE_URL' 'https://localhost:8081'
-      if ($firebaseProject) { Set-StageValue 'STEAM_OPENID_CALLBACK_URL' 'https://localhost:8081/api/v1/identity/steam/callback' }
+      Set-StageValue 'PUBLIC_SITE_URL' 'http://localhost:8081'
+      if ($firebaseProject) { Set-StageValue 'STEAM_OPENID_CALLBACK_URL' 'http://localhost:8081/api/v1/identity/steam/callback' }
     }
     return
   }
 }
 
+if ($Action -in @('Start', 'Update')) {
+  Set-StageValue 'PUBLIC_SITE_URL' 'http://localhost:8081'
+  $firebaseProject = @((Get-Content -LiteralPath $taskEnv) | Where-Object { $_.StartsWith('FIREBASE_PROJECT_ID=') })[0] -replace '^FIREBASE_PROJECT_ID=', ''
+  if ($firebaseProject) {
+    Set-StageValue 'STEAM_OPENID_CALLBACK_URL' 'http://localhost:8081/api/v1/identity/steam/callback'
+  }
+}
 $current = @((Get-Content -LiteralPath $taskEnv) | Where-Object { $_.StartsWith('APP_IMAGE=') })[0].Substring(10)
 & docker image inspect $current *> $null
 $hasImage = $LASTEXITCODE -eq 0

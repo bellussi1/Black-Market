@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+const isLoopbackHttpUrl = (value?: string) => {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const envSchema = z
   .object({
     CONTACT_EMAIL: z.preprocess(
@@ -119,6 +129,11 @@ export const envSchema = z
       .default(''),
   })
   .superRefine((value, context) => {
+    const localStagingHttpOrigin =
+      value.APP_ENV === 'staging' &&
+      isLoopbackHttpUrl(value.PUBLIC_SITE_URL) &&
+      isLoopbackHttpUrl(value.WEB_ORIGIN) &&
+      new URL(value.PUBLIC_SITE_URL!).origin === value.WEB_ORIGIN;
     for (const name of ['PUBLIC_SITE_URL', 'CATALOG_ASSETS_PUBLIC_URL'] as const) {
       const raw = value[name];
       if (!raw) continue;
@@ -198,12 +213,15 @@ export const envSchema = z
           });
         if (
           value.APP_ENV !== 'local' &&
-          (!callback.protocol.startsWith('https:') || callback.origin !== value.WEB_ORIGIN)
+          ((!callback.protocol.startsWith('https:') &&
+            !(localStagingHttpOrigin && isLoopbackHttpUrl(callback.origin))) ||
+            callback.origin !== value.WEB_ORIGIN)
         )
           context.addIssue({
             code: 'custom',
             path: ['STEAM_OPENID_CALLBACK_URL'],
-            message: 'Staging e produção exigem callback HTTPS na origem pública configurada.',
+            message:
+              'Staging e produção exigem callback HTTPS, exceto localhost no staging local, na origem configurada.',
           });
       } catch {
         context.addIssue({
@@ -247,7 +265,7 @@ export const envSchema = z
         path: ['POSTHOG_PUBLIC_KEY'],
         message: 'Configure a chave pública antes de ativar estatísticas.',
       });
-    if (value.NODE_ENV === 'production') {
+    if (value.NODE_ENV === 'production' && !localStagingHttpOrigin) {
       if (
         value.CATALOG_ASSETS_PUBLIC_URL &&
         !value.CATALOG_ASSETS_PUBLIC_URL.startsWith('https://')

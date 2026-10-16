@@ -56,6 +56,27 @@ describe('environment boundaries', () => {
       }).success,
     ).toBe(true);
   });
+  it('allows an HTTP Steam callback only for a local staging origin', () => {
+    const localStaging = {
+      ...local,
+      ...firebase,
+      NODE_ENV: 'production',
+      APP_ENV: 'staging',
+      PUBLIC_SITE_URL: 'http://localhost:8081',
+      WEB_ORIGIN: 'http://localhost:8081',
+      STEAM_OPENID_CALLBACK_URL: 'http://localhost:8081/api/v1/identity/steam/callback',
+    };
+
+    expect(envSchema.safeParse(localStaging).success).toBe(true);
+    expect(
+      envSchema.safeParse({
+        ...localStaging,
+        PUBLIC_SITE_URL: 'http://staging.example.test',
+        WEB_ORIGIN: 'http://staging.example.test',
+        STEAM_OPENID_CALLBACK_URL: 'http://staging.example.test/api/v1/identity/steam/callback',
+      }).success,
+    ).toBe(false);
+  });
   it('rejects a staging seed UID outside staging', () => {
     expect(
       envSchema.safeParse({
