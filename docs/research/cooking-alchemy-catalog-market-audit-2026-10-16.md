@@ -1,0 +1,67 @@
+# Auditoria inicial — catálogo, receitas e mercado de Culinária/Alquimia
+
+**Consulta:** 16/10/2026 · região de trabalho assumida: SA · extração local SA/pt publicada em 10/10 · sem escrita em banco.
+
+Este documento registra a auditoria inicial solicitada pelo usuário. As contagens abaixo descrevem a extração local indicada, não garantem que o banco ativo ou um patch posterior contenha exatamente os mesmos dados.
+
+## Pedido
+
+- Cobrir peixes com ícone e preço baseado no produto desidratado negociável.
+- Cobrir ingredientes/materiais de Culinária e Alquimia com imagem e preço de NPC quando vendidos por NPC.
+- Identificar consumíveis com maior lucro e volume de negociação atuais.
+- Validar fórmulas, quantidades, rendimentos e cálculos e corrigir dados somente com evidência suficiente.
+
+## Estado encontrado no repositório
+
+Extração examinada: `data/extracted/sa-pt-meta-2e188c2680c1-loc-7e729a315ce6-ext-5bf11bd7-bin-60bd5677-catalog`.
+
+| Grupo | Resultado da extração | Leitura correta |
+| --- | ---: | --- |
+| Itens na categoria `Fish` | 513 | O grupo inclui itens de peixe/frutos do mar e categorias especiais; precisa ser classificado antes de chamar todos de peixes de pesca. |
+| Itens `Fish` com alias e arquivo de ícone no diretório | 513 | Ícones existem na extração local; confirmar disponibilidade após publicação do catálogo/API. |
+| Itens `Fish` com `forTrade=true` e sem `marketable=true` | 308 | É a seleção atualmente considerada pelo resolvedor de equivalentes, não uma classificação final de todos os peixes pescáveis. |
+| Entradas de `DRY` com um desses itens como insumo | 194 | Há 194 relações de secagem e 193 saídas distintas; 114 itens da seleção acima não têm relação `DRY` neste dataset. O grupo sem vínculo requer classificação, não preço ou receita inventados. |
+| Receitas `COOK`, `SIMPLE_COOK`, `ALCHEMY`, `SIMPLE_ALCHEMY` | 3.564 | Contagem da extração bruta com estes quatro tipos; não substitui a contagem normalizada do banco, nem inclui caixas imperiais/outros métodos. |
+| Ingredientes distintos dessas receitas | 1.207 | Identificados por ID, sem inferir substitutos pelo nome. |
+| Ingredientes com alias/arquivo de ícone ausente | 2 | `#9740 Carne da Perna de Gárgula` e `#9738 Carne de Perna Traseira de Gazela`. |
+| Ingredientes com `buyPrice > 0` e ao menos um `vendors.urns` | 78 | São registros com preço e relação de vendedor na extração; os demais não devem receber preço NPC presumido. |
+
+O código já fornece `npcPurchasePrices` apenas quando o catálogo contém preço positivo e vendedor listado. A árvore de receitas e Recomendações já consomem essa API. Na extração examinada, os exemplos solicitados estão presentes: Sal `#9001` = 20, Açúcar `#9002` = 20 e Água Mineral `#9059` = 30. A página atual do Codex para [Água Mineral #9059](https://bdocodex.com/us/item/9059/) mostra ícone, compra com vendedor de comida/estalajadeiro e preço 30; a página de [Açúcar #9002](https://bdocodex.com/sp/item/9002/) mostra preço 20 e venda por NPC. A abertura inglesa direta das páginas #9001/#9002 foi restringida nesta consulta; o preço local do Sal vem do dataset versionado.
+
+## Risco identificado no preço equivalente de peixe seco
+
+O fluxo atual deriva o item seco pela relação de receita `DRY`, mas `deriveRecipeMarketEquivalents` devolve `quantityRatio: 1` para toda relação. A resposta da API conserva as quantidades de entrada/saída no SQL, mas a transformação descarta esses dados; na extração, o rendimento de saída de muitas secagens é nulo, portanto não é seguro inferir um rendimento médio de processamento a partir desse campo.
+
+Esse `quantityRatio` é usado como **unidades do item equivalente comprável por unidade do ingrediente original** e multiplica a cotação do produto seco. A referência pública consultada indica equivalências de cozinha diferentes conforme a variante: a página de [Dried Catfish #8519](https://bdocodex.com/us/item/8519/) declara que peixe seco pode exigir o dobro de unidades comparado ao fresco; o [grupo de substituição de peixes #5101](https://bdocodex.com/us/materialgroup/5101/) registra valores distintos entre itens; e o guia de [substituições de Culinária da GrumpyG](https://grumpygreen.cricket/cooking-recipes/) registra 1 peixe fresco = 2 peixes secos brancos e uma equivalência diferente para peixe seco verde. Esses dados são evidência de que `1` fixo não é uma regra geral. Ainda falta cruzar os valores por ID com o grupo/regra presente no cliente SA atual e validar em jogo antes de escolher razões específicas.
+
+**Conclusão provisória:** preço baseado em peixe seco precisa considerar a equivalência real de substituição de Culinária, que pode variar por item/qualidade; não basta apontar para uma saída de secagem nem multiplicar por uma unidade fixa. Não confundir o preço no Mercado Central do produto seco com valor de venda a NPC, preço base do catálogo ou rendimento do processo `DRY`.
+
+Os 114 itens sem ligação de secagem incluem, por exemplo, tubarões, baleias e espécies especiais. Alguns podem não ter produto seco ou uso culinário; outros podem estar fora da cobertura do extractor. O próximo passo é classificar por dados do cliente, relação de substituição e possibilidade de negociação. A cobertura “todos os peixes” não deve ser marcada completa antes disso.
+
+## Correção de receitas e dados financeiros
+
+O documento [Tiers e receitas regionais](../tiers-and-regional-recipes.md) registra a auditoria final da extração SA/pt: zero divergências estruturais/API e zero divergências de quantidade nas relações comparáveis com XMLs regionais e descrições analisadas. Essa auditoria não prova que todas as fórmulas estejam ativas no servidor; fórmulas sem relação regional comparável, resultados/probabilidades ausentes e relações em quarentena continuam desconhecidos. A matriz [Contagens do catálogo](../recipe-counts.md) descreve 7.016 registros de Life Skills no endpoint, em grupos diferentes dos quatro tipos usados nesta auditoria.
+
+Antes de corrigir dados, comparar a extração com a versão atual do cliente SA/pt. O patch oficial mais recente documentado no contexto do projeto é [08/10/2026](https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694); não foi feita nova extração do cliente nesta consulta. Alterar fórmula somente com ID, método, quantidade e fonte concordantes; manter rendimento/probabilidade nulos quando o cliente não os declara. Em seguida, repetir regressões para receita, maestria, produto/subproduto, preço, taxa, tempo e preço equivalente de peixe.
+
+## Pesquisa competitiva atual e limite para ranking
+
+| Fonte | Evidência consultada em 16/10/2026 | O que pode informar | Limite para afirmar vencedores atuais |
+| --- | --- | --- | --- |
+| [BDO Workshop — oficina](https://bdoworkshop.com/crafting-workshop/plan/9601) | A rota pública não abriu na consulta web; o projeto já registra uma captura pública fornecida pelo usuário com preço de venda líquido, custo, tempo, lucro, lucro/h e “Buy all / Craft all / Best profit/hour”. | Entradas e saídas que convém comparar no planner. Não encontrei volume de vendas no plano visível. | A captura é observação histórica de interface; não revela fórmula privada nem preço atual. |
+| [BDO Codex — receitas e itens](https://bdocodex.com/us/recipes/) | As páginas públicas expõem itens, ícones, receitas, materiais, alguns níveis e valores de compra NPC. O [item Água Mineral #9059](https://bdocodex.com/us/item/9059/) mostra 30 e vendedor; o [grupo de peixes #5101](https://bdocodex.com/us/materialgroup/5101/) lista valores de substituição. Parte dos dados de tabelas carrega dinamicamente e páginas individuais em inglês foram restringidas. | Conferir IDs, relações, substituições, descrição, ícone e preço NPC. | Não é feed atual do Mercado Central nem ranking de vendas; relatos/comentários podem divergir do patch atual. |
+| [BDOLytics — crafting/alchemy](https://bdolytics.com/en/alchemy) | A captura indexada mostra filtros `Min Silver/Hour` e `Min Daily Volume` e colunas de `Silver/Hour`, `Price` e `Volume (14d avg)`. O resultado consultado reporta região North America e data de captura/crawl de semanas atrás; a rota imperial também expõe lucro por caixa e volume médio de 14 dias. | Modelo de comparação separado entre lucro/h, preço e volume com janela explicitada. | A região/default e a idade da captura não validam o top atual de SA em 16/10. Não copiar esses números para o Black Market. |
+| [Garmoth — mercado](https://garmoth.com/market) | A página descreve “Popular Items” como itens favoritados/seguidos nos últimos 15 dias e “Trending Items” como maior volume relativo ao estoque. Nesta captura, região EU e os campos agregados de quantidade/valor/mais vendido ficaram vazios. | Diferenciar popularidade, tendência, volume e estoque. | Não apresenta ranking de lucro de receitas; o snapshot não permite identificar mais vendidos atuais da SA. |
+
+A Política de Fonte do Mercado mantém Arsha como candidato de consulta sob demanda, sem autorização documentada para coleta persistente. O `ACTIVE_CONTEXT.md` §139 registra que `production-quotes` respondeu 503 em 16/10 porque o upstream respondeu 500 com bloqueio Imperva. O histórico local requer cobertura temporal para calcular mudanças em `totalTrades`, cuja unidade ainda não está confirmada como unidades vendidas. Assim, **não há evidência confiável nesta consulta para publicar uma lista atual dos consumíveis mais lucrativos ou mais vendidos de SA**. O snapshot anterior de BDOLytics não deve ser chamado de atual nem usado como dado do produto.
+
+## Proposta de continuidade
+
+1. Gerar uma auditoria reproduzível por dataset/região: cobertura de item/icon, preço e vendedor NPC, receitas de secagem, equivalência de substituição por ID, receitas de Culinária/Alquimia e divergências contra XML/descrições.
+2. Classificar cada insumo como compra NPC confirmada, cotação de Mercado Central, produção/colheita/coleta ou fonte desconhecida. Manter preço NPC somente com vendedor listado e preço confirmado.
+3. Corrigir o preço equivalente de peixe seco usando relações de substituição verificadas por item; estados sem equivalente ou sem cotação ficam sem preço, não recebem valor aproximado.
+4. Validar fórmulas e quantidades contra o cliente atualizado, publicar novo dataset somente depois de comparar diferenças e manter os registros de rendimento desconhecido.
+5. Manter duas classificações independentes: lucro esperado (por operação e por hora, com maestria, tempo, impostos, insumos e saídas) e volume/atividade de mercado (região, janela, unidade, fonte, timestamp e cobertura). Não criar score combinado oculto nem chamar `totalTrades` de unidades vendidas sem contrato que confirme a unidade.
+6. Não ativar coleta persistente enquanto a política de fonte, licença, contrato e cobertura exigida em [market-source-policy.md](market-source-policy.md) não for satisfeita. Se a origem atual não estiver disponível, expor volume como desconhecido e buscar fonte autorizada.
+
+Nenhum banco, arquivo de cliente, pacote, preço de mercado ou receita foi alterado nesta auditoria. A alteração registrada até aqui está restrita ao checklist do projeto.

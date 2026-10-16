@@ -15,6 +15,7 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 | [BDOLytics e BDO Workshop](lytics-workshop.md)                            | Cerca de 35 rotas Workshop; shell atual e páginas/indexação BDOLytics distinguidos                |
 | [Garmoth, Workerman e Arsha](garmoth-workerman-arsha.md)                  | Nove páginas Garmoth; aplicação/código Workerman; documentação e código Arsha                     |
 | [Política de fonte do mercado](market-source-policy.md)                   | Fonte manual aprovada; Arsha candidato não aprovado; controles e critérios para habilitar coleta  |
+| [Auditoria inicial de catálogo, receitas e mercado de Culinária/Alquimia](cooking-alchemy-catalog-market-audit-2026-10-16.md) | Cobertura local de peixe seco, ícones e preços NPC; riscos de equivalência; limites para ranquear lucro/volume atuais na SA |
 
 Essas contagens não representam todas as rotas possíveis. Cada site tem entidades, filtros, idiomas e paginações que multiplicam URLs. Áreas autenticadas, respostas apenas com shell JavaScript, páginas indisponíveis e bloqueios estão registrados nos relatórios. Não é correto apresentar a pesquisa como uma cópia integral das bases dos concorrentes.
 
