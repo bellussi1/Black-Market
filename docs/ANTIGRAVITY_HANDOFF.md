@@ -1,6 +1,6 @@
 # Handoff do Black Market para Antigravity
 
-- **Atualizado em:** 15/10/2026
+- **Atualizado em:** 16/10/2026
 - **Projeto:** Black Market — planejador para Black Desert Online
 - **Objetivo:** permitir que o Antigravity retome o trabalho sem depender do histórico dos chats do Codex.
 
@@ -9,20 +9,33 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 ## Estado do workspace nesta passagem
 
 - Branch atual: `main`.
-- Último commit de código observado: `6d22a75 feat(market): render item history with Chart.js`.
+- Último commit funcional antes desta atualização documental: `53ed17b chore(format): exclude scratch plans and normalize files`.
+- Entregas implementadas nesta continuação: `0185b87` (indexação dos lookups do Coach), `205dee4` (Home/Roadmap dinâmico) e `8cf0283` (Tutoriais guiados com Driver.js). Também foram criados `1308342` (teste do canvas acessível do Mercado) e `53ed17b` (formatação/Prettier). Confira o histórico real antes de agir.
 - Este handoff e a atualização de `docs/ACTIVE_CONTEXT.md` foram registrados juntos em um commit documental local. O workspace estava limpo logo após o commit; confira `git status` ao retomar e preserve qualquer alteração que apareça.
-- O gráfico Chart.js do histórico de Mercado está commitado em `6d22a75`; seus arquivos incluem o componente `market-history-chart` e as alterações de `market-history`, `market-page` e manifests.
-- A seção 126 de `docs/ACTIVE_CONTEXT.md` registra que build de desenvolvimento e lint passaram e que Chart.js foi separado em chunk lazy. Falta a inspeção visual: o screenshot não pôde ser obtido enquanto o perfil Chrome estava ocupado. Não afirme validação visual concluída.
+- O gráfico Chart.js do histórico do Mercado está commitado em `6d22a75`; recebeu validação adicional de lacunas e métrica em `128` do `ACTIVE_CONTEXT.md`.
+- Home/Roadmap e a biblioteca de Tutoriais Guiados estão implementados e commitados. Os planos de implementação registram detalhes e pendências; não reimplemente essas entregas do zero.
+- `pnpm check` e `pnpm test` passaram nesta continuação. O build de produção ainda falha nos budgets atuais: bundle inicial 1,08 MB (limite 1 MB) e `recipe-tree.scss` 38,77 kB (limite 20 kB). Não aumente os budgets sem reduzir e justificar o custo real.
+- As migrações `0011_global_roadmap_order` e `0012_tutorial_guides` estão versionadas, mas não foram aplicadas a banco nesta passagem; o seed de tutoriais também não foi executado.
+- Prompt reutilizável para a continuidade: `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`; o commit documental mais recente deve ser conferido com `git log`.
+- A seção 128 de `docs/ACTIVE_CONTEXT.md` registra a validação visual do Chart.js em desktop e mobile, para métricas de preço, estoque e negociações por intervalo. A seção 126 é o histórico da implementação inicial, anterior à validação visual.
 
 ## Prioridades de continuação
 
-### 1. Conferir visualmente o gráfico do Mercado
+### 1. Tratar os limites do build de produção
+
+O último build de produção concluiu a compilação, mas falhou nos budgets Angular: bundle inicial de 1,08 MB contra 1 MB e `recipe-tree.scss` com 38,77 kB contra 20 kB. Não elevar o limite para fazer o build ficar verde. Investigue quais módulos e regras CSS causam o peso, proponha cortes mensuráveis e mantenha recursos de rota lazy. O Driver.js está em chunk lazy (~27 kB); preserve esse carregamento sob demanda.
+
+### 2. Preparar e validar o Tutorial Guiado em banco local
+
+Antes de qualquer escrita, confirme que a URL resolve para um banco local descartável. Aplique somente as migrações pendentes (`0011`/`0012`) e execute `pnpm --filter @bdo/api tutorials:seed` nesse banco. Confira `/tutorials/manage` com identidade de admin e as guias públicas; nunca use uma URL remota por suposição. Seed de tutorial não foi executado nesta passagem.
+
+### 3. Conferir visualmente o gráfico do Mercado
 
 O pedido recente era fazer um gráfico conectado, não deixar apenas pontos. A implementação já está commitada. Inspecione a tela com dados reais disponíveis e os estados sem amostras, SSR, acessibilidade, escalas e lacunas de coleta; corrija o que for necessário. Não apresente uma linha contínua como se houvesse observações durante períodos sem consulta; a linha tracejada indica um intervalo longo. Não converta contador de negociações em unidades vendidas nem em liquidez garantida.
 
 O histórico técnico está na seção 126 de `docs/ACTIVE_CONTEXT.md` e a política de fontes do Mercado em `docs/research/market-source-policy.md` e `docs/research/competitor-market-crafting-audit-2026-10-14.md`.
 
-### 2. Desbloquear autenticação Google local
+### 4. Desbloquear autenticação Google local
 
 - O código já contém o fluxo Firebase Web/Google, validação Firebase Admin no BFF, identidade, workspace e guards. Veja as seções 90–99 e 125 do `ACTIVE_CONTEXT.md`, mais `docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md` e `docs/superpowers/plans/2026-10-14-social-auth-and-staging.md`.
 - Foi criado o projeto local dedicado `black-market-bdo-local`, e o app Web foi registrado. O usuário aceitou no navegador o prompt de termos e pediu nova tentativa.
@@ -32,7 +45,7 @@ O histórico técnico está na seção 126 de `docs/ACTIVE_CONTEXT.md` e a polí
 - Login Google ainda não foi confirmado como salvo e `localhost` ainda não foi autorizado em Authentication > Settings > Authorized domains. Portanto o login real e as rotas autenticadas continuam sem validação end-to-end.
 - Quando o Console voltar a funcionar, retomar o provedor Google e `localhost`, manter credenciais privadas exclusivamente no `.env` local ignorado e nunca enviá-las ao chat, frontend ou Git. O e-mail de suporte foi autorizado pelo usuário no Console; não registrar seu endereço pessoal em documentação versionada.
 
-### 3. Manter o Coach de Atividades alinhado ao objetivo do produto
+### 5. Manter o Coach de Atividades alinhado ao objetivo do produto
 
 O Coach da rota `/recommendations` foi implementado e refinado nas seções 121–124 do `ACTIVE_CONTEXT.md`. Ele automatiza o ranking de receitas de produção usando catálogo, perfil/maestria, estoque, preços disponíveis e calibração opcional de tempo; mostra custos, quantidades, duração, origem e pendências. O carregamento do catálogo é automático e usa resolver/cache, sem botão “carregar catálogo”. A UI segue os painéis, titlebars, controles retangulares e tokens do padrão BDO.
 
@@ -67,7 +80,16 @@ Antes de estender o comparador para atividades de combate ou coleta, use registr
 | Staging, implantação, backup e segurança | `docs/staging-local.md`, `docs/deployment.md`, `docs/backup-recovery.md`, `docs/security.md`, `docs/production-and-accounts.md`                                                                                                                                                  |
 | Home/Roadmap e tutorial guiado           | `docs/superpowers/specs/2026-10-15-home-roadmap-dynamic-flow-design.md`, `docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md`, `docs/superpowers/specs/2026-10-15-guided-tutorial-library-design.md`, `docs/superpowers/plans/2026-10-15-guided-tutorial-library.md` |
 
-Os planos de Home/Roadmap e tutorial guiado foram documentados em 15/10; confira o estado e aprovação mais recentes antes de implementá-los. Não deduza aprovação a partir de um plano existente.
+Os planos de Home/Roadmap e Tutorial Guiado foram aprovados e implementados nesta continuação. Consulte os registros de execução no final de `docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md` e `docs/superpowers/plans/2026-10-15-guided-tutorial-library.md`; não repita essas implementações sem conferir o estado atual.
+
+## Pendências confirmadas em 16/10/2026
+
+- **Build produção**: bundle inicial excede o limite em 76,9 kB e `recipe-tree.scss` excede o limite de estilo em 18,77 kB. Reduzir o custo real e manter recursos lazy; não aumentar os budgets como atalho. Driver.js está em chunk lazy (~27 kB).
+- **Tutorial em banco local**: migrações estão versionadas, mas ainda não aplicadas; o seed idempotente não foi executado. Confirmar destino local descartável antes de migrar/semear e validar a tela administrativa e os tours. Script: `pnpm --filter @bdo/api tutorials:seed`.
+- **Coach**: o Map acelerou busca de rótulos/ícones, não o cálculo de cenários. A medição sintética foi ~11,06 s para 4.222 receitas e 12.666 cenários pendentes. A divergência de lucro/h da Refeição de Valência segue sem comparação pareada; conferir `docs/research/activity-coach-competitive-review.md` antes de mudar fórmulas.
+- **Autenticação e dados locais**: o login Google real segue bloqueado pelo Firebase Console. Personagem, gear, armazém e staging precisam de dados locais de teste controlados; não preencher dados remotos nem compartilhar credenciais.
+- **OCR**: seguir os documentos de corpus/calibração e manter revisão humana do resultado extraído para armazenamento, inventário, maestria, peso e personagens.
+- **Verificação**: a suíte completa e `pnpm check` passaram. A build de produção falha nos budgets atuais e `pnpm test:ssr` foi tentado com build de desenvolvimento; não declarar produção ou SSR de produção validados até rodar o smoke na configuração correta.
 
 ## Contexto recuperado dos chats referenciados
 
@@ -96,8 +118,9 @@ Não rode ou acrescente testes só por causa deste handoff. Ao retomar a refator
 
 ## Instrução direta para o próximo agente
 
-1. Leia `AGENTS.md` e este handoff; depois confira `docs/ACTIVE_CONTEXT.md`, branch, `git status` e os três últimos commits.
+1. Leia `AGENTS.md` e este handoff; depois confira `docs/ACTIVE_CONTEXT.md`, branch, `git status` e os três últimos commits. Preserve mudanças presentes no workspace.
 2. Confira o estado local. Preserve quaisquer alterações que existam e inspecione o diff antes de editar.
-3. Confira visualmente o gráfico Chart.js commitado em `6d22a75`; registre a evidência e atualize `docs/ACTIVE_CONTEXT.md` ao terminar.
-4. Retome o login Google somente quando o Firebase Console permitir listar/configurar o projeto; não altere IAM nem exponha credenciais.
-5. Mantenha as decisões de produto acima e trate dados faltantes como pendentes, sem inventar preços, liquidez, loot ou rendimento.
+3. Investigue e reduza os budgets de produção sem elevá-los por conveniência; documente tamanhos antes/depois e preserve carregamento lazy. A validação visual do Chart.js já está registrada na seção 128 do `ACTIVE_CONTEXT.md`.
+4. Aplique migrações e seed de tutoriais apenas após confirmar um banco local descartável; depois valide o editor/tours com estado local.
+5. Retome login Google somente quando o Firebase Console permitir listar/configurar o projeto; não altere IAM nem exponha credenciais. Continue as pendências de personagem, gear, armazém e OCR com dados temporários locais e revisão humana.
+6. Mantenha as decisões de produto acima e trate dados faltantes como pendentes, sem inventar preços, liquidez, loot ou rendimento.

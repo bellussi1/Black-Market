@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-15-guided-tutorial-library-design.md`
 
+> **Estado em 16/10/2026:** implementação entregue em `8cf0283`, sobre o registro e schema em `11f681d` e `8768f56`. O registro de execução no final resume testes e limites atuais; os checklists originais descrevem o plano e não substituem a verificação do workspace.
+
 ## Global Constraints
 
 - Primeira publicação: Mercado e Receitas/Crafting públicos; Scan, Armazém e Recomendações autenticados pelo `authGuard` existente.
@@ -552,3 +554,12 @@ git commit -m "test(tutorials): cover accessible guided tour flow"
 - Analytics consentido e atualização da política: Task 10.
 
 **Conteúdo editorial do seed:** a especificação exige guias iniciais para o fluxo principal, mas não contém seus textos. Durante a Task 4, redigir conteúdo curto e verificá-lo contra os nomes/controles reais das cinco telas; persistir os valores no seed idempotente, fora do bundle. Após o primeiro seed, o banco e o editor administrativo são a fonte operacional, e o seed nunca sobrescreve alterações. Fixture sintética fica restrita aos testes.
+
+## Execução no workspace — 16/10/2026
+
+- **Status**: biblioteca de Tutoriais Guiados implementada e commitada em 8cf0283 feat(tutorials): add guided screen tours and editor; registro/schema base estão em 11f681d e 8768f56.
+- **Entrega**: catálogo permite apenas cinco telas e âncoras versionadas; API pública/admin valida conteúdo em texto simples e concorrência; seed idempotente preserva ajustes operacionais; editor fica sob rota administrativa; tours só começam por clique e carregam Driver.js no navegador. Analytics limita-se a início/conclusão/dispensa com consentimento.
+- **Verificações**: specs específicas do agente — Web 40 testes e API/runtime/grants 30 — passaram; pnpm check e a suíte completa passaram (calculators 67; API 245, 1 ignorado; Web 609; OCR/scripts 73). O bundle de Driver.js permanece lazy (~27 kB).
+- **Limites**: build de produção geral falha nos budgets Angular (bundle inicial 1,08 MB > 1 MB; estilo recipe-tree.scss 38,77 kB > 20 kB). pnpm test:ssr foi rodado contra build de desenvolvimento e a verificação de redirect de /crafting falhou porque esse ambiente não usa environment.production; execute smoke SSR com o build/configuração de produção após resolver os budgets. Não declarar produção verificada.
+- **Banco/seed**: migrações não aplicadas e seed não executado nesta passagem. Para validar, confirmar uma URL de PostgreSQL local descartável, aplicar somente migrações pendentes e executar pnpm --filter @bdo/api tutorials:seed localmente.
+- **Política**: não copiar conteúdo do tutorial para o bundle, não colocar dados de teste no staging/produção e nunca tratar o guard do cliente como autorização suficiente.

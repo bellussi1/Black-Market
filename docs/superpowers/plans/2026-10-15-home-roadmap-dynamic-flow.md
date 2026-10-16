@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-15-home-roadmap-dynamic-flow-design.md`
 
+> **Estado em 16/10/2026:** implementação entregue em `205dee4` (Home/Roadmap), sobre a fundação de schema/registro em `11f681d` e `8768f56`. O registro de execução abaixo resume validações e limitações atuais; os checklists originais descrevem o plano, não devem ser lidos isoladamente como status do workspace.
+
 ## Global Constraints
 
 - Manter os valores `flow | pillar` no banco e no contrato público por compatibilidade.
@@ -289,3 +291,12 @@ git commit -m "feat(home): promote roadmap featured entries"
 - Home dinâmica, remoção de cópias estáticas, foco múltiplo em ordem, primeira ação/links secundários, ausência de foco, caminhos protegidos e destino de login seguro, retry e ferramentas contextuais preservadas: Task 5.
 - Desktop alternado, mobile em uma coluna, conteúdo variável sem corte, ordem de tab, leitores de tela, foco visível, alvos de 44 × 44 px e movimento reduzido: Tasks 3 e 5.
 - Limite inevitável do harness atual: não existe teste de navegador/viewport configurado no repositório. Os testes Angular validam estrutura e estados; viewport, navegação por teclado e movimento reduzido ficam como revisão manual nas Tasks 3 e 5, sem adicionar uma dependência E2E ao escopo. Não existe runner de migração no pacote `@bdo/database`; o teste de preservação usa uma tabela temporária PostgreSQL em banco descartável e pode ser ignorado somente quando `ROADMAP_MIGRATION_TEST_URL` não estiver configurada.
+
+## Execução no workspace — 16/10/2026
+
+- **Status**: implementação concluída e commitada em 205dee4 feat(roadmap): unify home and global roadmap flow; o arquivo roadmap-manage-page.html foi incluído no commit após conferência do diff.
+- **Resultado**: Roadmap público e editor usam ordem global de fases/pilares; Home usa focos dinâmicos de API e links seguros, sem arrays editoriais locais. Estados de falha, retry, vazio e carregamento foram cobertos.
+- **Integração relacionada**: o link de gestão de tutoriais no editor do Roadmap é o ponto de acesso à feature commitada em 8cf0283.
+- **Verificações integradas**: pnpm check passou. pnpm test passou (calculators 67; API 245, 1 ignorado; Web 609; OCR/scripts 73). O build de produção geral ainda falha nos budgets Angular documentados na seção 129 de docs/ACTIVE_CONTEXT.md; não foi aumentado nenhum limite.
+- **Banco**: não executar migrações presumindo que o banco configurado seja local. As migrações estão versionadas, sem aplicação nesta passagem.
+- **Commits-base**: 11f681d registro de telas compartilhado e 8768f56 schema/migrações; esta implementação fica em 205dee4.
