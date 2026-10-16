@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  Injector,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -35,7 +46,7 @@ import { visibleMarkets } from '../core/market-configuration';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
 import { RegionPreferences } from '../core/region-preferences';
 import { RouteIntentPrefetchDirective } from '../core/route-intent-prefetch.directive';
-import { WorkspaceStore } from '../core/workspace-store';
+import type { WorkspaceStore } from '../core/workspace-store';
 import { AdSlot } from '../shared/ad-slot/ad-slot';
 import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-picker';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
@@ -109,7 +120,11 @@ export class WorkspaceLayout {
   }
   readonly screenshotMvp = SCREENSHOT_MVP;
 
-  readonly store = inject(WorkspaceStore);
+  readonly store = signal<WorkspaceStore | null>(null);
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+  private sessionRequested = false;
 
   private readonly router = inject(Router);
 
@@ -141,6 +156,19 @@ export class WorkspaceLayout {
   );
 
   constructor() {
+    effect(() => {
+      if (
+        !this.browser ||
+        this.sessionRequested ||
+        (!this.identity.authenticated() && !this.path().startsWith('/demo'))
+      )
+        return;
+      this.sessionRequested = true;
+      void import('../core/workspace-store').then(({ WorkspaceStore }) => {
+        if (this.destroyRef.destroyed) return;
+        this.store.set(this.injector.get(WorkspaceStore));
+      });
+    });
     void this.identity.initialize().catch(() => undefined);
     this.router.events
 

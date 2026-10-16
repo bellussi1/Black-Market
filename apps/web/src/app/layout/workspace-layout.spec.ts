@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import { IdentityService } from '../core/identity.service';
+import { WorkspaceStore } from '../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
 import { WorkspaceLayout } from './workspace-layout';
 
@@ -66,5 +67,21 @@ describe('workspace navigation', () => {
 
     for (const path of ['/scans', '/storage', '/recommendations', '/family', '/shopping'])
       expect(links).not.toContain(path);
+  });
+
+  it('does not inject the lazy workspace store after the layout is destroyed', async () => {
+    const session = identity();
+    const storeFactory = vi.fn(() => ({}));
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: session },
+      { provide: WorkspaceStore, useFactory: storeFactory },
+    ]);
+
+    session.authenticated.set(true);
+    fixture.detectChanges();
+    fixture.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(storeFactory).not.toHaveBeenCalled();
   });
 });

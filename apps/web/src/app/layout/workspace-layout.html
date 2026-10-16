@@ -117,7 +117,7 @@
         </button>
         @if (identity.authenticated()) {
           <a class="topbar-character" routerLink="/family">{{
-            store.activeCharacter()?.name ?? 'Meu espaço'
+            store()?.activeCharacter()?.name ?? 'Meu espaço'
           }}</a>
         }
         <a class="topbar-account" routerLink="/account" i18n>Conta</a>
@@ -143,11 +143,13 @@
         aria-label="Busca global"
         i18n-aria-label
       >
-        <app-catalog-item-picker
-          label="Buscar por nome ou ID"
-          [compact]="true"
-          (selected)="openItem($event)"
-        />
+        @defer {
+          <app-catalog-item-picker
+            label="Buscar por nome ou ID"
+            [compact]="true"
+            (selected)="openItem($event)"
+          />
+        }
         <button hlmBtn variant="outline" type="button" (click)="quickSearchOpen.set(false)" i18n>
           Fechar busca
         </button>
@@ -160,7 +162,7 @@
       </div>
     }
     <div class="content-frame" [class.with-ad-rails]="showAds()">
-      @if (store.demoActive()) {
+      @if (store()?.demoActive()) {
         <aside class="storage-warning" aria-label="Modo demonstração" i18n-aria-label>
           <span i18n
             >Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão;
@@ -169,7 +171,7 @@
           @if (identity.authenticated()) {
             <a routerLink="/recommendations" i18n>Comparar produção</a>
           }
-          <button hlmBtn variant="outline" class="btn subtle" (click)="store.exitDemo()" i18n>
+          <button hlmBtn variant="outline" class="btn subtle" (click)="store()?.exitDemo()" i18n>
             Sair da demonstração
           </button>
         </aside>
