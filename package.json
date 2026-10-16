@@ -11,7 +11,7 @@
     "dev:api": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/api start:dev",
     "lint": "pnpm lint:packages && pnpm lint:ocr && pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test && node --test scripts/generate-synthetic-ocr-dataset.test.mjs scripts/scrape-bdo-screenshots.test.mjs scripts/benchmark-ocr.test.mjs scripts/validate-ocr-corpus.test.mjs scripts/validate-screen-ocr.test.mjs scripts/real-ocr-corpus.test.mjs scripts/evaluate-scan-reader-output.test.mjs scripts/measured-quantity-label.test.mjs",
+    "test": "pnpm -r --workspace-concurrency=1 --if-present test && node --test scripts/generate-synthetic-ocr-dataset.test.mjs scripts/scrape-bdo-screenshots.test.mjs scripts/benchmark-ocr.test.mjs scripts/validate-ocr-corpus.test.mjs scripts/validate-screen-ocr.test.mjs scripts/real-ocr-corpus.test.mjs scripts/evaluate-scan-reader-output.test.mjs scripts/measured-quantity-label.test.mjs",
     "build": "pnpm -r --if-present build",
     "db:generate": "pnpm --filter @bdo/database db:generate",
     "db:migrate": "pnpm --filter @bdo/database db:migrate",
