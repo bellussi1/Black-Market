@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import type { RoadmapEntry } from '@bdo/shared';
+import type { RoadmapEntry, RoadmapEntryKind } from '@bdo/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { finalize } from 'rxjs';
 
@@ -38,17 +38,12 @@ export class RoadmapPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly loaded = signal(false);
-  readonly flowEntries = computed(() =>
-    this.entries()
-      .filter((entry) => entry.kind === 'flow')
-      .sort((left, right) => left.sortOrder - right.sortOrder),
-  );
-  readonly pillars = computed(() =>
-    this.entries()
-      .filter((entry) => entry.kind === 'pillar')
+  readonly trailEntries = computed(() =>
+    [...this.entries()]
       .sort((left, right) => left.sortOrder - right.sortOrder)
       .map((entry) => ({
         ...entry,
+        kindLabel: this.kindLabel(entry.kind),
         links: entry.links.filter(
           (link) => this.identity.authenticated() || !isLoginRequiredPath(link.path),
         ),
@@ -58,6 +53,10 @@ export class RoadmapPage implements OnInit {
   ngOnInit() {
     this.load();
     if (this.browser) void this.identity.initialize().catch(() => undefined);
+  }
+
+  kindLabel(kind: RoadmapEntryKind): string {
+    return kind === 'flow' ? $localize`Fase` : $localize`Pilar`;
   }
 
   load() {

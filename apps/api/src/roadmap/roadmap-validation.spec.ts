@@ -30,6 +30,68 @@ describe('roadmap update validation', () => {
     ).toThrow();
   });
 
+  it('acceptsMoreThan32EntriesAndSortOrderAbove1000', () => {
+    const entries = Array.from({ length: 33 }, (_, index) => ({
+      ...entry,
+      slug: `entry-${index + 1}`,
+      kind: index % 2 === 0 ? ('flow' as const) : ('pillar' as const),
+      sortOrder: index === 32 ? 1001 : index,
+      featured: index < 2,
+    }));
+    const parsed = parseRoadmapUpdate({ entries });
+    expect(parsed.entries).toHaveLength(33);
+    expect(parsed.entries[32]?.sortOrder).toBe(1001);
+    expect(parsed.entries.filter((item) => item.featured)).toHaveLength(2);
+  });
+
+  it('rejectsDuplicateSortOrdersAcrossKinds', () => {
+    expect(() =>
+      parseRoadmapUpdate({
+        entries: [
+          { ...entry, slug: 'flow-step', kind: 'flow', sortOrder: 0 },
+          { ...entry, slug: 'pillar-step', kind: 'pillar', sortOrder: 0 },
+        ],
+      }),
+    ).toThrow();
+  });
+
+  it('rejectsRepeatedPathsInOneEntryButAllowsTheSamePathAcrossEntries', () => {
+    expect(() =>
+      parseRoadmapUpdate({
+        entries: [
+          {
+            ...entry,
+            links: [
+              { label: 'Mercado', path: '/market' },
+              { label: 'Mercado novamente', path: ' /market ' },
+            ],
+          },
+        ],
+      }),
+    ).toThrow();
+
+    expect(
+      parseRoadmapUpdate({
+        entries: [
+          {
+            ...entry,
+            slug: 'flow-market',
+            kind: 'flow',
+            sortOrder: 0,
+            links: [{ label: 'Abrir mercado', path: '/market' }],
+          },
+          {
+            ...entry,
+            slug: 'pillar-market',
+            kind: 'pillar',
+            sortOrder: 1,
+            links: [{ label: 'Consultar mercado', path: '/market' }],
+          },
+        ],
+      }).entries,
+    ).toHaveLength(2);
+  });
+
   it('accepts only internal paths and plain text content', () => {
     expect(() =>
       parseRoadmapUpdate({

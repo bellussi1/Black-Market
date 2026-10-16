@@ -12,58 +12,98 @@
       <p class="hero-copy" i18n>
         Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só lugar.
       </p>
-      <div class="action-row hero-actions">
-        <a hlmBtn variant="outline" class="btn" routerLink="/market" i18n>Consultar preço</a>
-        @if (identity.authenticated()) {
-          <a hlmBtn variant="outline" class="btn subtle" routerLink="/scans" i18n
-            >Importar capturas</a
-          >
-        }
-        @if (!screenshotMvp) {
-          <a hlmBtn variant="outline" class="btn subtle" routerLink="/demo" i18n
-            >Experimentar com um personagem</a
+      <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
+    </div>
+
+    <section class="home-focus-section" aria-labelledby="home-focus-title">
+      <div class="home-focus-heading">
+        <div>
+          <p class="tool-kicker" i18n>TRILHA ATIVA DO PRODUTO</p>
+          <h2 id="home-focus-title" i18n>Focos atuais</h2>
+        </div>
+        @if (!roadmapLoaded() || homeFocuses().length > 0) {
+          <a class="btn subtle home-roadmap-link" routerLink="/roadmap" i18n
+            >Ver Roadmap completo</a
           >
         }
       </div>
-      <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
-    </div>
-    <aside class="flow-card" aria-labelledby="flow-title">
-      <p class="tool-kicker" i18n>DA BUSCA À DECISÃO</p>
-      <h2 id="flow-title" i18n>Um caminho simples</h2>
-      <ol class="flow-list">
-        <li>
-          <span class="flow-number">1</span>
-          <div>
-            <a routerLink="/market" i18n>Encontre um item</a
-            ><span i18n>Busque pelo nome ou categoria</span>
-          </div>
-        </li>
-        <li>
-          <span class="flow-number">2</span>
-          <div>
-            <a routerLink="/market" i18n>Confira o mercado</a
-            ><span i18n>Veja preço, estoque e região</span>
-          </div>
-        </li>
-        @if (identity.authenticated()) {
-          <li>
-            <span class="flow-number">3</span>
-            <div>
-              <a routerLink="/scans" i18n>Importe seus itens</a
-              ><span i18n>Enviar, revisar e confirmar</span>
-            </div>
-          </li>
-          <li>
-            <span class="flow-number">4</span>
-            <div>
-              <a routerLink="/storage" i18n>Use o que já possui</a
-              ><span i18n>Confira armazém, inventário e equipamentos</span>
-            </div>
-          </li>
-        }
-      </ol>
-    </aside>
+
+      @if (roadmapLoading()) {
+        <p class="home-focus-state" role="status" i18n>Carregando focos do Roadmap…</p>
+      } @else if (roadmapError()) {
+        <div class="home-focus-state home-focus-error" role="alert">
+          <p>{{ roadmapError() }}</p>
+          <button class="btn subtle home-focus-retry" type="button" (click)="loadRoadmap()" i18n>
+            Tentar novamente
+          </button>
+        </div>
+      } @else if (roadmapLoaded() && homeFocuses().length === 0) {
+        <div class="home-focus-state home-focus-empty" role="status">
+          <p i18n>Ainda não há foco ativo definido na trilha.</p>
+          <a class="btn subtle" routerLink="/roadmap" i18n>Abrir Roadmap</a>
+        </div>
+      } @else if (roadmapLoaded()) {
+        <ol class="home-focus-list">
+          @for (focus of homeFocuses(); track focus.entry.id) {
+            <li class="home-focus-item">
+              <article class="home-focus-card" [attr.data-kind]="focus.entry.kind">
+                <div class="home-focus-card-top">
+                  <div class="home-focus-meta">
+                    <ng-icon [name]="focus.entry.icon" aria-hidden="true" />
+                    <span class="home-focus-kind">{{ focus.kindLabel }}</span>
+                  </div>
+                  @if (focus.entry.statusLabel) {
+                    <span class="home-focus-status">{{ focus.entry.statusLabel }}</span>
+                  }
+                </div>
+                <h3>{{ focus.entry.title }}</h3>
+                <p class="home-focus-summary">{{ focus.entry.summary }}</p>
+                @if (focus.entry.description) {
+                  <p class="home-focus-description">{{ focus.entry.description }}</p>
+                }
+                <div class="home-focus-actions">
+                  @if (focus.primaryLink; as primary) {
+                    <a hlmBtn variant="outline" class="btn" [routerLink]="primary.path">{{
+                      primary.label
+                    }}</a>
+                    @for (link of focus.secondaryLinks; track link.path) {
+                      <a hlmBtn variant="outline" class="btn subtle" [routerLink]="link.path">{{
+                        link.label
+                      }}</a>
+                    }
+                  } @else if (focus.requiresLoginToAccess) {
+                    @if (focus.loginReturnUrl; as returnUrl) {
+                      <a
+                        hlmBtn
+                        variant="outline"
+                        class="btn subtle"
+                        routerLink="/account"
+                        [queryParams]="{ returnUrl }"
+                        i18n
+                        >Entrar para acessar</a
+                      >
+                    } @else {
+                      <a hlmBtn variant="outline" class="btn subtle" routerLink="/account" i18n
+                        >Entrar para acessar</a
+                      >
+                    }
+                  } @else {
+                    <a hlmBtn variant="outline" class="btn subtle" routerLink="/roadmap" i18n
+                      >Ver no Roadmap</a
+                    >
+                  }
+                </div>
+              </article>
+            </li>
+          }
+        </ol>
+      }
+    </section>
   </section>
+
+  @if (!screenshotMvp) {
+    <app-player-overview />
+  }
 
   <section hlmCard class="panel home-search">
     <div class="panel-heading">
@@ -98,68 +138,6 @@
     }
   </section>
 
-  <section class="journey-section" aria-labelledby="journey-title">
-    @if (!screenshotMvp) {
-      <app-player-overview />
-    }
-    <div class="home-section-head">
-      <div>
-        <p class="tool-kicker" i18n>COMECE PELO SEU OBJETIVO</p>
-        <h2 id="journey-title" i18n>O que você quer fazer agora?</h2>
-        <p class="section-copy" i18n>
-          As ferramentas reutilizam seu estoque e preferências. Seu perfil pode ser preenchido aos
-          poucos.
-        </p>
-      </div>
-    </div>
-    <div class="journey-grid">
-      @for (journey of journeys(); track journey.number) {
-        <a [routerLink]="journey.path" class="journey-card" [attr.data-type]="journey.icon">
-          <div class="journey-card-top">
-            <span class="journey-icon" aria-hidden="true">
-              @switch (journey.icon) {
-                @case ('market') {
-                  <svg viewBox="0 0 32 32" fill="none">
-                    <path d="M6 24V8m0 16h21M10 20l5-5 4 3 7-9" />
-                    <path d="M21 9h5v5" />
-                  </svg>
-                }
-                @case ('craft') {
-                  <svg viewBox="0 0 32 32" fill="none">
-                    <path d="M5 11h22l-3 6h-7v8H9v-8H5zM12 11V7h8v4" />
-                    <path d="M9 25h14" />
-                  </svg>
-                }
-                @case ('silver') {
-                  <svg viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="11" />
-                    <path
-                      d="M19 12c-.7-.8-1.7-1.2-3-1.2-1.7 0-2.8.8-2.8 2 0 3.7 6.2 1.3 6.2 5 0 1.4-1.3 2.4-3.2 2.4-1.5 0-2.8-.5-3.7-1.5M16 8v16"
-                    />
-                  </svg>
-                }
-                @case ('storage') {
-                  <svg viewBox="0 0 32 32" fill="none">
-                    <path d="m4.5 10 11.5-6 11.5 6v13L16 29 4.5 23z" />
-                    <path d="M4.5 10 16 16l11.5-6M16 16v13M10 7l12 6" />
-                  </svg>
-                }
-              }
-            </span>
-            <span class="journey-number">{{ journey.number }}</span>
-          </div>
-          <span class="journey-tag">{{ journey.tag }}</span>
-          <h3>{{ journey.title }}</h3>
-          <p>{{ journey.description }}</p>
-          <span class="journey-steps">{{ journey.steps }}</span>
-          <span class="journey-open"
-            ><ng-container i18n>Começar</ng-container><span aria-hidden="true">↗</span></span
-          >
-        </a>
-      }
-    </div>
-  </section>
-
   @if (hasWorkspaceData()) {
     <section class="continue-section" aria-labelledby="continue-title">
       <div class="home-section-head">
@@ -183,30 +161,6 @@
       </div>
     </section>
   }
-
-  <details class="more-tools">
-    <summary>
-      <span
-        ><ng-container i18n>Ver todas as ferramentas</ng-container
-        ><small i18n>Além das tarefas principais</small></span
-      >
-      <span class="more-tools-toggle" aria-hidden="true">+</span>
-    </summary>
-    <div class="more-tools-grid">
-      @for (tool of tools; track tool.path) {
-        @if (canOpenPath(tool.path)) {
-          <a [routerLink]="tool.path" class="home-tool">
-            <span class="home-tool-tag">{{ tool.tag }}</span>
-            <h3>{{ tool.title }}</h3>
-            <p>{{ tool.description }}</p>
-            <span class="tool-open"
-              ><ng-container i18n>Abrir ferramenta</ng-container><b aria-hidden="true">↗</b></span
-            >
-          </a>
-        }
-      }
-    </div>
-  </details>
 
   <aside class="source-note">
     <span class="source-note-mark" aria-hidden="true">i</span>

@@ -13,9 +13,7 @@ export class RoadmapService {
   async list(): Promise<RoadmapResponse> {
     const rows = await this.database.db.select().from(roadmapEntries);
     const entries = [...rows]
-      .sort(
-        (left, right) => left.kind.localeCompare(right.kind) || left.sortOrder - right.sortOrder,
-      )
+      .sort((left, right) => left.sortOrder - right.sortOrder)
       .map(
         (row): RoadmapEntry => ({
           id: row.id,

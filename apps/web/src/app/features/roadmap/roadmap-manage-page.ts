@@ -19,19 +19,6 @@ import { RoadmapApiService } from '../../core/roadmap-api.service';
 import { ROADMAP_ICON_OPTIONS, ROADMAP_ICONS } from './roadmap-icons';
 
 type DraftEntry = RoadmapEntryInput & { draftKey: string };
-type EditorGroup = {
-  kind: RoadmapEntryKind;
-  kicker: string;
-  title: string;
-  addLabel: string;
-  itemLabel: string;
-  untitledLabel: string;
-  orderLabel: string;
-  moveUpLabel: string;
-  moveDownLabel: string;
-  removeLabel: string;
-  entries: DraftEntry[];
-};
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,36 +44,9 @@ export class RoadmapManagePage implements OnInit {
   readonly error = signal('');
   readonly pendingRemoval = signal<string | null>(null);
   readonly hasChanges = signal(false);
-  readonly flowEntries = computed(() => this.orderedEntries('flow'));
-  readonly pillars = computed(() => this.orderedEntries('pillar'));
-  readonly editorGroups = computed<EditorGroup[]>(() => [
-    {
-      kind: 'flow',
-      kicker: $localize`SEQUÊNCIA DA EXPERIÊNCIA`,
-      title: $localize`Etapas do fluxo`,
-      addLabel: $localize`Adicionar etapa`,
-      itemLabel: $localize`Etapa`,
-      untitledLabel: $localize`Etapa sem título`,
-      orderLabel: $localize`Reordenar etapa`,
-      moveUpLabel: $localize`Mover para cima`,
-      moveDownLabel: $localize`Mover para baixo`,
-      removeLabel: $localize`Remover etapa`,
-      entries: this.flowEntries(),
-    },
-    {
-      kind: 'pillar',
-      kicker: $localize`ÁREAS DO PRODUTO`,
-      title: $localize`Pilares`,
-      addLabel: $localize`Adicionar pilar`,
-      itemLabel: $localize`Pilar`,
-      untitledLabel: $localize`Pilar sem título`,
-      orderLabel: $localize`Reordenar pilar`,
-      moveUpLabel: $localize`Mover para cima`,
-      moveDownLabel: $localize`Mover para baixo`,
-      removeLabel: $localize`Remover pilar`,
-      entries: this.pillars(),
-    },
-  ]);
+  readonly orderedEntries = computed(() =>
+    [...this.entries()].sort((left, right) => left.sortOrder - right.sortOrder),
+  );
   readonly iconOptions = ROADMAP_ICON_OPTIONS;
 
   ngOnInit() {
@@ -115,7 +75,14 @@ export class RoadmapManagePage implements OnInit {
     this.message.set('');
     try {
       const result = await this.api.getManaged();
-      this.entries.set(result.entries.map((entry) => ({ ...entry, draftKey: entry.id })));
+      const sorted = [...result.entries].sort((left, right) => left.sortOrder - right.sortOrder);
+      this.entries.set(
+        sorted.map((entry, index) => ({
+          ...entry,
+          sortOrder: index,
+          draftKey: entry.id,
+        })),
+      );
       this.updatedAt.set(result.updatedAt);
       this.hasChanges.set(false);
       this.pendingRemoval.set(null);
@@ -131,16 +98,18 @@ export class RoadmapManagePage implements OnInit {
     }
   }
 
-  orderedEntries(kind: RoadmapEntryKind): DraftEntry[] {
-    return this.entries()
-      .filter((entry) => entry.kind === kind)
-      .sort((left, right) => left.sortOrder - right.sortOrder);
+  kindLabel(kind: RoadmapEntryKind): string {
+    return kind === 'flow' ? $localize`Fase` : $localize`Pilar`;
   }
 
-  addEntry(kind: RoadmapEntryKind) {
+  untitledLabel(kind: RoadmapEntryKind): string {
+    return kind === 'flow' ? $localize`Fase sem título` : $localize`Pilar sem título`;
+  }
+
+  addEntry(kind: RoadmapEntryKind = 'pillar') {
     const number = ++this.nextKey;
-    const entries = this.orderedEntries(kind);
-    const slugBase = kind === 'flow' ? 'nova-etapa' : 'novo-pilar';
+    const ordered = this.orderedEntries();
+    const slugBase = kind === 'flow' ? 'nova-fase' : 'novo-pilar';
     let slug = `${slugBase}-${number}`;
     while (this.entries().some((entry) => entry.slug === slug))
       slug = `${slugBase}-${++this.nextKey}`;
@@ -148,7 +117,7 @@ export class RoadmapManagePage implements OnInit {
       draftKey: `draft-${this.nextKey}`,
       slug,
       kind,
-      sortOrder: entries.length,
+      sortOrder: ordered.length,
       title: '',
       summary: '',
       description: '',
@@ -157,7 +126,7 @@ export class RoadmapManagePage implements OnInit {
       featured: false,
       links: [],
     };
-    this.entries.update((current) => [...current, created]);
+    this.entries.set([...ordered, created].map((entry, index) => ({ ...entry, sortOrder: index })));
     this.markChanged();
   }
 
@@ -172,22 +141,9 @@ export class RoadmapManagePage implements OnInit {
     const current = this.entries();
     const entry = current.find((value) => value.draftKey === draftKey);
     if (!entry || entry.kind === kind) return;
-    const nextOrder = this.orderedEntries(kind).length;
-    let updated = current.map((value) =>
-      value.draftKey === draftKey ? { ...value, kind, sortOrder: nextOrder } : value,
+    this.entries.set(
+      current.map((value) => (value.draftKey === draftKey ? { ...value, kind } : value)),
     );
-    for (const groupKind of ['flow', 'pillar'] as const) {
-      const ordered = updated
-        .filter((value) => value.kind === groupKind)
-        .sort((left, right) => left.sortOrder - right.sortOrder);
-      const positions = new Map(ordered.map((value, index) => [value.draftKey, index]));
-      updated = updated.map((value) =>
-        value.kind === groupKind
-          ? { ...value, sortOrder: positions.get(value.draftKey) ?? value.sortOrder }
-          : value,
-      );
-    }
-    this.entries.set(updated);
     this.markChanged();
   }
 
@@ -213,8 +169,8 @@ export class RoadmapManagePage implements OnInit {
     this.patch(draftKey, { links: entry.links.filter((_, linkIndex) => linkIndex !== index) });
   }
 
-  move(kind: RoadmapEntryKind, draftKey: string, direction: -1 | 1) {
-    const reordered = this.orderedEntries(kind);
+  move(draftKey: string, direction: -1 | 1) {
+    const reordered = [...this.orderedEntries()];
     const currentIndex = reordered.findIndex((entry) => entry.draftKey === draftKey);
     const nextIndex = currentIndex + direction;
     if (currentIndex < 0 || nextIndex < 0 || nextIndex >= reordered.length) return;
@@ -222,14 +178,7 @@ export class RoadmapManagePage implements OnInit {
       reordered[nextIndex]!,
       reordered[currentIndex]!,
     ];
-    const positions = new Map(reordered.map((entry, index) => [entry.draftKey, index]));
-    this.entries.update((current) =>
-      current.map((entry) =>
-        entry.kind === kind
-          ? { ...entry, sortOrder: positions.get(entry.draftKey) ?? entry.sortOrder }
-          : entry,
-      ),
-    );
+    this.entries.set(reordered.map((entry, index) => ({ ...entry, sortOrder: index })));
     this.markChanged();
   }
 
@@ -242,21 +191,11 @@ export class RoadmapManagePage implements OnInit {
   }
 
   confirmRemove(draftKey: string) {
-    const entry = this.entries().find((value) => value.draftKey === draftKey);
-    if (!entry) return;
-    const remaining = this.orderedEntries(entry.kind).filter(
-      (value) => value.draftKey !== draftKey,
-    );
-    const positions = new Map(remaining.map((value, index) => [value.draftKey, index]));
-    this.entries.update((current) =>
-      current
-        .filter((value) => value.draftKey !== draftKey)
-        .map((value) =>
-          value.kind === entry.kind
-            ? { ...value, sortOrder: positions.get(value.draftKey) ?? value.sortOrder }
-            : value,
-        ),
-    );
+    const remaining = this.orderedEntries()
+      .filter((value) => value.draftKey !== draftKey)
+      .map((value, index) => ({ ...value, sortOrder: index }));
+    if (remaining.length === this.entries().length) return;
+    this.entries.set(remaining);
     this.pendingRemoval.set(null);
     this.markChanged();
   }
@@ -267,11 +206,18 @@ export class RoadmapManagePage implements OnInit {
     this.error.set('');
     this.message.set('');
     try {
+      const normalized = this.orderedEntries().map(({ draftKey: _draftKey, ...entry }, index) => ({
+        ...entry,
+        sortOrder: index,
+      }));
       const result = await this.api.replace({
         expectedUpdatedAt: this.updatedAt(),
-        entries: this.entries().map(({ draftKey: _draftKey, ...entry }) => entry),
+        entries: normalized,
       });
-      this.entries.set(result.entries.map((entry) => ({ ...entry, draftKey: entry.id })));
+      const sorted = [...result.entries].sort((left, right) => left.sortOrder - right.sortOrder);
+      this.entries.set(
+        sorted.map((entry, index) => ({ ...entry, sortOrder: index, draftKey: entry.id })),
+      );
       this.updatedAt.set(result.updatedAt);
       this.hasChanges.set(false);
       this.pendingRemoval.set(null);
@@ -296,8 +242,7 @@ export class RoadmapManagePage implements OnInit {
   }
 
   private validate(): boolean {
-    const entries = this.entries();
-    if (entries.length > 32) return this.reject('O Roadmap pode ter até 32 etapas e pilares.');
+    const entries = this.orderedEntries();
     const slugs = entries.map((entry) => entry.slug.trim());
     if (slugs.some((slug) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)))
       return this.reject('Revise os identificadores: use letras minúsculas, números e hífens.');
@@ -319,10 +264,17 @@ export class RoadmapManagePage implements OnInit {
           (link) =>
             !link.label.trim() ||
             link.label.length > 80 ||
+            link.path.trim().length < 2 ||
+            link.path.trim().length > 180 ||
             !/^\/(?!\/)[a-zA-Z0-9/_-]+$/.test(link.path.trim()),
         )
       )
         return this.reject('Use um rótulo e um caminho interno válido em cada link.');
+      const normalizedPaths = entry.links.map((link) => link.path.trim());
+      if (new Set(normalizedPaths).size !== normalizedPaths.length)
+        return this.reject(
+          'Cada link de uma mesma entrada deve apontar para um destino diferente.',
+        );
     }
     this.error.set('');
     return true;

@@ -13,6 +13,7 @@
 .roadmap-admin-heading,
 .roadmap-admin-toolbar,
 .roadmap-admin-group-heading,
+.roadmap-admin-add-actions,
 .roadmap-editor-entry-heading,
 .roadmap-entry-heading-title,
 .roadmap-entry-order,
@@ -65,6 +66,7 @@
 }
 
 .roadmap-admin-actions,
+.roadmap-admin-add-actions,
 .roadmap-entry-order {
   flex-wrap: wrap;
   justify-content: flex-end;
