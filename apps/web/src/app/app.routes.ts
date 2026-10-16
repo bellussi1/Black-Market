@@ -220,6 +220,7 @@ export const routes: Routes = [
         title: $localize`Black Market · Meus planos`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           import('./features/plans/plans-page').then((module) => module.PlansPage),
@@ -338,6 +339,7 @@ export const routes: Routes = [
         title: $localize`Black Market · Dados e backup`,
 
         data: { private: true },
+        canActivate: [authGuard],
 
         loadComponent: () =>
           import('./features/settings/settings-page').then((m) => m.SettingsPage),

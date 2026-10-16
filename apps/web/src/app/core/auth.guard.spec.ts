@@ -15,6 +15,8 @@ describe('authGuard', () => {
     expect(isLoginRequiredPath('/family')).toBe(true);
     expect(isLoginRequiredPath('/family?tab=equipment')).toBe(true);
     expect(isLoginRequiredPath('/shopping')).toBe(true);
+    expect(isLoginRequiredPath('/plans')).toBe(true);
+    expect(isLoginRequiredPath('/settings')).toBe(true);
     expect(isLoginRequiredPath('/recipes')).toBe(false);
     expect(isLoginRequiredPath('/market')).toBe(false);
   });

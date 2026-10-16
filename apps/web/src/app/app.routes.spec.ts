@@ -77,6 +77,8 @@ describe('Unified personal workspace routes', () => {
       'storage',
       'family',
       'shopping',
+      'plans',
+      'settings',
     ]);
     for (const route of routes[0].children ?? []) {
       expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
@@ -102,7 +104,14 @@ describe('Unified personal workspace routes', () => {
   });
 
   it('keeps personal data routes client-rendered and non-cacheable', () => {
-    for (const path of ['family', 'shopping', 'recommendations', 'tutorials/manage']) {
+    for (const path of [
+      'family',
+      'shopping',
+      'plans',
+      'settings',
+      'recommendations',
+      'tutorials/manage',
+    ]) {
       const route = serverRoutes.find((candidate) => candidate.path === path);
       expect(route?.renderMode).toBe(RenderMode.Client);
       expect(route?.headers).toMatchObject({
