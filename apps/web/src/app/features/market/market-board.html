@@ -51,30 +51,60 @@
           </p>
         }
         @for (entry of categoryRoots(); track entry.id) {
-          <button
-            hlmBtn
-            variant="outline"
-            type="button"
-            [class.subcategory]="!!entry.parentId"
-            [attr.aria-pressed]="category() === entry.id"
-            (click)="filterCategory(entry.id)"
-          >
-            {{ entry.name }}
-          </button>
-          @if (selectedCategoryParent() === entry.id) {
-            @for (child of childrenOf(entry.id); track child.id) {
+          <div class="category-group">
+            <div class="category-filter-row">
               <button
                 hlmBtn
                 variant="outline"
                 type="button"
-                class="subcategory"
-                [attr.aria-pressed]="category() === child.id"
-                (click)="filterCategory(child.id)"
+                class="category-filter-button"
+                [attr.aria-pressed]="category() === entry.id"
+                (click)="filterCategory(entry.id)"
               >
-                {{ child.name }}
+                {{ entry.name }}
               </button>
-            }
-          }
+              @if (childrenOf(entry.id).length) {
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="category-expand-toggle"
+                  [attr.aria-label]="
+                    isCategoryExpansionLocked(entry.id)
+                      ? 'Subcategorias de ' + entry.name + ' abertas para mostrar o filtro ativo'
+                      : (isCategoryExpanded(entry.id) ? 'Recolher' : 'Expandir') +
+                        ' subcategorias de ' +
+                        entry.name
+                  "
+                  [attr.aria-expanded]="isCategoryExpanded(entry.id)"
+                  [attr.aria-controls]="'category-children-' + entry.id"
+                  [disabled]="isCategoryExpansionLocked(entry.id)"
+                  (click)="toggleCategoryExpansion(entry.id)"
+                >
+                  {{ isCategoryExpanded(entry.id) ? '−' : '+' }}
+                </button>
+              }
+            </div>
+            <div
+              class="category-children"
+              [id]="'category-children-' + entry.id"
+              [hidden]="!isCategoryExpanded(entry.id)"
+            >
+              @for (child of childrenOf(entry.id); track child.id) {
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  class="category-filter-button subcategory"
+                  [attr.data-category-id]="child.id"
+                  [attr.aria-pressed]="category() === child.id"
+                  (click)="filterCategory(child.id)"
+                >
+                  {{ child.name }}
+                </button>
+              }
+            </div>
+          </div>
         }
       </div>
       <p class="category-note">
@@ -159,6 +189,18 @@
             </button>
           </div>
 
+          @if (hasActiveFilters()) {
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              class="btn-clear-filters"
+              (click)="clearFilters()"
+            >
+              Limpar filtros
+            </button>
+          }
+
           <button
             hlmBtn
             variant="outline"
@@ -173,48 +215,104 @@
         </div>
       </div>
 
-      <div class="board-summary" aria-live="polite">
-        <span class="summary-total">
-          {{
-            loading()
-              ? cacheEntry()
-                ? 'Atualizando cotações em segundo plano…'
-                : 'Carregando mercado…'
-              : number(result()?.total, 0) +
-                (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
-          }}
-          @if (stockFilter() !== 'all') {
-            <span class="summary-filtered-count">
-              ({{ displayItems().length }} visíveis no filtro)
-            </span>
-          }
-          @if (pageOnlyOrdering()) {
-            <span class="summary-filtered-count">
-              · ordenação/filtro aplicado aos itens visíveis desta página
-            </span>
-          }
-        </span>
-        @if (cacheEntry()) {
-          <span class="summary-timestamp">
-            {{ loading() ? 'Atualizando · dados locais de' : 'Cache local de' }}
-            {{ cacheTimestamp() }}
-            @if (cachedEntryStale()) {
-              <span class="cache-stale-label"> · desatualizado</span>
+      <div class="board-summary">
+        <div class="board-summary-details" aria-live="polite">
+          <span class="summary-total">
+            {{
+              loading()
+                ? cacheEntry()
+                  ? 'Atualizando cotações em segundo plano…'
+                  : 'Carregando mercado…'
+                : number(result()?.total, 0) +
+                  (fullCatalog() ? ' itens no catálogo' : ' itens em alta')
+            }}
+            @if (stockFilter() !== 'all') {
+              <span class="summary-filtered-count">
+                ({{ displayItems().length }} visíveis no filtro)
+              </span>
+            }
+            @if (pageOnlyOrdering()) {
+              <span class="summary-filtered-count">
+                · ordenação/filtro aplicado aos itens visíveis desta página
+              </span>
             }
           </span>
-        }
-        @if (result(); as response) {
-          <span class="summary-timestamp">
-            {{
-              response.quotesUnavailable
-                ? 'Cotações indisponíveis'
-                : response.cacheStatus === 'stale'
-                  ? 'Última consulta disponível'
-                  : 'Consulta sincronizada'
-            }}
-            · {{ date(response.fetchedAt) }}
+          @if (cacheEntry()) {
+            <span class="summary-timestamp">
+              {{ loading() ? 'Atualizando · dados locais de' : 'Cache local de' }}
+              {{ cacheTimestamp() }}
+              @if (cachedEntryStale()) {
+                <span class="cache-stale-label"> · desatualizado</span>
+              }
+            </span>
+          }
+          @if (result(); as response) {
+            <span class="summary-timestamp">
+              {{
+                response.quotesUnavailable
+                  ? 'Cotações indisponíveis'
+                  : response.cacheStatus === 'stale'
+                    ? 'Última consulta disponível'
+                    : 'Consulta sincronizada'
+              }}
+              · {{ date(response.fetchedAt) }}
+            </span>
+          }
+        </div>
+        <nav class="board-pagination" aria-label="Páginas do mercado" [attr.aria-busy]="loading()">
+          <span class="board-page-range" aria-live="polite">
+            @if (loading() && !result()) {
+              <span class="pagination-skeleton pagination-range-skeleton" aria-hidden="true"></span>
+              <span class="visually-hidden">Carregando intervalo de itens</span>
+            } @else {
+              {{ firstItem() }}–{{ lastItem() }} de {{ number(result()?.total ?? 0, 0) }}
+            }
           </span>
-        }
+          <label class="page-size-control"
+            >Itens por página
+            <select
+              appBdoSelect
+              aria-label="Itens por página"
+              [ngModel]="pageSize()"
+              (ngModelChange)="setPageSize($event)"
+            >
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select></label
+          >
+          <div class="page-navigation">
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="move(-1)"
+              [disabled]="loading() || page() === 1"
+              aria-label="Página anterior"
+            >
+              Anterior</button
+            ><span class="page-indicator">
+              @if (loading() && !result()) {
+                <span
+                  class="pagination-skeleton pagination-page-skeleton"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Carregando página</span>
+              } @else {
+                {{ page() }} / {{ pageCount() }}
+              }</span
+            ><button
+              hlmBtn
+              variant="outline"
+              type="button"
+              (click)="move(1)"
+              [disabled]="loading() || page() >= pageCount()"
+              aria-label="Próxima página"
+            >
+              Próxima
+            </button>
+          </div>
+        </nav>
       </div>
 
       @if (error()) {
@@ -409,148 +507,129 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of displayItems(); track item.itemId + ':' + item.subId) {
-              <tr class="board-row">
-                <th scope="row" class="board-row-item">
-                  <button
-                    hlmBtn
-                    variant="outline"
-                    type="button"
-                    class="board-item"
-                    (click)="selected.emit(item)"
-                    [attr.aria-label]="
-                      'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
-                    "
-                  >
-                    <span class="board-identity">
-                      <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
-                      <span class="item-meta">
-                        <strong>{{ item.name }}</strong>
-                        <small>
-                          {{ item.categories[0]?.name ?? 'Mercado Central' }}
-                          @if (item.quoteScope === 'summary') {
-                            ·
-                            {{
-                              item.marketAvailable === false
-                                ? 'Sem cotação'
-                                : 'Resumo das variantes'
-                            }}
-                          } @else if (item.subId) {
-                            · Variante {{ item.subId }}
-                          }
-                        </small>
+            @if (loading() && !result()) {
+              @for (row of skeletonRows; track row) {
+                <tr class="board-row board-skeleton-row" aria-hidden="true">
+                  <th scope="row"><span class="market-skeleton skeleton-item"></span></th>
+                  <td class="numeric col-reference-price">
+                    <span class="market-skeleton skeleton-price"></span>
+                    <span class="market-skeleton skeleton-caption"></span>
+                    <span class="market-skeleton skeleton-caption skeleton-caption-short"></span>
+                  </td>
+                  <td class="numeric"><span class="market-skeleton skeleton-value"></span></td>
+                  <td class="numeric"><span class="market-skeleton skeleton-value"></span></td>
+                  <td class="numeric"><span class="market-skeleton skeleton-value"></span></td>
+                  <td class="numeric"><span class="market-skeleton skeleton-value"></span></td>
+                </tr>
+              }
+            } @else {
+              @for (item of displayItems(); track item.itemId + ':' + item.subId) {
+                <tr class="board-row">
+                  <th scope="row" class="board-row-item">
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      class="board-item"
+                      (click)="selected.emit(item)"
+                      [attr.aria-label]="
+                        'Consultar ' + item.name + (item.subId ? ' · variante ' + item.subId : '')
+                      "
+                    >
+                      <span class="board-identity">
+                        <app-item-icon [url]="catalog.resolveIconUrl(item)" [name]="item.name" />
+                        <span class="item-meta">
+                          <strong>{{ item.name }}</strong>
+                          <small>
+                            {{ item.categories[0]?.name ?? 'Mercado Central' }}
+                            @if (item.quoteScope === 'summary') {
+                              ·
+                              {{
+                                item.marketAvailable === false
+                                  ? 'Sem cotação'
+                                  : 'Resumo das variantes'
+                              }}
+                            } @else if (item.subId) {
+                              · Variante {{ item.subId }}
+                            }
+                          </small>
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                </th>
-                <td
-                  class="numeric col-price col-reference-price"
-                  [attr.title]="'Fonte: Arsha · ' + priceReferenceLabel(item)"
-                >
-                  <span class="reference-value">{{ silver(priceReference(item).value) }}</span>
-                  <small class="reference-basis">{{ priceReferenceLabel(item) }}</small>
-                  <span
-                    class="mean-price"
-                    [attr.title]="
-                      item.meanPrice === null
-                        ? 'Histórico insuficiente para a média de 30 dias'
-                        : item.observationCount + ' observações de preço'
-                    "
-                    >Média 30d: {{ silver(item.meanPrice) }}</span
+                    </button>
+                  </th>
+                  <td
+                    class="numeric col-price col-reference-price"
+                    [attr.title]="'Fonte: Arsha · ' + priceReferenceLabel(item)"
                   >
-                </td>
-                <td class="numeric col-stock">
-                  @if (item.stock === null) {
-                    —
-                  } @else if (item.stock === 0) {
-                    <span class="stock-badge stock-zero">0 un (Zerado)</span>
-                  } @else {
-                    {{ number(item.stock, 0) }}
-                  }
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume24h === null
-                      ? 'Histórico insuficiente para 24 horas'
-                      : 'Diferença do contador total de negociações em 24 horas; unidade não confirmada'
-                  "
-                >
-                  {{ silver(item.volume24h) }}
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume15d === null
-                      ? 'Histórico insuficiente para 15 dias'
-                      : 'Diferença do contador total de negociações em 15 dias; unidade não confirmada'
-                  "
-                >
-                  {{ silver(item.volume15d) }}
-                </td>
-                <td
-                  class="numeric col-volume"
-                  [attr.title]="
-                    item.volume30d === null
-                      ? 'Histórico insuficiente para 30 dias'
-                      : 'Diferença do contador total de negociações em 30 dias; unidade não confirmada'
-                  "
-                >
-                  {{ silver(item.volume30d) }}
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="board-empty">
-                  {{
-                    loading()
-                      ? 'Consultando mercado…'
-                      : error()
-                        ? 'O mercado está temporariamente indisponível.'
-                        : 'Nenhum item corresponde a esta pesquisa.'
-                  }}
-                </td>
-              </tr>
+                    <span class="reference-value">{{ silver(priceReference(item).value) }}</span>
+                    <small class="reference-basis">{{ priceReferenceLabel(item) }}</small>
+                    <span
+                      class="mean-price"
+                      [attr.title]="
+                        item.meanPrice === null
+                          ? 'Histórico insuficiente para a média de 30 dias'
+                          : item.observationCount + ' observações de preço'
+                      "
+                      >Média 30d: {{ silver(item.meanPrice) }}</span
+                    >
+                  </td>
+                  <td class="numeric col-stock">
+                    @if (item.stock === null) {
+                      —
+                    } @else if (item.stock === 0) {
+                      <span class="stock-badge stock-zero">0 un (Zerado)</span>
+                    } @else {
+                      {{ number(item.stock, 0) }}
+                    }
+                  </td>
+                  <td
+                    class="numeric col-volume"
+                    [attr.title]="
+                      item.volume24h === null
+                        ? 'Histórico insuficiente para 24 horas'
+                        : 'Diferença do contador total de negociações em 24 horas; unidade não confirmada'
+                    "
+                  >
+                    {{ silver(item.volume24h) }}
+                  </td>
+                  <td
+                    class="numeric col-volume"
+                    [attr.title]="
+                      item.volume15d === null
+                        ? 'Histórico insuficiente para 15 dias'
+                        : 'Diferença do contador total de negociações em 15 dias; unidade não confirmada'
+                    "
+                  >
+                    {{ silver(item.volume15d) }}
+                  </td>
+                  <td
+                    class="numeric col-volume"
+                    [attr.title]="
+                      item.volume30d === null
+                        ? 'Histórico insuficiente para 30 dias'
+                        : 'Diferença do contador total de negociações em 30 dias; unidade não confirmada'
+                    "
+                  >
+                    {{ silver(item.volume30d) }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="board-empty">
+                    {{
+                      loading()
+                        ? 'Consultando mercado…'
+                        : error()
+                          ? 'O mercado está temporariamente indisponível.'
+                          : 'Nenhum item corresponde a esta pesquisa.'
+                    }}
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
       </div>
-      <nav class="board-pagination" aria-label="Páginas do mercado">
-        <span>{{ firstItem() }}–{{ lastItem() }} de {{ number(result()?.total ?? 0, 0) }}</span>
-        <label
-          >Itens por página
-          <select
-            appBdoSelect
-            aria-label="Itens por página"
-            [ngModel]="pageSize()"
-            (ngModelChange)="setPageSize($event)"
-          >
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select></label
-        >
-        <div>
-          <button
-            hlmBtn
-            variant="outline"
-            type="button"
-            (click)="move(-1)"
-            [disabled]="loading() || page() === 1"
-          >
-            Anterior</button
-          ><span>{{ page() }} / {{ pageCount() }}</span
-          ><button
-            hlmBtn
-            variant="outline"
-            type="button"
-            (click)="move(1)"
-            [disabled]="loading() || page() >= pageCount()"
-          >
-            Próxima
-          </button>
-        </div>
-      </nav>
       <p class="board-note">
         Consulta e cache automáticos em background. Preço de referência fornecido pela Arsha: preço
         atual quando há estoque e preço máximo quando está zerado. Clicar no cabeçalho das colunas

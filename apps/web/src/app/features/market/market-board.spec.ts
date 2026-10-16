@@ -211,6 +211,95 @@ describe('MarketBoard', () => {
     TestBed.inject(HttpTestingController).verify();
   });
 
+  it('keeps pagination controls above the table and reserves their loading layout', async () => {
+    const fixture = await renderMarketBoard();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const pagination = element.querySelector<HTMLElement>('.board-pagination')!;
+    const table = element.querySelector<HTMLElement>('.board-table-scroll')!;
+    expect(pagination.parentElement?.classList.contains('board-summary')).toBe(true);
+    expect(
+      pagination.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(pagination.querySelector('select[aria-label="Itens por página"]')).not.toBeNull();
+    expect(pagination.querySelector('.pagination-range-skeleton')).not.toBeNull();
+    expect(pagination.querySelector('.pagination-page-skeleton')).not.toBeNull();
+    expect(element.querySelectorAll('.board-skeleton-row')).toHaveLength(10);
+
+    takeRequest().flush(response());
+    fixture.detectChanges();
+
+    expect(pagination.querySelector('.pagination-range-skeleton')).toBeNull();
+    expect(pagination.textContent).toContain('1 / 20');
+    expect(element.querySelectorAll('.board-skeleton-row')).toHaveLength(0);
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('expands market subcategories independently and keeps the active subcategory visible', async () => {
+    const categories: CatalogCategory[] = [
+      { id: 'materials', parentId: null, name: 'Materiais', sortOrder: 1 },
+      { id: 'ores', parentId: 'materials', name: 'Minérios', sortOrder: 1 },
+      { id: 'wood', parentId: 'materials', name: 'Madeira', sortOrder: 2 },
+    ];
+    const fixture = await renderMarketBoard(categories);
+    takeRequest().flush({ ...response(), categories });
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const group = element.querySelector<HTMLElement>('.category-group')!;
+    const toggle = group.querySelector<HTMLButtonElement>('.category-expand-toggle')!;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(group.textContent).toContain('Minérios');
+    expect(group.textContent).toContain('Madeira');
+
+    [...group.querySelectorAll<HTMLButtonElement>('.category-filter-button')]
+      .find((button) => button.textContent?.includes('Minérios'))!
+      .click();
+    fixture.detectChanges();
+    expect(takeRequest().request.params.get('categoryId')).toBe('ores');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.disabled).toBe(true);
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('clears search, category, and stock filters in one action', async () => {
+    const categories: CatalogCategory[] = [
+      { id: 'materials', parentId: null, name: 'Materiais', sortOrder: 1 },
+    ];
+    const fixture = await renderMarketBoard(categories);
+    takeRequest().flush({ ...response(), categories });
+    fixture.detectChanges();
+
+    const board = fixture.componentInstance;
+    board.filterCategory('materials');
+    takeRequest().flush({ ...response(), categories });
+    board.setStockFilter('with_volume');
+    board.find('Cerveja');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const clear = element.querySelector<HTMLButtonElement>('.btn-clear-filters');
+    expect(clear).not.toBeNull();
+    clear!.click();
+    fixture.detectChanges();
+
+    expect(board.category()).toBe('');
+    expect(board.search()).toBe('');
+    expect(board.stockFilter()).toBe('all');
+    expect(board.page()).toBe(1);
+    expect(board.result()?.items[0]?.name).toBe('Cerveja');
+    expect(element.querySelector('.btn-clear-filters')).toBeNull();
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.endsWith('/market/board'),
+    );
+    TestBed.inject(HttpTestingController).verify();
+  });
+
   it('keeps absent historical metrics unknown and emits the exact item variant', async () => {
     const fixture = await renderMarketBoard();
     const data = response();

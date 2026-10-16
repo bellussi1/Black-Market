@@ -74,6 +74,7 @@ export class MarketBoard implements OnDestroy {
   readonly taxonomy = signal<CatalogCategory[]>([]);
   readonly taxonomyLoading = signal(true);
   readonly category = signal('');
+  readonly expandedCategories = signal<ReadonlySet<string>>(new Set());
   readonly page = signal(1);
   readonly pageSize = signal<MarketBoardPageSize>(20);
   readonly sort = signal<MarketBoardSort>('hot');
@@ -86,6 +87,11 @@ export class MarketBoard implements OnDestroy {
   /** Quick stock / liquidity filter */
   readonly stockFilter = signal<StockFilterType>('all');
 
+  readonly hasActiveFilters = computed(
+    () => !!this.search().trim() || !!this.category() || this.stockFilter() !== 'all',
+  );
+  readonly skeletonRows = Array.from({ length: 10 }, (_, index) => index);
+
   readonly silver = silver;
   readonly number = number;
   readonly date = date;
@@ -97,13 +103,27 @@ export class MarketBoard implements OnDestroy {
     );
   });
 
-  readonly selectedCategoryParent = computed(() => {
-    const entry = this.taxonomy().find((category) => category.id === this.category());
-    return entry?.parentId ?? entry?.id ?? '';
-  });
-
   childrenOf(id: string) {
     return this.taxonomy().filter((entry) => entry.parentId === id);
+  }
+
+  isCategoryExpanded(id: string): boolean {
+    return this.expandedCategories().has(id) || this.isCategoryExpansionLocked(id);
+  }
+
+  isCategoryExpansionLocked(id: string): boolean {
+    return this.taxonomy().some((entry) => entry.id === this.category() && entry.parentId === id);
+  }
+
+  toggleCategoryExpansion(id: string): void {
+    if (this.isCategoryExpansionLocked(id)) return;
+
+    this.expandedCategories.update((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   readonly pageCount = computed(() =>
@@ -393,6 +413,17 @@ export class MarketBoard implements OnDestroy {
     this.sortDirection.set(nextSort === 'name' ? 'asc' : 'desc');
     this.page.set(1);
     this.load();
+  }
+
+  clearFilters(): void {
+    this.search.set('');
+    this.category.set('');
+    this.stockFilter.set('all');
+    this.sort.set('hot');
+    this.sortColumn.set('hot');
+    this.sortDirection.set('desc');
+    this.page.set(1);
+    this.load({ preservePrevious: true });
   }
 
   setStockFilter(filter: StockFilterType): void {
