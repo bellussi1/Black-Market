@@ -1,6 +1,6 @@
 # Staging local sem mensalidade de hospedagem
 
-Um único ambiente de teste, ligado sob demanda no computador do mantenedor. Angular SSR compilado, NestJS e PostgreSQL em Docker Compose. Cloudflare Quick Tunnel fornece um link HTTPS temporário, sem domínio. O login Google/Steam fica desativado até configurar um projeto Firebase exclusivo de staging; não use credenciais, usuários nem banco de produção.
+Um único ambiente de teste, ligado sob demanda no computador do mantenedor. Angular SSR compilado, NestJS e PostgreSQL em Docker Compose. Cloudflare Quick Tunnel fornece um link HTTPS temporário, sem domínio. Os projetos Firebase local e staging estão separados e Google está habilitado; o runtime do login só ativa depois de configurar as credenciais Admin e o callback Steam. Não use credenciais, usuários nem banco de produção.
 
 ## Preparação
 
@@ -45,7 +45,7 @@ O gateway bloqueia indexação por `robots.txt` e `X-Robots-Tag`; isso não cont
 
 ## Contas Google/Steam de staging
 
-Em 16/10/2026 foram configurados projetos separados: `black-market-bdo-local` e `black-market-bdo-staging`. Firebase Authentication está inicializado e somente o provedor Google está habilitado em ambos; `localhost` consta como domínio autorizado nos dois. O app web `Black Market BDO Staging` foi registrado sem Analytics e sem Gemini. O login do aplicativo ainda aguarda a credencial Firebase Admin em cada ambiente.
+Em 16/10/2026 foram configurados projetos separados: `black-market-bdo-local` e `black-market-bdo-staging`. Firebase Authentication está inicializado e somente o provedor Google está habilitado em ambos; `localhost` consta como domínio autorizado nos dois. O app web `Black Market BDO Staging` foi registrado sem Analytics e sem Gemini. A configuração Web pública de ambos existe; o login do aplicativo ainda aguarda a credencial Firebase Admin exclusiva de cada projeto.
 
 Firebase Web/Google e Steam OpenID → Firebase custom token já estão implementados. Password, telefone, login anônimo e outros provedores continuam desativados. Steam é iniciada pela API; não se habilita Steam como provedor Firebase. Mantenha cada credencial Admin exclusiva para seu projeto e apenas nos arquivos `.env` ignorados pelo Git; nunca a coloque em `apps/web`, Git ou chat. A configuração parcial não é aceita pelo schema: preencha os cinco campos juntos — `FIREBASE_PROJECT_ID`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID` e `FIREBASE_ADMIN_CREDENTIALS_BASE64` — para evitar deixar o serviço em estado inválido.
 
