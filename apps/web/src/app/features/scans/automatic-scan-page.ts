@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { HlmButton } from '@bdo/ui/button';
 
+import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
 import { ProfileScreenImportComponent } from './profile-screen-import';
 import { ScansPage } from './scans-page';
 import { detectScreenPanes, type ScreenKind } from './screen-recognition';
@@ -9,7 +10,7 @@ import { ScreenTextReader } from './screen-text-reader';
 @Component({
   selector: 'app-automatic-scan-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ScansPage, ProfileScreenImportComponent, HlmButton],
+  imports: [TutorialLauncher, ScansPage, ProfileScreenImportComponent, HlmButton],
   templateUrl: './automatic-scan-page.html',
   styleUrl: './automatic-scan-page.scss',
 })

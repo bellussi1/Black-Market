@@ -13,6 +13,7 @@
     "lint": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\" --max-warnings=0",
     "test": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && pnpm --filter @bdo/shared build && vitest run",
     "data:import": "pnpm build && node dist/catalog/import-game-data.js",
+    "tutorials:seed": "pnpm build && node dist/tutorials/tutorial-seed.cli.js",
     "workspace:seed-test-profile": "node dist/workspace/seed-test-workspace.cli.js",
     "lint:fix": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\" --max-warnings=0 --fix"
   },

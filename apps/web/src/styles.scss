@@ -11,6 +11,7 @@
 @use 'styles/guided';
 @use 'styles/workstation';
 @use 'styles/responsive';
+@use 'app/shared/tutorials/tutorial-popover';
 /* Interactive controls expose their action consistently across the application. */
 :where(
     a[href],

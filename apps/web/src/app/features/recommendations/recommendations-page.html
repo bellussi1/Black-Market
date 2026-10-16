@@ -6,6 +6,7 @@
       Priorize produção dentro das atividades que você gosta e use o retorno para evoluir seu gear
       de Life Skill e PvPvE.
     </p>
+    <app-tutorial-launcher screenKey="recommendations" />
   </header>
 
   @if (message()) {
@@ -80,7 +81,11 @@
       </section>
     }
 
-    <section class="activity-preferences panel" aria-labelledby="activity-preferences-title">
+    <section
+      class="activity-preferences panel"
+      data-tour="recommendations.conditions"
+      aria-labelledby="activity-preferences-title"
+    >
       <div class="panel-heading">
         <div>
           <h2 id="activity-preferences-title">Quais atividades você quer priorizar?</h2>
@@ -111,7 +116,11 @@
       </p>
     }
 
-    <section class="recommendations-section panel" aria-labelledby="recommendations-title">
+    <section
+      class="recommendations-section panel"
+      data-tour="recommendations.ranking"
+      aria-labelledby="recommendations-title"
+    >
       <div class="panel-heading section-heading">
         <div>
           <p class="tool-kicker">PRIORIDADE AGORA</p>

@@ -27,6 +27,7 @@ const publicRoutes = [
 
 const privateRoutes = [
   'scans',
+  'tutorials/manage',
   'recommendations',
   'account',
   'profile',

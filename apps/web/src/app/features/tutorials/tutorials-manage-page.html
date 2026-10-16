@@ -1,0 +1,154 @@
+<div class="tool-page tutorials-manage-page">
+  <header class="tool-heading">
+    <p class="tool-kicker" i18n>ADMINISTRAÇÃO</p>
+    <h1 i18n>Editar tutoriais</h1>
+    <p i18n>
+      Publique orientações curtas para cada tela. Os textos são compartilhados com todos os
+      visitantes.
+    </p>
+  </header>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p role="status" i18n>Verificando acesso e carregando tutoriais…</p>
+  } @else if (!authorized()) {
+    <p i18n>Acesso reservado à administração.</p>
+    <button type="button" (click)="initialize()" i18n>Verificar acesso novamente</button>
+  } @else {
+    <button type="button" [disabled]="saving()" (click)="load()" i18n>
+      Recarregar versão salva e descartar rascunhos
+    </button>
+    @if (loaded()) {
+      <nav aria-label="Tela do tutorial" i18n-aria-label>
+        @for (screen of screens; track screen.screenKey) {
+          <button
+            type="button"
+            [disabled]="saving()"
+            [attr.aria-pressed]="screenKey() === screen.screenKey"
+            (click)="selectScreen(screen.screenKey)"
+          >
+            {{ screenLabel(screen.screenKey) }}
+          </button>
+        }
+      </nav>
+      <section class="panel">
+        <h2>{{ screenLabel(screenKey()) }} · pt-BR</h2>
+        <p i18n>Estado: {{ dirty() ? 'Alterações não salvas' : 'Sem alterações' }}</p>
+        @if (draft().expectedUpdatedAt) {
+          <p>
+            <span i18n>Revisão salva:</span> <time>{{ draft().expectedUpdatedAt }}</time>
+          </p>
+        }
+        <fieldset [disabled]="saving()">
+          <legend i18n>Publicação e etapas</legend>
+          <label class="enabled"
+            ><input
+              type="checkbox"
+              [ngModel]="draft().enabled"
+              (ngModelChange)="setEnabled($event)"
+            />
+            <span i18n>Tutorial publicado</span></label
+          >
+          @if (validation()['steps']) {
+            <p role="status">{{ validation()['steps'] }}</p>
+          }
+          @for (step of draft().steps; track $index; let index = $index) {
+            <article class="step">
+              <h3 i18n>Etapa {{ index + 1 }}</h3>
+              <label [for]="'anchor-' + index" i18n>Destaque</label>
+              <select
+                [id]="'anchor-' + index"
+                [ngModel]="step.anchorKey"
+                (ngModelChange)="patchStep(index, 'anchorKey', $event)"
+                [attr.aria-invalid]="!!fieldError(index, 'anchorKey')"
+                [attr.aria-describedby]="'anchor-error-' + index"
+              >
+                <option [ngValue]="null" i18n>Etapa geral, sem destaque</option>
+                @if (invalidAnchor(step.anchorKey)) {
+                  <option [ngValue]="step.anchorKey" disabled i18n>
+                    Âncora removida — selecione outra opção
+                  </option>
+                }
+                @for (anchor of anchors(); track anchor.key) {
+                  <option [ngValue]="anchor.key">{{ anchorLabel(anchor.key) }}</option>
+                }
+              </select>
+              <p class="field-error" [id]="'anchor-error-' + index">
+                {{ fieldError(index, 'anchorKey') }}
+              </p>
+              <label [for]="'title-' + index" i18n>Título (até 100 caracteres)</label>
+              <input
+                [id]="'title-' + index"
+                type="text"
+                maxlength="100"
+                [ngModel]="step.title"
+                (ngModelChange)="patchStep(index, 'title', $event)"
+                [attr.aria-invalid]="!!fieldError(index, 'title')"
+                [attr.aria-describedby]="'title-error-' + index"
+              />
+              <p class="field-error" [id]="'title-error-' + index">
+                {{ fieldError(index, 'title') }}
+              </p>
+              <label [for]="'body-' + index" i18n
+                >Orientação (até 360 caracteres, texto simples)</label
+              >
+              <textarea
+                [id]="'body-' + index"
+                rows="4"
+                maxlength="360"
+                [ngModel]="step.body"
+                (ngModelChange)="patchStep(index, 'body', $event)"
+                [attr.aria-invalid]="!!fieldError(index, 'body')"
+                [attr.aria-describedby]="'body-error-' + index"
+              ></textarea>
+              <p class="field-error" [id]="'body-error-' + index">
+                {{ fieldError(index, 'body') }}
+              </p>
+              <div class="actions">
+                <button
+                  type="button"
+                  [disabled]="index === 0"
+                  (click)="moveStep(index, -1)"
+                  [attr.aria-label]="'Mover etapa ' + (index + 1) + ' para cima'"
+                  i18n
+                >
+                  Subir</button
+                ><button
+                  type="button"
+                  [disabled]="index === draft().steps.length - 1"
+                  (click)="moveStep(index, 1)"
+                  [attr.aria-label]="'Mover etapa ' + (index + 1) + ' para baixo'"
+                  i18n
+                >
+                  Descer</button
+                ><button
+                  type="button"
+                  (click)="removeStep(index)"
+                  [attr.aria-label]="'Remover etapa ' + (index + 1)"
+                  i18n
+                >
+                  Remover
+                </button>
+              </div>
+            </article>
+          }
+          <button type="button" [disabled]="draft().steps.length >= 8" (click)="addStep()" i18n>
+            Adicionar etapa
+          </button>
+        </fieldset>
+        <div class="actions">
+          <button
+            class="primary"
+            type="button"
+            [disabled]="saving() || !dirty() || !valid()"
+            (click)="save()"
+          >
+            {{ saving() ? 'Salvando…' : 'Salvar tutorial' }}
+          </button>
+          <p role="status">{{ message() }}</p>
+        </div>
+      </section>
+    }
+  }
+</div>

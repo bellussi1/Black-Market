@@ -21,6 +21,7 @@ const enabledRoots = new Set([
   'market',
   'recommendations',
   'roadmap',
+  'tutorials',
   'storage',
   'family',
   'inventory',

@@ -13,6 +13,7 @@ describe('Screenshot MVP scope', () => {
       '/recommendations',
       '/crafting',
       '/roadmap',
+      '/tutorials/manage',
       '/recipes/items/5301',
       '/inventory',
       '/storage',

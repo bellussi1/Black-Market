@@ -140,6 +140,17 @@ export const routes: Routes = [
       },
 
       {
+        path: 'tutorials/manage',
+        title: $localize`Black Market · Editar tutoriais`,
+        data: { private: true, noindex: true },
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/tutorials/tutorials-manage-page').then(
+            (module) => module.TutorialsManagePage,
+          ),
+      },
+
+      {
         path: 'roadmap/manage',
         title: $localize`Black Market · Editar Roadmap`,
         data: { private: true, noindex: true },

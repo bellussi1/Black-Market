@@ -19,6 +19,7 @@ import type { Workspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type Stock = Workspace['inventory'][number];
@@ -26,6 +27,7 @@ type Stock = Workspace['inventory'][number];
   selector: 'app-stock-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    TutorialLauncher,
     HlmInput,
     HlmCard,
     HlmButton,

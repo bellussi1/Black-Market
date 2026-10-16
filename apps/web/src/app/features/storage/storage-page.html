@@ -10,6 +10,7 @@
         metas próprias.
       </ng-container>
     </p>
+    <app-tutorial-launcher screenKey="storage" />
   </header>
   <div class="tabs">
     <button
@@ -27,6 +28,7 @@
       type="button"
       [class.active]="tab() === 'projects'"
       [attr.aria-pressed]="tab() === 'projects'"
+      data-tour="storage.projects"
       (click)="tab.set('projects')"
     >
       <ng-container i18n>Projetos de materiais </ng-container>
@@ -272,7 +274,7 @@
         </button>
       </div>
     </section>
-    <section hlmCard class="panel">
+    <section hlmCard class="panel" data-tour="storage.items">
       <div class="panel-heading">
         <h2>
           <ng-container i18n>Inventário · {{ store.data().region.toUpperCase() }}</ng-container>

@@ -73,6 +73,7 @@ describe('Unified personal workspace routes', () => {
       'scans',
       'scans/profile',
       'recommendations',
+      'tutorials/manage',
       'storage',
       'family',
       'shopping',
@@ -88,8 +89,20 @@ describe('Unified personal workspace routes', () => {
     expect(route?.resolve?.['productionCatalog']).toBe(recommendationsRouteResolver);
   });
 
+  it('protects the tutorial editor and serves it privately without indexing', () => {
+    const route = routes[0].children?.find((candidate) => candidate.path === 'tutorials/manage');
+    expect(route?.canActivate?.length).toBeGreaterThan(0);
+    expect(route?.data).toMatchObject({ private: true, noindex: true });
+    const serverRoute = serverRoutes.find((candidate) => candidate.path === 'tutorials/manage');
+    expect(serverRoute?.renderMode).toBe(RenderMode.Client);
+    expect(serverRoute?.headers).toMatchObject({
+      'Cache-Control': 'private,no-store',
+      'X-Robots-Tag': 'noindex,nofollow',
+    });
+  });
+
   it('keeps personal data routes client-rendered and non-cacheable', () => {
-    for (const path of ['family', 'shopping', 'recommendations']) {
+    for (const path of ['family', 'shopping', 'recommendations', 'tutorials/manage']) {
       const route = serverRoutes.find((candidate) => candidate.path === path);
       expect(route?.renderMode).toBe(RenderMode.Client);
       expect(route?.headers).toMatchObject({

@@ -1,0 +1,11 @@
+@if (guide()) {
+  <button #launcher type="button" [attr.aria-busy]="starting()" (click)="start(launcher)" i18n>
+    Tutorial desta tela
+  </button>
+} @else if (error()) {
+  <span i18n>Tutorial indisponível.</span>
+  <button type="button" (click)="load()" i18n>Tentar novamente</button>
+}
+@if (message()) {
+  <p role="status">{{ message() }}</p>
+}

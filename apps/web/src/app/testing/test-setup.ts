@@ -3,7 +3,10 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { EnvironmentProviders, Provider, Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { afterEach, beforeEach, vi } from 'vitest';
+
+import { TutorialApiService } from '../core/tutorial-api.service';
 
 /** Install fresh storage per test without sharing state between suites. */
 export function useMemoryStorage(): void {
@@ -32,7 +35,13 @@ export async function renderComponent<T>(
 ) {
   await TestBed.configureTestingModule({
     imports: [component],
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), ...providers],
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([]),
+      { provide: TutorialApiService, useValue: { getPublished: () => of({ guide: null }) } },
+      ...providers,
+    ],
   }).compileComponents();
   const fixture = TestBed.createComponent(component);
   for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);

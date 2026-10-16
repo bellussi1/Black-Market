@@ -1,9 +1,9 @@
 import {
-  TUTORIAL_LOCALES,
-  TUTORIAL_SCREEN_REGISTRY,
   isTutorialAnchorForScreen,
   isTutorialLocale,
   isTutorialScreenKey,
+  TUTORIAL_LOCALES,
+  TUTORIAL_SCREEN_REGISTRY,
 } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 

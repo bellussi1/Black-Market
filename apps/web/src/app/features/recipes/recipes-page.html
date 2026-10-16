@@ -7,7 +7,8 @@
       aproveite o que já está no seu armazém.
     </p>
   </header>
-  <details class="panel search-panel" [open]="!item()">
+  <app-tutorial-launcher screenKey="recipes" />
+  <details data-tour="recipes.search" class="panel search-panel" [open]="!item()">
     <summary>
       <span i18n>Pesquisar item</span
       ><strong>{{ item()?.name ?? 'Escolha o produto que deseja explorar' }}</strong>
@@ -38,6 +39,7 @@
   }
   @if (item(); as selected) {
     <app-recipe-tree
+      data-tour="recipes.tree"
       [recipe]="recipe()"
       [recipes]="alternatives()"
       [selectedItem]="selected"
@@ -46,7 +48,7 @@
     >
       <div recipe-method>
         @if (alternatives().length) {
-          <section class="recipe-methods">
+          <section class="recipe-methods" data-tour="recipes.methods">
             <label for="root-recipe" i18n>Fórmula</label
             ><select appBdoSelect id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>

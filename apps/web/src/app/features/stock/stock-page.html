@@ -1,4 +1,5 @@
 <div class="tool-page stock-page">
+  <app-tutorial-launcher screenKey="storage" />
   <header class="page-heading">
     <p class="eyebrow" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
     <h1 i18n>Armazém</h1>
@@ -98,7 +99,7 @@
         </button>
       </div>
     </div>
-    <div class="stock-items" [class.list]="view() === 'list'">
+    <div class="stock-items" data-tour="storage.items" [class.list]="view() === 'list'">
       @for (row of visibleRows(); track row.id) {
         <article class="stock-item">
           <app-item-icon

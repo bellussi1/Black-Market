@@ -4,6 +4,7 @@ import { effect, inject, Injectable, PLATFORM_ID, signal, untracked } from '@ang
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
+import { isTutorialScreenKey, type TutorialScreenKey } from '@bdo/shared';
 import { filter, Subject, takeUntil } from 'rxjs';
 
 import { environment } from '../../environments/environment';
@@ -14,6 +15,10 @@ export type AnalyticsEvent =
   | 'journey_started'
   | 'journey_completed'
   | 'journey_failed';
+export type TutorialAnalyticsEvent =
+  | 'tutorial_started'
+  | 'tutorial_completed'
+  | 'tutorial_dismissed';
 export type Feature =
   | 'home'
   | 'catalog'
@@ -194,6 +199,51 @@ export class AnalyticsService {
           event,
           properties: {
             ...cleanProperties(properties),
+            distinct_id: this.id,
+            $process_person_profile: false,
+            $ip: null,
+          },
+        },
+        { transferCache: false },
+      )
+      .pipe(takeUntil(this.revoked), takeUntilDestroyed(this.destroy))
+      .subscribe({ error: () => undefined });
+    return true;
+  }
+  captureTutorial(
+    event: TutorialAnalyticsEvent,
+    screenKey: TutorialScreenKey,
+    guideUpdatedAt: string,
+  ): boolean {
+    const config = this.config();
+    if (
+      !this.browser ||
+      !environment.production ||
+      !config?.enabled ||
+      !config.key ||
+      !config.host ||
+      !this.privacy.allowsAnalytics() ||
+      this.events >= 100 ||
+      !['tutorial_started', 'tutorial_completed', 'tutorial_dismissed'].includes(event) ||
+      !isTutorialScreenKey(screenKey) ||
+      !guideUpdatedAt ||
+      !Number.isFinite(Date.parse(guideUpdatedAt))
+    )
+      return false;
+    if (!this.id) {
+      this.id = this.privacy.ensureAnalyticsIdentifier() ?? '';
+      if (!this.id) return false;
+    }
+    this.events++;
+    this.http
+      .post(
+        config.host + '/i/v0/e/',
+        {
+          api_key: config.key,
+          event,
+          properties: {
+            screenKey,
+            guideUpdatedAt,
             distinct_id: this.id,
             $process_person_profile: false,
             $ip: null,

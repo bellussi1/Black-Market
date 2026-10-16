@@ -1,0 +1,74 @@
+@import 'driver.js/dist/driver.css';
+.bm-tutorial-popover.driver-popover {
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  min-width: 0;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  background: var(--bm-surface, #242424);
+  color: var(--bm-text, #eee);
+  border: 1px solid var(--bm-accent, #a78a54);
+  border-radius: 2px;
+  padding: 20px;
+  box-shadow: 0 8px 28px #0009;
+  font-family: inherit;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  .driver-popover-title {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    padding-right: 36px;
+  }
+  .driver-popover-description {
+    line-height: 1.6;
+    margin-block: 12px;
+  }
+  .driver-popover-footer {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .driver-popover-navigation-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  button {
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid var(--bm-accent, #a78a54);
+    border-radius: 2px;
+    background: var(--bm-surface, #242424);
+    color: var(--bm-text, #eee);
+    font: inherit;
+    text-shadow: none;
+  }
+  button:hover {
+    background: var(--bm-background, #181818);
+  }
+  button:focus-visible,
+  &:focus-visible {
+    outline: 2px solid var(--bm-accent, #c6a66a);
+    outline-offset: 3px;
+  }
+  .driver-popover-close-btn {
+    top: 4px;
+    right: 4px;
+  }
+  .driver-popover-next-btn {
+    background: var(--bm-accent, #c6a66a);
+    color: #151515;
+  }
+  .driver-popover-arrow {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .driver-overlay,
+  .driver-popover,
+  .driver-active-element {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
