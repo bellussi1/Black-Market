@@ -184,7 +184,7 @@ Ainda falta inspeção browser em cada rota e medição de CLS em produção; o 
 
 ### Atualização — continuação do checklist (16/10/2026)
 
-A otimização global de fórmulas e alternativas recursivas foi aprovada no escopo. Também foi aprovada uma fórmula única por item intermediário em cada plano (sem dividir demanda entre fórmulas). A análise identificou que o grafo mantém um produtor por item e que a busca não seleciona fórmulas intermediárias. A especificação está em docs/superpowers/specs/2026-10-16-recursive-recipe-alternative-optimizer-design.md para revisão antes de criar o plano e editar o solver. O limite atual de 10.000 estados precisa continuar explícito; não chamar candidato parcial de ótimo certificado.
+A otimização global de fórmulas e alternativas recursivas foi aprovada no escopo; cada plano escolhe uma fórmula única por item intermediário (sem dividir demanda entre fórmulas). A análise identificou que o grafo mantém um produtor por item e que a busca não seleciona fórmulas intermediárias. Especificação e plano estão em `docs/superpowers/specs/2026-10-16-recursive-recipe-alternative-optimizer-design.md` e `docs/superpowers/plans/2026-10-16-recursive-recipe-alternative-optimizer.md`; aguardar revisão do plano antes de editar o solver. Preservar o limite atual de 10.000 estados e nunca rotular candidato parcial como ótimo certificado.
 
 A revisão de peixe fresco/seco em docs/research/fish-price-equivalence-review-2026-10-16.md não sustenta alterar o ratio 1:1 atual: relações DRY não são equivalências culinárias e os valores públicos divergem num exemplo. Preservar como dado não verificado até obter relação versionada por ID ou validar no cliente SA/PT.
 
