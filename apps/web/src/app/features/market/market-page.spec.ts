@@ -279,9 +279,8 @@ describe('MarketPage', () => {
     expect(page.historyChart().samples).toBe(2);
     expect(page.historyChart().segments).toHaveLength(2);
     expect(page.historyMetricLabel()).toBe('Preço de venda');
-    const chart = (fixture.nativeElement as HTMLElement).querySelector('svg[role="group"]');
-    expect(chart?.querySelectorAll('.chart-axis-label').length).toBe(5);
-    expect(chart?.querySelectorAll('.chart-point[tabindex="0"]').length).toBe(2);
+    const chart = (fixture.nativeElement as HTMLElement).querySelector('canvas[role="img"]');
+    expect(chart?.getAttribute('aria-label')).toContain('2 observações no período');
 
     page.historyRange.set('day');
     page.historyMetric.set('volume');
