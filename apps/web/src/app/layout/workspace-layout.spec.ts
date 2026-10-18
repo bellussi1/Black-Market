@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { IdentityService } from '../core/identity.service';
 import { LoginIntentService } from '../core/login-intent.service';
+import { PrivacyService } from '../core/privacy.service';
 import { RegionPreferences } from '../core/region-preferences';
 import { WorkspaceStore } from '../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
@@ -38,6 +39,38 @@ describe('workspace navigation', () => {
     await fixture.whenStable();
     expect(element.querySelector('app-login-dialog')).toBe(modal);
     expect(intent.returnUrl()).toBe('/storage');
+  });
+
+  it('loads privacy controls when an initial consent choice is needed', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+    const privacy = TestBed.inject(PrivacyService);
+
+    expect(element.querySelector('app-privacy-controls')).toBeNull();
+
+    privacy.optionalAvailable.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(element.querySelector('app-privacy-controls')).not.toBeNull();
+  });
+
+  it('loads privacy controls when the user opens preferences from the footer', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+    const privacy = TestBed.inject(PrivacyService);
+    expect(element.querySelector('app-privacy-controls')).toBeNull();
+
+    fixture.detectChanges();
+    const preferences = element.querySelector<HTMLButtonElement>('app-platform-footer button')!;
+    preferences.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(privacy.open()).toBe(true);
+    expect(element.querySelector('app-privacy-controls')).not.toBeNull();
   });
 
   it('consumes a public redirect intent, removes the URL parameter and cancels without navigation', async () => {

@@ -337,11 +337,24 @@
 }
 
 .workspace-topbar select {
+  width: 100%;
   min-height: 44px;
   border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
   color: var(--bm-text);
   padding: 8px 10px;
   background: var(--bm-input);
+  font-size: 14px;
+}
+
+.workspace-topbar select:focus-visible {
+  border-color: var(--bm-focus);
+  outline: 2px solid var(--bm-focus);
+  outline-offset: 2px;
+}
+
+.workspace-topbar select:disabled {
+  opacity: 0.5;
 }
 
 @media (max-width: 900px) {

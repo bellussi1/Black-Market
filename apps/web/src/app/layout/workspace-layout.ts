@@ -15,7 +15,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { CatalogItem } from '@bdo/shared';
-import { HlmButton } from '@bdo/ui/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideBookOpenText,
@@ -50,6 +49,7 @@ import { LoginDialog } from '../core/login-dialog';
 import { LoginIntentService } from '../core/login-intent.service';
 import { visibleMarkets } from '../core/market-configuration';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
+import { PrivacyService } from '../core/privacy.service';
 import { RegionPreferences } from '../core/region-preferences';
 import { RouteIntentPrefetchDirective } from '../core/route-intent-prefetch.directive';
 import type { WorkspaceStore } from '../core/workspace-store';
@@ -57,7 +57,6 @@ import { AdSlot } from '../shared/ad-slot/ad-slot';
 import { CatalogItemPicker } from '../shared/catalog-item-picker/catalog-item-picker';
 import { PlatformFooter } from '../shared/platform-footer/platform-footer';
 import { PrivacyControls } from '../shared/privacy-controls/privacy-controls';
-import { BdoSelect } from '../ui/native-select/bdo-select';
 
 type NavigationLink = { path: string; label: string; icon?: string; requiresAuth?: boolean };
 type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
@@ -69,8 +68,6 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
 
   imports: [
     NgIcon,
-    HlmButton,
-    BdoSelect,
     RouterLink,
 
     RouterLinkActive,
@@ -166,6 +163,7 @@ export class WorkspaceLayout {
   private readonly router = inject(Router);
 
   readonly identity = inject(IdentityService);
+  readonly privacy = inject(PrivacyService);
   protected readonly loginIntent = inject(LoginIntentService);
 
   private readonly path = signal(this.router.url);

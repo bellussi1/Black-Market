@@ -18,8 +18,6 @@
       <button
         #menuTrigger
         (keydown.escape)="closeMobileNavigation()"
-        hlmBtn
-        variant="outline"
         class="mobile-nav-toggle"
         type="button"
         aria-controls="workspace-navigation"
@@ -112,8 +110,6 @@
         <button
           #searchTrigger
           (keydown.escape)="closeQuickSearch()"
-          hlmBtn
-          variant="outline"
           class="global-search-toggle"
           type="button"
           [attr.aria-expanded]="quickSearchOpen()"
@@ -132,7 +128,6 @@
         <label for="market-region"
           ><ng-container i18n>Região do mercado</ng-container
           ><select
-            appBdoSelect
             id="market-region"
             [value]="preferences.region()"
             (change)="onMarketRegionChange($event)"
@@ -161,7 +156,7 @@
             (selected)="openItem($event)"
           />
         }
-        <button hlmBtn variant="outline" type="button" (click)="closeQuickSearch()" i18n>
+        <button class="btn subtle" type="button" (click)="closeQuickSearch()" i18n>
           Fechar busca
         </button>
       </section>
@@ -182,7 +177,7 @@
           @if (identity.authenticated()) {
             <a routerLink="/recommendations" i18n>Comparar produção</a>
           }
-          <button hlmBtn variant="outline" class="btn subtle" (click)="store()?.exitDemo()" i18n>
+          <button class="btn subtle" (click)="store()?.exitDemo()" i18n>
             Sair da demonstração
           </button>
         </aside>
@@ -203,7 +198,9 @@
       }
     </div>
     <app-platform-footer />
-    <app-privacy-controls />
+    @defer (when privacy.needsChoice() || privacy.open()) {
+      <app-privacy-controls />
+    }
   </div>
 </div>
 @defer (when loginIntent.opened()) {
