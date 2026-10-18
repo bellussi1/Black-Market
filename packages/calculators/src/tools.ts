@@ -399,8 +399,8 @@ export function calculateProduction(raw: unknown) {
   if (rootCrafts === undefined) {
     take(root.name, i.quantity, root.id, '0', [], root.itemId);
   } else {
-    const produced = Math.floor(rootCrafts * root.yield);
-    if (!Number.isSafeInteger(produced) || produced > 1e12)
+    const produced = Math.round(rootCrafts * root.yield * 1_000_000) / 1_000_000;
+    if (!Number.isFinite(produced) || produced > 1e12)
       throw new RangeError('A produção excedeu o limite de quantidade.');
     const output = rowFor(root.name, root.itemId);
     output.required += produced;

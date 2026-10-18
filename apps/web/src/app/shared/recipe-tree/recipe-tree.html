@@ -8,7 +8,11 @@
         />
         <div>
           <p class="eyebrow" i18n>PRODUTO</p>
-          <h2>{{ product.part.name }}</h2>
+          @if (primaryHeading()) {
+            <h1>{{ product.part.name }}</h1>
+          } @else {
+            <h2>{{ product.part.name }}</h2>
+          }
         </div>
       </div>
       <div class="mode-controls">
@@ -35,10 +39,11 @@
                     min="1"
                     max="1000000"
                     class="craft-count-input"
+                    aria-label="Quantia de receitas"
                     [ngModel]="craftCount()"
                     (ngModelChange)="setCraftCount($event)"
                   />
-                  <span class="craft-count-unit" i18n>receitas</span>
+                  <span class="craft-count-unit" aria-hidden="true" i18n>receitas</span>
                 </div>
               </label>
               <div
@@ -151,7 +156,7 @@
           @if (!store.data().characters.length) {
             <p class="help">
               Insumos sem receita são comprados por padrão. Coleta exige rendimento e tempo
-              calibrados abaixo.
+              informados abaixo.
             </p>
           }
           @if (canAdjustRootYield()) {
@@ -181,7 +186,10 @@
                 <span class="time-suffix">seg/operação</span>
               </label>
             }
-            <p class="help" i18n>Sem um tempo calibrado, o lucro por hora fica indisponível.</p>
+            <p class="help" i18n>
+              Tempos padrão são estimativas de referência, não medições do seu equipamento. Informe
+              seu tempo por método para ajustar o lucro estimado por hora.
+            </p>
           </details>
           <details class="production-calibration">
             <summary i18n>Calibrar rendimento e tempo de coleta</summary>
@@ -336,8 +344,10 @@
                 <strong>
                   {{
                     previewSearchLimited()
-                      ? 'Melhor combinação encontrada · busca limitada'
-                      : 'Combinação proposta'
+                      ? 'Melhor encontrado · ótimo não certificado'
+                      : optimizationPreview()?.optimization
+                        ? 'Ótimo certificado nos dados recebidos'
+                        : 'Combinação proposta'
                   }}
                   · {{ requestedOperations() }} receitas
                 </strong>
@@ -358,9 +368,43 @@
               </div>
               @if (previewSearchLimited()) {
                 <p class="notice" role="status">
-                  Este é o melhor resultado encontrado dentro do limite de busca. O ótimo global
+                  Este é o melhor resultado encontrado nas premissas disponíveis. O ótimo global
                   ainda não está certificado.
                 </p>
+              }
+              @if (optimizationPreview()?.optimization; as search) {
+                <p class="help">{{ optimizationReasonLabel(search.reason) }}.</p>
+                <ul>
+                  @for (choice of previewRecipeChoices(); track choice.itemId) {
+                    <li class="preview-recipe-choice">
+                      Fórmula de {{ productionStepName(choice.recipeId) }}
+                    </li>
+                  }
+                </ul>
+                <details class="preview-coverage">
+                  <summary>Ver alcance da comparação</summary>
+                  <p class="help">
+                    Fórmulas finais: {{ search.rootRecipesEvaluated }}/{{
+                      search.rootRecipesTotal
+                    }}
+                    · alternativas recursivas avaliadas: {{ search.recursiveRecipesEvaluated }} ·
+                    estados: {{ search.statesVisited }}/10.000 · excluídos:
+                    {{ search.statesPruned }}
+                  </p>
+                </details>
+                @if (previewIssues().length) {
+                  <details>
+                    <summary>Pendências e exclusões ({{ previewIssues().length }})</summary>
+                    <ul>
+                      @for (issue of previewIssues(); track issue.key) {
+                        <li class="preview-data-issue">
+                          <strong>{{ issue.itemName }}</strong
+                          >: {{ issue.message }}
+                        </li>
+                      }
+                    </ul>
+                  </details>
+                }
               }
               <div class="economic-metrics-grid">
                 <div class="metric-card">
@@ -423,6 +467,42 @@
                   }
                 </ul>
               </details>
+              <details>
+                <summary>Premissas do lucro estimado</summary>
+                <ul>
+                  @for (assumption of preview.assumptions; track $index) {
+                    <li>{{ assumption }}</li>
+                  }
+                </ul>
+              </details>
+            </section>
+          } @else if (optimizationPreview()?.optimization; as search) {
+            <section
+              class="optimization-preview optimization-incomplete"
+              aria-label="Dados pendentes da otimização"
+            >
+              <strong>Nenhum plano econômico completo encontrado</strong>
+              <p>{{ optimizationReasonLabel(search.reason) }}.</p>
+              <details class="preview-coverage">
+                <summary>Ver alcance da comparação</summary>
+                <p>
+                  Fórmulas avaliadas: {{ search.rootRecipesEvaluated }}/{{
+                    search.rootRecipesTotal
+                  }}
+                  · estados: {{ search.statesVisited }}
+                </p>
+              </details>
+              <ul>
+                @for (issue of previewIssues(); track issue.key) {
+                  <li class="preview-data-issue">
+                    <strong>{{ issue.itemName }}</strong
+                    >: {{ issue.message }}
+                  </li>
+                }
+              </ul>
+              <button hlmBtn type="button" variant="outline" (click)="discardOptimizationPreview()">
+                Fechar prévia
+              </button>
             </section>
           }
         </dialog>

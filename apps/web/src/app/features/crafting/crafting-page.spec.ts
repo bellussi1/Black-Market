@@ -24,6 +24,22 @@ describe('CraftingPage', () => {
     expect(element.querySelector('app-recipe-tree')).toBeNull();
   });
 
+  it('keeps the selected formula when opening its catalogue entry', async () => {
+    const fixture = await render(CraftingPage);
+    const page = fixture.componentInstance;
+    page.workshopItem.set({ id: 100, name: 'Produto', categories: [], sourceData: {} } as never);
+    page.workshopRecipe.set({
+      key: 'a'.repeat(64),
+      type: 'COOKING',
+      station: null,
+      inputs: [],
+      outputs: [{ itemId: 100, name: 'Produto', quantity: '1' }],
+    });
+    fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('.workshop-explore') as HTMLAnchorElement;
+    expect(link?.getAttribute('href')).toBe('/recipes/items/100?recipe=' + 'a'.repeat(64));
+  });
+
   it('reserves an accessible recipe-tree skeleton while loading a selected product', async () => {
     const api = {
       getItem: () => new Subject<unknown>(),

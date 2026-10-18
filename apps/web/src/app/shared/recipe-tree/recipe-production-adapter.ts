@@ -44,6 +44,8 @@ import {
 
 export interface RecipeProductionAdapterOptions {
   quoteObservedAt?: ReadonlyMap<number, string>;
+  defaultTimeMethods?: ReadonlySet<string>;
+  calibratedTimeMethods?: ReadonlySet<string>;
   masteryOverride?: number | null;
   masterySkill?: string | null;
   masteryOverrides?: Readonly<Partial<Record<RecipeMasterySkill, number>>>;
@@ -64,7 +66,7 @@ function positiveNumber(value: string | number | null | undefined): number | und
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
-/** Standard BDO craft durations per method (in seconds), aligned with game equipment & buffs. */
+/** Baseline duration assumptions in seconds; these are not measurements of the player. */
 export function defaultRecipeMethodSeconds(type: string): number {
   const norm = (type || '').toLowerCase();
   if (norm === 'cook' || norm.includes('cooking') || norm.includes('culinaria')) return 1.2;
@@ -144,7 +146,16 @@ export function buildRecipeProductionInput(
     );
   };
 
-  const allRecipes = [graph.rootRecipe, ...graph.producerRecipes];
+  const allRecipes = [
+    ...new Map(
+      [
+        graph.rootRecipe,
+        ...graph.producerRecipes,
+        ...(graph.rootAlternatives ?? []),
+        ...[...(graph.producerAlternativesByItemId?.values() ?? [])].flat(),
+      ].map((recipe) => [recipe.key, recipe]),
+    ).values(),
+  ];
   const byproductValues: NonNullable<ProductionPlannerInput['byproductValues']> = {};
   const recipes = allRecipes.flatMap((recipe) => {
     const primary =
@@ -162,31 +173,33 @@ export function buildRecipeProductionInput(
         ? processingBatchCount(mastery)
         : 1;
     const fixedOrCatalogYield = outputQuantity(recipe, itemId);
-    const overrideYield = options.yieldOverrides?.get(itemId);
+    const overrideYield =
+      recipe.key === graph.rootRecipe.key ||
+      graph.producerRecipes.some((selected) => selected.key === recipe.key)
+        ? options.yieldOverrides?.get(itemId)
+        : undefined;
     const expectedYield =
       (skill === 'processing' && fixedRecipeYield(recipe, itemId) === null
         ? null
         : fixedOrCatalogYield) ??
       overrideYield ??
-      resolveDefaultYield(recipe, itemId, mastery);
+      (skill ? resolveDefaultYield(recipe, itemId, mastery) : undefined);
     const baseTime = methodTimes.get(recipe.type);
     const time =
       baseTime !== undefined && Number.isFinite(baseTime) && baseTime > 0
         ? baseTime / (skill === 'cooking' ? cookingMassProduceRate(mastery) : 1)
         : undefined;
-    const estimateSource: ProductionEstimate['source'] =
-      fixedRecipeYield(recipe, itemId) !== null
-        ? 'fixed'
-        : time !== undefined && Number.isFinite(time) && time > 0
-          ? 'calibrated'
-          : 'informed';
+    const timeSource = options.defaultTimeMethods?.has(recipe.type)
+      ? 'default'
+      : options.calibratedTimeMethods?.has(recipe.type)
+        ? 'calibrated'
+        : 'informed';
     const estimate: ProductionEstimate = {
       expectedYield,
-      source: estimateSource,
-      ...(time !== undefined && Number.isFinite(time) && time > 0
-        ? { craftSeconds: time, contextHash }
-        : {}),
-      ...(estimateSource === 'calibrated' ? { contextHash } : {}),
+      source: fixedRecipeYield(recipe, itemId) !== null ? 'fixed' : timeSource,
+      timeSource,
+      ...(time !== undefined && Number.isFinite(time) && time > 0 ? { craftSeconds: time } : {}),
+      ...(timeSource === 'calibrated' ? { contextHash } : {}),
     };
     const numericOutput =
       skill === 'processing' && fixedRecipeYield(recipe, itemId) === null
@@ -271,9 +284,10 @@ export function buildRecipeProductionInput(
     return [
       {
         id: recipe.key,
+        catalogVersion: graph.datasetVersion,
         name: primary.name,
         method: recipe.type,
-        output: { itemId, quantity: numericOutput },
+        output: { itemId, quantity: numericOutput ?? null },
         ingredients: recipe.inputs.map((part) => ({
           itemId: part.itemId,
           quantity:
@@ -298,7 +312,9 @@ export function buildRecipeProductionInput(
   const surplusSales = Object.fromEntries(
     [
       ...new Set(
-        graph.producerRecipes.flatMap((recipe) => recipe.outputs.map((output) => output.itemId)),
+        allRecipes
+          .filter((recipe) => recipe.outputs[0]?.itemId !== rootItemId)
+          .flatMap((recipe) => recipe.outputs.map((output) => output.itemId)),
       ),
     ].map((itemId) => [
       itemId,
@@ -362,6 +378,44 @@ export function buildRecipeProductionInput(
 
   return {
     recipes: plannerRecipes,
+    catalogVersion: graph.datasetVersion,
+    ...(graph.rootAlternatives || graph.producerAlternativesByItemId
+      ? {
+          recipeAlternativesByItemId: Object.fromEntries([
+            [
+              rootItemId,
+              (graph.rootAlternatives ?? [graph.rootRecipe]).map((recipe) => recipe.key),
+            ],
+            ...[...(graph.producerAlternativesByItemId ?? [])].map(([itemId, alternatives]) => [
+              itemId,
+              alternatives.map((recipe) => recipe.key),
+            ]),
+          ]),
+        }
+      : {}),
+    customRecipes: Object.fromEntries(
+      graph.producerRecipes.map((recipe) => [recipe.outputs[0]?.itemId, recipe.key]),
+    ),
+    optimizationIssues: graph.issues
+      .filter(
+        (issue) =>
+          issue.code === 'dataset-mismatch' ||
+          issue.code === 'incomplete-recipes' ||
+          issue.code === 'invalid-alternative',
+      )
+      .map((issue) => ({
+        code:
+          issue.code === 'dataset-mismatch'
+            ? ('dataset-mismatch' as const)
+            : issue.code === 'invalid-alternative'
+              ? ('invalid-alternative' as const)
+              : ('missing-recipe' as const),
+        itemId: issue.itemId,
+        message:
+          issue.code === 'dataset-mismatch'
+            ? 'O catálogo mudou durante a consulta.'
+            : 'A consulta de fórmulas ficou incompleta.',
+      })),
     quotes: mappedQuotes,
     inventory: [...inventory].map(([itemId, quantity]) => ({ itemId, quantity, reserved: 0 })),
     estimates,

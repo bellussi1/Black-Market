@@ -135,7 +135,10 @@
       background: var(--bm-input, #1b1e24);
       border: 1px solid var(--bm-border-strong, #544b3f);
       border-radius: 2px;
-      transition: all 120ms ease;
+      transition:
+        background-color var(--bm-motion-fast) ease,
+        border-color var(--bm-motion-fast) ease,
+        box-shadow var(--bm-motion-fast) ease;
       position: relative;
     }
 
@@ -302,7 +305,11 @@
     border: 1px solid var(--bm-accent);
     border-radius: 2px;
     cursor: pointer;
-    transition: all 120ms ease;
+    transition:
+      color var(--bm-motion-fast) ease,
+      background-color var(--bm-motion-fast) ease,
+      border-color var(--bm-motion-fast) ease,
+      box-shadow var(--bm-motion-fast) ease;
 
     &:hover {
       background: var(--bm-accent-hover, #e0b86a);

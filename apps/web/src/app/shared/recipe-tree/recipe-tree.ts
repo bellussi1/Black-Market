@@ -23,6 +23,7 @@ import {
   planProduction,
   type ProductionChoice,
   type ProductionEstimate,
+  type ProductionOptimizationResult,
   type ProductionPlan,
   type TaxOptions,
 } from '@bdo/calculators';
@@ -120,6 +121,7 @@ function usableOptimizedPlan(
   result: ReturnType<typeof planProduction> | null,
 ): ProductionPlan | null {
   if (!result) return null;
+  if (result.optimization) return result.optimization.bestFound;
   const complete = result.ranked.find(
     (plan) => plan.scenario === 'optimized' && !plan.issues.length && plan.sourceChoices,
   );
@@ -202,6 +204,7 @@ export class RecipeTree {
   readonly selectedItem = input<CatalogItemDetail | null>(null);
   readonly datasetVersion = input('');
   readonly summaryOnly = input(false);
+  readonly primaryHeading = input(false);
   readonly rootMethod = output<CatalogRecipe | null>();
   readonly advancedChanged = output<boolean>();
   readonly advanced = signal(false);
@@ -341,7 +344,7 @@ export class RecipeTree {
     if (skill === 'processing')
       return `Lote de processamento · maestria ${mastery} · média ${this.effectiveYield().toFixed(2)} un/ação`;
     if (mastery > 0 && skill) {
-      return `Média estimada: ${this.effectiveYield().toFixed(2)} un / receita (${skill} maestria: ${mastery})`;
+      return `Média estimada: ${this.effectiveYield().toFixed(2)} un / receita (${this.masterySkillLabel(skill as RecipeMasterySkill)} maestria: ${mastery})`;
     }
     return `Média padrão: ${this.effectiveYield().toFixed(2)} un / receita`;
   });
@@ -514,26 +517,86 @@ export class RecipeTree {
       : 'buy';
   }
 
+  private allGraphRecipes(graph: RecipeProductionGraph | null): CatalogRecipe[] {
+    if (!graph) return [];
+    return [
+      ...new Map(
+        [
+          graph.rootRecipe,
+          ...graph.producerRecipes,
+          ...(graph.rootAlternatives ?? []),
+          ...[...(graph.producerAlternativesByItemId?.values() ?? [])].flat(),
+        ].map((recipe) => [recipe.key, recipe]),
+      ).values(),
+    ];
+  }
+
+  readonly previewRecipeChoices = computed(() =>
+    Object.entries(this.previewPlan()?.recipeChoices ?? {}).map(([itemId, recipeId]) => ({
+      itemId: Number(itemId),
+      recipeId,
+    })),
+  );
+
+  readonly previewIssues = computed(() => {
+    const recipeItems = new Map(
+      this.allGraphRecipes(this.recipeGraph()).map((recipe) => [
+        recipe.key,
+        recipe.outputs[0]?.itemId,
+      ]),
+    );
+    const unique = new Map<string, { key: string; itemName: string; message: string }>();
+    for (const alternative of this.optimizationPreview()?.optimization?.incompleteAlternatives ??
+      []) {
+      for (const issue of alternative.issues) {
+        const itemId =
+          issue.itemId ??
+          recipeItems.get(issue.recipeId ?? alternative.recipeId) ??
+          alternative.itemId;
+        const key = `${itemId}:${issue.code}`;
+        if (!unique.has(key))
+          unique.set(key, {
+            key,
+            itemName: this.productionMaterialName(itemId),
+            message: issue.message,
+          });
+      }
+    }
+    return [...unique.values()];
+  });
+
+  optimizationReasonLabel(reason: ProductionOptimizationResult['reason']): string {
+    const labels: Record<ProductionOptimizationResult['reason'], string> = {
+      complete: 'Busca concluída nos dados recebidos',
+      'state-limit': 'Limite de busca atingido',
+      'missing-data': 'Dados necessários ainda não confirmados',
+      'dataset-mismatch': 'Versão do catálogo não confirmada',
+      cycle: 'Cadeia de produção com ciclo',
+      'invalid-alternative': 'Uma fórmula precisa ser revisada',
+    };
+    return labels[reason];
+  }
+
   productionMaterialName(itemId: number): string {
     const existing = this.parts().get(itemId)?.name;
     if (existing) return existing;
     const graph = this.recipeGraph();
-    for (const recipe of [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])]) {
-      const part = recipe?.inputs.find((input) => input.itemId === itemId);
+    for (const recipe of this.allGraphRecipes(graph)) {
+      const part = [...recipe.inputs, ...recipe.outputs].find((part) => part.itemId === itemId);
       if (part) return part.name;
     }
     return `Item ${itemId}`;
   }
 
   productionStepName(recipeId: string): string {
-    return this.productionStepPart(recipeId)?.name ?? recipeId;
+    if (recipeId.startsWith('gather:'))
+      return `Coleta de ${this.productionMaterialName(Number(recipeId.slice('gather:'.length)))}`;
+    return this.productionStepPart(recipeId)?.name ?? 'Fórmula não identificada';
   }
 
   productionStepPart(recipeId: string): CatalogRecipePart | undefined {
     const graph = this.recipeGraph();
-    return [graph?.rootRecipe, ...(graph?.producerRecipes ?? [])].find(
-      (recipe) => recipe?.key === recipeId,
-    )?.outputs[0];
+    return this.allGraphRecipes(graph).find((recipe) => recipe?.key === recipeId)?.outputs[0];
   }
 
   materialSourceLabel(itemId: number): string {
@@ -551,7 +614,6 @@ export class RecipeTree {
 
   optimizeAcquisition(): void {
     this.optimizationPreview.set(null);
-    this.applyDefaultMethodTimes();
     this.cancelOptimization();
     const input = this.productionInput();
     if (!input) return;
@@ -568,6 +630,10 @@ export class RecipeTree {
     this.optimizationMessage.set('Calculando a melhor combinação…');
     worker.onmessage = ({ data }) => {
       if (this.optimizationWorker !== worker) return;
+      if (this.optimizationSnapshot !== this.optimizationContext()) {
+        this.cancelOptimization();
+        return;
+      }
       this.cancelOptimization();
       if (!data.result) {
         this.optimizationMessage.set(data.error ?? 'Falha na otimização.');
@@ -577,10 +643,14 @@ export class RecipeTree {
       if (best) {
         this.optimizationPreview.set(data.result);
         this.optimizationMessage.set(
-          hasOnlyOptimizationLimit(best)
-            ? 'Melhor combinação encontrada. A busca atingiu o limite e o ótimo global não está certificado. Confira a prévia.'
+          (!data.result.optimization?.complete && !!data.result.optimization) ||
+            hasOnlyOptimizationLimit(best)
+            ? 'Melhor combinação encontrada. O ótimo global não está certificado. Confira a cobertura na prévia.'
             : 'Combinação calculada. Confira a prévia antes de aplicar.',
         );
+      } else if (data.result.optimization) {
+        this.optimizationPreview.set(data.result);
+        this.applyOptimizationResult(data.result);
       } else this.applyOptimizationResult(data.result);
     };
     worker.onerror = () => {
@@ -606,9 +676,15 @@ export class RecipeTree {
   readonly optimizing = signal(false);
   readonly optimizationPreview = signal<ReturnType<typeof planProduction> | null>(null);
   readonly previewPlan = computed(() => usableOptimizedPlan(this.optimizationPreview()));
-  readonly previewSearchLimited = computed(() => hasOnlyOptimizationLimit(this.previewPlan()));
+  readonly previewSearchLimited = computed(() =>
+    this.optimizationPreview()?.optimization
+      ? !this.optimizationPreview()!.optimization!.complete
+      : hasOnlyOptimizationLimit(this.previewPlan()),
+  );
   readonly optimizationSearchLimited = computed(() =>
-    hasOnlyOptimizationLimit(this.currentProductionPlan()),
+    this.productionResult()?.optimization
+      ? !this.productionResult()!.optimization!.complete
+      : hasOnlyOptimizationLimit(this.currentProductionPlan()),
   );
 
   applyOptimizationPreview(): void {
@@ -624,19 +700,7 @@ export class RecipeTree {
   }
   private optimizationWorker: Worker | null = null;
   private optimizationSnapshot: string | null = null;
-  private readonly optimizationContext = computed(() =>
-    JSON.stringify([
-      this.masteryOverride(),
-      this.masteryOverrides(),
-      this.craftCount(),
-      this.recipeGraph(),
-      [...this.marketQuotes()],
-      [...this.effectiveMethodTimes()],
-      [...this.gatherEstimates()],
-      this.excludedLocations(),
-      this.store.data(),
-    ]),
-  );
+  private readonly optimizationContext = computed(() => JSON.stringify(this.productionInput()));
   private readonly optimizedResult = signal<ReturnType<typeof planProduction> | null>(null);
 
   cancelOptimization(announce = false): void {
@@ -649,15 +713,56 @@ export class RecipeTree {
   private applyOptimizationResult(result: ReturnType<typeof planProduction>): void {
     const best = usableOptimizedPlan(result);
     if (best?.sourceChoices) {
-      const sources = new Map<number, ProductionChoice>();
-      for (const itemId of this.materialItemIds())
-        sources.set(itemId, best.sourceChoices[itemId] ?? 'buy');
+      const graph = this.recipeGraph();
+      const formulas = new Map(this.allGraphRecipes(graph).map((recipe) => [recipe.key, recipe]));
+      const choices = best.recipeChoices;
+      if (choices && graph && this.root()) {
+        const apply = (node: RecipeNode, active: ReadonlySet<number>): RecipeNode => {
+          if (active.has(node.part.itemId)) return node;
+          const selected = choices[node.part.itemId]
+            ? formulas.get(choices[node.part.itemId])
+            : undefined;
+          const next = selected ? withRecipe(node, selected) : node;
+          const path = new Set(active).add(node.part.itemId);
+          return { ...next, children: next.children.map((child) => apply(child, path)) };
+        };
+        const root = apply(this.root()!, new Set());
+        this.root.set(root);
+        this.recipeGraph.set({
+          ...graph,
+          rootRecipe: root.recipe ?? graph.rootRecipe,
+          producerRecipes: [
+            ...new Map(
+              [
+                ...graph.producerRecipes,
+                ...Object.entries(choices)
+                  .filter(([id]) => Number(id) !== root.part.itemId)
+                  .flatMap(([, id]) => (formulas.has(id) ? [formulas.get(id)!] : [])),
+              ].map((recipe) => [recipe.outputs[0]?.itemId, recipe]),
+            ).values(),
+          ],
+        });
+        this.recipeGraphIdentity = [
+          this.region(),
+          this.datasetVersion(),
+          root.part.itemId,
+          root.recipe?.key ?? 'external',
+          ...[...this.selectedRecipeMethods(root)]
+            .sort(([a], [b]) => a - b)
+            .map(([id, key]) => `${id}:${key}`),
+        ].join('/');
+        this.rootMethod.emit(root.recipe);
+      }
+      const sources = new Map<number, ProductionChoice>(
+        Object.entries(best.sourceChoices).map(([id, source]) => [Number(id), source]),
+      );
       this.customMaterialSource.set(sources);
       this.optimizedResult.set(result);
       this.acquisitionStrategy.set('optimized');
+      this.optimizationSnapshot = this.optimizationContext();
       this.optimizationMessage.set(
-        hasOnlyOptimizationLimit(best)
-          ? 'Melhor combinação encontrada aplicada. A busca atingiu o limite; o ótimo global não está certificado.'
+        (result.optimization && !result.optimization.complete) || hasOnlyOptimizationLimit(best)
+          ? 'Melhor combinação encontrada aplicada. O ótimo global não está certificado.'
           : 'Melhor combinação por lucro aplicada com sucesso.',
       );
       return;
@@ -860,7 +965,7 @@ export class RecipeTree {
     return root
       ? planRecipeTree(
           this.withEstimatedYields(root),
-          Math.max(1, Math.floor(this.requestedOperations() * this.effectiveYield())),
+          this.requestedOperations() * this.effectiveYield(),
           this.store.data(),
           {
             rootCrafts: this.requestedOperations(),
@@ -906,6 +1011,11 @@ export class RecipeTree {
       new Date(),
       {
         quoteObservedAt: this.quoteObservedAt(),
+        defaultTimeMethods: new Set(
+          [...this.effectiveMethodTimes().keys()].filter(
+            (method) => !this.methodTimes().has(method),
+          ),
+        ),
         masteryOverride: this.masteryOverride(),
         masterySkill: this.masterySkill(),
         masteryOverrides: this.masteryOverrides(),
@@ -930,6 +1040,8 @@ export class RecipeTree {
   readonly currentProductionPlan = computed<ProductionPlan | null>(() => {
     const result = this.productionResult();
     if (!result) return null;
+    if (this.acquisitionStrategy() === 'optimized' && result.optimization)
+      return result.optimization.bestFound;
     const scenario =
       this.acquisitionStrategy() === 'buy_all'
         ? 'buy-all'
@@ -971,7 +1083,7 @@ export class RecipeTree {
   readonly methodCalibrationRows = computed(() => {
     const graph = this.recipeGraph();
     if (!graph) return [];
-    const recipes = [graph.rootRecipe, ...graph.producerRecipes];
+    const recipes = this.allGraphRecipes(graph);
     const methods = [...new Set(recipes.map((recipe) => recipe.type))].sort();
     return methods.map((method) => ({
       method,
@@ -984,12 +1096,12 @@ export class RecipeTree {
     if (!graph) return [];
     const rootId = graph.rootRecipe.outputs[0]?.itemId;
     const producedIds = new Set(
-      [graph.rootRecipe, ...graph.producerRecipes].flatMap((recipe) =>
+      this.allGraphRecipes(graph).flatMap((recipe) =>
         recipe.outputs.map((output) => output.itemId),
       ),
     );
     const parts = new Map<number, CatalogRecipePart>();
-    for (const recipe of [graph.rootRecipe, ...graph.producerRecipes])
+    for (const recipe of this.allGraphRecipes(graph))
       for (const part of recipe.inputs) parts.set(part.itemId, part);
     return [...parts.keys()]
       .filter((itemId) => itemId !== rootId && !producedIds.has(itemId))
@@ -1029,13 +1141,12 @@ export class RecipeTree {
   });
 
   readonly producedQuantity = computed(() => {
-    const ops = this.operationsCount();
-    const y = this.effectiveYield();
-    return ops * y;
+    const modeled = this.currentProductionPlan()?.output;
+    return modeled ?? this.operationsCount() * this.effectiveYield();
   });
 
   readonly formattedProducedQuantity = computed(() => {
-    return Math.floor(this.producedQuantity()).toLocaleString('pt-BR');
+    return this.producedQuantity().toLocaleString('pt-BR', { maximumFractionDigits: 6 });
   });
 
   readonly effectiveMaterialCost = computed(() => {
@@ -1156,7 +1267,7 @@ export class RecipeTree {
     const root = this.root();
     if (!root?.recipe) return [];
     const graph = this.recipeGraph();
-    const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
+    const recipes = graph ? this.allGraphRecipes(graph) : [root.recipe];
     const skills = new Set<RecipeMasterySkill>();
 
     for (const recipe of recipes) {
@@ -1176,7 +1287,7 @@ export class RecipeTree {
     const root = this.root();
     const selectedSkill = this.masterySkill();
     if (!selectedSkill || !root?.recipe) return false;
-    const recipes = graph ? [graph.rootRecipe, ...graph.producerRecipes] : [root.recipe];
+    const recipes = graph ? this.allGraphRecipes(graph) : [root.recipe];
     return recipes.some((recipe) => {
       if (lifeSkillForRecipe(recipe.type) !== selectedSkill) return false;
       if (recipe.key === root.recipe?.key && root.yield !== null && root.yield > 0) return false;
@@ -1207,11 +1318,7 @@ export class RecipeTree {
     const custom = this.methodTimes();
     const graph = this.recipeGraph();
     const rootRecipe = this.root()?.recipe;
-    const recipes = graph
-      ? [graph.rootRecipe, ...graph.producerRecipes]
-      : rootRecipe
-        ? [rootRecipe]
-        : [];
+    const recipes = graph ? this.allGraphRecipes(graph) : rootRecipe ? [rootRecipe] : [];
     const map = new Map<string, number>(custom);
     for (const r of recipes) {
       if (!map.has(r.type)) {
@@ -1231,21 +1338,7 @@ export class RecipeTree {
   });
 
   applyDefaultMethodTimes(): void {
-    const graph = this.recipeGraph();
-    const rootRecipe = this.root()?.recipe;
-    const recipes = graph
-      ? [graph.rootRecipe, ...graph.producerRecipes]
-      : rootRecipe
-        ? [rootRecipe]
-        : [];
-    if (!recipes.length) return;
-    const updated = new Map(this.methodTimes());
-    for (const r of recipes) {
-      if (!updated.has(r.type)) {
-        updated.set(r.type, defaultRecipeMethodSeconds(r.type));
-      }
-    }
-    this.methodTimes.set(updated);
+    // Defaults are resolved without storing them as personally informed measurements.
   }
 
   readonly formattedCraftTime = computed(() => {
@@ -1320,7 +1413,7 @@ export class RecipeTree {
           if (revision !== this.quoteRevision) return EMPTY;
           let itemIds: number[];
           const graphRecipes = graph
-            ? [graph.rootRecipe, ...graph.producerRecipes]
+            ? this.allGraphRecipes(graph)
             : root.recipe
               ? [root.recipe]
               : [];
@@ -1502,8 +1595,8 @@ export class RecipeTree {
     afterRenderEffect(() => {
       const dialog = this.optimizationDialog()?.nativeElement;
       if (!dialog) return;
-      if (this.previewPlan() && !dialog.open) dialog.showModal?.();
-      else if (!this.previewPlan() && dialog.open) dialog.close?.();
+      if (this.optimizationPreview() && !dialog.open) dialog.showModal?.();
+      else if (!this.optimizationPreview() && dialog.open) dialog.close?.();
     });
     effect(() => {
       if (this.acquisitionStrategy() !== 'gather_all') return;

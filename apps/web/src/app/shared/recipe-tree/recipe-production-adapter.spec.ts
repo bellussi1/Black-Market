@@ -240,8 +240,8 @@ describe('recipe production planner adapter', () => {
     expect(result.candidates).toEqual([{ recipeId: 'root', crafts: 4, optimizeCrafts: 4 }]);
     expect(result.maxOptimizationStates).toBe(10_000);
     expect(result.estimates).toMatchObject({
-      root: { expectedYield: 2.829, craftSeconds: 12, source: 'calibrated' },
-      producer: { expectedYield: 212.5, craftSeconds: 8, source: 'calibrated' },
+      root: { expectedYield: 2.829, craftSeconds: 12, source: 'informed' },
+      producer: { expectedYield: 212.5, craftSeconds: 8, source: 'informed' },
     });
     expect(result.recipes[1]?.ingredients).toEqual([{ itemId: 3, quantity: 170 }]);
     expect(result.quotes[100]).toMatchObject({ unitPrice: '100', source: 'market' });
@@ -867,4 +867,33 @@ describe('recipe production planner adapter', () => {
 
     expect(result.inventory).toEqual([]);
   });
+});
+
+it('adapts every recursive formula and identifies default durations as estimates', () => {
+  const root = recipe('root', 100, [{ itemId: 1, quantity: '1' }]);
+  const alternative = recipe('other', 100, [{ itemId: 2, quantity: '2' }], '3');
+  const nested = recipe('nested', 1, [{ itemId: 3, quantity: '1' }]);
+  const input = buildRecipeProductionInput(
+    {
+      ...graph(root, [nested]),
+      rootAlternatives: [root, alternative],
+      producerAlternativesByItemId: new Map([[1, [nested]]]),
+    },
+    100,
+    emptyWorkspace(),
+    new Map(),
+    new Map([['ALCHEMY', 1.2]]),
+    new Map(),
+    new Map(),
+    now,
+    { defaultTimeMethods: new Set(['ALCHEMY']) },
+  );
+  expect(input.catalogVersion).toBe('dataset-v1');
+  expect(input.recipeAlternativesByItemId).toEqual({ 100: ['root', 'other'], 1: ['nested'] });
+  expect(input.recipes.find((entry) => entry.id === 'other')).toMatchObject({
+    output: { itemId: 100, quantity: 3 },
+    ingredients: [{ itemId: 2, quantity: 2 }],
+  });
+  expect(input.estimates['root'].source).toBe('default');
+  expect(input.candidates[0].optimizeCrafts).toBe(100);
 });

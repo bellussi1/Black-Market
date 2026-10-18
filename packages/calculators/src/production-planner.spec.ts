@@ -964,3 +964,155 @@ describe('production planner', () => {
     expect(row(input, 'buy-all').crafts).toBe(4);
   });
 });
+
+describe('recursive recipe alternatives', () => {
+  function alternatives(): ProductionPlannerInput {
+    const input = fixture();
+    input.enforcePurchaseLimits = false;
+    input.recipes.push(
+      { ...input.recipes[0], id: 'final-fast', output: { itemId: 3, quantity: 2 } },
+      { ...input.recipes[1], id: 'middle-efficient', ingredients: [{ itemId: 1, quantity: 1 }] },
+    );
+    input.estimates['final-fast'] = { source: 'informed', craftSeconds: 20 };
+    input.estimates['middle-efficient'] = { source: 'informed', craftSeconds: 1 };
+    return Object.assign(input, {
+      catalogVersion: 'v1',
+      recipeAlternativesByItemId: { 3: ['final', 'final-fast'], 2: ['middle', 'middle-efficient'] },
+      candidates: [{ recipeId: 'final', crafts: 3, optimizeCrafts: 3 }],
+    });
+  }
+
+  it('matches an exhaustive oracle across root formulas and recursive source/formula decisions', () => {
+    const input = alternatives();
+    const oracle = ['final', 'final-fast']
+      .flatMap((recipeId) =>
+        ['middle', 'middle-efficient'].flatMap((middle) =>
+          (['buy', 'produce'] as const).map((source) => {
+            const exhaustive = planProduction({
+              ...input,
+              recipeAlternativesByItemId: undefined,
+              candidates: [{ recipeId, crafts: 3 }],
+              customRecipes: { 2: middle },
+              customChoices: { 2: source },
+            });
+            return [...exhaustive.ranked, ...exhaustive.incomplete].find(
+              (plan) => plan.scenario === 'custom',
+            )!;
+          }),
+        ),
+      )
+      .filter((plan) => plan.profitPerHour !== null)
+      .sort(compareProductionPlans);
+    const result = planProduction(input).optimization;
+    expect(result?.best?.profit).toBe(oracle[0].profit);
+    expect(result?.best?.durationMilliseconds).toBe(oracle[0].durationMilliseconds);
+    expect(result?.best?.recipeChoices).toEqual({ 3: 'final-fast', 2: 'middle-efficient' });
+    expect(result?.best?.crafts).toBe(3);
+    expect(result?.rootRecipesEvaluated).toBe(2);
+    expect(result?.complete).toBe(true);
+  });
+
+  it('keeps best found distinct from certified optimum when the global state budget expires', () => {
+    const input = alternatives();
+    input.maxOptimizationStates = 1;
+    const result = planProduction(input).optimization;
+    expect(result?.statesVisited).toBe(1);
+    expect(result?.complete).toBe(false);
+    expect(result?.reason).toBe('state-limit');
+    expect(result?.best).toBeNull();
+    expect(result?.bestFound?.profitPerHour).not.toBeNull();
+  });
+
+  it('does not certify missing inputs or dataset mismatches while preserving viable alternatives', () => {
+    const input = alternatives();
+    delete input.estimates['middle-efficient'].craftSeconds;
+    const missing = planProduction(input).optimization;
+    expect(missing?.best).toBeNull();
+    expect(missing?.bestFound).not.toBeNull();
+    expect(missing?.reason).toBe('missing-data');
+    expect(
+      missing?.incompleteAlternatives.some((alternative) =>
+        alternative.issues.some((issue) => issue.code === 'missing-time'),
+      ),
+    ).toBe(true);
+    input.recipes.find((recipe) => recipe.id === 'middle-efficient')!.catalogVersion = 'v2';
+    expect(planProduction(input).optimization?.reason).toBe('dataset-mismatch');
+  });
+
+  it('uses one formula for a shared intermediate and includes explicit gathering and free stock', () => {
+    const input = alternatives();
+    input.recipes[0].ingredients.push({ itemId: 2, quantity: 1 });
+    input.recipes[2].ingredients.push({ itemId: 2, quantity: 1 });
+    input.inventory = [{ itemId: 2, quantity: 4, reserved: 1 }];
+    input.useOwnedInProduction = true;
+    input.gatheringEstimates = {
+      1: { source: 'informed', expectedYield: 100, craftSeconds: 0.001 },
+    };
+    const best = planProduction(input).optimization?.best;
+    expect(best?.recipeChoices?.[2]).toBe('middle-efficient');
+    expect(best?.sourceChoices?.[1]).toBe('gather');
+    expect(best?.materials.find((part) => part.itemId === 2)?.owned).toBe(3);
+    expect(
+      best?.steps
+        .filter((step) => step.recipeId.startsWith('middle'))
+        .every((step) => step.recipeId === 'middle-efficient'),
+    ).toBe(true);
+  });
+
+  it('records an invalid alternative and excludes a proved cycle without hiding the viable plan', () => {
+    const input = alternatives();
+    input.recipes.push({
+      ...input.recipes[1],
+      id: 'cyclic',
+      ingredients: [{ itemId: 3, quantity: 1 }],
+    });
+    input.recipeAlternativesByItemId![2].push('cyclic', 'absent');
+    const result = planProduction(input).optimization;
+    expect(
+      result?.incompleteAlternatives.some((alternative) =>
+        alternative.issues.some((issue) => issue.code === 'cycle'),
+      ),
+    ).toBe(true);
+    expect(
+      result?.incompleteAlternatives.some((alternative) => alternative.recipeId === 'absent'),
+    ).toBe(true);
+    expect(result?.bestFound).not.toBeNull();
+  });
+});
+
+it('recursive recipe alternatives do not reject a structural cycle satisfied by free stock', () => {
+  const input = fixture();
+  input.candidates[0].optimizeCrafts = 1;
+  input.recipeAlternativesByItemId = { 3: ['final'], 2: ['middle'] };
+  input.recipes[1].ingredients = [{ itemId: 3, quantity: 1 }];
+  input.quotes[2].unitPrice = '2000';
+  input.inventory = [{ itemId: 3, quantity: 2 }];
+  input.useOwnedInProduction = true;
+  const best = planProduction(input).optimization?.bestFound;
+  expect(best?.sourceChoices?.[2]).toBe('produce');
+  expect(best?.materials.find((material) => material.itemId === 3)?.owned).toBe(2);
+});
+
+it('recursive recipe alternatives reject a root formula producing another item', () => {
+  const input = fixture();
+  input.candidates[0].optimizeCrafts = 1;
+  input.recipeAlternativesByItemId = { 3: ['final', 'middle'] };
+  const optimization = planProduction(input).optimization;
+  expect(optimization?.incompleteAlternatives).toContainEqual(
+    expect.objectContaining({
+      recipeId: 'middle',
+      issues: [expect.objectContaining({ code: 'invalid-alternative' })],
+    }),
+  );
+  expect(optimization?.best).toBeNull();
+});
+
+it('does not certify recursive alternatives without a catalog version', () => {
+  const input = fixture();
+  input.candidates[0].optimizeCrafts = 1;
+  input.recipeAlternativesByItemId = { 3: ['final'], 2: ['middle'] };
+  const optimization = planProduction(input).optimization;
+  expect(optimization?.best).toBeNull();
+  expect(optimization?.complete).toBe(false);
+  expect(optimization?.reason).toBe('dataset-mismatch');
+});

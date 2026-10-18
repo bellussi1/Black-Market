@@ -6,6 +6,7 @@ export interface ProductionRecipe {
   id: string;
   name: string;
   method: string;
+  catalogVersion?: string;
   output: { itemId: number; quantity: ProductionQuantity };
   ingredients: { itemId: number; quantity: ProductionQuantity }[];
   byproducts?: { itemId: number; quantity: ProductionQuantity }[];
@@ -15,7 +16,9 @@ export interface ProductionRecipe {
 export interface ProductionEstimate {
   expectedYield?: number;
   craftSeconds?: number;
-  source: 'informed' | 'calibrated' | 'fixed';
+  source: 'informed' | 'calibrated' | 'fixed' | 'default';
+  /** Duration provenance is independent of a verified fixed output yield. */
+  timeSource?: 'default' | 'informed' | 'calibrated';
   contextHash?: string;
   origin?: 'user-confirmed';
 }
@@ -29,6 +32,10 @@ export interface ProductionCandidate {
 }
 export interface ProductionPlannerInput {
   recipes: ProductionRecipe[];
+  catalogVersion?: string;
+  recipeAlternativesByItemId?: Record<number, string[]>;
+  /** Coverage failures reported by the versioned catalog loader. */
+  optimizationIssues?: ProductionIssue[];
   quotes: Record<
     number,
     {
@@ -92,13 +99,16 @@ export interface ProductionIssue {
     | 'weight'
     | 'missing-weight'
     | 'optimization-limit'
-    | 'invalid-input';
+    | 'invalid-input'
+    | 'dataset-mismatch'
+    | 'invalid-alternative';
   message: string;
   itemId?: number;
   recipeId?: string;
 }
 export interface ProductionPlan {
   recipeId: string;
+  recipeChoices?: Record<number, string>;
   name: string;
   scenario: ProductionScenario;
   crafts: number;
@@ -129,7 +139,27 @@ export interface ProductionPlan {
   sourceChoices?: Record<number, ProductionChoice>;
   steps: { recipeId: string; crafts: number; output: number; seconds: number | null }[];
 }
+export interface ProductionOptimizationResult {
+  best: ProductionPlan | null;
+  bestFound: ProductionPlan | null;
+  incompleteAlternatives: { itemId: number; recipeId: string; issues: ProductionIssue[] }[];
+  complete: boolean;
+  reason:
+    | 'complete'
+    | 'state-limit'
+    | 'missing-data'
+    | 'dataset-mismatch'
+    | 'cycle'
+    | 'invalid-alternative';
+  rootRecipesTotal: number;
+  rootRecipesEvaluated: number;
+  recursiveRecipesEvaluated: number;
+  statesVisited: number;
+  statesPruned: number;
+  catalogVersion: string | null;
+}
 export interface ProductionPlannerResult {
+  optimization: ProductionOptimizationResult | null;
   ranked: ProductionPlan[];
   incomplete: ProductionPlan[];
   best: ProductionPlan | null;
@@ -186,6 +216,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     crafts: number,
     scenario: ProductionScenario,
     optimizedChoices: Record<number, ProductionChoice> = {},
+    recipeChoices?: Record<number, string>,
   ): ProductionPlan {
     const root = recipes.get(recipeId);
     const issues: ProductionIssue[] = [];
@@ -207,7 +238,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const assumptions = new Set<string>([
       'Materiais próprios são avaliados pelo preço de reposição informado; não são gratuitos.',
       'Receita de venda usa o imposto e os bônus informados; a cotação não garante venda imediata.',
-      'Tempos calibrados e rendimentos seguem estimativas ou medições informadas; a maestria só é aplicada quando há regra catalogada.',
+      'Tempos e rendimentos seguem as premissas indicadas; valores padrão não são medições pessoais. A maestria só é aplicada quando há regra catalogada.',
     ]);
     const owned = new Map<number, bigint>();
     for (const entry of input.inventory) {
@@ -398,10 +429,12 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
           seconds: positive(seconds) ? seconds * Number(count) : null,
         });
         weightSteps.push({ ingredients: [], outputs: [{ itemId: id, quantity: gathered }] });
-        assumptions.add(`Item ${id}: coleta estimada com rendimento e tempo calibrados.`);
+        assumptions.add(
+          `Item ${id}: coleta estimada com rendimento e tempo ${estimate?.source === 'calibrated' ? 'calibrados' : 'informados'}.`,
+        );
         return;
       }
-      const producer = producers.get(id);
+      const producer = recipeChoices?.[id] ? recipes.get(recipeChoices[id]) : producers.get(id);
       if (!producer) {
         if (scenario === 'custom' && input.customChoices?.[id] === 'produce')
           issue('missing-recipe', 'Nenhuma receita disponível para produzir este ingrediente.', {
@@ -435,7 +468,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     function recipeYield(recipe: ProductionRecipe): bigint | null {
       const estimate = input.estimates[recipe.id];
       if (
-        estimate?.source === 'calibrated' &&
+        (estimate?.source === 'calibrated' || estimate?.timeSource === 'calibrated') &&
         (!estimate.contextHash ||
           !input.profile.contextHash ||
           estimate.contextHash !== input.profile.contextHash)
@@ -535,7 +568,12 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       if (!positive(seconds) || Math.round(seconds * 1000) === 0) {
         issue('missing-time', 'Informe os segundos por operação.', { recipeId: recipe.id });
         timesKnown = false;
-      } else totalMilliseconds += BigInt(Math.round(seconds * 1000)) * BigInt(count);
+      } else {
+        totalMilliseconds += BigInt(Math.round(seconds * 1000)) * BigInt(count);
+        assumptions.add(
+          `${recipe.name}: ${seconds} s por operação (${(input.estimates[recipe.id]?.timeSource ?? input.estimates[recipe.id]?.source) === 'default' ? 'tempo padrão estimado, não medido' : (input.estimates[recipe.id]?.timeSource ?? input.estimates[recipe.id]?.source) === 'calibrated' ? 'tempo calibrado para o contexto' : 'tempo informado'}).`,
+        );
+      }
       const result = yieldValue * BigInt(count);
       const substitution =
         substitutionRatio > 0 && input.useRareProcs?.[recipe.id]
@@ -797,6 +835,16 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
             ),
           }
         : {}),
+      ...(recipeChoices
+        ? {
+            recipeChoices: Object.fromEntries([
+              [root?.output.itemId ?? 0, recipeId],
+              ...steps
+                .filter((step) => recipes.has(step.recipeId))
+                .map((step) => [recipes.get(step.recipeId)!.output.itemId, step.recipeId]),
+            ]),
+          }
+        : {}),
       steps,
     };
     durations.set(plan, totalMilliseconds);
@@ -1037,6 +1085,211 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     return frontier[0] ?? null;
   }
 
+  /** Enumerates only reached decisions; no rate pruning is assumed safe across formulas. */
+  function optimizeAlternatives(): ProductionOptimizationResult {
+    type State = {
+      rootId: string;
+      crafts: number;
+      sources: Record<number, ProductionChoice>;
+      formulas: Record<number, string>;
+    };
+    const rawLimit = input.maxOptimizationStates ?? 10_000;
+    const limit =
+      Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(10_000, rawLimit) : 10_000;
+    const alternatives = input.recipeAlternativesByItemId!;
+    const incompleteAlternatives: ProductionOptimizationResult['incompleteAlternatives'] = [];
+    const addIssues = (itemId: number, recipeId: string, issues: ProductionIssue[]) => {
+      const previous = incompleteAlternatives.find(
+        (row) => row.itemId === itemId && row.recipeId === recipeId,
+      );
+      if (previous) {
+        for (const issue of issues)
+          if (
+            !previous.issues.some(
+              (row) =>
+                row.code === issue.code &&
+                row.itemId === issue.itemId &&
+                row.recipeId === issue.recipeId,
+            )
+          )
+            previous.issues.push(issue);
+      } else incompleteAlternatives.push({ itemId, recipeId, issues: [...issues] });
+    };
+    for (const issue of input.optimizationIssues ?? [])
+      addIssues(issue.itemId ?? 0, issue.recipeId ?? '', [issue]);
+    if (!input.catalogVersion)
+      addIssues(0, '', [
+        { code: 'dataset-mismatch', message: 'A versão do catálogo não foi informada.' },
+      ]);
+    const roots = new Map<string, State>();
+    for (const candidate of input.candidates) {
+      if (candidate.optimizeCrafts === undefined) continue;
+      const rootItemId = recipes.get(candidate.recipeId)?.output.itemId;
+      const ids =
+        rootItemId === undefined
+          ? [candidate.recipeId]
+          : (alternatives[rootItemId] ?? [candidate.recipeId]);
+      for (const id of ids) {
+        if (!roots.has(id))
+          roots.set(id, {
+            rootId: id,
+            crafts: candidate.optimizeCrafts,
+            sources: {},
+            formulas: { [rootItemId ?? 0]: id },
+          });
+      }
+    }
+    let statesVisited = 0;
+    let statesPruned = 0;
+    let limited = false;
+    const rootEvaluated = new Set<string>();
+    const recursiveEvaluated = new Set<string>();
+    const seen = new Set<string>();
+    let bestFound: ProductionPlan | null = null;
+    const better = (a: ProductionPlan, b: ProductionPlan) => {
+      const rate = compareProductionPlans(a, b);
+      if (rate !== 0) return rate < 0;
+      const cashA = BigInt(a.cashCost ?? '0'),
+        cashB = BigInt(b.cashCost ?? '0');
+      if (cashA !== cashB) return cashA < cashB;
+      return (
+        JSON.stringify([a.recipeChoices, a.sourceChoices]) <
+        JSON.stringify([b.recipeChoices, b.sourceChoices])
+      );
+    };
+    const validRecipe = (itemId: number, id: string): boolean => {
+      const recipe = recipes.get(id);
+      const code =
+        !recipe || recipe.output.itemId !== itemId
+          ? 'invalid-alternative'
+          : recipe.catalogVersion && input.catalogVersion !== recipe.catalogVersion
+            ? 'dataset-mismatch'
+            : null;
+      if (code) {
+        addIssues(itemId, id, [
+          {
+            code,
+            itemId,
+            recipeId: id,
+            message:
+              code === 'dataset-mismatch'
+                ? 'Fórmula de outra versão do catálogo.'
+                : 'Fórmula inválida para este produto.',
+          },
+        ]);
+        statesPruned++;
+        return false;
+      }
+      return true;
+    };
+    const pending = [...roots.values()].reverse();
+    while (pending.length) {
+      if (statesVisited >= limit) {
+        limited = true;
+        break;
+      }
+      const state = pending.pop()!;
+      const itemId = Number(
+        Object.keys(state.formulas).find((key) => state.formulas[Number(key)] === state.rootId) ??
+          0,
+      );
+      if (!validRecipe(itemId, state.rootId)) continue;
+      const key = JSON.stringify([
+        state.rootId,
+        state.crafts,
+        Object.entries(state.sources).sort(),
+        Object.entries(state.formulas).sort(),
+      ]);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      statesVisited++;
+      rootEvaluated.add(state.rootId);
+      // Evaluation reveals the actual demand after shared inventory and surplus.
+      // Structural edges alone cannot prove a cycle when free stock breaks it.
+      const trial = evaluate(
+        state.rootId,
+        state.crafts,
+        'optimized',
+        state.sources,
+        state.formulas,
+      );
+      const cycle = trial.issues.find((issue) => issue.code === 'cycle');
+      if (cycle) {
+        addIssues(itemId, state.rootId, [cycle]);
+        statesPruned++;
+        continue;
+      }
+      const nextItem =
+        trial.materials.find(
+          (part) =>
+            part.bought > 0 &&
+            !state.sources[part.itemId] &&
+            ((alternatives[part.itemId]?.length ?? 0) > 0 ||
+              producers.has(part.itemId) ||
+              input.gatheringEstimates?.[part.itemId]),
+        )?.itemId ?? null;
+      for (const step of trial.steps)
+        if (step.recipeId !== state.rootId && recipes.has(step.recipeId))
+          recursiveEvaluated.add(step.recipeId);
+      if (trial.profitPerHour !== null) {
+        if (!bestFound || better(trial, bestFound)) bestFound = trial;
+        const previous = recursiveBestByRoot.get(state.rootId);
+        if (!previous || better(trial, previous)) recursiveBestByRoot.set(state.rootId, trial);
+      } else if (nextItem === null) {
+        const uncertain = trial.issues.filter(
+          (issue) =>
+            !['budget', 'time', 'weight', 'market-stock', 'stock-shortage', 'cycle'].includes(
+              issue.code,
+            ),
+        );
+        if (uncertain.length) addIssues(itemId, state.rootId, uncertain);
+      }
+      if (nextItem === null) continue;
+      const next = nextItem as number;
+      const options: State[] = [{ ...state, sources: { ...state.sources, [next]: 'buy' } }];
+      for (const recipeId of [
+        ...new Set(alternatives[next] ?? (producers.has(next) ? [producers.get(next)!.id] : [])),
+      ].sort()) {
+        if (validRecipe(next, recipeId))
+          options.push({
+            ...state,
+            sources: { ...state.sources, [next]: 'produce' },
+            formulas: { ...state.formulas, [next]: recipeId },
+          });
+      }
+      if (input.gatheringEstimates?.[next])
+        options.push({ ...state, sources: { ...state.sources, [next]: 'gather' } });
+      pending.push(...options.reverse());
+    }
+    const issues = incompleteAlternatives
+      .flatMap((row) => row.issues)
+      .filter((issue) => issue.code !== 'cycle');
+    const complete = !limited && issues.length === 0;
+    const reason: ProductionOptimizationResult['reason'] = limited
+      ? 'state-limit'
+      : issues.some((issue) => issue.code === 'dataset-mismatch')
+        ? 'dataset-mismatch'
+        : issues.some((issue) => issue.code === 'invalid-alternative')
+          ? 'invalid-alternative'
+          : issues.length
+            ? 'missing-data'
+            : 'complete';
+    return {
+      best: complete ? bestFound : null,
+      bestFound,
+      incompleteAlternatives,
+      complete,
+      reason,
+      rootRecipesTotal: roots.size,
+      rootRecipesEvaluated: rootEvaluated.size,
+      recursiveRecipesEvaluated: recursiveEvaluated.size,
+      statesVisited,
+      statesPruned,
+      catalogVersion: input.catalogVersion ?? null,
+    };
+  }
+
+  const recursiveBestByRoot = new Map<string, ProductionPlan>();
   const ranked: ProductionPlan[] = [];
   const incomplete: ProductionPlan[] = [];
   const boundIssues = new Set<ProductionIssue['code']>([
@@ -1080,7 +1333,7 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
       if (result.profitPerHour === null) incomplete.push(result);
       else ranked.push(result);
     }
-    if (candidate.optimizeCrafts !== undefined) {
+    if (candidate.optimizeCrafts !== undefined && !input.recipeAlternativesByItemId) {
       const rawLimit = input.maxOptimizationStates ?? 10_000;
       const stateLimit =
         Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 10_000) : 10_000;
@@ -1261,5 +1514,23 @@ export function planProduction(input: ProductionPlannerInput): ProductionPlanner
     const comparison = compareRate(a, b);
     return comparison === 0 ? a.recipeId.localeCompare(b.recipeId) : -comparison;
   });
-  return { ranked, incomplete, best: ranked[0] ?? null };
+  const optimization =
+    input.recipeAlternativesByItemId &&
+    input.candidates.some((candidate) => candidate.optimizeCrafts !== undefined)
+      ? optimizeAlternatives()
+      : null;
+  if (optimization) {
+    const perRoot = recursiveBestByRoot;
+    for (const plan of perRoot.values()) {
+      if (optimization.complete) ranked.push(plan);
+      else incomplete.push(plan);
+    }
+    ranked.sort(compareProductionPlans);
+  }
+  return {
+    ranked,
+    incomplete,
+    best: optimization ? optimization.best : (ranked[0] ?? null),
+    optimization,
+  };
 }

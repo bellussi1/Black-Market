@@ -230,13 +230,39 @@ describe('shared stock in production chains', () => {
 
     expect(result.tasks.find((task) => task.id === 'root')).toMatchObject({
       crafts: 10,
-      produced: 15,
+      produced: 15.5,
     });
     expect(result.rows.map(({ name, required }) => [name, required])).toEqual([
-      ['Product', 15],
+      ['Product', 15.5],
       ['X', 10],
       ['Y', 20],
       ['Z', 10],
     ]);
   });
+});
+
+it('preserves fractional expected root production with explicit integer operations', () => {
+  const recipe = {
+    id: 'root',
+    name: 'Product',
+    itemId: 1,
+    yield: 2.767,
+    ingredients: [{ name: 'Salt', quantity: 2, price: '5', recipeId: null }],
+  };
+  const result = calculateProduction({
+    recipeId: 'root',
+    quantity: 276.7,
+    rootCrafts: 100,
+    recipes: [recipe],
+    inventory: [],
+  });
+  expect(result.quantity).toBe(276.7);
+  expect(result.rows.find((row) => row.itemId === 1)?.produced).toBeCloseTo(276.7);
+  expect(result.allocations[0].required).toBeCloseTo(276.7);
+  expect(result.tasks[0].produced).toBeCloseTo(276.7);
+  expect(result.rows.find((row) => row.name === 'Salt')?.required).toBe(200);
+  expect(result.cost).toBe('1000');
+  expect(() =>
+    calculateProduction({ recipeId: 'root', quantity: 276.7, recipes: [recipe], inventory: [] }),
+  ).toThrow();
 });

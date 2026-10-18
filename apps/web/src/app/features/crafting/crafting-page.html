@@ -1,7 +1,7 @@
 <div class="tool-page">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>03 / OFICINA DE PRODUÇÃO</ng-container></p>
-    <h1><ng-container i18n>Planeje uma receita.</ng-container></h1>
+    <h1><ng-container i18n>Calcular produção</ng-container></h1>
     <p>
       <ng-container i18n
         >Configure lote, maestria e recursos para comparar comprar, produzir e coletar. Use Receitas
@@ -121,7 +121,13 @@
           (rootMethod)="setWorkshopMethod($event)"
         />
         <div class="action-row">
-          <a hlmBtn variant="outline" [routerLink]="['/recipes/items', selected.id]" i18n
+          <a
+            hlmBtn
+            variant="outline"
+            class="workshop-explore"
+            [routerLink]="['/recipes/items', selected.id]"
+            [queryParams]="{ recipe: workshopRecipe()?.key ?? 'external' }"
+            i18n
             >Explorar catálogo e origens</a
           >
           <a

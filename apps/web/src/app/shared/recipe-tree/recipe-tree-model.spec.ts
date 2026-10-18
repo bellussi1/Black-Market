@@ -335,3 +335,16 @@ describe('Progressive graph layout', () => {
     expect(layout.nodes.every((n) => Number.isFinite(n.x) && Number.isFinite(n.y))).toBe(true);
   });
 });
+
+it('preserves fractional expected root output while operations and materials stay integral', () => {
+  const root = withRecipe(
+    nodeFor(part(1), 'root'),
+    recipe('fractional', 1, [[2, '2']], null),
+    2.767,
+  );
+  const result = planRecipeTree(root, 276.7, emptyWorkspace(), { rootCrafts: 100 });
+  expect(result.value?.quantity).toBe(276.7);
+  expect(result.value?.allocations[0].produced).toBeCloseTo(276.7);
+  expect(result.value?.tasks[0].crafts).toBe(100);
+  expect(result.value?.rows.find((row) => row.itemId === 2)?.required).toBe(200);
+});

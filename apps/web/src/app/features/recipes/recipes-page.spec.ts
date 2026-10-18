@@ -59,6 +59,22 @@ describe('Universal recipe explorer', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.componentInstance.item()?.id).toBe(5301);
+    expect(fixture.nativeElement.querySelectorAll('h1:not([hidden])')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('app-recipe-tree h1')?.textContent).toContain(
+      'Reagente Líquido Limpo',
+    );
+    const productionShortcut = fixture.nativeElement.querySelector(
+      '.continue-production',
+    ) as HTMLButtonElement;
+    const count = fixture.nativeElement.querySelector('.craft-count-input') as HTMLInputElement;
+    count.value = '42';
+    count.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    productionShortcut.click();
+    expect(document.activeElement).toBe(count);
+    expect(count.value).toBe('42');
     expect(
       fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
     ).toBe('recipe-workshop');
@@ -267,6 +283,7 @@ describe('Universal recipe explorer', () => {
     ).not.toBeNull();
     expect(browser.querySelector('.recipe-list-skeleton')).toBeNull();
     expect(browser.textContent).toContain('Comece por uma receita');
+    expect(element.querySelector('h1')?.textContent).toContain('Explorar receitas e origens');
     http.verify();
   });
   it('shows an in-place skeleton while paginating and requests one more recipe per page', async () => {
@@ -308,6 +325,61 @@ describe('Universal recipe explorer', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.recipe-pagination-skeleton')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Receita 2-1');
+    const next = fixture.nativeElement.querySelector(
+      '.pagination-bar button:last-child',
+    ) as HTMLButtonElement;
+    expect(next.disabled).toBe(false);
+    expect(next.getAttribute('aria-disabled')).toBe('true');
+    next.click();
+    http.expectNone((request) => request.url.endsWith('/recipes'));
+    http.verify();
+  });
+});
+
+describe('recipe catalogue last page', () => {
+  useMemoryStorage();
+  it('keeps the pager before the grid while rendering a complete long name and retaining the page after an error', async () => {
+    const fixture = await renderComponent(RecipesPage, {}, [
+      {
+        provide: ActivatedRoute,
+        useValue: { paramMap: of(convertToParamMap({})), queryParamMap: of(convertToParamMap({})) },
+      },
+    ]);
+    const http = TestBed.inject(HttpTestingController);
+    const longName = 'Receita de nome muito longo com todos os materiais e qualidades '.repeat(8);
+    const rows = (count: number) =>
+      Array.from({ length: count }, (_, index) => ({
+        key: String(index).padStart(64, '0'),
+        type: 'COOKING',
+        name: longName,
+        inputs: [],
+        outputs: [],
+      }));
+    http
+      .expectOne((r) => r.url.endsWith('/recipes'))
+      .flush({ recipes: rows(25), total: 26, page: 1, pageSize: 25, dataset });
+    fixture.detectChanges();
+    fixture.componentInstance.move(1);
+    http
+      .expectOne((r) => r.url.endsWith('/recipes'))
+      .flush({ recipes: rows(1), total: 26, page: 2, pageSize: 25, dataset });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.recipe-card strong').textContent).toBe(longName);
+    expect(
+      fixture.nativeElement.querySelectorAll('.recipe-cards-content .recipe-card'),
+    ).toHaveLength(1);
+    const pager = fixture.nativeElement.querySelector('.pagination-bar') as HTMLElement;
+    const cards = fixture.nativeElement.querySelector('.recipe-cards') as HTMLElement;
+    expect(pager.compareDocumentPosition(cards) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fixture.componentInstance.filterGroup({ target: { value: 'alchemy' } } as unknown as Event);
+    http
+      .expectOne((r) => r.url.endsWith('/recipes'))
+      .flush({}, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.pagination-bar span').textContent.trim()).toBe(
+      'Página 2',
+    );
+    expect(fixture.nativeElement.querySelector('.recipe-card strong').textContent).toBe(longName);
     http.verify();
   });
 });

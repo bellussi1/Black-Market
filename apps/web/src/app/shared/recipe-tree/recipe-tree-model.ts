@@ -164,7 +164,12 @@ export function planRecipeTree(
     });
   };
   try {
-    if (!Number.isSafeInteger(target) || target < 1 || target > 1_000_000)
+    if (
+      !Number.isFinite(target) ||
+      target <= 0 ||
+      target > 1_000_000 ||
+      (options.rootCrafts === undefined && !Number.isSafeInteger(target))
+    )
       throw new Error('Escolha entre 1 e 1.000.000 unidades inteiras.');
     const selected = state.inventory.filter(
       (r) =>

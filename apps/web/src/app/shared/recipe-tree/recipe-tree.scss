@@ -111,6 +111,7 @@
 .product-identity > div {
   min-width: 0;
 }
+.product-identity h1,
 .product-identity h2 {
   margin: 0;
   font: 600 19px/1.35 var(--bm-font-body);
@@ -890,6 +891,15 @@
 .optimization-dialog .optimization-preview {
   margin: 0;
   border: 0;
+}
+
+.optimization-dialog .optimization-incomplete {
+  padding: 20px;
+}
+
+.optimization-incomplete ul {
+  margin-block: 16px;
+  line-height: 1.7;
 }
 
 .preview-heading {

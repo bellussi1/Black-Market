@@ -31,6 +31,8 @@ export const gearSlots = [
   'earring2',
   'tool',
   'clothes',
+  'alchemyStone',
+  'tome',
 ] as const;
 export const characterSchema = z
   .object({
@@ -79,7 +81,7 @@ export const characterSchema = z
                 caphras: z.number().int().min(0).max(20),
               }),
             )
-            .max(15),
+            .max(gearSlots.length),
           crystals: z
             .array(
               z.object({ itemId: z.number().int().positive(), name: z.string().min(1).max(140) }),
@@ -117,7 +119,7 @@ export const characterSchema = z
           caphrasConfirmed: z.boolean().optional(),
         }),
       )
-      .max(15)
+      .max(gearSlots.length)
       .default([]),
   })
   .superRefine((character, context) => {

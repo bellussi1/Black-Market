@@ -1,12 +1,14 @@
 <div class="tool-page recipe-explorer">
-  <header class="tool-heading" [hidden]="!!item()">
-    <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
-    <h1 i18n>Oficina de produção</h1>
-    <p [hidden]="!!item()" i18n>
-      Do produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e
-      aproveite o que já está no seu armazém.
-    </p>
-  </header>
+  @if (!item()) {
+    <header class="tool-heading">
+      <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
+      <h1 i18n>Explorar receitas e origens</h1>
+      <p [hidden]="!!item()" i18n>
+        Do produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas
+        e aproveite o que já está no seu armazém.
+      </p>
+    </header>
+  }
   @if (workshopRoute()) {
     <app-tutorial-launcher screenKey="recipe-workshop" />
   } @else {
@@ -50,6 +52,12 @@
         </div>
         <span class="recipe-skeleton-line recipe-skeleton-filter"></span>
       </div>
+
+      <div class="action-row pagination-bar recipe-pagination-bar-skeleton" aria-hidden="true">
+        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
+        <span class="recipe-skeleton-line recipe-pagination-page-skeleton"></span>
+        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
+      </div>
       <div class="recipe-cards">
         @for (row of recipeSkeletonRows; track row) {
           <div class="recipe-card recipe-skeleton-card">
@@ -60,11 +68,6 @@
             </span>
           </div>
         }
-      </div>
-      <div class="action-row pagination-bar recipe-pagination-bar-skeleton" aria-hidden="true">
-        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
-        <span class="recipe-skeleton-line recipe-pagination-page-skeleton"></span>
-        <span class="recipe-skeleton-line recipe-pagination-control-skeleton"></span>
       </div>
     </section>
   }
@@ -106,7 +109,25 @@
     </section>
   }
   @if (item(); as selected) {
+    <div class="production-entry action-row">
+      <p class="help" i18n>
+        Este produto já está aberto na oficina. Ajuste o lote, a maestria e os materiais para
+        calcular a produção.
+      </p>
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        class="continue-production"
+        (click)="focusProduction()"
+        i18n
+      >
+        Calcular produção deste produto
+      </button>
+    </div>
     <app-recipe-tree
+      #productionWorkspace
+      [primaryHeading]="true"
       data-tour="recipes.tree"
       [recipe]="recipe()"
       [recipes]="alternatives()"
@@ -161,7 +182,8 @@
           <p class="tool-kicker" i18n>CATÁLOGO DE RECEITAS</p>
           <h2 id="recipe-browser-title" i18n>Comece por uma receita</h2>
           <p class="help" i18n>
-            Explore receitas por profissão ou abra um produto para conferir sua cadeia de materiais.
+            Explore receitas por profissão. Abra um produto para conferir suas origens e calcular
+            lote, custos e materiais na mesma oficina.
           </p>
         </div>
         <div class="recipe-browser-controls">
@@ -183,9 +205,37 @@
           </label>
         </div>
       </div>
-      <p class="refresh-status" role="status" [attr.aria-hidden]="loading() ? null : 'true'">
-        {{ loading() ? 'Atualizando a lista de receitas…' : '' }}
-      </p>
+      <nav
+        class="action-row pagination-bar"
+        aria-label="Páginas de receitas"
+        i18n-aria-label
+        [attr.aria-busy]="loading()"
+      >
+        <button
+          hlmBtn
+          variant="outline"
+          (click)="move(-1)"
+          [attr.aria-disabled]="loading() || list.page === 1"
+          i18n
+        >
+          Anterior
+        </button>
+        <span class="pagination-current" role="status" aria-live="polite">
+          @if (loading()) {
+            <ng-container i18n>Atualizando…</ng-container>
+          } @else {
+            <ng-container i18n>Página {{ list.page }}</ng-container>
+          }</span
+        ><button
+          hlmBtn
+          variant="outline"
+          (click)="move(1)"
+          [attr.aria-disabled]="loading() || list.page * list.pageSize >= list.total"
+          i18n
+        >
+          Próxima
+        </button>
+      </nav>
       <div class="recipe-cards" [attr.aria-busy]="loading()">
         <div
           class="recipe-cards-content"
@@ -223,31 +273,6 @@
           </div>
         }
       </div>
-      <nav
-        class="action-row pagination-bar"
-        aria-label="Páginas de receitas"
-        i18n-aria-label
-        [attr.aria-busy]="loading()"
-      >
-        <button
-          hlmBtn
-          variant="outline"
-          (click)="move(-1)"
-          [disabled]="loading() || page === 1"
-          i18n
-        >
-          Anterior</button
-        ><span>{{ page }}</span
-        ><button
-          hlmBtn
-          variant="outline"
-          (click)="move(1)"
-          [disabled]="loading() || page * list.pageSize >= list.total"
-          i18n
-        >
-          Próxima
-        </button>
-      </nav>
     </section>
   }
   @if (dataset(); as data) {

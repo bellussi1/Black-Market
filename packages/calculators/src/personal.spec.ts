@@ -3,11 +3,28 @@ import { describe, expect, it } from 'vitest';
 import {
   availableInventory,
   characterSchema,
+  gearSlots,
   personalPlanSchema,
   reservationIssues,
 } from './personal';
 import { emptyWorkspace, workspaceSchema } from './workspace';
 describe('Personal planning', () => {
+  it('supports alchemy stone and adventurer tome without discarding existing gear or presets', () => {
+    const gear = [...gearSlots, 'alchemyStone', 'tome']
+      .filter((slot, index, all) => all.indexOf(slot) === index)
+      .map((slot, index) => ({ slot, itemId: index + 1, name: slot, level: 0, caphras: 0 }));
+    const profile = characterSchema.parse({
+      id: 'life',
+      name: 'Profissão',
+      region: 'sa',
+      gear,
+      activityPresets: [{ id: 'p', name: 'Coleta', gear, crystals: [] }],
+    });
+    expect(profile.gear).toHaveLength(17);
+    expect(profile.activityPresets?.[0].gear).toHaveLength(17);
+    expect(profile.gear.find((row) => row.slot === 'tool')).toBeDefined();
+    expect(characterSchema.parse({ id: 'old', name: 'Antigo', region: 'sa' }).gear).toEqual([]);
+  });
   const plan = (id: string, quantity: number) =>
     personalPlanSchema.parse({
       id,

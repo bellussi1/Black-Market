@@ -3,7 +3,11 @@ import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CatalogApiService } from '../../core/catalog-api.service';
-import { resolveRecipeProductionGraph } from './recipe-production-graph';
+import { withVerifiedIngredientSubstitutions } from './recipe-equivalents';
+import {
+  type RecipeProductionGraph,
+  resolveRecipeProductionGraph,
+} from './recipe-production-graph';
 
 const dataset = {
   version: 'dataset-v1',
@@ -64,7 +68,7 @@ describe('resolveRecipeProductionGraph', () => {
       itemIds: [1, 2, 3, 4, 100],
       producerRecipes: [{ key: 'producer-1' }, { key: 'producer-2' }],
     });
-    expect(api.getItemRecipes).toHaveBeenCalledTimes(4);
+    expect(api.getItemRecipes).toHaveBeenCalledTimes(5);
     expect(api.getItemRecipes).toHaveBeenCalledWith(3, 'produces');
   });
 
@@ -129,7 +133,7 @@ describe('resolveRecipeProductionGraph', () => {
     ).subscribe((value) => (graph = value));
 
     expect(graph).toMatchObject({
-      itemIds: [1, 9, 100],
+      itemIds: [1, 8, 9, 100],
       producerRecipes: [{ key: 'z-selected' }],
     });
   });
@@ -145,7 +149,7 @@ describe('resolveRecipeProductionGraph', () => {
     );
 
     expect(graph).toMatchObject({
-      itemIds: [1, 8, 100],
+      itemIds: [1, 8, 9, 100],
       producerRecipes: [{ key: 'a-producer' }],
     });
   });
@@ -168,7 +172,7 @@ describe('resolveRecipeProductionGraph', () => {
     ).subscribe((value) => (graph = value));
 
     expect(graph).toMatchObject({
-      itemIds: expect.not.arrayContaining([9300]),
+      itemIds: expect.arrayContaining([9300]),
       producerRecipes: [{ key: 'z-normal-substitute' }],
     });
   });
@@ -221,22 +225,93 @@ describe('resolveRecipeProductionGraph', () => {
     expect(graph).toMatchObject({
       itemIds: [1, 100],
       producerRecipes: [],
-      issues: [{ itemId: 1, code: 'dataset-mismatch' }],
+      issues: [
+        { itemId: 1, code: 'dataset-mismatch' },
+        { itemId: 100, code: 'dataset-mismatch' },
+      ],
     });
   });
 
   it('limits graph requests to six in flight', () => {
     const requests = Array.from({ length: 7 }, () => new Subject<CatalogRecipesResponse>());
     const api = {
-      getItemRecipes: vi.fn((itemId: number) => requests[itemId - 1].asObservable()),
+      getItemRecipes: vi.fn((itemId: number) =>
+        itemId === 100
+          ? of(response([recipe('root', 100, [1, 2, 3, 4, 5, 6, 7])]))
+          : requests[itemId - 1].asObservable(),
+      ),
     } as unknown as CatalogApiService;
     const root = recipe('root', 100, [1, 2, 3, 4, 5, 6, 7]);
 
     resolveRecipeProductionGraph(root, api, new Map(), 'dataset-v1').subscribe();
 
-    expect(api.getItemRecipes).toHaveBeenCalledTimes(6);
+    expect(api.getItemRecipes).toHaveBeenCalledTimes(7);
     requests[0].next(response([]));
     requests[0].complete();
-    expect(api.getItemRecipes).toHaveBeenCalledTimes(7);
+    expect(api.getItemRecipes).toHaveBeenCalledTimes(8);
   });
+});
+
+it('retains all root and recursive alternatives, including inputs unique to an unselected formula', () => {
+  const root = recipe('root', 100, [1]);
+  const alternateRoot = recipe('root-other', 100, [5]);
+  const nested = recipe('a-default', 1, [8]);
+  const alternateNested = recipe('z-alternative', 1, [9]);
+  const api = apiFor(
+    new Map([
+      [100, [root, alternateRoot, root]],
+      [1, [nested, alternateNested]],
+    ]),
+  );
+  let result: RecipeProductionGraph | undefined;
+  resolveRecipeProductionGraph(root, api, new Map(), 'dataset-v1').subscribe(
+    (value) => (result = value),
+  );
+  expect(result?.rootAlternatives?.map((entry) => entry.key)).toEqual(['root', 'root-other']);
+  expect(result?.producerAlternativesByItemId?.get(1)?.map((entry) => entry.key)).toEqual([
+    'a-default',
+    'z-alternative',
+  ]);
+  expect(result?.itemIds).toEqual([1, 5, 8, 9, 100]);
+  expect(api.getItemRecipes).toHaveBeenCalledTimes(5);
+});
+
+it('reports failed and partial catalog coverage without dropping the known root', () => {
+  const root = recipe('root', 100, [1]);
+  const api = {
+    getItemRecipes: vi.fn((itemId: number) =>
+      of({ ...response(itemId === 100 ? [root] : []), total: itemId === 1 ? 2 : 1 }),
+    ),
+  } as unknown as CatalogApiService;
+  let result: RecipeProductionGraph | undefined;
+  resolveRecipeProductionGraph(root, api, new Map(), 'dataset-v1').subscribe(
+    (value) => (result = value),
+  );
+  expect(result?.issues).toContainEqual({ itemId: 1, code: 'incomplete-recipes' });
+  expect(result?.rootAlternatives).toEqual([root]);
+});
+
+it('keeps verified substitution coverage independent of the selected root formula', () => {
+  const organic = { ...recipe('organic', 54018, [7905, 8201, 7921, 9276]), type: 'COOK' };
+  const api = apiFor(new Map([[54018, [organic]]]));
+  let result: RecipeProductionGraph | undefined;
+  resolveRecipeProductionGraph(organic, api, new Map(), 'dataset-v1').subscribe(
+    (value) => (result = value),
+  );
+  expect(result?.rootAlternatives).toHaveLength(4);
+  expect(result?.itemIds).toEqual(expect.arrayContaining([7901, 8501]));
+  const keys = result?.rootAlternatives?.map((candidate) => candidate.key);
+  const selected = withVerifiedIngredientSubstitutions([organic])[3];
+  resolveRecipeProductionGraph(selected, api, new Map(), 'dataset-v1').subscribe(
+    (value) => (result = value),
+  );
+  expect(result?.rootAlternatives?.map((candidate) => candidate.key)).toEqual(keys);
+
+  resolveRecipeProductionGraph(
+    recipe('parent', 100, [54018]),
+    api,
+    new Map(),
+    'dataset-v1',
+  ).subscribe((value) => (result = value));
+  expect(result?.producerAlternativesByItemId?.get(54018)).toHaveLength(4);
 });

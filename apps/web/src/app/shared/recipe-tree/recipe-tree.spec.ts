@@ -125,7 +125,17 @@ function providers() {
         recipes: [],
         total: 0,
         direction: 'byproducts',
-        dataset: null,
+        dataset: _datasetVersion
+          ? {
+              version: _datasetVersion,
+              region: 'sa',
+              locale: 'pt',
+              checksum: null,
+              itemCount: 0,
+              recipeCount: 0,
+              importedAt: new Date().toISOString(),
+            }
+          : null,
       } as CatalogRecipesResponse),
     ),
   };
@@ -185,7 +195,7 @@ function configureProduction(tree: RecipeTree, prices: Record<number, string>) {
       lastSoldAt: observedAt,
     });
   tree.marketQuotes.set(quotes);
-  tree.quoteObservedAt.set(new Map(itemIds.map((id) => [id, observedAt])));
+  tree.quoteObservedAt.set(new Map(Object.keys(prices).map((id) => [Number(id), observedAt])));
   tree.livePrices.set(new Map(Object.entries(prices).map(([id, price]) => [Number(id), price])));
   tree.store.update((workspace) => ({ ...workspace, familySilver: '1000000000000' }));
 }
@@ -892,18 +902,30 @@ describe('Interactive recipe tree', () => {
       inputs: [{ itemId: 9002, name: 'Açúcar', quantity: '1' }],
       outputs: [{ itemId: 1389, name: 'Elixir 1389', quantity: null }],
     };
+    const mocks = providers();
+    mocks.catalog.getItemRecipes.mockImplementation((itemId) => {
+      const recipes = itemId === 1399 ? [simpleRoot] : itemId === 1389 ? [intermediate] : [];
+      return of({
+        recipes,
+        total: recipes.length,
+        direction: 'produces',
+        dataset: {
+          version: 'dataset-v1',
+          region: 'sa',
+          locale: 'pt',
+          checksum: null,
+          itemCount: 0,
+          recipeCount: 0,
+          importedAt: '2026-10-16T00:00:00Z',
+        },
+      } as CatalogRecipesResponse);
+    });
     const fixture = await renderComponent(
       RecipeTree,
-      { recipe: simpleRoot, selectedItem: harmonyItem },
-      providers().list,
+      { recipe: simpleRoot, selectedItem: harmonyItem, datasetVersion: 'dataset-v1' },
+      mocks.list,
     );
-    fixture.componentInstance.recipeGraph.set({
-      rootRecipe: simpleRoot,
-      producerRecipes: [intermediate],
-      itemIds: [1399, 1389, 1391, 1393, 1395, 1397, 9002],
-      issues: [],
-      datasetVersion: 'dataset-v1',
-    });
+    fixture.componentInstance.consultAllTreePrices(true);
     fixture.detectChanges();
 
     expect(
@@ -917,16 +939,13 @@ describe('Interactive recipe tree', () => {
     expect(masteryInput).not.toBeNull();
     expect(masteryInput?.disabled).toBe(false);
 
-    vi.useFakeTimers();
     fixture.componentInstance.setMasteryForSkill('alchemy', 3000);
-    await vi.advanceTimersByTimeAsync(250);
     fixture.detectChanges();
     expect(
       fixture.componentInstance.productionInput()?.estimates['make-harmony-component']
         ?.expectedYield,
     ).toBe(3.438);
     fixture.destroy();
-    vi.useRealTimers();
   });
 
   it('offers a processing mastery override for a recipe with known materials', async () => {
@@ -2337,4 +2356,227 @@ describe('Interactive recipe tree', () => {
     expect(el.textContent).not.toContain('ESTOQUE ZERADO NO MERCADO');
     expect(el.textContent).not.toContain('Produzir é a única forma de obtenção imediata');
   });
+});
+
+it('recursive optimizer previews and applies root and intermediate formulas together', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 5301: '1000', 9001: '400', 8001: '1' });
+  const alternate: CatalogRecipe = {
+    ...recipe,
+    key: 'alternate-root',
+    outputs: [{ ...recipe.outputs[0], quantity: '10' }],
+  };
+  const nested: CatalogRecipe = {
+    key: 'alternate-salt',
+    type: 'HEAT',
+    station: null,
+    inputs: [{ itemId: 8001, name: 'Pedra', quantity: '1' }],
+    outputs: [{ itemId: 9001, name: 'Sal', quantity: '100' }],
+  };
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    rootAlternatives: [recipe, alternate],
+    producerRecipes: [nested],
+    producerAlternativesByItemId: new Map([[9001, [nested]]]),
+    itemIds: [5301, 9001, 8001],
+  }));
+  tree.setMethodTime('ALCHEMY', 10);
+  tree.setMethodTime('HEAT', 0.01);
+  fixture.detectChanges();
+  tree.optimizeAcquisition();
+  fixture.detectChanges();
+  expect(tree.root()?.recipe?.key).toBe(recipe.key);
+  expect(tree.previewPlan()?.recipeChoices).toEqual({
+    5301: 'alternate-root',
+    9001: 'alternate-salt',
+  });
+  expect(fixture.nativeElement.textContent).toContain('Ótimo certificado');
+  expect(fixture.nativeElement.querySelector('.preview-recipe-choice')?.textContent).toContain(
+    item.name,
+  );
+  tree.applyOptimizationPreview();
+  fixture.detectChanges();
+  expect(tree.root()?.recipe?.key).toBe('alternate-root');
+  expect(tree.root()?.children[0]?.recipe?.key).toBe('alternate-salt');
+  expect(tree.currentProductionPlan()?.recipeChoices?.[5301]).toBe('alternate-root');
+  expect(tree.materialSource(9001)).toBe('produce');
+  fixture.destroy();
+});
+
+it('recursive optimizer keeps a missing-data best found visibly uncertified and discard leaves formulas unchanged', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 5301: '1000', 9001: '10' });
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    rootAlternatives: [recipe],
+    producerAlternativesByItemId: new Map(),
+    issues: [{ itemId: 9001, code: 'incomplete-recipes' }],
+  }));
+  tree.optimizeAcquisition();
+  fixture.detectChanges();
+  expect(tree.previewPlan()).not.toBeNull();
+  expect(fixture.nativeElement.textContent).toContain('ótimo não certificado');
+  expect(fixture.nativeElement.textContent).toContain('Dados necessários ainda não confirmados');
+  tree.discardOptimizationPreview();
+  expect(tree.root()?.recipe?.key).toBe(recipe.key);
+  expect(tree.acquisitionStrategy()).toBe('buy_all');
+  fixture.destroy();
+});
+
+it('keeps fractional expected production, a single quantity name, and default time provenance', async () => {
+  const balenos = {
+    ...recipe,
+    type: 'COOK',
+    outputs: [{ itemId: 9601, name: 'Refeição de Balenos', quantity: '1' }],
+  };
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe: balenos, primaryHeading: true },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  tree.setCraftCount(100);
+  tree.recipeGraph.set({
+    rootRecipe: balenos,
+    producerRecipes: [],
+    itemIds: [9601, 9001],
+    issues: [],
+    datasetVersion: 'v1',
+  });
+  fixture.detectChanges();
+  expect(tree.formattedProducedQuantity()).toBe('276,7');
+  expect(tree.productionInput()?.estimates[balenos.key].source).toBe('default');
+  expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Balenos');
+  const input = fixture.nativeElement.querySelector('.craft-count-input');
+  expect(input.getAttribute('aria-label')).toBe('Quantia de receitas');
+  fixture.destroy();
+});
+
+it.each(['quotes', 'mastery', 'tax', 'operations', 'returns'] as const)(
+  'ignores late recursive worker results after %s changes',
+  async (changed) => {
+    const workers: {
+      onmessage?: (event: { data: { result: ReturnType<typeof planProduction> } }) => void;
+      terminate: ReturnType<typeof vi.fn>;
+    }[] = [];
+    let posted: ProductionPlannerInput | undefined;
+    vi.stubGlobal(
+      'Worker',
+      class {
+        onmessage?: (event: { data: { result: ReturnType<typeof planProduction> } }) => void;
+        terminate = vi.fn();
+        constructor() {
+          workers.push(this);
+        }
+        postMessage(input: ProductionPlannerInput) {
+          posted = input;
+        }
+      },
+    );
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '10' });
+    tree.recipeGraph.update((graph) => ({
+      ...graph!,
+      rootAlternatives: [recipe],
+      producerAlternativesByItemId: new Map(),
+    }));
+    tree.optimizeAcquisition();
+    expect(posted).toBeDefined();
+    if (changed === 'quotes')
+      tree.marketQuotes.update(
+        (quotes) =>
+          new Map(
+            [...quotes].map(([id, quote]) => [id, { ...quote, price: '999', maxPrice: '999' }]),
+          ),
+      );
+    if (changed === 'mastery') tree.setMasteryForSkill('alchemy', 2000);
+    if (changed === 'tax')
+      tree.store.update((workspace) => ({
+        ...workspace,
+        taxOptions: { ...workspace.taxOptions, valuePack: !workspace.taxOptions.valuePack },
+      }));
+    if (changed === 'operations') tree.setCraftCount(42);
+    if (changed === 'returns') tree.setReturnProductSale(5301, false);
+    workers[0].onmessage!({ data: { result: planProduction(posted!) } });
+    expect(tree.optimizationPreview()).toBeNull();
+    expect(workers[0].terminate).toHaveBeenCalled();
+    fixture.destroy();
+  },
+);
+
+it('explains limited optimization with recipe names and unique item-specific issues', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 5301: '1000', 9001: '10' });
+  const formulaHash = 'a'.repeat(64);
+  const catalogHash = 'b'.repeat(64);
+  const namedRecipe = { ...recipe, key: formulaHash };
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    rootRecipe: namedRecipe,
+    rootAlternatives: [namedRecipe],
+    producerAlternativesByItemId: new Map(),
+  }));
+  const base = planProduction(tree.productionInput()!);
+  const bestFound = {
+    ...base.ranked[0],
+    recipeId: formulaHash,
+    scenario: 'optimized' as const,
+    recipeChoices: { 5301: formulaHash },
+    sourceChoices: { 9001: 'buy' as const },
+  };
+  tree.optimizationPreview.set({
+    ...base,
+    optimization: {
+      best: null,
+      bestFound,
+      complete: false,
+      reason: 'state-limit',
+      rootRecipesTotal: 2,
+      rootRecipesEvaluated: 1,
+      recursiveRecipesEvaluated: 3,
+      statesVisited: 10000,
+      statesPruned: 0,
+      catalogVersion: catalogHash,
+      incompleteAlternatives: Array.from({ length: 13 }, () => ({
+        itemId: 5301,
+        recipeId: formulaHash,
+        issues: [
+          { itemId: 9001, code: 'missing-quote' as const, message: 'Informe o preço unitário.' },
+        ],
+      })),
+    },
+  });
+  fixture.detectChanges();
+  const preview = fixture.nativeElement.querySelector('.optimization-preview') as HTMLElement;
+  expect(preview.textContent).toContain('Limite de busca atingido');
+  expect(preview.textContent).toContain(item.name);
+  expect(preview.textContent).not.toContain(formulaHash);
+  expect(preview.textContent).not.toContain(catalogHash);
+  expect(preview.textContent).not.toContain('state-limit');
+  const issues = preview.querySelectorAll('.preview-data-issue');
+  expect(issues).toHaveLength(1);
+  expect(issues[0].textContent).toContain('Sal');
+  expect(issues[0].textContent).toContain('Informe o preço unitário.');
+  expect(preview.querySelector('.preview-coverage')?.textContent).toContain('10000');
+  fixture.destroy();
 });

@@ -204,13 +204,18 @@ export const inventorySchema = z.object({
   target: countSchema,
   price: moneySchema,
 });
-export const productionSchema = z.object({
-  recipeId: z.string().min(1).max(64),
-  quantity: positiveCount.max(1_000_000),
-  rootCrafts: positiveCount.max(1_000_000).optional(),
-  recipes: z.array(recipeSchema).min(1).max(100),
-  inventory: z.array(inventorySchema).max(4000),
-});
+export const productionSchema = z
+  .object({
+    recipeId: z.string().min(1).max(64),
+    quantity: z.number().positive().max(1_000_000),
+    rootCrafts: positiveCount.max(1_000_000).optional(),
+    recipes: z.array(recipeSchema).min(1).max(100),
+    inventory: z.array(inventorySchema).max(4000),
+  })
+  .refine((input) => input.rootCrafts !== undefined || Number.isSafeInteger(input.quantity), {
+    path: ['quantity'],
+    message: 'Quantidade deve ser inteira quando não há operações explícitas.',
+  });
 export type MarketInput = z.infer<typeof marketSchema>;
 export type CraftingInput = z.infer<typeof craftingSchema>;
 export type EnhancementInput = z.infer<typeof enhancementSchema>;
