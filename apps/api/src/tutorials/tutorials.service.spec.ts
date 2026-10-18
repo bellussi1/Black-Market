@@ -110,7 +110,7 @@ describe('TutorialsService', () => {
     expect(result.guide).toMatchObject({
       screenKey: 'recipe-workshop',
       locale: 'pt-BR',
-      updatedAt: '2026-10-16T00:00:00.000Z',
+      updatedAt: '2026-10-18T00:00:00.000Z',
       steps: [
         {
           sortOrder: 0,
@@ -137,7 +137,7 @@ describe('TutorialsService', () => {
     expect(guides).toHaveLength(0);
   });
 
-  it('uses an enabled database guide instead of the versioned fallback', async () => {
+  it('prefers an active database guide over the versioned fallback', async () => {
     guides = [
       {
         id: '00000000-0000-4000-8000-000000000001',
@@ -163,7 +163,7 @@ describe('TutorialsService', () => {
     });
   });
 
-  it('keeps an explicitly disabled database guide disabled', async () => {
+  it('suppresses fallback for an explicitly disabled database guide', async () => {
     await expect(service.getPublished('recipe-workshop', 'en-US')).resolves.toEqual({
       guide: null,
     });
@@ -194,6 +194,21 @@ describe('TutorialsService', () => {
     await expect(service.getPublished('unknown', 'pt-BR')).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('serves a versioned pt-BR fallback for each registered surface', async () => {
+    for (const { screenKey } of TUTORIAL_SCREEN_REGISTRY) {
+      const result = await service.getPublished(screenKey, 'pt-BR');
+      expect(result.guide?.screenKey).toBe(screenKey);
+      expect(result.guide?.steps.length).toBeGreaterThanOrEqual(2);
+      expect(result.guide?.steps.length).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('does not write during a public guide read', async () => {
+    await service.getPublished('home', 'pt-BR');
+    expect(guides).toEqual([]);
+    expect(steps).toEqual([]);
   });
 
   it('lists registered screens and locales including disabled guides', async () => {
