@@ -122,6 +122,112 @@ describe('Reviewed stock management', () => {
       filters!.compareDocumentPosition(items!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+  it('opens the detailed list by default with explicit quantity and destination labels', async () => {
+    const fixture = await renderComponent(StockPage);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'velia-rope',
+          itemId: 212,
+          name: 'Corda',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 5,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.stock-items')?.classList.contains('list')).toBe(true);
+    expect(
+      element.querySelector('[aria-label="Visualização dos itens"] [aria-pressed="true"]')
+        ?.textContent,
+    ).toContain('Lista');
+    const row = element.querySelector('.stock-item');
+    expect(row?.textContent).toContain('Quantidade: 5');
+    expect(row?.textContent).toContain('Cidade ou armazém: Velia');
+  });
+
+  it('keeps an edited item editor inside its selected item row', async () => {
+    const fixture = await renderComponent(StockPage);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'velia-rope',
+          itemId: 212,
+          name: 'Corda',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 5,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('[aria-label="Editar Corda"]')!
+      .click();
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.stock-item [data-stock-editor]')).not.toBeNull();
+    expect(element.querySelector('.panel > [data-stock-editor]')).toBeNull();
+  });
+
+  it('confirms removal inline, allows cancellation, and keeps undo available after removal', async () => {
+    const fixture = await renderComponent(StockPage);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      inventory: [
+        {
+          id: 'velia-rope',
+          itemId: 212,
+          name: 'Corda',
+          region: 'sa',
+          location: 'Velia',
+          quantity: 5,
+          target: 0,
+          price: '0',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+
+    element.querySelector<HTMLButtonElement>('[aria-label="Remover Corda"]')!.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.stock-item')?.textContent).toContain('Corda');
+    expect(element.querySelector('[data-stock-removal-confirmation]')?.textContent).toContain(
+      'Remover Corda de Velia?',
+    );
+
+    element.querySelector<HTMLButtonElement>('[data-stock-removal-cancel]')!.click();
+    fixture.detectChanges();
+    expect(page.stock()).toHaveLength(1);
+    expect(element.querySelector('[data-stock-removal-confirmation]')).toBeNull();
+
+    element.querySelector<HTMLButtonElement>('[aria-label="Remover Corda"]')!.click();
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('[data-stock-removal-confirm]')!.click();
+    fixture.detectChanges();
+    expect(page.stock()).toHaveLength(0);
+    expect(element.querySelector('[data-stock-undo]')).not.toBeNull();
+
+    element.querySelector<HTMLButtonElement>('[data-stock-undo]')!.click();
+    fixture.detectChanges();
+    expect(page.stock()).toHaveLength(1);
+    expect(page.stock()[0].quantity).toBe(5);
+  });
   it('switches storage and character inventories in the same page without moving an open edit', async () => {
     const params = new BehaviorSubject(convertToParamMap({}));
     const fixture = await renderComponent(StockPage, {}, [
@@ -253,6 +359,8 @@ describe('Reviewed stock management', () => {
     expect(page.message()).toContain('já está');
     expect(page.stock()).toHaveLength(1);
     page.remove(page.stock()[0]);
+    expect(page.stock()).toHaveLength(1);
+    page.confirmRemove();
     expect(page.stock()).toHaveLength(0);
     page.undoRemove();
     expect(page.stock()[0].quantity).toBe(49);

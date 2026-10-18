@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,6 +29,7 @@ type Stock = Workspace['inventory'][number];
   selector: 'app-stock-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    NgTemplateOutlet,
     TutorialSurfaceDirective,
     HlmInput,
     HlmCard,
@@ -52,7 +54,7 @@ export class StockPage {
   );
   readonly search = signal('');
   readonly destination = signal('');
-  readonly view = signal<'grid' | 'list'>('grid');
+  readonly view = signal<'grid' | 'list'>('list');
   readonly page = signal(0);
   readonly message = signal('');
   readonly loadingItems = signal(false);
@@ -110,6 +112,7 @@ export class StockPage {
   readonly nextPage = (page: number) => page + 1;
   draft: Stock | null = null;
   removed: Stock | null = null;
+  pendingRemoval: Stock | null = null;
   private catalogRegion = '';
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
@@ -117,6 +120,7 @@ export class StockPage {
       if (kind !== this.kind()) {
         this.kind.set(kind);
         this.destination.set('');
+        this.pendingRemoval = null;
         this.resetPage();
       }
     });
@@ -155,12 +159,14 @@ export class StockPage {
     });
   }
   selectKind(kind: 'storage' | 'inventory') {
+    this.pendingRemoval = null;
     void this.router.navigate(['/storage'], {
       queryParams: { tab: kind },
       queryParamsHandling: 'merge',
     });
   }
   newItem() {
+    this.pendingRemoval = null;
     this.draft = {
       id: crypto.randomUUID(),
       region: this.store.data().region,
@@ -177,9 +183,19 @@ export class StockPage {
     };
   }
   edit(row: Stock) {
+    this.pendingRemoval = null;
     this.draft = structuredClone(row);
   }
   remove(row: Stock) {
+    this.pendingRemoval = structuredClone(row);
+    this.message.set('');
+  }
+  cancelRemove() {
+    this.pendingRemoval = null;
+  }
+  confirmRemove() {
+    const row = this.pendingRemoval;
+    if (!row) return;
     if (
       this.store.update((state) => ({
         ...state,
@@ -187,6 +203,8 @@ export class StockPage {
       }))
     ) {
       this.removed = structuredClone(row);
+      this.pendingRemoval = null;
+      if (this.draft?.id === row.id) this.draft = null;
       this.message.set('Item removido. Você pode desfazer nesta página.');
     } else
       this.message.set(
@@ -289,7 +307,30 @@ export class StockPage {
       );
   }
   resetPage() {
+    this.pendingRemoval = null;
     this.page.set(0);
+  }
+  setSearch(value: string) {
+    this.search.set(value);
+    this.resetPage();
+  }
+  setDestination(value: string) {
+    this.destination.set(value);
+    this.resetPage();
+  }
+  goToPreviousPage() {
+    this.pendingRemoval = null;
+    this.page.update(this.previousPage);
+  }
+  goToNextPage() {
+    this.pendingRemoval = null;
+    this.page.update(this.nextPage);
+  }
+  draftIsVisible() {
+    return !!this.draft && this.visibleRows().some((row) => row.id === this.draft?.id);
+  }
+  draftIsExisting() {
+    return !!this.draft && this.store.data().inventory.some((row) => row.id === this.draft?.id);
   }
   date(value?: string) {
     return value ? new Date(value).toLocaleString('pt-BR') : 'Ainda sem data registrada';

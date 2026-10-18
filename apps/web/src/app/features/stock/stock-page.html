@@ -52,20 +52,28 @@
       <h2 i18n>Itens cadastrados</h2>
       <span class="badge" i18n>{{ rows().length }} registros</span>
     </div>
+    @if (removed) {
+      <div class="stock-undo" role="status">
+        @if ((removed.kind ?? 'storage') === 'storage') {
+          <span i18n>{{ removed.name }} foi removido do armazém.</span>
+        } @else {
+          <span i18n>{{ removed.name }} foi removido do inventário.</span>
+        }
+        <button hlmBtn variant="outline" type="button" data-stock-undo (click)="undoRemove()" i18n>
+          Desfazer
+        </button>
+      </div>
+    }
     <div class="form-grid">
       <label i18n
         >Pesquisar item<input
           hlmInput
           type="search"
           [ngModel]="search()"
-          (ngModelChange)="search.set($event); resetPage()" /></label
+          (ngModelChange)="setSearch($event)" /></label
       ><label [attr.data-tour]="kind() === 'inventory' ? 'stock-inventory.location' : null"
         >{{ kind() === 'storage' ? 'Cidade ou armazém' : 'Personagem'
-        }}<select
-          appBdoSelect
-          [ngModel]="destination()"
-          (ngModelChange)="destination.set($event); resetPage()"
-        >
+        }}<select appBdoSelect [ngModel]="destination()" (ngModelChange)="setDestination($event)">
           <option value="" i18n>Todos</option>
           @if (kind() === 'storage') {
             @for (location of locations(); track location) {
@@ -117,6 +125,9 @@
     >
       {{ loadingItems() ? 'Carregando imagens do catálogo…' : '' }}
     </p>
+    @if (draft && !draftIsVisible()) {
+      <ng-container [ngTemplateOutlet]="stockEditor" />
+    }
     <div
       class="stock-items"
       data-stock-items
@@ -125,7 +136,7 @@
       [attr.aria-busy]="loadingItems() ? 'true' : null"
     >
       @for (row of visibleRows(); track row.id) {
-        <article class="stock-item">
+        <article class="stock-item" [attr.data-stock-item]="row.id">
           <div class="stock-item-icon-slot">
             <app-item-icon
               [url]="catalog.resolveIconUrl(items().get(row.itemId ?? 0) ?? {})"
@@ -143,15 +154,18 @@
               aria-hidden="true"
             ></span>
           </div>
-          <div>
+          <div class="stock-item-details">
             <ng-container>
               @if (row.itemId) {
                 <a [routerLink]="['/market/items', row.itemId]">{{ row.name }}</a>
               } @else {
                 <span>{{ row.name }}</span>
               }</ng-container
-            ><strong>{{ row.quantity.toLocaleString('pt-BR') }}</strong
-            ><small>{{ row.location }} · #{{ row.itemId ?? 'não vinculado' }}</small
+            ><strong i18n>Quantidade: {{ row.quantity.toLocaleString('pt-BR') }}</strong
+            ><small
+              >{{ (row.kind ?? 'storage') === 'storage' ? 'Cidade ou armazém:' : 'Personagem:' }}
+              {{ row.location }}</small
+            ><small i18n>ID do item: #{{ row.itemId ?? 'não vinculado' }}</small
             ><small i18n>Atualização: {{ date(row.updatedAt) }}</small>
           </div>
           <div class="stock-actions">
@@ -180,6 +194,40 @@
               Remover
             </button>
           </div>
+          @if (pendingRemoval?.id === row.id) {
+            <div class="stock-confirmation" data-stock-removal-confirmation role="group">
+              <div>
+                <strong i18n>Remover {{ row.name }} de {{ row.location }}?</strong>
+                <small i18n>Você poderá desfazer essa ação logo depois.</small>
+              </div>
+              <div class="stock-confirmation-actions">
+                <button
+                  hlmBtn
+                  variant="outline"
+                  type="button"
+                  data-stock-removal-cancel
+                  (click)="cancelRemove()"
+                  i18n
+                >
+                  Manter item
+                </button>
+                <button
+                  hlmBtn
+                  variant="outline"
+                  class="btn danger"
+                  type="button"
+                  data-stock-removal-confirm
+                  (click)="confirmRemove()"
+                  i18n
+                >
+                  Confirmar remoção
+                </button>
+              </div>
+            </div>
+          }
+          @if (draft?.id === row.id) {
+            <ng-container [ngTemplateOutlet]="stockEditor" />
+          }
         </article>
       } @empty {
         <div class="stock-empty empty-workspace">
@@ -200,19 +248,13 @@
       }
     </div>
     <nav class="action-row pagination-bar" aria-label="Páginas dos itens" i18n-aria-label>
-      <button
-        hlmBtn
-        variant="outline"
-        (click)="page.update(previousPage)"
-        [disabled]="page() === 0"
-        i18n
-      >
+      <button hlmBtn variant="outline" (click)="goToPreviousPage()" [disabled]="page() === 0" i18n>
         Anterior</button
       ><span i18n>Página {{ page() + 1 }}</span
       ><button
         hlmBtn
         variant="outline"
-        (click)="page.update(nextPage)"
+        (click)="goToNextPage()"
         [disabled]="(page() + 1) * 48 >= rows().length"
         i18n
       >
@@ -220,55 +262,70 @@
       </button>
     </nav>
   </section>
-  @if (draft) {
-    <section hlmCard class="panel">
-      <h2>
-        {{
-          (draft.kind ?? 'storage') === 'storage'
-            ? 'Editar item do armazém'
-            : 'Editar item do inventário'
-        }}
-      </h2>
-      <app-catalog-item-picker
-        label="Item"
-        [selectionName]="draft.name"
-        (selected)="choose($event)"
-      />
-      @if ((draft.kind ?? 'storage') === 'storage') {
+  <ng-template #stockEditor>
+    @if (draft) {
+      <section hlmCard class="stock-editor" data-stock-editor>
+        <h2>
+          @if (draftIsExisting()) {
+            {{
+              (draft.kind ?? 'storage') === 'storage'
+                ? 'Editar item do armazém'
+                : 'Editar item do inventário'
+            }}
+          } @else {
+            {{
+              (draft.kind ?? 'storage') === 'storage'
+                ? 'Adicionar item ao armazém'
+                : 'Adicionar item ao inventário'
+            }}
+          }
+        </h2>
+        <app-catalog-item-picker
+          label="Item"
+          [selectionName]="draft.name"
+          (selected)="choose($event)"
+        />
+        @if ((draft.kind ?? 'storage') === 'storage') {
+          <label i18n
+            >Cidade ou armazém<input hlmInput [(ngModel)]="draft.location" maxlength="120"
+          /></label>
+        } @else {
+          <label
+            ><span i18n>Personagem</span
+            ><select appBdoSelect [(ngModel)]="draft.characterId">
+              <option value="" i18n>Selecione</option>
+              @for (profile of profiles(); track profile.id) {
+                <option [value]="profile.id">{{ profile.name }}</option>
+              }
+            </select></label
+          ><a routerLink="/family" [queryParams]="{ tab: 'character' }" i18n
+            >Cadastrar personagem</a
+          >
+        }
         <label i18n
-          >Cidade ou armazém<input hlmInput [(ngModel)]="draft.location" maxlength="120"
+          >Quantidade exata<input
+            hlmInput
+            type="number"
+            min="0"
+            max="1000000000"
+            step="1"
+            [(ngModel)]="draft.quantity"
         /></label>
-      } @else {
-        <label
-          ><span i18n>Personagem</span
-          ><select appBdoSelect [(ngModel)]="draft.characterId">
-            <option value="" i18n>Selecione</option>
-            @for (profile of profiles(); track profile.id) {
-              <option [value]="profile.id">{{ profile.name }}</option>
-            }
-          </select></label
-        ><a routerLink="/family" [queryParams]="{ tab: 'character' }" i18n>Cadastrar personagem</a>
-      }
-      <label i18n
-        >Quantidade exata<input
-          hlmInput
-          type="number"
-          min="0"
-          max="1000000000"
-          step="1"
-          [(ngModel)]="draft.quantity"
-      /></label>
-      <div class="action-row">
-        <button hlmBtn variant="outline" class="btn" (click)="save()" i18n>Salvar alteração</button
-        ><button hlmBtn variant="outline" (click)="draft = null" i18n>Cancelar</button>
-      </div>
-    </section>
-  }
-  @if (removed) {
-    <button hlmBtn variant="outline" type="button" (click)="undoRemove()" i18n>
-      Desfazer remoção de {{ removed.name }}
-    </button>
-  }
+        <div class="action-row">
+          <button hlmBtn variant="outline" class="btn" (click)="save()" i18n>
+            {{
+              draftIsExisting()
+                ? 'Salvar alteração'
+                : (draft.kind ?? 'storage') === 'storage'
+                  ? 'Adicionar ao armazém'
+                  : 'Adicionar ao inventário'
+            }}
+          </button>
+          <button hlmBtn variant="outline" (click)="draft = null" i18n>Cancelar</button>
+        </div>
+      </section>
+    }
+  </ng-template>
   @if (message()) {
     <p class="status-message" role="status">{{ message() }}</p>
   }
