@@ -1,0 +1,522 @@
+{
+  "date": "2026-10-16",
+  "branch": "codex/audit-remediation",
+  "base": "81cea47415b82d22587e0a96f9920062c39b46ab",
+  "environment": {
+    "web": "http://localhost:4200",
+    "node": "24.21.0",
+    "unitTestWorkers": 4,
+    "desktop": [1440, 900],
+    "mobile": [390, 844],
+    "realSocialSession": false
+  },
+  "tests": {
+    "calculators": 77,
+    "api": 248,
+    "web": 706,
+    "scripts": 78,
+    "totalPassed": 1109,
+    "skipped": 1,
+    "skipReason": "PostgreSQL descartável"
+  },
+  "home": {
+    "home": [
+      {
+        "cls": 0.003491609144694094,
+        "shifts": [
+          {
+            "value": 0.003491609144694094,
+            "sources": [
+              {
+                "tag": "DIV",
+                "cls": "topbar-tools",
+                "previous": {
+                  "x": 839.890625,
+                  "y": 13.5,
+                  "width": 549.109375,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 839.890625
+                },
+                "current": {
+                  "x": 898.734375,
+                  "y": 13.5,
+                  "width": 490.265625,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 898.734375
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 135,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 135,
+                  "right": 798.75,
+                  "bottom": 178,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 138,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 138,
+                  "right": 784.96875,
+                  "bottom": 181,
+                  "left": 284
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 178.1875,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 178.1875,
+                  "right": 798.75,
+                  "bottom": 221.1875,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 181.1875,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 181.1875,
+                  "right": 784.96875,
+                  "bottom": 224.1875,
+                  "left": 284
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "",
+                "previous": {
+                  "x": 16,
+                  "y": 708.28125,
+                  "width": 200,
+                  "height": 46,
+                  "top": 708.28125,
+                  "right": 216,
+                  "bottom": 754.28125,
+                  "left": 16
+                },
+                "current": {
+                  "x": 16,
+                  "y": 698.5,
+                  "width": 200,
+                  "height": 46,
+                  "top": 698.5,
+                  "right": 216,
+                  "bottom": 744.5,
+                  "left": 16
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "btn subtle home-roadmap-link",
+                "previous": {
+                  "x": 1188.765625,
+                  "y": 117,
+                  "width": 179.234375,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1188.765625
+                },
+                "current": {
+                  "x": 1211.734375,
+                  "y": 117,
+                  "width": 156.265625,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1211.734375
+                }
+              }
+            ]
+          }
+        ],
+        "warning": false,
+        "headings": ["Menos preparação.Mais possibilidades."],
+        "mainY": 72
+      },
+      {
+        "cls": 0.003491609144694094,
+        "shifts": [
+          {
+            "value": 0.003491609144694094,
+            "sources": [
+              {
+                "tag": "DIV",
+                "cls": "topbar-tools",
+                "previous": {
+                  "x": 839.890625,
+                  "y": 13.5,
+                  "width": 549.109375,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 839.890625
+                },
+                "current": {
+                  "x": 898.734375,
+                  "y": 13.5,
+                  "width": 490.265625,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 898.734375
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 135,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 135,
+                  "right": 798.75,
+                  "bottom": 178,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 138,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 138,
+                  "right": 784.96875,
+                  "bottom": 181,
+                  "left": 284
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 178.1875,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 178.1875,
+                  "right": 798.75,
+                  "bottom": 221.1875,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 181.1875,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 181.1875,
+                  "right": 784.96875,
+                  "bottom": 224.1875,
+                  "left": 284
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "",
+                "previous": {
+                  "x": 16,
+                  "y": 708.28125,
+                  "width": 200,
+                  "height": 46,
+                  "top": 708.28125,
+                  "right": 216,
+                  "bottom": 754.28125,
+                  "left": 16
+                },
+                "current": {
+                  "x": 16,
+                  "y": 698.5,
+                  "width": 200,
+                  "height": 46,
+                  "top": 698.5,
+                  "right": 216,
+                  "bottom": 744.5,
+                  "left": 16
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "btn subtle home-roadmap-link",
+                "previous": {
+                  "x": 1188.765625,
+                  "y": 117,
+                  "width": 179.234375,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1188.765625
+                },
+                "current": {
+                  "x": 1211.734375,
+                  "y": 117,
+                  "width": 156.265625,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1211.734375
+                }
+              }
+            ]
+          }
+        ],
+        "warning": false,
+        "headings": ["Menos preparação.Mais possibilidades."],
+        "mainY": 72
+      },
+      {
+        "cls": 0.003491609144694094,
+        "shifts": [
+          {
+            "value": 0.003491609144694094,
+            "sources": [
+              {
+                "tag": "DIV",
+                "cls": "topbar-tools",
+                "previous": {
+                  "x": 839.890625,
+                  "y": 13.5,
+                  "width": 549.109375,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 839.890625
+                },
+                "current": {
+                  "x": 898.734375,
+                  "y": 13.5,
+                  "width": 490.265625,
+                  "height": 44,
+                  "top": 13.5,
+                  "right": 1389,
+                  "bottom": 57.5,
+                  "left": 898.734375
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 135,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 135,
+                  "right": 798.75,
+                  "bottom": 178,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 138,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 138,
+                  "right": 784.96875,
+                  "bottom": 181,
+                  "left": 284
+                }
+              },
+              {
+                "previous": {
+                  "x": 284,
+                  "y": 178.1875,
+                  "width": 514.75,
+                  "height": 43,
+                  "top": 178.1875,
+                  "right": 798.75,
+                  "bottom": 221.1875,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 181.1875,
+                  "width": 500.96875,
+                  "height": 43,
+                  "top": 181.1875,
+                  "right": 784.96875,
+                  "bottom": 224.1875,
+                  "left": 284
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "",
+                "previous": {
+                  "x": 16,
+                  "y": 708.28125,
+                  "width": 200,
+                  "height": 46,
+                  "top": 708.28125,
+                  "right": 216,
+                  "bottom": 754.28125,
+                  "left": 16
+                },
+                "current": {
+                  "x": 16,
+                  "y": 698.5,
+                  "width": 200,
+                  "height": 46,
+                  "top": 698.5,
+                  "right": 216,
+                  "bottom": 744.5,
+                  "left": 16
+                }
+              },
+              {
+                "tag": "A",
+                "cls": "btn subtle home-roadmap-link",
+                "previous": {
+                  "x": 1188.765625,
+                  "y": 117,
+                  "width": 179.234375,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1188.765625
+                },
+                "current": {
+                  "x": 1211.734375,
+                  "y": 117,
+                  "width": 156.265625,
+                  "height": 44,
+                  "top": 117,
+                  "right": 1368,
+                  "bottom": 161,
+                  "left": 1211.734375
+                }
+              }
+            ]
+          }
+        ],
+        "warning": false,
+        "headings": ["Menos preparação.Mais possibilidades."],
+        "mainY": 72
+      }
+    ],
+    "desktop": {
+      "x": 450,
+      "y": 292,
+      "width": 540,
+      "height": 316
+    },
+    "mobile": {
+      "x": 19,
+      "y": 212,
+      "width": 352,
+      "height": 420,
+      "overflow": false
+    }
+  },
+  "backup": {
+    "modal": false,
+    "warning": true,
+    "raw": "{corrupt-audit-fixture",
+    "download": "black-market-backup.json"
+  },
+  "pagination": {
+    "before": {
+      "scrollY": 0,
+      "pagerY": 577.328125,
+      "gridY": 663.328125,
+      "panel": [
+        {
+          "c": "panel search-panel",
+          "y": 231.53125,
+          "h": 169.796875
+        },
+        {
+          "c": "recipe-browser panel",
+          "y": 417.328125,
+          "h": 1354.171875
+        }
+      ],
+      "head": "RECEITAS & ORIGENS\n\nExplorar receitas e origens\n\nDo produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e aproveite o que já está no seu armazém.\n\nPesquisar item\nEscolha o produto que deseja explorar\nQual item você quer explorar?\nCategoria\nTodas\n\nBusque produtos e materiais de culinária, alquimia, processamento e entrega imperial.\n\nCATÁLOGO DE RECEITAS\n\nComece por uma receita\n\nExplore receitas por profissão. Abra um produto para conferir suas origens e calcular lote, custos e materiais na mesma oficina.\n\n7016 receitas\nAtividade\nTodas as profissões\nCulinária\nAlquimia\nProcessamento\nEntrega imperial\nAnterior\n"
+    },
+    "after": {
+      "scrollY": 0,
+      "pagerY": 577.328125,
+      "gridY": 663.328125,
+      "panel": [
+        {
+          "c": "panel search-panel",
+          "y": 231.53125,
+          "h": 169.796875
+        },
+        {
+          "c": "recipe-browser panel",
+          "y": 417.328125,
+          "h": 1354.171875
+        }
+      ],
+      "head": "RECEITAS & ORIGENS\n\nExplorar receitas e origens\n\nDo produto final à matéria-prima. Explore uma etapa de cada vez, encontre fontes conhecidas e aproveite o que já está no seu armazém.\n\nPesquisar item\nEscolha o produto que deseja explorar\nQual item você quer explorar?\nCategoria\nTodas\n\nBusque produtos e materiais de culinária, alquimia, processamento e entrega imperial.\n\nCATÁLOGO DE RECEITAS\n\nComece por uma receita\n\nExplore receitas por profissão. Abra um produto para conferir suas origens e calcular lote, custos e materiais na mesma oficina.\n\n7016 receitas\nAtividade\nTodas as profissões\nCulinária\nAlquimia\nProcessamento\nEntrega imperial\nAnterior\n"
+    }
+  },
+  "optimizer": {
+    "dialog": "Nenhum plano econômico completo encontrado\n\nLimite de busca atingido.\n\nVer alcance da comparação\nCroquete de Carne: Informe o preço unitário.\nFilé de Peixe Defumado: Informe o preço unitário.\nLegumes Refogados: Informe o preço unitário.\nRepolho: Informe o preço unitário.\nPimenta: Informe o preço unitário.\nGarrafa com Água do Mar: Informe o preço unitário.\nGobião: Informe o preço unitário.\nQueijo: Informe o preço unitário.\nLeite: Informe o preço unitário.\nMassa de Trigo: Informe o preço unitário.\nSalsicha Grelhada: Informe o preço unitário.\nCebola: Informe o preço unitário.\nPimenta-do-Reino: Informe o preço unitário.\nFechar prévia",
+    "apply": false,
+    "h1": "Refeição de Balenos",
+    "batch": "100",
+    "closed": true,
+    "login": {
+      "route": "/recipes/items/9601",
+      "locked": "hidden",
+      "open": true
+    },
+    "focusEscaped": false,
+    "reopened": true
+  },
+  "recoveredFixtureExact": true,
+  "bundle": {
+    "auditInitialKB": 553.57,
+    "beforeLazyKB": 565.31,
+    "afterLazyKB": 538.26,
+    "estimatedTransferKB": 145.1,
+    "warningBudgetKB": 500,
+    "status": "partial",
+    "finalInitialKB": 538.21,
+    "finalEstimatedTransferKB": 145.31
+  },
+  "independentReview": {
+    "oracleGraphs": 300,
+    "verifiedVariantCoverageRegression": "fixed-and-rechecked",
+    "otherMaterialFindings": 0
+  },
+  "pending": [
+    "AUD-13: sessão social/sync reais",
+    "AUD-14: corpus OCR independente",
+    "AUD-15: demanda/patch com fonte adequada",
+    "AUD-16: bundle acima de 500kB"
+  ],
+  "limits": [
+    "Amostra local de layout; não é métrica de campo.",
+    "Diálogo nativo permite foco do chrome do navegador; nenhum controle da página de fundo recebeu foco nos ciclos observados.",
+    "Imagem staging não contém esta implementação."
+  ],
+  "gates": {
+    "check": "passed",
+    "serialMonorepoBuild": "passed",
+    "ssrSmoke": "passed",
+    "legalSourceContracts": "passed",
+    "databaseMigrationCheck": "passed",
+    "socialAuthConfigLocal": "passed",
+    "socialAuthConfigStaging": "passed",
+    "i18nMessages": 1539,
+    "developmentServerHTTP": 200
+  }
+}

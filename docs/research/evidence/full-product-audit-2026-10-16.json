@@ -1,0 +1,1775 @@
+{
+  "date": "2026-10-16",
+  "timezone": "America/Sao_Paulo",
+  "branch": "main",
+  "head": "81cea47",
+  "method": "Sessão Playwright isolada, visitante; navegação/GET e casos de cálculo locais, sem seed nem sessão real.",
+  "inventory": [
+    {
+      "path": "docs/ACTIVE_CONTEXT.md",
+      "bytes": 350811
+    },
+    {
+      "path": "docs/advertising-layout.md",
+      "bytes": 1099
+    },
+    {
+      "path": "docs/analytics.md",
+      "bytes": 15463
+    },
+    {
+      "path": "docs/angular-architecture.md",
+      "bytes": 5188
+    },
+    {
+      "path": "docs/ANTIGRAVITY_CONTINUATION_PROMPT.md",
+      "bytes": 21097
+    },
+    {
+      "path": "docs/ANTIGRAVITY_HANDOFF.md",
+      "bytes": 43718
+    },
+    {
+      "path": "docs/api.md",
+      "bytes": 6881
+    },
+    {
+      "path": "docs/architecture.md",
+      "bytes": 10628
+    },
+    {
+      "path": "docs/backup-recovery.md",
+      "bytes": 5343
+    },
+    {
+      "path": "docs/bdo-ui-validation.md",
+      "bytes": 3477
+    },
+    {
+      "path": "docs/calculators.md",
+      "bytes": 5613
+    },
+    {
+      "path": "docs/catalog-consumption.md",
+      "bytes": 3539
+    },
+    {
+      "path": "docs/catalog-updates.md",
+      "bytes": 5341
+    },
+    {
+      "path": "docs/changed-files.md",
+      "bytes": 14762
+    },
+    {
+      "path": "docs/code-quality.md",
+      "bytes": 3884
+    },
+    {
+      "path": "docs/crafting-equivalences-and-totals.md",
+      "bytes": 3589
+    },
+    {
+      "path": "docs/crafting-expansion-qa.md",
+      "bytes": 2390
+    },
+    {
+      "path": "docs/data-pipeline.md",
+      "bytes": 15391
+    },
+    {
+      "path": "docs/database.md",
+      "bytes": 5818
+    },
+    {
+      "path": "docs/deployment.md",
+      "bytes": 1321
+    },
+    {
+      "path": "docs/design-system/bdo-ui.md",
+      "bytes": 1627
+    },
+    {
+      "path": "docs/development.md",
+      "bytes": 5062
+    },
+    {
+      "path": "docs/discovery-and-crawlers.md",
+      "bytes": 814
+    },
+    {
+      "path": "docs/edania-recipe-correction.md",
+      "bytes": 5839
+    },
+    {
+      "path": "docs/extracted-data-inventory.md",
+      "bytes": 15074
+    },
+    {
+      "path": "docs/feature-coverage.md",
+      "bytes": 15619
+    },
+    {
+      "path": "docs/implementation-queue.md",
+      "bytes": 12757
+    },
+    {
+      "path": "docs/implementation-status.md",
+      "bytes": 4186
+    },
+    {
+      "path": "docs/legal-pages.md",
+      "bytes": 7054
+    },
+    {
+      "path": "docs/local-extraction.md",
+      "bytes": 7611
+    },
+    {
+      "path": "docs/market-item-review-2026-10-11.md",
+      "bytes": 3469
+    },
+    {
+      "path": "docs/market-life-skills.md",
+      "bytes": 8398
+    },
+    {
+      "path": "docs/modernization/architecture-audit.md",
+      "bytes": 872
+    },
+    {
+      "path": "docs/modernization/dependency-audit.md",
+      "bytes": 1073
+    },
+    {
+      "path": "docs/modernization/migration-plan.md",
+      "bytes": 1134
+    },
+    {
+      "path": "docs/modernization/pages-migration.md",
+      "bytes": 1866
+    },
+    {
+      "path": "docs/modernization/progress.md",
+      "bytes": 2040
+    },
+    {
+      "path": "docs/modernization/ui-inventory.md",
+      "bytes": 813
+    },
+    {
+      "path": "docs/observability.md",
+      "bytes": 12291
+    },
+    {
+      "path": "docs/ocr-validation.md",
+      "bytes": 21333
+    },
+    {
+      "path": "docs/print-import-tutorial.md",
+      "bytes": 6152
+    },
+    {
+      "path": "docs/privacy-inventory.md",
+      "bytes": 21501
+    },
+    {
+      "path": "docs/product-redesign.md",
+      "bytes": 13406
+    },
+    {
+      "path": "docs/product-research.md",
+      "bytes": 15171
+    },
+    {
+      "path": "docs/product-vision.md",
+      "bytes": 13991
+    },
+    {
+      "path": "docs/production-and-accounts.md",
+      "bytes": 7973
+    },
+    {
+      "path": "docs/production-audit.md",
+      "bytes": 44611
+    },
+    {
+      "path": "docs/production-browser-qa.md",
+      "bytes": 8472
+    },
+    {
+      "path": "docs/project-feature-checklist.md",
+      "bytes": 88531
+    },
+    {
+      "path": "docs/recipe-catalog-update.md",
+      "bytes": 5851
+    },
+    {
+      "path": "docs/recipe-counts.md",
+      "bytes": 3544
+    },
+    {
+      "path": "docs/recipe-explorer.md",
+      "bytes": 13586
+    },
+    {
+      "path": "docs/recipe-review-2026-10-10.md",
+      "bytes": 8760
+    },
+    {
+      "path": "docs/recipe-supplements/sa-pt-edania-recipes.json",
+      "bytes": 9028
+    },
+    {
+      "path": "docs/recipe-workspace-review-2026-10-11.md",
+      "bytes": 3588
+    },
+    {
+      "path": "docs/regions-and-locales.md",
+      "bytes": 4694
+    },
+    {
+      "path": "docs/research/activity-coach-competitive-review.md",
+      "bytes": 16435
+    },
+    {
+      "path": "docs/research/attachments/2026 Alchemy Byproducts.xlsx",
+      "bytes": 2605685
+    },
+    {
+      "path": "docs/research/authenticated-navigation-competitive-review-2026-10-16.md",
+      "bytes": 6059
+    },
+    {
+      "path": "docs/research/bdo-workshop-plan-1408-observations.md",
+      "bytes": 4346
+    },
+    {
+      "path": "docs/research/catalog-corrections-competitive-review-2026-10-16.md",
+      "bytes": 15115
+    },
+    {
+      "path": "docs/research/codex-foundry.md",
+      "bytes": 20061
+    },
+    {
+      "path": "docs/research/competitor-market-crafting-audit-2026-10-14.md",
+      "bytes": 34522
+    },
+    {
+      "path": "docs/research/competitor-review-playbook.md",
+      "bytes": 5040
+    },
+    {
+      "path": "docs/research/cooking-alchemy-catalog-market-audit-2026-10-16.md",
+      "bytes": 14685
+    },
+    {
+      "path": "docs/research/crafting-market-flow-competitive-review-2026-10-16.md",
+      "bytes": 8058
+    },
+    {
+      "path": "docs/research/evidence/calculator-map-repositories.json",
+      "bytes": 2371
+    },
+    {
+      "path": "docs/research/evidence/extraction-repositories.json",
+      "bytes": 2370
+    },
+    {
+      "path": "docs/research/evidence/market-utility-repositories.json",
+      "bytes": 2416
+    },
+    {
+      "path": "docs/research/fish-price-equivalence-review-2026-10-16.md",
+      "bytes": 10607
+    },
+    {
+      "path": "docs/research/full-product-audit-prompt-2026-10-16.md",
+      "bytes": 16909
+    },
+    {
+      "path": "docs/research/garmoth-workerman-arsha.md",
+      "bytes": 22279
+    },
+    {
+      "path": "docs/research/home-recommendations-competitive-review-2026-10-16.md",
+      "bytes": 4358
+    },
+    {
+      "path": "docs/research/implementation-gap-matrix.md",
+      "bytes": 19885
+    },
+    {
+      "path": "docs/research/lytics-workshop.md",
+      "bytes": 21212
+    },
+    {
+      "path": "docs/research/market-filled-chart-review-2026-10-16.md",
+      "bytes": 5094
+    },
+    {
+      "path": "docs/research/market-recipe-competitive-review-2026-10-16.md",
+      "bytes": 10582
+    },
+    {
+      "path": "docs/research/market-source-policy.md",
+      "bytes": 4196
+    },
+    {
+      "path": "docs/research/master-bdo-knowledge-base.md",
+      "bytes": 13881
+    },
+    {
+      "path": "docs/research/README.md",
+      "bytes": 7496
+    },
+    {
+      "path": "docs/research/real-ocr-calibration.md",
+      "bytes": 9826
+    },
+    {
+      "path": "docs/research/recipe-mastery-model.md",
+      "bytes": 3117
+    },
+    {
+      "path": "docs/research/repository-review-calculators-maps.md",
+      "bytes": 19962
+    },
+    {
+      "path": "docs/research/repository-review-extraction.md",
+      "bytes": 26804
+    },
+    {
+      "path": "docs/research/repository-review-market-utilities.md",
+      "bytes": 14623
+    },
+    {
+      "path": "docs/research/storage-profile-gear-ocr-competitive-review-2026-10-16.md",
+      "bytes": 6612
+    },
+    {
+      "path": "docs/research/ui-loading-competitive-review-2026-10-16.md",
+      "bytes": 5357
+    },
+    {
+      "path": "docs/research/useful-links.md",
+      "bytes": 12111
+    },
+    {
+      "path": "docs/research/workshop-calculator-implementation.md",
+      "bytes": 5171
+    },
+    {
+      "path": "docs/roadmap.md",
+      "bytes": 24198
+    },
+    {
+      "path": "docs/screenshot-mvp.md",
+      "bytes": 18376
+    },
+    {
+      "path": "docs/security-hardening.md",
+      "bytes": 13276
+    },
+    {
+      "path": "docs/security.md",
+      "bytes": 4812
+    },
+    {
+      "path": "docs/security_best_practices_report.md",
+      "bytes": 6351
+    },
+    {
+      "path": "docs/seo-performance-accessibility.md",
+      "bytes": 7053
+    },
+    {
+      "path": "docs/Site de BDO-threat-model.md",
+      "bytes": 22062
+    },
+    {
+      "path": "docs/staging-local.md",
+      "bytes": 14407
+    },
+    {
+      "path": "docs/storage-import-strategy.md",
+      "bytes": 17429
+    },
+    {
+      "path": "docs/storage-tutorial.md",
+      "bytes": 4796
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-09-bdo-ui-implementation.md",
+      "bytes": 4349
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-09-production-qa.md",
+      "bytes": 2025
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-automatic-hybrid-production.md",
+      "bytes": 5100
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-bdo-ocr-benchmark.md",
+      "bytes": 8370
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-bdo-ocr-corpus.md",
+      "bytes": 18060
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-bdo-ocr-real-collector.md",
+      "bytes": 7794
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-bdo-ocr-synthetic-generator.md",
+      "bytes": 5953
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-market-board-cache.md",
+      "bytes": 8557
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-recipe-market-cache.md",
+      "bytes": 10441
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-10-recipe-production-optimizer.md",
+      "bytes": 18027
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-13-pending-core-features.md",
+      "bytes": 3647
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-13-recipe-profit-alignment.md",
+      "bytes": 5541
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-14-social-auth-and-staging.md",
+      "bytes": 19187
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-activity-coach-recommendations.md",
+      "bytes": 7204
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-activity-coach-validation-remediation.md",
+      "bytes": 4265
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-guided-tutorial-library.md",
+      "bytes": 43441
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-home-roadmap-dynamic-flow.md",
+      "bytes": 30324
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-market-board.md",
+      "bytes": 4176
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-market-recipe-cache-workbench.md",
+      "bytes": 12155
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-private-feature-access.md",
+      "bytes": 3415
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-16-backlog-execution.md",
+      "bytes": 7814
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-16-recursive-recipe-alternative-optimizer.md",
+      "bytes": 13232
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-16-roadmap-visual-phase-1.md",
+      "bytes": 5834
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-16-roadmap-visual-phase-2.md",
+      "bytes": 3739
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md",
+      "bytes": 9200
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-09-bdo-recipes-design.md",
+      "bytes": 8542
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-10-automatic-hybrid-production.md",
+      "bytes": 2681
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-10-bdo-ocr-corpus-design.md",
+      "bytes": 10565
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-10-bdo-ocr-dataset-pipeline.md",
+      "bytes": 10449
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-10-recipe-market-autoresolver-design.md",
+      "bytes": 12863
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-13-product-roadmap-design.md",
+      "bytes": 4792
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-13-recipe-profit-alignment.md",
+      "bytes": 2382
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-13-recipe-sales-volume-and-e2e-validation.md",
+      "bytes": 9704
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-14-semantic-surfaces-market-design.md",
+      "bytes": 15312
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-14-social-auth-and-staging-design.md",
+      "bytes": 14681
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-15-activity-coach-recommendations-design.md",
+      "bytes": 15234
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-15-guided-tutorial-library-design.md",
+      "bytes": 25657
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-15-home-roadmap-dynamic-flow-design.md",
+      "bytes": 15263
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-15-market-recipe-route-cache-and-workbench-design.md",
+      "bytes": 9844
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-16-recursive-recipe-alternative-optimizer-design.md",
+      "bytes": 10371
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-16-roadmap-inspired-visual-rollout-design.md",
+      "bytes": 7080
+    },
+    {
+      "path": "docs/tiers-and-regional-recipes.md",
+      "bytes": 4514
+    },
+    {
+      "path": "docs/ui-accessibility-audit.md",
+      "bytes": 8117
+    },
+    {
+      "path": "docs/worker-empire.md",
+      "bytes": 8018
+    }
+  ],
+  "runtime": [
+    {
+      "origin": "http://localhost:3000",
+      "route": "/ready",
+      "status": 200,
+      "data": {
+        "status": "ok",
+        "database": "up"
+      }
+    },
+    {
+      "origin": "http://localhost:3000",
+      "route": "/api/v1/identity/config",
+      "status": 200,
+      "enabled": true,
+      "googleEnabled": true,
+      "steamEnabled": true
+    },
+    {
+      "origin": "http://localhost:8081",
+      "route": "/ready",
+      "status": 200,
+      "data": {
+        "status": "ok",
+        "database": "up"
+      }
+    },
+    {
+      "origin": "http://localhost:8081",
+      "route": "/api/v1/identity/config",
+      "status": 200,
+      "enabled": true,
+      "googleEnabled": true,
+      "steamEnabled": true
+    },
+    {
+      "origin": "http://localhost:4200",
+      "route": "/",
+      "status": 200,
+      "ssrRecoveryWarning": true,
+      "htmlBytes": 69941
+    },
+    {
+      "origin": "http://localhost:4200",
+      "route": "/market",
+      "status": 200,
+      "ssrRecoveryWarning": true,
+      "htmlBytes": 503505
+    },
+    {
+      "origin": "http://localhost:8081",
+      "route": "/",
+      "status": 200,
+      "ssrRecoveryWarning": true,
+      "htmlBytes": 65568
+    },
+    {
+      "origin": "http://localhost:8081",
+      "route": "/market",
+      "status": 200,
+      "ssrRecoveryWarning": true,
+      "htmlBytes": 459235
+    }
+  ],
+  "calculations": [
+    {
+      "name": "mercado sem VP",
+      "result": {
+        "gross": "10000",
+        "net": "6500",
+        "tax": "3500",
+        "profit": "4500",
+        "retentionPercent": 65,
+        "withoutValuePack": "6500",
+        "withValuePack": "8450",
+        "breakEvenPrice": "308"
+      }
+    },
+    {
+      "name": "mercado com VP",
+      "result": {
+        "gross": "10000",
+        "net": "8450",
+        "tax": "1550",
+        "profit": "6450",
+        "retentionPercent": 84.5,
+        "withoutValuePack": "6500",
+        "withValuePack": "8450",
+        "breakEvenPrice": "237"
+      }
+    },
+    {
+      "name": "mercado quantidade zero rejeitada",
+      "error": "ZodError",
+      "message": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"quantity\"\n    ],\n    \"message\": \"Too small: expected number to be >=1\"\n  }\n]"
+    },
+    {
+      "name": "mercado preço zero válido",
+      "result": {
+        "gross": "0",
+        "net": "0",
+        "tax": "0",
+        "profit": "-2000",
+        "retentionPercent": 65,
+        "withoutValuePack": "0",
+        "withValuePack": "0",
+        "breakEvenPrice": "308"
+      }
+    },
+    {
+      "name": "craft yield 2.5 estoque parcial",
+      "result": {
+        "rows": [
+          {
+            "name": "A",
+            "needed": 20,
+            "missing": 15,
+            "economicCost": "2000",
+            "cashCost": "1500"
+          }
+        ],
+        "output": 25,
+        "economicCost": "2100",
+        "cashCost": "1600",
+        "gross": "25000",
+        "net": "16250",
+        "profit": "14150",
+        "profitPerHour": "424500",
+        "costPerOutput": "84",
+        "breakEvenPrice": "130",
+        "marginPercent": 87.07
+      }
+    },
+    {
+      "name": "craft sem estoque",
+      "result": {
+        "rows": [
+          {
+            "name": "A",
+            "needed": 20,
+            "missing": 20,
+            "economicCost": "2000",
+            "cashCost": "2000"
+          }
+        ],
+        "output": 25,
+        "economicCost": "2100",
+        "cashCost": "2100",
+        "gross": "25000",
+        "net": "16250",
+        "profit": "14150",
+        "profitPerHour": "424500",
+        "costPerOutput": "84",
+        "breakEvenPrice": "130",
+        "marginPercent": 87.07
+      }
+    },
+    {
+      "name": "craft preço ausente rejeitado",
+      "error": "ZodError",
+      "message": "[\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"ingredients\",\n      0,\n      \"price\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"
+    },
+    {
+      "name": "craft lucro negativo",
+      "result": {
+        "rows": [
+          {
+            "name": "A",
+            "needed": 20,
+            "missing": 15,
+            "economicCost": "2000",
+            "cashCost": "1500"
+          }
+        ],
+        "output": 25,
+        "economicCost": "2100",
+        "cashCost": "1600",
+        "gross": "25",
+        "net": "16",
+        "profit": "-2084",
+        "profitPerHour": "-62520",
+        "costPerOutput": "84",
+        "breakEvenPrice": "130",
+        "marginPercent": -13025
+      }
+    },
+    {
+      "name": "craft tempo zero rejeitado",
+      "error": "ZodError",
+      "message": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": false,\n    \"path\": [\n      \"minutes\"\n    ],\n    \"message\": \"Too small: expected number to be >0\"\n  }\n]"
+    }
+  ],
+  "desktop": [
+    {
+      "path": "/",
+      "url": "/",
+      "h1": "Menos preparação.Mais possibilidades.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 762,
+      "alerts": []
+    },
+    {
+      "path": "/roadmap",
+      "url": "/roadmap",
+      "h1": "Roadmap",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 1966,
+      "alerts": []
+    },
+    {
+      "path": "/market",
+      "url": "/market",
+      "h1": "Mercado Central",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 1420,
+      "alerts": []
+    },
+    {
+      "path": "/recipes",
+      "url": "/recipes",
+      "h1": "Oficina de produção",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 1689,
+      "alerts": []
+    },
+    {
+      "path": "/crafting",
+      "url": "/crafting",
+      "h1": "Planeje uma receita.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 795,
+      "alerts": []
+    },
+    {
+      "path": "/settings",
+      "url": "/account?returnUrl=%2Fsettings",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/storage",
+      "url": "/account?returnUrl=%2Fstorage",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/family",
+      "url": "/account?returnUrl=%2Ffamily",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/recommendations",
+      "url": "/account?returnUrl=%2Frecommendations",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/plans",
+      "url": "/account?returnUrl=%2Fplans",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/shopping",
+      "url": "/account?returnUrl=%2Fshopping",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 458,
+      "alerts": []
+    },
+    {
+      "path": "/scans/profile",
+      "url": "/account?returnUrl=%2Fscans%2Fprofile",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 545,
+      "alerts": [
+        "O login social ainda não está configurado. Entre com Google ou Steam para continuar quando estiver disponível.",
+        "Não foi possível consultar sua conta. Tente novamente mais tarde."
+      ]
+    },
+    {
+      "path": "/gear",
+      "url": "/account?returnUrl=%2Ffamily%3Ftab%3Dequipment",
+      "h1": "Seus planos, onde você estiver.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 545,
+      "alerts": [
+        "O login social ainda não está configurado. Entre com Google ou Steam para continuar quando estiver disponível.",
+        "Não foi possível consultar sua conta. Tente novamente mais tarde."
+      ]
+    },
+    {
+      "path": "/world",
+      "url": "/",
+      "h1": "Menos preparação.Mais possibilidades.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 652,
+      "alerts": [
+        "Não foi possível carregar os focos do Roadmap agora. Tente novamente. Tentar novamente"
+      ]
+    },
+    {
+      "path": "/tutorials",
+      "url": "/tutorials",
+      "h1": "Esta página não existe.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 257,
+      "alerts": []
+    },
+    {
+      "path": "/sobre/",
+      "url": "/sobre/",
+      "h1": "Seus próximos passos começam com informação.",
+      "width": 1440,
+      "overflow": false,
+      "mainHeight": 1814,
+      "alerts": []
+    }
+  ],
+  "mobile": [
+    {
+      "url": "/",
+      "h1": "Menos preparação.Mais possibilidades.",
+      "overflow": false,
+      "mainHeight": 1195,
+      "links": 2
+    },
+    {
+      "url": "/roadmap",
+      "h1": "Roadmap",
+      "overflow": false,
+      "mainHeight": 387,
+      "links": 0
+    },
+    {
+      "url": "/market",
+      "h1": "Mercado Central",
+      "overflow": false,
+      "mainHeight": 2059,
+      "links": 0
+    },
+    {
+      "url": "/recipes",
+      "h1": "Oficina de produção",
+      "overflow": false,
+      "mainHeight": 3607,
+      "links": 25
+    },
+    {
+      "url": "/crafting",
+      "h1": "Planeje uma receita.",
+      "overflow": false,
+      "mainHeight": 1222,
+      "links": 3
+    },
+    {
+      "url": "/account",
+      "h1": "Seus planos, onde você estiver.",
+      "overflow": false,
+      "mainHeight": 473,
+      "links": 0
+    }
+  ],
+  "staging": [
+    {
+      "url": "/",
+      "h1": "Menos preparação.Mais possibilidades.",
+      "height": 762,
+      "alerts": [],
+      "overflow": false
+    },
+    {
+      "url": "/roadmap",
+      "h1": "Roadmap",
+      "height": 1966,
+      "alerts": [],
+      "overflow": false
+    },
+    {
+      "url": "/market",
+      "h1": "Mercado Central",
+      "height": 1478,
+      "alerts": [
+        "Não foi possível ler seus dados locais. Exporte um backup antes de substituir o armazenamento. Recuperar dados locais",
+        "Carregando tutorial…"
+      ],
+      "overflow": false
+    },
+    {
+      "url": "/recipes",
+      "h1": "Oficina de produção",
+      "height": 1689,
+      "alerts": [],
+      "overflow": false
+    },
+    {
+      "url": "/crafting",
+      "h1": "Planeje uma receita.",
+      "height": 795,
+      "alerts": [],
+      "overflow": false
+    },
+    {
+      "url": "/account",
+      "h1": "Seus planos, onde você estiver.",
+      "height": 458,
+      "alerts": [],
+      "overflow": false
+    }
+  ],
+  "performance": [
+    {
+      "route": "/",
+      "cls": 0.21266212302930818,
+      "lcp": 176,
+      "shifts": [
+        {
+          "value": 0.05242386264149653,
+          "time": 230.90000000596046
+        },
+        {
+          "value": 0.16023826038781164,
+          "time": 242.10000000149012
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/v1/analytics/config",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/identity/config",
+          "duration": 6
+        },
+        {
+          "path": "/api/v1/roadmap",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/roadmap",
+          "duration": 16
+        }
+      ],
+      "longtasks": 0
+    },
+    {
+      "route": "/roadmap",
+      "cls": 0,
+      "lcp": 188,
+      "shifts": [],
+      "requests": [
+        {
+          "path": "/api/v1/analytics/config",
+          "duration": 2
+        },
+        {
+          "path": "/api/v1/identity/config",
+          "duration": 11
+        },
+        {
+          "path": "/api/v1/roadmap",
+          "duration": 2
+        }
+      ],
+      "longtasks": 0
+    },
+    {
+      "route": "/market",
+      "cls": 0.08118716049382715,
+      "lcp": 660,
+      "shifts": [
+        {
+          "value": 0.018551272528299308,
+          "time": 853.5999999940395
+        },
+        {
+          "value": 0.06263588796552785,
+          "time": 888.0999999940395
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/v1/analytics/config",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/categories",
+          "duration": 12
+        },
+        {
+          "path": "/api/v1/market/board",
+          "duration": 69
+        },
+        {
+          "path": "/api/v1/identity/config",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/tutorials/market",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/items/670/icon",
+          "duration": 2
+        },
+        {
+          "path": "/api/v1/items/1393/icon",
+          "duration": 2
+        },
+        {
+          "path": "/api/v1/items/3550/icon",
+          "duration": 2
+        },
+        {
+          "path": "/api/v1/items/3555/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/3561/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/4457/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/4490/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/5531/icon",
+          "duration": 4
+        },
+        {
+          "path": "/api/v1/items/6942/icon",
+          "duration": 4
+        },
+        {
+          "path": "/api/v1/items/7343/icon",
+          "duration": 4
+        },
+        {
+          "path": "/api/v1/items/8503/icon",
+          "duration": 5
+        },
+        {
+          "path": "/api/v1/items/8513/icon",
+          "duration": 5
+        },
+        {
+          "path": "/api/v1/items/8539/icon",
+          "duration": 5
+        },
+        {
+          "path": "/api/v1/items/8545/icon",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/items/8548/icon",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/items/8564/icon",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/items/8576/icon",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/tutorials/market",
+          "duration": 20
+        }
+      ],
+      "longtasks": 0
+    },
+    {
+      "route": "/recipes",
+      "cls": 0.058564508737731266,
+      "lcp": 284,
+      "shifts": [
+        {
+          "value": 0.035138705242638756,
+          "time": 422
+        },
+        {
+          "value": 0.023425803495092507,
+          "time": 434.5
+        }
+      ],
+      "requests": [
+        {
+          "path": "/api/v1/analytics/config",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/recipes",
+          "duration": 103
+        },
+        {
+          "path": "/api/v1/identity/config",
+          "duration": 10
+        },
+        {
+          "path": "/api/v1/tutorials/recipes",
+          "duration": 1
+        },
+        {
+          "path": "/api/v1/items/9209/icon",
+          "duration": 2
+        },
+        {
+          "path": "/api/v1/items/820815/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/9217/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/9302/icon",
+          "duration": 3
+        },
+        {
+          "path": "/api/v1/items/820816/icon",
+          "duration": 4
+        },
+        {
+          "path": "/api/v1/items/9261/icon",
+          "duration": 4
+        },
+        {
+          "path": "/api/v1/items/9276/icon",
+          "duration": 5
+        },
+        {
+          "path": "/api/v1/items/9378/icon",
+          "duration": 7
+        },
+        {
+          "path": "/api/v1/items/9379/icon",
+          "duration": 8
+        },
+        {
+          "path": "/api/v1/items/9401/icon",
+          "duration": 9
+        },
+        {
+          "path": "/api/v1/items/9496/icon",
+          "duration": 10
+        },
+        {
+          "path": "/api/v1/items/9430/icon",
+          "duration": 10
+        },
+        {
+          "path": "/api/v1/items/9294/icon",
+          "duration": 11
+        },
+        {
+          "path": "/api/v1/items/9205/icon",
+          "duration": 12
+        },
+        {
+          "path": "/api/v1/items/9266/icon",
+          "duration": 13
+        }
+      ],
+      "longtasks": 0
+    }
+  ],
+  "homeRepeated": [
+    {
+      "cls": 0.16023826038781164,
+      "shifts": [
+        {
+          "value": 0.16023826038781164,
+          "time": 270,
+          "sources": [
+            {
+              "tag": "DIV",
+              "cls": "content-frame",
+              "text": "BLACK MARKET · BLACK DESERT ONLINEMenos preparação.Mais possibilidades. Do ",
+              "previous": {
+                "x": 283,
+                "y": 139,
+                "width": 1106,
+                "height": 761,
+                "top": 139,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              },
+              "current": {
+                "x": 283,
+                "y": 72,
+                "width": 1106,
+                "height": 761.578125,
+                "top": 72,
+                "right": 1389,
+                "bottom": 833.578125,
+                "left": 283
+              }
+            },
+            {
+              "tag": "ASIDE",
+              "cls": "source-note",
+              "text": "iSaiba de onde vêm os valores Os cálculos usam os dados que você informa. N",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 284,
+                "y": 701.296875,
+                "width": 1105,
+                "height": 100.28125,
+                "top": 701.296875,
+                "right": 1389,
+                "bottom": 801.578125,
+                "left": 284
+              }
+            },
+            {
+              "tag": "APP-PLATFORM-FOOTER",
+              "cls": "",
+              "text": "◇BLACK MARKETFerramentas para a comunidade brasileira de Black Desert Onlin",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 283,
+                "y": 873.578125,
+                "width": 1106,
+                "height": 26.421875,
+                "top": 873.578125,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": 0.21266212302930818,
+      "shifts": [
+        {
+          "value": 0.05242386264149653,
+          "time": 220.10000000149012,
+          "sources": [
+            {
+              "tag": "SECTION",
+              "cls": "bg-card text-card-foreground min-w-0 rounded-[2px] border border-border p-[var(--bm-panel-padding,1.25rem)] text-sm data-[size=sm]:p-4 group/card block panel home-search",
+              "text": "COMECE POR UM ITEMO que você está procurando?SEM CADASTRONome, ID ou catego",
+              "previous": {
+                "x": 284,
+                "y": 532.71875,
+                "width": 1105,
+                "height": 211.578125,
+                "top": 532.71875,
+                "right": 1389,
+                "bottom": 744.296875,
+                "left": 284
+              },
+              "current": {
+                "x": 284,
+                "y": 785.5,
+                "width": 1105,
+                "height": 114.5,
+                "top": 785.5,
+                "right": 1389,
+                "bottom": 900,
+                "left": 284
+              }
+            },
+            {
+              "tag": "ASIDE",
+              "cls": "source-note",
+              "text": "iSaiba de onde vêm os valores Os cálculos usam os dados que você informa. N",
+              "previous": {
+                "x": 284,
+                "y": 768.296875,
+                "width": 1105,
+                "height": 100.28125,
+                "top": 768.296875,
+                "right": 1389,
+                "bottom": 868.578125,
+                "left": 284
+              },
+              "current": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              }
+            }
+          ]
+        },
+        {
+          "value": 0.16023826038781164,
+          "time": 235,
+          "sources": [
+            {
+              "tag": "DIV",
+              "cls": "content-frame",
+              "text": "BLACK MARKET · BLACK DESERT ONLINEMenos preparação.Mais possibilidades. Do ",
+              "previous": {
+                "x": 283,
+                "y": 139,
+                "width": 1106,
+                "height": 761,
+                "top": 139,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              },
+              "current": {
+                "x": 283,
+                "y": 72,
+                "width": 1106,
+                "height": 761.578125,
+                "top": 72,
+                "right": 1389,
+                "bottom": 833.578125,
+                "left": 283
+              }
+            },
+            {
+              "tag": "ASIDE",
+              "cls": "source-note",
+              "text": "iSaiba de onde vêm os valores Os cálculos usam os dados que você informa. N",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 284,
+                "y": 701.296875,
+                "width": 1105,
+                "height": 100.28125,
+                "top": 701.296875,
+                "right": 1389,
+                "bottom": 801.578125,
+                "left": 284
+              }
+            },
+            {
+              "tag": "APP-PLATFORM-FOOTER",
+              "cls": "",
+              "text": "◇BLACK MARKETFerramentas para a comunidade brasileira de Black Desert Onlin",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 283,
+                "y": 873.578125,
+                "width": 1106,
+                "height": 26.421875,
+                "top": 873.578125,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": 0.21266212302930818,
+      "shifts": [
+        {
+          "value": 0.05242386264149653,
+          "time": 319,
+          "sources": [
+            {
+              "tag": "SECTION",
+              "cls": "bg-card text-card-foreground min-w-0 rounded-[2px] border border-border p-[var(--bm-panel-padding,1.25rem)] text-sm data-[size=sm]:p-4 group/card block panel home-search",
+              "text": "COMECE POR UM ITEMO que você está procurando?SEM CADASTRONome, ID ou catego",
+              "previous": {
+                "x": 284,
+                "y": 532.71875,
+                "width": 1105,
+                "height": 211.578125,
+                "top": 532.71875,
+                "right": 1389,
+                "bottom": 744.296875,
+                "left": 284
+              },
+              "current": {
+                "x": 284,
+                "y": 785.5,
+                "width": 1105,
+                "height": 114.5,
+                "top": 785.5,
+                "right": 1389,
+                "bottom": 900,
+                "left": 284
+              }
+            },
+            {
+              "tag": "ASIDE",
+              "cls": "source-note",
+              "text": "iSaiba de onde vêm os valores Os cálculos usam os dados que você informa. N",
+              "previous": {
+                "x": 284,
+                "y": 768.296875,
+                "width": 1105,
+                "height": 100.28125,
+                "top": 768.296875,
+                "right": 1389,
+                "bottom": 868.578125,
+                "left": 284
+              },
+              "current": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              }
+            }
+          ]
+        },
+        {
+          "value": 0.16023826038781164,
+          "time": 332.69999999552965,
+          "sources": [
+            {
+              "tag": "DIV",
+              "cls": "content-frame",
+              "text": "BLACK MARKET · BLACK DESERT ONLINEMenos preparação.Mais possibilidades. Do ",
+              "previous": {
+                "x": 283,
+                "y": 139,
+                "width": 1106,
+                "height": 761,
+                "top": 139,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              },
+              "current": {
+                "x": 283,
+                "y": 72,
+                "width": 1106,
+                "height": 761.578125,
+                "top": 72,
+                "right": 1389,
+                "bottom": 833.578125,
+                "left": 283
+              }
+            },
+            {
+              "tag": "ASIDE",
+              "cls": "source-note",
+              "text": "iSaiba de onde vêm os valores Os cálculos usam os dados que você informa. N",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 284,
+                "y": 701.296875,
+                "width": 1105,
+                "height": 100.28125,
+                "top": 701.296875,
+                "right": 1389,
+                "bottom": 801.578125,
+                "left": 284
+              }
+            },
+            {
+              "tag": "APP-PLATFORM-FOOTER",
+              "cls": "",
+              "text": "◇BLACK MARKETFerramentas para a comunidade brasileira de Black Desert Onlin",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "current": {
+                "x": 283,
+                "y": 873.578125,
+                "width": 1106,
+                "height": 26.421875,
+                "top": 873.578125,
+                "right": 1389,
+                "bottom": 900,
+                "left": 283
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recipe": {
+    "recipe": {
+      "url": "http://localhost:8081/recipes/items/9601",
+      "visibleH1": 0,
+      "h2": "Refeição de Balenos",
+      "mainHeight": 1629.25,
+      "maestries": [
+        {
+          "label": "Maestria de Culinária",
+          "value": "1000"
+        },
+        {
+          "label": "Maestria de Processamento",
+          "value": "1000"
+        }
+      ],
+      "outputLabels": ["Estimativa do produto: 276 unidades", "Tempo estimado: 29.6s"]
+    },
+    "dialog": {
+      "dialogs": [
+        {
+          "role": null,
+          "modal": null,
+          "text": ""
+        }
+      ],
+      "active": "<button _ngcontent-ng-c883923710=\"\" type=\"button\" class=\"node-details\" aria-label=\"Ver detalhes de Refeição de Balenos\"><svg _ngcontent-ng-c883923710=\"\" width=\""
+    },
+    "afterEscape": {
+      "active": "Ver detalhes de Refeição de Balenos",
+      "dialogs": 0
+    },
+    "motion": {
+      "running": 0
+    },
+    "mobile": {
+      "width": 390,
+      "scrollWidth": 375
+    }
+  },
+  "browser": {
+    "market": {
+      "url": "http://localhost:8081/market",
+      "canvas": [],
+      "text": "e de Produção  Acessório  +  Anel  Colar  Brinco  Cinto  Material  +  Minério/Gema  Plantas  Semente  Fruta/Fruto  Legume  Grão  Frutos do Mar  Carne  Couro  Sangue  Variado  Aprimoramentos Gerais  +  Pedra Negra  Refinar  Reforjar  Consumíveis  +  Elixir Ofensivo  Elixir Defensivo  Elixir Funcional  Culinária  Culinária Especial  Poção  Item de cerco  Item de Combinação  Outros Consumíveis  Ferramentas  +  Lenhador  Coletor de Fluidos  Faca de Açougueiro  Picareta  Enxada  Faca de Curtimento  Pesca  Mosquete de Caça  Alquimia/Culinária  Outras  Pedra de Alquimia  +  Destruição  Proteção  Vida  Pedra de Espírito  Cristal Mágico  +  Cristal de Ataque  Cristal de Defesa  Cristal de Efeito  Cristal Misto  Luvas  Sapatos  Versátil  Arma Desperta  Item de Pérola  +  Conjuto de Traje Masculino  Kit de Traje Feminino  Traje Individual Masculino  Traje Individual Feminino  Kit de Traje Universal  Conveniência/Função  Montaria  Mascote  Corante  +  Básico  Olvia  Velia  Heidel  Keplan  Calpheon  Mediah  Valência  Efeito  Animal  +  Registro  Alimentação  Champron  Barda  Sela  Estribo  Ferradura  [Elefante]Estribos  [Elefante]Armadura  [Elefante]Máscara  [Elefante]Sela  Treinamento de Corcel  Navio  +  Registro  Carga  Proa  Decoração  Totem  Proa  Luvas  Canhão  Vela  Carroça  +  Registro  Roda  Cobertura  Bandeira  Emblema  Lâmpada  Mobília  +  Cama  Mesas  Armário/Estante  Sofá/Cadeira  Lustre  Piso/Carpete  Parede/Cortina  Decoração  Outros  Artefato / Pedra da Luz  +  Pedra da Luz do Fogo  Pedra da Luz da Terra  Pedra da Luz do Vento  Pedra da Luz da Grama  Pedra da Luz Especial  Artefato  Pesquise um nome ou código para encontrar itens de todo o catálogo. Buscar no mercado ✕ Disponibilidade Todos  Com estoque  Estoque zerado  Com registros 24h  Limpar filtros  Atualizar  1 itens no catálogo  Cache local de 16/10/2026, 17:01  Consulta sincronizada · 16/10/2026, 17:01  1–1 de 1 Itens por página 2050100 Anterior 1 / 1  Próxima  Itens do mercado: preços em prata por unidade, estoque observado e contagem acumulada de negociações registrada. Clique no cabeçalho das colunas para ordenar. Item ▲ Preço de referência ⇅ Estoque ⇅ Registros 24h ⇅ Registros 15d ⇅ Registros 30d ⇅ Refeição de Balenos Consumíveis  · Resumo das variantes 29.000Atual · com estoqueMédia 30d: — 29.998  —  —  —  Consulta e cache automáticos em background. Preço de referência fornecido pela Arsha: preço atual quando há estoque e preço máximo quando está zerado. Clicar no cabeçalho das colunas ordena a visualização. A fonte mantém cache de até 30 minutos. Resumos agregam variantes; selecione um item para suas cotações individuais. Preços médios em prata por unidade. Média de cotações observadas em 30 dias; contagens de negociações exigem histórico completo do período. — indica dado ainda indisponível.  Voltar ao mercado Refeição de Balenos Gráfico e detalhes Buscar itemRefeição de BalenosBuscar item e consultar mercadoPREÇOS DO MERCADOBuscar item do jogo CategoriaTodasSelecionado:Refeição de Balenos × Descrição e dados do catálogoExplorar receitas e origensBuscar pelo código do itemID do itemCotações sincronizadas automaticamente via cache Atualizar cotação Mercado selecionado: SA.Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um item para consultar sua cotação. Consulta automática a cada 8 minutos enquanto esta aba estiver visível; a fonte pode manter os mesmos dados por até 30 minutos.  Value PackOrigem, região e idade da consultaFonte: Arsha · SA · idioma solicitado: pt · consulta em 16/10/2026, 17:01 · Preços consultados agora. Cache informado pela fonte: 30 minutos. Preço atual / unidade29.000Estimativa líquida após taxas18.850Estoque29.998Negociações registradas (contador)754.514.862Limite mínimo17.300Limite máximo238.000Última venda16/10/2026, 16:48Preço da última venda29.000 Negociações registradas não são unidades vendidas. Estoque e contagem acumulada ajudam a acompanhar a atividade observada, mas não confirmam liquidez nem o tempo de venda.  Simular recebimento líquido  Salvar cotação Explorar receitasAbrir na oficinaProduzir para venderAbrir árvore e insumosPRODUTORefeição de BalenosCulináriaFórmula de produção  Culinária · método 1 Quantia de receitasreceitas 1x  10x  100x  Maestria (Culinária) pts Usada no rendimento das receitas produzidas e nas alternativas do otimizador.  Maestria (Processamento) pts Usada no rendimento das receitas produzidas e nas alternativas do otimizador. Média estimada: 2.77 un / receita (cooking maestria: 1000) Estimativa do produto: 276 unidades  Tempo estimado: 29.6sConfigurações de produção Insumos sem receita são comprados por padrão. Coleta exige rendimento e tempo calibrados abaixo.  Produção por operação (ajuste fino)Calibrar tempo por métodoCulináriaseg/operaçãoSecagemseg/operaçãoMoagemseg/operaçãoAquecimentoseg/operaçãoMisturaseg/operaçãoSem um tempo calibrado, o lucro por hora fica indisponível.Calibrar rendimento e tempo de coletaCarne de PorcoUnidades por coletaSegundos por coletaCebolaUnidades por coletaSegundos por coletaPimenta-do-ReinoUnidades por coletaSegundos por coletaGobiãoUnidades por coletaSegundos por coletaAzeite de OlivaUnidades por coletaSegundos por coletaTrigoUnidades por coletaSegundos por coletaÁgua MineralUnidades por coletaSegundos por coletaRepolhoUnidades por coletaSegundos por coletaLeiteUnidades por coletaSegundos por coletaOvoUnidades por coletaSegundos por coletaÓleo para FrituraUnidades por coletaSegundos por coletaPimentaUnidades por coletaSegundos por coletaGarrafa com Água do MarUnidades por coletaSegundos por coletaFermentoUnidades por coletaSegundos por coletaAçúcarUnidades por coletaSegundos por coletaMolho BaseUnidades por coletaSegundos por coletaQuais estoques entram no cálculo? Nenhum estoque importado.  Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao simular. Resultado da receita Preço de venda estimado: cotação atual com estoque; sem estoque, preço máximo anunciado.  Comprar subreceitas  Fazer / coletar tudo  Otimizar lucro por hora Lucro por horaPendenteLucro líquidoPendenteCusto dos materiaisPendenteFaturamento líquido5.215.795Preço un.: 29.000Bruto: 8.024.300100 receitas · tempo total: 29.6s · inclui a etapa finalAtualizada há menos de 1 min Resultado incompleto · 4 itens ou etapas a conferir Croquete de Carne: Informe o preço unitário. Filé de Peixe Defumado: Informe o preço unitário. Legumes Refogados: Informe o preço unitário. Cerveja: Informe o preço unitário.   Opções de impostos e buffs do mercadoColeta da vendaValue Pack (+30% sobre a coleta)Venda isentaRegras e bônus avançadosImposto base (%)Fama / anel / outros bônus (%)Bônus sobre a coleta após imposto.Preços, estoque e negociações observadasVariante do item selecionadoRefeição de Balenos · 0Ainda não há observações guardadas para este item e variante.Evolução das observaçõesVeja o que foi registrado pelo Black Market neste item. 24 horas  7 dias  30 dias  Preço  Estoque  Negociações por intervalo  O gráfico liga observações reais do preço e do estoque. A linha tracejada indica um intervalo longo sem consulta intermediária.  Ainda não há observações válidas neste período para desenhar o gráfico. O histórico de negociações exige duas consultas consecutivas válidas. As consultas começam a formar histórico depois que são registradas. Como ler estes dados Preço e estoque são observações no horário da consulta. A série de negociações é a diferença do contador total entre consultas, com duração indicada ao passar o cursor. A fonte não confirma que esses registros correspondam a unidades vendidas; por isso, não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem a série de negociações. Intervalos longos de preço e estoque são mostrados com linha tracejada. A média de cotações não representa uma média ponderada das vendas."
+    },
+    "details": {
+      "active": "<button _ngcontent-ng-c1695538703=\"\" type=\"button\" class=\"context-close\">Fechar</button>",
+      "panel": "<aside _ngcontent-ng-c1695538703=\"\" aria-label=\"Detalhes do item selecionado\" class=\"context-panel panel bottom-details-tray\" aria-busy=\"false\"><div _ngcontent-ng-c1695538703=\"\" class=\"context-titlebar\"><div _ngcontent-ng-c1695538703=\"\" class=\"tray-title-text\"><span _ngcontent-ng-c1695538703=\"\" clas",
+      "backdrop": true,
+      "inert": null
+    },
+    "detailsTab": {
+      "active": "<button _ngcontent-ng-c1695538703=\"\" type=\"button\"> Centralizar no mapa </button>",
+      "inPanel": true
+    },
+    "mobile": {
+      "overflow": false,
+      "mainHeight": 1959.5,
+      "table": 860,
+      "scrollRegions": [
+        {
+          "cls": "board-table-scroll",
+          "width": 327,
+          "scroll": 860
+        }
+      ]
+    }
+  },
+  "chartPagination": {
+    "chart": {
+      "canvas": [],
+      "text": "Preços, estoque e negociações observadasVariante do item selecionadoRefeição de Balenos · 0Ainda não há observações guardadas para este item e variante.Evolução das observaçõesVeja o que foi registrado pelo Black Market neste item. 24 horas  7 dias  30 dias  Preço  Estoque  Negociações por intervalo  O gráfico liga observações reais do preço e do estoque. A linha tracejada indica um intervalo longo sem consulta intermediária.  Ainda não há observações válidas neste período para desenhar o gráfico. O histórico de negociações exige duas consultas consecutivas válidas. As consultas começam a formar histórico depois que são registradas. Como ler estes dados Preço e estoque são observações no horário da consulta. A série de negociações é a diferença do contador total entre consultas, com duração indicada ao passar o cursor. A fonte não confirma que esses registros correspondam a unidades vendidas; por isso, não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem a série de negociações. Intervalos longos de preço e estoque são mostrados com linha tracejada. A média de cotações não representa uma média ponderada das vendas.",
+      "tables": null
+    },
+    "before": {
+      "cards": 25,
+      "height": 938,
+      "status": 28
+    },
+    "during": {
+      "busy": "true",
+      "inert": true,
+      "skeletons": 25,
+      "height": 938
+    },
+    "after": {
+      "busy": "false",
+      "cards": 25,
+      "height": 982.390625
+    },
+    "elapsed": 1204,
+    "failed": {
+      "alerts": ["Não foi possível carregar esta consulta. Tente novamente.  Tentar novamente"],
+      "cards": 25,
+      "busy": "false"
+    }
+  },
+  "localChart": {
+    "canvas": [
+      {
+        "label": "Preço de venda: 34 observações no período",
+        "tabindex": null,
+        "role": "img"
+      }
+    ],
+    "text": "Preços, estoque e negociações observadasVariante do item selecionadoRefeição de Balenos · 0Evolução das observaçõesVeja o que foi registrado pelo Black Market neste item. 24 horas  7 dias  30 dias  Preço  Estoque  Negociações por intervalo  O gráfico liga observações reais do preço e do estoque. A linha tracejada indica um intervalo longo sem consulta intermediária. Histórico do item34 observações no período.Como ler estes dados Preço e estoque são observações no horário da consulta. A série de negociações é a diferença do contador total entre consultas, com duração indicada ao passar o cursor. A fonte não confirma que esses registros correspondam a unidades vendidas; por isso, não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem a série de negociações. Intervalos longos de preço e estoque são mostrados com linha tracejada. A média de cotações não representa uma média ponderada das vendas. Observações registradas Últimas 50 observações do período. O gráfico usa todas as observações disponíveis. ConsultaPreçoEstoqueTransações (contador)13/10/2026, 23:4631.300 39.996 754.212.72713/10/2026, 23:5431.300 39.996 754.212.72716/10/2026, 11:2429.000 26.579 754.496.73216/10/2026, 11:4729.000 36.579 754.503.23216/10/2026, 11:5529.000 36.579 754.503.23216/10/2026, 12:0429.000 36.898 754.503.23216/10/2026, 12:1329.000 36.898 754.503.23216/10/2026, 12:2329.000 36.898 754.503.23216/10/2026, 12:3129.000 36.898 754.503.23216/10/2026, 12:4229.000 36.898 754.503.23216/10/2026, 12:5029.000 36.898 754.503.23216/10/2026, 12:5829.000 36.898 754.503.23216/10/2026, 13:0629.000 36.896 754.503.23416/10/2026, 13:1429.000 36.896 754.503.23416/10/2026, 13:2829.000 36.896 754.503.23416/10/2026, 13:3629.000 36.896 754.503.23416/10/2026, 13:5229.000 36.779 754.503.35116/10/2026, 14:0029.000 36.779 754.503.35116/10/2026, 14:1629.000 36.778 754.503.38216/10/2026, 14:2429.000 36.778 754.503.38216/10/2026, 14:3229.000 36.778 754.5",
+    "tables": "ConsultaPreçoEstoqueTransações (contador)13/10/2026, 23:4631.300 39.996 754.212.72713/10/2026, 23:5431.300 39.996 754.212.72716/10/2026, 11:2429.000 26.579 754.496.73216/10/2026, 11:4729.000 36.579 754.503.23216/10/2026, 11:5529.000 36.579 754.503.23216/10/2026, 12:0429.000 36.898 754.503.23216/10/2026, 12:1329.000 36.898 754.503.23216/10/2026, 12:2329.000 36.898 754.503.23216/10/2026, 12:3129.000 36.898 754.503.23216/10/2026, 12:4229.000 36.898 754.503.23216/10/2026, 12:5029.000 36.898 754.503.23216/10/2026, 12:5829.000 36.898 754.503.23216/10/2026, 13:0629.000 36.896 754.503.23416/10/2026, 13:1429.000 36.896 754.503.23416/10/2026, 13:2829.000 36.896 754.503.23416/10/2026, 13:3629.000 36.896 754.503.23416/10/2026, 13:5229.000 36.779 754.503.35116/10/2026, 14:0029.000 36.779 754.503.35116/10/2026, 14:1629.000 36.778 754.503.38216/10/2026, 14:2429.000 36.778 754.503.38216/10/2026, 14:3229.000 36.778 754.503.38216/10/2026, 14:4129.000 36.778 754.503.38216/10/2026, 14:4929.000 36.378 754.503.78216/10/2026, 14:5729.000 36.378 754.503.78216/10/2026, 15:1329.000 36.278 754.503.88216/10/2026, 15:2129.000 36.278 754.503.88216/10/2026, 15:2929.000 36.278 754.503.88216/10/2026, 15:3729.000 36.278 754.503.88216/10/2026, 15:5329.000 35.478 754.504.68216/10/2026, 16:0129.000 35.478 754.504.68216/10/2026, 16:0929.000 35.478 754.504.68216/10/2026, 16:1729.000 35.178 754.504.98216/10/2026, 16:2829.000 35.178 754.504.98216/10/2026, 17:0329.000 29.998 754.514.862"
+  },
+  "verification": {
+    "check": "passou, exit 0",
+    "test": {
+      "passed": 1066,
+      "skipped": 1
+    },
+    "build": "monorepo serial passou, exit 0",
+    "authLocal": "passou",
+    "authStaging": "passou",
+    "initialWebRawKB": 553.57,
+    "initialEstimatedTransferKB": 149.8,
+    "nodeShell": "24.13.0",
+    "requiredNode": "^24.15.0",
+    "limits": "Sem login real, corpus independente novo ou validação de produção. Diferença de Node registrada no relatório."
+  }
+}
