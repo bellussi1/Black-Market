@@ -931,7 +931,6 @@ export class RecommendationsPage implements OnDestroy {
     if (rawTrades === undefined || rawTrades === null) return true;
     const trades = Number(rawTrades);
     if (!Number.isFinite(trades)) return true;
-    // Allow synthetic unit-test quotes with totalTrades === '1' while filtering out dead items (0 trades or below minTradeVolume in live data)
     if (trades === 0) return false;
     if (trades > 0 && trades < this.minTradeVolume() && quote.lastSoldAt === null) return false;
     return true;
@@ -940,13 +939,17 @@ export class RecommendationsPage implements OnDestroy {
     const outId = this.producersName(recipeId);
     const quote = outId ? this.quotes()[outId] : undefined;
     if (!quote) return 'Cotação manual / NPC';
-    const trades = Number(quote.totalTrades ?? NaN);
-    const stock = quote.available ?? 0;
-    if (Number.isFinite(trades) && trades > 0) {
-      return `${trades.toLocaleString('pt-BR')} vendas · ${stock.toLocaleString('pt-BR')} em estoque`;
+    const stock =
+      quote.available === null || quote.available === undefined
+        ? 'Estoque não informado'
+        : `${quote.available.toLocaleString('pt-BR')} em estoque`;
+    const trades = quote.totalTrades;
+    if (trades !== null && trades !== undefined && /^\d+$/.test(trades)) {
+      return `${BigInt(trades).toLocaleString('pt-BR')} negociações acumuladas · ${stock}`;
     }
-    return `${stock.toLocaleString('pt-BR')} em estoque no mercado`;
+    return `Atividade não informada · ${stock}`;
   }
+
   ownedMaterials(row: ProductionPlan) {
     return row.materials.filter((part) => part.owned > 0);
   }

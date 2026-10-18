@@ -221,8 +221,12 @@
             [checked]="requireLiquidity()"
             (change)="requireLiquidity.set($any($event.target).checked)"
           />
-          <span>Garantir volume de venda no mercado</span>
+          <span i18n>Ocultar itens com baixa atividade conhecida</span>
         </label>
+        <p class="help" i18n>
+          Usa negociações acumuladas e registro de última venda. Dados ausentes permanecem visíveis;
+          isso não mede vendas por dia nem garante liquidez.
+        </p>
       </div>
       <div class="coach-search-bar">
         <label class="field">

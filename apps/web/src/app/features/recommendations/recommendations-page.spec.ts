@@ -84,6 +84,27 @@ async function renderComponent<T>(
 }
 describe('production recommendations', () => {
   useMemoryStorage();
+  it('labels cumulative negotiations without inventing stock or guaranteeing sales', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    vi.spyOn(page, 'producersName').mockReturnValue(2);
+    page.quotes.set({
+      2: {
+        unitPrice: '100',
+        available: null,
+        observedAt: new Date().toISOString(),
+        source: 'market',
+        totalTrades: '9007199254740993',
+      },
+    });
+    expect(page.tradeVolumeLabel('elixir')).toContain(
+      '9.007.199.254.740.993 negociações acumuladas',
+    );
+    expect(page.tradeVolumeLabel('elixir')).toContain('Estoque não informado');
+    expect(fixture.nativeElement.textContent).not.toContain('Garantir volume de venda');
+  });
   it('resolves names and icons in one catalogue pass, preserving first matches and snapshot changes', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },
