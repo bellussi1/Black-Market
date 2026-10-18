@@ -22,7 +22,23 @@ class PrefetchHost {}
 class EmptyPrefetchHost {}
 
 describe('Route intent prefetch directive', () => {
-  it('warms the matching public route on pointer intent and keyboard focus', () => {
+  it('does not instantiate catalogue warming before user intent or after destruction', async () => {
+    const factory = vi.fn(() => ({ prefetchPath: () => of({ status: 'ready' }) }));
+    TestBed.configureTestingModule({
+      imports: [PrefetchHost],
+      providers: [provideRouter([]), { provide: PublicRouteData, useFactory: factory }],
+    });
+    const fixture = TestBed.createComponent(PrefetchHost);
+    fixture.detectChanges();
+    expect(factory).not.toHaveBeenCalled();
+    fixture.nativeElement.querySelector('a').dispatchEvent(new PointerEvent('pointerenter'));
+    fixture.destroy();
+    await import('./public-route-data');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(factory).not.toHaveBeenCalled();
+  });
+
+  it('warms the matching public route on pointer intent and keyboard focus', async () => {
     const prefetchPath = vi.fn(() => of({ status: 'ready' as const }));
     TestBed.configureTestingModule({
       imports: [PrefetchHost],
@@ -35,7 +51,7 @@ describe('Route intent prefetch directive', () => {
     link.dispatchEvent(new PointerEvent('pointerenter'));
     link.dispatchEvent(new FocusEvent('focusin'));
 
-    expect(prefetchPath).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(prefetchPath).toHaveBeenCalledTimes(2));
     expect(prefetchPath).toHaveBeenNthCalledWith(1, '/market');
     expect(prefetchPath).toHaveBeenNthCalledWith(2, '/market');
     fixture.destroy();

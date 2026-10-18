@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import type { ResolveFn } from '@angular/router';
 import {
   catchError,
   finalize,
@@ -126,15 +125,9 @@ export class PublicRouteData {
   }
 }
 
-export const marketRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
-  inject(PublicRouteData).prefetchPath('/market');
-
-export const recommendationsRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
-  inject(PublicRouteData).prefetchPath('/recommendations');
-
-export const recipesRouteResolver: ResolveFn<PublicRouteWarmResult> = (route) => {
-  const id = route.paramMap.get('id') ?? route.queryParamMap.get('item');
-  const key = route.paramMap.get('key');
-  const path = key ? `/recipes/${key}` : id ? `/recipes/items/${id}` : '/recipes';
-  return inject(PublicRouteData).prefetchPath(path);
-};
+// Preserve the established import path for callers; route configuration uses the lightweight facade.
+export {
+  marketRouteResolver,
+  recipesRouteResolver,
+  recommendationsRouteResolver,
+} from './public-route-resolvers';

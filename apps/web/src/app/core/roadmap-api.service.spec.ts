@@ -1,57 +1,54 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import type { RoadmapResponse } from '@bdo/shared';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { IdentityService } from './identity.service';
 import { RoadmapApiService } from './roadmap-api.service';
 
-const flushAsyncWork = async () => {
-  for (let index = 0; index < 4; index++) await Promise.resolve();
-};
+const key = makeStateKey<RoadmapResponse>('black-market-public-roadmap');
+const snapshot: RoadmapResponse = { entries: [], updatedAt: null };
 
-describe('RoadmapApiService', () => {
-  it('loads public content without requiring an identity token', () => {
-    TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
-    });
-    const api = TestBed.inject(RoadmapApiService);
-    const http = TestBed.inject(HttpTestingController);
-    const result: unknown[] = [];
-    api.getPublic().subscribe((response) => result.push(response));
-    const request = http.expectOne((candidate) => candidate.url.endsWith('/api/v1/roadmap'));
-    expect(request.request.method).toBe('GET');
-    request.flush({ entries: [], updatedAt: null });
-    expect(result).toEqual([{ entries: [], updatedAt: null }]);
-    http.verify();
-  });
+describe('public roadmap hydration', () => {
+  afterEach(() => TestBed.resetTestingModule());
 
-  it('uses a verified Firebase bearer token for management requests and saves', async () => {
-    const token = vi.fn().mockResolvedValue('verified-session');
+  function setup(platform = 'browser') {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: IdentityService, useValue: { token } },
+        { provide: PLATFORM_ID, useValue: platform },
+        { provide: IdentityService, useValue: {} },
       ],
     });
-    const api = TestBed.inject(RoadmapApiService);
-    const http = TestBed.inject(HttpTestingController);
-    const managed = api.getManaged();
-    await flushAsyncWork();
-    const readRequest = http.expectOne((candidate) => candidate.url.endsWith('/roadmap/manage'));
-    expect(readRequest.request.headers.get('Authorization')).toBe('Bearer verified-session');
-    readRequest.flush({ entries: [], updatedAt: null });
-    await expect(managed).resolves.toEqual({ entries: [], updatedAt: null });
+    return {
+      api: TestBed.inject(RoadmapApiService),
+      http: TestBed.inject(HttpTestingController),
+      state: TestBed.inject(TransferState),
+    };
+  }
 
-    const saved = api.replace({ expectedUpdatedAt: null, entries: [] });
-    await flushAsyncWork();
-    const writeRequest = http.expectOne((candidate) => candidate.url.endsWith('/roadmap/manage'));
-    expect(writeRequest.request.method).toBe('PUT');
-    expect(writeRequest.request.headers.get('Authorization')).toBe('Bearer verified-session');
-    writeRequest.flush({ entries: [], updatedAt: null });
-    await expect(saved).resolves.toEqual({ entries: [], updatedAt: null });
-    expect(token).toHaveBeenCalledTimes(2);
+  it('uses the SSR snapshot once, then allows an explicit fresh request', () => {
+    const { api, http, state } = setup();
+    state.set(key, snapshot);
+    let received: RoadmapResponse | undefined;
+    api.getPublic().subscribe((value) => (received = value));
+    expect(received).toEqual(snapshot);
+    http.expectNone((request) => request.url.endsWith('/api/v1/roadmap'));
+    expect(state.hasKey(key)).toBe(false);
+
+    api.getPublic().subscribe();
+    http.expectOne((request) => request.url.endsWith('/api/v1/roadmap')).flush(snapshot);
+    http.verify();
+  });
+
+  it('transfers only the successful public response rendered by the server', () => {
+    const { api, http, state } = setup('server');
+    api.getPublic().subscribe();
+    http.expectOne((request) => request.url.endsWith('/api/v1/roadmap')).flush(snapshot);
+    expect(state.get(key, { entries: [], updatedAt: 'missing' })).toEqual(snapshot);
     http.verify();
   });
 });

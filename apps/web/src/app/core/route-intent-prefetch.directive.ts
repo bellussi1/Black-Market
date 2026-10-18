@@ -1,7 +1,7 @@
-import { DestroyRef, Directive, HostListener, inject, input } from '@angular/core';
+import { DestroyRef, Directive, HostListener, inject, Injector, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { PublicRouteData } from './public-route-data';
+import { warmPublicPath } from './public-route-resolvers';
 
 @Directive({
   selector: '[appRouteIntentPrefetch]',
@@ -9,7 +9,7 @@ import { PublicRouteData } from './public-route-data';
 })
 export class RouteIntentPrefetchDirective {
   readonly routeUrl = input('', { alias: 'appRouteIntentPrefetch' });
-  private readonly routeData = inject(PublicRouteData);
+  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
 
   @HostListener('pointerenter')
@@ -25,8 +25,7 @@ export class RouteIntentPrefetchDirective {
   private warmRoute(): void {
     const url = this.routeUrl().trim();
     if (!url) return;
-    this.routeData
-      .prefetchPath(url)
+    warmPublicPath(this.injector, url)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
   }
