@@ -39,3 +39,11 @@ A comparação não permite concluir como os concorrentes carregam seus módulos
 ## Snapshot após agrupar a navegação — 18/10/2026
 
 O build serial de produção posterior ao refactor de navegação reportou bundle inicial de **501,70 kB** e transferência estimada de **134,99 kB**. São 1,48 kB a menos que o snapshot anterior deste relatório; o bundle permanece 1,70 kB acima do aviso de 500 kB. A compilação isolada confirma o tamanho atual, mas não atribui toda a diferença a uma dependência específica. Nenhum budget foi elevado. A alteração de navegação e seu QA estão descritos em [`mvp-navigation-refactor-review-2026-10-18.md`](mvp-navigation-refactor-review-2026-10-18.md) e ACTIVE_CONTEXT §164.
+
+## Snapshot após filtragem dos ícones do shell MVP — 18/10/2026
+
+O build de produção serial com `ng build --stats-json` ficou em **499,47 kB** de bundle inicial e **134,68 kB** estimados em transferência. Em relação ao snapshot anterior, a redução foi de 2,23 kB bruto e 0,31 kB transferidos; em relação aos 546,01 kB iniciais, a redução acumulada é 46,54 kB. O shell registra apenas os ícones presentes na navegação MVP quando `SCREENSHOT_MVP` está ativo e mantém o registro completo na configuração alternativa. Um ícone não usado foi removido. O orçamento continua em 500 kB e não foi alterado; a build deixou de emitir o aviso de tamanho inicial. O módulo do registry Lucide caiu de 14,87 kB para 13,09 kB; CSS permaneceu em 57,44 kB. Avisos de fallback de locale `pt-BR`→`pt` e CommonJS do Tesseract continuam independentes.
+
+O teste focado do layout passou 15/15; `pnpm check`, build de produção, `pnpm test:ssr` e a suíte integral (1.154 aprovados/1 ignorado) passaram. Playwright CLI em 390×844 confirmou largura sem overflow e renderização de todos os ícones do menu. O detalhe do código está no commit `4366417` e ACTIVE_CONTEXT §165.
+
+**Próximo passo:** acompanhar o bundle em mudanças do shell e evitar regressão acima de 500 kB; não alterar o budget nem remover controles do MVP para atingir a meta.
