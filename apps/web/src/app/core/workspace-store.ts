@@ -1,5 +1,15 @@
+import { isPlatformBrowser } from '@angular/common';
 import type { OnDestroy } from '@angular/core';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  inject,
+  Injectable,
+  makeStateKey,
+  PLATFORM_ID,
+  signal,
+  TransferState,
+} from '@angular/core';
 import type { CalculatorKey, CharacterProfile } from '@bdo/calculators';
 
 import { validationMessage } from '../shared/calculation-feedback';
@@ -8,10 +18,12 @@ import { RegionPreferences } from './region-preferences';
 import { emptyWorkspace, presetSchema, type Workspace, workspaceSchema } from './workspace-models';
 
 const STORAGE_KEY = 'black-market.workspace.v1';
+const HYDRATION_KEY = makeStateKey<boolean>('black-market-workspace-hydration');
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceStore implements OnDestroy {
   private readonly preferences = inject(RegionPreferences);
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly internal = signal<Workspace>(emptyWorkspace());
   private readonly demonstration = signal<Workspace | null>(null);
   readonly demoActive = computed(() => this.demonstration() !== null);
@@ -25,12 +37,32 @@ export class WorkspaceStore implements OnDestroy {
   readonly blocked: RegionPreferences['blocked'];
   private readonly unsubscribe: () => void;
   private recovery = '';
+  private restored = false;
 
   constructor() {
     const preferences = this.preferences;
     this.message = preferences.message;
     this.blocked = preferences.blocked;
     this.internal.update((state) => ({ ...state, region: preferences.region() }));
+    preferences.setSummary(this.data());
+    this.unsubscribe = preferences.onRegionChange((region) => {
+      if (this.data().region === region) return;
+      // RegionPreferences restores before the workspace during hydration. Never
+      // persist an empty initial workspace over the backup awaiting restoration.
+      if (!this.restored) this.internal.update((state) => ({ ...state, region }));
+      else this.update((state) => ({ ...state, region }));
+    });
+    const transfer = inject(TransferState);
+    if (!this.browser) {
+      transfer.set(HYDRATION_KEY, true);
+    } else if (transfer.hasKey(HYDRATION_KEY)) {
+      transfer.remove(HYDRATION_KEY);
+      afterNextRender(() => this.restore());
+    } else this.restore();
+  }
+  private restore(): void {
+    if (this.restored || !this.browser) return;
+    const preferences = this.preferences;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -45,13 +77,13 @@ export class WorkspaceStore implements OnDestroy {
         'Não foi possível ler seus dados locais. Exporte um backup antes de substituir o armazenamento.',
       );
       this.blocked.set(Boolean(this.recovery));
+    } finally {
+      this.restored = true;
     }
     preferences.setSummary(this.data());
-    this.unsubscribe = preferences.onRegionChange((region) => {
-      if (this.data().region !== region) this.update((state) => ({ ...state, region }));
-    });
   }
   update(change: (state: Workspace) => Workspace): boolean {
+    this.restore();
     if (this.demoActive()) return this.replace(change(this.data()));
     if (this.blocked()) {
       this.message.set(
@@ -72,10 +104,12 @@ export class WorkspaceStore implements OnDestroy {
         this.preferences.setSummary(this.data());
         return true;
       }
+      this.restored = true;
       this.internal.set(value);
       this.blocked.set(false);
       this.preferences.setSummary(value);
       this.preferences.setRegion(value.region);
+      if (!this.browser) return true;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
         this.message.set('');
@@ -131,6 +165,7 @@ export class WorkspaceStore implements OnDestroy {
     this.update((s) => ({ ...s, presets: s.presets.filter((r) => r.id !== id) }));
   }
   exportBackup(): void {
+    this.restore();
     download(
       this.demoActive() ? 'black-market-demonstracao.json' : 'black-market-backup.json',
       this.blocked() && !this.demoActive()

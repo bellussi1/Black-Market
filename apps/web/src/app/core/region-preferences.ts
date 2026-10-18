@@ -31,6 +31,7 @@ const emptySummary = {
 @Injectable({ providedIn: 'root' })
 export class RegionPreferences {
   private readonly document = inject(DOCUMENT);
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly region = signal<Region>(DEFAULT_REGION);
   readonly message = signal('');
   readonly blocked = signal(false);
@@ -61,7 +62,7 @@ export class RegionPreferences {
   constructor() {
     const state = inject(TransferState);
     const regionKey = makeStateKey<Region>('black-market-region');
-    const browser = isPlatformBrowser(inject(PLATFORM_ID));
+    const browser = this.browser;
     const request = inject(REQUEST, { optional: true });
     const cookie = browser ? (this.document.cookie ?? '') : (request?.headers.get('cookie') ?? '');
     const selected = /(?:^|;\s*)black-market-region=([a-z]+)/.exec(cookie)?.[1];
@@ -124,6 +125,10 @@ export class RegionPreferences {
   setRegion(value: string): void {
     if (!regions.includes(value as Region) || value === this.region() || this.blocked()) return;
     this.region.set(value as Region);
+    if (!this.browser) {
+      this.listeners.forEach((listener) => listener(value as Region));
+      return;
+    }
     try {
       localStorage.setItem('black-market.region', value);
       this.document.cookie = `black-market-region=${value}; Path=/; Max-Age=31536000; SameSite=Lax${this.document.location?.protocol === 'https:' ? '; Secure' : ''}`;
