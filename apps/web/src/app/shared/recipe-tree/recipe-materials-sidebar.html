@@ -114,10 +114,16 @@
                       ? 'NPC · '
                       : item.unitPriceSource === 'equivalent'
                         ? 'Equivalente' +
-                          (item.equivalentPriceSource === 'maximum' ? ' · Máxima · ' : ' · ')
+                          (item.equivalentPriceSource === 'maximum'
+                            ? ' · Máxima · '
+                            : item.equivalentPriceSource === 'reference'
+                              ? ' · Referência · '
+                              : ' · ')
                         : item.unitPriceSource === 'maximum'
                           ? 'Máxima · '
-                          : ''
+                          : item.unitPriceSource === 'reference'
+                            ? 'Referência · '
+                            : ''
                   }}{{ silver(item.unitPrice) }}</span
                 >
                 @if (item.stock !== null) {

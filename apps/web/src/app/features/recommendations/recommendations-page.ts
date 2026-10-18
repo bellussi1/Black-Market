@@ -57,7 +57,7 @@ import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surfac
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
-  basis?: 'market' | 'maximum' | 'manual' | 'npc';
+  basis?: 'market' | 'maximum' | 'reference' | 'manual' | 'npc';
   totalTrades?: string | null;
   lastSoldAt?: string | null;
 };
@@ -976,6 +976,7 @@ export class RecommendationsPage implements OnDestroy {
     if (quote.source === 'npc') return 'NPC · preço do catálogo';
     if (quote.source === 'manual') return 'Premissa manual';
     if (quote.basis === 'maximum') return 'Máxima do mercado · sem estoque';
+    if (quote.basis === 'reference') return 'Referência do mercado · sem estoque';
     return `Mercado · ${quote.available ?? 'estoque não informado'}`;
   }
   quoteDetails(itemId: number): string {

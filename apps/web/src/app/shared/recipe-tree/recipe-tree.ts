@@ -456,7 +456,9 @@ export class RecipeTree {
         const unitPrice = materialPrice?.price ?? null;
         const totalPurchaseCost = this.materialPurchaseValue(itemId, required);
         const liveQuote =
-          materialPrice?.source === 'market' || materialPrice?.source === 'maximum'
+          materialPrice?.source === 'market' ||
+          materialPrice?.source === 'maximum' ||
+          materialPrice?.source === 'reference'
             ? quotes.get(itemId)
             : undefined;
         const stock = liveQuote?.stock ?? null;
@@ -1517,7 +1519,7 @@ export class RecipeTree {
               });
               const quotes$ = (
                 this.marketCache.resolveProductionQuotes ?? this.marketCache.resolveQuotesBatch
-              ).call(this.marketCache, quoteItemIds, region);
+              ).call(this.marketCache, quoteItemIds, region, force);
               const npcPrices$ =
                 this.catalog
                   .getNpcPurchasePrices?.(

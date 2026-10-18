@@ -487,6 +487,9 @@ describe('production recommendations', () => {
       available: 4,
       basis: 'market',
     });
+    expect(
+      recommendationMarketQuote({ ...base, stock: 0, maxPrice: null }, observedAt),
+    ).toMatchObject({ unitPrice: '50', available: 0, basis: 'reference' });
     expect(recommendationMarketQuote({ ...base, price: null, maxPrice: null }, observedAt)).toBe(
       null,
     );

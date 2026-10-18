@@ -1,6 +1,6 @@
 import type { MarketItemQuote, NpcPurchasePrice } from '@bdo/shared';
 
-import { recipeMarketPrice } from './recipe-market-price';
+import { recipeMarketPrice, type RecipeMarketPriceSource } from './recipe-market-price';
 
 export interface RecipeMarketEquivalent {
   itemId: number;
@@ -11,9 +11,9 @@ export interface RecipeMarketEquivalent {
 
 export type RecipeMaterialPrice = {
   price: string;
-  source: 'market' | 'maximum' | 'npc' | 'equivalent';
+  source: RecipeMarketPriceSource | 'npc' | 'equivalent';
   equivalentItem?: RecipeMarketEquivalent;
-  equivalentPriceSource?: 'market' | 'maximum';
+  equivalentPriceSource?: RecipeMarketPriceSource;
 };
 
 export function resolveRecipeMaterialPrice(

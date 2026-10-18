@@ -288,7 +288,7 @@ describe('MarketCacheService', () => {
     expect(service.isSyncing()).toBe(false);
   });
 
-  it('keeps a zero-stock quote without maxPrice pending instead of fanning out to the item endpoint', () => {
+  it('preserves the zero-stock base reference without fanning out to the item endpoint', () => {
     const emissions: Map<number, (typeof mockLookupResponse.items)[number]>[] = [];
     service.resolveProductionQuotes([1408], 'sa').subscribe((result) => emissions.push(result));
 

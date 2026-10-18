@@ -135,6 +135,26 @@ describe('recipe production planner adapter', () => {
 
     expect(result.quotes[4986]).toMatchObject({ unitPrice: '900', source: 'market' });
   });
+  it('keeps a sold-out summary price in the calculation without inventing available stock', () => {
+    const result = buildRecipeProductionInput(
+      graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),
+      1,
+      emptyWorkspace(),
+      new Map([[4986, { ...quote(4986, '14000'), stock: 0, maxPrice: null }]]),
+      new Map(),
+      new Map(),
+      new Map(),
+      now,
+      { quoteObservedAt: new Map([[4986, now.toISOString()]]) },
+    );
+    expect(result.quotes[4986]).toMatchObject({
+      unitPrice: '14000',
+      available: 0,
+      source: 'market',
+      observedAt: now.toISOString(),
+    });
+  });
+
   it('uses the maximum market price when the item has no stock', () => {
     const result = buildRecipeProductionInput(
       graph(recipe('root', 100, [{ itemId: 4986, quantity: '1' }])),

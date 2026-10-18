@@ -241,6 +241,7 @@ describe('Interactive recipe tree', () => {
         766107, 820910,
       ],
       'sa',
+      false,
     );
   });
 
@@ -345,6 +346,7 @@ describe('Interactive recipe tree', () => {
     expect(mocks.marketCache.resolveQuotesBatch).toHaveBeenCalledWith(
       expect.arrayContaining([8511]),
       'sa',
+      true,
     );
     expect(tree.materialPrice(8211)).toMatchObject({
       price: '24000',
@@ -497,6 +499,7 @@ describe('Interactive recipe tree', () => {
     expect(dependencies.marketCache.resolveQuotesBatch).toHaveBeenCalledWith(
       expect.arrayContaining([8501]),
       'sa',
+      true,
     );
     fixture.destroy();
   });
@@ -2001,7 +2004,7 @@ describe('Interactive recipe tree', () => {
     expect(el.querySelectorAll('.economic-summary-header button[hlmBtn]')).toHaveLength(3);
     expect(el.textContent).toContain('Resultado da receita');
     expect(el.textContent).toContain(
-      'Preço de venda estimado: cotação atual com estoque; sem estoque, preço máximo anunciado.',
+      'Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda.',
     );
   });
 
