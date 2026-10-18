@@ -6,8 +6,8 @@ import { Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from './analytics.service';
-import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 import { TUTORIAL_DRIVER_LOADER, TutorialService } from './tutorial.service';
+import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 
 const guide = {
   screenKey: 'market' as const,

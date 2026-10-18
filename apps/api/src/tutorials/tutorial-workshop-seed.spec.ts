@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest';
-
 import { TUTORIAL_SCREEN_REGISTRY } from '@bdo/shared';
+import { describe, expect, it } from 'vitest';
 
 import { TUTORIAL_SEED_ENTRIES } from './tutorial-seed-content';
 import { parseTutorialGuideUpdate } from './tutorial-validation';

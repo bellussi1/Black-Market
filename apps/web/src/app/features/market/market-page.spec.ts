@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
-import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import type { CatalogItem, MarketBoardItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 

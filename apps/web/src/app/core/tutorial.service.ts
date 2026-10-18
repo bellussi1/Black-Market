@@ -6,12 +6,12 @@ import type { TutorialPublicGuide } from '@bdo/shared';
 import type { Config, Driver, PopoverDOM } from 'driver.js';
 
 import { AnalyticsService } from './analytics.service';
-import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 import {
   findUniqueVisibleTourTarget,
   type ResolvedTutorialStep,
   resolveTutorialSteps,
 } from './tutorial-anchor-resolver';
+import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 
 export const ANCHOR_RECHECK_DELAY_MS = 150;
 export const TUTORIAL_DRIVER_LOADER = new InjectionToken<

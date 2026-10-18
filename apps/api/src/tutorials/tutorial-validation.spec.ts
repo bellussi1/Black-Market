@@ -90,7 +90,7 @@ describe('tutorial guide payload validation', () => {
       parseTutorialGuideUpdate('market', 'pt-BR', {
         expectedUpdatedAt: null,
         enabled: true,
-        steps: [...steps, { ...steps[0]!, sortOrder: 12 }],
+        steps: [...steps, { ...steps[0], sortOrder: 12 }],
       }),
     ).toThrow();
   });

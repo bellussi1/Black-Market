@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
-import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
 
 import { IdentityService } from '../../core/identity.service';

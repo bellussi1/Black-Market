@@ -2,8 +2,8 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
   Directive,
-  ElementRef,
   effect,
+  ElementRef,
   inject,
   input,
   PLATFORM_ID,
@@ -11,10 +11,10 @@ import {
 import type { TutorialPublicGuide, TutorialScreenKey } from '@bdo/shared';
 import { type Subscription } from 'rxjs';
 
-import { TutorialOnboardingStateService } from '../../core/tutorial-onboarding-state.service';
-import { TutorialApiService } from '../../core/tutorial-api.service';
-import { hasVisibleTutorialTarget } from '../../core/tutorial-anchor-resolver';
 import { TutorialService } from '../../core/tutorial.service';
+import { hasVisibleTutorialTarget } from '../../core/tutorial-anchor-resolver';
+import { TutorialApiService } from '../../core/tutorial-api.service';
+import { TutorialOnboardingStateService } from '../../core/tutorial-onboarding-state.service';
 
 export const TUTORIAL_TARGET_WAIT_MS = 4000;
 export const TUTORIAL_TARGET_POLL_MS = 150;

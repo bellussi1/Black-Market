@@ -9,7 +9,7 @@ import { PlayerPage } from '../player/player-page';
 import { RecipesPage } from '../recipes/recipes-page';
 import { RecommendationsPage } from '../recommendations/recommendations-page';
 import { AutomaticScanPage } from '../scans/automatic-scan-page';
-import { ScansPage, type CellDraft } from '../scans/scans-page';
+import { type CellDraft, ScansPage } from '../scans/scans-page';
 import { StockPage } from '../stock/stock-page';
 import { StoragePage } from '../storage/storage-page';
 

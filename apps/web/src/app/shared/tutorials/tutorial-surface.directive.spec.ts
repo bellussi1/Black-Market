@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
+import type { TutorialScreenKey } from '@bdo/shared';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { TutorialScreenKey } from '@bdo/shared';
-import { TutorialOnboardingStateService } from '../../core/tutorial-onboarding-state.service';
-import { TutorialApiService } from '../../core/tutorial-api.service';
 import { TutorialService } from '../../core/tutorial.service';
+import { TutorialApiService } from '../../core/tutorial-api.service';
+import { TutorialOnboardingStateService } from '../../core/tutorial-onboarding-state.service';
 import { renderComponent } from '../../testing/test-setup';
 import { TutorialSurfaceDirective } from './tutorial-surface.directive';
 
