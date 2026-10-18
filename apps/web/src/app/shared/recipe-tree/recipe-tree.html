@@ -293,7 +293,7 @@
             </p>
           </div>
           <div
-            class="flex flex-wrap gap-2"
+            class="flex flex-wrap gap-2 scenario-actions"
             role="group"
             aria-label="Cenário de produção"
             data-tour="recipe-workshop.strategy"
@@ -302,29 +302,34 @@
               hlmBtn
               variant="outline"
               type="button"
+              class="h-auto flex-col items-start whitespace-normal text-left gap-1"
               [attr.aria-pressed]="acquisitionStrategy() === 'buy_all'"
               (click)="setAcquisitionStrategy('buy_all')"
             >
               Comprar subreceitas
+              <small class="text-xs font-normal">Produzir só a receita final</small>
             </button>
             <button
               hlmBtn
               variant="outline"
               type="button"
+              class="h-auto flex-col items-start whitespace-normal text-left gap-1"
               [attr.aria-pressed]="acquisitionStrategy() === 'gather_all'"
               (click)="setAcquisitionStrategy('gather_all')"
             >
               Fazer / coletar tudo
+              <small class="text-xs font-normal">Produzir intermediários quando possível</small>
             </button>
             <button
               hlmBtn
               type="button"
               variant="outline"
-              class="optimize-action"
+              class="optimize-action h-auto flex-col items-start whitespace-normal text-left gap-1"
               [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
               (click)="optimizing() ? cancelOptimization(true) : optimizeAcquisition()"
             >
               {{ optimizing() ? 'Cancelar cálculo' : 'Otimizar lucro por hora' }}
+              <small class="text-xs font-normal">Comparar compra e produção com sua maestria</small>
             </button>
           </div>
         </div>

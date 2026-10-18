@@ -2171,7 +2171,7 @@ describe('Interactive recipe tree', () => {
 
     expect(tree.returnedProductRows().find((product) => product.itemId === 750)?.sell).toBe(false);
     expect(Number(tree.netRevenue())).toBeLessThan(beforeKeep);
-    expect(fixture.nativeElement.textContent).toContain('Guardar');
+    expect(fixture.nativeElement.textContent).toContain('guardado');
     fixture.destroy();
   });
 

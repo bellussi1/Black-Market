@@ -24,11 +24,7 @@
           returnSaleChanged.emit({ itemId: returned.itemId, sell: $any($event.target).checked })
         "
       />
-      @if (returned.sell) {
-        <span i18n>Vender</span>
-      } @else {
-        <span i18n>Guardar</span>
-      }
+      <span i18n>Incluir venda</span>
     </label>
   </div>
 </ng-template>
@@ -46,7 +42,10 @@
         >{{ materials().length }} insumos · {{ returns().length }} retornos</span
       >
     </div>
-    <p class="sidebar-hint" i18n>Escolha o que fazer, comprar, vender ou guardar.</p>
+    <p class="sidebar-hint" i18n>
+      Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é
+      abatido do lote.
+    </p>
   </div>
 
   <div class="sidebar-section-heading">
@@ -67,20 +66,24 @@
         <label
           class="material-source-checkbox bdo-checkbox-container"
           [title]="
-            item.source === 'buy'
-              ? 'Comprar no Mercado Central'
-              : 'Fazer ou coletar por conta própria'
+            !item.canProduce
+              ? 'Sem método de produção conhecido; obter pronto'
+              : item.source === 'buy'
+                ? 'Comprar no Mercado Central'
+                : 'Fazer ou coletar por conta própria'
           "
         >
           <input
             type="checkbox"
             [checked]="item.source !== 'buy'"
+            [disabled]="!item.canProduce"
             (change)="toggleSource.emit(item.itemId)"
             [attr.aria-label]="
               (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') + item.name
             "
           />
           <span class="bdo-checkbox-visual"></span>
+          <span class="source-choice-label">Produzir</span>
         </label>
 
         <button
@@ -146,7 +149,13 @@
           [class.is-buy]="item.source === 'buy'"
         >
           {{
-            item.source === 'buy' ? 'Comprar' : item.sourceLabel === 'Coletar' ? 'Coletar' : 'Fazer'
+            !item.canProduce
+              ? 'Obter pronto'
+              : item.source === 'buy'
+                ? 'Comprar'
+                : item.sourceLabel === 'Coletar'
+                  ? 'Coletar'
+                  : 'Produzir'
           }}
         </div>
       </div>
@@ -162,7 +171,8 @@
         <span>{{ returns().length }}</span>
       </div>
       <p class="sidebar-hint" i18n>
-        Venda marcada entra no faturamento; itens guardados ficam fora.
+        Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e
+        não gera receita de venda.
       </p>
       <div class="returned-product-list" id="returned-product-list">
         @for (returned of visibleReturns(); track returned.itemId) {
