@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { apiCorsOptions, jsonRequest } from './http-policy';
+import { MetricsService } from './metrics.service';
 import { requestControls } from './request-controls';
 import { SafeExceptionFilter } from './safe-exception.filter';
 
@@ -38,13 +39,14 @@ describe('HTTP security through the native Nest adapter', () => {
   let app: NestExpressApplication;
   let url: string;
   const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() };
+  const metrics = new MetricsService();
   beforeAll(async () => {
     app = await NestFactory.create<NestExpressApplication>(FixtureModule, {
       logger: false,
       bodyParser: false,
     });
     app.enableCors(apiCorsOptions('https://platform.example'));
-    app.use(requestControls(logger, 'production', 'https://platform.example'));
+    app.use(requestControls(logger, 'production', 'https://platform.example', metrics));
     app.useGlobalFilters(new SafeExceptionFilter(logger));
     app.useBodyParser('json', { limit: '256kb', type: (request) => jsonRequest(request, false) });
     app.useBodyParser('json', { limit: '20mb', type: (request) => jsonRequest(request, true) });
@@ -65,6 +67,18 @@ describe('HTTP security through the native Nest adapter', () => {
     expect(response?.status).toBe(429);
     expect(response?.headers.get('access-control-allow-origin')).toBe('https://platform.example');
     expect(response?.headers.get('retry-after')).toBe('60');
+  });
+  it('records route templates without query-string values', async () => {
+    await fetch(url + '/api/v1/calculators/fixture?token=private', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    const output = metrics.render();
+    expect(output).toContain(
+      'black_market_http_requests_total{method="POST",route="/api/v1/calculators/fixture",status_class="2xx"} 1',
+    );
+    expect(output).not.toContain('token=private');
   });
   it('enforces body limits without reducing the personal backup limit', async () => {
     const body = JSON.stringify({ data: 'x'.repeat(300000) });

@@ -93,6 +93,19 @@ describe('environment boundaries', () => {
         .MARKET_BOARD_COLLECTOR_ENABLED,
     ).toBe(true);
   });
+  it('keeps local metrics disabled by default and rejects the option outside local', () => {
+    expect(envSchema.parse(local).LOCAL_METRICS_ENABLED).toBe(false);
+    expect(envSchema.parse({ ...local, LOCAL_METRICS_ENABLED: 'true' }).LOCAL_METRICS_ENABLED).toBe(
+      true,
+    );
+    expect(
+      envSchema.safeParse({
+        ...local,
+        APP_ENV: 'staging',
+        LOCAL_METRICS_ENABLED: 'true',
+      }).success,
+    ).toBe(false);
+  });
   it('normalizes a development web origin', () => {
     expect(envSchema.parse({ ...local, WEB_ORIGIN: 'http://localhost:4200/path' }).WEB_ORIGIN).toBe(
       'http://localhost:4200',

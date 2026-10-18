@@ -39,6 +39,10 @@ export const envSchema = z
       .default('false')
       .transform((value) => value === 'true'),
     APP_ENV: z.enum(['local', 'staging', 'production']).default('local'),
+    LOCAL_METRICS_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     PUBLIC_SITE_URL: z.preprocess(
@@ -129,6 +133,12 @@ export const envSchema = z
       .default(''),
   })
   .superRefine((value, context) => {
+    if (value.LOCAL_METRICS_ENABLED && value.APP_ENV !== 'local')
+      context.addIssue({
+        code: 'custom',
+        path: ['LOCAL_METRICS_ENABLED'],
+        message: 'LOCAL_METRICS_ENABLED is available only for APP_ENV=local.',
+      });
     const localStagingHttpOrigin =
       value.APP_ENV === 'staging' &&
       isLoopbackHttpUrl(value.PUBLIC_SITE_URL) &&

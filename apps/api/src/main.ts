@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { DatabaseService } from './database/database.service';
 import { apiCorsOptions, jsonRequest } from './operations/http-policy';
+import { MetricsService } from './operations/metrics.service';
 import { requestControls } from './operations/request-controls';
 import { SafeExceptionFilter } from './operations/safe-exception.filter';
 import { StructuredLogger } from './operations/structured-logger';
@@ -36,6 +37,7 @@ async function bootstrap() {
       logger,
       config.getOrThrow<string>('NODE_ENV'),
       config.getOrThrow<string>('WEB_ORIGIN'),
+      app.get(MetricsService),
     ),
   );
   app.useGlobalFilters(new SafeExceptionFilter(logger));

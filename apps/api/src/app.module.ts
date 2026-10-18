@@ -7,6 +7,7 @@ import { validateEnvironment } from './config/env.schema';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { MarketModule } from './market/market.module';
+import { MetricsModule } from './operations/metrics.module';
 import { OperationsModule } from './operations/operations.module';
 import { ReferenceModule } from './reference/reference.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
@@ -21,6 +22,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
       validate: validateEnvironment,
     }),
     DatabaseModule,
+    MetricsModule,
     HealthModule,
     CatalogModule,
     CalculatorsModule,

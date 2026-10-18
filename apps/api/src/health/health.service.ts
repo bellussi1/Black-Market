@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { DatabaseService } from '../database/database.service';
+import { MetricsService } from '../operations/metrics.service';
 
 @Injectable()
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
   private lastReady: boolean | undefined;
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly metrics: MetricsService,
+  ) {}
 
   healthcheck() {
     return {
@@ -23,6 +27,7 @@ export class HealthService {
     } catch {
       // Do not retain connection errors or credentials.
     }
+    this.metrics.setDatabaseReady(ready);
     if (ready !== this.lastReady) {
       const event = { event: 'database_readiness', status: ready ? 200 : 503 };
       if (ready) this.logger.log(event);

@@ -4,6 +4,7 @@ import type { LoggerService } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
 import { isWorkspacePath } from './http-policy';
+import type { MetricsService } from './metrics.service';
 
 export type CorrelatedRequest = Request & { requestId?: string };
 export class WindowLimiter {
@@ -24,7 +25,12 @@ export class WindowLimiter {
     return true;
   }
 }
-export function requestControls(logger: LoggerService, environment: string, webOrigin: string) {
+export function requestControls(
+  logger: LoggerService,
+  environment: string,
+  webOrigin: string,
+  metrics?: MetricsService,
+) {
   const limiter = new WindowLimiter();
   return (req: CorrelatedRequest, res: Response, next: NextFunction) => {
     const started = Date.now();
@@ -56,9 +62,17 @@ export function requestControls(logger: LoggerService, environment: string, webO
         status: res.statusCode,
         durationMs: Date.now() - started,
       };
+      if (!['/health', '/ready', '/api/v1/metrics'].includes(req.path)) {
+        metrics?.recordHttpRequest(
+          req.method,
+          routePath === 'unmatched' ? routePath : `${req.baseUrl ?? ''}${routePath}`,
+          res.statusCode,
+          Date.now() - started,
+        );
+      }
       if (res.statusCode >= 500) logger.error(event);
       else if (res.statusCode >= 400) logger.warn(event);
-      else if (!['/health', '/ready'].includes(req.path)) logger.log(event);
+      else if (!['/health', '/ready', '/api/v1/metrics'].includes(req.path)) logger.log(event);
     });
     const workspace = isWorkspacePath(req.path);
     const identity = req.path.startsWith('/api/v1/identity/');
