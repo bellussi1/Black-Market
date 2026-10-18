@@ -27,6 +27,7 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 - [Redução do bundle inicial do shell](shell-bundle-deferral-review-2026-10-18.md): análise do grafo inicial, controles carregados sob demanda e novo baseline de produção.
 - [Home, acesso público a Profissões e botões sociais](home-social-login-ui-review-2026-10-18.md): primeira dobra da Home, mudança de acesso de `/lifeskills`, padronização dos botões Google/Steam e pesquisa pública atual.
 - [Ficha compacta de item na árvore de receitas](recipe-item-quick-info-review-2026-10-18.md): tooltip inspirado no jogo, pesquisa pública, acesso separado à ficha completa e revisão estática das etapas expansíveis.
+- [Revisão de fluxos pessoais e leitura de capturas](authenticated-workflows-ui-review-2026-10-18.md): cobertura automatizada de Scan/Armazém/Família/Recomendações/Profissões, correção do filtro inicial do Scan, pesquisa competitiva e limites do browser autenticado.
 
 | Documento                                                                                                                     | Cobertura                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
