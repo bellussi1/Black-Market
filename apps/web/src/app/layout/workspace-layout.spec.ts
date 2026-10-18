@@ -242,6 +242,35 @@ describe('workspace navigation', () => {
     expect(nav.textContent).toContain('Roadmap');
   });
 
+  it('keeps six Life Skills actions visible and groups secondary destinations', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity(true) },
+    ]);
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('#workspace-navigation')!;
+    const primaryPaths = [...nav.querySelectorAll('.primary-links a')].map((link) =>
+      link.getAttribute('href'),
+    );
+    const groups = [...nav.querySelectorAll('.nav-group')];
+    const groupTitles = groups.map((group) =>
+      group.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+
+    expect(primaryPaths).toEqual([
+      '/',
+      '/recommendations',
+      '/lifeskills',
+      '/market',
+      '/recipes',
+      '/crafting',
+    ]);
+    expect(groupTitles).toEqual(['Materiais e planos', 'Guias e conta']);
+    expect(
+      groups.flatMap((group) =>
+        [...group.querySelectorAll('a')].map((link) => link.getAttribute('href')),
+      ),
+    ).toEqual(['/storage', '/scans', '/family', '/shopping', '/plans', '/settings', '/roadmap']);
+  });
+
   it('shows login-required destinations to signed-out visitors', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity() },

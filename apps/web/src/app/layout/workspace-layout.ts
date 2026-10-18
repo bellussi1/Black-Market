@@ -255,48 +255,22 @@ export class WorkspaceLayout {
 
   private readonly primaryLinkOptions: NavigationLink[] = SCREENSHOT_MVP
     ? [
-        { path: '/', label: 'Início', icon: 'lucideHouse' },
-        { path: '/scans', label: 'Importar capturas', icon: 'lucideScanLine', requiresAuth: true },
-        { path: '/market', label: 'Mercado', icon: 'lucideStore' },
-        { path: '/recipes', label: 'Explorar receitas', icon: 'lucideBookOpenText' },
-        { path: '/crafting', label: 'Calcular produção', icon: 'lucideHammer' },
+        { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
         {
           path: '/recommendations',
-          label: 'O que fazer',
+          label: $localize`O que fazer`,
           icon: 'lucideCompass',
           requiresAuth: true,
         },
-        { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true },
         {
           path: '/lifeskills',
           label: $localize`Profissões e rendimento`,
           icon: 'lucidePickaxe',
           requiresAuth: true,
         },
-        {
-          path: '/family',
-          label: 'Família',
-          icon: 'lucideUsersRound',
-          requiresAuth: true,
-        },
-        {
-          path: '/shopping',
-          label: 'Lista de materiais',
-          icon: 'lucideListChecks',
-          requiresAuth: true,
-        },
-        {
-          path: '/plans',
-          label: $localize`Meus planos`,
-          icon: 'lucideListChecks',
-          requiresAuth: true,
-        },
-        {
-          path: '/settings',
-          label: $localize`Configurações e backup`,
-          icon: 'lucideSettings',
-        },
-        { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
+        { path: '/market', label: $localize`Mercado`, icon: 'lucideStore' },
+        { path: '/recipes', label: $localize`Explorar receitas`, icon: 'lucideBookOpenText' },
+        { path: '/crafting', label: $localize`Calcular produção`, icon: 'lucideHammer' },
       ]
     : [
         { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
@@ -311,111 +285,168 @@ export class WorkspaceLayout {
 
   readonly primaryLinks = computed(() => this.primaryLinkOptions);
 
-  private readonly navGroupOptions: NavigationGroup[] = [
-    {
-      title: 'Seus itens',
-      icon: 'lucideBoxes',
-      links: [{ path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true }],
-    },
-
-    {
-      title: $localize`Mercado e produção`,
-      icon: 'lucideStore',
-
-      links: [
-        { path: '/recipes', label: $localize`Receitas`, icon: 'lucideBookOpenText' },
-
-        { path: '/market', label: $localize`Consultar mercado`, icon: 'lucideChartNoAxesCombined' },
-
-        { path: '/crafting', label: $localize`Calcular produção`, icon: 'lucideHammer' },
-      ],
-    },
-
-    {
-      title: $localize`Personagem e evolução`,
-      icon: 'lucideUsersRound',
-
-      links: [
+  private readonly navGroupOptions: NavigationGroup[] = SCREENSHOT_MVP
+    ? [
         {
-          path: '/family',
-          label: $localize`Família`,
+          title: $localize`Materiais e planos`,
+          icon: 'lucideBoxes',
+          links: [
+            {
+              path: '/storage',
+              label: $localize`Armazém`,
+              icon: 'lucideWarehouse',
+              requiresAuth: true,
+            },
+            {
+              path: '/scans',
+              label: $localize`Importar capturas`,
+              icon: 'lucideScanLine',
+              requiresAuth: true,
+            },
+            {
+              path: '/family',
+              label: $localize`Família`,
+              icon: 'lucideUsersRound',
+              requiresAuth: true,
+            },
+            {
+              path: '/shopping',
+              label: $localize`Lista de materiais`,
+              icon: 'lucideListChecks',
+              requiresAuth: true,
+            },
+            {
+              path: '/plans',
+              label: $localize`Meus planos`,
+              icon: 'lucideListChecks',
+              requiresAuth: true,
+            },
+          ],
+        },
+        {
+          title: $localize`Guias e conta`,
+          icon: 'lucideBookOpenText',
+          links: [
+            {
+              path: '/settings',
+              label: $localize`Configurações e backup`,
+              icon: 'lucideSettings',
+            },
+            { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
+          ],
+        },
+      ]
+    : [
+        {
+          title: 'Seus itens',
+          icon: 'lucideBoxes',
+          links: [
+            { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true },
+          ],
+        },
+
+        {
+          title: $localize`Mercado e produção`,
+          icon: 'lucideStore',
+
+          links: [
+            { path: '/recipes', label: $localize`Receitas`, icon: 'lucideBookOpenText' },
+
+            {
+              path: '/market',
+              label: $localize`Consultar mercado`,
+              icon: 'lucideChartNoAxesCombined',
+            },
+
+            { path: '/crafting', label: $localize`Calcular produção`, icon: 'lucideHammer' },
+          ],
+        },
+
+        {
+          title: $localize`Personagem e evolução`,
           icon: 'lucideUsersRound',
-          requiresAuth: true,
+
+          links: [
+            {
+              path: '/family',
+              label: $localize`Família`,
+              icon: 'lucideUsersRound',
+              requiresAuth: true,
+            },
+
+            {
+              path: '/enhancement',
+              label: $localize`Aprimoramento e acúmulos`,
+              icon: 'lucideSparkles',
+            },
+
+            {
+              path: '/lifeskills',
+              label: $localize`Profissões e rendimento`,
+              icon: 'lucidePickaxe',
+              requiresAuth: true,
+            },
+
+            { path: '/buffs', label: $localize`Buffs e combinações`, icon: 'lucideFlaskConical' },
+          ],
         },
 
         {
-          path: '/enhancement',
-          label: $localize`Aprimoramento e acúmulos`,
-          icon: 'lucideSparkles',
+          title: $localize`Materiais e planejamento`,
+          icon: 'lucideBoxes',
+
+          links: [
+            {
+              path: '/storage',
+              label: $localize`Armazém`,
+              icon: 'lucideWarehouse',
+              requiresAuth: true,
+            },
+
+            {
+              path: '/scans',
+              label: $localize`Importar por captura`,
+              icon: 'lucideScanLine',
+              requiresAuth: true,
+            },
+
+            {
+              path: '/shopping',
+              label: $localize`Lista de materiais`,
+              icon: 'lucideListChecks',
+              requiresAuth: true,
+            },
+
+            { path: '/world', label: $localize`Bases e trabalhadores`, icon: 'lucideMap' },
+
+            {
+              path: '/plans',
+              label: $localize`Meus planos`,
+              icon: 'lucideListChecks',
+              requiresAuth: true,
+            },
+
+            { path: '/rng', label: $localize`Caixas e vendedor noturno`, icon: 'lucideDice5' },
+          ],
         },
 
         {
-          path: '/lifeskills',
-          label: $localize`Profissões e rendimento`,
-          icon: 'lucidePickaxe',
-          requiresAuth: true,
+          title: $localize`Guias e conta`,
+          icon: 'lucideBookOpenText',
+
+          links: [
+            { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
+
+            {
+              path: '/settings',
+              label: $localize`Configurações e backup`,
+              icon: 'lucideSettings',
+            },
+
+            { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
+          ],
         },
-
-        { path: '/buffs', label: $localize`Buffs e combinações`, icon: 'lucideFlaskConical' },
-      ],
-    },
-
-    {
-      title: $localize`Materiais e planejamento`,
-      icon: 'lucideBoxes',
-
-      links: [
-        {
-          path: '/storage',
-          label: $localize`Armazém`,
-          icon: 'lucideWarehouse',
-          requiresAuth: true,
-        },
-
-        {
-          path: '/scans',
-          label: $localize`Importar por captura`,
-          icon: 'lucideScanLine',
-          requiresAuth: true,
-        },
-
-        {
-          path: '/shopping',
-          label: $localize`Lista de materiais`,
-          icon: 'lucideListChecks',
-          requiresAuth: true,
-        },
-
-        { path: '/world', label: $localize`Bases e trabalhadores`, icon: 'lucideMap' },
-
-        {
-          path: '/plans',
-          label: $localize`Meus planos`,
-          icon: 'lucideListChecks',
-          requiresAuth: true,
-        },
-
-        { path: '/rng', label: $localize`Caixas e vendedor noturno`, icon: 'lucideDice5' },
-      ],
-    },
-
-    {
-      title: $localize`Guias e conta`,
-      icon: 'lucideBookOpenText',
-
-      links: [
-        { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
-
-        {
-          path: '/settings',
-          label: $localize`Configurações e backup`,
-          icon: 'lucideSettings',
-        },
-
-        { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },
-      ],
-    },
-  ];
+      ];
 
   readonly navGroups = computed(() =>
     this.navGroupOptions
@@ -423,7 +454,7 @@ export class WorkspaceLayout {
         ...group,
         links: group.links.filter((link) => isMvpPathEnabled(link.path)),
       }))
-      .filter((group) => !SCREENSHOT_MVP && group.links.length),
+      .filter((group) => group.links.length),
   );
 
   readonly utilityLinks = [

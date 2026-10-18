@@ -969,7 +969,7 @@
     <unit id="5177990394865145565">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:48,49</note>
-        <note category="location">src/app/layout/workspace-layout.ts:314</note>
+        <note category="location">src/app/layout/workspace-layout.ts:357</note>
       </notes>
       <segment>
         <source>Consultar mercado</source>
@@ -1024,7 +1024,8 @@
     <unit id="6469027931203119221">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:316</note>
+        <note category="location">src/app/layout/workspace-layout.ts:273</note>
+        <note category="location">src/app/layout/workspace-layout.ts:361</note>
       </notes>
       <segment>
         <source>Calcular produção</source>
@@ -1195,6 +1196,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:149,150</note>
         <note category="location">src/app/features/market/market-page.html:291,292</note>
+        <note category="location">src/app/layout/workspace-layout.ts:272</note>
       </notes>
       <segment>
         <source>Explorar receitas</source>
@@ -2043,7 +2045,8 @@
     <unit id="7330494029236893287">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:55,56</note>
-        <note category="location">src/app/layout/workspace-layout.ts:327</note>
+        <note category="location">src/app/layout/workspace-layout.ts:308</note>
+        <note category="location">src/app/layout/workspace-layout.ts:372</note>
       </notes>
       <segment>
         <source>Família</source>
@@ -3012,7 +3015,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:416</note>
+        <note category="location">src/app/layout/workspace-layout.ts:461</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
@@ -3038,7 +3041,7 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:422</note>
+        <note category="location">src/app/layout/workspace-layout.ts:467</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
@@ -4422,7 +4425,7 @@
       <notes>
         <note category="location">src/app/features/market/market-page.html:776,777</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:30</note>
-        <note category="location">src/app/layout/workspace-layout.ts:312</note>
+        <note category="location">src/app/layout/workspace-layout.ts:353</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -5609,7 +5612,8 @@
     <unit id="6215048040341403789">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-page.html:5,6</note>
-        <note category="location">src/app/layout/workspace-layout.ts:401</note>
+        <note category="location">src/app/layout/workspace-layout.ts:335</note>
+        <note category="location">src/app/layout/workspace-layout.ts:446</note>
       </notes>
       <segment>
         <source>Roadmap</source>
@@ -6080,6 +6084,7 @@
         <note category="location">src/app/features/scans/scans-page.html:27,28</note>
         <note category="location">src/app/features/stock/stock-page.html:15,16</note>
         <note category="location">src/app/features/stock/stock-page.html:190,191</note>
+        <note category="location">src/app/layout/workspace-layout.ts:302</note>
       </notes>
       <segment>
         <source>Importar capturas</source>
@@ -6332,7 +6337,8 @@
         <note category="location">src/app/features/stock/stock-page.html:5,6</note>
         <note category="location">src/app/features/storage/storage-page.html:24</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:33</note>
-        <note category="location">src/app/layout/workspace-layout.ts:356</note>
+        <note category="location">src/app/layout/workspace-layout.ts:296</note>
+        <note category="location">src/app/layout/workspace-layout.ts:401</note>
       </notes>
       <segment>
         <source>Armazém</source>
@@ -7343,8 +7349,8 @@
     <unit id="9026691923958891580">
       <notes>
         <note category="location">src/app/features/settings/settings-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:282</note>
-        <note category="location">src/app/layout/workspace-layout.ts:397</note>
+        <note category="location">src/app/layout/workspace-layout.ts:332</note>
+        <note category="location">src/app/layout/workspace-layout.ts:442</note>
       </notes>
       <segment>
         <source>Configurações e backup</source>
@@ -8472,6 +8478,7 @@
     <unit id="6393961446548554775">
       <notes>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:29</note>
+        <note category="location">src/app/layout/workspace-layout.ts:271</note>
       </notes>
       <segment>
         <source>Mercado</source>
@@ -9400,7 +9407,7 @@
     </unit>
     <unit id="7247693219862804405">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:1</note>
+        <note category="location">src/app/layout/workspace-layout.html:2</note>
       </notes>
       <segment>
         <source>Ir para o conteúdo</source>
@@ -9408,7 +9415,7 @@
     </unit>
     <unit id="4238688687797785495">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:5</note>
+        <note category="location">src/app/layout/workspace-layout.html:7</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:4</note>
       </notes>
       <segment>
@@ -9417,7 +9424,7 @@
     </unit>
     <unit id="8389424346923838325">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:12</note>
+        <note category="location">src/app/layout/workspace-layout.html:14</note>
       </notes>
       <segment>
         <source>BLACK</source>
@@ -9425,7 +9432,7 @@
     </unit>
     <unit id="8799479633147592005">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:13</note>
+        <note category="location">src/app/layout/workspace-layout.html:15</note>
       </notes>
       <segment>
         <source>MARKET</source>
@@ -9433,7 +9440,7 @@
     </unit>
     <unit id="2102825898069375693">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:26</note>
+        <note category="location">src/app/layout/workspace-layout.html:27</note>
       </notes>
       <segment>
         <source>Menu</source>
@@ -9441,7 +9448,7 @@
     </unit>
     <unit id="285051370968454986">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:36</note>
+        <note category="location">src/app/layout/workspace-layout.html:37</note>
       </notes>
       <segment>
         <source>ESPAÇO DO AVENTUREIRO</source>
@@ -9449,7 +9456,7 @@
     </unit>
     <unit id="6932472387281990307">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:38</note>
+        <note category="location">src/app/layout/workspace-layout.html:39</note>
       </notes>
       <segment>
         <source>SEU PLANEJADOR DE BDO</source>
@@ -9457,7 +9464,7 @@
     </unit>
     <unit id="8596585797689247822">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:46,47</note>
+        <note category="location">src/app/layout/workspace-layout.html:48,49</note>
       </notes>
       <segment>
         <source>Navegação principal do Black Market</source>
@@ -9465,7 +9472,7 @@
     </unit>
     <unit id="1649501872041853489">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:93</note>
+        <note category="location">src/app/layout/workspace-layout.html:95</note>
       </notes>
       <segment>
         <source>Ferramentas independentes</source>
@@ -9473,7 +9480,7 @@
     </unit>
     <unit id="68888036324846593">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:100</note>
+        <note category="location">src/app/layout/workspace-layout.html:102</note>
       </notes>
       <segment>
         <source>Localização atual</source>
@@ -9481,7 +9488,7 @@
     </unit>
     <unit id="7454412857772204394">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:119,120</note>
+        <note category="location">src/app/layout/workspace-layout.html:120,121</note>
       </notes>
       <segment>
         <source> Buscar item <pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span aria-hidden=&quot;true&quot;&gt;" dispEnd="&lt;/span&gt;">⌕</pc></source>
@@ -9489,7 +9496,7 @@
     </unit>
     <unit id="8486008966550715052">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:126,127</note>
+        <note category="location">src/app/layout/workspace-layout.html:127,128</note>
       </notes>
       <segment>
         <source>Configurações</source>
@@ -9497,7 +9504,7 @@
     </unit>
     <unit id="2708136643858622046">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:128</note>
+        <note category="location">src/app/layout/workspace-layout.html:129</note>
       </notes>
       <segment>
         <source>Região do mercado</source>
@@ -9505,7 +9512,7 @@
     </unit>
     <unit id="4756995594800823013">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:147,148</note>
+        <note category="location">src/app/layout/workspace-layout.html:148,149</note>
       </notes>
       <segment>
         <source>Busca global</source>
@@ -9513,7 +9520,7 @@
     </unit>
     <unit id="1672965432682395276">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:159,160</note>
+        <note category="location">src/app/layout/workspace-layout.html:160,161</note>
       </notes>
       <segment>
         <source> Fechar busca </source>
@@ -9521,7 +9528,7 @@
     </unit>
     <unit id="8241565724085181444">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:166</note>
+        <note category="location">src/app/layout/workspace-layout.html:167</note>
       </notes>
       <segment>
         <source>Recuperar dados locais</source>
@@ -9529,7 +9536,7 @@
     </unit>
     <unit id="6027154618860461295">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:171</note>
+        <note category="location">src/app/layout/workspace-layout.html:172</note>
       </notes>
       <segment>
         <source>Modo demonstração</source>
@@ -9537,7 +9544,7 @@
     </unit>
     <unit id="5855265007971144187">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:173,174</note>
+        <note category="location">src/app/layout/workspace-layout.html:174,175</note>
       </notes>
       <segment>
         <source>Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão; seus dados anteriores estão preservados.</source>
@@ -9545,7 +9552,7 @@
     </unit>
     <unit id="5304497066524759118">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:177,178</note>
+        <note category="location">src/app/layout/workspace-layout.html:178,179</note>
       </notes>
       <segment>
         <source>Comparar produção</source>
@@ -9553,49 +9560,84 @@
     </unit>
     <unit id="6034865844234363330">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:180</note>
+        <note category="location">src/app/layout/workspace-layout.html:181</note>
       </notes>
       <segment>
         <source> Sair da demonstração </source>
       </segment>
     </unit>
-    <unit id="3186839719843195748">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:258</note>
-        <note category="location">src/app/layout/workspace-layout.ts:340</note>
-      </notes>
-      <segment>
-        <source>Profissões e rendimento</source>
-      </segment>
-    </unit>
-    <unit id="3031009167976274068">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:276</note>
-        <note category="location">src/app/layout/workspace-layout.ts:379</note>
-      </notes>
-      <segment>
-        <source>Meus planos</source>
-      </segment>
-    </unit>
     <unit id="8237522812427434567">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:288</note>
+        <note category="location">src/app/layout/workspace-layout.ts:258</note>
+        <note category="location">src/app/layout/workspace-layout.ts:276</note>
       </notes>
       <segment>
         <source>Início</source>
       </segment>
     </unit>
+    <unit id="6507422559925786279">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:261</note>
+      </notes>
+      <segment>
+        <source>O que fazer</source>
+      </segment>
+    </unit>
+    <unit id="3186839719843195748">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:267</note>
+        <note category="location">src/app/layout/workspace-layout.ts:385</note>
+      </notes>
+      <segment>
+        <source>Profissões e rendimento</source>
+      </segment>
+    </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:292</note>
+        <note category="location">src/app/layout/workspace-layout.ts:280</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
       </segment>
     </unit>
+    <unit id="6391981534381874449">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:291</note>
+      </notes>
+      <segment>
+        <source>Materiais e planos</source>
+      </segment>
+    </unit>
+    <unit id="3051215723242753347">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:314</note>
+        <note category="location">src/app/layout/workspace-layout.ts:415</note>
+      </notes>
+      <segment>
+        <source>Lista de materiais</source>
+      </segment>
+    </unit>
+    <unit id="3031009167976274068">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:320</note>
+        <note category="location">src/app/layout/workspace-layout.ts:424</note>
+      </notes>
+      <segment>
+        <source>Meus planos</source>
+      </segment>
+    </unit>
+    <unit id="800803655328576309">
+      <notes>
+        <note category="location">src/app/layout/workspace-layout.ts:327</note>
+        <note category="location">src/app/layout/workspace-layout.ts:434</note>
+      </notes>
+      <segment>
+        <source>Guias e conta</source>
+      </segment>
+    </unit>
     <unit id="1453134524041735834">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:308</note>
+        <note category="location">src/app/layout/workspace-layout.ts:349</note>
       </notes>
       <segment>
         <source>Mercado e produção</source>
@@ -9603,7 +9645,7 @@
     </unit>
     <unit id="6004493327033173129">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:321</note>
+        <note category="location">src/app/layout/workspace-layout.ts:366</note>
       </notes>
       <segment>
         <source>Personagem e evolução</source>
@@ -9611,7 +9653,7 @@
     </unit>
     <unit id="7468173889571751215">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:334</note>
+        <note category="location">src/app/layout/workspace-layout.ts:379</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos</source>
@@ -9619,7 +9661,7 @@
     </unit>
     <unit id="1066166934309898114">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:345</note>
+        <note category="location">src/app/layout/workspace-layout.ts:390</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -9627,7 +9669,7 @@
     </unit>
     <unit id="4384711067175333650">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:350</note>
+        <note category="location">src/app/layout/workspace-layout.ts:395</note>
       </notes>
       <segment>
         <source>Materiais e planejamento</source>
@@ -9635,23 +9677,15 @@
     </unit>
     <unit id="2628946056707873008">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:363</note>
+        <note category="location">src/app/layout/workspace-layout.ts:408</note>
       </notes>
       <segment>
         <source>Importar por captura</source>
       </segment>
     </unit>
-    <unit id="3051215723242753347">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:370</note>
-      </notes>
-      <segment>
-        <source>Lista de materiais</source>
-      </segment>
-    </unit>
     <unit id="1012592931481663403">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:375</note>
+        <note category="location">src/app/layout/workspace-layout.ts:420</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
@@ -9659,23 +9693,15 @@
     </unit>
     <unit id="3487828683297229196">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:384</note>
+        <note category="location">src/app/layout/workspace-layout.ts:429</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
       </segment>
     </unit>
-    <unit id="800803655328576309">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:389</note>
-      </notes>
-      <segment>
-        <source>Guias e conta</source>
-      </segment>
-    </unit>
     <unit id="7338913928758216034">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:393</note>
+        <note category="location">src/app/layout/workspace-layout.ts:438</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -9683,7 +9709,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:418</note>
+        <note category="location">src/app/layout/workspace-layout.ts:463</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
       </notes>
       <segment>
@@ -9692,7 +9718,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:420</note>
+        <note category="location">src/app/layout/workspace-layout.ts:465</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
       </notes>
       <segment>
@@ -9701,7 +9727,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:440</note>
+        <note category="location">src/app/layout/workspace-layout.ts:485</note>
       </notes>
       <segment>
         <source>Black Market</source>
