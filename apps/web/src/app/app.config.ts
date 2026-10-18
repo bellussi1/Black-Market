@@ -10,8 +10,10 @@ import {
 import { provideRouter, TitleStrategy, withViewTransitions } from '@angular/router';
 
 import { routes } from './app.routes';
+import { apiOriginInterceptor } from './core/api-origin.interceptor';
 import { uiLocale } from './core/locale';
 import { operationalErrorInterceptor, SafeFrontendErrorHandler } from './core/operational-errors';
+import { shouldTransferPublicRead } from './core/public-http-transfer-cache';
 import { SeoService } from './core/seo.service';
 
 export const appConfig: ApplicationConfig = {
@@ -30,19 +32,14 @@ export const appConfig: ApplicationConfig = {
       }),
     ),
     { provide: TitleStrategy, useExisting: SeoService },
-    provideHttpClient(withInterceptors([operationalErrorInterceptor])),
+    provideHttpClient(withInterceptors([apiOriginInterceptor, operationalErrorInterceptor])),
     { provide: ErrorHandler, useClass: SafeFrontendErrorHandler },
     { provide: LOCALE_ID, useFactory: uiLocale },
     provideClientHydration(
       withNoIncrementalHydration(),
       withI18nSupport(),
       withHttpTransferCacheOptions({
-        filter: (request) =>
-          request.method === 'GET' &&
-          !request.headers.has('Authorization') &&
-          ['/items', '/recipes', '/reference', '/categories', '/world/', '/roadmap'].some((path) =>
-            request.url.includes('/api/v1' + path),
-          ),
+        filter: shouldTransferPublicRead,
       }),
     ),
   ],
