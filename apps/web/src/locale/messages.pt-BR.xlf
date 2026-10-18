@@ -456,7 +456,7 @@
       <notes>
         <note category="location">src/app/features/account/account-page.html:18,20</note>
         <note category="location">src/app/features/demo/demo-page.html:32,34</note>
-        <note category="location">src/app/features/market/market-page.html:269,276</note>
+        <note category="location">src/app/features/market/market-page.html:261,268</note>
         <note category="location">src/app/features/reference/reference-page.html:64,66</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:80,81</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:92,95</note>
@@ -683,7 +683,7 @@
     <unit id="2332180001770133395">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:28</note>
-        <note category="location">src/app/features/market/market-page.html:702</note>
+        <note category="location">src/app/features/market/market-page.html:694</note>
       </notes>
       <segment>
         <source>Nome</source>
@@ -865,7 +865,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:551</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:448</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:358</note>
-        <note category="location">src/app/features/market/market-page.html:794</note>
+        <note category="location">src/app/features/market/market-page.html:786</note>
         <note category="location">src/app/features/storage/storage-page.html:477</note>
       </notes>
       <segment>
@@ -929,7 +929,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:525</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:429</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:329</note>
-        <note category="location">src/app/features/market/market-page.html:720</note>
+        <note category="location">src/app/features/market/market-page.html:712</note>
         <note category="location">src/app/features/storage/storage-page.html:441</note>
       </notes>
       <segment>
@@ -988,7 +988,7 @@
     <unit id="5177990394865145565">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:54,55</note>
-        <note category="location">src/app/layout/workspace-layout.ts:373</note>
+        <note category="location">src/app/layout/workspace-layout.ts:379</note>
       </notes>
       <segment>
         <source>Consultar mercado</source>
@@ -1005,9 +1005,9 @@
     <unit id="5923041569817566400">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:63,64</note>
-        <note category="location">src/app/features/market/market-page.html:660</note>
-        <note category="location">src/app/features/market/market-page.html:692</note>
-        <note category="location">src/app/features/market/market-page.html:716</note>
+        <note category="location">src/app/features/market/market-page.html:652</note>
+        <note category="location">src/app/features/market/market-page.html:684</note>
+        <note category="location">src/app/features/market/market-page.html:708</note>
         <note category="location">src/app/shared/catalog-item-picker/catalog-item-picker.html:21</note>
         <note category="location">src/app/shared/item-dossier/item-dossier.html:19,20</note>
       </notes>
@@ -1044,8 +1044,8 @@
     <unit id="6469027931203119221">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:289</note>
-        <note category="location">src/app/layout/workspace-layout.ts:377</note>
+        <note category="location">src/app/layout/workspace-layout.ts:295</note>
+        <note category="location">src/app/layout/workspace-layout.ts:383</note>
       </notes>
       <segment>
         <source>Calcular produção</source>
@@ -1215,8 +1215,8 @@
     <unit id="3706218468114650661">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:153,154</note>
-        <note category="location">src/app/features/market/market-page.html:290,291</note>
-        <note category="location">src/app/layout/workspace-layout.ts:288</note>
+        <note category="location">src/app/features/market/market-page.html:282,283</note>
+        <note category="location">src/app/layout/workspace-layout.ts:294</note>
       </notes>
       <segment>
         <source>Explorar receitas</source>
@@ -1338,7 +1338,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:275</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:156</note>
-        <note category="location">src/app/features/market/market-page.html:663</note>
+        <note category="location">src/app/features/market/market-page.html:655</note>
         <note category="location">src/app/features/world/world-page.html:123,124</note>
       </notes>
       <segment>
@@ -1420,7 +1420,7 @@
     <unit id="7366564846379609598">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:356</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:512,513</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:515,516</note>
       </notes>
       <segment>
         <source>Lucro por hora</source>
@@ -1709,7 +1709,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:601</note>
         <note category="location">src/app/features/demo/demo-page.html:198,199</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:148</note>
-        <note category="location">src/app/features/market/market-page.html:562</note>
+        <note category="location">src/app/features/market/market-page.html:554</note>
         <note category="location">src/app/features/scans/scans-page.html:890,891</note>
         <note category="location">src/app/features/storage/storage-page.html:150</note>
         <note category="location">src/app/features/storage/storage-page.html:182,183</note>
@@ -1947,8 +1947,8 @@
     <unit id="3186839719843195748">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.html:85,86</note>
-        <note category="location">src/app/layout/workspace-layout.ts:284</note>
-        <note category="location">src/app/layout/workspace-layout.ts:401</note>
+        <note category="location">src/app/layout/workspace-layout.ts:290</note>
+        <note category="location">src/app/layout/workspace-layout.ts:407</note>
       </notes>
       <segment>
         <source>Profissões e rendimento</source>
@@ -2232,8 +2232,8 @@
     <unit id="7330494029236893287">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:55,56</note>
-        <note category="location">src/app/layout/workspace-layout.ts:324</note>
-        <note category="location">src/app/layout/workspace-layout.ts:388</note>
+        <note category="location">src/app/layout/workspace-layout.ts:330</note>
+        <note category="location">src/app/layout/workspace-layout.ts:394</note>
       </notes>
       <segment>
         <source>Família</source>
@@ -2369,8 +2369,8 @@
     <unit id="8075168556531069883">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:196,197</note>
-        <note category="location">src/app/features/market/market-page.html:657</note>
-        <note category="location">src/app/features/market/market-page.html:715</note>
+        <note category="location">src/app/features/market/market-page.html:649</note>
+        <note category="location">src/app/features/market/market-page.html:707</note>
         <note category="location">src/app/features/scans/scans-page.html:856,857</note>
         <note category="location">src/app/features/storage/storage-page.html:148</note>
         <note category="location">src/app/features/storage/storage-page.html:180,181</note>
@@ -2906,7 +2906,7 @@
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:425</note>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:326</note>
-        <note category="location">src/app/features/market/market-page.html:842</note>
+        <note category="location">src/app/features/market/market-page.html:834</note>
       </notes>
       <segment>
         <source>Data</source>
@@ -3209,7 +3209,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:476</note>
+        <note category="location">src/app/layout/workspace-layout.ts:482</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:14,15</note>
       </notes>
       <segment>
@@ -3235,7 +3235,7 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:482</note>
+        <note category="location">src/app/layout/workspace-layout.ts:488</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:19,20</note>
       </notes>
       <segment>
@@ -3907,57 +3907,26 @@
         <source>Ferramentas do mercado</source>
       </segment>
     </unit>
-    <unit id="3227609098412697469">
+    <unit id="6393961446548554775">
       <notes>
         <note category="location">src/app/features/market/market-page.html:21,22</note>
+        <note category="location">src/app/layout/workspace-layout.ts:293</note>
       </notes>
       <segment>
-        <source>Encontrar item</source>
+        <source>Mercado</source>
       </segment>
     </unit>
-    <unit id="7216278160772388007">
+    <unit id="2423733681660034844">
       <notes>
         <note category="location">src/app/features/market/market-page.html:22,23</note>
       </notes>
       <segment>
-        <source>Preço, estoque e atividade</source>
-      </segment>
-    </unit>
-    <unit id="8554698294881679356">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:31,32</note>
-      </notes>
-      <segment>
-        <source>Detalhes do item</source>
-      </segment>
-    </unit>
-    <unit id="2719096306486437069">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:32,33</note>
-      </notes>
-      <segment>
-        <source>Origem e histórico</source>
-      </segment>
-    </unit>
-    <unit id="7583748633502187379">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:41,42</note>
-      </notes>
-      <segment>
-        <source>Simular venda líquida</source>
-      </segment>
-    </unit>
-    <unit id="8668285396549125925">
-      <notes>
-        <note category="location">src/app/features/market/market-page.html:42,43</note>
-      </notes>
-      <segment>
-        <source>Quantidade e taxas</source>
+        <source>Buscar, conferir e simular venda</source>
       </segment>
     </unit>
     <unit id="317136359143889969">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:51,52</note>
+        <note category="location">src/app/features/market/market-page.html:31,32</note>
       </notes>
       <segment>
         <source>Cotações pessoais</source>
@@ -3965,7 +3934,7 @@
     </unit>
     <unit id="5628927578394720502">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:52,53</note>
+        <note category="location">src/app/features/market/market-page.html:32,33</note>
       </notes>
       <segment>
         <source>Seus registros e histórico</source>
@@ -3973,7 +3942,7 @@
     </unit>
     <unit id="9030778315672509415">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:76,77</note>
+        <note category="location">src/app/features/market/market-page.html:68,69</note>
         <note category="location">src/app/features/storage/storage-page.html:325</note>
       </notes>
       <segment>
@@ -3982,7 +3951,7 @@
     </unit>
     <unit id="6912587571852921525">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:83</note>
+        <note category="location">src/app/features/market/market-page.html:75</note>
       </notes>
       <segment>
         <source>Buscar item e consultar mercado</source>
@@ -3990,7 +3959,7 @@
     </unit>
     <unit id="2204671182950548434">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:84</note>
+        <note category="location">src/app/features/market/market-page.html:76</note>
       </notes>
       <segment>
         <source>PREÇOS DO MERCADO</source>
@@ -3998,7 +3967,7 @@
     </unit>
     <unit id="3991832578589507090">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:97,98</note>
+        <note category="location">src/app/features/market/market-page.html:89,90</note>
       </notes>
       <segment>
         <source>Descrição e dados do catálogo</source>
@@ -4006,7 +3975,7 @@
     </unit>
     <unit id="8032684949312514049">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:106,107</note>
+        <note category="location">src/app/features/market/market-page.html:98,99</note>
         <note category="location">src/app/features/recipes/recipes-page.html:9,10</note>
       </notes>
       <segment>
@@ -4015,7 +3984,7 @@
     </unit>
     <unit id="2021799324421993222">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:110,111</note>
+        <note category="location">src/app/features/market/market-page.html:102,103</note>
       </notes>
       <segment>
         <source>Buscar pelo código do item</source>
@@ -4023,7 +3992,7 @@
     </unit>
     <unit id="699393056129285909">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:113</note>
+        <note category="location">src/app/features/market/market-page.html:105</note>
       </notes>
       <segment>
         <source>ID do item</source>
@@ -4031,7 +4000,7 @@
     </unit>
     <unit id="8392503094018394418">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:117,118</note>
+        <note category="location">src/app/features/market/market-page.html:109,110</note>
       </notes>
       <segment>
         <source>ID numérico do jogo</source>
@@ -4039,7 +4008,7 @@
     </unit>
     <unit id="6825794645117413789">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:127,128</note>
+        <note category="location">src/app/features/market/market-page.html:119,120</note>
       </notes>
       <segment>
         <source>Cotações sincronizadas automaticamente via cache</source>
@@ -4047,7 +4016,7 @@
     </unit>
     <unit id="9069522809411594251">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:141,142</note>
+        <note category="location">src/app/features/market/market-page.html:133,134</note>
       </notes>
       <segment>
         <source>Mercado selecionado: <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/>.</source>
@@ -4055,7 +4024,7 @@
     </unit>
     <unit id="1925853618376154894">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:147,149</note>
+        <note category="location">src/app/features/market/market-page.html:139,141</note>
       </notes>
       <segment>
         <source>Os preços podem levar alguns minutos para atualizar. Busque pelo nome e selecione um item para consultar sua cotação. Consulta automática a cada 8 minutos enquanto esta aba estiver visível; a fonte pode manter os mesmos dados por até 30 minutos. </source>
@@ -4063,7 +4032,7 @@
     </unit>
     <unit id="5238611884653148649">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:157,158</note>
+        <note category="location">src/app/features/market/market-page.html:149,150</note>
       </notes>
       <segment>
         <source>Encontre sua próxima compra ou venda</source>
@@ -4071,7 +4040,7 @@
     </unit>
     <unit id="4851357227205436166">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:159,160</note>
+        <note category="location">src/app/features/market/market-page.html:151,152</note>
       </notes>
       <segment>
         <source> Selecione um item acima. A cotação aparece automaticamente, sem precisar cadastrar um personagem. </source>
@@ -4079,7 +4048,7 @@
     </unit>
     <unit id="1612246282396859164">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:170,171</note>
+        <note category="location">src/app/features/market/market-page.html:162,163</note>
       </notes>
       <segment>
         <source>Consultando preço e estoque do item…</source>
@@ -4087,7 +4056,7 @@
     </unit>
     <unit id="351312453698565026">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:179,180</note>
+        <note category="location">src/app/features/market/market-page.html:171,172</note>
       </notes>
       <segment>
         <source> Atualizando preço e estoque; a última cotação continua visível. </source>
@@ -4095,7 +4064,7 @@
     </unit>
     <unit id="5677037849775812185">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:193,194</note>
+        <note category="location">src/app/features/market/market-page.html:185,186</note>
       </notes>
       <segment>
         <source>Origem, região e idade da consulta</source>
@@ -4103,7 +4072,7 @@
     </unit>
     <unit id="6326651733398024056">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:196,205</note>
+        <note category="location">src/app/features/market/market-page.html:188,197</note>
       </notes>
       <segment>
         <source>Fonte: Arsha · <ph id="0" equiv="INTERPOLATION" disp="{{ response.region.toUpperCase() }}"/> · idioma solicitado: <ph id="1" equiv="INTERPOLATION_1" disp="{{ response.locale || &apos;não informado&apos; }}"/> · consulta em <ph id="2" equiv="INTERPOLATION_2" disp="{{ date(response.fetchedAt) }}"/> · <ph id="3" equiv="INTERPOLATION_3" disp="{{
@@ -4117,7 +4086,7 @@
     </unit>
     <unit id="1848154367185451357">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:243,244</note>
+        <note category="location">src/app/features/market/market-page.html:235,236</note>
       </notes>
       <segment>
         <source> Negociações registradas não são unidades vendidas. Estoque e contagem acumulada ajudam a acompanhar a atividade observada, mas não confirmam liquidez nem o tempo de venda. </source>
@@ -4125,7 +4094,7 @@
     </unit>
     <unit id="7177950249241691718">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:249,250</note>
+        <note category="location">src/app/features/market/market-page.html:241,242</note>
       </notes>
       <segment>
         <source>Ações da cotação atual</source>
@@ -4133,7 +4102,7 @@
     </unit>
     <unit id="2084101149184386316">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:259</note>
+        <note category="location">src/app/features/market/market-page.html:251</note>
       </notes>
       <segment>
         <source> Simular recebimento líquido </source>
@@ -4141,7 +4110,7 @@
     </unit>
     <unit id="3515365995577298357">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:281,282</note>
+        <note category="location">src/app/features/market/market-page.html:273,274</note>
       </notes>
       <segment>
         <source>Continuar com este item</source>
@@ -4149,7 +4118,7 @@
     </unit>
     <unit id="6344022238940208025">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:299,300</note>
+        <note category="location">src/app/features/market/market-page.html:291,292</note>
       </notes>
       <segment>
         <source>Abrir na oficina</source>
@@ -4157,7 +4126,7 @@
     </unit>
     <unit id="7280825933834867689">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:305,306</note>
+        <note category="location">src/app/features/market/market-page.html:297,298</note>
       </notes>
       <segment>
         <source> Salve apenas uma cotação atualizada da região selecionada. Dados antigos ou sem preço continuam disponíveis para consulta, mas não entram no histórico salvo. </source>
@@ -4165,7 +4134,7 @@
     </unit>
     <unit id="249869117279220410">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:326,327</note>
+        <note category="location">src/app/features/market/market-page.html:318,319</note>
       </notes>
       <segment>
         <source>Preços, estoque e negociações observadas</source>
@@ -4173,7 +4142,7 @@
     </unit>
     <unit id="3099786700666908725">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:328,329</note>
+        <note category="location">src/app/features/market/market-page.html:320,321</note>
       </notes>
       <segment>
         <source>Variante do item selecionado</source>
@@ -4181,7 +4150,7 @@
     </unit>
     <unit id="3937585497124856235">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:345,346</note>
+        <note category="location">src/app/features/market/market-page.html:337,338</note>
       </notes>
       <segment>
         <source>Evolução das observações</source>
@@ -4189,7 +4158,7 @@
     </unit>
     <unit id="8423143494094442446">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:346,347</note>
+        <note category="location">src/app/features/market/market-page.html:338,339</note>
       </notes>
       <segment>
         <source>Veja o que foi registrado pelo Black Market neste item.</source>
@@ -4197,7 +4166,7 @@
     </unit>
     <unit id="8701433791820000375">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:351,352</note>
+        <note category="location">src/app/features/market/market-page.html:343,344</note>
       </notes>
       <segment>
         <source>Período do histórico</source>
@@ -4205,7 +4174,7 @@
     </unit>
     <unit id="7401404971387018025">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:363</note>
+        <note category="location">src/app/features/market/market-page.html:355</note>
       </notes>
       <segment>
         <source> 24 horas </source>
@@ -4213,7 +4182,7 @@
     </unit>
     <unit id="8178316023794471075">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:374</note>
+        <note category="location">src/app/features/market/market-page.html:366</note>
       </notes>
       <segment>
         <source> 7 dias </source>
@@ -4221,7 +4190,7 @@
     </unit>
     <unit id="101379979004783225">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:385</note>
+        <note category="location">src/app/features/market/market-page.html:377</note>
       </notes>
       <segment>
         <source> 30 dias </source>
@@ -4229,7 +4198,7 @@
     </unit>
     <unit id="6391191141582996612">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:392,393</note>
+        <note category="location">src/app/features/market/market-page.html:384,385</note>
       </notes>
       <segment>
         <source>Indicador do gráfico</source>
@@ -4237,7 +4206,7 @@
     </unit>
     <unit id="7672594612233435342">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:404</note>
+        <note category="location">src/app/features/market/market-page.html:396</note>
       </notes>
       <segment>
         <source> Preço </source>
@@ -4245,7 +4214,7 @@
     </unit>
     <unit id="6638343486040544704">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:415</note>
+        <note category="location">src/app/features/market/market-page.html:407</note>
       </notes>
       <segment>
         <source> Estoque </source>
@@ -4253,7 +4222,7 @@
     </unit>
     <unit id="6921807735401932069">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:426</note>
+        <note category="location">src/app/features/market/market-page.html:418</note>
       </notes>
       <segment>
         <source> Negociações por intervalo </source>
@@ -4261,7 +4230,7 @@
     </unit>
     <unit id="2356451325982668381">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:431,433</note>
+        <note category="location">src/app/features/market/market-page.html:423,425</note>
       </notes>
       <segment>
         <source> O gráfico mostra a diferença do contador total de negociações entre consultas consecutivas. A fonte não confirma quantas unidades cada registro representa; use como atividade observada, não como unidades vendidas nem como estimativa de giro. </source>
@@ -4269,7 +4238,7 @@
     </unit>
     <unit id="6217373628656729808">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:437,438</note>
+        <note category="location">src/app/features/market/market-page.html:429,430</note>
       </notes>
       <segment>
         <source> O gráfico liga observações reais do preço e do estoque. A linha tracejada indica um intervalo longo sem consulta intermediária. </source>
@@ -4277,7 +4246,7 @@
     </unit>
     <unit id="3621314580480677808">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:444,445</note>
+        <note category="location">src/app/features/market/market-page.html:436,437</note>
       </notes>
       <segment>
         <source>Carregando gráfico do histórico…</source>
@@ -4285,7 +4254,7 @@
     </unit>
     <unit id="7978142690549531276">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:459,460</note>
+        <note category="location">src/app/features/market/market-page.html:451,452</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ historyChart().samples }}"/> observações no período.</source>
@@ -4293,7 +4262,7 @@
     </unit>
     <unit id="2348635113040761125">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:463,465</note>
+        <note category="location">src/app/features/market/market-page.html:455,457</note>
       </notes>
       <segment>
         <source> Ainda não há observações válidas neste período para desenhar o gráfico. O histórico de negociações exige duas consultas consecutivas válidas. As consultas começam a formar histórico depois que são registradas. </source>
@@ -4301,7 +4270,7 @@
     </unit>
     <unit id="7596655349554419364">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:473,478</note>
+        <note category="location">src/app/features/market/market-page.html:465,470</note>
       </notes>
       <segment>
         <source> Preço e estoque são observações no horário da consulta. A série de negociações é a diferença do contador total entre consultas, com duração indicada ao passar o cursor. A fonte não confirma que esses registros correspondam a unidades vendidas; por isso, não calculamos giro do estoque a partir dela. Lacunas acima de 16 minutos, dados ausentes e reinícios do contador interrompem a série de negociações. Intervalos longos de preço e estoque são mostrados com linha tracejada. A média de cotações não representa uma média ponderada das vendas. </source>
@@ -4309,7 +4278,7 @@
     </unit>
     <unit id="8111708682975908729">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:486</note>
+        <note category="location">src/app/features/market/market-page.html:478</note>
       </notes>
       <segment>
         <source> Últimas 50 observações do período. O gráfico usa todas as observações disponíveis. </source>
@@ -4317,7 +4286,7 @@
     </unit>
     <unit id="8735549703481409024">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:492,493</note>
+        <note category="location">src/app/features/market/market-page.html:484,485</note>
       </notes>
       <segment>
         <source>Consulta</source>
@@ -4325,9 +4294,9 @@
     </unit>
     <unit id="8788236719253964164">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:493,494</note>
-        <note category="location">src/app/features/market/market-page.html:717</note>
-        <note category="location">src/app/features/market/market-page.html:843</note>
+        <note category="location">src/app/features/market/market-page.html:485,486</note>
+        <note category="location">src/app/features/market/market-page.html:709</note>
+        <note category="location">src/app/features/market/market-page.html:835</note>
         <note category="location">src/app/features/storage/storage-page.html:440</note>
       </notes>
       <segment>
@@ -4336,9 +4305,9 @@
     </unit>
     <unit id="5310365591817659665">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:494,495</note>
-        <note category="location">src/app/features/market/market-page.html:718</note>
-        <note category="location">src/app/features/market/market-page.html:844</note>
+        <note category="location">src/app/features/market/market-page.html:486,487</note>
+        <note category="location">src/app/features/market/market-page.html:710</note>
+        <note category="location">src/app/features/market/market-page.html:836</note>
       </notes>
       <segment>
         <source>Estoque</source>
@@ -4346,7 +4315,7 @@
     </unit>
     <unit id="422192921440020006">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:495,496</note>
+        <note category="location">src/app/features/market/market-page.html:487,488</note>
       </notes>
       <segment>
         <source>Transações (contador)</source>
@@ -4354,7 +4323,7 @@
     </unit>
     <unit id="4626854302844650537">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:522</note>
+        <note category="location">src/app/features/market/market-page.html:514</note>
       </notes>
       <segment>
         <source>COTAÇÃO EM USO</source>
@@ -4362,7 +4331,7 @@
     </unit>
     <unit id="1406303006276424602">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:527,528</note>
+        <note category="location">src/app/features/market/market-page.html:519,520</note>
       </notes>
       <segment>
         <source>cotação desatualizada</source>
@@ -4370,7 +4339,7 @@
     </unit>
     <unit id="5721394485706821735">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:539,540</note>
+        <note category="location">src/app/features/market/market-page.html:531,532</note>
       </notes>
       <segment>
         <source> Consultar outro item </source>
@@ -4378,7 +4347,7 @@
     </unit>
     <unit id="7453154888884477085">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:547</note>
+        <note category="location">src/app/features/market/market-page.html:539</note>
       </notes>
       <segment>
         <source>Calculadora de imposto</source>
@@ -4386,7 +4355,7 @@
     </unit>
     <unit id="3487550026139941836">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:549,551</note>
+        <note category="location">src/app/features/market/market-page.html:541,543</note>
       </notes>
       <segment>
         <source> Simule o recebimento líquido para uma quantidade e um custo de aquisição. A cotação só é preenchida quando você veio de um item consultado ou escolheu uma cotação pessoal; revise região, horário e taxas antes de usar o valor como premissa. </source>
@@ -4394,7 +4363,7 @@
     </unit>
     <unit id="1609107690500144555">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:555</note>
+        <note category="location">src/app/features/market/market-page.html:547</note>
       </notes>
       <segment>
         <source>Preço por unidade</source>
@@ -4402,7 +4371,7 @@
     </unit>
     <unit id="4359991899627078496">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:570</note>
+        <note category="location">src/app/features/market/market-page.html:562</note>
       </notes>
       <segment>
         <source>Custo total de aquisição</source>
@@ -4410,7 +4379,7 @@
     </unit>
     <unit id="7395913447556051815">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:579,580</note>
+        <note category="location">src/app/features/market/market-page.html:571,572</note>
       </notes>
       <segment>
         <source>Taxas, benefícios e configurações salvas</source>
@@ -4418,7 +4387,7 @@
     </unit>
     <unit id="6794038841878699401">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:585</note>
+        <note category="location">src/app/features/market/market-page.html:577</note>
       </notes>
       <segment>
         <source>Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. </source>
@@ -4426,7 +4395,7 @@
     </unit>
     <unit id="2617496686434668492">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:590</note>
+        <note category="location">src/app/features/market/market-page.html:582</note>
       </notes>
       <segment>
         <source>Guia oficial</source>
@@ -4434,7 +4403,7 @@
     </unit>
     <unit id="4507372915135672800">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:591</note>
+        <note category="location">src/app/features/market/market-page.html:583</note>
       </notes>
       <segment>
         <source>. Ajuste imposto e isenção para o tipo de venda. </source>
@@ -4442,7 +4411,7 @@
     </unit>
     <unit id="5266129531413454647">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:599</note>
+        <note category="location">src/app/features/market/market-page.html:591</note>
       </notes>
       <segment>
         <source>Prata líquida</source>
@@ -4450,7 +4419,7 @@
     </unit>
     <unit id="1310762442287993211">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:603,604</note>
+        <note category="location">src/app/features/market/market-page.html:595,596</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(r.retentionPercent, 3) }}"/>% do valor bruto</source>
@@ -4458,7 +4427,7 @@
     </unit>
     <unit id="7348274636007235284">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:608</note>
+        <note category="location">src/app/features/market/market-page.html:600</note>
       </notes>
       <segment>
         <source>Imposto efetivo</source>
@@ -4466,7 +4435,7 @@
     </unit>
     <unit id="2322395245583365035">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:612</note>
+        <note category="location">src/app/features/market/market-page.html:604</note>
       </notes>
       <segment>
         <source>Lucro após aquisição</source>
@@ -4474,7 +4443,7 @@
     </unit>
     <unit id="1931834351682235099">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:616</note>
+        <note category="location">src/app/features/market/market-page.html:608</note>
       </notes>
       <segment>
         <source>Sem Value Pack</source>
@@ -4482,7 +4451,7 @@
     </unit>
     <unit id="1091039017859064153">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:620</note>
+        <note category="location">src/app/features/market/market-page.html:612</note>
       </notes>
       <segment>
         <source>Com Value Pack</source>
@@ -4490,7 +4459,7 @@
     </unit>
     <unit id="1993502475412526999">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:624</note>
+        <note category="location">src/app/features/market/market-page.html:616</note>
       </notes>
       <segment>
         <source>Venda bruta</source>
@@ -4498,7 +4467,7 @@
     </unit>
     <unit id="8360100029363116652">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:628</note>
+        <note category="location">src/app/features/market/market-page.html:620</note>
       </notes>
       <segment>
         <source>Preço mínimo para empatar</source>
@@ -4506,7 +4475,7 @@
     </unit>
     <unit id="5318446860994828461">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:630</note>
+        <note category="location">src/app/features/market/market-page.html:622</note>
       </notes>
       <segment>
         <source>Por unidade</source>
@@ -4514,7 +4483,7 @@
     </unit>
     <unit id="6168088396667686758">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:644,645</note>
+        <note category="location">src/app/features/market/market-page.html:636,637</note>
       </notes>
       <segment>
         <source>Minhas cotações · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/></source>
@@ -4522,7 +4491,7 @@
     </unit>
     <unit id="5673023361258794932">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:647</note>
+        <note category="location">src/app/features/market/market-page.html:639</note>
       </notes>
       <segment>
         <source>MEUS DADOS</source>
@@ -4530,7 +4499,7 @@
     </unit>
     <unit id="8323102111110530942">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:650,652</note>
+        <note category="location">src/app/features/market/market-page.html:642,644</note>
       </notes>
       <segment>
         <source> Cotações pessoais ficam salvas neste workspace e filtradas pela região ativa. Elas guardam observações e histórico para consulta; use “Calcular” para simular venda ou abra a receita e a oficina para continuar o planejamento. </source>
@@ -4538,7 +4507,7 @@
     </unit>
     <unit id="9134675884968306580">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:666</note>
+        <note category="location">src/app/features/market/market-page.html:658</note>
       </notes>
       <segment>
         <source>Estoque observado</source>
@@ -4546,7 +4515,7 @@
     </unit>
     <unit id="2485808646117915455">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:672</note>
+        <note category="location">src/app/features/market/market-page.html:664</note>
       </notes>
       <segment>
         <source>Registrar cotação</source>
@@ -4554,7 +4523,7 @@
     </unit>
     <unit id="8520121261881767662">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:675</note>
+        <note category="location">src/app/features/market/market-page.html:667</note>
       </notes>
       <segment>
         <source>Registrar o mesmo item adiciona um ponto ao histórico.</source>
@@ -4562,7 +4531,7 @@
     </unit>
     <unit id="8713073708350341933">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:685</note>
+        <note category="location">src/app/features/market/market-page.html:677</note>
       </notes>
       <segment>
         <source>Buscar</source>
@@ -4570,7 +4539,7 @@
     </unit>
     <unit id="8984411036822240574">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:689,690</note>
+        <note category="location">src/app/features/market/market-page.html:681,682</note>
       </notes>
       <segment>
         <source>Nome do item</source>
@@ -4578,7 +4547,7 @@
     </unit>
     <unit id="4030076799559469157">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:694</note>
+        <note category="location">src/app/features/market/market-page.html:686</note>
         <note category="location">src/app/features/world/worker-empire.html:453,454</note>
         <note category="location">src/app/shared/catalog-item-picker/catalog-item-picker.html:29,30</note>
       </notes>
@@ -4588,7 +4557,7 @@
     </unit>
     <unit id="5368042189439962963">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:700</note>
+        <note category="location">src/app/features/market/market-page.html:692</note>
       </notes>
       <segment>
         <source>Ordenar</source>
@@ -4596,7 +4565,7 @@
     </unit>
     <unit id="3003942307958583176">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:703</note>
+        <note category="location">src/app/features/market/market-page.html:695</note>
       </notes>
       <segment>
         <source>Menor preço</source>
@@ -4604,7 +4573,7 @@
     </unit>
     <unit id="7317333658355224141">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:707</note>
+        <note category="location">src/app/features/market/market-page.html:699</note>
       </notes>
       <segment>
         <source>Somente favoritos</source>
@@ -4612,7 +4581,7 @@
     </unit>
     <unit id="7969157691322945974">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:719</note>
+        <note category="location">src/app/features/market/market-page.html:711</note>
       </notes>
       <segment>
         <source>Registrado / consultado</source>
@@ -4620,7 +4589,7 @@
     </unit>
     <unit id="7605723731873327478">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:735,736</note>
+        <note category="location">src/app/features/market/market-page.html:727,728</note>
       </notes>
       <segment>
         <source>Favorito</source>
@@ -4628,7 +4597,7 @@
     </unit>
     <unit id="360460582882405766">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:758</note>
+        <note category="location">src/app/features/market/market-page.html:750</note>
       </notes>
       <segment>
         <source>Calcular</source>
@@ -4636,9 +4605,9 @@
     </unit>
     <unit id="6914995339590461813">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:775,776</note>
+        <note category="location">src/app/features/market/market-page.html:767,768</note>
         <note category="location">src/app/features/stock/stock-page.html:232,233</note>
-        <note category="location">src/app/layout/workspace-layout.ts:369</note>
+        <note category="location">src/app/layout/workspace-layout.ts:375</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -4646,7 +4615,7 @@
     </unit>
     <unit id="4901909143665079585">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:784,785</note>
+        <note category="location">src/app/features/market/market-page.html:776,777</note>
         <note category="location">src/app/shared/game-labels.ts:12</note>
       </notes>
       <segment>
@@ -4655,7 +4624,7 @@
     </unit>
     <unit id="7668640276908116800">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:805</note>
+        <note category="location">src/app/features/market/market-page.html:797</note>
       </notes>
       <segment>
         <source>Sua lista de cotações ainda está vazia.</source>
@@ -4663,7 +4632,7 @@
     </unit>
     <unit id="6506951062688659055">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:806</note>
+        <note category="location">src/app/features/market/market-page.html:798</note>
       </notes>
       <segment>
         <source>Registre um preço acima ou ajuste os filtros. </source>
@@ -4671,7 +4640,7 @@
     </unit>
     <unit id="8953858760316497523">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:814,815</note>
+        <note category="location">src/app/features/market/market-page.html:806,807</note>
       </notes>
       <segment>
         <source>Histórico pessoal · <ph id="0" equiv="INTERPOLATION" disp="{{ q.name }}"/></source>
@@ -4679,7 +4648,7 @@
     </unit>
     <unit id="7737470903533692241">
       <notes>
-        <note category="location">src/app/features/market/market-page.html:835,836</note>
+        <note category="location">src/app/features/market/market-page.html:827,828</note>
       </notes>
       <segment>
         <source>Pontos igualmente espaçados por registro. A tabela preserva os horários reais. </source>
@@ -5810,8 +5779,8 @@
     <unit id="6215048040341403789">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-page.html:10,11</note>
-        <note category="location">src/app/layout/workspace-layout.ts:351</note>
-        <note category="location">src/app/layout/workspace-layout.ts:461</note>
+        <note category="location">src/app/layout/workspace-layout.ts:357</note>
+        <note category="location">src/app/layout/workspace-layout.ts:467</note>
       </notes>
       <segment>
         <source>Roadmap</source>
@@ -6282,7 +6251,7 @@
         <note category="location">src/app/features/scans/scans-page.html:27,28</note>
         <note category="location">src/app/features/stock/stock-page.html:14,15</note>
         <note category="location">src/app/features/stock/stock-page.html:305,306</note>
-        <note category="location">src/app/layout/workspace-layout.ts:318</note>
+        <note category="location">src/app/layout/workspace-layout.ts:324</note>
       </notes>
       <segment>
         <source>Importar capturas</source>
@@ -6534,8 +6503,8 @@
         <note category="location">src/app/features/scans/scans-page.html:247,248</note>
         <note category="location">src/app/features/stock/stock-page.html:4,5</note>
         <note category="location">src/app/features/storage/storage-page.html:23</note>
-        <note category="location">src/app/layout/workspace-layout.ts:312</note>
-        <note category="location">src/app/layout/workspace-layout.ts:416</note>
+        <note category="location">src/app/layout/workspace-layout.ts:318</note>
+        <note category="location">src/app/layout/workspace-layout.ts:422</note>
       </notes>
       <segment>
         <source>Armazém</source>
@@ -7547,8 +7516,8 @@
     <unit id="9026691923958891580">
       <notes>
         <note category="location">src/app/features/settings/settings-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:348</note>
-        <note category="location">src/app/layout/workspace-layout.ts:457</note>
+        <note category="location">src/app/layout/workspace-layout.ts:354</note>
+        <note category="location">src/app/layout/workspace-layout.ts:463</note>
       </notes>
       <segment>
         <source>Configurações e backup</source>
@@ -9991,7 +9960,7 @@
     </unit>
     <unit id="8389424346923838325">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:14</note>
+        <note category="location">src/app/layout/workspace-layout.html:11</note>
       </notes>
       <segment>
         <source>BLACK</source>
@@ -9999,7 +9968,7 @@
     </unit>
     <unit id="8799479633147592005">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:15</note>
+        <note category="location">src/app/layout/workspace-layout.html:12</note>
       </notes>
       <segment>
         <source>MARKET</source>
@@ -10007,7 +9976,7 @@
     </unit>
     <unit id="2102825898069375693">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:27</note>
+        <note category="location">src/app/layout/workspace-layout.html:24</note>
       </notes>
       <segment>
         <source>Menu</source>
@@ -10015,7 +9984,7 @@
     </unit>
     <unit id="285051370968454986">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:37</note>
+        <note category="location">src/app/layout/workspace-layout.html:34</note>
       </notes>
       <segment>
         <source>ESPAÇO DO AVENTUREIRO</source>
@@ -10023,7 +9992,7 @@
     </unit>
     <unit id="6932472387281990307">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:39</note>
+        <note category="location">src/app/layout/workspace-layout.html:36</note>
       </notes>
       <segment>
         <source>SEU PLANEJADOR DE BDO</source>
@@ -10031,7 +10000,7 @@
     </unit>
     <unit id="8596585797689247822">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:48,49</note>
+        <note category="location">src/app/layout/workspace-layout.html:45,46</note>
       </notes>
       <segment>
         <source>Navegação principal do Black Market</source>
@@ -10039,7 +10008,7 @@
     </unit>
     <unit id="1649501872041853489">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:95</note>
+        <note category="location">src/app/layout/workspace-layout.html:92</note>
       </notes>
       <segment>
         <source>Ferramentas independentes</source>
@@ -10047,7 +10016,7 @@
     </unit>
     <unit id="1756877592380326454">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:97,98</note>
+        <note category="location">src/app/layout/workspace-layout.html:94,95</note>
       </notes>
       <segment>
         <source>BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS</source>
@@ -10055,7 +10024,7 @@
     </unit>
     <unit id="68888036324846593">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:102</note>
+        <note category="location">src/app/layout/workspace-layout.html:99</note>
       </notes>
       <segment>
         <source>Localização atual</source>
@@ -10063,7 +10032,7 @@
     </unit>
     <unit id="7454412857772204394">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:120,121</note>
+        <note category="location">src/app/layout/workspace-layout.html:117,118</note>
       </notes>
       <segment>
         <source> Buscar item <pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span aria-hidden=&quot;true&quot;&gt;" dispEnd="&lt;/span&gt;">⌕</pc></source>
@@ -10071,7 +10040,7 @@
     </unit>
     <unit id="8486008966550715052">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:127,128</note>
+        <note category="location">src/app/layout/workspace-layout.html:124,125</note>
       </notes>
       <segment>
         <source>Configurações</source>
@@ -10079,7 +10048,7 @@
     </unit>
     <unit id="2708136643858622046">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:129</note>
+        <note category="location">src/app/layout/workspace-layout.html:126</note>
       </notes>
       <segment>
         <source>Região do mercado</source>
@@ -10087,7 +10056,7 @@
     </unit>
     <unit id="4756995594800823013">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:148,149</note>
+        <note category="location">src/app/layout/workspace-layout.html:145,146</note>
       </notes>
       <segment>
         <source>Busca global</source>
@@ -10095,7 +10064,7 @@
     </unit>
     <unit id="1672965432682395276">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:160,161</note>
+        <note category="location">src/app/layout/workspace-layout.html:157,158</note>
       </notes>
       <segment>
         <source> Fechar busca </source>
@@ -10103,7 +10072,7 @@
     </unit>
     <unit id="8241565724085181444">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:167</note>
+        <note category="location">src/app/layout/workspace-layout.html:164</note>
       </notes>
       <segment>
         <source>Recuperar dados locais</source>
@@ -10111,7 +10080,7 @@
     </unit>
     <unit id="6027154618860461295">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:172</note>
+        <note category="location">src/app/layout/workspace-layout.html:169</note>
       </notes>
       <segment>
         <source>Modo demonstração</source>
@@ -10119,7 +10088,7 @@
     </unit>
     <unit id="5855265007971144187">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:174,175</note>
+        <note category="location">src/app/layout/workspace-layout.html:171,172</note>
       </notes>
       <segment>
         <source>Demonstração · Personagem e estoque de teste. As alterações duram apenas nesta sessão; seus dados anteriores estão preservados.</source>
@@ -10127,7 +10096,7 @@
     </unit>
     <unit id="5304497066524759118">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:178,179</note>
+        <note category="location">src/app/layout/workspace-layout.html:175,176</note>
       </notes>
       <segment>
         <source>Comparar produção</source>
@@ -10135,7 +10104,7 @@
     </unit>
     <unit id="6034865844234363330">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.html:181</note>
+        <note category="location">src/app/layout/workspace-layout.html:178</note>
       </notes>
       <segment>
         <source> Sair da demonstração </source>
@@ -10143,8 +10112,8 @@
     </unit>
     <unit id="8237522812427434567">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:275</note>
-        <note category="location">src/app/layout/workspace-layout.ts:292</note>
+        <note category="location">src/app/layout/workspace-layout.ts:281</note>
+        <note category="location">src/app/layout/workspace-layout.ts:298</note>
       </notes>
       <segment>
         <source>Início</source>
@@ -10152,23 +10121,15 @@
     </unit>
     <unit id="6507422559925786279">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:278</note>
+        <note category="location">src/app/layout/workspace-layout.ts:284</note>
       </notes>
       <segment>
         <source>O que fazer</source>
       </segment>
     </unit>
-    <unit id="6393961446548554775">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:287</note>
-      </notes>
-      <segment>
-        <source>Mercado</source>
-      </segment>
-    </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:296</note>
+        <note category="location">src/app/layout/workspace-layout.ts:302</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
@@ -10176,7 +10137,7 @@
     </unit>
     <unit id="6391981534381874449">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:307</note>
+        <note category="location">src/app/layout/workspace-layout.ts:313</note>
       </notes>
       <segment>
         <source>Materiais e planos</source>
@@ -10184,8 +10145,8 @@
     </unit>
     <unit id="3051215723242753347">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:330</note>
-        <note category="location">src/app/layout/workspace-layout.ts:430</note>
+        <note category="location">src/app/layout/workspace-layout.ts:336</note>
+        <note category="location">src/app/layout/workspace-layout.ts:436</note>
       </notes>
       <segment>
         <source>Lista de materiais</source>
@@ -10193,8 +10154,8 @@
     </unit>
     <unit id="3031009167976274068">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:336</note>
-        <note category="location">src/app/layout/workspace-layout.ts:439</note>
+        <note category="location">src/app/layout/workspace-layout.ts:342</note>
+        <note category="location">src/app/layout/workspace-layout.ts:445</note>
       </notes>
       <segment>
         <source>Meus planos</source>
@@ -10202,8 +10163,8 @@
     </unit>
     <unit id="800803655328576309">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:343</note>
-        <note category="location">src/app/layout/workspace-layout.ts:449</note>
+        <note category="location">src/app/layout/workspace-layout.ts:349</note>
+        <note category="location">src/app/layout/workspace-layout.ts:455</note>
       </notes>
       <segment>
         <source>Guias e conta</source>
@@ -10211,7 +10172,7 @@
     </unit>
     <unit id="1453134524041735834">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:365</note>
+        <note category="location">src/app/layout/workspace-layout.ts:371</note>
       </notes>
       <segment>
         <source>Mercado e produção</source>
@@ -10219,7 +10180,7 @@
     </unit>
     <unit id="6004493327033173129">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:382</note>
+        <note category="location">src/app/layout/workspace-layout.ts:388</note>
       </notes>
       <segment>
         <source>Personagem e evolução</source>
@@ -10227,7 +10188,7 @@
     </unit>
     <unit id="7468173889571751215">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:395</note>
+        <note category="location">src/app/layout/workspace-layout.ts:401</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos</source>
@@ -10235,7 +10196,7 @@
     </unit>
     <unit id="1066166934309898114">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:405</note>
+        <note category="location">src/app/layout/workspace-layout.ts:411</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -10243,7 +10204,7 @@
     </unit>
     <unit id="4384711067175333650">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:410</note>
+        <note category="location">src/app/layout/workspace-layout.ts:416</note>
       </notes>
       <segment>
         <source>Materiais e planejamento</source>
@@ -10251,7 +10212,7 @@
     </unit>
     <unit id="2628946056707873008">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:423</note>
+        <note category="location">src/app/layout/workspace-layout.ts:429</note>
       </notes>
       <segment>
         <source>Importar por captura</source>
@@ -10259,7 +10220,7 @@
     </unit>
     <unit id="1012592931481663403">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:435</note>
+        <note category="location">src/app/layout/workspace-layout.ts:441</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
@@ -10267,7 +10228,7 @@
     </unit>
     <unit id="3487828683297229196">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:444</note>
+        <note category="location">src/app/layout/workspace-layout.ts:450</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
@@ -10275,7 +10236,7 @@
     </unit>
     <unit id="7338913928758216034">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:453</note>
+        <note category="location">src/app/layout/workspace-layout.ts:459</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -10283,7 +10244,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:478</note>
+        <note category="location">src/app/layout/workspace-layout.ts:484</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:15,16</note>
       </notes>
       <segment>
@@ -10292,7 +10253,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:480</note>
+        <note category="location">src/app/layout/workspace-layout.ts:486</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
@@ -10301,7 +10262,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:500</note>
+        <note category="location">src/app/layout/workspace-layout.ts:506</note>
       </notes>
       <segment>
         <source>Black Market</source>
@@ -11424,7 +11385,7 @@
     </unit>
     <unit id="8451668644841861598">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:17,20</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:17,19</note>
       </notes>
       <segment>
         <source>Informações do item: <ph id="0" equiv="INTERPOLATION" disp="{{ tree().context()?.node?.part?.name ?? tree().selectedNode()?.part?.name }}"/></source>
@@ -11496,7 +11457,7 @@
     </unit>
     <unit id="2131218554816218394">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:89,107</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:89,106</note>
       </notes>
       <segment>
         <source>Método de produção<pc id="0" equivStart="START_TAG_SELECT" equivEnd="CLOSE_TAG_SELECT" type="other" dispStart="&lt;select
@@ -11530,7 +11491,7 @@
     </unit>
     <unit id="6375705110326689405">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:123,124</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:132</note>
       </notes>
       <segment>
         <source>Descrição informada pelo jogo</source>
@@ -11538,7 +11499,7 @@
     </unit>
     <unit id="7452095354869753712">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:135,136</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:144,145</note>
       </notes>
       <segment>
         <source>Estoque nos Armazéns</source>
@@ -11546,7 +11507,7 @@
     </unit>
     <unit id="7199749543714490303">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:146,147</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:155,156</note>
       </notes>
       <segment>
         <source>Quantidades cadastradas:</source>
@@ -11554,7 +11515,7 @@
     </unit>
     <unit id="2801442376031464209">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:154,155</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:163,164</note>
       </notes>
       <segment>
         <source>Sem quantidade nos armazéns selecionados.</source>
@@ -11562,7 +11523,7 @@
     </unit>
     <unit id="2575215593231932102">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:162,163</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:171,172</note>
       </notes>
       <segment>
         <source>Mercado Central &amp; Cotação</source>
@@ -11570,7 +11531,7 @@
     </unit>
     <unit id="4388268655824420527">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:178,179</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:187,188</note>
       </notes>
       <segment>
         <source>Sem cotação ativa no Mercado Central.</source>
@@ -11578,7 +11539,7 @@
     </unit>
     <unit id="2870534225087162420">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:194,195</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:203</note>
       </notes>
       <segment>
         <source> Abrir mercado completo → </source>
@@ -11586,7 +11547,7 @@
     </unit>
     <unit id="7481896997243324721">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:198,199</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:207</note>
       </notes>
       <segment>
         <source>Histórico observado</source>
@@ -11594,7 +11555,7 @@
     </unit>
     <unit id="8886013891594364415">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:199,200</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:208,209</note>
       </notes>
       <segment>
         <source>Consultar histórico</source>
@@ -11602,7 +11563,7 @@
     </unit>
     <unit id="2888125710184836550">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:214,215</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:223,224</note>
       </notes>
       <segment>
         <source>Obtenção no Mundo</source>
@@ -11610,7 +11571,7 @@
     </unit>
     <unit id="2539810599944761314">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:216,217</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:225,226</note>
       </notes>
       <segment>
         <source>Trabalhadores · bases conhecidas:</source>
@@ -11618,7 +11579,7 @@
     </unit>
     <unit id="6870939584309916285">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:230,231</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:239,240</note>
       </notes>
       <segment>
         <source>Sem produção de trabalhadores vinculada.</source>
@@ -11626,7 +11587,7 @@
     </unit>
     <unit id="7800952521702015153">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:234,235</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:243,244</note>
       </notes>
       <segment>
         <source>Combate convencional · spots de grind:</source>
@@ -11634,7 +11595,7 @@
     </unit>
     <unit id="2391334450447249069">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:263</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-details.html:272</note>
       </notes>
       <segment>
         <source> Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas. </source>
@@ -11667,7 +11628,7 @@
     <unit id="3383907643333341583">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:73,74</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:184,185</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:194,195</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -11705,42 +11666,34 @@
         <source>Sem cotação de mercado; venda não incluída.</source>
       </segment>
     </unit>
-    <unit id="8032717281324704933">
+    <unit id="6607875018331464152">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:28,29</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:27,28</note>
       </notes>
       <segment>
-        <source>Vender</source>
-      </segment>
-    </unit>
-    <unit id="1372173599787735409">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:30,31</note>
-      </notes>
-      <segment>
-        <source>Guardar</source>
+        <source>Incluir venda</source>
       </segment>
     </unit>
     <unit id="385550784261308218">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:39,40</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:44,45</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:35,36</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:40,41</note>
       </notes>
       <segment>
         <source>Plano da receita</source>
       </segment>
     </unit>
-    <unit id="4119258282286453025">
+    <unit id="2598220245359085864">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:49,50</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:46,47</note>
       </notes>
       <segment>
-        <source>Escolha o que fazer, comprar, vender ou guardar.</source>
+        <source> Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote. </source>
       </segment>
     </unit>
     <unit id="8776558155521885715">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:53,54</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:52,53</note>
       </notes>
       <segment>
         <source>Materiais da receita</source>
@@ -11748,7 +11701,7 @@
     </unit>
     <unit id="1051153516446623837">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:124,125</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:127,128</note>
       </notes>
       <segment>
         <source>Sem cotação</source>
@@ -11756,7 +11709,7 @@
     </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:154,156</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:163,164</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -11764,24 +11717,24 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:159</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:161,162</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:168</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:170,171</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
       </segment>
     </unit>
-    <unit id="4229231559712666889">
+    <unit id="6431746344747902792">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:165,166</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:174,175</note>
       </notes>
       <segment>
-        <source> Venda marcada entra no faturamento; itens guardados ficam fora. </source>
+        <source> Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda. </source>
       </segment>
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:186,187</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:196,197</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returns().length - 2 }}"/>)</source>
@@ -11789,7 +11742,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:197,198</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:207,208</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -11797,7 +11750,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:204,206</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:214,215</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>
@@ -11972,7 +11925,7 @@
     </unit>
     <unit id="2445384171965660751">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:522,523</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:525,526</note>
       </notes>
       <segment>
         <source>Lucro líquido</source>
@@ -11980,7 +11933,7 @@
     </unit>
     <unit id="7628283421798864413">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:531,532</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:534,535</note>
       </notes>
       <segment>
         <source>Custo dos materiais</source>
@@ -11988,7 +11941,7 @@
     </unit>
     <unit id="5254134715645515364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:537,538</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:540,541</note>
       </notes>
       <segment>
         <source>Faturamento líquido</source>
@@ -11996,7 +11949,7 @@
     </unit>
     <unit id="5783330943194905505">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:562,563</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:565,566</note>
       </notes>
       <segment>
         <source>Atualizando cotações</source>
@@ -12004,7 +11957,7 @@
     </unit>
     <unit id="4696046538802796110">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:605,606</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:608,609</note>
       </notes>
       <segment>
         <source>Opções de impostos e buffs do mercado</source>
@@ -12012,7 +11965,7 @@
     </unit>
     <unit id="8638566115687747364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:617</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:620</note>
       </notes>
       <segment>
         <source>Visualização da produção</source>
@@ -12020,7 +11973,7 @@
     </unit>
     <unit id="3423527547728662625">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:624</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:627</note>
       </notes>
       <segment>
         <source> Árvore visual </source>
@@ -12028,7 +11981,7 @@
     </unit>
     <unit id="1596513412557859561">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:632</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:635</note>
       </notes>
       <segment>
         <source> Etapas expansíveis </source>
@@ -12036,7 +11989,7 @@
     </unit>
     <unit id="5764736619878600212">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:638</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:641</note>
       </notes>
       <segment>
         <source> Expandir todos </source>
@@ -12044,7 +11997,7 @@
     </unit>
     <unit id="2016013543679738291">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:640,641</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:643,644</note>
       </notes>
       <segment>
         <source>Recolher todos</source>
@@ -12052,7 +12005,7 @@
     </unit>
     <unit id="6761593809530292978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:642,643</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:645,646</note>
       </notes>
       <segment>
         <source>Interromper expansão</source>
