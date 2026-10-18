@@ -93,6 +93,8 @@ export class ProfilePage {
     earring2: 'Brinco 2',
     tool: 'Ferramenta',
     clothes: 'Traje de profissão',
+    alchemyStone: 'Pedra alquímica',
+    tome: 'Tomo do aventureiro',
   };
   empty() {
     return characterSchema.parse({

@@ -1,0 +1,148 @@
+<section class="equipment-sheet" aria-label="Equipamentos do personagem" i18n-aria-label>
+  <div class="equipment-workspace">
+    <div class="equipment-window">
+      <header class="equipment-titlebar">
+        <h2 i18n>Equipamento</h2>
+        <span>{{ profile().name }}</span>
+      </header>
+      <div class="profession-heading">
+        <span i18n>SEU CONJUNTO DE PROFISSÃO</span><small i18n>Vida em primeiro lugar</small>
+      </div>
+      <div class="profession-equipment">
+        @for (position of professionPositions; track position.slot) {
+          <button
+            type="button"
+            class="profession-slot"
+            [attr.data-slot]="position.slot"
+            [attr.aria-label]="slotLabel(position.slot)"
+            [attr.aria-pressed]="selection() === position.slot"
+            (click)="selectSlot(position.slot)"
+          >
+            @if (parts().get(position.slot); as part) {
+              <app-item-icon
+                [url]="catalog.resolveIconUrl(items().get(part.itemId) ?? {})"
+                [name]="part.name"
+                [grade]="items().get(part.itemId)?.grade ?? null"
+              />
+            } @else {
+              <span class="profession-empty"
+                ><ng-icon [name]="position.icon" aria-hidden="true"
+              /></span>
+            }
+            <span
+              ><small>{{ labels[position.slot] }}</small
+              ><strong>{{ parts().get(position.slot)?.name || 'Não informado' }}</strong></span
+            >
+          </button>
+        }
+      </div>
+      <div
+        class="equipment-orbit"
+        role="group"
+        aria-label="Posições de equipamento conforme a interface do jogo"
+        i18n-aria-label
+      >
+        <div class="orbit-center" aria-hidden="true">
+          <ng-icon name="lucideShirt" /><span>BLACK MARKET</span><strong>VIDA</strong>
+        </div>
+        @for (position of orbit; track position.slot) {
+          <button
+            type="button"
+            class="orbit-slot"
+            [class.vacant]="!parts().has(position.slot)"
+            [attr.data-slot]="position.slot"
+            [attr.aria-label]="position.number + ' · ' + slotLabel(position.slot)"
+            [attr.title]="slotLabel(position.slot)"
+            [attr.aria-pressed]="selection() === position.slot"
+            [style.left.%]="position.x"
+            [style.top.%]="position.y"
+            (click)="selectSlot(position.slot)"
+          >
+            <span class="slot-number" aria-hidden="true">{{ position.number }}</span>
+            @if (parts().get(position.slot); as part) {
+              <app-item-icon
+                [url]="catalog.resolveIconUrl(items().get(part.itemId) ?? {})"
+                [name]="part.name"
+                [grade]="items().get(part.itemId)?.grade ?? null"
+              />
+              @if (levelBadge(part); as badge) {
+                <strong class="slot-level" aria-hidden="true">{{ badge }}</strong>
+              }
+            } @else {
+              <ng-icon class="vacant-icon" [name]="position.icon" aria-hidden="true" />
+            }
+            <span class="sr-only">{{ labels[position.slot] }}</span>
+          </button>
+        }
+      </div>
+      <p class="equipment-hint" i18n>Selecione uma posição para consultar ou corrigir o item.</p>
+      @if (showStatistics()) {
+        <details class="combat-attributes">
+          <summary i18n>Atributos de combate informados</summary>
+          <div class="equipment-stats">
+            <span
+              >PA <strong>{{ profile().mainAp }}</strong></span
+            ><span i18n
+              >Despertar <strong>{{ profile().awakeAp }}</strong></span
+            ><span
+              >PD <strong>{{ profile().dp }}</strong></span
+            >
+          </div>
+          <p i18n>
+            Valores da ficha, sem soma automática dos itens. Zero pode indicar dado ainda não
+            preenchido.
+          </p>
+        </details>
+      }
+    </div>
+    <div class="equipment-selection" aria-label="Item da posição selecionada" i18n-aria-label>
+      <header class="selection-heading">
+        <p i18n>POSIÇÃO SELECIONADA</p>
+        <h3>{{ labels[selection()] }}</h3>
+      </header>
+      @if (selectedPart(); as part) {
+        @if (message()) {
+          <div class="equipment-message" role="status">
+            <p>{{ message() }}</p>
+            <button type="button" class="catalog-retry" (click)="retryCatalog()" i18n>
+              Tentar carregar novamente
+            </button>
+          </div>
+        }
+        <app-item-dossier
+          [loading]="loading()"
+          [item]="items().get(part.itemId) ?? null"
+          [itemId]="part.itemId"
+          [fallbackName]="part.name"
+          [iconUrl]="catalog.resolveIconUrl(items().get(part.itemId) ?? {})"
+          [enhancement]="levelText(part)"
+          [showMarketLink]="true"
+        />
+      } @else {
+        <div class="empty-equipment">
+          <span aria-hidden="true">+</span>
+          <h4 i18n>Posição não informada</h4>
+          <p i18n>
+            Adicione o item que aparece nesta posição no jogo. A seleção não altera sua ficha.
+          </p>
+        </div>
+      }
+      <ng-content select="[equipment-editor]" />
+    </div>
+  </div>
+  @if (profile().crystals.length) {
+    <section class="equipment-crystals">
+      <h3 i18n>Cristais da ficha</h3>
+      <div class="crystal-slots">
+        @for (crystal of profile().crystals; track $index) {
+          <a [routerLink]="['/market/items', crystal.itemId]"
+            ><app-item-icon
+              [url]="catalog.resolveIconUrl(items().get(crystal.itemId) ?? {})"
+              [name]="crystal.name"
+            /><span>{{ crystal.name }}</span></a
+          >
+        }
+      </div>
+    </section>
+  }
+</section>

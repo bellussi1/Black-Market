@@ -6,6 +6,38 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { GearInventoryPage } from './gear-inventory-page';
 describe('Character equipment management', () => {
   useMemoryStorage();
+  it('selects an equipment position in context without writing before confirmation', async () => {
+    const fixture = await renderComponent(GearInventoryPage);
+    const page = fixture.componentInstance;
+    page.name = 'Profissão';
+    page.create();
+    fixture.detectChanges();
+    const before = structuredClone(page.profile());
+    const tool = fixture.nativeElement.querySelector('[data-slot="tool"]') as HTMLButtonElement;
+    tool.click();
+    fixture.detectChanges();
+    expect(page.slot).toBe('tool');
+    expect(page.profile()).toEqual(before);
+    page.item = { id: 10, name: 'Ferramenta' } as CatalogItem;
+    page.level = 19;
+    page.save();
+    fixture.detectChanges();
+    expect(page.profile()?.gear.find((row) => row.slot === 'tool')?.itemId).toBe(10);
+    const tome = fixture.nativeElement.querySelector('[data-slot="tome"]') as HTMLButtonElement;
+    tome.click();
+    fixture.detectChanges();
+    expect(page.slot).toBe('tome');
+    expect(page.item).toBeNull();
+    page.item = { id: 11, name: 'Tomo' } as CatalogItem;
+    page.level = 19;
+    page.caphras = 20;
+    page.save();
+    expect(page.profile()?.gear.find((row) => row.slot === 'tome')).toMatchObject({
+      level: 0,
+      caphras: 0,
+    });
+    expect(page.profile()?.gear.find((row) => row.slot === 'tool')?.level).toBe(19);
+  });
   it('keeps equipment identity and review actions grouped when embedded and standalone', async () => {
     const fixture = await renderComponent(GearInventoryPage);
     const page = fixture.componentInstance;
@@ -30,7 +62,7 @@ describe('Character equipment management', () => {
       'Equipamentos do personagem',
     );
     expect(embeddedElement.querySelector('app-equipment-sheet')).not.toBeNull();
-    expect(embeddedElement.querySelector('details summary')?.textContent).toContain(
+    expect(embeddedElement.querySelector('.equipment-editor summary')?.textContent).toContain(
       'Adicionar ou corrigir equipamento manualmente',
     );
   });

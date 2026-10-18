@@ -55,58 +55,127 @@
     </section>
   }
   @if (profile(); as current) {
-    <section hlmCard class="panel" aria-label="Atributos informados do personagem" i18n-aria-label>
-      <h2 i18n>Atributos da ficha</h2>
-      <div class="action-row">
-        <strong>PA {{ current.mainAp }}</strong
-        ><strong i18n>Despertar {{ current.awakeAp }}</strong
-        ><strong>PD {{ current.dp }}</strong>
-      </div>
+    <section
+      class="gear-life-summary"
+      aria-label="Informações de profissão da ficha"
+      i18n-aria-label
+    >
+      <h2 i18n>Seu conjunto de Vida</h2>
       <p i18n>
-        Valores informados por você ou confirmados na importação. Zero pode representar um campo
-        ainda não preenchido; não calculamos esses atributos pela imagem dos itens.
+        Ferramenta, traje e acessórios para suas profissões. Escolha uma posição para revisar o
+        equipamento.
       </p>
-    </section>
-    <app-equipment-sheet [profile]="current" [showStatistics]="false" />
-    <details class="panel">
-      <summary i18n>Adicionar ou corrigir equipamento manualmente</summary>
-      <app-catalog-item-picker
-        label="Equipamento"
-        [selectionName]="item?.name ?? ''"
-        (selected)="item = $event"
-      />
-      <div class="form-grid">
-        <label
-          ><span i18n>Posição</span
-          ><select appBdoSelect [(ngModel)]="slot">
-            @for (position of slots; track position) {
-              <option [value]="position">{{ labels[position] }}</option>
-            }
-          </select></label
-        ><label i18n
-          >Aprimoramento confirmado no jogo<input
-            hlmInput
-            type="number"
-            min="0"
-            max="30"
-            [(ngModel)]="level" /></label
-        ><label i18n
-          >Caphras confirmado no jogo<input
-            hlmInput
-            type="number"
-            min="0"
-            max="20"
-            [(ngModel)]="caphras"
-        /></label>
+      <div class="gear-life-metrics">
+        <div>
+          <label
+            ><span i18n>Maestria de</span
+            ><select appBdoSelect [(ngModel)]="focusSkill">
+              @for (skill of skills; track skill) {
+                <option [value]="skill">{{ skillLabels[skill] }}</option>
+              }
+            </select></label
+          ><strong>{{ current.mastery[focusSkill] }}</strong
+          ><small i18n>Valor informado na ficha</small>
+        </div>
+        <div>
+          <span i18n>Energia atual</span><strong>{{ current.energy }}</strong
+          ><small i18n>Informada pelo jogador</small>
+        </div>
+        <div>
+          <span i18n>Limite de peso</span><strong>{{ current.weightLimit }} LT</strong
+          ><small i18n>Sem somar bônus dos itens</small>
+        </div>
       </div>
       <p class="help" i18n>
-        0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1 a 10.
-        Confira o item e o nível antes de substituir esta posição.
+        Os valores vêm da ficha. Zero pode indicar um campo ainda não preenchido; não calculamos sua
+        maestria pela imagem dos equipamentos.
       </p>
-      <button hlmBtn variant="outline" class="btn" type="button" (click)="save()" i18n>
-        Confirmar equipamento nesta posição
-      </button>
-    </details>
+    </section>
+    <app-equipment-sheet
+      [profile]="current"
+      [activeSlot]="selectedPosition()"
+      (slotSelected)="chooseSlot($event)"
+    >
+      <div equipment-editor>
+        @if (isArtifact()) {
+          <section class="equipment-editor artifact-editor">
+            <h4 i18n>Artefatos e pedras de luz</h4>
+            <p i18n>
+              Os artefatos usam os complementos já cadastrados na ficha. Revise-os junto às pedras
+              de luz para manter um único registro.
+            </p>
+            <a
+              hlmBtn
+              variant="outline"
+              routerLink="/family"
+              [queryParams]="{ tab: 'character' }"
+              fragment="character-complements"
+              i18n
+              >Editar complementos da ficha →</a
+            >
+          </section>
+        } @else {
+          <details class="equipment-editor" open>
+            <summary i18n>Adicionar ou corrigir equipamento manualmente</summary>
+            <app-catalog-item-picker
+              label="Equipamento"
+              [selectionName]="item?.name ?? ''"
+              (selected)="item = $event"
+            />
+            <div class="form-grid">
+              <label
+                ><span i18n>Posição</span
+                ><select appBdoSelect [ngModel]="slot" (ngModelChange)="chooseSlot($event)">
+                  @for (position of slots; track position) {
+                    <option [value]="position">{{ labels[position] }}</option>
+                  }
+                </select></label
+              >
+              @if (canEnhance()) {
+                <label i18n
+                  >Aprimoramento confirmado no jogo<input
+                    hlmInput
+                    type="number"
+                    min="0"
+                    max="30"
+                    [(ngModel)]="level"
+                /></label>
+                <label i18n
+                  >Caphras confirmado no jogo<input
+                    hlmInput
+                    type="number"
+                    min="0"
+                    max="20"
+                    [(ngModel)]="caphras"
+                /></label>
+              }
+            </div>
+            @if (canEnhance()) {
+              <p class="help" i18n>
+                0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1
+                a 10. Confira o nível no jogo antes de confirmar.
+              </p>
+            } @else {
+              <p class="help" i18n>
+                Esta posição não usa o nível numérico de armas/armaduras. O item é registrado pela
+                sua identidade, sem atribuir aprimoramento ou Caphras.
+              </p>
+            }
+            <button
+              hlmBtn
+              variant="outline"
+              class="btn"
+              type="button"
+              (click)="save()"
+              [disabled]="!item"
+              i18n
+            >
+              Confirmar equipamento nesta posição
+            </button>
+          </details>
+        }
+      </div>
+    </app-equipment-sheet>
   }
   @if (message()) {
     <p class="status-message" role="status">{{ message() }}</p>

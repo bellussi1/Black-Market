@@ -1,5 +1,6 @@
-import type { OnDestroy } from '@angular/core';
+import type { ElementRef, OnDestroy } from '@angular/core';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   effect,
@@ -8,6 +9,7 @@ import {
   output,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import type { CatalogCategory, CatalogItem, CatalogPage } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
@@ -39,6 +41,8 @@ export class CatalogItemPicker implements OnDestroy {
   readonly selectionName = input('');
   readonly label = input($localize`Buscar item do jogo`);
   readonly compact = input(false);
+  readonly focusOnOpen = input(false);
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly scope = input<'life-skill' | undefined>(undefined);
   readonly selected = output<CatalogItem | null>();
   readonly query = signal('');
@@ -51,6 +55,9 @@ export class CatalogItemPicker implements OnDestroy {
   readonly open = signal(false);
 
   constructor() {
+    afterNextRender(() => {
+      if (this.focusOnOpen()) this.searchInput()?.nativeElement.focus();
+    });
     effect(() => {
       const scope = this.scope();
       untracked(() => {

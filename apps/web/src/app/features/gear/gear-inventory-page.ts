@@ -1,7 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { characterSchema, gearSlots } from '@bdo/calculators';
+import { characterSchema, gearSlots, lifeSkills } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
@@ -10,7 +18,12 @@ import { HlmInput } from '@bdo/ui/input';
 import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import {
+  equipmentLabels,
+  type EquipmentPosition,
+} from '../../shared/equipment-sheet/equipment-positions';
 import { EquipmentSheet } from '../../shared/equipment-sheet/equipment-sheet';
+import { lifeSkillLabels } from '../../shared/game-labels';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   selector: 'app-gear-inventory-page',
@@ -26,6 +39,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     EquipmentSheet,
   ],
   templateUrl: './gear-inventory-page.html',
+  styleUrl: './gear-inventory-page.scss',
 })
 export class GearInventoryPage {
   readonly store = inject(WorkspaceStore);
@@ -33,32 +47,60 @@ export class GearInventoryPage {
   readonly embedded = input(false);
   readonly message = signal('');
   readonly slots = gearSlots;
-  readonly labels: Record<string, string> = {
-    mainhand: 'Arma principal',
-    offhand: 'Arma secundária',
-    awakening: 'Despertar',
-    helmet: 'Elmo',
-    armor: 'Armadura',
-    gloves: 'Luvas',
-    shoes: 'Sapatos',
-    necklace: 'Colar',
-    belt: 'Cinto',
-    ring1: 'Anel esquerdo',
-    ring2: 'Anel direito',
-    earring1: 'Brinco esquerdo',
-    earring2: 'Brinco direito',
-    tool: 'Ferramenta',
-    clothes: 'Traje de profissão',
-  };
+  readonly labels = equipmentLabels;
+  readonly skills = lifeSkills;
+  readonly skillLabels = lifeSkillLabels;
+  readonly selectedPosition = signal<EquipmentPosition>('clothes');
+  readonly isArtifact = computed(() =>
+    ['artifact1', 'artifact2'].includes(this.selectedPosition()),
+  );
+  focusSkill: (typeof lifeSkills)[number] = 'gathering';
+  private previousProfileId = '';
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
   );
   readonly profile = this.store.activeCharacter;
   name = '';
-  slot: (typeof gearSlots)[number] = 'mainhand';
+  slot: (typeof gearSlots)[number] = 'clothes';
   item: CatalogItem | null = null;
   level = 0;
   caphras = 0;
+  constructor() {
+    effect(() => {
+      const id = this.profile()?.id ?? '';
+      if (id === this.previousProfileId) return;
+      this.previousProfileId = id;
+      this.item = null;
+      this.slot = 'clothes';
+      this.selectedPosition.set('clothes');
+      this.level = 0;
+      this.caphras = 0;
+    });
+  }
+  chooseSlot(position: EquipmentPosition): void {
+    this.selectedPosition.set(position);
+    this.message.set('');
+    this.item = null;
+    if (position === 'artifact1' || position === 'artifact2') return;
+    this.slot = position;
+    const part = this.profile()?.gear.find((row) => row.slot === position);
+    this.level = part?.levelConfirmed === false ? 0 : (part?.level ?? 0);
+    this.caphras = part?.caphrasConfirmed === false ? 0 : (part?.caphras ?? 0);
+    if (part)
+      this.item = {
+        id: part.itemId,
+        name: part.name,
+        description: null,
+        grade: null,
+        weight: null,
+        category: null,
+        categories: [],
+        icon: null,
+      };
+  }
+  canEnhance(): boolean {
+    return !['alchemyStone', 'tome'].includes(this.slot);
+  }
   select(id: string) {
     this.store.update((state) => ({ ...state, activeCharacterId: id }));
   }
@@ -90,7 +132,7 @@ export class GearInventoryPage {
   }
   save() {
     const profile = this.profile();
-    if (!profile || !this.item || !this.slots.includes(this.slot)) {
+    if (!profile || !this.item || !this.slots.includes(this.slot) || this.isArtifact()) {
       this.message.set('Escolha personagem, item e posição.');
       return;
     }
@@ -98,8 +140,8 @@ export class GearInventoryPage {
       slot: this.slot,
       itemId: this.item.id,
       name: this.item.name,
-      level: this.level,
-      caphras: this.caphras,
+      level: this.canEnhance() ? this.level : 0,
+      caphras: this.canEnhance() ? this.caphras : 0,
       levelConfirmed: true,
       caphrasConfirmed: true,
     };
