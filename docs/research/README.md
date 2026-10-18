@@ -25,6 +25,7 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 - [Subproduto aleatório na listagem de receitas](recipe-byproduct-listing-review-2026-10-18.md): correção de “Comida Retirada” na página 4, metadado ausente, evidência local e limites da pesquisa competitiva.
 - [Disponibilidade do tutorial da oficina](tutorial-versioned-fallback-review-2026-10-18.md): comparação pública de guias e decisão de fallback versionado sem seed persistente.
 - [Redução do bundle inicial do shell](shell-bundle-deferral-review-2026-10-18.md): análise do grafo inicial, controles carregados sob demanda e novo baseline de produção.
+- [Home, acesso público a Profissões e botões sociais](home-social-login-ui-review-2026-10-18.md): primeira dobra da Home, mudança de acesso de `/lifeskills`, padronização dos botões Google/Steam e pesquisa pública atual.
 
 | Documento                                                                                                                     | Cobertura                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -4,7 +4,7 @@ _Este arquivo é o canal oficial de passagem de bastão de contexto entre OpenAI
 
 ---
 
-> **Retomada atual — 16/10/2026:** branch `codex/audit-remediation`, base `81cea47`; equipamentos e descrições com foco em Life Skills em **§160**; checklist/sessões em **§159**; localhost:4200 restabelecido em **§158** (Web/API ativos); funcionalidades anteriores em **§157**, com reversão local da última importação de capturas e reconciliação documental. Auditoria/otimizador/login anteriores em §156. Conferir Git e os relatórios atuais antes de agir.
+> **Retomada atual — 18/10/2026:** branch `codex/audit-remediation`. Navegação MVP e budget do shell concluídos em **§164–165**; Home, acesso público às Profissões e botões sociais em **§166**. O plano preexistente `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` segue não rastreado e deve ser preservado. Conferir Git e relatórios antes de agir.
 
 ## 1. Estado Atual Verificado: 10/10/2026
 
@@ -1802,3 +1802,14 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
 - **Pesquisa/evidência:** concorrentes e limites da consulta estão no relatório `docs/research/shell-bundle-deferral-review-2026-10-18.md`; esta mudança de registry foi guiada pelo grafo local. Commit de código `4366417`; agrupamento da navegação `6aa9391` e documento próprio `2dfe6bb`.
 - **Documentação:** checklist mestre atualizado para PERF-01 concluído e gates integrais aprovados; pesquisa recebeu novo snapshot. Handoff resume o estado atual.
 - **Continuidade:** acompanhar o limite do bundle em futuras alterações do shell. Login OAuth real, QA autenticado/leitor de tela, fontes/datasets externos e teste que depende de banco descartável continuam pendências separadas. Preservar o plano de fase 3 preexistente, não rastreado; não houve push ou deploy.
+
+## 166. Priorizar a entrada da Home e permitir Profissões sem login (Codex, 18/10/2026)
+
+- **Decisões aprovadas:** Home compacta com busca de item e acesso a “Profissões e rendimento” no primeiro bloco; padronizar os botões Google/Steam em estrutura Black Market sem distorcer as artes.
+- **Home:** hero, CTA `/lifeskills` e busca rápida foram agrupados antes dos focos do Roadmap. A busca usa o seletor compacto por nome/ID; filtros por categoria continuam em Receitas. Loading, erro, vazio e lista de focos foram preservados.
+- **Acesso público:** `/lifeskills` removeu `authGuard`, metadado privado e política SSR noindex/no-store. Visitantes podem criar/comparar sessões no armazenamento local; sincronizar entre dispositivos ainda exige sessão. A navegação principal e secundária refletem a rota pública.
+- **Botões sociais:** caixas de clique iguais com grade, altura 52px, largura integral em tela estreita, artes centralizadas com proporção intrínseca, `aria-label`, foco/hover/disabled e reduced-motion. O arquivo Google local foi comparado por hash ao botão escuro retangular do pacote pré-aprovado oficial. Steam mantém a arte existente do produto.
+- **Pesquisa/fixtures:** quatro concorrentes consultados; acesso parcial/limitado registrado, sem copiar interfaces, dados ou fórmulas. A pesquisa e limites estão em `docs/research/home-social-login-ui-review-2026-10-18.md`. Nenhum fixture de preços/itens novo; specs usam o fixture de Roadmap e doubles existentes.
+- **Verificação final:** 48/48 testes focados passaram. `pnpm check`, `pnpm test` (1.156 aprovados e 1 ignorado por depender de PostgreSQL descartável), build serial completo e `pnpm test:ssr` passaram. SSR confirmou `/lifeskills` público, indexável e com cache público apropriado. O build preservou o bundle inicial abaixo do limite de aviso: 499,40 kB brutos/134,65 kB estimados transferidos. Permanecem avisos de locale `pt-BR` usando `pt` e CommonJS do Tesseract/OCR.
+- **Limite visual:** a política do navegador integrado recusou autoridade para observar `localhost:4200`. Não fazer workaround por outra superfície. Capturas/medidas atuais de desktop e 390×844 ficam pendentes; os testes de componente não substituem a revisão visual. Login OAuth e sync reais continuam pendentes de validação humana (AUTH-01).
+- **Git:** `codex/audit-remediation`; commits de feature `5bde953` (botões sociais), `4174763` (Home/Profissões) e `7423be8` (XLIFF) concluídos. Esta atualização fecha documentação/pesquisa em commit separado. Preservar o plano não rastreado `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md`; sem push/deploy.

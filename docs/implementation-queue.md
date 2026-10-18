@@ -4,9 +4,9 @@ Esta é a fila persistente do projeto. Não há uma ferramenta de fila/Queue con
 
 > Para reconciliar esta fila com todos os chats acessíveis, ver estado e localizar evidências atuais, consulte o [checklist mestre de funcionalidades](project-feature-checklist.md). Esta fila preserva a ordenação e critérios registrados em 13/10/2026; confirme a implementação antes de tratar qualquer item como pendente.
 
-## Continuidade verificada em 16/10/2026
+## Continuidade verificada em 18/10/2026
 
-A fila histórica abaixo não é a lista executável atual. Consulte os IDs FEAT/DATA/RULE/AUTH/TOUR/QA/PERF/OPS/LEGAL/PRODUCT no checklist mestre. Otimizador recursivo, modal social, Settings público, fase visual 3 e reversão de capturas já estão no código. Nesta rodada foi implementada a comparação das sessões pessoais por contexto, com média ponderada, amostra e período; /lifeskills é reativada sob autenticação, como apoio ao pilar de Recomendações. Isso entrega a comparação observada do item 9, sem concluir seu modelo universal por maestria/patch ou dataset de locais.
+A fila histórica abaixo não é a lista executável atual. Consulte os IDs FEAT/DATA/RULE/AUTH/TOUR/QA/PERF/OPS/LEGAL/PRODUCT no checklist mestre. Otimizador recursivo, modal social, Settings público, fase visual 3 e reversão de capturas já estão no código. A comparação de sessões pessoais por contexto, média ponderada, amostra e período está implementada; desde 18/10, `/lifeskills` é pública e usa armazenamento local para visitantes. Login é necessário para sincronizar entre dispositivos. Isso entrega a comparação observada do item 9, sem concluir seu modelo universal por maestria/patch ou dataset de locais.
 
 Pesquisa/contrato e gates: [comparação de sessões](research/observed-sessions-checklist-2026-10-16.md). Dependências externas não foram convertidas em valores fictícios. Não reabrir o rollout visual 3 por causa de checkboxes antigos.
 

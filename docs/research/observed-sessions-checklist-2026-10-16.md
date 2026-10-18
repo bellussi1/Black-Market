@@ -2,6 +2,8 @@
 
 Pedido: configurar o checklist com as features que ainda faltam e implementar. Reconciliado o estado atual com código e docs, preservando as alterações anteriores da auditoria/reversão de capturas.
 
+> **Estado atual — 18/10/2026:** `/lifeskills` passou a ser pública. Visitantes registram sessões no armazenamento local; sincronização continua vinculada à conta. As referências abaixo a `authGuard`, `noindex/no-store` e à rota fora do sitemap descrevem o estado histórico de 16/10 e foram substituídas por `docs/research/home-social-login-ui-review-2026-10-18.md`.
+
 ## Recorte implementável
 
 `LifeskillsPage` já registra duração, profissão, modo, maestria, custos, itens/preços e receita direta; o histórico só oferecia uma média geral e resultados individuais. A comparação agrupa as sessões da região ativa por nome da atividade/rota (sem diferença de caixa/espaço externo), profissão, maestria e modo. Campos antigos ausentes permanecem desconhecidos, distintos de zero ou ativo.
