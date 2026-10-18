@@ -8,6 +8,12 @@ Antes desta revisão, já existiam os eventos tipados `page_viewed`, `journey_st
 
 Plano aplicado: medir navegação por família de funcionalidade; medir somente inícios, conclusões, falhas e resultado agregado de fluxos escolhidos; e permitir funis de passos sem capturar texto ou conteúdo que o jogador fornece. Para abandono, usar a queda entre etapas do funil no PostHog — não gerar um evento de “abandono” no cliente nem gravar sessão. Eventos são agregados por navegador consentido e algumas análises de funil representam usuários que realizaram cada passo, não uma correlação exata de cada tentativa repetida.
 
+## Interface de consentimento
+
+Em 18/10/2026, o painel foi reorganizado para separar o armazenamento necessário, sempre ativo, das estatísticas opcionais. A pessoa vê a escolha atual e a finalidade resumida; pode permitir, recusar ou personalizar quando o serviço está disponível. Depois de permitir, encontra uma ação direta para desativar. A indisponibilidade do serviço aparece separada do consentimento salvo: uma escolha anterior não é descrita como analytics ativo e não gera eventos enquanto não houver configuração válida.
+
+Esta mudança alterou somente a interface e a extração de mensagens. Não adicionou SDK, integração, chamada, categoria ou tipo de cookie. A configuração externa continua desativada, e as regras existentes de produção, consentimento, cancelamento de requests e exclusão do identificador local não foram alteradas. A consulta competitiva e seus limites estão em `docs/research/privacy-controls-ui-review-2026-10-18.md`.
+
 ### Esquema tipado
 
 | Evento               | Propriedades permitidas                                  | Uso                                                                                                                                                                                    |
