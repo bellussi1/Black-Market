@@ -29,21 +29,12 @@ describe('Simple expandable production steps', () => {
       fixture.nativeElement.querySelector('.step-hint-loading [role="status"]'),
     ).not.toBeNull();
   });
-  it('lets the user finish a decimal yield before applying it on blur', async () => {
+  it('shows the same recipe structure without asking for yield input', async () => {
     const node = ready();
     node.yield = null;
     const fixture = await renderComponent(RecipeBranch, { node });
-    const emit = vi.spyOn(fixture.componentInstance.action, 'emit');
-    const input = fixture.nativeElement.querySelector('.yield-needed input') as HTMLInputElement;
-    for (const value of ['2', '2.5']) {
-      input.value = value;
-      input.dispatchEvent(new Event('input'));
-      fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.yield-needed input')).toBe(input);
-      expect(emit).not.toHaveBeenCalled();
-    }
-    input.dispatchEvent(new Event('blur'));
-    expect(emit).toHaveBeenCalledWith({ path: 'root/0', action: 'yield', value: 2.5 });
+    expect(fixture.nativeElement.querySelector('input, select')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-recipe-branch')).not.toBeNull();
   });
   it('makes the ingredient header the primary expand control and hides optional adjustments', async () => {
     const node = ready();
@@ -55,98 +46,14 @@ describe('Simple expandable production steps', () => {
     expect(button.getAttribute('aria-expanded')).toBe('false');
     button.click();
     expect(emit).toHaveBeenCalledWith({ path: 'root/0', action: 'expand', value: undefined });
-    expect(fixture.nativeElement.querySelector('.step-settings').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('.step-settings')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Comprar em vez de produzir');
   });
-  it('makes missing yield actionable and nests ingredients beneath the same control', async () => {
-    const node = ready();
-    node.yield = null;
-    const fixture = await renderComponent(RecipeBranch, { node });
-    expect(fixture.nativeElement.querySelector('.yield-needed input')).not.toBeNull();
-    const button = fixture.nativeElement.querySelector('.step-toggle');
-    expect(button.getAttribute('aria-controls')).toBe('branch-root/0');
-    expect(
-      fixture.nativeElement.querySelector('#branch-root\\/0 app-recipe-branch'),
-    ).not.toBeNull();
-  });
-
-  it('shows a rare-proc option only for cooking recipes with a known rare product', async () => {
-    const node = withRecipe(
-      nodeFor({ itemId: 9216, name: 'Torta de Figo', quantity: '2' }, 'root/0'),
-      {
-        key: 'fig-pie',
-        type: 'COOK',
-        station: null,
-        outputs: [{ itemId: 9216, name: 'Torta de Figo', quantity: '1' }],
-        inputs: [{ itemId: 9208, name: 'Figo', quantity: '5' }],
-      },
-    );
-    const fixture = await renderComponent(RecipeBranch, { node });
-    const emit = vi.spyOn(fixture.componentInstance.action, 'emit');
-    const checkbox = fixture.nativeElement.querySelector(
-      '.rare-proc-toggle input',
-    ) as HTMLInputElement;
-
-    expect(checkbox).not.toBeNull();
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    expect(emit).toHaveBeenCalledWith({
-      path: 'root/0',
-      action: 'rare-procs',
-      value: true,
-    });
-  });
-
-  it('hides rare-proc options for recipes without a known cooking bonus product', async () => {
+  it('opens the shared item details for adjustments instead of editing the visual steps', async () => {
     const fixture = await renderComponent(RecipeBranch, { node: ready() });
-    expect(fixture.nativeElement.querySelector('.rare-proc-toggle')).toBeNull();
-  });
-
-  it('shows icon, full name, and quantity for each ingredient alternative', async () => {
-    const node = ready();
-    const alternatives = [
-      {
-        recipeKey: 'lion-meat',
-        part: {
-          itemId: 902,
-          name: 'Carne de Leão',
-          quantity: '2',
-          iconUrl: '/icons/lion-meat.png',
-        },
-      },
-      {
-        recipeKey: 'goat-meat',
-        part: {
-          itemId: 901,
-          name: 'Carne de Cabra',
-          quantity: '3',
-          iconUrl: '/icons/goat-meat.png',
-        },
-      },
-    ];
-    node.part = alternatives[0]!.part;
-    node.substitutions = alternatives;
-    const fixture = await renderComponent(RecipeBranch, { node });
-    (fixture.nativeElement.querySelector('.step-settings') as HTMLDetailsElement).open = true;
-    fixture.detectChanges();
-
-    const choices = fixture.nativeElement.querySelectorAll('.ingredient-alternative');
-    expect(choices).toHaveLength(2);
-    expect(choices[0].textContent).toContain('Carne de Leão');
-    expect(choices[0].textContent).toContain('2');
-    expect(choices[0].querySelector('app-item-icon')?.getAttribute('title')).toContain(
-      'Carne de Leão',
-    );
-    expect(choices[1].textContent).toContain('Carne de Cabra');
-    expect(choices[1].querySelector('app-item-icon')?.getAttribute('title')).toContain(
-      'Carne de Cabra',
-    );
-
     const emit = vi.spyOn(fixture.componentInstance.action, 'emit');
-    const secondChoice = choices[1].querySelector('input') as HTMLInputElement;
-    secondChoice.checked = true;
-    secondChoice.dispatchEvent(new Event('change'));
-    expect(emit).toHaveBeenCalledWith({ path: 'root', action: 'choose', value: 'goat-meat' });
+    (fixture.nativeElement.querySelector('.step-source') as HTMLButtonElement).click();
+    expect(emit).toHaveBeenCalledWith({ path: 'root/0', action: 'source', value: undefined });
+    expect(fixture.nativeElement.querySelector('input, select')).toBeNull();
   });
 });

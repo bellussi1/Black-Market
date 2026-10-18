@@ -104,7 +104,7 @@
               }
             </select></label
           >
-          @if (current.yield) {
+          @if (current.recipe) {
             <label i18n
               >Rendimento por operação<input
                 type="number"
@@ -116,6 +116,23 @@
                   tree().action({ path: current.path, action: 'yield', value: $event })
                 "
             /></label>
+          }
+        }
+
+        @if (tree().selectedNode(); as current) {
+          @if (
+            current.path !== 'root' && current.recipe && bonusProducts(current.recipe).length > 0
+          ) {
+            <label>
+              <input
+                type="checkbox"
+                [ngModel]="current.useRareProcs"
+                (ngModelChange)="
+                  tree().action({ path: current.path, action: 'rare-procs', value: $event })
+                "
+              />
+              Usar procs raros como ingredientes (até 3 por operação, limitado pela receita)
+            </label>
           }
         }
 

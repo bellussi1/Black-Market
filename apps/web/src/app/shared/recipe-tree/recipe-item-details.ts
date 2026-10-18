@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 
 import { ItemDossier } from '../item-dossier/item-dossier';
 import { ItemIcon } from '../item-icon/item-icon';
+import { recipeBonusProducts } from './recipe-bonus-products';
 import type { RecipeTree } from './recipe-tree';
 
 @Component({
@@ -15,4 +16,5 @@ import type { RecipeTree } from './recipe-tree';
 })
 export class RecipeItemDetails {
   readonly tree = input.required<RecipeTree>();
+  readonly bonusProducts = recipeBonusProducts;
 }

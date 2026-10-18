@@ -73,116 +73,12 @@
     }
   </button>
   <div class="step-tools">
-    <button type="button" class="step-source" (click)="emit('source')">Detalhes e origem</button>
-    @if (supportsRareProcs()) {
-      <label class="rare-proc-toggle">
-        <input
-          type="checkbox"
-          [ngModel]="node().useRareProcs"
-          (ngModelChange)="emit('rare-procs', $event)"
-        />
-        <span>Usar procs raros <small>Até 3 por operação, limitado pela receita</small></span>
-      </label>
-    }
-    <details class="step-settings">
-      <summary>Ajustes</summary>
-      <div class="settings-content">
-        @if (allocation(); as row) {
-          <p>
-            Do estoque: {{ row.fromStock }} · De sobras: {{ row.fromSurplus }} · Faltam:
-            {{ row.missing }}
-          </p>
-        }
-        @if (node().category) {
-          <p>{{ node().category }}</p>
-        }
-        @if (node().acquisition?.kind === 'workers' || node().acquisition?.kind === 'grinding') {
-          <p>Origem escolhida: {{ node().acquisition?.label }}</p>
-        }
-        @if ((node().substitutions?.length ?? 0) > 1) {
-          <app-recipe-ingredient-alternatives
-            [choices]="node().substitutions ?? []"
-            [selectedKey]="substitutionKey()"
-            [groupName]="'ingredient-alternative-' + node().path"
-            (choiceSelected)="substitute($event)"
-          />
-        }
-        @if (batches().length > 1) {
-          <label
-            >Tamanho do lote<select [ngModel]="batchSize()" (ngModelChange)="chooseBatch($event)">
-              @for (batch of batches(); track batch.quantity) {
-                <option [ngValue]="batch.quantity">
-                  {{ batch.quantity }} unidades por operação
-                </option>
-              }
-            </select></label
-          >
-        }
-        @if (node().recipe && methods().length > 1) {
-          <label
-            >Método de produção<select
-              [ngModel]="methodKey()"
-              (ngModelChange)="emit('choose', $event)"
-            >
-              @for (option of methods(); track option.key; let index = $index) {
-                <option [value]="option.key">
-                  {{ typeLabel(option.type) }} · método {{ index + 1 }} ·
-                  {{ option.inputs.length }} ingredientes
-                </option>
-              }
-            </select></label
-          >
-        }
-        @if (node().recipe && node().yield) {
-          <label
-            >Produção por operação<input
-              type="number"
-              min="0.001"
-              max="1000000"
-              step="0.0001"
-              [ngModel]="node().yield"
-              (ngModelChange)="emit('yield', $event)"
-          /></label>
-        }
-        @if (node().path !== 'root') {
-          <label
-            >Quantidade na receita acima<input
-              type="number"
-              min="1"
-              max="1000000"
-              [ngModel]="node().part.quantity"
-              (ngModelChange)="emit('quantity', $event)"
-          /></label>
-        }
-        @if (node().recipe) {
-          <button type="button" class="step-ready" (click)="emit('buy')">
-            Usar este item pronto
-          </button>
-          <p class="help">
-            Use seu estoque ou obtenha o item pronto, sem fabricar seus ingredientes.
-          </p>
-        }
-      </div>
-    </details>
+    <button type="button" class="step-source" (click)="emit('source')">
+      Detalhes e ajustes do item
+    </button>
   </div>
   @if (node().message) {
     <p class="step-message" role="status">{{ node().message }}</p>
-  }
-  @if (!node().recipe && methods().length > 1) {
-    <label class="method-needed"
-      >Escolha como produzir<select
-        [ngModel]="methodKey()"
-        (ngModelChange)="emit('choose', $event)"
-      >
-        <option value="" disabled>Selecionar método</option>
-        @for (option of methods(); track option.key; let index = $index) {
-          <option [value]="option.key">
-            {{ typeLabel(option.type) }} · método {{ index + 1 }} ·
-            {{ option.inputs.length }} ingredientes
-          </option>
-        }
-      </select></label
-    >
   }
   @if (node().recipe && node().expanded) {
     <div
@@ -191,21 +87,6 @@
       animate.enter="steps-enter"
       animate.leave="steps-leave"
     >
-      @if (!node().yield) {
-        <label class="yield-needed"
-          >Quanto esta receita produz por operação?
-          <input
-            type="number"
-            min="0.001"
-            max="1000000"
-            step="0.0001"
-            [ngModel]="node().yield"
-            [ngModelOptions]="{ updateOn: 'blur' }"
-            (ngModelChange)="emit('yield', $event)"
-          />
-          <small>Informe o rendimento e saia do campo para atualizar os ingredientes abaixo.</small>
-        </label>
-      }
       <p class="children-heading">Ingredientes de {{ node().part.name }}</p>
       @for (child of node().children; track child.path) {
         <app-recipe-branch
