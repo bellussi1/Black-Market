@@ -277,6 +277,7 @@ describe('Screenshot entry', () => {
       { ...cell, id: 1, item: null },
       { ...cell, id: 2, quantityUncertain: true },
     ]);
+    page.setReviewFilter('pending');
     page.confirmReliable();
     expect(page.cells().map((row) => row.reviewed)).toEqual([true, false, false]);
     expect(page.cells().map((row) => row.include)).toEqual([true, false, false]);
@@ -520,6 +521,46 @@ describe('Screenshot entry', () => {
     });
     expect(cell.options).toContain(item);
   });
+  it('shows every recognized slot by default, including included and removed entries', async () => {
+    const fixture = await renderComponent(ScansPage),
+      page = fixture.componentInstance;
+    const item = { id: 13, name: 'Material de teste', icon: null } as CatalogItem;
+    const cell = (id: number) => ({
+      id,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: false,
+      quantity: '8',
+      quantityText: '8',
+      quantityEstimate: null,
+      quantityUncertain: false,
+      quantityConfidence: 100,
+      include: false,
+      reviewed: false,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    });
+    const included = cell(0);
+    const pending = cell(1);
+    const removed = cell(2);
+    page.preview.set('data:image/png;base64,test');
+    page.cells.set([included, pending, removed]);
+    page.validateCell(included);
+    page.removeCell(removed);
+    fixture.detectChanges();
+
+    expect(page.reviewFilter()).toBe('all');
+    expect(page.visibleCells().map((entry) => entry.id)).toEqual([0, 1, 2]);
+    const cards = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.scan-cell')];
+    expect(cards).toHaveLength(3);
+    expect(cards.map((card) => card.querySelector('.scan-status')?.textContent?.trim())).toEqual([
+      'Incluído',
+      'Confirmar',
+      'Removido',
+    ]);
+  });
   it('saves reliable items but keeps uncertain and incomplete items out of the batch', async () => {
     images();
     const fixture = await renderComponent(ScansPage),
@@ -614,6 +655,7 @@ describe('Screenshot entry', () => {
       level: 0,
       caphras: 0,
     };
+    page.setReviewFilter('pending');
     page.preview.set('data:image/png;base64,test');
     page.cells.set([cell]);
     fixture.detectChanges();

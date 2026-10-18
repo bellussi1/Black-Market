@@ -292,7 +292,7 @@ export class ScansPage implements OnDestroy {
   readonly equipmentStatLabels = { mainAp: 'PA principal', awakeAp: 'PA de despertar', dp: 'PD' };
   readonly reviewPage = signal(0);
   readonly reviewPageSize = 12;
-  readonly reviewFilter = signal<'pending' | 'all'>('pending');
+  readonly reviewFilter = signal<'pending' | 'all'>('all');
   readonly autoRead = signal(false);
   readonly skipLockedSlots = signal(true);
   readonly reviewCells = computed(() =>
