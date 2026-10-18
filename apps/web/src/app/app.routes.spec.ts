@@ -94,7 +94,7 @@ describe('Unified personal workspace routes', () => {
       expect(router.url).toBe(canonical);
     }
   });
-  it('requires social sessions on every personal data route', () => {
+  it('requires social sessions on personal data routes but keeps profession planning public', () => {
     const sessionRoutes = new Set([
       'scans',
       'scans/profile',
@@ -105,11 +105,22 @@ describe('Unified personal workspace routes', () => {
       'family',
       'shopping',
       'plans',
-      'lifeskills',
     ]);
     for (const route of routes[0].children ?? []) {
       expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
     }
+  });
+
+  it('renders profession planning publicly with the public cache policy', () => {
+    const route = routes[0].children?.find((candidate) => candidate.path === 'lifeskills');
+    expect(route?.canActivate).toBeUndefined();
+    expect(route?.data?.['private']).not.toBe(true);
+    const serverRoute = serverRoutes.find((candidate) => candidate.path === 'lifeskills');
+    expect(serverRoute?.renderMode).toBe(RenderMode.Server);
+    expect(serverRoute?.headers).toMatchObject({
+      'Cache-Control': 'private, max-age=0, must-revalidate',
+    });
+    expect(serverRoute?.headers?.['X-Robots-Tag']).toBeUndefined();
   });
 
   it('keeps local settings public and preserves legacy Steam callbacks and return intent', async () => {
@@ -163,7 +174,6 @@ describe('Unified personal workspace routes', () => {
       'family',
       'shopping',
       'plans',
-      'lifeskills',
       'settings',
       'recommendations',
       'tutorials/manage',

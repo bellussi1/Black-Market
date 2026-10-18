@@ -246,8 +246,11 @@ try {
   assert.equal(plans.headers.get('cache-control'), 'private,no-store');
   const lifeskills = await request('/lifeskills');
   assert.equal(lifeskills.status, 200);
-  assert.equal(lifeskills.headers.get('x-robots-tag'), 'noindex,nofollow');
-  assert.equal(lifeskills.headers.get('cache-control'), 'private,no-store');
+  assert.equal(lifeskills.headers.get('x-robots-tag'), null);
+  assert.equal(lifeskills.headers.get('cache-control'), 'private, max-age=0, must-revalidate');
+  const lifeskillsHtml = await lifeskills.text();
+  assert.ok(lifeskillsHtml.includes('Meça seu rendimento.'));
+  assert.ok(lifeskillsHtml.includes('Comece sem conta'));
 
   const unknown = await request('/not-a-real-page');
   assert.equal(unknown.status, 404);

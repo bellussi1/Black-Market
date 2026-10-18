@@ -1,18 +1,68 @@
 <div class="home-page">
   <section class="home-hero" aria-labelledby="home-title">
-    <div class="hero-intro">
-      <p class="tool-kicker">
-        <ng-container i18n>BLACK MARKET · BLACK DESERT ONLINE</ng-container>
-      </p>
-      @if (store.activeCharacter(); as profile) {
-        <h1 id="home-title" i18n>O próximo passo de {{ profile.name }}.</h1>
-      } @else {
-        <h1 id="home-title" i18n>Menos preparação.<br />Mais possibilidades.</h1>
-      }
-      <p class="hero-copy" i18n>
-        Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só lugar.
-      </p>
-      <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
+    <div class="home-entry">
+      <div class="hero-intro">
+        <p class="tool-kicker">
+          <ng-container i18n>BLACK MARKET · BLACK DESERT ONLINE</ng-container>
+        </p>
+        @if (store.activeCharacter(); as profile) {
+          <h1 id="home-title" i18n>O próximo passo de {{ profile.name }}.</h1>
+        } @else {
+          <h1 id="home-title" i18n>Menos preparação.<br />Mais possibilidades.</h1>
+        }
+        <p class="hero-copy" i18n>
+          Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só
+          lugar.
+        </p>
+        <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
+      </div>
+
+      <a
+        hlmBtn
+        variant="outline"
+        class="btn home-professions-link"
+        routerLink="/lifeskills"
+        data-home-professions-link
+      >
+        <span i18n>Profissões e rendimento</span>
+        <span class="home-professions-arrow" aria-hidden="true">→</span>
+      </a>
+
+      <section hlmCard class="panel home-search">
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker" i18n>CONSULTA PÚBLICA</p>
+            <h2 i18n>Busque um item</h2>
+          </div>
+          <span class="badge" i18n>SEM CADASTRO</span>
+        </div>
+        <app-catalog-item-picker
+          label="Nome ou ID do item"
+          i18n-label
+          [compact]="true"
+          [selectionName]="selectedItem()?.name ?? ''"
+          (selected)="selectedItem.set($event)"
+        />
+        @if (selectedItem(); as item) {
+          <div class="action-row">
+            <a hlmBtn variant="outline" class="btn" [routerLink]="['/recipes/items', item.id]" i18n
+              >Explorar produção e origens</a
+            ><a
+              hlmBtn
+              variant="outline"
+              class="btn subtle"
+              routerLink="/market"
+              [queryParams]="{ item: item.id }"
+              i18n
+              >Consultar preço</a
+            ><a [routerLink]="['/market/items', item.id]" i18n>Detalhes do item →</a>
+          </div>
+        } @else {
+          <p class="help" i18n>
+            Selecione um resultado para abrir receitas, preços ou informações do catálogo.
+          </p>
+        }
+      </section>
     </div>
 
     <section class="home-focus-section panel" aria-labelledby="home-focus-title">
@@ -122,39 +172,6 @@
   @if (!screenshotMvp) {
     <app-player-overview />
   }
-
-  <section hlmCard class="panel home-search">
-    <div class="panel-heading">
-      <div>
-        <p class="tool-kicker">COMECE POR UM ITEM</p>
-        <h2>O que você está procurando?</h2>
-      </div>
-      <span class="badge">SEM CADASTRO</span>
-    </div>
-    <app-catalog-item-picker
-      label="Nome, ID ou categoria"
-      [selectionName]="selectedItem()?.name ?? ''"
-      (selected)="selectedItem.set($event)"
-    />
-    @if (selectedItem(); as item) {
-      <div class="action-row">
-        <a hlmBtn variant="outline" class="btn" [routerLink]="['/recipes/items', item.id]"
-          >Explorar produção e origens</a
-        ><a
-          hlmBtn
-          variant="outline"
-          class="btn subtle"
-          routerLink="/market"
-          [queryParams]="{ item: item.id }"
-          >Consultar preço</a
-        ><a [routerLink]="['/market/items', item.id]">Detalhes do item →</a>
-      </div>
-    } @else {
-      <p class="help">
-        Selecione um resultado para abrir receitas, preços ou informações do catálogo.
-      </p>
-    }
-  </section>
 
   @if (hasWorkspaceData()) {
     <section class="continue-section panel" aria-labelledby="continue-title">

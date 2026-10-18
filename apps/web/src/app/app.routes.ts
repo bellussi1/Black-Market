@@ -295,8 +295,6 @@ export const routes: Routes = [
 
       {
         path: 'lifeskills',
-        data: { private: true },
-        canActivate: [authGuard],
         title: $localize`Black Market · Profissões`,
 
         loadComponent: () =>

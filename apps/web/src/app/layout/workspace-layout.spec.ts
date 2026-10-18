@@ -175,17 +175,17 @@ describe('workspace navigation', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('hides personal sessions immediately when authentication is lost and preserves login intent', async () => {
+  it('hides family data immediately when authentication is lost and preserves login intent', async () => {
     const session = { ...identity(true), enabled: signal(false), error: signal('') };
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: session },
     ]);
     const router = TestBed.inject(Router);
     router.resetConfig([
-      { path: 'lifeskills', children: [] },
+      { path: 'family', children: [] },
       { path: '', children: [] },
     ]);
-    await router.navigateByUrl('/lifeskills?tab=sessions#history');
+    await router.navigateByUrl('/family?tab=equipment#gear');
     fixture.detectChanges();
     expect(fixture.componentInstance.canShowPage()).toBe(true);
     session.authenticated.set(false);
@@ -193,7 +193,7 @@ describe('workspace navigation', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(router.url).toBe('/');
-    expect(TestBed.inject(LoginIntentService).returnUrl()).toBe('/lifeskills?tab=sessions#history');
+    expect(TestBed.inject(LoginIntentService).returnUrl()).toBe('/family?tab=equipment#gear');
   });
 
   it('uses the supplied logo and preserves the separate wordmark', async () => {
@@ -285,7 +285,6 @@ describe('workspace navigation', () => {
       '/family',
       '/shopping',
       '/plans',
-      '/lifeskills',
       '/settings',
     ])
       expect(links.filter((href) => href === path)).toHaveLength(1);

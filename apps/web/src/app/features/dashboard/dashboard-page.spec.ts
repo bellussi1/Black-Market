@@ -55,6 +55,31 @@ const roadmapFixture: RoadmapEntry[] = [
 ];
 
 describe('DashboardPage', () => {
+  it('prioritizes public profession access and item search before the roadmap', async () => {
+    const fixture = await renderComponent(DashboardPage, {}, [
+      {
+        provide: IdentityService,
+        useValue: {
+          authenticated: signal(false),
+          initialize: vi.fn().mockResolvedValue(undefined),
+        },
+      },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+    const entry = element.querySelector('.home-entry');
+    const professionLink = element.querySelector<HTMLAnchorElement>('[data-home-professions-link]');
+    const itemSearch = element.querySelector('.home-search');
+    const focus = element.querySelector('.home-focus-section');
+
+    expect(entry).not.toBeNull();
+    expect(professionLink?.getAttribute('href')).toBe('/lifeskills');
+    expect(entry?.contains(itemSearch)).toBe(true);
+    expect(itemSearch?.querySelector('app-catalog-item-picker select')).toBeNull();
+    expect(
+      Boolean(itemSearch!.compareDocumentPosition(focus!) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
+  });
+
   it('shows a roadmap action for a focus without links and keeps public actions in mixed focuses', async () => {
     const fixture = await renderComponent(DashboardPage, {}, [
       {

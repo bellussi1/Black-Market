@@ -11,7 +11,6 @@ const loginRequiredPaths = [
   'family',
   'shopping',
   'plans',
-  'lifeskills',
   'tutorials/manage',
   'roadmap/manage',
 ] as const;

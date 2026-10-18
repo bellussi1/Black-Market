@@ -204,8 +204,6 @@ export class WorkspaceLayout {
         '/family',
 
         '/plans',
-        '/lifeskills',
-
         '/account',
 
         '/scans',
@@ -285,7 +283,6 @@ export class WorkspaceLayout {
           path: '/lifeskills',
           label: $localize`Profissões e rendimento`,
           icon: 'lucidePickaxe',
-          requiresAuth: true,
         },
         { path: '/market', label: $localize`Mercado`, icon: 'lucideStore' },
         { path: '/recipes', label: $localize`Explorar receitas`, icon: 'lucideBookOpenText' },
@@ -403,7 +400,6 @@ export class WorkspaceLayout {
               path: '/lifeskills',
               label: $localize`Profissões e rendimento`,
               icon: 'lucidePickaxe',
-              requiresAuth: true,
             },
 
             { path: '/buffs', label: $localize`Buffs e combinações`, icon: 'lucideFlaskConical' },
