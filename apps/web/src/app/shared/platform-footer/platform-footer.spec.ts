@@ -19,6 +19,9 @@ describe('platform footer', () => {
     expect(element.querySelector('a[href="/settings"]')).toBeNull();
     expect(element.textContent).toContain('© ' + new Date().getUTCFullYear());
     expect(element.textContent).toContain('sem afiliação');
+    expect(element.querySelector('.footer-identity p')?.textContent).toMatch(
+      /Black Desert Online.*sem afiliação com a Pearl Abyss/i,
+    );
   });
   it('opens the existing preference mechanism without requiring optional analytics', async () => {
     const fixture = await renderComponent(PlatformFooter);

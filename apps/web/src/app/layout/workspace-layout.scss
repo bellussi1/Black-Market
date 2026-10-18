@@ -237,8 +237,10 @@
 }
 
 .sidebar-foot small {
+  display: block;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
 }
 
 .tiny-dot {

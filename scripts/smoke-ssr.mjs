@@ -185,6 +185,13 @@ try {
     assert.ok(html.includes(title), `Missing expected content for ${path}`);
     assert.ok(/<html[^>]*lang="pt-BR"/.test(html), `Missing Portuguese locale on ${path}`);
     assert.equal((html.match(/<meta name="description"/g) ?? []).length, 1);
+    if (path === '/') {
+      assert.match(
+        html,
+        /<meta name="description" content="[^\"]*Black Desert Online[^\"]*sem afiliação com a Pearl Abyss/i,
+        'Home search description must disclose non-affiliation beside the game name',
+      );
+    }
     assert.ok(
       html.includes('<meta name="robots" content="index,follow"'),
       `Missing indexable robots metadata on ${path}: ${html.match(/<head>([\s\S]*?)<\/head>/)?.[1]?.slice(0, 1200) ?? 'head missing'}\n${serverErrors}`,
@@ -195,6 +202,18 @@ try {
     assert.ok(html.includes(`property="og:image" content="${publicOrigin}/og-black-market.png"`));
     assert.ok(html.includes('name="twitter:card" content="summary_large_image"'));
     assert.ok(html.includes('application/ld+json'));
+    if (path === '/sobre') {
+      assert.match(
+        html,
+        /<meta name="description" content="[^"]*Black Desert[^"]*sem afiliação com a Pearl Abyss/i,
+        'About metadata must disclose non-affiliation beside the game name',
+      );
+      assert.match(
+        html,
+        /independente[^<]*Black Desert Online[^<]*sem afiliação com a Pearl Abyss/i,
+        'About intro must disclose non-affiliation beside the game name',
+      );
+    }
     assert.match(html, /<main\b/);
     assert.ok(response.headers.has('content-security-policy'));
     if (path !== '/sobre') {
@@ -216,6 +235,14 @@ try {
         assert.fail(`Executable inline script incompatible with CSP on ${path}`);
     }
   }
+
+  const llms = await request('/llms.txt');
+  assert.equal(llms.status, 200);
+  assert.match(
+    await llms.text(),
+    /Black Desert Online[^\n]*sem afiliação com a Pearl Abyss/i,
+    'Public LLM guidance must disclose non-affiliation beside the game name',
+  );
 
   for (const path of ['/reference/npcs', '/world', '/demo']) {
     const response = await request(path, { redirect: 'manual' });

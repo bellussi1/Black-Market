@@ -11,13 +11,17 @@ import {
 import { isMvpPathSuspended } from '@bdo/shared';
 import express from 'express';
 
-import { isPublicSeoPath, publicDescription } from './app/core/seo-content';
+import {
+  isPublicSeoPath,
+  publicDescription,
+  withNonAffiliationDisclosure,
+} from './app/core/seo-content';
 import { securityHeaders } from './security-headers';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const socialImage = '/og-black-market.png';
 const socialAlt =
-  'Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português.';
+  'Black Market, ferramenta independente de mercado, receitas e planejamento para Black Desert Online, sem afiliação com a Pearl Abyss.';
 
 function escapeHtml(value: string): string {
   return value
@@ -45,10 +49,11 @@ function injectSeoMetadata(
   const renderedDescription = html.match(
     /<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["'][^>]*>/i,
   )?.[1];
-  const description =
+  const description = withNonAffiliationDisclosure(
     (renderedDescription && decodeHtml(renderedDescription)) ||
-    publicDescription(path) ||
-    'Black Market: plataforma brasileira para jogadores de Black Desert Online.';
+      publicDescription(path) ||
+      'Black Market: plataforma brasileira para jogadores de Black Desert Online.',
+  );
   const publicUrl = process.env['PUBLIC_SITE_URL'];
   const origin = publicUrl ? new URL(publicUrl).origin : null;
   const responseRobots = response.headers.get('X-Robots-Tag') ?? '';
@@ -198,7 +203,7 @@ app.get('/sobre/', (_req, res, next) => {
   void readFile(join(browserDistFolder, 'sobre', 'index.html'), 'utf8')
     .then((html) => {
       const description =
-        'Conheça o Black Market: ferramentas de Black Desert para organizar materiais e planejar atividades em português brasileiro.';
+        'Conheça o Black Market: ferramentas independentes para organizar materiais e planejar atividades em Black Desert Online. Sem afiliação com a Pearl Abyss.';
       const publicUrl = process.env['PUBLIC_SITE_URL'];
       let metadata =
         `<meta name="description" content="${description}" />` +
@@ -230,12 +235,12 @@ app.get('/sobre/', (_req, res, next) => {
           '<meta property="og:image:type" content="image/png" />',
           '<meta property="og:image:width" content="1200" />',
           '<meta property="og:image:height" content="630" />',
-          '<meta property="og:image:alt" content="Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português." />',
+          '<meta property="og:image:alt" content="Black Market, ferramenta independente de mercado, receitas e planejamento para Black Desert Online, sem afiliação com a Pearl Abyss." />',
           '<meta name="twitter:card" content="summary_large_image" />',
           '<meta name="twitter:title" content="Black Market — Fontes dos dados e perguntas frequentes" />',
           `<meta name="twitter:description" content="${description}" />`,
           `<meta name="twitter:image" content="${image}" />`,
-          '<meta name="twitter:image:alt" content="Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português." />',
+          '<meta name="twitter:image:alt" content="Black Market, ferramenta independente de mercado, receitas e planejamento para Black Desert Online, sem afiliação com a Pearl Abyss." />',
           `<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}</script>`,
         ].join('');
       }

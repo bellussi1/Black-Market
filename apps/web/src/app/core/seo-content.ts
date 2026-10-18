@@ -1,4 +1,15 @@
 import { isMvpPathEnabled } from './mvp-scope';
+
+const NON_AFFILIATION_DISCLOSURE = 'Ferramenta independente, sem afiliação com a Pearl Abyss.';
+
+export function withNonAffiliationDisclosure(description: string): string {
+  const normalized = description.replace(/\s+/g, ' ').trim();
+  if (!/black desert(?: online)?/i.test(normalized)) return normalized;
+  if (/(?:sem|não tem|não possui) afiliação[^.]*Pearl Abyss/i.test(normalized)) return normalized;
+
+  return `${normalized.replace(/[.!?]+$/, '')}. ${NON_AFFILIATION_DISCLOSURE}`;
+}
+
 export const PUBLIC_DESCRIPTIONS: Readonly<Record<string, string>> = {
   '/termos': 'Condições de uso das ferramentas gratuitas do Black Market para Black Desert Online.',
   '/privacidade':
@@ -56,7 +67,7 @@ export function isPublicSeoPath(path: string): boolean {
 }
 
 export function publicDescription(path: string): string | undefined {
-  return (
+  const description =
     PUBLIC_DESCRIPTIONS[path] ??
     (path.startsWith('/reference/')
       ? PUBLIC_DESCRIPTIONS['/reference']
@@ -66,6 +77,6 @@ export function publicDescription(path: string): string | undefined {
           ? PUBLIC_DESCRIPTIONS['/market/items']
           : path.startsWith('/database/items/')
             ? PUBLIC_DESCRIPTIONS['/database/items']
-            : undefined)
-  );
+            : undefined);
+  return description ? withNonAffiliationDisclosure(description) : undefined;
 }

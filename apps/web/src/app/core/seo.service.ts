@@ -4,7 +4,12 @@ import { Meta, type MetaDefinition, Title } from '@angular/platform-browser';
 import type { RouterStateSnapshot } from '@angular/router';
 import { TitleStrategy } from '@angular/router';
 
-import { isPublicSeoPath, PRIVATE_DESCRIPTIONS, publicDescription } from './seo-content';
+import {
+  isPublicSeoPath,
+  PRIVATE_DESCRIPTIONS,
+  publicDescription,
+  withNonAffiliationDisclosure,
+} from './seo-content';
 
 const MANAGED_SELECTORS = [
   'name="description"',
@@ -29,7 +34,7 @@ const MANAGED_SELECTORS = [
 
 const SHARE_IMAGE = '/og-black-market.png';
 const SHARE_IMAGE_ALT =
-  'Black Market, ferramentas de mercado, receitas e planejamento para Black Desert Online em português.';
+  'Black Market, ferramenta independente de mercado, receitas e planejamento para Black Desert Online, sem afiliação com a Pearl Abyss.';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService extends TitleStrategy {
@@ -53,10 +58,12 @@ export class SeoService extends TitleStrategy {
 
   describe(name: string, description: string) {
     const title = name.replace(/<[^>]*>/g, '').slice(0, 120) + ' · Black Market';
-    const summary = description
-      .replace(/<[^>]*>/g, '')
-      .replace(/\s+/g, ' ')
-      .slice(0, 180);
+    const summary = withNonAffiliationDisclosure(
+      description
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .slice(0, 120),
+    );
     this.title.setTitle(title);
     const tags: MetaDefinition[] = [
       { name: 'description', content: summary },
@@ -94,10 +101,11 @@ export class SeoService extends TitleStrategy {
     const knownPublicRoute = isPublicSeoPath(path);
     const indexable = knownPublicRoute && !privateRoute && origin !== null;
     const title = titleOverride || 'Black Market';
-    const description =
+    const description = withNonAffiliationDisclosure(
       publicDescription(path) ??
-      PRIVATE_DESCRIPTIONS[path] ??
-      'Black Market: plataforma brasileira para jogadores de Black Desert Online.';
+        PRIVATE_DESCRIPTIONS[path] ??
+        'Black Market: plataforma brasileira para jogadores de Black Desert Online.',
+    );
 
     this.title.setTitle(title);
     this.meta.addTags([

@@ -248,7 +248,7 @@ export const routes: Routes = [
       {
         path: '',
 
-        title: $localize`Black Market · Seu planejador de Black Desert`,
+        title: $localize`Black Market · Life Skills, receitas e mercado SA`,
 
         loadComponent: () =>
           import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),

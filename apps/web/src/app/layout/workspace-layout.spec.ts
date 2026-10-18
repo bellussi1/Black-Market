@@ -214,6 +214,17 @@ describe('workspace navigation', () => {
     expect(brand.querySelector('.brand-market')?.textContent?.trim()).toBe('MARKET');
   });
 
+  it('keeps the non-affiliation disclosure beside the game name in the shell', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const affiliation = (fixture.nativeElement as HTMLElement).querySelector('.sidebar-foot small');
+
+    expect(affiliation?.textContent?.replace(/\s+/g, ' ').trim()).toMatch(
+      /BLACK DESERT ONLINE.*SEM AFILIAÇÃO COM A PEARL ABYSS/i,
+    );
+  });
+
   it('offers one destination for authenticated personal areas and public market tools', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity(true) },

@@ -1,6 +1,6 @@
 # Black Market
 
-> Plataforma brasileira para jogadores de Black Desert Online, com foco inicial em SA e português brasileiro.
+> Ferramenta independente para jogadores de Black Desert Online, sem afiliação com a Pearl Abyss, com foco inicial em SA e português brasileiro.
 
 Este arquivo é uma orientação experimental. Não concede acesso a dados privados e não substitui robots.txt, autenticação ou condições de uso.
 

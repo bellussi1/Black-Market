@@ -57,6 +57,14 @@ const roadmapFixture: RoadmapEntry[] = [
 ];
 
 describe('DashboardPage', () => {
+  it('avoids an unqualified game-name claim in the home kicker', async () => {
+    const fixture = await renderComponent(DashboardPage);
+    const kicker = fixture.nativeElement.querySelector('.tool-kicker')?.textContent ?? '';
+
+    expect(kicker).toContain('BLACK MARKET');
+    expect(kicker).not.toContain('BLACK DESERT ONLINE');
+  });
+
   it('registers the home tutorial without adding a page control', async () => {
     const fixture = await renderComponent(DashboardPage);
     const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
