@@ -108,7 +108,10 @@
   overflow-wrap: anywhere;
   max-width: 100%;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color var(--bm-motion-fast) ease,
+    color var(--bm-motion-fast) ease,
+    border-color var(--bm-motion-fast) ease;
 }
 .market-categories button:hover {
   background: var(--bm-surface);
@@ -304,7 +307,10 @@
   font-size: 13px;
   border-radius: 2px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color var(--bm-motion-fast) ease,
+    color var(--bm-motion-fast) ease,
+    border-color var(--bm-motion-fast) ease;
 }
 .pill-btn:hover {
   color: var(--bm-text);
@@ -477,17 +483,6 @@
 .board-row {
   position: relative;
   transition: background-color 0.15s ease;
-  animation: bm-row-fade 0.25s ease-out;
-}
-@keyframes bm-row-fade {
-  from {
-    opacity: 0.6;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 .board-row:hover {
   background: var(--bm-surface-raised);

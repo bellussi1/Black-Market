@@ -27,6 +27,7 @@ $palette: (
 
 @layer base {
   :root {
+    --bm-motion-fast: 140ms;
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }
