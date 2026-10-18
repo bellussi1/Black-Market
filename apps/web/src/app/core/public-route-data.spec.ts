@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   type ActivatedRouteSnapshot,
@@ -6,7 +7,7 @@ import {
   type RouterStateSnapshot,
 } from '@angular/router';
 import type { CatalogRecipe } from '@bdo/shared';
-import { firstValueFrom, type Observable, of, Subject, throwError } from 'rxjs';
+import { firstValueFrom, NEVER, type Observable, of, Subject, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogApiService } from './catalog-api.service';
@@ -54,10 +55,40 @@ function setup() {
 }
 
 describe('Public route data warming', () => {
+  it('does not block browser activation on pending public requests', async () => {
+    const prefetchPath = vi.fn(() => NEVER);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: PublicRouteData, useValue: { prefetchPath } },
+      ],
+    });
+    const route = {
+      paramMap: convertToParamMap({}),
+      queryParamMap: convertToParamMap({}),
+    } as ActivatedRouteSnapshot;
+    for (const resolver of [
+      marketRouteResolver,
+      recommendationsRouteResolver,
+      recipesRouteResolver,
+    ]) {
+      let result: PublicRouteWarmResult | undefined;
+      const subscription = TestBed.runInInjectionContext(
+        () => resolver(route, {} as RouterStateSnapshot) as Observable<PublicRouteWarmResult>,
+      ).subscribe((value) => (result = value));
+      expect(result).toEqual({ status: 'ignored' });
+      subscription.unsubscribe();
+    }
+    expect(prefetchPath).not.toHaveBeenCalled();
+  });
+
   it('routes both market and recipe resolvers through the shared public cache service', async () => {
     const prefetchPath = vi.fn((_path: string) => of({ status: 'ready' as const }));
     TestBed.configureTestingModule({
-      providers: [{ provide: PublicRouteData, useValue: { prefetchPath } }],
+      providers: [
+        { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: PublicRouteData, useValue: { prefetchPath } },
+      ],
     });
     const snapshot = (params: Record<string, string>) =>
       ({

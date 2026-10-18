@@ -1,6 +1,7 @@
-import { inject, Injector } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { inject, Injector, PLATFORM_ID } from '@angular/core';
 import type { ResolveFn } from '@angular/router';
-import { defer, type Observable, switchMap } from 'rxjs';
+import { defer, type Observable, of, switchMap } from 'rxjs';
 
 import type { PublicRouteWarmResult } from './public-route-data';
 
@@ -14,15 +15,22 @@ export function warmPublicPath(
   );
 }
 
+/** Browser pages own loading/error states; only SSR needs data before activation. */
+function resolvePublicPath(path: string): Observable<PublicRouteWarmResult> {
+  return isPlatformServer(inject(PLATFORM_ID))
+    ? warmPublicPath(inject(Injector), path)
+    : of({ status: 'ignored' });
+}
+
 export const marketRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
-  warmPublicPath(inject(Injector), '/market');
+  resolvePublicPath('/market');
 
 export const recommendationsRouteResolver: ResolveFn<PublicRouteWarmResult> = () =>
-  warmPublicPath(inject(Injector), '/recommendations');
+  resolvePublicPath('/recommendations');
 
 export const recipesRouteResolver: ResolveFn<PublicRouteWarmResult> = (route) => {
   const id = route.paramMap.get('id') ?? route.queryParamMap.get('item');
   const key = route.paramMap.get('key');
   const path = key ? `/recipes/${key}` : id ? `/recipes/items/${id}` : '/recipes';
-  return warmPublicPath(inject(Injector), path);
+  return resolvePublicPath(path);
 };
