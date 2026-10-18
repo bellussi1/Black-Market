@@ -32,7 +32,7 @@ nvm use 24.21.0
 corepack enable
 corepack prepare pnpm@10.28.1 --activate
 pnpm install
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 docker compose up -d postgres
 pnpm db:migrate
 pnpm dev:api
@@ -144,3 +144,107 @@ Para testes sem domínio e sem mensalidade de hospedagem, consulte [staging loca
 Contato público informado: enzobellussi3@gmail.com. Responsável informado: Bellussi; identificação jurídica completa e documentos sujeitos à revisão. Integrações externas e domínio não estão ativados só por existir configuração no código.
 
 Veja [segurança e infraestrutura implementadas](docs/security-hardening.md) para conta restrita PostgreSQL, limites de entrada, isolamento do Compose, testes e configuração manual de backups/produção.
+
+## URLs e operação dos ambientes
+
+O projeto tem desenvolvimento local e um staging isolado executado no computador do mantenedor. Não há domínio permanente de staging HTTPS nem URL pública de produção configurados.
+
+### URLs locais
+
+| Serviço                  | URL                                                                          | Disponibilidade                              |
+| ------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| Aplicação Web            | [http://localhost:4200](http://localhost:4200)                               | `pnpm dev:web`                               |
+| Catálogo                 | [http://localhost:4200/database/items](http://localhost:4200/database/items) | Web local                                    |
+| API                      | [http://localhost:3000/api/v1](http://localhost:3000/api/v1)                 | `pnpm dev:api` ou overlay de observabilidade |
+| Saúde da API             | [http://localhost:3000/health](http://localhost:3000/health)                 | API local                                    |
+| Prontidão da API e banco | [http://localhost:3000/ready](http://localhost:3000/ready)                   | API local                                    |
+| OpenAPI                  | [http://localhost:3000/api/docs](http://localhost:3000/api/docs)             | API local                                    |
+| Métricas Prometheus      | [http://localhost:3000/api/v1/metrics](http://localhost:3000/api/v1/metrics) | Observabilidade local ativa                  |
+| Grafana                  | [http://localhost:3001](http://localhost:3001)                               | `pnpm ops:local:observability`               |
+| Prometheus               | [http://localhost:9090](http://localhost:9090)                               | `pnpm ops:local:observability`               |
+| Adminer, somente leitura | [http://localhost:8082](http://localhost:8082)                               | `pnpm ops:local:db-viewer`                   |
+
+O [guia local](docs/local-operations.md) descreve como iniciar/parar a observabilidade e obter a credencial local do Adminer. O overlay de observabilidade ocupa a porta `3000`; pare-o com `pnpm ops:local:observability:stop` antes de iniciar `pnpm dev:api` nessa porta.
+
+### URLs de staging
+
+| Serviço             | URL                                                          | Disponibilidade                                          |
+| ------------------- | ------------------------------------------------------------ | -------------------------------------------------------- |
+| Aplicação Web       | [http://localhost:8081](http://localhost:8081)               | Staging ligado                                           |
+| API via gateway     | [http://localhost:8081/api/v1](http://localhost:8081/api/v1) | Staging ligado; API e banco não publicam portas próprias |
+| Saúde               | [http://localhost:8081/health](http://localhost:8081/health) | Staging ligado                                           |
+| Prontidão com banco | [http://localhost:8081/ready](http://localhost:8081/ready)   | Staging ligado                                           |
+| Quick Tunnel HTTPS  | `https://<hostname-impresso-pelo-Share>.trycloudflare.com`   | Temporário, muda a cada sessão                           |
+
+O OpenAPI fica disponível no modo local de desenvolvimento e é desativado no runtime de produção usado pelo staging. O hostname HTTPS é emitido por `Share`, exige a allowlist de 1–10 e-mails e só funciona enquanto o túnel e o computador permanecerem ativos. Não registre esse endereço nem e-mails de testers no Git. Não há serviço de observabilidade ou conexão direta ao banco de staging expostos ao navegador.
+
+Com Firebase/Steam configurados, os callbacks locais são `http://localhost:3000/api/v1/identity/steam/callback` (desenvolvimento) e `http://localhost:8081/api/v1/identity/steam/callback` (staging pelo gateway). Durante `Share`, o script ajusta o callback para a origem HTTPS temporária seguida de `/api/v1/identity/steam/callback`. O handler OAuth do Firebase segue o formato `https://<FIREBASE_AUTH_DOMAIN>/__/auth/handler`; não substitua o domínio pelo hostname temporário do Quick Tunnel.
+
+### Passo a passo
+
+#### Desenvolvimento local
+
+Requisitos: Node.js 24.21.0, pnpm 10.28.1 e Docker Compose. Na raiz do projeto, configure e inicie o banco:
+
+```powershell
+nvm install 24.21.0
+nvm use 24.21.0
+corepack enable
+corepack prepare pnpm@10.28.1 --activate
+pnpm install
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+docker compose up -d postgres
+pnpm db:migrate
+```
+
+Em terminais separados, rode `pnpm dev:api` e `pnpm dev:web`; abra [http://localhost:4200](http://localhost:4200). Para parar sem remover dados, use `Ctrl+C` e `docker compose stop postgres`. Não use `docker compose down -v` se quiser preservar o volume do banco.
+
+#### Staging local
+
+Requer Docker Desktop e PowerShell 7 (`pwsh`). O script cria `.env.staging` com senhas locais aleatórias se o arquivo não existir. Na primeira utilização apenas, com o PostgreSQL local iniciado e `.env` configurado, copie schema e catálogo para o banco de staging vazio:
+
+```powershell
+pwsh -File scripts/staging.ps1 Seed
+```
+
+O `Seed` recusa um banco que já tenha tabelas e não copia workspaces, identidades ou histórico pessoal. Depois, tanto nessa configuração quanto nas próximas inicializações, use:
+
+```powershell
+pwsh -File scripts/staging.ps1 Start
+pnpm test:staging
+```
+
+`Start` usa `.env.staging` e volumes separados, aplica migrations e valida o serviço. Consulte `pwsh -File scripts/staging.ps1 Status` para ver os containers. Para compartilhar com testers, instale `cloudflared` (Windows: `winget install --id Cloudflare.cloudflared --exact`) e rode:
+
+```powershell
+pwsh -File scripts/staging.ps1 Share -AllowedEmail pessoa1@example.com,pessoa2@example.com
+```
+
+Copie o endereço HTTPS impresso pelo comando. `Ctrl+C` encerra o túnel. `pwsh -File scripts/staging.ps1 Stop` para túnel e containers preservando banco, assets e backups. Comandos para logs, testes autenticados, backup e agenda estão em [staging local](docs/staging-local.md).
+
+### Atualização, rollback e versão
+
+Antes de atualizar, crie um commit Git atômico, confirme `git status --short` limpo e guarde o SHA retornado por `git rev-parse HEAD`. O script **não executa `git pull`**; ele compila o checkout atual. Valide e atualize:
+
+```powershell
+pnpm check
+pnpm test
+pnpm build
+pwsh -File scripts/staging.ps1 Update
+pnpm test:staging
+Get-Content data/staging/images.json
+```
+
+`Update` gera uma imagem local `black-market:staging-<data-UTC>`, faz backup antes da troca quando já há imagem instalada, aplica migrations e verifica o serviço. `data/staging/images.json` guarda as tags `current` e `previous`; registre a tag da imagem junto ao SHA do commit para saber exatamente o código validado. O repositório não tem tags de release; `0.1.0` no `package.json` é metadado do workspace, não a versão implantada.
+
+Se a falha for somente da aplicação e o schema ainda for compatível com a imagem anterior, execute:
+
+```powershell
+pwsh -File scripts/staging.ps1 Status
+pwsh -File scripts/staging.ps1 Rollback
+pnpm test:staging
+```
+
+`Rollback` também faz um backup e volta a imagem preservando o banco. Ele não desfaz migrations nem alterações de dados; confira `Status` e `images.json` antes de repetir, pois a ação alterna as tags anterior/atual. Uma migration incompatível exige recuperação separada: suspenda escritas, preserve o volume atual, valide um dump pelo [restore drill](docs/backup-recovery.md), restaure em novo volume/banco e só faça a troca depois de conferir dados, assets e smoke. Esse rollback de banco ainda não é automatizado. Nunca restaure sobre o único banco ou use `down -v`.
+
+Migrations ficam versionadas em `packages/database`; revise-as antes do commit, use `pnpm db:check` e aplique localmente com `pnpm db:migrate`. O catálogo também tem versão: use um rótulo `--version` novo quando o conteúdo importado mudar; dump de banco não substitui os assets `data/assets/<checksum>`. `.env`, `.env.staging`, backups e dados privados não entram em commits. Backups de staging ficam no próprio computador em `data/staging/backups`, sem cópia externa cifrada ativa; consulte [backup e recuperação](docs/backup-recovery.md) para limites e procedimentos.
