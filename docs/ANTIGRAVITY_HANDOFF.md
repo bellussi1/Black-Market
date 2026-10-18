@@ -255,3 +255,9 @@ Falta apenas validar login interativo com consentimento Google/Steam e sessão (
 Na página 4 da listagem de Culinária, o item 9711 (“Comida Retirada”) aparecia como produto principal por falta de metadado estrutural, embora a descrição do catálogo o marque como subproduto aleatório. O filtro agora exclui esse caso e mantém o item na busca/ficha; a API local retorna 25 receitas na página 4, total 543 e zero ocorrências do nome. A ficha de produtores retorna total zero. Veja `docs/research/recipe-byproduct-listing-review-2026-10-18.md` e `docs/ACTIVE_CONTEXT.md` §161.
 
 O fix da receita e o fallback do tutorial são mudanças separadas. Próximo passo técnico: manter a taxonomia de subprodutos estruturada na próxima extração e fazer QA visual do tutorial. Crie commits de responsabilidade única com listas explícitas de arquivos, preserve o plano de fase 3 não rastreado e não faça push/deploy.
+
+### Atualização — rebuild e redução do shell (18/10/2026)
+
+O build serial completo, `pnpm check`, `pnpm test` (1.153 aprovados/1 ignorado) e `pnpm test:ssr` passaram em Node 24.21.0. O shell inicial caiu de 546,01 kB para 503,18 kB; transferência estimada 135,20 kB. Ainda excede o aviso de 500 kB em 3,18 kB, sem alteração do budget. Ver `docs/research/shell-bundle-deferral-review-2026-10-18.md`, checklist e `docs/ACTIVE_CONTEXT.md` §163.
+
+Botões/select do shell não carregam o sistema de fusão de classes no bundle inicial, e o painel de privacidade é deferido até consentimento pendente ou abertura pelo rodapé. QA visual de `/recipes` em desktop/390×844 e SSR passou. HMR local emite NG0751 e carrega `@defer` eager; o grafo de produção confirma a separação, mas a rede lazy não foi observada no browser de desenvolvimento. Próximo passo: cortar os 3,18 kB restantes com medição e manter o orçamento; preservar o plano visual 3 não rastreado. Commits separados de código e documentação, paths explícitos; sem push/deploy.
