@@ -95,6 +95,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
+            "hmr": false,
             "prebundle": {
               "exclude": ["@bdo/shared", "@bdo/calculators"]
             }
