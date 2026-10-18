@@ -62,6 +62,33 @@ function service(keys: string[]) {
   return { instance, db, related };
 }
 describe('Paginated item recipes', () => {
+  it('does not present random byproducts as directly crafted item recipes', async () => {
+    const itemVersion = query([
+      {
+        itemId: 9711,
+        description: 'Um subproduto da culinária. Recebido aleatoriamente após Cozinhar.',
+      },
+    ]);
+    const db = { select: vi.fn(() => itemVersion) };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      finishedAt: new Date(),
+    } as never);
+
+    const result = await instance.getItemRecipes(9711, { region: 'sa', locale: 'pt' }, 'produces');
+
+    expect(result).toMatchObject({ recipes: [], total: 0, direction: 'produces' });
+    expect(db.select).toHaveBeenCalledOnce();
+  });
+
   it('serves the requested page of distinct relationships beyond the former 50-recipe cap', async () => {
     const keys = Array.from({ length: 100 }, (_, i) => String(100 + i));
     const { instance, related } = service(keys);
@@ -258,15 +285,7 @@ describe('recipe market equivalents', () => {
       preferredLocale: 'pt',
     });
 
-    expect(response.equivalents).toEqual([
-      {
-        sourceItemId: 8211,
-        itemId: 8511,
-        name: 'Calamar Desidratado',
-        iconUrl: '/items/8511.webp',
-        quantityRatio: 1,
-      },
-    ]);
+    expect(response.equivalents).toEqual([]);
     expect(new PgDialect().sqlToQuery(dryRows.where.mock.calls[0][0] as SQL).params).toContain(
       'DRY',
     );
@@ -338,6 +357,19 @@ describe('Life skill discovery', () => {
     }
   });
 
+  it('omits random byproducts from the recipe index and its page count', async () => {
+    const { instance, countQuery, rowsQuery } = discovery();
+    await instance.listRecipes({ recipeGroup: 'cooking', page: 4, pageSize: 25 });
+    for (const statement of [countQuery, rowsQuery]) {
+      const compiled = sqlQuery(statement.where.mock.calls[0][0]);
+      expect(compiled.sql).toContain('"recipes"."byproduct_of_item_id" is null');
+      expect(compiled.params).toContain('%subproduto%');
+      expect(compiled.params).toContain('%byproduct%');
+      expect(compiled.params).toContain('%aleatoriamente%');
+      expect(compiled.params).toContain('%randomly%');
+    }
+  });
+
   it('limits only opted-in item discovery to ingredients and products of life skill recipes', async () => {
     const scoped = discovery(true);
     await scoped.instance.listItems({ scope: 'life-skill', q: 'carne' });
@@ -379,6 +411,7 @@ describe('Production catalogue snapshot', () => {
       query([
         { key: 'main', type: 'ALCHEMY', station: null, byproductOfItemId: null },
         { key: 'proc', type: 'ALCHEMY', station: null, byproductOfItemId: 202 },
+        { key: 'random-byproduct', type: 'COOK', station: null, byproductOfItemId: null },
       ]),
       query([
         { recipeKey: 'main', itemId: 101, quantity: '3.0000' },
@@ -387,11 +420,19 @@ describe('Production catalogue snapshot', () => {
       query([
         { recipeKey: 'main', itemId: 202, quantity: null },
         { recipeKey: 'proc', itemId: 203, quantity: null },
+        { recipeKey: 'random-byproduct', itemId: 204, quantity: null },
       ]),
       query([
         { id: 101, name: 'Ore', weight: '0.1000', sourceData: { vendors: ['Vendor'] } },
         { id: 202, name: 'Ingot', weight: '1.0000', sourceData: {} },
         { id: 203, name: 'Rare ingot', weight: '1.0000', sourceData: {} },
+        {
+          id: 204,
+          name: 'Comida Retirada',
+          description: 'Um subproduto da culinária. Recebido aleatoriamente após Cozinhar.',
+          weight: '0.0100',
+          sourceData: {},
+        },
       ]),
       query([{ itemId: 101, id: 'ore', parentId: null, sortOrder: 1, name: 'Ore category' }]),
     ];
@@ -417,13 +458,14 @@ describe('Production catalogue snapshot', () => {
     expect(active).toHaveBeenCalledOnce();
     expect(result.dataset?.version).toBe('reviewed');
     expect(result.recipes).toHaveLength(2);
+    expect(result.recipes.map((recipe) => recipe.key)).not.toContain('random-byproduct');
     expect(result.recipes[0]).toMatchObject({
       key: 'main',
       inputs: [{ itemId: 101, name: 'Ore', quantity: '3.0000' }],
       outputs: [{ itemId: 202, name: 'Ingot', quantity: null }],
     });
     expect(result.recipes[1].byproductOfItemId).toBe(202);
-    expect(result.items.map((item) => item.id)).toEqual([101, 202, 203]);
+    expect(result.items.map((item) => item.id)).toEqual([101, 202, 203, 204]);
     expect(result.items[0]).toMatchObject({
       weight: '0.1000',
       sourceData: { vendors: ['Vendor'] },

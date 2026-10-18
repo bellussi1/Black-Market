@@ -31,13 +31,44 @@ import {
   LIFE_SKILL_RECIPE_TYPES,
 } from '@bdo/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  not,
+  or,
+  type SQL,
+  sql,
+} from 'drizzle-orm';
 
 import { DatabaseService } from '../database/database.service';
 import { CatalogAssetsService } from './catalog-assets.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
 import { npcPurchasePriceFromCatalog } from './npc-purchase-price';
 import { deriveRecipeMarketEquivalents } from './recipe-market-equivalents';
+
+const BYPRODUCT_DESCRIPTION_TERMS = ['subproduto', 'subproducto', 'byproduct'] as const;
+const RANDOM_YIELD_DESCRIPTION_TERMS = [
+  'aleatoriamente',
+  'randomly',
+  'probability',
+  'probabilidade',
+  'probabilidad',
+  'chance',
+] as const;
+
+function isRandomByproductDescription(description: string | null | undefined): boolean {
+  const normalized = description?.toLocaleLowerCase() ?? '';
+  return (
+    BYPRODUCT_DESCRIPTION_TERMS.some((term) => normalized.includes(term)) &&
+    RANDOM_YIELD_DESCRIPTION_TERMS.some((term) => normalized.includes(term))
+  );
+}
 
 @Injectable()
 export class CatalogService {
@@ -149,12 +180,21 @@ export class CatalogService {
     };
     const inputs = groupParts(inputRows);
     const outputs = groupParts(outputRows);
+    const productionRecipes = recipeRows.flatMap((row) => {
+      const recipeOutputs = outputs.get(row.key) ?? [];
+      const primaryOutput = recipeOutputs[0];
+      if (isRandomByproductDescription(itemMap.get(primaryOutput?.itemId ?? -1)?.description))
+        return [];
+      return [
+        {
+          ...row,
+          inputs: inputs.get(row.key) ?? [],
+          outputs: recipeOutputs,
+        },
+      ];
+    });
     return {
-      recipes: recipeRows.map((row) => ({
-        ...row,
-        inputs: inputs.get(row.key) ?? [],
-        outputs: outputs.get(row.key) ?? [],
-      })),
+      recipes: productionRecipes,
       items: detailedItems,
       dataset: this.toSummary(dataset),
     };
@@ -172,7 +212,17 @@ export class CatalogService {
       eq(recipes.datasetVersionId, dataset.id),
       eq(recipeOutputs.position, 0),
       inArray(recipes.recipeType, [...types]),
+      isNull(recipes.byproductOfItemId),
     ];
+    const outputDescription = sql`coalesce(${itemTranslations.description}, '')`;
+    const byproductDescription = or(
+      ...BYPRODUCT_DESCRIPTION_TERMS.map((term) => ilike(outputDescription, `%${term}%`)),
+    );
+    const randomYieldDescription = or(
+      ...RANDOM_YIELD_DESCRIPTION_TERMS.map((term) => ilike(outputDescription, `%${term}%`)),
+    );
+    if (byproductDescription && randomYieldDescription)
+      filters.push(not(and(byproductDescription, randomYieldDescription)!));
     if (query.search)
       for (const word of this.normalizedSearch(query.search).split(/\s+/))
         filters.push(
@@ -622,11 +672,28 @@ export class CatalogService {
       };
 
     const [itemVersion] = await this.database.db
-      .select({ itemId: itemVersions.itemId })
+      .select({ itemId: itemVersions.itemId, description: itemTranslations.description })
       .from(itemVersions)
+      .innerJoin(
+        itemTranslations,
+        and(
+          eq(itemTranslations.datasetVersionId, itemVersions.datasetVersionId),
+          eq(itemTranslations.itemId, itemVersions.itemId),
+          eq(itemTranslations.language, dataset.locale),
+        ),
+      )
       .where(and(eq(itemVersions.datasetVersionId, dataset.id), eq(itemVersions.itemId, itemId)))
       .limit(1);
     if (!itemVersion) throw new NotFoundException('Item não encontrado no catálogo ativo.');
+    if (direction === 'produces' && isRandomByproductDescription(itemVersion.description))
+      return {
+        recipes: [],
+        total: 0,
+        direction,
+        dataset: this.toSummary(dataset),
+        page: query.page,
+        pageSize: query.pageSize,
+      };
 
     const relation = direction === 'produces' ? recipeOutputs : recipeIngredients;
     const relationFilter = and(
