@@ -154,12 +154,28 @@ describe('production recommendations', () => {
       activeCharacterId: player.id,
     }));
     fixture.detectChanges();
-    page.plans.set({ ranked: [completePlan()], incomplete: [] });
+    page.plans.set({
+      ranked: [
+        {
+          ...completePlan(),
+          materials: [{ itemId: 1, required: 2, owned: 0, bought: 2, produced: 0, substituted: 0 }],
+        },
+      ],
+      incomplete: [],
+    });
     fixture.detectChanges();
 
     expect(page.profile()).not.toBeNull();
     expect(page.topPlans()).toHaveLength(1);
     expect(fixture.nativeElement.querySelector('.opportunity-leading')).not.toBeNull();
+    expect(
+      fixture.nativeElement
+        .querySelector('.opportunity-title app-item-icon')
+        ?.getAttribute('title'),
+    ).toContain('Elixir de teste');
+    expect(
+      fixture.nativeElement.querySelector('.material-line app-item-icon')?.getAttribute('title'),
+    ).toContain('Material');
     expect(
       fixture.nativeElement.querySelector('.opportunity-leading-label')?.textContent,
     ).toContain('Maior lucro líquido por hora');

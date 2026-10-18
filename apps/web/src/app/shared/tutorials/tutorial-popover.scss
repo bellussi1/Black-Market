@@ -6,9 +6,9 @@
   max-width: calc(100vw - 24px);
   max-height: calc(100dvh - 24px);
   overflow-y: auto;
-  background: var(--bm-surface, #242424);
-  color: var(--bm-text, #eee);
-  border: 1px solid var(--bm-accent, #a78a54);
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  border: 1px solid var(--bm-accent);
   border-radius: 2px;
   padding: 20px;
   box-shadow: 0 8px 28px #0009;
@@ -36,10 +36,10 @@
   button {
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid var(--bm-accent, #a78a54);
+    border: 1px solid var(--bm-accent);
     border-radius: 2px;
-    background: var(--bm-surface, #242424);
-    color: var(--bm-text, #eee);
+    background: var(--bm-surface);
+    color: var(--bm-text);
     font: inherit;
     text-shadow: none;
   }
@@ -48,7 +48,7 @@
   }
   button:focus-visible,
   &:focus-visible {
-    outline: 2px solid var(--bm-accent, #c6a66a);
+    outline: 2px solid var(--bm-accent);
     outline-offset: 3px;
   }
   .driver-popover-close-btn {
@@ -56,7 +56,7 @@
     right: 4px;
   }
   .driver-popover-next-btn {
-    background: var(--bm-accent, #c6a66a);
+    background: var(--bm-accent);
     color: #151515;
   }
   .driver-popover-arrow {

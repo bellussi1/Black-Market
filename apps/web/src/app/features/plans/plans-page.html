@@ -20,8 +20,16 @@
     ><app-catalog-item-picker (selected)="add($event)" />
     @for (material of draft.materials; track material.itemId) {
       <div class="row-editor">
-        <strong>{{ material.name }}</strong
-        ><label class="field"
+        <span class="inline-flex items-center gap-2.5">
+          <app-item-icon
+            style="--item-icon-size: 36px"
+            [url]="catalog.resolveIconUrl(items().get(material.itemId) ?? {})"
+            [name]="material.name"
+            [grade]="items().get(material.itemId)?.grade ?? null"
+          />
+          <strong>{{ material.name }}</strong>
+        </span>
+        <label class="field"
           ><span i18n>Quantidade necessária</span
           ><input hlmInput type="number" min="1" [(ngModel)]="material.quantity" /></label
         ><button
@@ -61,10 +69,16 @@
           Retorno estimado: {{ silver(plan.estimatedProfit) }} · {{ plan.minutes }} minutos
         </p>
       }
-      <ul>
+      <ul class="space-y-2 list-none pl-0">
         @for (material of plan.materials; track material.itemId) {
-          <li>
-            {{ material.name }} ·
+          <li class="flex flex-wrap items-center gap-2.5">
+            <app-item-icon
+              style="--item-icon-size: 36px"
+              [url]="catalog.resolveIconUrl(items().get(material.itemId) ?? {})"
+              [name]="material.name"
+              [grade]="items().get(material.itemId)?.grade ?? null"
+            />
+            <a [routerLink]="['/market/items', material.itemId]">{{ material.name }}</a> ·
             <span i18n
               >{{ material.quantity }} necessários · {{ stock(plan, material.itemId) }} no
               armazém</span

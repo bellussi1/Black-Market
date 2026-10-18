@@ -176,6 +176,12 @@
               <li class="opportunity" [class.opportunity-leading]="$first">
                 <div class="opportunity-title">
                   <span class="rank-number">{{ $index + 1 }}</span>
+                  <app-item-icon
+                    class="opportunity-icon"
+                    [url]="icon(producersName(row.recipeId))"
+                    [name]="row.name"
+                    [grade]="grade(producersName(row.recipeId))"
+                  />
                   <div>
                     <h3>
                       <a [routerLink]="['/recipes', row.recipeId]">{{ row.name }}</a>
@@ -206,19 +212,33 @@
                   <summary>Ver materiais, etapas e dados usados</summary>
                   <p>{{ row.crafts }} operações · {{ rounded(row.peakWeight) }} LT no pico</p>
                   @for (part of row.materials; track part.itemId) {
-                    <p class="material-line">
-                      <strong>{{ name(part.itemId) }}</strong>
+                    <div class="material-line">
+                      <span class="material-identity">
+                        <app-item-icon
+                          [url]="icon(part.itemId)"
+                          [name]="name(part.itemId)"
+                          [grade]="grade(part.itemId)"
+                        />
+                        <strong>{{ name(part.itemId) }}</strong>
+                      </span>
                       <span
                         >Comprar {{ rounded(part.bought) }} · armazém {{ rounded(part.owned) }} ·
                         produzir {{ rounded(part.produced) }}</span
                       >
                       <small>{{ quoteDetails(part.itemId) }}</small>
-                    </p>
+                    </div>
                   }
                   @for (step of row.steps; track $index) {
-                    <p>
-                      {{ step.crafts }} × {{ name(producersName(step.recipeId)) }} ·
-                      {{ rounded(step.seconds) }} s
+                    <p class="step-line">
+                      <app-item-icon
+                        [url]="icon(producersName(step.recipeId))"
+                        [name]="name(producersName(step.recipeId))"
+                        [grade]="grade(producersName(step.recipeId))"
+                      />
+                      <span
+                        >{{ step.crafts }} × {{ name(producersName(step.recipeId)) }} ·
+                        {{ rounded(step.seconds) }} s</span
+                      >
                     </p>
                   }
                   @for (text of row.assumptions; track $index) {
@@ -250,11 +270,20 @@
             @for (row of visibleIncomplete(); track row.key) {
               <article class="pending-row">
                 <div class="pending-issue">
-                  <div>
-                    <strong>{{ row.name }}</strong>
-                    @for (issue of row.issues; track issue.code) {
-                      <p>{{ issue.message }}</p>
+                  <div class="pending-identity">
+                    @if (row.itemId !== undefined) {
+                      <app-item-icon
+                        [url]="icon(row.itemId)"
+                        [name]="row.name"
+                        [grade]="grade(row.itemId)"
+                      />
                     }
+                    <div>
+                      <strong>{{ row.name }}</strong>
+                      @for (issue of row.issues; track issue.code) {
+                        <p>{{ issue.message }}</p>
+                      }
+                    </div>
                   </div>
                   @if (row.itemId !== undefined) {
                     <label class="manual-price-field">

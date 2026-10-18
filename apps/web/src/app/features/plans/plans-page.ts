@@ -8,26 +8,42 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { availableInventory, type PersonalPlan, personalPlanSchema } from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
+import { catchError, EMPTY } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 @Component({
   selector: 'app-plans-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, FormsModule, CatalogItemPicker, TutorialSurfaceDirective],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    FormsModule,
+    RouterLink,
+    CatalogItemPicker,
+    ItemIcon,
+    TutorialSurfaceDirective,
+  ],
   templateUrl: './plans-page.html',
 })
 export class PlansPage {
   private readonly analytics = inject(AnalyticsService);
+  readonly catalog = inject(CatalogApiService);
+  readonly items = signal(new Map<number, CatalogItem>());
+  private catalogRegion = '';
   constructor() {
     effect(() => {
       const region = this.store.data().region;
@@ -37,6 +53,29 @@ export class PlansPage {
           this.message.set('Região alterada. Escolha ou crie um plano deste mercado.');
         }
       });
+    });
+    effect((cleanup) => {
+      const region = this.store.data().region;
+      if (region !== this.catalogRegion) {
+        this.catalogRegion = region;
+        this.items.set(new Map());
+      }
+      const ids = [...new Set(this.plans().flatMap((plan) => plan.materials.map((m) => m.itemId)))];
+      if (!ids.length) return;
+      const current = untracked(() => this.items());
+      const missingIds = ids.filter((id) => !current.has(id));
+      if (!missingIds.length) return;
+      const sub = this.catalog
+        .getItems({ ids: missingIds.slice(0, 100), page: 1, pageSize: 100 })
+        .pipe(catchError(() => EMPTY))
+        .subscribe((result) => {
+          this.items.update((prev) => {
+            const next = new Map(prev);
+            for (const item of result.items) next.set(item.id, item);
+            return next;
+          });
+        });
+      cleanup(() => sub.unsubscribe());
     });
   }
   readonly store = inject(WorkspaceStore);
@@ -58,6 +97,7 @@ export class PlansPage {
   }
   add(item: CatalogItem | null) {
     if (!item) return;
+    this.items.update((prev) => new Map(prev).set(item.id, item));
     const held = this.draft.materials.find((row) => row.itemId === item.id);
     if (held) held.quantity += this.quantity;
     else this.draft.materials.push({ itemId: item.id, name: item.name, quantity: this.quantity });

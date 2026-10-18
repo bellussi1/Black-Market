@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,10 +21,13 @@ import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
+import { catchError, EMPTY } from 'rxjs';
 
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
@@ -33,6 +44,7 @@ import { GearInventoryPage } from '../gear/gear-inventory-page';
     FormsModule,
     RouterLink,
     CatalogItemPicker,
+    ItemIcon,
     TaxOptionsComponent,
     GearInventoryPage,
     TutorialSurfaceDirective,
@@ -42,6 +54,9 @@ import { GearInventoryPage } from '../gear/gear-inventory-page';
 export class PlayerPage {
   readonly store = inject(WorkspaceStore);
   readonly identity = inject(IdentityService);
+  readonly catalog = inject(CatalogApiService);
+  readonly items = signal(new Map<number, CatalogItem>());
+  private catalogRegion = '';
   private readonly router = inject(Router);
   readonly tab = signal<'character' | 'family' | 'equipment'>('character');
   readonly tutorialSurface = computed(() => {
@@ -105,6 +120,40 @@ export class PlayerPage {
         const tab = params.get('tab');
         this.tab.set(tab === 'family' || tab === 'equipment' ? tab : 'character');
       });
+    effect((cleanup) => {
+      const region = this.store.data().region;
+      if (region !== this.catalogRegion) {
+        this.catalogRegion = region;
+        this.items.set(new Map());
+      }
+      const profile = this.current();
+      if (!profile) return;
+      const ids = [
+        ...new Set(
+          [
+            ...(profile.artifacts ?? []),
+            ...(profile.lightstones ?? []),
+            ...(profile.crystals ?? []),
+            ...(profile.pearlOutfits ?? []),
+          ].map((entry) => entry.itemId),
+        ),
+      ];
+      if (!ids.length) return;
+      const current = untracked(() => this.items());
+      const missingIds = ids.filter((id) => !current.has(id));
+      if (!missingIds.length) return;
+      const sub = this.catalog
+        .getItems({ ids: missingIds.slice(0, 100), page: 1, pageSize: 100 })
+        .pipe(catchError(() => EMPTY))
+        .subscribe((result) => {
+          this.items.update((prev) => {
+            const next = new Map(prev);
+            for (const item of result.items) next.set(item.id, item);
+            return next;
+          });
+        });
+      cleanup(() => sub.unsubscribe());
+    });
   }
   selectTab(tab: 'character' | 'family' | 'equipment') {
     void this.router.navigate(['/family'], {
@@ -252,6 +301,7 @@ export class PlayerPage {
     item: CatalogItem | null,
   ) {
     if (!item || !this.current()) return;
+    this.items.update((prev) => new Map(prev).set(item.id, item));
     this.saveCharacter({
       [kind]: [...(this.current()![kind] ?? []), { itemId: item.id, name: item.name }],
     });

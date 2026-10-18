@@ -3,11 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ElementRef,
   inject,
   RESPONSE_INIT,
   signal,
-  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -116,14 +114,6 @@ export class RecipesPage {
       method.inputs.length +
       ' materiais'
     );
-  }
-  private readonly productionWorkspace = viewChild('productionWorkspace', { read: ElementRef });
-  focusProduction(): void {
-    const control = this.productionWorkspace()?.nativeElement.querySelector(
-      '.craft-count-input',
-    ) as HTMLInputElement | null;
-    control?.focus();
-    control?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
   }
   page = 1;
   constructor() {

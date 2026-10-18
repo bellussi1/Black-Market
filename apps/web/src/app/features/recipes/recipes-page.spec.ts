@@ -63,17 +63,13 @@ describe('Universal recipe explorer', () => {
     expect(fixture.nativeElement.querySelector('app-recipe-tree h1')?.textContent).toContain(
       'Reagente Líquido Limpo',
     );
-    const productionShortcut = fixture.nativeElement.querySelector(
-      '.continue-production',
-    ) as HTMLButtonElement;
+    expect(fixture.nativeElement.querySelector('.production-entry')).toBeNull();
     const count = fixture.nativeElement.querySelector('.craft-count-input') as HTMLInputElement;
     count.value = '42';
     count.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    productionShortcut.click();
-    expect(document.activeElement).toBe(count);
     expect(count.value).toBe('42');
     const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
     expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe(

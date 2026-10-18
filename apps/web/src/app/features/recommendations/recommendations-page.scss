@@ -291,8 +291,13 @@
 
 .opportunity-title {
   display: flex;
+  align-items: flex-start;
   gap: 0.75rem;
   min-width: 0;
+}
+
+.opportunity-icon {
+  --item-icon-size: 44px;
 }
 
 .rank-number {
@@ -365,9 +370,25 @@
 .material-line {
   display: grid;
   grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.5fr);
-  gap: 0.2rem 0.75rem;
-  padding-block: 0.35rem;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding-block: 0.45rem;
   border-bottom: 1px solid var(--bm-border);
+}
+
+.material-identity,
+.step-line,
+.pending-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.material-identity app-item-icon,
+.step-line app-item-icon,
+.pending-identity app-item-icon {
+  --item-icon-size: 36px;
 }
 
 .material-line small {

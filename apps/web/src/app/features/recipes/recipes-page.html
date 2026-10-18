@@ -108,24 +108,7 @@
     </section>
   }
   @if (item(); as selected) {
-    <div class="production-entry action-row">
-      <p class="help" i18n>
-        Este produto já está aberto na oficina. Ajuste o lote, a maestria e os materiais para
-        calcular a produção.
-      </p>
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        class="continue-production"
-        (click)="focusProduction()"
-        i18n
-      >
-        Calcular produção deste produto
-      </button>
-    </div>
     <app-recipe-tree
-      #productionWorkspace
       [primaryHeading]="true"
       [recipe]="recipe()"
       [recipes]="alternatives()"

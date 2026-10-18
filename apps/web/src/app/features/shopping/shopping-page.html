@@ -50,7 +50,18 @@
             @for (row of visibleRows(); track row.itemId) {
               <tr>
                 <td>
-                  <a [routerLink]="['/market/items', row.itemId]">{{ row.name }}</a>
+                  <a
+                    class="inline-flex items-center gap-2.5"
+                    [routerLink]="['/market/items', row.itemId]"
+                  >
+                    <app-item-icon
+                      style="--item-icon-size: 36px"
+                      [url]="catalog.resolveIconUrl(items().get(row.itemId) ?? {})"
+                      [name]="row.name"
+                      [grade]="items().get(row.itemId)?.grade ?? null"
+                    />
+                    <span>{{ row.name }}</span>
+                  </a>
                 </td>
                 <td class="numeric">{{ row.required.toLocaleString('pt-BR') }}</td>
                 <td class="numeric positive">{{ row.available.toLocaleString('pt-BR') }}</td>
@@ -96,7 +107,19 @@
         <h2>Planos incluídos</h2>
         @for (plan of plans(); track plan.id) {
           <div class="shopping-plan">
-            <a [routerLink]="['/recipes/items', plan.sourceItemId]">{{ plan.name }}</a
+            <a
+              class="inline-flex items-center gap-2.5"
+              [routerLink]="['/recipes/items', plan.sourceItemId]"
+            >
+              @if (plan.sourceItemId) {
+                <app-item-icon
+                  style="--item-icon-size: 36px"
+                  [url]="catalog.resolveIconUrl(items().get(plan.sourceItemId) ?? {})"
+                  [name]="plan.name"
+                  [grade]="items().get(plan.sourceItemId)?.grade ?? null"
+                />
+              }
+              <span>{{ plan.name }}</span> </a
             ><button hlmBtn variant="outline" type="button" (click)="remove(plan)">
               Remover da lista
             </button>

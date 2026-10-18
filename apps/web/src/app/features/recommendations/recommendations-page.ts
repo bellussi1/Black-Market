@@ -39,6 +39,7 @@ import { ProductionApi } from '../../core/production-api';
 import type { Region } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { fixedRecipeYield } from '../../shared/recipe-tree/recipe-fixed-yields';
 import { recipeMarketPrice } from '../../shared/recipe-tree/recipe-market-price';
 import {
@@ -195,7 +196,15 @@ export function productionRecipes(
 @Component({
   selector: 'app-recommendations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TutorialSurfaceDirective, HlmInput, HlmButton, BdoSelect, FormsModule, RouterLink],
+  imports: [
+    TutorialSurfaceDirective,
+    HlmInput,
+    HlmButton,
+    BdoSelect,
+    FormsModule,
+    RouterLink,
+    ItemIcon,
+  ],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',
 })
@@ -863,6 +872,9 @@ export class RecommendationsPage implements OnDestroy {
   icon(itemId: number) {
     const item = this.itemsById().get(itemId);
     return item ? this.catalogApi.resolveIconUrl(item) : null;
+  }
+  grade(itemId: number) {
+    return this.itemsById().get(itemId)?.grade ?? null;
   }
   producers(itemId: number) {
     return this.recipes().filter((row) => row.output.itemId === itemId);

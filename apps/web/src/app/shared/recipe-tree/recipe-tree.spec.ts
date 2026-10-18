@@ -1403,7 +1403,6 @@ describe('Interactive recipe tree', () => {
     expect(tree.materialPrice(5301)).toEqual({ price: '1100', source: 'maximum' });
     expect(tree.materialPrice(9001)).toEqual({ price: '60', source: 'maximum' });
     expect(tree.productionInput()?.enforcePurchaseLimits).toBe(false);
-    tree.view.set('list');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.sidebar-price')?.textContent).toContain('Máxima');
     const sourceCheckbox = fixture.nativeElement.querySelector(
@@ -1810,7 +1809,7 @@ describe('Interactive recipe tree', () => {
     graph.pan.set({ x: -200, y: -80 });
     graph.zoom.set(0.65);
     graph.focus.set('root/0');
-    tree.view.set('list');
+    tree.view.set('tree');
     fixture.detectChanges();
     tree.view.set('graph');
     fixture.detectChanges();
@@ -1916,9 +1915,9 @@ describe('Interactive recipe tree', () => {
     expect(tree.plan()?.value?.rows.find((r) => r.itemId === 9001)?.required).toBe(8);
     expect(fixture.nativeElement.querySelector('.btn-apply-default-yield')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Confirme o rendimento para calcular');
-    tree.view.set('list');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('table').textContent).toContain('Sal');
+    expect(
+      fixture.nativeElement.querySelector('.workspace-materials-sidebar')?.textContent,
+    ).toContain('Sal');
     expect(fixture.nativeElement.querySelectorAll('img').length).toBe(0);
   });
   it('uses a partial context response and does not let an older selection replace a newer one', async () => {

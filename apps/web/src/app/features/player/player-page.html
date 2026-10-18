@@ -190,7 +190,17 @@
               />
               @for (item of $any(profile)[group.key] ?? []; track $index) {
                 <div class="action-row">
-                  <a [routerLink]="['/market/items', item.itemId]">{{ item.name }}</a
+                  <a
+                    class="inline-flex items-center gap-2.5"
+                    [routerLink]="['/market/items', item.itemId]"
+                  >
+                    <app-item-icon
+                      style="--item-icon-size: 36px"
+                      [url]="catalog.resolveIconUrl(items().get(item.itemId) ?? {})"
+                      [name]="item.name"
+                      [grade]="items().get(item.itemId)?.grade ?? null"
+                    />
+                    <span>{{ item.name }}</span> </a
                   ><button
                     hlmBtn
                     variant="outline"

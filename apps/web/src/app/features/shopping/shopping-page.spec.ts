@@ -1,14 +1,29 @@
 import { By } from '@angular/platform-browser';
 import { personalPlanSchema } from '@bdo/calculators';
-import { describe, expect, it } from 'vitest';
+import { of } from 'rxjs';
+import { describe, expect, it, vi } from 'vitest';
 
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { ShoppingPage } from './shopping-page';
 describe('Integrated shopping list', () => {
   useMemoryStorage();
   it('shares stock once across plans and updates after imports without changing inventory', async () => {
-    const fixture = await renderComponent(ShoppingPage),
+    const catalog = {
+      getItems: vi.fn(() =>
+        of({
+          items: [
+            { id: 1, name: 'Sal', grade: 'white', icon: null },
+            { id: 5301, name: 'Reagente', grade: 'green', icon: null },
+          ],
+        }),
+      ),
+      resolveIconUrl: vi.fn(() => null),
+    };
+    const fixture = await renderComponent(ShoppingPage, {}, [
+        { provide: CatalogApiService, useValue: catalog },
+      ]),
       page = fixture.componentInstance;
     const plan = (id: string) =>
       personalPlanSchema.parse({
@@ -39,6 +54,12 @@ describe('Integrated shopping list', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('a[href="/scans"]')).toBeNull();
     expect(page.rows()[0]).toMatchObject({ required: 20, available: 12, missing: 8 });
+    expect(
+      fixture.nativeElement.querySelector('tbody app-item-icon')?.getAttribute('title'),
+    ).toContain('Sal');
+    expect(
+      fixture.nativeElement.querySelector('.shopping-plan app-item-icon')?.getAttribute('title'),
+    ).toContain('Produção');
     page.store.update((state) => ({
       ...state,
       inventory: state.inventory.map((row) => ({ ...row, quantity: 30 })),

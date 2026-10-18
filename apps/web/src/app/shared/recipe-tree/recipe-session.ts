@@ -6,7 +6,7 @@ export interface RecipeSession {
   root: RecipeNode;
   target: number;
   craftCount?: number;
-  view: 'graph' | 'tree' | 'list';
+  view: 'graph' | 'tree';
   excludedLocations: string[];
   methodTimes?: Record<string, number>;
   gatherEstimates?: Record<number, ProductionEstimate>;

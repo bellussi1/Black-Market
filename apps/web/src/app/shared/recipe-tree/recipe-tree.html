@@ -631,14 +631,6 @@
               >
                 Etapas expansíveis
               </button>
-              <button
-                type="button"
-                [attr.aria-pressed]="view() === 'list'"
-                (click)="view.set('list')"
-                i18n
-              >
-                Materiais consolidados
-              </button>
             </div>
 
             <div class="tree-expansion-controls">
@@ -674,98 +666,13 @@
               />
             </div>
 
-            @if (view() !== 'list') {
-              <div [class.mobile-tree]="view() === 'graph'">
-                <app-recipe-branch
-                  [node]="product"
-                  [allocations]="result.value?.allocations ?? []"
-                  (action)="action($event)"
-                />
-              </div>
-            }
-
-            @if (view() === 'list' && recipeGraph()) {
-              <section class="panel">
-                <h3 i18n>Materiais e origem escolhida</h3>
-                <div class="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th i18n>Material</th>
-                        <th i18n>Fazer / coletar</th>
-                        <th i18n>Necessário</th>
-                        <th i18n>Estoque usado</th>
-                        <th i18n>Comprar</th>
-                        <th i18n>Produzir / coletar</th>
-                        <th i18n>Valor comprado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (row of plannerMaterials(); track row.itemId) {
-                        <tr>
-                          <td>
-                            <button
-                              type="button"
-                              class="text-button"
-                              (click)="
-                                action({ path: allocationPath(row.itemId), action: 'source' })
-                              "
-                            >
-                              <app-item-icon
-                                [url]="
-                                  catalog.resolveIconUrl(
-                                    parts().get(row.itemId) ?? { itemId: row.itemId }
-                                  )
-                                "
-                                [name]="productionMaterialName(row.itemId)"
-                              />
-                              {{ productionMaterialName(row.itemId) }}
-                            </button>
-                          </td>
-                          <td>
-                            <label class="material-source-checkbox">
-                              <input
-                                type="checkbox"
-                                [checked]="materialSource(row.itemId) !== 'buy'"
-                                (change)="toggleMaterialSource(row.itemId)"
-                                [attr.aria-label]="
-                                  (materialSource(row.itemId) === 'buy'
-                                    ? 'Marcar fazer ou coletar: '
-                                    : 'Marcar comprar: ') + productionMaterialName(row.itemId)
-                                "
-                              />
-                              <span>{{ materialSourceLabel(row.itemId) }}</span>
-                            </label>
-                          </td>
-                          <td>{{ row.required.toLocaleString('pt-BR') }}</td>
-                          <td>{{ row.owned.toLocaleString('pt-BR') }}</td>
-                          <td>{{ row.bought.toLocaleString('pt-BR') }}</td>
-                          <td>
-                            {{ row.produced.toLocaleString('pt-BR') }}
-                            @if (row.substituted > 0) {
-                              <small class="material-substitution-note">
-                                + {{ row.substituted.toLocaleString('pt-BR') }} via procs raros
-                              </small>
-                            }
-                          </td>
-                          <td>{{ materialPurchaseValue(row.itemId, row.bought) }}</td>
-                        </tr>
-                      } @empty {
-                        <tr>
-                          <td colspan="7" i18n>Nenhum material disponível no cenário atual.</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-                <p class="help" i18n>
-                  A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque
-                  próprio é descontado e valorizado conforme as opções do cálculo.
-                </p>
-              </section>
-            } @else if (view() === 'list') {
-              <p i18n>Confira as estimativas e quantidades antes de gerar a lista consolidada.</p>
-            }
+            <div [class.mobile-tree]="view() === 'graph'">
+              <app-recipe-branch
+                [node]="product"
+                [allocations]="result.value?.allocations ?? []"
+                (action)="action($event)"
+              />
+            </div>
           </div>
         </div>
 

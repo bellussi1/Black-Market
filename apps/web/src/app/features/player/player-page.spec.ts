@@ -78,4 +78,27 @@ describe('Progressive player workspace', () => {
     page.store.setRegion('sa');
     expect(page.family().name).toBe('Família SA');
   });
+  it('renders BDO item icons for registered character complements', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    page.accessory('artifacts', {
+      id: 721001,
+      name: 'Artefato de Culinária',
+      description: null,
+      grade: 'blue',
+      weight: null,
+      category: null,
+      icon: null,
+      categories: [],
+    });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement
+        .querySelector('#character-complements app-item-icon')
+        ?.getAttribute('title'),
+    ).toContain('Artefato de Culinária');
+  });
 });

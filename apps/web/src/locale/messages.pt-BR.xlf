@@ -1174,7 +1174,7 @@
     <unit id="6346846833260924961">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:103,104</note>
-        <note category="location">src/app/features/recipes/recipes-page.html:151,152</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:134,135</note>
       </notes>
       <segment>
         <source>Produção por operação</source>
@@ -1471,7 +1471,6 @@
         <note category="location">src/app/features/crafting/crafting-page.html:382</note>
         <note category="location">src/app/features/crafting/crafting-page.html:609</note>
         <note category="location">src/app/features/storage/storage-page.html:584</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:694,695</note>
       </notes>
       <segment>
         <source>Material</source>
@@ -1480,7 +1479,6 @@
     <unit id="6162001305295829622">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:383</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:696,697</note>
       </notes>
       <segment>
         <source>Necessário</source>
@@ -1500,7 +1498,6 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:385</note>
         <note category="location">src/app/features/crafting/crafting-page.html:614</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:698,699</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1732,7 +1729,6 @@
     <unit id="2853504753899430284">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:611</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:697,698</note>
       </notes>
       <segment>
         <source>Estoque usado</source>
@@ -3568,7 +3564,7 @@
     <unit id="2243466991987287932">
       <notes>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:322</note>
-        <note category="location">src/app/features/recipes/recipes-page.html:191</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:174</note>
       </notes>
       <segment>
         <source>Atividade</source>
@@ -4701,7 +4697,7 @@
     </unit>
     <unit id="1550834545380959558">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:25,26</note>
+        <note category="location">src/app/features/plans/plans-page.html:33,34</note>
       </notes>
       <segment>
         <source>Quantidade necessária</source>
@@ -4709,7 +4705,7 @@
     </unit>
     <unit id="7414925192432873572">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:35,36</note>
+        <note category="location">src/app/features/plans/plans-page.html:43,44</note>
       </notes>
       <segment>
         <source> Remover material </source>
@@ -4717,7 +4713,7 @@
     </unit>
     <unit id="598735058800019321">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:40</note>
+        <note category="location">src/app/features/plans/plans-page.html:48</note>
       </notes>
       <segment>
         <source>Próxima tarefa</source>
@@ -4725,7 +4721,7 @@
     </unit>
     <unit id="6066598230564050835">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:42,43</note>
+        <note category="location">src/app/features/plans/plans-page.html:50,51</note>
       </notes>
       <segment>
         <source> Adicionar tarefa </source>
@@ -4733,7 +4729,7 @@
     </unit>
     <unit id="8571911312290901629">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:49,50</note>
+        <note category="location">src/app/features/plans/plans-page.html:57,58</note>
       </notes>
       <segment>
         <source> Salvar plano </source>
@@ -4741,7 +4737,7 @@
     </unit>
     <unit id="4977236730277802020">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:61,63</note>
+        <note category="location">src/app/features/plans/plans-page.html:69,71</note>
       </notes>
       <segment>
         <source> Retorno estimado: <ph id="0" equiv="INTERPOLATION" disp="{{ silver(plan.estimatedProfit) }}"/> · <ph id="1" equiv="INTERPOLATION_1" disp="{{ plan.minutes }}"/> minutos </source>
@@ -4749,7 +4745,7 @@
     </unit>
     <unit id="3841532948627285223">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:69,70</note>
+        <note category="location">src/app/features/plans/plans-page.html:83,84</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ material.quantity }}"/> necessários · <ph id="1" equiv="INTERPOLATION_1" disp="{{ stock(plan, material.itemId) }}"/> no armazém</source>
@@ -4757,7 +4753,7 @@
     </unit>
     <unit id="2332784393609439278">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:84,85</note>
+        <note category="location">src/app/features/plans/plans-page.html:98,99</note>
         <note category="location">src/app/features/stock/stock-page.html:183</note>
         <note category="location">src/app/features/world/worker-empire.html:182</note>
       </notes>
@@ -4767,7 +4763,7 @@
     </unit>
     <unit id="3624138170741667021">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:96</note>
+        <note category="location">src/app/features/plans/plans-page.html:110</note>
       </notes>
       <segment>
         <source> Reservar materiais </source>
@@ -4775,7 +4771,7 @@
     </unit>
     <unit id="2986024041520264297">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:108</note>
+        <note category="location">src/app/features/plans/plans-page.html:122</note>
       </notes>
       <segment>
         <source> Marcar concluído</source>
@@ -4783,7 +4779,7 @@
     </unit>
     <unit id="539171382193559214">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:117</note>
+        <note category="location">src/app/features/plans/plans-page.html:131</note>
       </notes>
       <segment>
         <source> Cancelar plano </source>
@@ -4791,7 +4787,7 @@
     </unit>
     <unit id="5033223961557556597">
       <notes>
-        <note category="location">src/app/features/plans/plans-page.html:125,126</note>
+        <note category="location">src/app/features/plans/plans-page.html:139,140</note>
       </notes>
       <segment>
         <source> Comece com um objetivo e alguns materiais, ou transforme uma recomendação em plano. </source>
@@ -4853,25 +4849,9 @@
         <source>Carregando o item e suas receitas…</source>
       </segment>
     </unit>
-    <unit id="6762228898087535508">
-      <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:113,114</note>
-      </notes>
-      <segment>
-        <source> Este produto já está aberto na oficina. Ajuste o lote, a maestria e os materiais para calcular a produção. </source>
-      </segment>
-    </unit>
-    <unit id="8790663657511234990">
-      <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:124,125</note>
-      </notes>
-      <segment>
-        <source> Calcular produção deste produto </source>
-      </segment>
-    </unit>
     <unit id="1797046512591361682">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:139,140</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:122,123</note>
       </notes>
       <segment>
         <source>Fórmula</source>
@@ -4879,7 +4859,7 @@
     </unit>
     <unit id="7118366348214061374">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:141,142</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:124,125</note>
       </notes>
       <segment>
         <source>Obter pronto / consultar fontes</source>
@@ -4887,7 +4867,7 @@
     </unit>
     <unit id="827879851811796075">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:166,167</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:149,150</note>
       </notes>
       <segment>
         <source> Não há receita vinculada a este item na extração disponível. Explore a descrição e as fontes conhecidas; não presumimos que a compra seja a única origem. </source>
@@ -4895,7 +4875,7 @@
     </unit>
     <unit id="5874191628634458689">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:181,182</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:164,165</note>
       </notes>
       <segment>
         <source>CATÁLOGO DE RECEITAS</source>
@@ -4903,7 +4883,7 @@
     </unit>
     <unit id="1838411717190152876">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:182,183</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:165,166</note>
       </notes>
       <segment>
         <source>Comece por uma receita</source>
@@ -4911,7 +4891,7 @@
     </unit>
     <unit id="3036658334864033998">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:184,185</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:167,168</note>
       </notes>
       <segment>
         <source> Explore receitas por profissão. Abra um produto para conferir suas origens e calcular lote, custos e materiais na mesma oficina. </source>
@@ -4919,7 +4899,7 @@
     </unit>
     <unit id="6199247641762842203">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:198,199</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:181,182</note>
       </notes>
       <segment>
         <source>Todas as profissões</source>
@@ -4927,7 +4907,7 @@
     </unit>
     <unit id="6867595305218044197">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:199,200</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:182,183</note>
         <note category="location">src/app/shared/game-labels.ts:3</note>
         <note category="location">src/app/shared/game-labels.ts:18</note>
       </notes>
@@ -4937,7 +4917,7 @@
     </unit>
     <unit id="7604374801877115377">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:200,201</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:183,184</note>
         <note category="location">src/app/shared/game-labels.ts:2</note>
         <note category="location">src/app/shared/game-labels.ts:19</note>
       </notes>
@@ -4947,7 +4927,7 @@
     </unit>
     <unit id="3316813935241157492">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:201,202</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:184,185</note>
         <note category="location">src/app/shared/game-labels.ts:20</note>
       </notes>
       <segment>
@@ -4956,7 +4936,7 @@
     </unit>
     <unit id="5216872758950039652">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:202,203</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:185,186</note>
       </notes>
       <segment>
         <source>Entrega imperial</source>
@@ -4964,7 +4944,7 @@
     </unit>
     <unit id="3639291516251714722">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:209,210</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:192,193</note>
       </notes>
       <segment>
         <source>Páginas de receitas</source>
@@ -4972,7 +4952,7 @@
     </unit>
     <unit id="4875107781438253519">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:220,221</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:203,204</note>
         <note category="location">src/app/features/scans/scans-page.html:760</note>
         <note category="location">src/app/features/storage/storage-page.html:209</note>
       </notes>
@@ -4982,7 +4962,7 @@
     </unit>
     <unit id="3215421619267642001">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:224</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:207</note>
       </notes>
       <segment>
         <source>Atualizando…</source>
@@ -4990,7 +4970,7 @@
     </unit>
     <unit id="7817664341345715654">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:226,227</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:209,210</note>
         <note category="location">src/app/features/stock/stock-page.html:253,254</note>
       </notes>
       <segment>
@@ -4999,7 +4979,7 @@
     </unit>
     <unit id="8860254213741197676">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:235,236</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:218,219</note>
         <note category="location">src/app/features/reference/reference-page.html:164,165</note>
         <note category="location">src/app/features/stock/stock-page.html:261,262</note>
         <note category="location">src/app/features/storage/storage-page.html:225</note>
@@ -5010,7 +4990,7 @@
     </unit>
     <unit id="3398645668965569799">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:256</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:239</note>
       </notes>
       <segment>
         <source> Nenhuma receita nesta atividade. Ajuste o filtro ou busque um produto ou material. </source>
@@ -5018,7 +4998,7 @@
     </unit>
     <unit id="7093266291974610674">
       <notes>
-        <note category="location">src/app/features/recipes/recipes-page.html:279,280</note>
+        <note category="location">src/app/features/recipes/recipes-page.html:262,263</note>
       </notes>
       <segment>
         <source>Fonte e versão do catálogo · <ph id="0" equiv="INTERPOLATION" disp="{{ data.region.toUpperCase() }}"/></source>
@@ -11958,17 +11938,9 @@
         <source> Etapas expansíveis </source>
       </segment>
     </unit>
-    <unit id="8239824440455457553">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:640</note>
-      </notes>
-      <segment>
-        <source> Materiais consolidados </source>
-      </segment>
-    </unit>
     <unit id="5764736619878600212">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:646</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:638</note>
       </notes>
       <segment>
         <source> Expandir todos </source>
@@ -11976,7 +11948,7 @@
     </unit>
     <unit id="2016013543679738291">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:648,649</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:640,641</note>
       </notes>
       <segment>
         <source>Recolher todos</source>
@@ -11984,66 +11956,10 @@
     </unit>
     <unit id="6761593809530292978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:650,651</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:642,643</note>
       </notes>
       <segment>
         <source>Interromper expansão</source>
-      </segment>
-    </unit>
-    <unit id="7714613758727508668">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:689,690</note>
-      </notes>
-      <segment>
-        <source>Materiais e origem escolhida</source>
-      </segment>
-    </unit>
-    <unit id="5345999946284409583">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:695,696</note>
-      </notes>
-      <segment>
-        <source>Fazer / coletar</source>
-      </segment>
-    </unit>
-    <unit id="4691189097375946424">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:699,700</note>
-      </notes>
-      <segment>
-        <source>Produzir / coletar</source>
-      </segment>
-    </unit>
-    <unit id="1669167189510461266">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:700,701</note>
-      </notes>
-      <segment>
-        <source>Valor comprado</source>
-      </segment>
-    </unit>
-    <unit id="3401818050644490501">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:755,756</note>
-      </notes>
-      <segment>
-        <source>Nenhum material disponível no cenário atual.</source>
-      </segment>
-    </unit>
-    <unit id="4074480377800209581">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:762,763</note>
-      </notes>
-      <segment>
-        <source> A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque próprio é descontado e valorizado conforme as opções do cálculo. </source>
-      </segment>
-    </unit>
-    <unit id="8977059576442042320">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:767,768</note>
-      </notes>
-      <segment>
-        <source>Confira as estimativas e quantidades antes de gerar a lista consolidada.</source>
       </segment>
     </unit>
     <unit id="3803192353703347339">

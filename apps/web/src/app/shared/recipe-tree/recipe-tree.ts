@@ -928,7 +928,7 @@ export class RecipeTree {
       })),
     };
   });
-  readonly view = signal<'graph' | 'tree' | 'list'>('graph');
+  readonly view = signal<'graph' | 'tree'>('graph');
   readonly selectedPath = signal('root');
   readonly graph = viewChild(RecipeGraph);
   readonly optimizationDialog = viewChild<ElementRef<HTMLDialogElement>>('optimizationDialog');

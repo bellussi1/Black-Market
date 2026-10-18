@@ -1,24 +1,38 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { PersonalPlan } from '@bdo/calculators';
 import { availableInventory } from '@bdo/calculators';
+import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
+import { catchError, EMPTY } from 'rxjs';
 
+import { CatalogApiService } from '../../core/catalog-api.service';
 import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
+import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 
 @Component({
   selector: 'app-shopping-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, RouterLink, TutorialSurfaceDirective],
+  imports: [HlmCard, HlmButton, RouterLink, ItemIcon, TutorialSurfaceDirective],
   templateUrl: './shopping-page.html',
 })
 export class ShoppingPage {
   readonly store = inject(WorkspaceStore);
   readonly identity = inject(IdentityService);
+  readonly catalog = inject(CatalogApiService);
+  readonly items = signal(new Map<number, CatalogItem>());
   readonly message = signal('');
   readonly page = signal(0);
   readonly pageSize = 48;
@@ -75,6 +89,39 @@ export class ShoppingPage {
   readonly visibleRows = computed(() =>
     this.rows().slice(this.page() * this.pageSize, (this.page() + 1) * this.pageSize),
   );
+  private catalogRegion = '';
+  constructor() {
+    effect((cleanup) => {
+      const region = this.store.data().region;
+      if (region !== this.catalogRegion) {
+        this.catalogRegion = region;
+        this.items.set(new Map());
+      }
+      const ids = [
+        ...new Set([
+          ...this.visibleRows().map((row) => row.itemId),
+          ...this.plans()
+            .map((plan) => plan.sourceItemId)
+            .filter((id): id is number => Boolean(id)),
+        ]),
+      ];
+      if (!ids.length) return;
+      const current = untracked(() => this.items());
+      const missingIds = ids.filter((id) => !current.has(id));
+      if (!missingIds.length) return;
+      const sub = this.catalog
+        .getItems({ ids: missingIds.slice(0, 100), page: 1, pageSize: 100 })
+        .pipe(catchError(() => EMPTY))
+        .subscribe((result) => {
+          this.items.update((prev) => {
+            const next = new Map(prev);
+            for (const item of result.items) next.set(item.id, item);
+            return next;
+          });
+        });
+      cleanup(() => sub.unsubscribe());
+    });
+  }
   private removed: PersonalPlan | null = null;
   remove(plan: PersonalPlan) {
     if (
