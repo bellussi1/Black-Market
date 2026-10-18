@@ -27,7 +27,12 @@
     >
     <app-item-icon [url]="catalog.resolveIconUrl(node().part)" [name]="node().part.name" />
     <span class="step-identity">
-      <strong>{{ node().part.name }}</strong>
+      <span class="step-title-row">
+        <strong>{{ node().part.name }}</strong>
+        <span class="step-action-badge" [attr.data-kind]="stepActionKind()">
+          {{ stepActionLabel() }}
+        </span>
+      </span>
       <span class="step-hint">
         @if (node().loading) {
           <span class="step-hint-loading">
@@ -47,8 +52,11 @@
     </span>
     @if (allocation(); as row) {
       <span class="step-quantity" [id]="'step-count-' + node().path"
-        ><small>Necessário</small><strong>{{ row.required }}</strong></span
-      >
+        ><small>Necessário</small><strong>{{ row.required }}</strong>
+        @if (row.fromStock + row.fromSurplus > 0) {
+          <small class="step-stock-used">Estoque: {{ row.fromStock + row.fromSurplus }}</small>
+        }
+      </span>
       <span
         class="step-stock"
         [id]="'step-stock-' + node().path"

@@ -2624,3 +2624,51 @@ it('explains limited optimization with recipe names and unique item-specific iss
   expect(preview.querySelector('.preview-coverage')?.textContent).toContain('10000');
   fixture.destroy();
 });
+
+it('displays step action badge, required quantity, stock used, and missing status in expandable steps', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 5301: '1000', 9001: '100' });
+  tree.store.update((workspace) => ({
+    ...workspace,
+    inventory: [
+      {
+        id: 'stock-9001',
+        itemId: 9001,
+        name: 'Sal',
+        quantity: 6,
+        target: 0,
+        price: '0',
+        location: 'Velia',
+        kind: 'storage',
+        region: 'sa',
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+  }));
+  tree.setCraftCount(10);
+  tree.view.set('tree');
+  fixture.detectChanges();
+
+  const branches = [
+    ...fixture.nativeElement.querySelectorAll('app-recipe-branch'),
+  ] as HTMLElement[];
+  expect(branches.length).toBeGreaterThanOrEqual(2);
+
+  const rootBadge = branches[0]?.querySelector('.step-action-badge');
+  expect(rootBadge?.textContent?.trim()).toBe('Alquimia');
+  expect(rootBadge?.getAttribute('data-kind')).toBe('produce');
+
+  const childBranch = branches[1]!;
+  const childBadge = childBranch.querySelector('.step-action-badge');
+  expect(childBadge?.textContent?.trim()).toBe('Obter pronto');
+  expect(childBadge?.getAttribute('data-kind')).toBe('acquire');
+  expect(childBranch.querySelector('.step-quantity strong')?.textContent?.trim()).toBe('20');
+  expect(childBranch.querySelector('.step-stock-used')?.textContent?.trim()).toBe('Estoque: 6');
+  expect(childBranch.querySelector('.step-stock')?.textContent?.trim()).toBe('Faltam 14');
+  fixture.destroy();
+});

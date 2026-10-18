@@ -11185,7 +11185,7 @@
     </unit>
     <unit id="740486470890843312">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:35,36</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:40,41</note>
       </notes>
       <segment>
         <source>Buscando receita…</source>
@@ -11193,7 +11193,7 @@
     </unit>
     <unit id="4436841969464801105">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:44</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:49</note>
       </notes>
       <segment>
         <source>Ver como obter</source>

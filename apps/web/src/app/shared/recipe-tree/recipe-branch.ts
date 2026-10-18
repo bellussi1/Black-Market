@@ -78,6 +78,19 @@ export class RecipeBranch {
     if (batch) this.emit('choose', batch.recipe.key);
   }
   readonly allocation = computed(() => this.allocations().find((a) => a.path === this.node().path));
+  readonly stepActionKind = computed<'produce' | 'acquire' | 'choose'>(() => {
+    const node = this.node();
+    if (node.recipe) return 'produce';
+    if (this.methods().length > 1) return 'choose';
+    return 'acquire';
+  });
+  readonly stepActionLabel = computed(() => {
+    const node = this.node();
+    if (node.recipe) return this.typeLabel(node.recipe.type);
+    if (this.methods().length > 1) return 'Escolher método';
+    if (node.acquisition?.label) return node.acquisition.label;
+    return 'Comprar ou estoque';
+  });
   emit(action: BranchAction['action'], value?: BranchAction['value']) {
     this.action.emit({ path: this.node().path, action, value });
   }
