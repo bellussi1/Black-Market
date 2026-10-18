@@ -1,6 +1,21 @@
 :host {
   display: block;
 }
+.item-additional-facts {
+  align-self: start;
+  min-width: 0;
+}
+.item-additional-facts summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.item-additional-facts summary:focus-visible {
+  outline: 2px solid var(--bm-accent);
+  outline-offset: 3px;
+}
 
 .item-detail-loading-skeleton {
   display: grid;

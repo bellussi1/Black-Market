@@ -158,7 +158,10 @@
     border: 1px solid var(--bm-border);
     border-radius: 2px;
     cursor: pointer;
-    transition: all 120ms ease;
+    transition:
+      color var(--bm-motion-fast) ease,
+      background-color var(--bm-motion-fast) ease,
+      border-color var(--bm-motion-fast) ease;
 
     &:hover {
       color: var(--bm-text);

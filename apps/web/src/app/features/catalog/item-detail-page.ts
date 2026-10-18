@@ -13,13 +13,14 @@ import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
 import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
+import { ItemDossier } from '../../shared/item-dossier/item-dossier';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { referenceFields } from '../reference/reference-fields';
 
 @Component({
   selector: 'app-item-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, RouterLink, ItemIcon],
+  imports: [HlmCard, HlmButton, RouterLink, ItemIcon, ItemDossier],
   templateUrl: './item-detail-page.html',
   styleUrl: './item-detail-page.scss',
 })

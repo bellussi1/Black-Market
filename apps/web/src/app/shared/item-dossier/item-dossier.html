@@ -1,0 +1,69 @@
+<article class="item-dossier" [attr.data-grade]="item()?.grade" [attr.aria-busy]="loading()">
+  <p class="dossier-kicker" i18n>CATÁLOGO DO JOGO</p>
+  <header>
+    <app-item-icon
+      [url]="iconUrl() || item()?.iconUrl || null"
+      [name]="item()?.name || fallbackName()"
+      [grade]="item()?.grade ?? null"
+    />
+    <div>
+      <h3>{{ item()?.name || fallbackName() }}</h3>
+      @if (enhancement()) {
+        <span class="enhancement-label">{{ enhancement() }}</span>
+      }
+    </div>
+  </header>
+  <dl class="dossier-facts">
+    @if (item()?.categories?.[0]?.name || item()?.category) {
+      <div>
+        <dt i18n>Categoria</dt>
+        <dd>{{ item()?.categories?.[0]?.name || item()?.category }}</dd>
+      </div>
+    }
+    @if (weight() !== null) {
+      <div>
+        <dt i18n>Peso</dt>
+        <dd>{{ weight() }} LT</dd>
+      </div>
+    }
+    @if (item()?.id || itemId()) {
+      <div>
+        <dt i18n>Item</dt>
+        <dd>#{{ item()?.id || itemId() }}</dd>
+      </div>
+    }
+  </dl>
+  <div class="dossier-description">
+    <h4 i18n>Descrição e efeitos informados</h4>
+    @if (loading()) {
+      <div class="dossier-loading" role="status">
+        <p i18n>Carregando descrição do catálogo…</p>
+        <div class="dossier-skeleton" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    } @else {
+      @for (line of lines(); track $index) {
+        <p
+          [class.paragraph-break]="line.breakBefore"
+          [class.description-bullet]="line.bullet"
+          [class.description-note]="line.note"
+        >
+          @for (part of line.parts; track $index) {
+            <span [class]="'copy-' + part.tone">{{ part.text }}</span>
+          }
+        </p>
+      } @empty {
+        <p class="dossier-empty" i18n>
+          Descrição não disponível no catálogo. O nome informado foi preservado.
+        </p>
+      }
+    }
+  </div>
+  <footer>
+    <small i18n>Texto do catálogo. Os efeitos não são somados automaticamente à ficha.</small>
+    @if (showMarketLink() && (item()?.id || itemId())) {
+      <a [routerLink]="['/market/items', item()?.id || itemId()]" i18n>Ver item e mercado →</a>
+    }
+  </footer>
+</article>

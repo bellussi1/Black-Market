@@ -49,17 +49,9 @@
       >
     </div>
     <div class="item-detail-layout">
-      <section hlmCard class="panel item-description-panel">
-        <div class="panel-heading">
-          <h2 i18n>Descrição do jogo</h2>
-          <span class="badge" i18n>CATÁLOGO</span>
-        </div>
-        <p>
-          {{ plain(selected.description) || 'Este item não tem descrição no catálogo disponível.' }}
-        </p>
-      </section>
-      <section hlmCard class="panel">
-        <h2 i18n>Informações do item</h2>
+      <app-item-dossier [item]="selected" [iconUrl]="api.resolveIconUrl(selected)" />
+      <details class="panel item-additional-facts">
+        <summary i18n>Informações adicionais do catálogo</summary>
         <dl class="item-facts">
           @for (category of selected.categories; track category.id) {
             <dt i18n>Categoria</dt>
@@ -80,7 +72,7 @@
             </dd>
           }
         </dl>
-      </section>
+      </details>
     </div>
     @if (!screenshotMvp) {
       @for (

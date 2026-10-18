@@ -121,9 +121,12 @@
 
         <details>
           <summary i18n>Descrição informada pelo jogo</summary>
-          <p class="item-description">
-            {{ tree().plain(info.item?.description ?? null) || 'Descrição indisponível.' }}
-          </p>
+          <app-item-dossier
+            [item]="info.item ?? null"
+            [itemId]="info.node.part.itemId"
+            [fallbackName]="info.node.part.name"
+            [iconUrl]="tree().catalog.resolveIconUrl(info.item ?? info.node.part)"
+          />
         </details>
       </div>
 
