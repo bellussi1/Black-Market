@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { deriveRecipeMarketEquivalents } from './recipe-market-equivalents';
 
 describe('recipe market equivalents', () => {
-  it('derives a marketable dried-fish input from the catalog drying relation', () => {
+  it('does not treat a drying relation as a verified culinary substitution ratio', () => {
     const equivalents = deriveRecipeMarketEquivalents(
       [
         {
@@ -30,15 +30,7 @@ describe('recipe market equivalents', () => {
       ],
     );
 
-    expect(equivalents).toEqual([
-      {
-        sourceItemId: 8201,
-        itemId: 8501,
-        name: 'Gobião Desidratado',
-        iconUrl: '/market/gobiao.webp',
-        quantityRatio: 1,
-      },
-    ]);
+    expect(equivalents).toEqual([]);
   });
 
   it('does not infer equivalents from names, non-fish inputs, or nonmarketable outputs', () => {
