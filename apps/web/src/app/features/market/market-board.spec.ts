@@ -295,6 +295,7 @@ describe('MarketBoard', () => {
     const group = element.querySelector<HTMLElement>('.category-group')!;
     const toggle = group.querySelector<HTMLButtonElement>('.category-expand-toggle')!;
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(group.querySelectorAll('.category-children button')).toHaveLength(0);
 
     group.querySelector<HTMLButtonElement>('.category-filter-button')!.click();
     fixture.detectChanges();
@@ -631,6 +632,7 @@ describe('MarketBoard', () => {
     expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(
       'Materiais',
     );
+    board.toggleCategoryExpansion('materials');
     takeRequest().flush({ ...response(), categories: [], items: [], total: 0 });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.category-list')?.textContent).toContain(

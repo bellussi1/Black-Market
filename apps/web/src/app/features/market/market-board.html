@@ -95,18 +95,20 @@
               [id]="'category-children-' + entry.id"
               [hidden]="!isCategoryExpanded(entry.id)"
             >
-              @for (child of childrenOf(entry.id); track child.id) {
-                <button
-                  hlmBtn
-                  variant="outline"
-                  type="button"
-                  class="category-filter-button subcategory"
-                  [attr.data-category-id]="child.id"
-                  [attr.aria-pressed]="category() === child.id"
-                  (click)="filterCategory(child.id)"
-                >
-                  {{ child.name }}
-                </button>
+              @if (isCategoryExpanded(entry.id)) {
+                @for (child of childrenOf(entry.id); track child.id) {
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    type="button"
+                    class="category-filter-button subcategory"
+                    [attr.data-category-id]="child.id"
+                    [attr.aria-pressed]="category() === child.id"
+                    (click)="filterCategory(child.id)"
+                  >
+                    {{ child.name }}
+                  </button>
+                }
               }
             </div>
           </div>
