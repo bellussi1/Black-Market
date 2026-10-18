@@ -256,6 +256,14 @@ Na página 4 da listagem de Culinária, o item 9711 (“Comida Retirada”) apar
 
 O fix da receita e o fallback do tutorial são mudanças separadas. Próximo passo técnico: manter a taxonomia de subprodutos estruturada na próxima extração e fazer QA visual do tutorial. Crie commits de responsabilidade única com listas explícitas de arquivos, preserve o plano de fase 3 não rastreado e não faça push/deploy.
 
+### Fechamento do onboarding automático (18/10/2026)
+
+Tours automáticos cobrem as superfícies MVP já registradas; Configurações agora permite reiniciar apenas o progresso local dos tutoriais após confirmação, com cancelamento, foco restaurado e feedback de sucesso. A pesquisa competitiva e os limites estão em `docs/research/automated-onboarding-review-2026-10-18.md`.
+
+`pnpm check`, `pnpm test` (1.189 aprovados/1 ignorado), `pnpm build` e `pnpm test:ssr` passaram. O bundle inicial atual é 500,42 kB, 416 bytes acima do aviso de 500 kB; reduzir essa diferença sem alterar o budget. `/` e `/settings` passaram pela inspeção responsiva em 1440×900 e 390×844, mas `localhost:3000` recusou conexão e impediu validar login real e guia servido por API. Consultar `docs/ACTIVE_CONTEXT.md` §169.
+
+Commits de código: `a0974a4` (normalização mecânica de lint/imports) e `5e1d97c` (reiniciar progresso em Configurações); documentação será commit próprio. Preservar o plano visual 3 não rastreado; sem push/deploy.
+
 ### Atualização — rebuild e redução do shell (18/10/2026)
 
 O build serial completo, `pnpm check`, `pnpm test` (1.153 aprovados/1 ignorado) e `pnpm test:ssr` passaram em Node 24.21.0. O shell inicial caiu de 546,01 kB para 503,18 kB; transferência estimada 135,20 kB. Ainda excede o aviso de 500 kB em 3,18 kB, sem alteração do budget. Ver `docs/research/shell-bundle-deferral-review-2026-10-18.md`, checklist e `docs/ACTIVE_CONTEXT.md` §163.

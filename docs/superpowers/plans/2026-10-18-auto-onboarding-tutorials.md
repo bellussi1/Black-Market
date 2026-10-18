@@ -184,7 +184,7 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 
 **Files:**
 
-- Modify: `apps/web/src/app/features/settings/settings-page.html`, `.ts`, `.scss`, `.spec.ts`
+- Modify: `apps/web/src/app/features/settings/settings-page.html`, `.ts`, `.spec.ts`
 - Modify: `apps/web/src/app/core/tutorial-onboarding-state.service.spec.ts`
 - Create: `docs/research/automated-onboarding-review-2026-10-18.md`
 - Modify: `docs/research/README.md`
@@ -196,11 +196,11 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Consumes: `TutorialOnboardingStateService.resetAll()` da Task 3.
 - Produces: seção central Ajuda e tutoriais com ação para reiniciar o progresso das apresentações; após limpar, cada tour volta a iniciar quando sua superfície for visitada.
 
-- [ ] **Step 1: Escrever teste RED** — adicionar `it('resets onboarding only after confirmation and reports success')`, verificando que progresso de tutorial é limpo e backup/dados pessoais não mudam.
-- [ ] **Step 2: Confirmar RED** — executar `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/settings/settings-page.spec.ts"`.
-- [ ] **Step 3: Implementar seção central** — botão somente em Configurações; não colocar launcher em Home, Mercado, Receitas, Scan ou outras superfícies; repetir spec e confirmar GREEN.
-- [ ] **Step 4: Registrar pesquisa pública atual e limites** — distinguir observação direta, superfície inacessível e ausência não verificada; ligar fontes competitivas da especificação.
-- [ ] **Step 5: Atualizar checklist e handoff** — marcar TOUR como implementado apenas após gates; listar superfícies cobertas, testes e QA pendentes com precisão.
-- [ ] **Step 6: Rodar verificações sequenciais** — `pnpm check`, `pnpm test`, `pnpm build` e `pnpm test:ssr`; inspecionar `/` e `/settings`, 1440×900 e 390×844, no navegador autorizado. Se o localhost não estiver acessível, documentar o bloqueio sem contornar a política.
-- [ ] **Step 7: Confirmar diff e commits** — `git diff --check`, Prettier nos arquivos tocados, branch status; commits separados por tarefa, sem incluir o plano não rastreado preexistente.
-- [ ] **Step 8: Commit documental atômico** — `docs(tutorials): record automatic onboarding rollout`.
+- [x] **Step 1: Escrever teste RED** — adicionar `it('resets onboarding only after confirmation and reports success')`, verificando que progresso de tutorial é limpo e backup/dados pessoais não mudam.
+- [x] **Step 2: Confirmar RED** — o spec falhou pela ausência do botão `[data-action="reset-tutorials"]`, antes da implementação.
+- [x] **Step 3: Implementar seção central** — botão somente em Configurações; confirmação contextual, cancelamento, foco restaurado e sucesso; nenhum launcher por superfície.
+- [x] **Step 4: Registrar pesquisa pública atual e limites** — distinguir observação direta, superfície que não renderizou e ausência não verificada; fontes e data em `docs/research/automated-onboarding-review-2026-10-18.md`.
+- [x] **Step 5: Atualizar checklist e handoff** — registrar cobertura, confirmação de reset e QA pendente pela API local.
+- [x] **Step 6: Rodar verificações sequenciais** — `pnpm check`, `pnpm test` (1.189 aprovados/1 ignorado), `pnpm build` e `pnpm test:ssr` passaram. `/` e `/settings` foram inspecionados em 1440×900 e 390×844, sem overflow horizontal. O servidor `localhost:3000` recusou conexão, então a mensagem de erro/retentativa da Home foi validada, mas um guia servido pela API e o login real não carregaram. Bundle inicial 500,42 kB, 416 bytes acima do aviso de 500 kB.
+- [x] **Step 7: Confirmar diff e commits** — `git diff --check`, Prettier nos arquivos tocados e branch status conferidos; commits separados por tarefa, sem incluir o plano não rastreado preexistente.
+- [x] **Step 8: Commit documental atômico** — documentação consolidada em `docs(tutorials): record automatic onboarding rollout`.
