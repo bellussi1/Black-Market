@@ -54,6 +54,7 @@ import {
   stockMatches,
   type StockUpdateMode,
 } from './scan-consolidation';
+import { createScanImportUndo, type ScanImportUndo, undoScanImport } from './scan-import-undo';
 import { type DetectedScreenPane, selectGridCaptureKind } from './screen-recognition';
 import { isDefinitelyEmptySlot, isKnownLockedSlot } from './slot-visibility';
 import { detectStorageGrids, type GridDetection } from './storage-grid';
@@ -327,6 +328,35 @@ export class ScansPage implements OnDestroy {
   readonly busy = signal(false);
   readonly progress = signal('');
   readonly message = signal('');
+  private readonly lastImportUndo = signal<ScanImportUndo | null>(null);
+  readonly undoAvailable = computed(() => this.lastImportUndo() !== null);
+  readonly undoRegion = computed(() => this.lastImportUndo()?.region.toUpperCase() ?? '');
+  undoLastImport(): void {
+    const token = this.lastImportUndo();
+    if (!token || this.locked()) return;
+    try {
+      const saved = this.store.update((state) => undoScanImport(state, token));
+      if (!saved) {
+        this.message.set(
+          this.store.message() || 'Não foi possível desfazer. Seus dados foram mantidos.',
+        );
+        return;
+      }
+      this.lastImportUndo.set(null);
+      this.batchConfirmed.set(false);
+      this.message.set(
+        this.store.message()
+          ? 'Importação desfeita nesta sessão. O navegador não conseguiu gravar os dados: exporte um backup em Configurações.'
+          : 'Importação desfeita. Os dados anteriores foram restaurados; as demais alterações foram mantidas.',
+      );
+    } catch (error) {
+      this.message.set(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível desfazer. Seus dados foram mantidos.',
+      );
+    }
+  }
   width = 0;
   height = 0;
   bounds: Crop = { left: 0, top: 0, width: 1, height: 1 };
@@ -379,6 +409,8 @@ export class ScansPage implements OnDestroy {
     earring2: 'Brinco 2',
     tool: 'Ferramenta',
     clothes: 'Traje de profissão',
+    alchemyStone: 'Pedra alquímica',
+    tome: 'Tomo do aventureiro',
   };
   profileId = '';
   captureCharacterName = '';
@@ -1759,7 +1791,9 @@ export class ScansPage implements OnDestroy {
         );
       const region = this.readingRegion;
       const now = new Date().toISOString();
+      let beforeImport = this.store.data();
       const saved = this.store.update((state) => {
+        beforeImport = state;
         let inventory = [...state.inventory];
         const sameLocation = (row: (typeof inventory)[number], incoming: ReviewedOccurrence) =>
           row.region === region &&
@@ -1870,6 +1904,7 @@ export class ScansPage implements OnDestroy {
         };
       });
       if (saved) {
+        this.lastImportUndo.set(createScanImportUndo(beforeImport, this.store.data()));
         this.analytics.capture('journey_completed', {
           feature: 'scans',
           action: 'import',

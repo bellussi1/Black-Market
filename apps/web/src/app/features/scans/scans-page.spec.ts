@@ -1097,6 +1097,102 @@ describe('Screenshot entry', () => {
     expect(page.jobs()).not.toContain(first);
     expect(page.jobs().at(-1)!.file.name).toBe('new.png');
   });
+  it('undoes the last saved capture without losing unrelated edits and rejects later stock conflicts', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['undo'], 'undo.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const item = { id: 212, name: 'Corda', icon: null } as CatalogItem;
+    const job = page.jobs()[0];
+    job.cells = [
+      {
+        id: 0,
+        preview: '',
+        options: [item],
+        item,
+        quantity: '48',
+        quantityText: '48',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ];
+    job.status = 'ready';
+    page.cells.set(job.cells);
+    page.jobs.set([job]);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    // Store.update may restore/normalize its base before invoking the change.
+    // The undo snapshot must use that base, not the earlier store.data() read.
+    const restoredProfile = characterSchema.parse({
+      id: 'restored',
+      name: 'Restaurado',
+      region: 'sa',
+    });
+    const actualBase = { ...page.store.data(), characters: [restoredProfile] };
+    const update = page.store.update.bind(page.store);
+    const restoredBase = vi
+      .spyOn(page.store, 'update')
+      .mockImplementationOnce((change) => update(() => change(actualBase)));
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    restoredBase.mockRestore();
+    expect(page.store.data().inventory).toHaveLength(1);
+    expect(page.undoAvailable()).toBe(true);
+    fixture.detectChanges();
+    const action = fixture.nativeElement.querySelector('[data-undo-import]') as HTMLButtonElement;
+    expect(action.textContent).toContain('Desfazer última importação');
+    page.store.update((state) => ({ ...state, familySilver: '1234' }));
+    const failedWrite = vi.spyOn(page.store, 'update').mockReturnValueOnce(false);
+    action.click();
+    expect(page.undoAvailable()).toBe(true);
+    expect(page.store.data().inventory).toHaveLength(1);
+    failedWrite.mockRestore();
+    action.click();
+    fixture.detectChanges();
+    expect(page.store.data().inventory).toHaveLength(0);
+    expect(page.store.data().screenshotImports).toHaveLength(0);
+    expect(page.store.data().familySilver).toBe('1234');
+    expect(page.store.data().characters).toEqual([restoredProfile]);
+    expect(JSON.parse(localStorage.getItem('black-market.workspace.v1')!).inventory).toEqual([]);
+    expect(page.undoAvailable()).toBe(false);
+    expect(page.message()).toContain('desfeita');
+    page.undoLastImport();
+    expect(page.store.data().familySilver).toBe('1234');
+
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    page.store.update((state) => ({
+      ...state,
+      inventory: state.inventory.map((row) => ({ ...row, quantity: 99 })),
+    }));
+    page.undoLastImport();
+    expect(page.store.data().inventory[0].quantity).toBe(99);
+    expect(page.store.data().screenshotImports).toHaveLength(1);
+    expect(page.undoAvailable()).toBe(true);
+    expect(page.message()).toContain('alterados');
+    page.store.update((state) => ({
+      ...state,
+      inventory: state.inventory.map((row) => ({ ...row, quantity: 48 })),
+    }));
+    const quotaFailure = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('Quota');
+    });
+    page.undoLastImport();
+    expect(page.store.data().inventory).toEqual([]);
+    expect(page.undoAvailable()).toBe(false);
+    expect(page.message()).toContain('navegador');
+    expect(JSON.parse(localStorage.getItem('black-market.workspace.v1')!).inventory).toHaveLength(
+      1,
+    );
+    quotaFailure.mockRestore();
+  });
   it('requires review and duplicate decisions, persists provenance, and never erases unseen items on partial updates', async () => {
     images();
     const fixture = await renderComponent(ScansPage);

@@ -1,4 +1,26 @@
 <div class="tool-page guided-page">
+  @if (undoAvailable()) {
+    <section hlmCard class="panel" aria-labelledby="undo-import-title">
+      <div class="panel-heading">
+        <h2 id="undo-import-title" i18n>Última importação · {{ undoRegion() }}</h2>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          data-undo-import
+          (click)="undoLastImport()"
+          [disabled]="locked()"
+          i18n
+        >
+          Desfazer última importação
+        </button>
+      </div>
+      <p class="help" i18n>
+        Disponível enquanto esta tela estiver aberta, até salvar outro lote. Se os dados afetados
+        tiverem sido alterados depois, a reversão será bloqueada para preservar suas edições.
+      </p>
+    </section>
+  }
   @if (!jobs().length) {
     <header class="tool-heading">
       <p class="tool-kicker" i18n>SEUS DADOS, COM SUA REVISÃO</p>
