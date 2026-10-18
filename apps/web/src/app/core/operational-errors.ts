@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { featureOf } from './analytics.service';
+import { featureOf } from './feature-area';
 @Injectable({ providedIn: 'root' })
 export class OperationalErrors {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));

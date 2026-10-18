@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ErrorHandler,
+  inject,
+  Injector,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
-import { AnalyticsService } from './core/analytics.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,6 +18,16 @@ import { AnalyticsService } from './core/analytics.service';
 })
 export class App {
   constructor() {
-    inject(AnalyticsService).start();
+    const injector = inject(Injector);
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      void import('./core/analytics.service')
+        .then(({ AnalyticsService }) => {
+          if (!destroy.destroyed) injector.get(AnalyticsService).start();
+        })
+        .catch((error: unknown) => {
+          if (!destroy.destroyed) injector.get(ErrorHandler).handleError(error);
+        });
+    });
   }
 }

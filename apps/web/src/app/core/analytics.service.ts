@@ -8,7 +8,9 @@ import { isTutorialScreenKey, type TutorialScreenKey } from '@bdo/shared';
 import { filter, Subject, takeUntil } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { type Feature, featureOf } from './feature-area';
 import { PrivacyService } from './privacy.service';
+export { type Feature, featureOf } from './feature-area';
 export type AnalyticsEvent =
   | 'page_viewed'
   | 'item_detail_opened'
@@ -19,62 +21,11 @@ export type TutorialAnalyticsEvent =
   | 'tutorial_started'
   | 'tutorial_completed'
   | 'tutorial_dismissed';
-export type Feature =
-  | 'home'
-  | 'catalog'
-  | 'recipes'
-  | 'reference'
-  | 'market'
-  | 'crafting'
-  | 'enhancement'
-  | 'gear'
-  | 'lifeskills'
-  | 'storage'
-  | 'rng'
-  | 'buffs'
-  | 'settings'
-  | 'profile'
-  | 'plans'
-  | 'account'
-  | 'scans'
-  | 'world'
-  | 'recommendations'
-  | 'legal'
-  | 'other';
 export interface EventProperties {
   feature: Feature;
   action?: 'search' | 'save' | 'import' | 'calculate' | 'sync' | 'read_print';
   status?: 'success' | 'failed';
   result?: 'matches' | 'no_matches';
-}
-export function featureOf(url: string): Feature {
-  const path = url.split(/[?#]/)[0];
-  if (path === '/') return 'home';
-  if (path === '/family') return 'profile';
-  if (path.startsWith('/database/items')) return 'catalog';
-  if (['/termos', '/privacidade', '/cookies', '/contato'].includes(path)) return 'legal';
-  const area = path.split('/')[1];
-  return [
-    'recipes',
-    'reference',
-    'market',
-    'crafting',
-    'enhancement',
-    'gear',
-    'lifeskills',
-    'storage',
-    'rng',
-    'buffs',
-    'settings',
-    'profile',
-    'plans',
-    'account',
-    'scans',
-    'world',
-    'recommendations',
-  ].includes(area)
-    ? (area as Feature)
-    : 'other';
 }
 export function cleanProperties(value: EventProperties) {
   return {
