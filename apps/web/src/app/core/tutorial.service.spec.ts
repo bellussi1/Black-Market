@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from './analytics.service';
+import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 import { TUTORIAL_DRIVER_LOADER, TutorialService } from './tutorial.service';
 
 const guide = {
@@ -30,6 +31,7 @@ describe('TutorialService', () => {
   let launcher: HTMLButtonElement;
   let router: Subject<unknown>;
   let capture: ReturnType<typeof vi.fn>;
+  let markSeen: ReturnType<typeof vi.fn>;
   const fake = { drive: vi.fn(), destroy: vi.fn(), moveTo: vi.fn(), getActiveIndex: () => index };
   const factory = vi.fn((options: Config) => {
     config = options;
@@ -43,10 +45,15 @@ describe('TutorialService', () => {
     index = 0;
     router = new Subject();
     capture = vi.fn();
+    markSeen = vi.fn();
     TestBed.configureTestingModule({
       providers: [
         { provide: Router, useValue: { events: router } },
         { provide: AnalyticsService, useValue: { captureTutorial: capture } },
+        {
+          provide: TutorialOnboardingStateService,
+          useValue: { hasSeen: () => false, markSeen, resetAll: vi.fn() },
+        },
         { provide: TUTORIAL_DRIVER_LOADER, useValue: loader },
       ],
     });
@@ -84,7 +91,7 @@ describe('TutorialService', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
   });
-  it('does not import or construct Driver before a browser click', async () => {
+  it('loads Driver.js only in the browser', async () => {
     expect(loader).not.toHaveBeenCalled();
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -96,7 +103,7 @@ describe('TutorialService', () => {
       ],
     });
     service = TestBed.inject(TutorialService);
-    await service.startTour(guide, launcher);
+    await service.startTour(guide);
     expect(loader).not.toHaveBeenCalled();
   });
   it('renders hostile title and body with textContent only', async () => {
@@ -119,13 +126,25 @@ describe('TutorialService', () => {
       'tutorial_started',
       'tutorial_dismissed',
     ]);
+    expect(markSeen.mock.calls).toEqual([
+      ['market', guide.updatedAt, 'completed'],
+      ['market', guide.updatedAt, 'dismissed'],
+    ]);
   });
-  it('destroys the active tour on route navigation and restores connected focus', async () => {
+  it('destroys the active tour on route navigation without marking it seen', async () => {
     await service.startTour(guide, launcher);
     router.next(new NavigationStart(1, '/recipes'));
     expect(fake.destroy).toHaveBeenCalledOnce();
-    expect(document.activeElement).toBe(launcher);
+    expect(document.activeElement).not.toBe(launcher);
     expect(capture).toHaveBeenCalledOnce();
+    expect(markSeen).not.toHaveBeenCalled();
+  });
+  it('returns focus after explicit replay', async () => {
+    await service.startTour(guide, launcher);
+
+    service.destroyTour('completed');
+
+    expect(document.activeElement).toBe(launcher);
   });
   it('does not open an empty tour and announces that the guide needs an update', async () => {
     await expect(

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { resolveTutorialSteps } from './tutorial-anchor-resolver';
+import { hasVisibleTutorialTarget, resolveTutorialSteps } from './tutorial-anchor-resolver';
 
 describe('resolveTutorialSteps', () => {
   beforeEach(() => {
@@ -9,6 +9,32 @@ describe('resolveTutorialSteps', () => {
     ] as unknown as DOMRectList);
   });
   afterEach(() => vi.restoreAllMocks());
+  it('waits until a guide has a visible unique target or a general step', () => {
+    const target = document.createElement('div');
+    target.setAttribute('data-tour', 'market.search');
+    document.body.append(target);
+
+    try {
+      expect(
+        hasVisibleTutorialTarget(document, 'market', [
+          { sortOrder: 0, anchorKey: 'market.filters', title: 'Filtros', body: 'Texto' },
+          { sortOrder: 1, anchorKey: 'market.search', title: 'Busca', body: 'Texto' },
+        ]),
+      ).toBe(true);
+      expect(
+        hasVisibleTutorialTarget(document, 'market', [
+          { sortOrder: 0, anchorKey: 'market.filters', title: 'Filtros', body: 'Texto' },
+        ]),
+      ).toBe(false);
+      expect(
+        hasVisibleTutorialTarget(document, 'market', [
+          { sortOrder: 0, anchorKey: null, title: 'Visão geral', body: 'Texto' },
+        ]),
+      ).toBe(true);
+    } finally {
+      target.remove();
+    }
+  });
   it('omits targets without layout area', () => {
     const target = document.createElement('div');
     target.dataset['tour'] = 'market.search';

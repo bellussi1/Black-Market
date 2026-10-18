@@ -72,6 +72,18 @@ export function findUniqueVisibleTourTarget(
   return matchingVisible[0] ?? null;
 }
 
+export function hasVisibleTutorialTarget(
+  document: Document,
+  screenKey: TutorialScreenKey,
+  steps: readonly TutorialPublicStep[],
+): boolean {
+  return steps.some(
+    (step) =>
+      step.anchorKey === null ||
+      findUniqueVisibleTourTarget(document, screenKey, step.anchorKey) !== null,
+  );
+}
+
 export function resolveTutorialSteps(
   document: Document,
   screenKey: TutorialScreenKey,

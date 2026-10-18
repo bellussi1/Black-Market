@@ -6,6 +6,7 @@ import type { TutorialPublicGuide } from '@bdo/shared';
 import type { Config, Driver, PopoverDOM } from 'driver.js';
 
 import { AnalyticsService } from './analytics.service';
+import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
 import {
   findUniqueVisibleTourTarget,
   type ResolvedTutorialStep,
@@ -24,9 +25,10 @@ export class TutorialService {
   private readonly document = inject(DOCUMENT);
   private readonly loader = inject(TUTORIAL_DRIVER_LOADER);
   private readonly analytics = inject(AnalyticsService);
+  private readonly onboardingState = inject(TutorialOnboardingStateService);
   private readonly destroyRef = inject(DestroyRef);
   private driver: Driver | null = null;
-  private launcher: HTMLButtonElement | null = null;
+  private returnFocusTo: HTMLElement | null = null;
   private guide: TutorialPublicGuide | null = null;
   private steps: ResolvedTutorialStep[] = [];
   private generation = 0;
@@ -61,7 +63,10 @@ export class TutorialService {
       });
     this.destroyRef.onDestroy(() => this.destroyTour('navigation'));
   }
-  async startTour(guide: TutorialPublicGuide, launcher: HTMLButtonElement): Promise<string> {
+  async startTour(
+    guide: TutorialPublicGuide,
+    returnFocusTo: HTMLElement | null = null,
+  ): Promise<string> {
     if (!this.browser) return '';
     this.destroyTour('navigation');
     const generation = this.generation;
@@ -69,9 +74,9 @@ export class TutorialService {
     if (!resolved.steps.length)
       return $localize`Este tutorial precisa de atualização. Nenhuma etapa está disponível nesta tela.`;
     const { driver } = await this.loader();
-    if (generation !== this.generation || !launcher.isConnected) return '';
+    if (generation !== this.generation) return '';
     this.guide = guide;
-    this.launcher = launcher;
+    this.returnFocusTo = returnFocusTo;
     this.steps = resolved.steps;
     const reduced =
       this.document.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -121,22 +126,40 @@ export class TutorialService {
     ++this.generation;
     const driver = this.driver,
       guide = this.guide,
-      launcher = this.launcher;
+      returnFocusTo = this.returnFocusTo;
     this.driver = null;
     this.guide = null;
-    this.launcher = null;
+    this.returnFocusTo = null;
     this.steps = [];
     this.popover = null;
     this.moving = false;
     if (this.browser) this.document.removeEventListener('keydown', this.keydown, true);
     driver?.destroy();
-    if (guide && reason !== 'navigation')
+    if (guide && reason !== 'navigation') {
       this.analytics.captureTutorial(
         reason === 'completed' ? 'tutorial_completed' : 'tutorial_dismissed',
         guide.screenKey,
         guide.updatedAt,
       );
-    if (launcher?.isConnected) launcher.focus();
+      this.onboardingState.markSeen(guide.screenKey, guide.updatedAt, reason);
+    }
+    if (reason !== 'navigation' && returnFocusTo?.isConnected) this.restoreFocus(returnFocusTo);
+  }
+  private restoreFocus(target: HTMLElement): void {
+    const canReceiveFocus = target.matches(
+      'a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])',
+    );
+    if (!canReceiveFocus && !target.hasAttribute('tabindex')) {
+      target.setAttribute('tabindex', '-1');
+      target.addEventListener(
+        'blur',
+        () => {
+          if (target.getAttribute('tabindex') === '-1') target.removeAttribute('tabindex');
+        },
+        { once: true },
+      );
+    }
+    target.focus({ preventScroll: true });
   }
   private render(popover: PopoverDOM, index: number): void {
     const step = this.steps[index];
