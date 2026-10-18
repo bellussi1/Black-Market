@@ -47,3 +47,7 @@ O build de produção serial com `ng build --stats-json` ficou em **499,47 kB** 
 O teste focado do layout passou 15/15; `pnpm check`, build de produção, `pnpm test:ssr` e a suíte integral (1.154 aprovados/1 ignorado) passaram. Playwright CLI em 390×844 confirmou largura sem overflow e renderização de todos os ícones do menu. O detalhe do código está no commit `4366417` e ACTIVE_CONTEXT §165.
 
 **Próximo passo:** acompanhar o bundle em mudanças do shell e evitar regressão acima de 500 kB; não alterar o budget nem remover controles do MVP para atingir a meta.
+
+## Snapshot após alterações de SEO e aviso de independência — 18/10/2026
+
+Build Angular de produção serial com `ng build --stats-json`: bundle inicial **500,82 kB**, transferência estimada **135,16 kB**. O aviso de 500 kB permanece excedido por 819 bytes; o budget não foi alterado. O grafo segue concentrado no router Angular (85,72 kB do chunk principal), shell/layout (31,37 kB), registry Lucide (13,11 kB) e serviços compartilhados. Não foi removido controle nem recurso para forçar o limite. Locale `pt-BR`→`pt` e CommonJS do Tesseract permanecem avisos separados.
