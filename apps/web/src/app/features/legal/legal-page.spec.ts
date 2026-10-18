@@ -83,7 +83,7 @@ describe('legal navigation and privacy controls', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     const button = Array.from(element.querySelectorAll('button')).find((row) =>
-      row.textContent?.includes('Rejeitar'),
+      row.textContent?.includes('Recusar estatísticas'),
     )!;
     button.click();
     fixture.detectChanges();
@@ -99,7 +99,7 @@ describe('legal navigation and privacy controls', () => {
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event('change'));
     Array.from(element.querySelectorAll('button'))
-      .find((row) => row.textContent?.includes('Salvar escolhas'))!
+      .find((row) => row.textContent?.includes('Salvar escolha'))!
       .click();
     fixture.detectChanges();
     expect(privacy.allowsAnalytics()).toBe(true);

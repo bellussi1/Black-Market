@@ -18,23 +18,67 @@ import { PrivacyService } from '../../core/privacy.service';
     @if (privacy.open() || privacy.needsChoice()) {
       <section
         class="privacy-panel"
+        role="region"
         aria-labelledby="privacy-title"
         tabindex="-1"
         (keydown.escape)="close()"
       >
-        <h2 id="privacy-title" #title tabindex="-1" i18n>Sua privacidade</h2>
-        <p i18n>
-          Cookies necessários guardam sua região e escolha de privacidade. Estatísticas opcionais
-          usam um identificador aleatório em cookie próprio por até 180 dias, somente após seu
-          aceite. Registram áreas visitadas e etapas agregadas, sem dados da conta, armazém,
-          pesquisas, nomes ou IDs de itens ou imagens. Você pode mudar a escolha pelo rodapé.
+        @let choice = privacy.choices();
+        <h2 id="privacy-title" #title tabindex="-1" i18n>Preferências de privacidade</h2>
+        <p class="privacy-intro" i18n>
+          Você decide sobre as estatísticas opcionais. Os recursos necessários continuam ativos e
+          sua escolha pode ser alterada pelo rodapé a qualquer momento.
         </p>
-        <p><a routerLink="/cookies" i18n>Como usamos cookies e armazenamento</a></p>
+        <div
+          class="privacy-categories"
+          aria-label="Categorias de armazenamento e dados"
+          i18n-aria-label
+        >
+          <article class="privacy-category">
+            <div class="category-heading">
+              <h3 i18n>Armazenamento necessário</h3>
+              <span class="status-chip required" i18n>Sempre ativos</span>
+            </div>
+            <p i18n>
+              Guarda sua região e a escolha de privacidade para manter as preferências do site.
+            </p>
+          </article>
+          <article class="privacy-category">
+            <div class="category-heading">
+              <h3 i18n>Estatísticas de uso</h3>
+              @if (choice?.analytics === true && privacy.optionalAvailable()) {
+                <span class="status-chip enabled" role="status" i18n>Estatísticas permitidas</span>
+              } @else if (choice?.analytics === true) {
+                <span class="status-chip enabled" role="status" i18n>Autorização anterior</span>
+              } @else if (choice?.analytics === false) {
+                <span class="status-chip disabled" role="status" i18n>Estatísticas recusadas</span>
+              } @else {
+                <span class="status-chip disabled" role="status" i18n>Sem escolha ainda</span>
+              }
+            </div>
+            <p i18n>
+              Mede áreas visitadas e etapas agregadas para orientar melhorias. Não envia dados da
+              conta, armazém, pesquisas, nomes ou IDs de itens nem imagens. Só funciona depois do
+              aceite e quando o serviço está configurado.
+            </p>
+            @if (privacy.optionalAvailable() && choice?.analytics === true) {
+              <button type="button" class="btn revoke" (click)="privacy.save(false)" i18n>
+                Desativar estatísticas
+              </button>
+            }
+          </article>
+        </div>
+        <p class="privacy-link">
+          <a routerLink="/cookies" i18n>Detalhes sobre cookies e armazenamento</a>
+        </p>
         @if (privacy.optionalAvailable()) {
-          <p i18n>Necessários: sempre ativos para as funções que você usa.</p>
           <div class="action-row">
-            <button class="btn" (click)="privacy.save(true)" i18n>Aceitar estatísticas</button>
-            <button class="btn" (click)="privacy.save(false)" i18n>Rejeitar opcionais</button>
+            <button type="button" class="btn primary" (click)="privacy.save(true)" i18n>
+              Permitir estatísticas
+            </button>
+            <button type="button" class="btn" (click)="privacy.save(false)" i18n>
+              Recusar estatísticas
+            </button>
             <button class="btn subtle" (click)="personalize()" i18n>Personalizar</button>
             @if (privacy.open()) {
               <button type="button" class="btn subtle" (click)="close()" i18n>
@@ -43,26 +87,31 @@ import { PrivacyService } from '../../core/privacy.service';
             }
           </div>
           @if (customize) {
-            <p i18n>Necessários: sempre ativos para os recursos solicitados.</p>
-            <label class="check-row">
-              <input
-                type="checkbox"
-                [checked]="analytics"
-                (change)="analytics = $any($event.target).checked"
-              />
-              <span i18n>Estatísticas de uso opcionais</span>
-            </label>
-            <button type="button" class="btn" (click)="privacy.save(analytics)" i18n>
-              Salvar escolhas
-            </button>
+            <div class="customize-panel">
+              <label class="check-row">
+                <input
+                  type="checkbox"
+                  [checked]="analytics"
+                  (change)="analytics = $any($event.target).checked"
+                />
+                <span>
+                  <strong i18n>Permitir estatísticas opcionais</strong>
+                  <small i18n>Você pode desativar novamente nas preferências de privacidade.</small>
+                </span>
+              </label>
+              <button type="button" class="btn primary" (click)="privacy.save(analytics)" i18n>
+                Salvar escolha
+              </button>
+            </div>
           }
         } @else {
-          <p role="status" i18n>
-            Estatísticas opcionais estão indisponíveis. Nenhum evento de analytics será enviado.
+          <p class="availability-note" role="status" i18n>
+            Estatísticas de uso estão indisponíveis neste ambiente. Nenhum evento de estatísticas
+            será enviado, mesmo que você tenha autorizado anteriormente.
           </p>
-          @if (privacy.choices()?.analytics === true) {
+          @if (choice?.analytics === true) {
             <button type="button" class="btn" (click)="privacy.save(false)" i18n>
-              Revogar autorização anterior
+              Revogar escolha anterior
             </button>
           }
           @if (privacy.open()) {

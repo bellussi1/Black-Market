@@ -23,10 +23,43 @@ describe('privacy preference controls', () => {
     privacy.open.set(true);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Nenhum evento de analytics será enviado');
+    expect(element.textContent).toContain('Nenhum evento de estatísticas será enviado');
     expect(element.querySelector('button')).not.toBeNull();
     expect(element.textContent).not.toContain('Aceitar estatísticas');
     expect(element.textContent).not.toContain('Rejeitar opcionais');
+  });
+
+  it('shows essential storage as always active and analytics as off before a choice', async () => {
+    const fixture = await renderComponent(PrivacyControls);
+    const privacy = TestBed.inject(PrivacyService);
+    privacy.optionalAvailable.set(true);
+    privacy.open.set(true);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Sempre ativos');
+    expect(element.textContent).toContain('Sem escolha ainda');
+    expect(privacy.allowsAnalytics()).toBe(false);
+  });
+
+  it('shows an enabled choice and disables analytics with one direct action', async () => {
+    const fixture = await renderComponent(PrivacyControls);
+    const privacy = TestBed.inject(PrivacyService);
+    privacy.optionalAvailable.set(true);
+    privacy.save(true);
+    privacy.open.set(true);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Estatísticas permitidas');
+    const revoke = Array.from(element.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Desativar estatísticas'),
+    );
+    expect(revoke).toBeTruthy();
+    revoke!.click();
+
+    expect(privacy.allowsAnalytics()).toBe(false);
+    expect(JSON.parse(cookieValue(PRIVACY_COOKIE)!).analytics).toBe(false);
   });
 
   it('lets a user revoke an older choice while the optional service is unavailable', async () => {
@@ -36,6 +69,7 @@ describe('privacy preference controls', () => {
     privacy.open.set(true);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Autorização anterior');
     const revoke = Array.from(element.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('Revogar'),
     )!;
@@ -57,7 +91,7 @@ describe('privacy preference controls', () => {
       privacy.open.set(true);
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(document.activeElement?.textContent).toContain('Sua privacidade');
+      expect(document.activeElement?.textContent).toContain('Preferências de privacidade');
       host
         .querySelector('.privacy-panel')!
         .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
