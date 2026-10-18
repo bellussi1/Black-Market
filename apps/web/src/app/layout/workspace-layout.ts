@@ -1,4 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
+import type { ElementRef } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,6 +10,7 @@ import {
   Injector,
   PLATFORM_ID,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -41,7 +43,11 @@ import {
 import { filter } from 'rxjs';
 
 import { ADVERTISING } from '../core/advertising';
+import { isLoginRequiredPath } from '../core/auth.guard';
+import { safeInternalReturnUrl } from '../core/auth-return-url';
 import { IdentityService } from '../core/identity.service';
+import { LoginDialog } from '../core/login-dialog';
+import { LoginIntentService } from '../core/login-intent.service';
 import { visibleMarkets } from '../core/market-configuration';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../core/mvp-scope';
 import { RegionPreferences } from '../core/region-preferences';
@@ -78,6 +84,7 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
 
     PlatformFooter,
     CatalogItemPicker,
+    LoginDialog,
   ],
 
   providers: [
@@ -112,6 +119,32 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
 })
 export class WorkspaceLayout {
   readonly quickSearchOpen = signal(false);
+  private readonly searchTrigger = viewChild<ElementRef<HTMLButtonElement>>('searchTrigger');
+  private readonly menuTrigger = viewChild<ElementRef<HTMLButtonElement>>('menuTrigger');
+  private readonly mainContent = viewChild<ElementRef<HTMLElement>>('mainContent');
+  readonly skipHref = computed(() => {
+    const currentUrl = this.path();
+    const hashIndex = currentUrl.indexOf('#');
+    const urlWithoutFragment = hashIndex >= 0 ? currentUrl.slice(0, hashIndex) : currentUrl;
+    return `${urlWithoutFragment || '/'}#workspace-main`;
+  });
+
+  skipToContent(event: Event): void {
+    event.preventDefault();
+    const main = this.mainContent()?.nativeElement;
+    if (!main) return;
+    main.focus({ preventScroll: true });
+    main.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+  }
+
+  closeQuickSearch(): void {
+    this.quickSearchOpen.set(false);
+    this.searchTrigger()?.nativeElement.focus();
+  }
+  closeMobileNavigation(): void {
+    this.mobileNavOpen.set(false);
+    this.menuTrigger()?.nativeElement.focus();
+  }
   openItem(item: CatalogItem | null) {
     if (!item) return;
     this.quickSearchOpen.set(false);
@@ -133,8 +166,12 @@ export class WorkspaceLayout {
   private readonly router = inject(Router);
 
   readonly identity = inject(IdentityService);
+  protected readonly loginIntent = inject(LoginIntentService);
 
   private readonly path = signal(this.router.url);
+  readonly canShowPage = computed(
+    () => !isLoginRequiredPath(this.path()) || this.identity.authenticated(),
+  );
 
   readonly showAds = computed(
     () =>
@@ -150,6 +187,7 @@ export class WorkspaceLayout {
         '/family',
 
         '/plans',
+        '/lifeskills',
 
         '/account',
 
@@ -160,6 +198,17 @@ export class WorkspaceLayout {
   );
 
   constructor() {
+    effect(() => {
+      if (
+        this.browser &&
+        this.identity.ready() &&
+        !this.identity.authenticated() &&
+        isLoginRequiredPath(this.path())
+      ) {
+        this.loginIntent.request(this.path());
+        void this.router.navigateByUrl('/', { replaceUrl: true });
+      }
+    });
     effect(() => {
       if (
         !this.browser ||
@@ -184,6 +233,16 @@ export class WorkspaceLayout {
 
       .subscribe((event) => {
         this.path.set(event.urlAfterRedirects);
+
+        if (this.browser) {
+          const url = this.router.parseUrl(event.urlAfterRedirects);
+          const requested = safeInternalReturnUrl(url.queryParams['loginReturnUrl'] ?? null);
+          if (requested && url.root.children['primary'] === undefined) {
+            this.loginIntent.request(requested);
+            delete url.queryParams['loginReturnUrl'];
+            void this.router.navigateByUrl(url, { replaceUrl: true });
+          }
+        }
 
         this.mobileNavOpen.set(false);
         this.quickSearchOpen.set(false);
@@ -211,6 +270,12 @@ export class WorkspaceLayout {
         },
         { path: '/storage', label: 'Armazém', icon: 'lucideWarehouse', requiresAuth: true },
         {
+          path: '/lifeskills',
+          label: $localize`Profissões e rendimento`,
+          icon: 'lucidePickaxe',
+          requiresAuth: true,
+        },
+        {
           path: '/family',
           label: 'Família',
           icon: 'lucideUsersRound',
@@ -230,9 +295,8 @@ export class WorkspaceLayout {
         },
         {
           path: '/settings',
-          label: $localize`Dados e backup`,
+          label: $localize`Configurações e backup`,
           icon: 'lucideSettings',
-          requiresAuth: true,
         },
         { path: '/roadmap', label: 'Roadmap', icon: 'lucideMap' },
       ]
@@ -287,7 +351,12 @@ export class WorkspaceLayout {
           icon: 'lucideSparkles',
         },
 
-        { path: '/lifeskills', label: $localize`Profissões e rendimento`, icon: 'lucidePickaxe' },
+        {
+          path: '/lifeskills',
+          label: $localize`Profissões e rendimento`,
+          icon: 'lucidePickaxe',
+          requiresAuth: true,
+        },
 
         { path: '/buffs', label: $localize`Buffs e combinações`, icon: 'lucideFlaskConical' },
       ],
@@ -339,13 +408,10 @@ export class WorkspaceLayout {
       links: [
         { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
 
-        { path: '/account', label: $localize`Minha conta`, icon: 'lucideUserRound' },
-
         {
           path: '/settings',
-          label: $localize`Dados e backup`,
+          label: $localize`Configurações e backup`,
           icon: 'lucideSettings',
-          requiresAuth: true,
         },
 
         { path: '/roadmap', label: $localize`Roadmap`, icon: 'lucideMap' },

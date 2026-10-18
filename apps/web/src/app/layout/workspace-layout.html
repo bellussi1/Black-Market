@@ -1,4 +1,6 @@
-<a class="skip-link" href="#workspace-main"><ng-container i18n>Ir para o conteúdo</ng-container></a>
+<a class="skip-link" [href]="skipHref()" (click)="skipToContent($event)"
+  ><ng-container i18n>Ir para o conteúdo</ng-container></a
+>
 <div class="workspace">
   <aside class="sidebar">
     <div class="sidebar-top">
@@ -14,6 +16,8 @@
         ></a
       >
       <button
+        #menuTrigger
+        (keydown.escape)="closeMobileNavigation()"
         hlmBtn
         variant="outline"
         class="mobile-nav-toggle"
@@ -38,6 +42,8 @@
       }
     </p>
     <nav
+      (keydown.escape)="closeMobileNavigation()"
+      tabindex="-1"
       id="workspace-navigation"
       class="sidebar-nav"
       [class.mobile-open]="mobileNavOpen()"
@@ -104,6 +110,8 @@
       </nav>
       <div class="topbar-tools">
         <button
+          #searchTrigger
+          (keydown.escape)="closeQuickSearch()"
           hlmBtn
           variant="outline"
           class="global-search-toggle"
@@ -120,7 +128,7 @@
             store()?.activeCharacter()?.name ?? 'Meu espaço'
           }}</a>
         }
-        <a class="topbar-account" routerLink="/account" i18n>Conta</a>
+        <a class="topbar-account" routerLink="/settings" i18n>Configurações</a>
         <label for="market-region"
           ><ng-container i18n>Região do mercado</ng-container
           ><select
@@ -139,18 +147,21 @@
     @if (quickSearchOpen()) {
       <section
         id="global-item-search"
+        (keydown.escape)="closeQuickSearch()"
+        tabindex="-1"
         class="global-item-search"
         aria-label="Busca global"
         i18n-aria-label
       >
-        @defer {
+        @defer (when quickSearchOpen()) {
           <app-catalog-item-picker
             label="Buscar por nome ou ID"
             [compact]="true"
+            [focusOnOpen]="true"
             (selected)="openItem($event)"
           />
         }
-        <button hlmBtn variant="outline" type="button" (click)="quickSearchOpen.set(false)" i18n>
+        <button hlmBtn variant="outline" type="button" (click)="closeQuickSearch()" i18n>
           Fechar busca
         </button>
       </section>
@@ -179,8 +190,10 @@
       @if (showAds()) {
         <div class="ad-rail"><app-ad-slot format="rail" /></div>
       }
-      <main id="workspace-main" tabindex="-1">
-        <router-outlet />
+      <main #mainContent id="workspace-main" tabindex="-1">
+        @if (canShowPage()) {
+          <router-outlet />
+        }
         @if (showAds()) {
           <div class="ad-banner"><app-ad-slot /></div>
         }
@@ -193,3 +206,6 @@
     <app-privacy-controls />
   </div>
 </div>
+@defer (when loginIntent.opened()) {
+  <app-login-dialog />
+}

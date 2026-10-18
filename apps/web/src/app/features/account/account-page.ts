@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -9,37 +8,38 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AnalyticsService } from '../../core/analytics.service';
-import { AUTH_RETURN_URL_KEY, safeInternalReturnUrl } from '../../core/auth-return-url';
 import { IdentityService } from '../../core/identity.service';
+import { LoginFlowService } from '../../core/login-flow.service';
+import { LoginPanel } from '../../core/login-panel';
 import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 
 @Component({
   selector: 'app-account-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, FormsModule],
+  imports: [HlmCard, HlmButton, FormsModule, LoginPanel],
   templateUrl: './account-page.html',
   styleUrl: './account-page.scss',
 })
 export class AccountPage {
   private readonly analytics = inject(AnalyticsService);
   readonly identity = inject(IdentityService);
-  private readonly document = inject(DOCUMENT);
+  readonly login = inject(LoginFlowService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  readonly returnUrl = signal<string | null>(null);
+
+  readonly returnUrl = this.login.intent.returnUrl;
   readonly store = inject(WorkspaceStore);
   private readonly http = inject(HttpClient);
-  readonly loading = signal(false);
+  readonly loading = this.login.loading;
   readonly loadingSavedData = signal(false);
-  readonly message = signal('');
+  readonly message = this.login.message;
   readonly snapshot = signal<Workspace | null>(null);
   readonly cloudVersion = signal<number | null>(null);
   readonly updatedAt = signal('');
@@ -47,7 +47,6 @@ export class AccountPage {
   confirmUpload = false;
   confirmDelete = false;
   constructor() {
-    this.restoreReturnUrl();
     effect(() => {
       this.identity.userId();
       untracked(() => {
@@ -58,11 +57,7 @@ export class AccountPage {
         this.confirmDelete = false;
       });
     });
-    const callback = this.consumeSteamCallback();
-    void this.identity.initialize().then(
-      () => this.finishSteamCallback(callback),
-      () => this.message.set('Não foi possível consultar sua conta. Tente novamente mais tarde.'),
-    );
+    void this.login.initialize(this.route.snapshot.queryParamMap.get('returnUrl'));
   }
   private async perform(action: () => Promise<void>, trackSyncFailure = true) {
     if (this.loading()) return;
@@ -89,13 +84,10 @@ export class AccountPage {
     }
   }
   async google() {
-    await this.perform(async () => {
-      await this.identity.google();
-      await this.continueAfterLogin();
-    }, false);
+    await this.login.google();
   }
   async steam() {
-    await this.perform(() => this.identity.steam(), false);
+    await this.login.steam();
   }
   async linkGoogle() {
     await this.perform(async () => {
@@ -112,75 +104,8 @@ export class AccountPage {
       this.message.set('Você saiu da sua conta.');
     }, false);
   }
-  private restoreReturnUrl(): void {
-    const browser = this.document.defaultView;
-    const requested = this.route.snapshot.queryParamMap.get('returnUrl');
-    let destination = safeInternalReturnUrl(requested);
-
-    try {
-      if (requested === null && browser)
-        destination = safeInternalReturnUrl(browser.sessionStorage.getItem(AUTH_RETURN_URL_KEY));
-      if (browser) {
-        if (destination) browser.sessionStorage.setItem(AUTH_RETURN_URL_KEY, destination);
-        else browser.sessionStorage.removeItem(AUTH_RETURN_URL_KEY);
-      }
-    } catch {
-      destination = null;
-    }
-
-    this.returnUrl.set(destination);
-  }
-
-  private async continueAfterLogin(): Promise<void> {
-    const destination = this.returnUrl();
-    if (!destination) return;
-
-    try {
-      this.document.defaultView?.sessionStorage.removeItem(AUTH_RETURN_URL_KEY);
-    } catch {
-      // A browser privacy setting may block storage; the in-memory destination still works.
-    }
-    this.returnUrl.set(null);
-    await this.router.navigateByUrl(destination, { replaceUrl: true });
-  }
-  private consumeSteamCallback(): { kind: 'code'; code: string } | { kind: string } | null {
-    const browser = this.document.defaultView;
-    if (!browser) return null;
-    const hash = browser.location.hash;
-    if (!hash.startsWith('#steam-')) return null;
-
-    browser.history.replaceState(
-      browser.history.state,
-      '',
-      browser.location.pathname + browser.location.search,
-    );
-    const code = hash.match(/^#steam-code=([A-Za-z0-9_-]{43})$/)?.[1];
-    if (code) return { kind: 'code', code };
-    if (hash === '#steam-linked') return { kind: 'linked' };
-    if (hash === '#steam-conflict') return { kind: 'conflict' };
-    return { kind: 'error' };
-  }
-  private async finishSteamCallback(callback: { kind: string; code?: string } | null) {
-    if (!callback) return;
-    if (callback.kind === 'linked') {
-      this.message.set('Conta Steam vinculada.');
-      return;
-    }
-    if (callback.kind === 'conflict') {
-      this.message.set('Esta conta Steam já está vinculada a outro usuário.');
-      return;
-    }
-    if (callback.kind !== 'code' || !callback.code) {
-      this.message.set('Não foi possível confirmar o acesso Steam. Tente entrar novamente.');
-      return;
-    }
-    await this.perform(async () => {
-      await this.identity.exchangeSteamCode(callback.code!);
-      this.message.set('Login Steam concluído.');
-      await this.continueAfterLogin();
-    }, false);
-  }
   async load() {
+    if (!this.identity.authenticated()) return;
     this.loadingSavedData.set(true);
     try {
       await this.perform(async () => {
@@ -209,6 +134,7 @@ export class AccountPage {
     }
   }
   async upload() {
+    if (!this.identity.authenticated()) return;
     if (this.store.demoActive()) {
       this.message.set('Saia da demonstração para sincronizar seus dados pessoais.');
       return;
@@ -240,6 +166,7 @@ export class AccountPage {
     });
   }
   download() {
+    if (!this.identity.authenticated()) return;
     if (!this.confirmDownload || !this.snapshot()) return;
     if (this.store.replace(this.snapshot())) {
       this.confirmDownload = false;
@@ -247,6 +174,7 @@ export class AccountPage {
     }
   }
   async remove() {
+    if (!this.identity.authenticated()) return;
     if (!this.confirmDelete) return;
     await this.perform(async () => {
       const owner = this.identity.userId();

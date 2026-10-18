@@ -6,6 +6,9 @@ describe('safeInternalReturnUrl', () => {
   it('preserves an internal path, query, and fragment', () => {
     expect(safeInternalReturnUrl('/scans?tab=review#space-4')).toBe('/scans?tab=review#space-4');
     expect(safeInternalReturnUrl('/plans?tab=active#first')).toBe('/plans?tab=active#first');
+    expect(safeInternalReturnUrl('/lifeskills?tab=sessions#history')).toBe(
+      '/lifeskills?tab=sessions#history',
+    );
     expect(safeInternalReturnUrl('/settings#backup')).toBe('/settings#backup');
     expect(safeInternalReturnUrl('/family?tab=equipment#gear')).toBe('/family?tab=equipment#gear');
     expect(safeInternalReturnUrl('/shopping?tab=materials#missing')).toBe(

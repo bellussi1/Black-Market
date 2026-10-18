@@ -7,7 +7,7 @@ import {
   marketRouteResolver,
   recipesRouteResolver,
   recommendationsRouteResolver,
-} from './core/public-route-data';
+} from './core/public-route-resolvers';
 import { WorkspaceLayout } from './layout/workspace-layout';
 
 const personalRedirect =
@@ -25,6 +25,9 @@ const marketRedirect =
       queryParams,
       fragment: fragment ?? undefined,
     });
+
+const settingsRedirect: RedirectFunction = ({ queryParams, fragment }) =>
+  inject(Router).createUrlTree(['/settings'], { queryParams, fragment: fragment ?? undefined });
 
 export const routes: Routes = [
   {
@@ -154,6 +157,7 @@ export const routes: Routes = [
         path: 'roadmap/manage',
         title: $localize`Black Market · Editar Roadmap`,
         data: { private: true, noindex: true },
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/roadmap/roadmap-manage-page').then(
             (module) => module.RoadmapManagePage,
@@ -184,13 +188,8 @@ export const routes: Routes = [
 
       {
         path: 'account',
-
-        title: $localize`Black Market · Minha conta`,
-
-        data: { private: true },
-
-        loadComponent: () =>
-          import('./features/account/account-page').then((module) => module.AccountPage),
+        pathMatch: 'full' as const,
+        redirectTo: settingsRedirect,
       },
 
       {
@@ -296,7 +295,8 @@ export const routes: Routes = [
 
       {
         path: 'lifeskills',
-
+        data: { private: true },
+        canActivate: [authGuard],
         title: $localize`Black Market · Profissões`,
 
         loadComponent: () =>
@@ -336,11 +336,9 @@ export const routes: Routes = [
       {
         path: 'settings',
 
-        title: $localize`Black Market · Dados e backup`,
+        title: $localize`Black Market · Configurações e backup`,
 
         data: { private: true },
-        canActivate: [authGuard],
-
         loadComponent: () =>
           import('./features/settings/settings-page').then((m) => m.SettingsPage),
       },

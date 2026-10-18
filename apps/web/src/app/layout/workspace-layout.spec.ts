@@ -1,7 +1,10 @@
 import { signal } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { IdentityService } from '../core/identity.service';
+import { LoginIntentService } from '../core/login-intent.service';
 import { RegionPreferences } from '../core/region-preferences';
 import { WorkspaceStore } from '../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../testing/test-setup';
@@ -9,13 +12,156 @@ import { WorkspaceLayout } from './workspace-layout';
 
 describe('workspace navigation', () => {
   useMemoryStorage();
+  beforeEach(() => {
+    TestBed.configureTestingModule({ deferBlockBehavior: DeferBlockBehavior.Playthrough });
+  });
+  it('loads the login modal only on request and reopens the same instance', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      {
+        provide: IdentityService,
+        useValue: { ...identity(), enabled: signal(false), error: signal('') },
+      },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('app-login-dialog')).toBeNull();
+    const intent = TestBed.inject(LoginIntentService);
+    intent.request('/plans');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const modal = element.querySelector('app-login-dialog');
+    expect(modal).not.toBeNull();
+    intent.close();
+    fixture.detectChanges();
+    intent.request('/storage');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(element.querySelector('app-login-dialog')).toBe(modal);
+    expect(intent.returnUrl()).toBe('/storage');
+  });
+
+  it('consumes a public redirect intent, removes the URL parameter and cancels without navigation', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      {
+        provide: IdentityService,
+        useValue: { ...identity(), ready: signal(true), enabled: signal(false), error: signal('') },
+      },
+    ]);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?loginReturnUrl=%2Fplans%3Ftab%3Dactive%23first');
+    await fixture.whenStable();
+    const intent = TestBed.inject(LoginIntentService);
+    expect(router.url).toBe('/');
+    expect(intent.returnUrl()).toBe('/plans?tab=active#first');
+    expect(intent.opened()).toBe(true);
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await fixture.whenStable();
+    expect(intent.opened()).toBe(false);
+    expect(intent.returnUrl()).toBeNull();
+    expect(router.url).toBe('/');
+  });
 
   function identity(authenticated = false) {
     return {
       initialize: async () => undefined,
       authenticated: signal(authenticated),
+      ready: signal(true),
     };
   }
+
+  it('skips to the current page content without losing its URL or filters', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const router = TestBed.inject(Router);
+    router.resetConfig([{ path: 'recipes', children: [] }]);
+    await router.navigateByUrl('/recipes?q=Manos#details');
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const skip = element.querySelector<HTMLAnchorElement>('.skip-link')!;
+    expect(skip.getAttribute('href')).toBe('/recipes?q=Manos#workspace-main');
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    skip.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(element.querySelector('#workspace-main'));
+    expect(router.url).toBe('/recipes?q=Manos#details');
+  });
+
+  it('focuses the deferred global search and restores its trigger on Escape', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const element: HTMLElement = fixture.nativeElement;
+    const trigger = element.querySelector<HTMLButtonElement>('.global-search-toggle')!;
+    trigger.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const search = element.querySelector<HTMLInputElement>('#global-item-search input')!;
+    expect(search).not.toBeNull();
+    expect(document.activeElement).toBe(search);
+    search.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(element.querySelector('#global-item-search')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('closes mobile navigation on Escape and returns focus to Menu', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const element: HTMLElement = fixture.nativeElement;
+    const trigger = element.querySelector<HTMLButtonElement>('.mobile-nav-toggle')!;
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    document.activeElement!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('can cancel global search before its deferred picker is rendered', async () => {
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: identity() },
+    ]);
+    const element: HTMLElement = fixture.nativeElement;
+    const trigger = element.querySelector<HTMLButtonElement>('.global-search-toggle')!;
+    trigger.focus();
+    trigger.click();
+    document.activeElement!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.quickSearchOpen()).toBe(false);
+    expect(element.querySelector('#global-item-search')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('hides personal sessions immediately when authentication is lost and preserves login intent', async () => {
+    const session = { ...identity(true), enabled: signal(false), error: signal('') };
+    const fixture = await renderComponent(WorkspaceLayout, {}, [
+      { provide: IdentityService, useValue: session },
+    ]);
+    const router = TestBed.inject(Router);
+    router.resetConfig([
+      { path: 'lifeskills', children: [] },
+      { path: '', children: [] },
+    ]);
+    await router.navigateByUrl('/lifeskills?tab=sessions#history');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.canShowPage()).toBe(true);
+    session.authenticated.set(false);
+    expect(fixture.componentInstance.canShowPage()).toBe(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(router.url).toBe('/');
+    expect(TestBed.inject(LoginIntentService).returnUrl()).toBe('/lifeskills?tab=sessions#history');
+  });
 
   it('uses the supplied logo and preserves the separate wordmark', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
@@ -47,6 +193,7 @@ describe('workspace navigation', () => {
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
     expect(paths.filter((path) => path === '/shopping')).toHaveLength(1);
     expect(paths.filter((path) => path === '/plans')).toHaveLength(1);
+    expect(paths.filter((path) => path === '/lifeskills')).toHaveLength(1);
     expect(paths.filter((path) => path === '/settings')).toHaveLength(1);
     expect(paths.filter((path) => path === '/market')).toHaveLength(1);
     expect(paths.filter((path) => path === '/crafting')).toHaveLength(1);
@@ -57,7 +204,7 @@ describe('workspace navigation', () => {
     expect(nav.textContent).toContain('Armazém');
     expect(nav.textContent).toContain('Família');
     expect(nav.textContent).toContain('Meus planos');
-    expect(nav.textContent).toContain('Dados e backup');
+    expect(nav.textContent).toContain('Configurações e backup');
     expect(nav.textContent).toContain('Calcular produção');
     expect(nav.textContent).toContain('Roadmap');
   });
@@ -76,6 +223,7 @@ describe('workspace navigation', () => {
       '/family',
       '/shopping',
       '/plans',
+      '/lifeskills',
       '/settings',
     ])
       expect(links.filter((href) => href === path)).toHaveLength(1);

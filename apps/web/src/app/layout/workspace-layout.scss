@@ -1,6 +1,12 @@
 :host {
   display: block;
 }
+.topbar-account,
+.topbar-character {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 
 .workspace {
   display: grid;
@@ -653,8 +659,8 @@
 
   .mobile-nav-toggle {
     width: 44px;
-    height: 40px;
-    min-height: 40px;
+    height: 44px;
+    min-height: 44px;
     margin-left: auto;
     font-size: 0;
   }

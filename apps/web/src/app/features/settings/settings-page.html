@@ -1,7 +1,7 @@
 <div class="tool-page">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>10 / DADOS PESSOAIS</ng-container></p>
-    <h1><ng-container i18n>Seus dados, sob seu controle.</ng-container></h1>
+    <h1><ng-container i18n>Configurações e backup</ng-container></h1>
     <p>
       <ng-container i18n
         >Faça backup de cotações, materiais, receitas, sessões e presets. Tudo nesta área fica no
@@ -11,8 +11,9 @@
   </header>
   <div class="notice">
     <ng-container i18n
-      >Limpar os dados do navegador remove seus dados pessoais. Exporte periodicamente. Ainda não há
-      conta nem sincronização entre dispositivos; o backup permite transferir seus dados.
+      >Limpar os dados do navegador remove seus dados pessoais. Exporte periodicamente. O backup
+      local funciona sem login. A cópia opcional na conta permite transferir dados entre
+      dispositivos.
     </ng-container>
   </div>
   <section hlmCard class="panel">
@@ -132,4 +133,5 @@
       </ng-container>
     </p>
   </section>
+  <app-account-page />
 </div>

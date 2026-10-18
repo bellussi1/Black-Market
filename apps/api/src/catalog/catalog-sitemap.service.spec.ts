@@ -26,6 +26,7 @@ describe('Screenshot MVP public sitemap', () => {
       '/storage',
       '/account',
       '/family',
+      '/lifeskills',
       '/database/items',
     ])
       expect(xml).not.toContain(`<loc>https://example.com${path}`);

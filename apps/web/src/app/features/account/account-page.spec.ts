@@ -12,6 +12,8 @@ import { AccountPage } from './account-page';
 
 function createIdentity(overrides: Record<string, unknown> = {}) {
   return {
+    error: signal(''),
+    retry: vi.fn(async () => undefined),
     enabled: signal(true),
     googleEnabled: signal(true),
     steamEnabled: signal(true),
@@ -81,7 +83,9 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     const page = fixture.nativeElement as HTMLElement;
-    const labels = [...page.querySelectorAll('button')].map((button) => button.textContent?.trim());
+    const labels = [...page.querySelectorAll('button')].map(
+      (button) => button.getAttribute('aria-label') ?? button.textContent?.trim(),
+    );
     expect(labels).toContain('Entrar com Google');
     expect(labels).toContain('Entrar com Steam');
     expect(page.querySelector('input[type="email"]')).toBeNull();
@@ -110,7 +114,7 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
-      (candidate) => candidate.textContent?.includes('Entrar com Google'),
+      (candidate) => candidate.getAttribute('aria-label') === 'Entrar com Google',
     )!;
     button.click();
     fixture.detectChanges();
@@ -155,7 +159,7 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     const page = fixture.nativeElement as HTMLElement;
-    expect(page.querySelector('h2')?.textContent).toContain('AuroraVale');
+    expect(page.textContent).toContain('AuroraVale');
     expect(page.textContent).toContain('Sair da conta');
     expect(page.querySelector('input[type="email"]')).toBeNull();
   });
@@ -181,7 +185,7 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
-      (candidate) => candidate.textContent?.includes('Entrar com Google'),
+      (candidate) => candidate.getAttribute('aria-label') === 'Entrar com Google',
     );
     button?.click();
     await fixture.whenStable();
@@ -195,7 +199,50 @@ describe('AccountPage social sign-in', () => {
     await fixture.whenStable();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'O login social ainda não está configurado',
+      'A sincronização entre dispositivos ainda não está disponível',
+    );
+  });
+
+  it('shows a retryable network error without claiming missing provider configuration', async () => {
+    const identity = createIdentity({
+      enabled: signal(false),
+      error: signal('Não foi possível consultar o login.'),
+    });
+    const { fixture } = createPage(identity);
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.textContent).toContain('Não foi possível consultar');
+    expect(page.textContent).not.toContain('ainda não está disponível');
+    const retry = [...page.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Tentar novamente'),
+    )!;
+    retry.click();
+    await fixture.whenStable();
+    expect(identity.retry).toHaveBeenCalledOnce();
+  });
+
+  it('retains the safe route through a Steam callback and returns after exchange', async () => {
+    const { fixture, identity, router } = createPage(
+      createIdentity(),
+      '#steam-code=' + 'c'.repeat(43),
+      '/plans?tab=active#first',
+    );
+    await fixture.whenStable();
+    expect(identity.exchangeSteamCode).toHaveBeenCalledWith('c'.repeat(43));
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/plans?tab=active#first', {
+      replaceUrl: true,
+    });
+  });
+
+  it('does not expose cloud controls or send sync requests as a visitor', async () => {
+    const { fixture, identity } = createPage();
+    await fixture.whenStable();
+    await fixture.componentInstance.load();
+    await fixture.componentInstance.upload();
+    await fixture.componentInstance.remove();
+    expect(identity.token).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain(
+      'Consultar meus dados salvos',
     );
   });
 });

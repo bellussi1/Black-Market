@@ -164,8 +164,8 @@ try {
   for (const [path, title] of [
     ['/', 'BLACK MARKET'],
     ['/market', 'Mercado Central'],
-    ['/recipes', 'Oficina de produção'],
-    ['/crafting', 'Planeje uma receita.'],
+    ['/recipes', 'Explorar receitas e origens'],
+    ['/crafting', 'Calcular produção'],
     ['/recipes/items/5301', 'Reagente Líquido Limpo'],
     ['/market/items/5301', 'Reagente Líquido Limpo'],
     ['/contato', 'Contato'],
@@ -198,7 +198,9 @@ try {
     assert.match(html, /<main\b/);
     assert.ok(response.headers.has('content-security-policy'));
     if (path !== '/sobre') {
-      const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
+      const footer = html.match(
+        /<footer\b[^>]*class="[^"]*\bplatform-footer\b[^"]*"[^>]*>[\s\S]*?<\/footer>/,
+      )?.[0];
       assert.ok(footer, `Missing footer for ${path}`);
       for (const target of ['/termos', '/privacidade', '/cookies', '/contato']) {
         assert.ok(footer.includes(`href="${target}"`), `Missing legal footer link for ${path}`);
@@ -242,6 +244,10 @@ try {
   assert.equal(plans.status, 200);
   assert.equal(plans.headers.get('x-robots-tag'), 'noindex,nofollow');
   assert.equal(plans.headers.get('cache-control'), 'private,no-store');
+  const lifeskills = await request('/lifeskills');
+  assert.equal(lifeskills.status, 200);
+  assert.equal(lifeskills.headers.get('x-robots-tag'), 'noindex,nofollow');
+  assert.equal(lifeskills.headers.get('cache-control'), 'private,no-store');
 
   const unknown = await request('/not-a-real-page');
   assert.equal(unknown.status, 404);

@@ -7,10 +7,11 @@ import { MAX_BACKUP_BYTES } from '../../core/region-preferences';
 import { emptyWorkspace, type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
+import { AccountPage } from '../account/account-page';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-settings-page',
-  imports: [HlmCard, HlmButton, FormsModule],
+  imports: [HlmCard, HlmButton, FormsModule, AccountPage],
   templateUrl: './settings-page.html',
 })
 export class SettingsPage {

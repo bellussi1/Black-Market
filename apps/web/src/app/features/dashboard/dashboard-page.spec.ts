@@ -225,17 +225,17 @@ describe('DashboardPage', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('a[href="/recommendations"]')).toBeNull();
-    expect(element.querySelector('a[href="/family"]')).toBeNull();
+    expect(element.querySelector('a[href="/recommendations"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/family"]')).not.toBeNull();
 
     const focusCards = Array.from(element.querySelectorAll<HTMLElement>('.home-focus-card'));
     expect(focusCards).toHaveLength(2);
     const firstAction = focusCards[0]?.querySelector<HTMLAnchorElement>('.home-focus-actions a');
     const secondAction = focusCards[1]?.querySelector<HTMLAnchorElement>('.home-focus-actions a');
     expect(firstAction?.textContent?.trim()).toBe('Entrar para acessar');
-    expect(firstAction?.getAttribute('href')).toBe('/account?returnUrl=%2Frecommendations');
+    expect(firstAction?.getAttribute('href')).toBe('/recommendations');
     expect(secondAction?.textContent?.trim()).toBe('Entrar para acessar');
-    expect(secondAction?.getAttribute('href')).toBe('/account?returnUrl=%2Ffamily');
+    expect(secondAction?.getAttribute('href')).toBe('/family');
 
     authenticated.set(true);
     resolveInit();

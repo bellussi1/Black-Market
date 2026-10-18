@@ -1,18 +1,8 @@
 <div class="tool-page" [attr.aria-busy]="!identity.ready() || loading() ? 'true' : null">
   <header class="tool-heading">
-    <p class="tool-kicker" i18n>MINHA CONTA</p>
-    <h1 i18n>Seus planos, onde você estiver.</h1>
-    <p i18n>
-      Continue como visitante ou salve seus dados na conta para usar em outro dispositivo. Não
-      usamos a conta ou a senha do jogo.
-    </p>
+    <h2>Conta e sincronização</h2>
+    <p>A cópia da conta é opcional e separada do backup deste navegador.</p>
   </header>
-  @if (returnUrl() && identity.ready() && !identity.enabled()) {
-    <p class="error-box" role="alert" i18n>
-      O login social ainda não está configurado. Entre com Google ou Steam para continuar quando
-      estiver disponível.
-    </p>
-  }
   @if (message()) {
     <p class="notice" role="status">{{ message() }}</p>
   }
@@ -42,49 +32,8 @@
         </div>
       </div>
     </section>
-  } @else if (!identity.enabled()) {
-    <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
-      <h2 i18n>Continue como visitante</h2>
-      <p i18n>
-        A sincronização entre dispositivos ainda não está disponível. Você pode usar as ferramentas
-        e fazer backup dos seus dados neste navegador.
-      </p>
-    </section>
   } @else if (!identity.authenticated()) {
-    <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
-      <h2 i18n>Entre com sua conta social</h2>
-      <p i18n>
-        Use Google ou Steam. O Black Market não cria senha nem pede acesso à sua conta do jogo.
-      </p>
-      <div class="action-row" data-account-actions [attr.aria-busy]="loading() ? 'true' : null">
-        @if (identity.googleEnabled()) {
-          <button
-            hlmBtn
-            variant="outline"
-            class="btn"
-            type="button"
-            (click)="google()"
-            [disabled]="loading()"
-            i18n
-          >
-            Entrar com Google
-          </button>
-        }
-        @if (identity.steamEnabled()) {
-          <button
-            hlmBtn
-            variant="outline"
-            class="btn subtle"
-            type="button"
-            (click)="steam()"
-            [disabled]="loading()"
-            i18n
-          >
-            Entrar com Steam
-          </button>
-        }
-      </div>
-    </section>
+    <app-login-panel />
   } @else {
     <section hlmCard class="panel account-panel" animate.enter="account-panel-enter">
       <h2>{{ identity.displayName() || identity.email() || 'Conta Steam' }}</h2>

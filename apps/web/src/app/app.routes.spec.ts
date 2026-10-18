@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -7,12 +8,34 @@ import { describe, expect, it } from 'vitest';
 
 import { routes } from './app.routes';
 import { serverRoutes } from './app.routes.server';
+import { authGuard } from './core/auth.guard';
+import { IdentityService } from './core/identity.service';
 import { recommendationsRouteResolver } from './core/public-route-data';
 
 @Component({ template: '' })
 class RouteDestination {}
 
 describe('Unified personal workspace routes', () => {
+  it('serializes a direct protected URL into the public Home redirect for reload and SSR continuity', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: IdentityService,
+          useValue: { initialize: async () => undefined, authenticated: signal(false) },
+        },
+        provideRouter([
+          { path: 'plans', component: RouteDestination, canActivate: [authGuard] },
+          { path: '', component: RouteDestination },
+        ]),
+      ],
+    });
+    await RouterTestingHarness.create('/plans?tab=active#first');
+    const router = TestBed.inject(Router);
+    expect(router.parseUrl(router.url).queryParams['loginReturnUrl']).toBe(
+      '/plans?tab=active#first',
+    );
+    expect(router.url.split('?')[0]).toBe('/');
+  });
   it('keeps catalogue filters and detail IDs when opening the unified market', async () => {
     const catalogueRoutes = routes[0]
       .children!.filter((route) =>
@@ -27,6 +50,9 @@ describe('Unified personal workspace routes', () => {
               ...route,
               component: RouteDestination,
               loadComponent: undefined,
+              // This harness verifies redirect URLs; warming is covered by its
+              // resolver integration specs and must not issue real HTTP here.
+              resolve: undefined,
               canMatch: undefined,
               canActivate: undefined,
             },
@@ -74,15 +100,44 @@ describe('Unified personal workspace routes', () => {
       'scans/profile',
       'recommendations',
       'tutorials/manage',
+      'roadmap/manage',
       'storage',
       'family',
       'shopping',
       'plans',
-      'settings',
+      'lifeskills',
     ]);
     for (const route of routes[0].children ?? []) {
       expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
     }
+  });
+
+  it('keeps local settings public and preserves legacy Steam callbacks and return intent', async () => {
+    expect(
+      routes[0].children?.find((route) => route.path === 'settings')?.canActivate,
+    ).toBeUndefined();
+    const selected = routes[0]
+      .children!.filter((route) => ['account', 'settings'].includes(route.path!))
+      .map((route) =>
+        route.redirectTo
+          ? route
+          : {
+              ...route,
+              loadComponent: undefined,
+              component: RouteDestination,
+              canActivate: undefined,
+              canMatch: undefined,
+            },
+      );
+    TestBed.configureTestingModule({ providers: [provideRouter(selected)] });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/account?returnUrl=%2Fplans#steam-code=' + 'a'.repeat(43),
+      RouteDestination,
+    );
+    expect(TestBed.inject(Router).url).toBe(
+      '/settings?returnUrl=%2Fplans#steam-code=' + 'a'.repeat(43),
+    );
   });
 
   it('warms only the public production catalog after the private route guard', () => {
@@ -108,6 +163,7 @@ describe('Unified personal workspace routes', () => {
       'family',
       'shopping',
       'plans',
+      'lifeskills',
       'settings',
       'recommendations',
       'tutorials/manage',

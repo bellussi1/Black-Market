@@ -8,7 +8,10 @@ const AUTHENTICATED_PATHS = [
   '/family',
   '/shopping',
   '/plans',
+  '/lifeskills',
   '/settings',
+  '/tutorials/manage',
+  '/roadmap/manage',
 ];
 
 export function safeInternalReturnUrl(candidate: string | null): string | null {

@@ -58,6 +58,7 @@ export class IdentityService {
   readonly googleEnabled = signal(false);
   readonly steamEnabled = signal(false);
   readonly ready = signal(false);
+  readonly error = signal('');
   readonly authenticated = signal(false);
   readonly email = signal('');
   readonly displayName = signal('');
@@ -72,6 +73,7 @@ export class IdentityService {
     }
     if (this.initialized) return;
     if (this.pending) return this.pending;
+    this.ready.set(false);
     this.pending = this.load();
     try {
       await this.pending;
@@ -80,7 +82,15 @@ export class IdentityService {
     }
   }
 
+  async retry(): Promise<void> {
+    if (this.pending) return this.pending;
+    this.initialized = false;
+    this.ready.set(false);
+    return this.initialize();
+  }
+
   private async load(): Promise<void> {
+    this.error.set('');
     try {
       const config = await firstValueFrom(
         this.http.get<FirebaseWebConfig>(environment.apiBaseUrl + '/api/v1/identity/config'),
@@ -132,6 +142,11 @@ export class IdentityService {
       this.steamEnabled.set(config.steamEnabled);
       this.enabled.set(config.googleEnabled || config.steamEnabled);
       this.initialized = true;
+    } catch (error) {
+      this.error.set(
+        'Não foi possível consultar o login. Verifique sua conexão e tente novamente.',
+      );
+      throw error;
     } finally {
       this.ready.set(true);
     }

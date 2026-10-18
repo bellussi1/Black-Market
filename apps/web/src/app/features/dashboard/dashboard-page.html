@@ -97,17 +97,11 @@
                     }
                   } @else if (focus.requiresLoginToAccess) {
                     @if (focus.loginReturnUrl; as returnUrl) {
-                      <a
-                        hlmBtn
-                        variant="outline"
-                        class="btn subtle"
-                        routerLink="/account"
-                        [queryParams]="{ returnUrl }"
-                        i18n
+                      <a hlmBtn variant="outline" class="btn subtle" [routerLink]="returnUrl" i18n
                         >Entrar para acessar</a
                       >
                     } @else {
-                      <a hlmBtn variant="outline" class="btn subtle" routerLink="/account" i18n
+                      <a hlmBtn variant="outline" class="btn subtle" routerLink="/settings" i18n
                         >Entrar para acessar</a
                       >
                     }

@@ -25,13 +25,14 @@ describe('Screenshot MVP scope', () => {
       '/database/items/212',
       '/settings',
       '/plans',
+      '/lifeskills',
       '/account',
       '/privacidade',
     ])
       expect(isMvpPathEnabled(path)).toBe(true);
   });
   it('blocks direct access to suspended tools as well as navigation links', () => {
-    for (const path of ['/demo', '/world', '/lifeskills'])
+    for (const path of ['/demo', '/world', '/enhancement'])
       expect(isMvpPathEnabled(path)).toBe(false);
     const tree = { redirect: '/' };
     TestBed.configureTestingModule({

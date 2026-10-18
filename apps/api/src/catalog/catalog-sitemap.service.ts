@@ -94,7 +94,6 @@ export class CatalogSitemapService {
         '/market',
         '/crafting',
         '/enhancement',
-        '/lifeskills',
         '/rng',
         '/buffs',
         '/termos',

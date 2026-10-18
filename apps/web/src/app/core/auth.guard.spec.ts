@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { authGuard, isLoginRequiredPath } from './auth.guard';
 import { IdentityService } from './identity.service';
+import { LoginIntentService } from './login-intent.service';
 
 describe('authGuard', () => {
   it('recognizes every personal data destination that requires authentication', () => {
@@ -16,7 +17,8 @@ describe('authGuard', () => {
     expect(isLoginRequiredPath('/family?tab=equipment')).toBe(true);
     expect(isLoginRequiredPath('/shopping')).toBe(true);
     expect(isLoginRequiredPath('/plans')).toBe(true);
-    expect(isLoginRequiredPath('/settings')).toBe(true);
+    expect(isLoginRequiredPath('/lifeskills?tab=sessions')).toBe(true);
+    expect(isLoginRequiredPath('/settings')).toBe(false);
     expect(isLoginRequiredPath('/recipes')).toBe(false);
     expect(isLoginRequiredPath('/market')).toBe(false);
   });
@@ -25,14 +27,17 @@ describe('authGuard', () => {
     authenticated: boolean,
     url: string,
     initialize = vi.fn(async () => undefined),
+    navigated = false,
   ) {
-    const redirect = { destination: '/account' };
+    const redirect = { destination: '/' };
     const identity = { initialize, authenticated: vi.fn(() => authenticated) };
-    const router = { createUrlTree: vi.fn(() => redirect) };
+    const router = { createUrlTree: vi.fn(() => redirect), navigated };
+    const intent = { request: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         { provide: IdentityService, useValue: identity },
         { provide: Router, useValue: router },
+        { provide: LoginIntentService, useValue: intent },
       ],
     });
     return {
@@ -42,6 +47,7 @@ describe('authGuard', () => {
       identity,
       router,
       redirect,
+      intent,
     };
   }
 
@@ -54,13 +60,26 @@ describe('authGuard', () => {
     expect(attempt.router.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects visitors to the public account page with their requested route', async () => {
+  it('sends direct protected URLs to the public home with a login intent', async () => {
     const attempt = evaluate(false, '/scans?tab=review#space-4');
 
     await expect(attempt.result).resolves.toBe(attempt.redirect);
-    expect(attempt.router.createUrlTree).toHaveBeenCalledWith(['/account'], {
-      queryParams: { returnUrl: '/scans?tab=review#space-4' },
+    expect(attempt.router.createUrlTree).toHaveBeenCalledWith(['/'], {
+      queryParams: { loginReturnUrl: '/scans?tab=review#space-4' },
     });
+    expect(attempt.intent.request).toHaveBeenCalledWith('/scans?tab=review#space-4');
+  });
+
+  it('cancels internal navigation without losing the current page', async () => {
+    const attempt = evaluate(
+      false,
+      '/plans',
+      vi.fn(async () => undefined),
+      true,
+    );
+    await expect(attempt.result).resolves.toBe(false);
+    expect(attempt.intent.request).toHaveBeenCalledWith('/plans');
+    expect(attempt.router.createUrlTree).not.toHaveBeenCalled();
   });
 
   it('redirects safely if session initialization fails', async () => {

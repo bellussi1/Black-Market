@@ -150,6 +150,21 @@ describe('IdentityService', () => {
     expect(firebase.initializeApp).not.toHaveBeenCalled();
   });
 
+  it('exposes a recoverable configuration request error and clears it on retry', async () => {
+    const pending = service.initialize();
+    http.expectOne(environment.apiBaseUrl + '/api/v1/identity/config').flush('offline', {
+      status: 503,
+      statusText: 'Unavailable',
+    });
+    await expect(pending).rejects.toBeDefined();
+    expect(service.error()).toContain('consultar');
+    const retry = service.retry();
+    http.expectOne(environment.apiBaseUrl + '/api/v1/identity/config').flush({ enabled: false });
+    await retry;
+    expect(service.error()).toBe('');
+    expect(service.ready()).toBe(true);
+  });
+
   it('signs in with Google using Firebase popup authentication', async () => {
     await initialize();
     const user = makeUser('google-uid', 'google.com', 'player@example.com');
@@ -301,5 +316,25 @@ describe('IdentityService', () => {
       providers: ['google', 'steam'],
       canManageRoadmap: false,
     });
+  });
+});
+
+describe('IdentityService SSR', () => {
+  it('marks the public shell ready without loading Firebase or requesting identity configuration', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: PLATFORM_ID, useValue: 'server' },
+      ],
+    });
+    const service = TestBed.inject(IdentityService);
+    await service.initialize();
+    expect(service.ready()).toBe(true);
+    expect(service.authenticated()).toBe(false);
+    expect(service.error()).toBe('');
+    TestBed.inject(HttpTestingController).expectNone(
+      environment.apiBaseUrl + '/api/v1/identity/config',
+    );
   });
 });
