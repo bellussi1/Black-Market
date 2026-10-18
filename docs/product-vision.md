@@ -1,5 +1,7 @@
 # Black Market: plataforma brasileira de BDO
 
+> **Prioridade reiterada pelo usuário em 16/10/2026:** Life Skills primeiro. Recomendações, Mercado, Receitas e equipamento devem favorecer decisões de profissões. Combate é contexto secundário; não inferir que PA/PD ou um layout de gear justifica priorizar grind ou inventar rendimento de profissão.
+
 Direção definida em 7 de outubro de 2026. Este documento descreve o produto desejado e a ordem de implementação. Recursos planejados não devem aparecer como disponíveis na interface.
 
 ## Objetivo

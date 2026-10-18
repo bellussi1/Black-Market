@@ -6,7 +6,24 @@ Antes de desenhar ou alterar qualquer feature de produto, siga o [protocolo de a
 
 Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram consultadas páginas públicas e fontes de código/documentação acessíveis; não houve login, upload de prints, coleta de dados pessoais nem contorno de bloqueios.
 
+## Auditoria transversal atual — 16/10/2026
+
+- [Prompt refinado com os cinco chats](full-product-audit-prompt-2026-10-16.md).
+- [Auditoria de produto, UI, cálculos e desempenho](full-product-ui-calculation-performance-audit-2026-10-16.md): cobertura, 20 achados, pesquisa atual, medidas e sequência recomendada, sem implementar correções.
+- [Evidência estruturada e inventário documental](evidence/full-product-audit-2026-10-16.json).
+- [Implementação autorizada dos achados, evidências e limites](audit-remediation-2026-10-16.md).
+
 ## Relatórios e cobertura
+
+- [Revisão de UI, loading e movimento](ui-loading-motion-review-2026-10-16.md).
+
+- [Equipamentos e descrição de itens com foco em Life Skills](gear-lifeskill-layout-2026-10-16.md).
+
+- [Checklist executável e comparação de sessões observadas](observed-sessions-checklist-2026-10-16.md).
+- [Reconciliação das funcionalidades e reversão da última importação](feature-continuation-2026-10-16.md).
+- [Pesquisa pública sobre reversão de capturas](scan-import-undo-competitive-review-2026-10-16.md).
+- [Subproduto aleatório na listagem de receitas](recipe-byproduct-listing-review-2026-10-18.md): correção de “Comida Retirada” na página 4, metadado ausente, evidência local e limites da pesquisa competitiva.
+- [Disponibilidade do tutorial da oficina](tutorial-versioned-fallback-review-2026-10-18.md): comparação pública de guias e decisão de fallback versionado sem seed persistente.
 
 | Documento                                                                                                                     | Cobertura                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |

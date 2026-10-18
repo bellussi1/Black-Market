@@ -1,14 +1,16 @@
 # Handoff do Black Market para Antigravity
 
-- **Atualizado em:** 16/10/2026
+- **Atualizado em:** 18/10/2026
 - **Projeto:** Black Market — planejador para Black Desert Online
 - **Objetivo:** permitir que o Antigravity retome o trabalho sem depender do histórico dos chats do Codex.
 
 Este é um índice de retomada, não substitui as instruções nem os documentos detalhados do projeto. Leia primeiro `AGENTS.md`, `docs/ACTIVE_CONTEXT.md` e [`docs/project-feature-checklist.md`](project-feature-checklist.md); depois confira `git status`, `git log -n 3 --oneline` e o código atual. O checklist mestre relaciona pedidos, origem nos chats, status e próximos passos; os documentos de especificação e implementação listados abaixo são a fonte de detalhes.
 
-## Estado do workspace nesta passagem
+> **Retomada de 18/10/2026:** correção da listagem de subprodutos aleatórios em ACTIVE_CONTEXT §161; fallback versionado do tour `recipe-workshop` sem seed em §162. API local retorna 25 receitas na página 4, zero “Comida Retirada” e quatro etapas do tutorial. `pnpm check`, `pnpm test` (1.151 aprovados, 1 caso PostgreSQL descartável ignorado), build serial e `pnpm test:ssr` passaram. Bundle inicial 546,01 kB, acima do aviso de 500 kB. Sessão autenticada, dados/corpus externos e QA privado seguem como dependências. Branch `codex/audit-remediation`; preservar o plano não rastreado de fase 3; sem push/deploy.
 
-- Branch atual: `main`.
+## Registro histórico de passagens anteriores
+
+- Branch registrada naquela passagem: `main`; a branch atual está indicada na retomada acima.
 - A continuação atual fechou novas fatias locais em 16/10/2026: otimização de coleta, tour `recipe-workshop`, guards/RLS, ciclo de vida do `WorkspaceStore`, extração CSS e rollout visual das fases 1–2. Leia as seções 134 e 138–139 de `docs/ACTIVE_CONTEXT.md` e confira commits/status antes de agir.
 - Entregas implementadas nesta continuação: `0185b87` (indexação dos lookups do Coach), `205dee4` (Home/Roadmap dinâmico) e `8cf0283` (Tutoriais guiados com Driver.js). Também foram criados `1308342` (teste do canvas acessível do Mercado) e `53ed17b` (formatação/Prettier). Confira o histórico real antes de agir.
 - Fase 2: `b90f83d` (Mercado) e `bd0140b` (Receitas/oficina). A atualização documental segue em commit próprio. Não faça push/deploy.
@@ -55,9 +57,9 @@ A inspeção da fase 2 em 390×844 não encontrou overflow horizontal em Mercado
 
 `pnpm --filter @bdo/web build` concluiu sem erro de budget CSS. O bundle inicial é 600,57 kB bruto / 158,90 kB estimados transferidos, acima do aviso de 500 kB; `pt-BR` usa fallback `pt`, e Tesseract/`regenerator-runtime` geram warnings CommonJS. Otimize sem elevar budgets ou remover regras ativas. Driver.js continua lazy (~27 kB).
 
-### 2. Validar o Tutorial Guiado em banco descartável
+### 2. Validar o Tutorial Guiado — fallback local entregue
 
-O tour `recipe-workshop` está implementado, mas seu guia não foi semeado. Antes de escrever, confirme que a URL resolve para um PostgreSQL descartável; aplique migrações pendentes (`0011`–`0013`) e execute `pnpm --filter @bdo/api tutorials:seed` nesse banco. Confira `/tutorials/manage` com identidade admin e a execução do tour. O banco local persistente, staging e produção não foram alterados.
+Quando não existe linha para o guia, a API serve o conteúdo pt-BR versionado. Um guia ativo no banco prevalece; uma linha desativada mantém o tour desligado. O endpoint local retornou quatro etapas sem gravar no banco. Consulte `docs/research/tutorial-versioned-fallback-review-2026-10-18.md`; falta QA visual do launcher/fluxo em sessão legítima. Não há necessidade de seed para testar a oficina local.
 
 ### 3. Gráfico do Mercado — entregue
 
@@ -239,3 +241,17 @@ O usuário anexou os JSONs Admin de `black-market-bdo-local` e `black-market-bdo
 Staging foi reconstruído por `scripts/staging.ps1 -Action Update`, com backup e migrações bem-sucedidas. API local compilada e reiniciada. `pnpm test:auth:local`, `pnpm test:auth:staging` e 31 testes focados passaram; o Auth API aceitou cada credencial em consulta por UID aleatório inexistente, sem ler/criar contas, e ambas assinam custom tokens. Os dois endpoints Steam iniciam redirecionamento OpenID com callback correto. `/account` responde 200 em `http://localhost:4200` e `http://localhost:8081`.
 
 Falta apenas validar login interativo com consentimento Google/Steam e sessão (`/identity/me`, `/workspace`, retorno protegido). Faça login em `/account` nos dois endereços; só depois, se necessário, configure `STAGING_TEST_FIREBASE_UID` e rode `SeedProfile`. Não foi feito seed nem deploy externo. O build mantém avisos Angular de orçamento inicial (553,57 kB), locale `pt-BR`→`pt` e CommonJS do Tesseract. Consulte `docs/ACTIVE_CONTEXT.md` §154 e `docs/staging-local.md` para o estado atual.
+
+### Atualização — prompt e auditoria integral (16/10/2026)
+
+- O prompt dos cinco chats foi refinado e executado nesta sessão, sem editar aplicação/testes/configurações. Prompt e relatório em `docs/research/full-product-audit-prompt-2026-10-16.md` e `docs/research/full-product-ui-calculation-performance-audit-2026-10-16.md`; JSON com rotas, inventário e medidas em `docs/research/evidence/full-product-audit-2026-10-16.json`.
+- 20 achados AUD-01–20: P1 na recuperação local atrás do login e na equivalência 1:1 de peixe usada no custo; P2 incluem SSR/CLS Home 0,1602–0,2127, novo modal/Settings, marcas sociais, falha de rede confundida com login desconfigurado, origem de tempos padrão, arredondamento e heading/paginação. Validação autenticada e corpus independente continuam pendentes.
+- APIs/bancos prontos e Google/Steam ativos; smokes local/staging passaram. Chart.js local com 34 pontos e tabela textual; staging histórico vazio é diferença de dados. pnpm test: 1.066 aprovados e 1 ignorado. Build serial completo passou; inicial 553,57kB. Node observado 24.13.0 não satisfaz ^24.15.0. pnpm check final e git diff --check passaram; documentação final conferida com Prettier.
+- Pesquisa dos quatro concorrentes revalidada com limites; sem benchmark matemático pareado nem dados externos copiados. Não houve push/deploy, seed, credenciais novas, coleta periódica ou mudanças pessoais. Plano não rastreado da fase 3 preservado.
+- Próxima ação: aguardar a revisão dos achados e escopo das correções. Não iniciar implementação do otimizador/plano antigo nem reconfigurar Firebase por causa de registros históricos.
+
+### Correção da listagem de subprodutos (18/10/2026)
+
+Na página 4 da listagem de Culinária, o item 9711 (“Comida Retirada”) aparecia como produto principal por falta de metadado estrutural, embora a descrição do catálogo o marque como subproduto aleatório. O filtro agora exclui esse caso e mantém o item na busca/ficha; a API local retorna 25 receitas na página 4, total 543 e zero ocorrências do nome. A ficha de produtores retorna total zero. Veja `docs/research/recipe-byproduct-listing-review-2026-10-18.md` e `docs/ACTIVE_CONTEXT.md` §161.
+
+O fix da receita e o fallback do tutorial são mudanças separadas. Próximo passo técnico: manter a taxonomia de subprodutos estruturada na próxima extração e fazer QA visual do tutorial. Crie commits de responsabilidade única com listas explícitas de arquivos, preserve o plano de fase 3 não rastreado e não faça push/deploy.
