@@ -1,34 +1,40 @@
 export const TUTORIAL_LOCALES = ['pt-BR'] as const;
+export const TUTORIAL_MAX_STEPS = 12;
 
 export type TutorialLocale = (typeof TUTORIAL_LOCALES)[number];
 
 export type TutorialAccessLevel = 'public' | 'authenticated';
 
 export type TutorialScreenKey =
+  | 'home'
+  | 'roadmap'
   | 'market'
+  | 'market-quote'
+  | 'market-calculator'
+  | 'market-saved'
+  | 'market-item'
   | 'recipes'
   | 'recipe-workshop'
-  | 'scans'
+  | 'crafting-workshop'
+  | 'crafting-manual'
+  | 'crafting-library'
+  | 'recommendations'
   | 'storage'
-  | 'recommendations';
+  | 'stock-inventory'
+  | 'family-character'
+  | 'family-family'
+  | 'family-equipment'
+  | 'lifeskills-sessions'
+  | 'lifeskills-mastery'
+  | 'lifeskills-training'
+  | 'scans'
+  | 'scans-review'
+  | 'scans-profile'
+  | 'shopping'
+  | 'plans'
+  | 'settings';
 
-export type TutorialAnchorKey =
-  | 'market.search'
-  | 'market.filters'
-  | 'market.results'
-  | 'recipes.search'
-  | 'recipes.methods'
-  | 'recipes.tree'
-  | 'recipe-workshop.batch-mastery'
-  | 'recipe-workshop.financial'
-  | 'recipe-workshop.strategy'
-  | 'recipe-workshop.materials-returns'
-  | 'scans.capture'
-  | 'scans.review'
-  | 'storage.items'
-  | 'storage.projects'
-  | 'recommendations.conditions'
-  | 'recommendations.ranking';
+export type TutorialAnchorKey = `${TutorialScreenKey}.${string}`;
 
 export interface TutorialAnchorDefinition {
   key: TutorialAnchorKey;
@@ -39,74 +45,97 @@ export interface TutorialScreenDefinition {
   screenKey: TutorialScreenKey;
   route: string;
   access: TutorialAccessLevel;
+  label: string;
   anchors: readonly TutorialAnchorDefinition[];
 }
 
+const screen = (
+  screenKey: TutorialScreenKey,
+  route: string,
+  access: TutorialAccessLevel,
+  label: string,
+  anchors: readonly string[],
+): TutorialScreenDefinition => ({
+  screenKey,
+  route,
+  access,
+  label,
+  anchors: anchors.map((anchor) => ({
+    key: `${screenKey}.${anchor}` as TutorialAnchorKey,
+    labelKey: `tutorial.anchor.${screenKey}.${anchor}`,
+  })),
+});
+
 export const TUTORIAL_SCREEN_REGISTRY: readonly TutorialScreenDefinition[] = [
-  {
-    screenKey: 'market',
-    route: '/market',
-    access: 'public',
-    anchors: [
-      { key: 'market.search', labelKey: 'tutorial.anchor.market.search' },
-      { key: 'market.filters', labelKey: 'tutorial.anchor.market.filters' },
-      { key: 'market.results', labelKey: 'tutorial.anchor.market.results' },
-    ],
-  },
-  {
-    screenKey: 'recipes',
-    route: '/recipes',
-    access: 'public',
-    anchors: [
-      { key: 'recipes.search', labelKey: 'tutorial.anchor.recipes.search' },
-      { key: 'recipes.methods', labelKey: 'tutorial.anchor.recipes.methods' },
-      { key: 'recipes.tree', labelKey: 'tutorial.anchor.recipes.tree' },
-    ],
-  },
-  {
-    screenKey: 'recipe-workshop',
-    route: '/recipes/items/:id',
-    access: 'public',
-    anchors: [
-      {
-        key: 'recipe-workshop.batch-mastery',
-        labelKey: 'tutorial.anchor.recipe-workshop.batch-mastery',
-      },
-      { key: 'recipe-workshop.financial', labelKey: 'tutorial.anchor.recipe-workshop.financial' },
-      { key: 'recipe-workshop.strategy', labelKey: 'tutorial.anchor.recipe-workshop.strategy' },
-      {
-        key: 'recipe-workshop.materials-returns',
-        labelKey: 'tutorial.anchor.recipe-workshop.materials-returns',
-      },
-    ],
-  },
-  {
-    screenKey: 'scans',
-    route: '/scans',
-    access: 'authenticated',
-    anchors: [
-      { key: 'scans.capture', labelKey: 'tutorial.anchor.scans.capture' },
-      { key: 'scans.review', labelKey: 'tutorial.anchor.scans.review' },
-    ],
-  },
-  {
-    screenKey: 'storage',
-    route: '/storage',
-    access: 'authenticated',
-    anchors: [
-      { key: 'storage.items', labelKey: 'tutorial.anchor.storage.items' },
-      { key: 'storage.projects', labelKey: 'tutorial.anchor.storage.projects' },
-    ],
-  },
-  {
-    screenKey: 'recommendations',
-    route: '/recommendations',
-    access: 'authenticated',
-    anchors: [
-      { key: 'recommendations.conditions', labelKey: 'tutorial.anchor.recommendations.conditions' },
-      { key: 'recommendations.ranking', labelKey: 'tutorial.anchor.recommendations.ranking' },
-    ],
-  },
+  screen('home', '/', 'public', 'Início', ['main-actions', 'lifeskill-entry']),
+  screen('roadmap', '/roadmap', 'public', 'Roadmap', ['progress', 'feature-cards']),
+  screen('market', '/market', 'public', 'Mercado · Painel', ['search', 'filters', 'results']),
+  screen('market-quote', '/market', 'public', 'Mercado · Cotação', ['search', 'quote-panel']),
+  screen('market-calculator', '/market', 'public', 'Mercado · Calculadora', ['inputs', 'result']),
+  screen('market-saved', '/market', 'public', 'Mercado · Salvos', ['list', 'actions']),
+  screen('market-item', '/market/items/:id', 'public', 'Mercado · Detalhe do item', [
+    'summary',
+    'history',
+  ]),
+  screen('recipes', '/recipes', 'public', 'Receitas · Catálogo', ['search', 'methods', 'tree']),
+  screen('recipe-workshop', '/recipes/items/:id', 'public', 'Receitas · Oficina', [
+    'batch-mastery',
+    'financial',
+    'strategy',
+    'materials-returns',
+  ]),
+  screen('crafting-workshop', '/crafting', 'public', 'Produção · Oficina', [
+    'recipe',
+    'settings',
+    'result',
+  ]),
+  screen('crafting-manual', '/crafting', 'public', 'Produção · Manual', ['recipe', 'settings']),
+  screen('crafting-library', '/crafting', 'public', 'Produção · Biblioteca', [
+    'catalogue',
+    'search',
+  ]),
+  screen('recommendations', '/recommendations', 'authenticated', 'O que fazer', [
+    'conditions',
+    'ranking',
+  ]),
+  screen('storage', '/storage', 'authenticated', 'Armazém · Cidades', ['items', 'projects']),
+  screen('stock-inventory', '/storage', 'authenticated', 'Armazém · Inventário pessoal', [
+    'location',
+    'items',
+  ]),
+  screen('family-character', '/family', 'authenticated', 'Família · Personagem ativo', [
+    'character',
+    'lifeskills',
+  ]),
+  screen('family-family', '/family', 'authenticated', 'Família · Personagens', [
+    'characters',
+    'actions',
+  ]),
+  screen('family-equipment', '/family', 'authenticated', 'Família · Equipamento', [
+    'slots',
+    'stats',
+  ]),
+  screen('lifeskills-sessions', '/lifeskills', 'public', 'Profissões · Sessões', [
+    'sessions',
+    'results',
+  ]),
+  screen('lifeskills-mastery', '/lifeskills', 'public', 'Profissões · Maestria', [
+    'profile',
+    'inputs',
+  ]),
+  screen('lifeskills-training', '/lifeskills', 'public', 'Profissões · Treino', [
+    'plans',
+    'results',
+  ]),
+  screen('scans', '/scans', 'authenticated', 'Scan · Captura', ['capture', 'review']),
+  screen('scans-review', '/scans', 'authenticated', 'Scan · Revisão', ['rows', 'save']),
+  screen('scans-profile', '/scans/profile', 'authenticated', 'Scan · Importar personagem', [
+    'profile-input',
+    'profile-preview',
+  ]),
+  screen('shopping', '/shopping', 'authenticated', 'Lista de materiais', ['items', 'actions']),
+  screen('plans', '/plans', 'authenticated', 'Meus planos', ['collection', 'actions']),
+  screen('settings', '/settings', 'authenticated', 'Configurações', ['account', 'tutorials']),
 ] as const;
 
 export interface TutorialGuideStep {

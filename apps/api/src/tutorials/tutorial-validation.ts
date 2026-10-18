@@ -2,6 +2,7 @@ import {
   isTutorialAnchorForScreen,
   isTutorialLocale,
   isTutorialScreenKey,
+  TUTORIAL_MAX_STEPS,
   type TutorialGuideUpdateRequest,
 } from '@bdo/shared';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -23,7 +24,7 @@ const tutorialGuideUpdateSchema = z
   .object({
     expectedUpdatedAt: z.string().datetime({ offset: true }).nullable(),
     enabled: z.boolean(),
-    steps: z.array(tutorialStepSchema).min(1).max(8),
+    steps: z.array(tutorialStepSchema).min(1).max(TUTORIAL_MAX_STEPS),
   })
   .strict();
 

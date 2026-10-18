@@ -15,7 +15,7 @@ describe('tutorial guide payload validation', () => {
       ).toThrow();
     },
   );
-  it('accepts one to eight pt-BR plain-text steps and normalizes their order', () => {
+  it('accepts one to twelve pt-BR plain-text steps and normalizes their order', () => {
     const single = parseTutorialGuideUpdate('market', 'pt-BR', {
       expectedUpdatedAt: null,
       enabled: true,
@@ -41,10 +41,10 @@ describe('tutorial guide payload validation', () => {
       ],
     });
 
-    const eightOutOfOrder = parseTutorialGuideUpdate('recipes', 'pt-BR', {
+    const twelveOutOfOrder = parseTutorialGuideUpdate('recipes', 'pt-BR', {
       expectedUpdatedAt: '2026-10-15T12:00:00.000Z',
       enabled: false,
-      steps: [70, 50, 10, 30, 0, 20, 60, 40].map((order) => ({
+      steps: [110, 50, 10, 30, 0, 20, 60, 40, 80, 70, 90, 100].map((order) => ({
         sortOrder: order,
         anchorKey: order === 0 ? null : ('recipes.search' as const),
         title: `Passo ${order}`,
@@ -52,8 +52,10 @@ describe('tutorial guide payload validation', () => {
       })),
     });
 
-    expect(eightOutOfOrder.steps.map((step) => step.sortOrder)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
-    expect(eightOutOfOrder.steps.map((step) => step.title)).toEqual([
+    expect(twelveOutOfOrder.steps.map((step) => step.sortOrder)).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+    ]);
+    expect(twelveOutOfOrder.steps.map((step) => step.title)).toEqual([
       'Passo 0',
       'Passo 10',
       'Passo 20',
@@ -62,10 +64,38 @@ describe('tutorial guide payload validation', () => {
       'Passo 50',
       'Passo 60',
       'Passo 70',
+      'Passo 80',
+      'Passo 90',
+      'Passo 100',
+      'Passo 110',
     ]);
   });
 
-  it('rejects unsupported locales, unknown screens, zero or nine steps, and overlong fields', () => {
+  it('accepts twelve guide steps and rejects thirteen', () => {
+    const steps = Array.from({ length: 12 }, (_, index) => ({
+      sortOrder: index,
+      anchorKey: 'market.search',
+      title: `Passo ${index + 1}`,
+      body: `Descrição ${index + 1}.`,
+    }));
+
+    expect(() =>
+      parseTutorialGuideUpdate('market', 'pt-BR', {
+        expectedUpdatedAt: null,
+        enabled: true,
+        steps,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      parseTutorialGuideUpdate('market', 'pt-BR', {
+        expectedUpdatedAt: null,
+        enabled: true,
+        steps: [...steps, { ...steps[0]!, sortOrder: 12 }],
+      }),
+    ).toThrow();
+  });
+
+  it('rejects unsupported locales, unknown screens, zero steps, and overlong fields', () => {
     const validStep = {
       sortOrder: 0,
       anchorKey: 'market.search',
@@ -94,17 +124,6 @@ describe('tutorial guide payload validation', () => {
         expectedUpdatedAt: null,
         enabled: true,
         steps: [],
-      }),
-    ).toThrow();
-
-    expect(() =>
-      parseTutorialGuideUpdate('market', 'pt-BR', {
-        expectedUpdatedAt: null,
-        enabled: true,
-        steps: Array.from({ length: 9 }, (_, index) => ({
-          ...validStep,
-          sortOrder: index,
-        })),
       }),
     ).toThrow();
 

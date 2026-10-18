@@ -1,4 +1,5 @@
 import { tutorialGuides } from '@bdo/database/schema';
+import { TUTORIAL_SCREEN_REGISTRY } from '@bdo/shared';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -226,14 +227,7 @@ describe('TutorialsService', () => {
 
     const management = await service.getManagement();
     expect(management.locales).toEqual(['pt-BR']);
-    expect(management.screens.map((screen) => screen.screenKey)).toEqual([
-      'market',
-      'recipes',
-      'recipe-workshop',
-      'scans',
-      'storage',
-      'recommendations',
-    ]);
+    expect(management.screens).toEqual(TUTORIAL_SCREEN_REGISTRY);
     expect(management.guides).toHaveLength(1);
     expect(management.guides[0]?.enabled).toBe(false);
     expect(management.guides[0]?.steps.map((step) => step.title)).toEqual(['Buscar', 'Resultados']);
