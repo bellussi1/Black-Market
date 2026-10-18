@@ -163,7 +163,7 @@
     </unit>
     <unit id="4885727268255876078">
       <notes>
-        <note category="location">src/app/app.routes.ts:300</note>
+        <note category="location">src/app/app.routes.ts:298</note>
       </notes>
       <segment>
         <source>Black Market · Profissões</source>
@@ -171,7 +171,7 @@
     </unit>
     <unit id="6742164136046077254">
       <notes>
-        <note category="location">src/app/app.routes.ts:309</note>
+        <note category="location">src/app/app.routes.ts:307</note>
       </notes>
       <segment>
         <source>Black Market · Armazém</source>
@@ -179,7 +179,7 @@
     </unit>
     <unit id="4505976942848701678">
       <notes>
-        <note category="location">src/app/app.routes.ts:323</note>
+        <note category="location">src/app/app.routes.ts:321</note>
       </notes>
       <segment>
         <source>Black Market · Caixas</source>
@@ -187,7 +187,7 @@
     </unit>
     <unit id="3066552515691443041">
       <notes>
-        <note category="location">src/app/app.routes.ts:331</note>
+        <note category="location">src/app/app.routes.ts:329</note>
       </notes>
       <segment>
         <source>Black Market · Buffs</source>
@@ -195,7 +195,7 @@
     </unit>
     <unit id="4377918620310123221">
       <notes>
-        <note category="location">src/app/app.routes.ts:339</note>
+        <note category="location">src/app/app.routes.ts:337</note>
       </notes>
       <segment>
         <source>Black Market · Configurações e backup</source>
@@ -203,10 +203,26 @@
     </unit>
     <unit id="4031547746956390715">
       <notes>
-        <note category="location">src/app/app.routes.ts:349</note>
+        <note category="location">src/app/app.routes.ts:347</note>
       </notes>
       <segment>
         <source>Black Market · Página não encontrada</source>
+      </segment>
+    </unit>
+    <unit id="1226054375921387082">
+      <notes>
+        <note category="location">src/app/core/login-panel.ts:39,40</note>
+      </notes>
+      <segment>
+        <source>Entrar com Google</source>
+      </segment>
+    </unit>
+    <unit id="3085815342094807098">
+      <notes>
+        <note category="location">src/app/core/login-panel.ts:58,59</note>
+      </notes>
+      <segment>
+        <source>Entrar com Steam</source>
       </segment>
     </unit>
     <unit id="market.sa">
@@ -730,7 +746,7 @@
     <unit id="4575018329748168256">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:59</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:98</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:102</note>
       </notes>
       <segment>
         <source>Duração (minutos)</source>
@@ -845,7 +861,7 @@
         <note category="location">src/app/features/buffs/buffs-page.html:155</note>
         <note category="location">src/app/features/crafting/crafting-page.html:546</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:448</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:351</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:355</note>
         <note category="location">src/app/features/market/market-page.html:795</note>
         <note category="location">src/app/features/storage/storage-page.html:451</note>
       </notes>
@@ -872,8 +888,8 @@
     <unit id="1288261701595144951">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:170</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:22,23</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:260</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:26,27</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:264</note>
       </notes>
       <segment>
         <source>Ativo</source>
@@ -898,7 +914,7 @@
     <unit id="6170019178516226599">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:174</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:320</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:324</note>
       </notes>
       <segment>
         <source>Duração</source>
@@ -909,7 +925,7 @@
         <note category="location">src/app/features/buffs/buffs-page.html:175</note>
         <note category="location">src/app/features/crafting/crafting-page.html:520</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:429</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:322</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:326</note>
         <note category="location">src/app/features/market/market-page.html:721</note>
         <note category="location">src/app/features/storage/storage-page.html:415</note>
       </notes>
@@ -969,7 +985,7 @@
     <unit id="5177990394865145565">
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:48,49</note>
-        <note category="location">src/app/layout/workspace-layout.ts:357</note>
+        <note category="location">src/app/layout/workspace-layout.ts:373</note>
       </notes>
       <segment>
         <source>Consultar mercado</source>
@@ -1024,8 +1040,8 @@
     <unit id="6469027931203119221">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:273</note>
-        <note category="location">src/app/layout/workspace-layout.ts:361</note>
+        <note category="location">src/app/layout/workspace-layout.ts:289</note>
+        <note category="location">src/app/layout/workspace-layout.ts:377</note>
       </notes>
       <segment>
         <source>Calcular produção</source>
@@ -1196,7 +1212,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:149,150</note>
         <note category="location">src/app/features/market/market-page.html:291,292</note>
-        <note category="location">src/app/layout/workspace-layout.ts:272</note>
+        <note category="location">src/app/layout/workspace-layout.ts:288</note>
       </notes>
       <segment>
         <source>Explorar receitas</source>
@@ -1317,7 +1333,7 @@
     <unit id="7106062251415864615">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:270</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:149</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:153</note>
         <note category="location">src/app/features/market/market-page.html:664</note>
         <note category="location">src/app/features/world/world-page.html:123,124</note>
       </notes>
@@ -1690,7 +1706,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:596</note>
         <note category="location">src/app/features/demo/demo-page.html:198,199</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:141</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:145</note>
         <note category="location">src/app/features/market/market-page.html:563</note>
         <note category="location">src/app/features/scans/scans-page.html:890,891</note>
         <note category="location">src/app/features/storage/storage-page.html:151</note>
@@ -1793,7 +1809,7 @@
     </unit>
     <unit id="1502500222486326943">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:5</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:6</note>
       </notes>
       <segment>
         <source>BLACK MARKET · BLACK DESERT ONLINE</source>
@@ -1801,7 +1817,7 @@
     </unit>
     <unit id="7999153287047392623">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:8,9</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:9,10</note>
       </notes>
       <segment>
         <source>O próximo passo de <ph id="0" equiv="INTERPOLATION" disp="{{ profile.name }}"/>.</source>
@@ -1809,7 +1825,7 @@
     </unit>
     <unit id="6177150166135131125">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:10,12</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:11,12</note>
       </notes>
       <segment>
         <source>Menos preparação.<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/>Mais possibilidades.</source>
@@ -1817,7 +1833,7 @@
     </unit>
     <unit id="7359609628647147931">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:13,14</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:14,15</note>
       </notes>
       <segment>
         <source> Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só lugar. </source>
@@ -1825,15 +1841,89 @@
     </unit>
     <unit id="5747263918235900747">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:15,16</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:16,17</note>
       </notes>
       <segment>
         <source>Comece sem conta. Seus dados ficam salvos neste navegador.</source>
       </segment>
     </unit>
+    <unit id="3186839719843195748">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:26,27</note>
+        <note category="location">src/app/layout/workspace-layout.ts:284</note>
+        <note category="location">src/app/layout/workspace-layout.ts:401</note>
+      </notes>
+      <segment>
+        <source>Profissões e rendimento</source>
+      </segment>
+    </unit>
+    <unit id="526840575679086725">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:33,34</note>
+      </notes>
+      <segment>
+        <source>CONSULTA PÚBLICA</source>
+      </segment>
+    </unit>
+    <unit id="7624186720784250888">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:34,35</note>
+      </notes>
+      <segment>
+        <source>Busque um item</source>
+      </segment>
+    </unit>
+    <unit id="2680235516322008591">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:36,37</note>
+      </notes>
+      <segment>
+        <source>SEM CADASTRO</source>
+      </segment>
+    </unit>
+    <unit id="3008075174207163656">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:39,40</note>
+      </notes>
+      <segment>
+        <source>Nome ou ID do item</source>
+      </segment>
+    </unit>
+    <unit id="3649760550946179451">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Explorar produção e origens</source>
+      </segment>
+    </unit>
+    <unit id="5622279872749956822">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:56,57</note>
+      </notes>
+      <segment>
+        <source>Consultar preço</source>
+      </segment>
+    </unit>
+    <unit id="2336070232574375018">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Detalhes do item →</source>
+      </segment>
+    </unit>
+    <unit id="4539518045654453416">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:61</note>
+      </notes>
+      <segment>
+        <source> Selecione um resultado para abrir receitas, preços ou informações do catálogo. </source>
+      </segment>
+    </unit>
     <unit id="2090431141577291090">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:21,22</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:70,71</note>
       </notes>
       <segment>
         <source>TRILHA ATIVA DO PRODUTO</source>
@@ -1841,7 +1931,7 @@
     </unit>
     <unit id="4780340987072406206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:22,23</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:71,72</note>
       </notes>
       <segment>
         <source>Focos atuais</source>
@@ -1849,7 +1939,7 @@
     </unit>
     <unit id="4834018170348636372">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:26,27</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:75,76</note>
       </notes>
       <segment>
         <source>Ver Roadmap completo</source>
@@ -1857,7 +1947,7 @@
     </unit>
     <unit id="3849618480410693034">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:33,34</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:82,83</note>
       </notes>
       <segment>
         <source>Carregando focos do Roadmap…</source>
@@ -1865,7 +1955,7 @@
     </unit>
     <unit id="932826414627378206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:61</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:110</note>
         <note category="location">src/app/features/recipes/recipes-page.html:42,43</note>
         <note category="location">src/app/features/roadmap/roadmap-page.html:55,56</note>
         <note category="location">src/app/features/scans/scans-page.html:294</note>
@@ -1877,7 +1967,7 @@
     </unit>
     <unit id="7375370981376205331">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:66,67</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:115,116</note>
       </notes>
       <segment>
         <source>Ainda não há foco ativo definido na trilha.</source>
@@ -1885,7 +1975,7 @@
     </unit>
     <unit id="781928456811062469">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:67,68</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:116,117</note>
       </notes>
       <segment>
         <source>Abrir Roadmap</source>
@@ -1893,8 +1983,8 @@
     </unit>
     <unit id="4857431980662452400">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:101,102</note>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:105,106</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:150,151</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:154,155</note>
       </notes>
       <segment>
         <source>Entrar para acessar</source>
@@ -1902,7 +1992,7 @@
     </unit>
     <unit id="5664887719499267382">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:110,111</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:159,160</note>
       </notes>
       <segment>
         <source>Ver no Roadmap</source>
@@ -1910,7 +2000,7 @@
     </unit>
     <unit id="7908809318381544433">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:163,164</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:179,180</note>
       </notes>
       <segment>
         <source>SEU ESPAÇO</source>
@@ -1918,7 +2008,7 @@
     </unit>
     <unit id="6970209319376830900">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:164,165</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:180,181</note>
       </notes>
       <segment>
         <source>Continue de onde parou</source>
@@ -1926,7 +2016,7 @@
     </unit>
     <unit id="2390245933811334922">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:174</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:190</note>
       </notes>
       <segment>
         <source>Abrir</source>
@@ -1934,7 +2024,7 @@
     </unit>
     <unit id="7612945010818850490">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:186,187</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:202,203</note>
       </notes>
       <segment>
         <source>Saiba de onde vêm os valores</source>
@@ -1942,7 +2032,7 @@
     </unit>
     <unit id="8364700149671171236">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:188,189</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:204,205</note>
       </notes>
       <segment>
         <source> Os cálculos usam os dados que você informa. Nas consultas ao mercado, confira a região, a fonte e o horário da cotação. </source>
@@ -1950,7 +2040,7 @@
     </unit>
     <unit id="266310373278766924">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:192,193</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:208,209</note>
       </notes>
       <segment>
         <source>Como a plataforma funciona</source>
@@ -2045,8 +2135,8 @@
     <unit id="7330494029236893287">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:55,56</note>
-        <note category="location">src/app/layout/workspace-layout.ts:308</note>
-        <note category="location">src/app/layout/workspace-layout.ts:372</note>
+        <note category="location">src/app/layout/workspace-layout.ts:324</note>
+        <note category="location">src/app/layout/workspace-layout.ts:388</note>
       </notes>
       <segment>
         <source>Família</source>
@@ -2701,7 +2791,7 @@
     <unit id="565555593282790809">
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:417,418</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:298,299</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:302,303</note>
       </notes>
       <segment>
         <source>Meu histórico · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/></source>
@@ -2718,7 +2808,7 @@
     <unit id="146442697456175258">
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:425</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:319</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:323</note>
         <note category="location">src/app/features/market/market-page.html:843</note>
       </notes>
       <segment>
@@ -3015,7 +3105,7 @@
     <unit id="6638063410941106713">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:13,15</note>
-        <note category="location">src/app/layout/workspace-layout.ts:461</note>
+        <note category="location">src/app/layout/workspace-layout.ts:476</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:11,12</note>
       </notes>
       <segment>
@@ -3041,7 +3131,7 @@
     <unit id="4195026889157980213">
       <notes>
         <note category="location">src/app/features/legal/legal-page.html:20,22</note>
-        <note category="location">src/app/layout/workspace-layout.ts:467</note>
+        <note category="location">src/app/layout/workspace-layout.ts:482</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:16,17</note>
       </notes>
       <segment>
@@ -3114,9 +3204,17 @@
         <source>Registre coleta, caça, pesca ou combate. Compare o retorno de uma melhoria de maestria e estime o tempo de treino a partir do seu XP medido. </source>
       </segment>
     </unit>
+    <unit id="5949565206609010005">
+      <notes>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:12,13</note>
+      </notes>
+      <segment>
+        <source> Comece sem conta: seus registros ficam neste navegador. Entre para sincronizar entre dispositivos. </source>
+      </segment>
+    </unit>
     <unit id="5915530118484999552">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:13,14</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:17,18</note>
       </notes>
       <segment>
         <source>Contexto da atividade</source>
@@ -3124,7 +3222,7 @@
     </unit>
     <unit id="5112032831894660633">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:16,17</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:20,21</note>
       </notes>
       <segment>
         <source>Uso do tempo</source>
@@ -3132,8 +3230,8 @@
     </unit>
     <unit id="2926416009269379103">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:23,24</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:262</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:27,28</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:266</note>
       </notes>
       <segment>
         <source>AFK</source>
@@ -3141,7 +3239,7 @@
     </unit>
     <unit id="4805990946114630606">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:26,27</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:30,31</note>
       </notes>
       <segment>
         <source>Profissão desta sessão</source>
@@ -3149,7 +3247,7 @@
     </unit>
     <unit id="1976106460259182665">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:32,33</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:36,37</note>
       </notes>
       <segment>
         <source>Não informada</source>
@@ -3157,7 +3255,7 @@
     </unit>
     <unit id="8976911635659923209">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:38,39</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:42,43</note>
       </notes>
       <segment>
         <source>Maestria usada na sessão</source>
@@ -3165,7 +3263,7 @@
     </unit>
     <unit id="6206225995345294119">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:49,50</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:53,54</note>
       </notes>
       <segment>
         <source> As recomendações comparam o rendimento observado. Uma mudança de maestria exige uma nova sessão; não aplicamos multiplicadores desconhecidos. </source>
@@ -3173,7 +3271,7 @@
     </unit>
     <unit id="7282716101934557525">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:62</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:66</note>
       </notes>
       <segment>
         <source>Sessões e lucro</source>
@@ -3181,7 +3279,7 @@
     </unit>
     <unit id="6990939636878877833">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:71</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:75</note>
       </notes>
       <segment>
         <source>Retorno de mastery</source>
@@ -3189,7 +3287,7 @@
     </unit>
     <unit id="3978649182365405260">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:80</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:84</note>
       </notes>
       <segment>
         <source>Tempo de treino </source>
@@ -3197,7 +3295,7 @@
     </unit>
     <unit id="5449288526138603373">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:88</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:92</note>
       </notes>
       <segment>
         <source>Dados observados da sessão</source>
@@ -3205,7 +3303,7 @@
     </unit>
     <unit id="7883160121651379847">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:91</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:95</note>
       </notes>
       <segment>
         <source>Atividade / rota</source>
@@ -3213,7 +3311,7 @@
     </unit>
     <unit id="6064016337829293519">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:107</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:111</note>
       </notes>
       <segment>
         <source>Energia consumida</source>
@@ -3221,7 +3319,7 @@
     </unit>
     <unit id="8246726991651955667">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:115</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:119</note>
       </notes>
       <segment>
         <source>Prata direta / venda em NPC</source>
@@ -3229,7 +3327,7 @@
     </unit>
     <unit id="2512180473130681056">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:122</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:126</note>
       </notes>
       <segment>
         <source>Despesas da sessão</source>
@@ -3237,7 +3335,7 @@
     </unit>
     <unit id="3432471646562986553">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:130</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:134</note>
       </notes>
       <segment>
         <source>Itens para vender no mercado</source>
@@ -3245,7 +3343,7 @@
     </unit>
     <unit id="5983832561333572488">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:159</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:163</note>
       </notes>
       <segment>
         <source>Remover item</source>
@@ -3253,7 +3351,7 @@
     </unit>
     <unit id="2342668515581501852">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:166</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:170</note>
       </notes>
       <segment>
         <source>Adicionar item</source>
@@ -3261,7 +3359,7 @@
     </unit>
     <unit id="346610309881322992">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:177</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:181</note>
       </notes>
       <segment>
         <source>Registrar sessão</source>
@@ -3269,7 +3367,7 @@
     </unit>
     <unit id="2478114331770580390">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:188</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:192</note>
       </notes>
       <segment>
         <source>Lucro líquido por hora</source>
@@ -3277,7 +3375,7 @@
     </unit>
     <unit id="899634115244094127">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:192</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:196</note>
       </notes>
       <segment>
         <source>Lucro da sessão</source>
@@ -3285,7 +3383,7 @@
     </unit>
     <unit id="8719503825127836594">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:196</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:200</note>
       </notes>
       <segment>
         <source>Prata por energia</source>
@@ -3293,7 +3391,7 @@
     </unit>
     <unit id="3696664955721124167">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:200</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:204</note>
       </notes>
       <segment>
         <source>Receita total líquida</source>
@@ -3301,7 +3399,7 @@
     </unit>
     <unit id="7415181193553316789">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:204</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:208</note>
       </notes>
       <segment>
         <source>Venda de mercado líquida</source>
@@ -3309,7 +3407,7 @@
     </unit>
     <unit id="530850466971317706">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:213,215</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:217,219</note>
       </notes>
       <segment>
         <source>Os resultados descrevem seus drops e preços informados. Efeitos de mastery, pets, Agris e buffs ficam refletidos nos valores observados; a ferramenta não prevê drops sem uma tabela validada. </source>
@@ -3317,7 +3415,7 @@
     </unit>
     <unit id="8857583541409574360">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:228,230</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:232,234</note>
       </notes>
       <segment>
         <source> Compare suas atividades · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/> </source>
@@ -3325,7 +3423,7 @@
     </unit>
     <unit id="2663929285672502801">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:231,232</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:235,236</note>
       </notes>
       <segment>
         <source> Ordenado por prata líquida/h observada: lucro total dividido pelo tempo total, sem média simples das taxas. Cada linha reúne a mesma rota, profissão, maestria e modo informados. </source>
@@ -3333,7 +3431,7 @@
     </unit>
     <unit id="493479140760411996">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:238,239</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:242,243</note>
       </notes>
       <segment>
         <source>Comparação das sessões observadas</source>
@@ -3341,7 +3439,7 @@
     </unit>
     <unit id="3008360544811291671">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:244,245</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:248,249</note>
       </notes>
       <segment>
         <source>Atividade / contexto</source>
@@ -3349,7 +3447,7 @@
     </unit>
     <unit id="8625139134309972221">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:245,246</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:249,250</note>
       </notes>
       <segment>
         <source>Amostra</source>
@@ -3357,7 +3455,7 @@
     </unit>
     <unit id="8303333585359769006">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:246,247</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:250,251</note>
       </notes>
       <segment>
         <source>Tempo total</source>
@@ -3365,7 +3463,7 @@
     </unit>
     <unit id="8094033910657894192">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:247,248</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:251,252</note>
       </notes>
       <segment>
         <source>Lucro total</source>
@@ -3373,7 +3471,7 @@
     </unit>
     <unit id="3169644854832192947">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:248,249</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:252,253</note>
       </notes>
       <segment>
         <source>Prata líquida / h</source>
@@ -3381,7 +3479,7 @@
     </unit>
     <unit id="7119400882931698896">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:249,250</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:253,254</note>
       </notes>
       <segment>
         <source>Período registrado</source>
@@ -3389,7 +3487,7 @@
     </unit>
     <unit id="2685211449323418741">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:264</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:268</note>
       </notes>
       <segment>
         <source>Modo não informado</source>
@@ -3397,7 +3495,7 @@
     </unit>
     <unit id="1986777558298476711">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:268,269</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:272,273</note>
       </notes>
       <segment>
         <source>Maestria <ph id="0" equiv="INTERPOLATION" disp="{{ number(row.mastery) }}"/></source>
@@ -3405,7 +3503,7 @@
     </unit>
     <unit id="3790163790209472738">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:270</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:274</note>
       </notes>
       <segment>
         <source>Maestria não informada</source>
@@ -3413,7 +3511,7 @@
     </unit>
     <unit id="8101759739015275149">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:275,276</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:279,280</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(row.count) }}"/> sessões</source>
@@ -3421,9 +3519,9 @@
     </unit>
     <unit id="771135449401995553">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:278,279</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:304</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:331,332</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:282,283</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:308</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:335,336</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(row.minutes, 3) }}"/> min</source>
@@ -3431,7 +3529,7 @@
     </unit>
     <unit id="7320803800960882205">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:289,292</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:293,296</note>
       </notes>
       <segment>
         <source> São observações pessoais com os preços e impostos registrados, sem atualização para a cotação atual. Patch, equipamento e buffs podem variar dentro da amostra. Não é uma comparação controlada, previsão por maestria ou garantia de drops e vendas. Uma sessão ainda é uma amostra limitada. </source>
@@ -3439,7 +3537,7 @@
     </unit>
     <unit id="5455975752106158525">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:302</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:306</note>
       </notes>
       <segment>
         <source>Tempo registrado</source>
@@ -3447,7 +3545,7 @@
     </unit>
     <unit id="5618241373003643775">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:308</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:312</note>
       </notes>
       <segment>
         <source>Média ponderada por tempo</source>
@@ -3455,7 +3553,7 @@
     </unit>
     <unit id="6444574648585262769">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:310</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:314</note>
       </notes>
       <segment>
         <source>Prata líquida / hora</source>
@@ -3463,7 +3561,7 @@
     </unit>
     <unit id="2243466991987287932">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:318</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:322</note>
         <note category="location">src/app/features/recipes/recipes-page.html:192</note>
       </notes>
       <segment>
@@ -3472,7 +3570,7 @@
     </unit>
     <unit id="4253859887130477233">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:321</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:325</note>
       </notes>
       <segment>
         <source>Lucro</source>
@@ -3480,7 +3578,7 @@
     </unit>
     <unit id="7865357932564430295">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:342</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:346</note>
       </notes>
       <segment>
         <source>Usar cenário </source>
@@ -3488,7 +3586,7 @@
     </unit>
     <unit id="4422929910433764457">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:361</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:365</note>
       </notes>
       <segment>
         <source>Registre uma sessão para comparar o rendimento.</source>
@@ -3496,7 +3594,7 @@
     </unit>
     <unit id="3577050251951603299">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:370</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:374</note>
       </notes>
       <segment>
         <source>Investimento e ganho observado</source>
@@ -3504,7 +3602,7 @@
     </unit>
     <unit id="4903747183952962974">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:373</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:377</note>
       </notes>
       <segment>
         <source>Custo líquido do upgrade</source>
@@ -3512,7 +3610,7 @@
     </unit>
     <unit id="7629338369528379700">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:380</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:384</note>
       </notes>
       <segment>
         <source>Lucro atual por hora</source>
@@ -3520,7 +3618,7 @@
     </unit>
     <unit id="147627241420474673">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:387</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:391</note>
       </notes>
       <segment>
         <source>Lucro previsto / medido por hora</source>
@@ -3528,7 +3626,7 @@
     </unit>
     <unit id="798528917459435352">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:394</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:398</note>
       </notes>
       <segment>
         <source>Horas de atividade por dia</source>
@@ -3536,7 +3634,7 @@
     </unit>
     <unit id="5978874357105245757">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:415</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:419</note>
       </notes>
       <segment>
         <source>Tempo para recuperar investimento</source>
@@ -3544,7 +3642,7 @@
     </unit>
     <unit id="6703852925549613439">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:421</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:425</note>
       </notes>
       <segment>
         <source>Ganho por hora</source>
@@ -3552,7 +3650,7 @@
     </unit>
     <unit id="4652564419311027260">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:425</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:429</note>
       </notes>
       <segment>
         <source>Dias de atividade</source>
@@ -3560,7 +3658,7 @@
     </unit>
     <unit id="6224031242259962060">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:434,435</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:438,439</note>
       </notes>
       <segment>
         <source>Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço, estoque ou tempo de compra do upgrade. </source>
@@ -3568,7 +3666,7 @@
     </unit>
     <unit id="8880706982712317742">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:445</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:449</note>
       </notes>
       <segment>
         <source>Estimador de XP</source>
@@ -3576,7 +3674,7 @@
     </unit>
     <unit id="7895743537841121363">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:448</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:452</note>
       </notes>
       <segment>
         <source>XP que falta para o alvo</source>
@@ -3584,7 +3682,7 @@
     </unit>
     <unit id="4841934776353175570">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:456</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:460</note>
       </notes>
       <segment>
         <source>XP por hora medido</source>
@@ -3592,7 +3690,7 @@
     </unit>
     <unit id="6062062311080852481">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:465</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:469</note>
       </notes>
       <segment>
         <source>Duração de cada sessão (minutos)</source>
@@ -3600,7 +3698,7 @@
     </unit>
     <unit id="6685564502508561749">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:485</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:489</note>
       </notes>
       <segment>
         <source>Tempo de treino estimado</source>
@@ -3608,7 +3706,7 @@
     </unit>
     <unit id="6056494583249463538">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:487</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:491</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(r.hours, 3) }}"/> h</source>
@@ -3616,7 +3714,7 @@
     </unit>
     <unit id="7765396290906459528">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:491</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:495</note>
       </notes>
       <segment>
         <source>Sessões necessárias</source>
@@ -3624,7 +3722,7 @@
     </unit>
     <unit id="5686246151353888710">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:500,501</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:504,505</note>
       </notes>
       <segment>
         <source>Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de níveis, breeding ou stats de cavalos. </source>
@@ -4425,7 +4523,7 @@
       <notes>
         <note category="location">src/app/features/market/market-page.html:776,777</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:30</note>
-        <note category="location">src/app/layout/workspace-layout.ts:353</note>
+        <note category="location">src/app/layout/workspace-layout.ts:369</note>
       </notes>
       <segment>
         <source>Receitas</source>
@@ -5612,8 +5710,8 @@
     <unit id="6215048040341403789">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-page.html:5,6</note>
-        <note category="location">src/app/layout/workspace-layout.ts:335</note>
-        <note category="location">src/app/layout/workspace-layout.ts:446</note>
+        <note category="location">src/app/layout/workspace-layout.ts:351</note>
+        <note category="location">src/app/layout/workspace-layout.ts:461</note>
       </notes>
       <segment>
         <source>Roadmap</source>
@@ -6084,7 +6182,7 @@
         <note category="location">src/app/features/scans/scans-page.html:27,28</note>
         <note category="location">src/app/features/stock/stock-page.html:15,16</note>
         <note category="location">src/app/features/stock/stock-page.html:190,191</note>
-        <note category="location">src/app/layout/workspace-layout.ts:302</note>
+        <note category="location">src/app/layout/workspace-layout.ts:318</note>
       </notes>
       <segment>
         <source>Importar capturas</source>
@@ -6337,8 +6435,8 @@
         <note category="location">src/app/features/stock/stock-page.html:5,6</note>
         <note category="location">src/app/features/storage/storage-page.html:24</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:33</note>
-        <note category="location">src/app/layout/workspace-layout.ts:296</note>
-        <note category="location">src/app/layout/workspace-layout.ts:401</note>
+        <note category="location">src/app/layout/workspace-layout.ts:312</note>
+        <note category="location">src/app/layout/workspace-layout.ts:416</note>
       </notes>
       <segment>
         <source>Armazém</source>
@@ -7349,8 +7447,8 @@
     <unit id="9026691923958891580">
       <notes>
         <note category="location">src/app/features/settings/settings-page.html:4</note>
-        <note category="location">src/app/layout/workspace-layout.ts:332</note>
-        <note category="location">src/app/layout/workspace-layout.ts:442</note>
+        <note category="location">src/app/layout/workspace-layout.ts:348</note>
+        <note category="location">src/app/layout/workspace-layout.ts:457</note>
       </notes>
       <segment>
         <source>Configurações e backup</source>
@@ -8478,7 +8576,7 @@
     <unit id="6393961446548554775">
       <notes>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:29</note>
-        <note category="location">src/app/layout/workspace-layout.ts:271</note>
+        <note category="location">src/app/layout/workspace-layout.ts:287</note>
       </notes>
       <segment>
         <source>Mercado</source>
@@ -9568,8 +9666,8 @@
     </unit>
     <unit id="8237522812427434567">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:258</note>
-        <note category="location">src/app/layout/workspace-layout.ts:276</note>
+        <note category="location">src/app/layout/workspace-layout.ts:275</note>
+        <note category="location">src/app/layout/workspace-layout.ts:292</note>
       </notes>
       <segment>
         <source>Início</source>
@@ -9577,24 +9675,15 @@
     </unit>
     <unit id="6507422559925786279">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:261</note>
+        <note category="location">src/app/layout/workspace-layout.ts:278</note>
       </notes>
       <segment>
         <source>O que fazer</source>
       </segment>
     </unit>
-    <unit id="3186839719843195748">
-      <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:267</note>
-        <note category="location">src/app/layout/workspace-layout.ts:385</note>
-      </notes>
-      <segment>
-        <source>Profissões e rendimento</source>
-      </segment>
-    </unit>
     <unit id="5371990967638584790">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:280</note>
+        <note category="location">src/app/layout/workspace-layout.ts:296</note>
       </notes>
       <segment>
         <source>Ganhar prata</source>
@@ -9602,7 +9691,7 @@
     </unit>
     <unit id="6391981534381874449">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:291</note>
+        <note category="location">src/app/layout/workspace-layout.ts:307</note>
       </notes>
       <segment>
         <source>Materiais e planos</source>
@@ -9610,8 +9699,8 @@
     </unit>
     <unit id="3051215723242753347">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:314</note>
-        <note category="location">src/app/layout/workspace-layout.ts:415</note>
+        <note category="location">src/app/layout/workspace-layout.ts:330</note>
+        <note category="location">src/app/layout/workspace-layout.ts:430</note>
       </notes>
       <segment>
         <source>Lista de materiais</source>
@@ -9619,8 +9708,8 @@
     </unit>
     <unit id="3031009167976274068">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:320</note>
-        <note category="location">src/app/layout/workspace-layout.ts:424</note>
+        <note category="location">src/app/layout/workspace-layout.ts:336</note>
+        <note category="location">src/app/layout/workspace-layout.ts:439</note>
       </notes>
       <segment>
         <source>Meus planos</source>
@@ -9628,8 +9717,8 @@
     </unit>
     <unit id="800803655328576309">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:327</note>
-        <note category="location">src/app/layout/workspace-layout.ts:434</note>
+        <note category="location">src/app/layout/workspace-layout.ts:343</note>
+        <note category="location">src/app/layout/workspace-layout.ts:449</note>
       </notes>
       <segment>
         <source>Guias e conta</source>
@@ -9637,7 +9726,7 @@
     </unit>
     <unit id="1453134524041735834">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:349</note>
+        <note category="location">src/app/layout/workspace-layout.ts:365</note>
       </notes>
       <segment>
         <source>Mercado e produção</source>
@@ -9645,7 +9734,7 @@
     </unit>
     <unit id="6004493327033173129">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:366</note>
+        <note category="location">src/app/layout/workspace-layout.ts:382</note>
       </notes>
       <segment>
         <source>Personagem e evolução</source>
@@ -9653,7 +9742,7 @@
     </unit>
     <unit id="7468173889571751215">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:379</note>
+        <note category="location">src/app/layout/workspace-layout.ts:395</note>
       </notes>
       <segment>
         <source>Aprimoramento e acúmulos</source>
@@ -9661,7 +9750,7 @@
     </unit>
     <unit id="1066166934309898114">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:390</note>
+        <note category="location">src/app/layout/workspace-layout.ts:405</note>
       </notes>
       <segment>
         <source>Buffs e combinações</source>
@@ -9669,7 +9758,7 @@
     </unit>
     <unit id="4384711067175333650">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:395</note>
+        <note category="location">src/app/layout/workspace-layout.ts:410</note>
       </notes>
       <segment>
         <source>Materiais e planejamento</source>
@@ -9677,7 +9766,7 @@
     </unit>
     <unit id="2628946056707873008">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:408</note>
+        <note category="location">src/app/layout/workspace-layout.ts:423</note>
       </notes>
       <segment>
         <source>Importar por captura</source>
@@ -9685,7 +9774,7 @@
     </unit>
     <unit id="1012592931481663403">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:420</note>
+        <note category="location">src/app/layout/workspace-layout.ts:435</note>
       </notes>
       <segment>
         <source>Bases e trabalhadores</source>
@@ -9693,7 +9782,7 @@
     </unit>
     <unit id="3487828683297229196">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:429</note>
+        <note category="location">src/app/layout/workspace-layout.ts:444</note>
       </notes>
       <segment>
         <source>Caixas e vendedor noturno</source>
@@ -9701,7 +9790,7 @@
     </unit>
     <unit id="7338913928758216034">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:438</note>
+        <note category="location">src/app/layout/workspace-layout.ts:453</note>
       </notes>
       <segment>
         <source>Guia do mundo</source>
@@ -9709,7 +9798,7 @@
     </unit>
     <unit id="4575036972922159781">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:463</note>
+        <note category="location">src/app/layout/workspace-layout.ts:478</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:12,13</note>
       </notes>
       <segment>
@@ -9718,7 +9807,7 @@
     </unit>
     <unit id="6036113794590889458">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:465</note>
+        <note category="location">src/app/layout/workspace-layout.ts:480</note>
         <note category="location">src/app/shared/platform-footer/platform-footer.html:13,14</note>
       </notes>
       <segment>
@@ -9727,7 +9816,7 @@
     </unit>
     <unit id="6885941681202195427">
       <notes>
-        <note category="location">src/app/layout/workspace-layout.ts:485</note>
+        <note category="location">src/app/layout/workspace-layout.ts:500</note>
       </notes>
       <segment>
         <source>Black Market</source>
