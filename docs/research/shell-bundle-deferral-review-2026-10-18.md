@@ -35,3 +35,7 @@ A comparação não permite concluir como os concorrentes carregam seus módulos
 - O dev server local informou `NG0751`: HMR carrega dependências `@defer` eager durante o desenvolvimento. A separação foi confirmada no grafo do build de produção; o navegador local não serviu como prova de rede lazy.
 
 **Próximo passo:** continuar medindo cortes seguros até ficar abaixo de 500 kB; não alterar o budget nem remover controles do MVP para atingir a meta.
+
+## Snapshot após agrupar a navegação — 18/10/2026
+
+O build serial de produção posterior ao refactor de navegação reportou bundle inicial de **501,70 kB** e transferência estimada de **134,99 kB**. São 1,48 kB a menos que o snapshot anterior deste relatório; o bundle permanece 1,70 kB acima do aviso de 500 kB. A compilação isolada confirma o tamanho atual, mas não atribui toda a diferença a uma dependência específica. Nenhum budget foi elevado. A alteração de navegação e seu QA estão descritos em [`mvp-navigation-refactor-review-2026-10-18.md`](mvp-navigation-refactor-review-2026-10-18.md) e ACTIVE_CONTEXT §164.
