@@ -1,5 +1,7 @@
 # Extração local do cliente SA
 
+**Revisão atual em 18/10/2026:** nova extração publicada do cliente instalado, com 74.523 itens e 10.683 receitas após suplemento revisado. Procedência, backup e limites em [cotações e cliente instalado](research/recipe-quotes-and-client-patch-2026-10-18.md) e ACTIVE_CONTEXT §185. As contagens abaixo são históricas. Preços de mercado continuam separados da extração.
+
 **Atualização em 9/10/2026:** o patch de 8/10 alterou formatos de experiência e buffs. Para atualizar receitas neste cliente, use o perfil e as instruções de [atualização do catálogo](recipe-catalog-update.md). Esse perfil preserva todas as relações de receitas dos XMLs e registra metadados omitidos; a receita permanece diferente de uma promessa de rendimento no servidor. Os comandos de extração completa abaixo exigem um extractor compatível com todas as tabelas.
 
 O Black Market lê a instalação Steam com o [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor), em modo de leitura. O jogo não precisa estar aberto. Aguarde o launcher concluir os patches antes de extrair.
