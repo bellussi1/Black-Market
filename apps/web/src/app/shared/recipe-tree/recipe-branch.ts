@@ -13,7 +13,16 @@ import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
 import type { RecipeNode } from './recipe-tree-model';
 export interface BranchAction {
   path: string;
-  action: 'expand' | 'collapse' | 'buy' | 'choose' | 'yield' | 'quantity' | 'source' | 'rare-procs';
+  action:
+    | 'expand'
+    | 'collapse'
+    | 'buy'
+    | 'choose'
+    | 'yield'
+    | 'quantity'
+    | 'source'
+    | 'info'
+    | 'rare-procs';
   value?: string | number | boolean | null;
 }
 @Component({

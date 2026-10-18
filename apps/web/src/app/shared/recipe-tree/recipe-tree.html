@@ -667,7 +667,9 @@
                 [allocations]="result.value?.allocations ?? []"
                 [selected]="selectedPath()"
                 [origins]="origins()"
+                [quickInfo]="quickItemInfo()"
                 (action)="action($event)"
+                (quickInfoClosed)="closeQuickItemInfo()"
                 (locationSelected)="openLocation($event)"
               />
             </div>

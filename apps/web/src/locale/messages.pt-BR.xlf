@@ -1016,6 +1016,7 @@
       <notes>
         <note category="location">src/app/features/catalog/item-detail-page.html:61,62</note>
         <note category="location">src/app/shared/item-dossier/item-dossier.html:25,26</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:39</note>
       </notes>
       <segment>
         <source>Peso</source>
@@ -1467,7 +1468,7 @@
         <note category="location">src/app/features/crafting/crafting-page.html:377</note>
         <note category="location">src/app/features/crafting/crafting-page.html:604</note>
         <note category="location">src/app/features/storage/storage-page.html:585</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:692,693</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:694,695</note>
       </notes>
       <segment>
         <source>Material</source>
@@ -1476,7 +1477,7 @@
     <unit id="6162001305295829622">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:378</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:694,695</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:696,697</note>
       </notes>
       <segment>
         <source>Necessário</source>
@@ -1496,7 +1497,7 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:380</note>
         <note category="location">src/app/features/crafting/crafting-page.html:609</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:696,697</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:698,699</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1727,7 +1728,7 @@
     <unit id="2853504753899430284">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:606</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:695,696</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:697,698</note>
       </notes>
       <segment>
         <source>Estoque usado</source>
@@ -1841,7 +1842,7 @@
     </unit>
     <unit id="5747263918235900747">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:16,17</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:17,18</note>
       </notes>
       <segment>
         <source>Comece sem conta. Seus dados ficam salvos neste navegador.</source>
@@ -1849,7 +1850,7 @@
     </unit>
     <unit id="3186839719843195748">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:26,27</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:27,28</note>
         <note category="location">src/app/layout/workspace-layout.ts:284</note>
         <note category="location">src/app/layout/workspace-layout.ts:401</note>
       </notes>
@@ -1859,7 +1860,7 @@
     </unit>
     <unit id="526840575679086725">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:33,34</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:34,35</note>
       </notes>
       <segment>
         <source>CONSULTA PÚBLICA</source>
@@ -1867,7 +1868,7 @@
     </unit>
     <unit id="7624186720784250888">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:34,35</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:35,36</note>
       </notes>
       <segment>
         <source>Busque um item</source>
@@ -1875,7 +1876,7 @@
     </unit>
     <unit id="2680235516322008591">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:36,37</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:37,38</note>
       </notes>
       <segment>
         <source>SEM CADASTRO</source>
@@ -1883,7 +1884,7 @@
     </unit>
     <unit id="3008075174207163656">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:39,40</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:40,41</note>
       </notes>
       <segment>
         <source>Nome ou ID do item</source>
@@ -1891,7 +1892,7 @@
     </unit>
     <unit id="3649760550946179451">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:48,49</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:49,50</note>
       </notes>
       <segment>
         <source>Explorar produção e origens</source>
@@ -1899,7 +1900,7 @@
     </unit>
     <unit id="5622279872749956822">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:56,57</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:57,58</note>
       </notes>
       <segment>
         <source>Consultar preço</source>
@@ -1907,7 +1908,7 @@
     </unit>
     <unit id="2336070232574375018">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:57,58</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:58,59</note>
       </notes>
       <segment>
         <source>Detalhes do item →</source>
@@ -1915,7 +1916,7 @@
     </unit>
     <unit id="4539518045654453416">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:61</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:62</note>
       </notes>
       <segment>
         <source> Selecione um resultado para abrir receitas, preços ou informações do catálogo. </source>
@@ -1923,7 +1924,7 @@
     </unit>
     <unit id="2090431141577291090">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:70,71</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:71,72</note>
       </notes>
       <segment>
         <source>TRILHA ATIVA DO PRODUTO</source>
@@ -1931,7 +1932,7 @@
     </unit>
     <unit id="4780340987072406206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:71,72</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:72,73</note>
       </notes>
       <segment>
         <source>Focos atuais</source>
@@ -1939,7 +1940,7 @@
     </unit>
     <unit id="4834018170348636372">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:75,76</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:76,77</note>
       </notes>
       <segment>
         <source>Ver Roadmap completo</source>
@@ -1947,7 +1948,7 @@
     </unit>
     <unit id="3849618480410693034">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:82,83</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:83,84</note>
       </notes>
       <segment>
         <source>Carregando focos do Roadmap…</source>
@@ -1955,7 +1956,7 @@
     </unit>
     <unit id="932826414627378206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:110</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:111</note>
         <note category="location">src/app/features/recipes/recipes-page.html:42,43</note>
         <note category="location">src/app/features/roadmap/roadmap-page.html:55,56</note>
         <note category="location">src/app/features/scans/scans-page.html:294</note>
@@ -1967,7 +1968,7 @@
     </unit>
     <unit id="7375370981376205331">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:115,116</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:116,117</note>
       </notes>
       <segment>
         <source>Ainda não há foco ativo definido na trilha.</source>
@@ -1975,7 +1976,7 @@
     </unit>
     <unit id="781928456811062469">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:116,117</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:117,118</note>
       </notes>
       <segment>
         <source>Abrir Roadmap</source>
@@ -1983,8 +1984,8 @@
     </unit>
     <unit id="4857431980662452400">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:150,151</note>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:154,155</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:151,152</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:155,156</note>
       </notes>
       <segment>
         <source>Entrar para acessar</source>
@@ -1992,7 +1993,7 @@
     </unit>
     <unit id="5664887719499267382">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:159,160</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:160,161</note>
       </notes>
       <segment>
         <source>Ver no Roadmap</source>
@@ -2000,7 +2001,7 @@
     </unit>
     <unit id="7908809318381544433">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:179,180</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:180,181</note>
       </notes>
       <segment>
         <source>SEU ESPAÇO</source>
@@ -2008,7 +2009,7 @@
     </unit>
     <unit id="6970209319376830900">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:180,181</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:181,182</note>
       </notes>
       <segment>
         <source>Continue de onde parou</source>
@@ -2016,7 +2017,7 @@
     </unit>
     <unit id="2390245933811334922">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:190</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:191</note>
       </notes>
       <segment>
         <source>Abrir</source>
@@ -2024,7 +2025,7 @@
     </unit>
     <unit id="7612945010818850490">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:202,203</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:203,204</note>
       </notes>
       <segment>
         <source>Saiba de onde vêm os valores</source>
@@ -2032,7 +2033,7 @@
     </unit>
     <unit id="8364700149671171236">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:204,205</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:205,206</note>
       </notes>
       <segment>
         <source> Os cálculos usam os dados que você informa. Nas consultas ao mercado, confira a região, a fonte e o horário da cotação. </source>
@@ -2040,7 +2041,7 @@
     </unit>
     <unit id="266310373278766924">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:208,209</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:209,210</note>
       </notes>
       <segment>
         <source>Como a plataforma funciona</source>
@@ -10787,7 +10788,7 @@
     </unit>
     <unit id="1929304274432355476">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:127,128</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:129,130</note>
       </notes>
       <segment>
         <source>Quantidade total a calcular</source>
@@ -10795,7 +10796,7 @@
     </unit>
     <unit id="7256196059812036695">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:223,224</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:225,226</note>
       </notes>
       <segment>
         <source>LOCALIZAÇÃO · ALTERNATIVA</source>
@@ -10803,7 +10804,7 @@
     </unit>
     <unit id="1642053073000478618">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:238</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:240</note>
       </notes>
       <segment>
         <source> Ver localização e recursos </source>
@@ -10811,7 +10812,7 @@
     </unit>
     <unit id="5263876161393259227">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:249,250</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:251,252</note>
       </notes>
       <segment>
         <source>LOCAIS AGRUPADOS</source>
@@ -10819,7 +10820,7 @@
     </unit>
     <unit id="2821737020222245448">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:253,254</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:255,256</note>
       </notes>
       <segment>
         <source>Consulte todos os locais no painel do item.</source>
@@ -10827,7 +10828,7 @@
     </unit>
     <unit id="4466085967947328193">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:260</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:262</note>
       </notes>
       <segment>
         <source> Ver todas as fontes </source>
@@ -10835,7 +10836,7 @@
     </unit>
     <unit id="4669609318960501516">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:277,278</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:279,280</note>
       </notes>
       <segment>
         <source>MÉTODO DE OBTENÇÃO</source>
@@ -10843,7 +10844,7 @@
     </unit>
     <unit id="577284102864482629">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:283,284</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:285,286</note>
       </notes>
       <segment>
         <source>Escolha um dos locais vinculados.<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/>Não é necessário usar todos.</source>
@@ -11075,6 +11076,47 @@
         <source> Atividade: combate convencional. Não é Hunting nem coleta de criaturas abatidas. </source>
       </segment>
     </unit>
+    <unit id="5899006906555783267">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:20,21</note>
+      </notes>
+      <segment>
+        <source>Fechar detalhes do item</source>
+      </segment>
+    </unit>
+    <unit id="7843148029440816599">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:45,46</note>
+      </notes>
+      <segment>
+        <source>Consultando descrição do catálogo…</source>
+      </segment>
+    </unit>
+    <unit id="3861107229466526218">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Descrição não disponível no catálogo.</source>
+      </segment>
+    </unit>
+    <unit id="3383907643333341583">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:73,74</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:184,185</note>
+      </notes>
+      <segment>
+        <source>Mostrar menos</source>
+      </segment>
+    </unit>
+    <unit id="8557489357427196015">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:75,76</note>
+      </notes>
+      <segment>
+        <source>Ver descrição completa</source>
+      </segment>
+    </unit>
     <unit id="1030792678479726433">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:7</note>
@@ -11171,14 +11213,6 @@
       </notes>
       <segment>
         <source> Venda marcada entra no faturamento; itens guardados ficam fora. </source>
-      </segment>
-    </unit>
-    <unit id="3383907643333341583">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:184,185</note>
-      </notes>
-      <segment>
-        <source>Mostrar menos</source>
       </segment>
     </unit>
     <unit id="8596648948059760377">
@@ -11470,7 +11504,7 @@
     </unit>
     <unit id="7714613758727508668">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:687,688</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:689,690</note>
       </notes>
       <segment>
         <source>Materiais e origem escolhida</source>
@@ -11478,7 +11512,7 @@
     </unit>
     <unit id="5345999946284409583">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:693,694</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:695,696</note>
       </notes>
       <segment>
         <source>Fazer / coletar</source>
@@ -11486,7 +11520,7 @@
     </unit>
     <unit id="4691189097375946424">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:697,698</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:699,700</note>
       </notes>
       <segment>
         <source>Produzir / coletar</source>
@@ -11494,7 +11528,7 @@
     </unit>
     <unit id="1669167189510461266">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:698,699</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:700,701</note>
       </notes>
       <segment>
         <source>Valor comprado</source>
@@ -11502,7 +11536,7 @@
     </unit>
     <unit id="3401818050644490501">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:753,754</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:755,756</note>
       </notes>
       <segment>
         <source>Nenhum material disponível no cenário atual.</source>
@@ -11510,7 +11544,7 @@
     </unit>
     <unit id="4074480377800209581">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:760,761</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:762,763</note>
       </notes>
       <segment>
         <source> A caixa marcada define fazer ou coletar; desmarcada define comprar. O estoque próprio é descontado e valorizado conforme as opções do cálculo. </source>
@@ -11518,7 +11552,7 @@
     </unit>
     <unit id="8977059576442042320">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:765,766</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:767,768</note>
       </notes>
       <segment>
         <source>Confira as estimativas e quantidades antes de gerar a lista consolidada.</source>

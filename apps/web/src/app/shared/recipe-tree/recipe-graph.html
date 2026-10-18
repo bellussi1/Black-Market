@@ -99,8 +99,10 @@
         <button
           type="button"
           class="node-details"
+          aria-haspopup="dialog"
+          [attr.aria-expanded]="quickInfo()?.path === entry.node.path"
           [attr.aria-label]="'Ver detalhes de ' + entry.node.part.name"
-          (click)="emit(entry.node.path, 'source')"
+          (click)="emit(entry.node.path, 'info')"
         >
           <svg
             width="18"
@@ -285,4 +287,20 @@
       </article>
     }
   </div>
+  @if (quickInfo(); as info) {
+    @for (entry of layout().nodes; track entry.node.path) {
+      @if (entry.node.path === info.path) {
+        <app-recipe-item-quick-info
+          [style.left.px]="quickInfoPosition().left"
+          [style.top.px]="quickInfoPosition().top"
+          [item]="info.item"
+          [fallbackName]="entry.node.part.name"
+          [fallbackCategory]="entry.node.category ?? 'Item'"
+          [iconUrl]="catalog.resolveIconUrl(info.item ?? entry.node.part)"
+          [loading]="info.loading"
+          (dismiss)="quickInfoClosed.emit()"
+        />
+      }
+    }
+  }
 </div>

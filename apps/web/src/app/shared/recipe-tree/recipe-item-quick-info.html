@@ -1,0 +1,80 @@
+<aside
+  class="quick-item-info"
+  [attr.data-grade]="item()?.grade"
+  role="dialog"
+  aria-modal="false"
+  [attr.aria-label]="'Detalhes de ' + (item()?.name || fallbackName())"
+  [attr.aria-busy]="loading()"
+  animate.enter="quick-info-enter"
+  animate.leave="quick-info-leave"
+  (pointerdown)="$event.stopPropagation()"
+  (click)="$event.stopPropagation()"
+  (wheel)="$event.stopPropagation()"
+  (keydown.escape)="dismiss.emit()"
+>
+  <div class="quick-titlebar">
+    <span>{{ category() }}</span>
+    <button
+      type="button"
+      class="quick-info-close"
+      aria-label="Fechar detalhes do item"
+      i18n-aria-label
+      (click)="dismiss.emit()"
+    >
+      ×
+    </button>
+  </div>
+
+  <header class="quick-item-identity">
+    <app-item-icon
+      [url]="iconUrl() || item()?.iconUrl || item()?.icon || null"
+      [name]="item()?.name || fallbackName()"
+      [grade]="item()?.grade ?? null"
+    />
+    <h2>{{ item()?.name || fallbackName() }}</h2>
+  </header>
+
+  @if (weight() !== null) {
+    <p class="quick-item-weight">
+      <span i18n>Peso</span><strong>{{ weight() }} LT</strong>
+    </p>
+  }
+
+  @if (loading()) {
+    <div class="quick-item-loading" role="status" aria-live="polite">
+      <span i18n>Consultando descrição do catálogo…</span>
+      <span class="quick-loading-line" aria-hidden="true"></span>
+      <span class="quick-loading-line short" aria-hidden="true"></span>
+    </div>
+  } @else {
+    <div class="quick-item-description">
+      @for (line of visibleLines(); track $index) {
+        <p
+          [class.paragraph-break]="line.breakBefore"
+          [class.description-bullet]="line.bullet"
+          [class.description-note]="line.note"
+        >
+          @for (part of line.parts; track $index) {
+            <span [class]="'copy-' + part.tone">{{ part.text }}</span>
+          }
+        </p>
+      } @empty {
+        <p class="quick-item-empty" i18n>Descrição não disponível no catálogo.</p>
+      }
+    </div>
+    @if (hasMore()) {
+      <button
+        type="button"
+        class="quick-description-toggle"
+        [attr.aria-expanded]="expanded()"
+        (click)="expanded.update((value) => !value)"
+      >
+        @if (expanded()) {
+          <span i18n>Mostrar menos</span>
+        } @else {
+          <span i18n>Ver descrição completa</span>
+        }
+      </button>
+    }
+  }
+</aside>

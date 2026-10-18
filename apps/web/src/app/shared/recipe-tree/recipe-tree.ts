@@ -75,6 +75,7 @@ import { recipeFamilies, verifiedIngredientSubstitutionItemIds } from './recipe-
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { RecipeItemDetails } from './recipe-item-details';
+import type { RecipeItemQuickInfoState } from './recipe-item-quick-info';
 import { type ItemSources, RecipeKnowledge } from './recipe-knowledge';
 import { resolveRecipeMaterialPrice } from './recipe-market-equivalent-price';
 import { recipeMarketPrice } from './recipe-market-price';
@@ -209,6 +210,7 @@ export class RecipeTree {
   readonly advancedChanged = output<boolean>();
   readonly advanced = signal(false);
   readonly detailsOpen = signal(false);
+  readonly quickItemInfo = signal<RecipeItemQuickInfoState | null>(null);
   readonly store = inject(WorkspaceStore);
   readonly identity = inject(IdentityService);
   readonly catalog = inject(CatalogApiService);
@@ -260,6 +262,8 @@ export class RecipeTree {
   private quoteRevision = 0;
   private lastConsultTime = 0;
   private detailsReturnFocus: HTMLElement | null = null;
+  private quickInfoRevision = 0;
+  private quickInfoReturnFocus: HTMLElement | null = null;
 
   readonly userMasteryForCurrentRecipe = computed(() => {
     const root = this.root();
@@ -794,6 +798,18 @@ export class RecipeTree {
         trigger?.isConnected && !trigger.closest('.bottom-details-tray')
           ? trigger
           : (fallback ?? document.querySelector<HTMLElement>('.craft-count-input'));
+      target?.focus({ preventScroll: true });
+    }, 0);
+  }
+
+  closeQuickItemInfo(): void {
+    if (!this.quickItemInfo()) return;
+    const trigger = this.quickInfoReturnFocus;
+    this.clearQuickItemInfo();
+    setTimeout(() => {
+      const target = trigger?.isConnected
+        ? trigger
+        : document.querySelector<HTMLElement>('.graph-viewport');
       target?.focus({ preventScroll: true });
     }, 0);
   }
@@ -1658,6 +1674,7 @@ export class RecipeTree {
       this.contextRevision++;
       this.context.set(null);
       this.detailsOpen.set(false);
+      this.clearQuickItemInfo();
       this.contextMessage.set('');
       this.contextLoading.set(false);
       this.history.set([]);
@@ -1868,6 +1885,7 @@ export class RecipeTree {
   }
   collapseAll() {
     this.stopExpansion();
+    this.clearQuickItemInfo();
     this.expansions.clear();
     this.contextRevision++;
     this.contextLoading.set(false);
@@ -1987,10 +2005,15 @@ export class RecipeTree {
     }
   }
   action(event: BranchAction) {
-    if (event.action !== 'source') this.stopExpansion();
+    if (event.action !== 'source' && event.action !== 'info') this.stopExpansion();
     const node = this.find(event.path);
     if (!node) return;
+    if (event.action === 'info') {
+      this.showQuickItemInfo(node);
+      return;
+    }
     if (event.action === 'source') {
+      this.clearQuickItemInfo();
       this.selectedPath.set(node.path);
       this.showContext(node);
       setTimeout(() => {
@@ -2005,6 +2028,9 @@ export class RecipeTree {
       return;
     }
     if (event.action === 'collapse') {
+      const quickPath = this.quickItemInfo()?.path;
+      if (quickPath === node.path || quickPath?.startsWith(node.path + '/'))
+        this.clearQuickItemInfo();
       this.patch(node.path, (n) => ({ ...n, expanded: false }));
       return;
     }
@@ -2142,6 +2168,8 @@ export class RecipeTree {
   private cancelExpansions(path: string) {
     for (const key of this.expansions.keys())
       if (key === path || key.startsWith(path + '/')) this.expansions.delete(key);
+    const quickPath = this.quickItemInfo()?.path;
+    if (quickPath === path || quickPath?.startsWith(path + '/')) this.clearQuickItemInfo();
     if (this.selectedPath().startsWith(path + '/')) {
       this.contextRevision++;
       this.context.set(null);
@@ -2179,7 +2207,41 @@ export class RecipeTree {
   private count(node = this.root()): number {
     return node ? 1 + node.children.reduce((n, c) => n + this.count(c), 0) : 0;
   }
+  private clearQuickItemInfo(): void {
+    this.quickInfoRevision++;
+    this.quickItemInfo.set(null);
+    this.quickInfoReturnFocus = null;
+  }
+  showQuickItemInfo(node: RecipeNode): void {
+    if (this.quickItemInfo()?.path === node.path) {
+      this.closeQuickItemInfo();
+      return;
+    }
+    this.quickInfoReturnFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    this.selectedPath.set(node.path);
+    const revision = ++this.quickInfoRevision,
+      region = this.region(),
+      datasetVersion = this.datasetVersion();
+    this.quickItemInfo.set({ path: node.path, item: null, loading: true });
+    this.knowledge
+      .item(node.part.itemId)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        if (revision !== this.quickInfoRevision || region !== this.region()) return;
+        const matchesDataset = !datasetVersion || response?.dataset?.version === datasetVersion;
+        this.quickItemInfo.set({
+          path: node.path,
+          item: matchesDataset ? (response?.item ?? null) : null,
+          loading: false,
+        });
+      });
+  }
   showContext(node: RecipeNode, locationId?: string) {
+    if (this.quickItemInfo()) this.clearQuickItemInfo();
     if (!this.detailsOpen()) {
       this.detailsReturnFocus =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;

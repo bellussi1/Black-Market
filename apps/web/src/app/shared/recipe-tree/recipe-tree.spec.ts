@@ -1675,6 +1675,50 @@ describe('Interactive recipe tree', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.context-panel')).not.toBeNull();
   });
+  it('opens a compact item card from the visual tree without opening the source workspace', async () => {
+    const mocks = providers();
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const infoButton = fixture.nativeElement.querySelector('.node-details') as HTMLButtonElement;
+    infoButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.quick-item-info')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.bottom-details-tray')).toBeNull();
+    expect(fixture.componentInstance.detailsOpen()).toBe(false);
+    expect(mocks.knowledge.item).toHaveBeenCalledWith(5301);
+    expect(mocks.knowledge.sources).not.toHaveBeenCalled();
+    expect(mocks.knowledge.produces).not.toHaveBeenCalled();
+  });
+  it('shows an accessible loading state while fetching only the item description', async () => {
+    const mocks = providers();
+    mocks.knowledge.item.mockReturnValue(NEVER);
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    (fixture.nativeElement.querySelector('.node-details') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const quickInfo = fixture.nativeElement.querySelector('.quick-item-info') as HTMLElement;
+    expect(quickInfo.getAttribute('aria-busy')).toBe('true');
+    expect(quickInfo.querySelector('[role="status"]')?.textContent).toContain('Consultando');
+    expect(fixture.nativeElement.querySelector('.bottom-details-tray')).toBeNull();
+    expect(mocks.knowledge.sources).not.toHaveBeenCalled();
+  });
+  it('closes the compact card and restores focus to its information trigger', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const trigger = fixture.nativeElement.querySelector('.node-details') as HTMLButtonElement;
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.quick-info-close') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 1));
+
+    expect(fixture.nativeElement.querySelector('.quick-item-info')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
   it('reserves an accessible skeleton while item details are loading', async () => {
     const mocks = providers();
     mocks.knowledge.item.mockReturnValue(NEVER);

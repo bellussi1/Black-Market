@@ -24,13 +24,14 @@ import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './recipe-graph-model';
 import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
+import { RecipeItemQuickInfo, type RecipeItemQuickInfoState } from './recipe-item-quick-info';
 import type { ItemSources } from './recipe-knowledge';
 import type { RecipeNode } from './recipe-tree-model';
 
 @Component({
   selector: 'app-recipe-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemIcon, RecipeIngredientAlternatives],
+  imports: [ItemIcon, RecipeIngredientAlternatives, RecipeItemQuickInfo],
   templateUrl: './recipe-graph.html',
   styleUrl: './recipe-graph.scss',
 })
@@ -42,6 +43,8 @@ export class RecipeGraph {
   readonly selection = computed(() => this.localSelection()?.path ?? this.selected());
   readonly advanced = input(false);
   readonly action = output<BranchAction>();
+  readonly quickInfo = input<RecipeItemQuickInfoState | null>(null);
+  readonly quickInfoClosed = output<void>();
   readonly origins = input<ReadonlyMap<number, ItemSources['nodes']>>(new Map());
   readonly locationSelected = output<{ path: string; source: ItemSources['nodes'][number] }>();
   readonly catalog = inject(CatalogApiService);
@@ -50,6 +53,7 @@ export class RecipeGraph {
   readonly focus = signal('');
   readonly dragging = signal(false);
   readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
+  readonly quickInfoPosition = signal({ left: 12, top: 12 });
   readonly ancestor = isGraphAncestor;
   readonly typeLabel = recipeTypeLabel;
   readonly families = (node: RecipeNode) => recipeFamilies(node.options).map((family) => family[0]);
@@ -122,6 +126,7 @@ export class RecipeGraph {
     pointer: number;
     target: HTMLElement;
   } | null = null;
+  private focusedQuickInfoPath = '';
 
   constructor() {
     let previous: ReturnType<typeof layoutRecipeGraph> | null = null;
@@ -171,7 +176,10 @@ export class RecipeGraph {
       viewport.addEventListener('wheel', this.wheel, { passive: false });
       viewport.addEventListener('click', this.clickCapture, true);
       if (typeof ResizeObserver !== 'undefined') {
-        this.observer = new ResizeObserver(() => this.scheduleMeasure());
+        this.observer = new ResizeObserver(() => {
+          this.scheduleMeasure();
+          this.refreshQuickInfoPosition();
+        });
         this.observer.observe(viewport);
       }
       this.refreshObservedNodes();
@@ -185,7 +193,11 @@ export class RecipeGraph {
         this.end();
       });
     });
-    afterEveryRender(() => this.refreshObservedNodes());
+    afterEveryRender(() => {
+      this.refreshObservedNodes();
+      this.refreshQuickInfoPosition();
+      this.focusNewQuickInfo();
+    });
     effect(() => {
       const focus = this.focus();
       if (focus && !this.layout().nodes.some((entry) => entry.node.path === focus))
@@ -207,6 +219,44 @@ export class RecipeGraph {
         this.observed.add(node);
       }
     this.scheduleMeasure();
+  }
+  private refreshQuickInfoPosition() {
+    const info = this.quickInfo(),
+      viewport = this.viewport()?.nativeElement;
+    if (!info || !viewport) return;
+    const node = [...viewport.querySelectorAll<HTMLElement>('.graph-node[data-node-path]')].find(
+      (candidate) => candidate.dataset['nodePath'] === info.path,
+    );
+    if (!node) return;
+    const bounds = viewport.getBoundingClientRect(),
+      target = node.getBoundingClientRect(),
+      width = Math.max(0, Math.min(340, viewport.clientWidth - 24)),
+      height = Math.max(0, Math.min(340, viewport.clientHeight - 24));
+    let left = target.right - bounds.left + 12;
+    if (left + width > viewport.clientWidth - 12) left = target.left - bounds.left - width - 12;
+    const top = Math.max(
+      12,
+      Math.min(target.top - bounds.top, viewport.clientHeight - height - 12),
+    );
+    const next = {
+      left: Math.max(12, Math.min(left, viewport.clientWidth - width - 12)),
+      top,
+    };
+    const current = this.quickInfoPosition();
+    if (Math.abs(current.left - next.left) > 1 || Math.abs(current.top - next.top) > 1)
+      this.quickInfoPosition.set(next);
+  }
+  private focusNewQuickInfo() {
+    const path = this.quickInfo()?.path ?? '';
+    if (!path) {
+      this.focusedQuickInfoPath = '';
+      return;
+    }
+    if (path === this.focusedQuickInfoPath) return;
+    this.focusedQuickInfoPath = path;
+    this.viewport()
+      ?.nativeElement.querySelector<HTMLElement>('.quick-info-close')
+      ?.focus({ preventScroll: true });
   }
   private scheduleMeasure() {
     if (this.measureFrame) return;

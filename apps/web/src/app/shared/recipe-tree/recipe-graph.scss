@@ -211,17 +211,26 @@ svg.source-symbol {
   position: absolute;
   top: 6px;
   right: 6px;
-  margin: auto 12px 6px;
-  text-align: left;
-  min-height: 32px;
-  padding: 4px 0;
-  background: transparent;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
+  background: var(--bm-surface-raised);
   color: var(--bm-muted);
-  border: 0;
-  font-size: 12px;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  transition:
+    color var(--bm-motion-fast) ease,
+    border-color var(--bm-motion-fast) ease,
+    background-color var(--bm-motion-fast) ease;
+}
+.node-details:hover,
+.node-details[aria-expanded='true'] {
+  border-color: var(--bm-accent);
+  background: color-mix(in srgb, var(--bm-accent) 10%, var(--bm-surface));
+  color: var(--bm-accent);
 }
 .expand-node {
   margin-top: auto;

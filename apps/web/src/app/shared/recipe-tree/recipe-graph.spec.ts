@@ -128,7 +128,7 @@ describe('Accessible graph controls', () => {
     expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'source' });
     expect(selected).not.toHaveBeenCalledWith({ path: 'root', action: 'expand' });
     fixture.nativeElement.querySelector('.node-details').click();
-    expect(selected).toHaveBeenCalledWith({ path: 'root', action: 'source' });
+    expect(selected).toHaveBeenCalledWith({ path: 'root', action: 'info' });
     graph.scale(100);
     expect(graph.zoom()).toBe(1.75);
     graph.scale(-100);
