@@ -118,4 +118,23 @@ describe('Character equipment management', () => {
     expect(page.profile()!.gear[0].level).toBe(19);
     expect(page.message()).toContain('Confira');
   });
+
+  it('offers 1-click Roman numeral enhancement presets adapted for weapons vs accessories', async () => {
+    const fixture = await renderComponent(GearInventoryPage);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    page.chooseSlot('mainhand');
+    fixture.detectChanges();
+
+    expect(page.enhancementPresets().some((p) => p.label === 'V (PEN)' && p.value === 20)).toBe(
+      true,
+    );
+
+    page.chooseSlot('necklace');
+    fixture.detectChanges();
+    expect(page.enhancementPresets().some((p) => p.label === 'V (PEN)' && p.value === 5)).toBe(
+      true,
+    );
+  });
 });

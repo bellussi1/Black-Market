@@ -1,12 +1,21 @@
 :host {
   display: block;
   min-width: 0;
+  container-type: inline-size;
 }
 .equipment-workspace {
   display: grid;
   grid-template-columns: minmax(300px, 430px) minmax(0, 1fr);
   gap: 20px;
   align-items: start;
+}
+@container (max-width: 720px) {
+  .equipment-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .equipment-window {
+    width: 100%;
+  }
 }
 .equipment-window {
   border: 1px solid var(--bm-border);

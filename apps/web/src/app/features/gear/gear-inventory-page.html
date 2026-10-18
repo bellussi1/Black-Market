@@ -1,13 +1,16 @@
-<div class="tool-page">
+<div class="tool-page gear-page" [class.gear-embedded]="embedded()">
   @if (embedded()) {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel gear-embedded-header">
       <div class="panel-heading">
-        <h2 i18n>Equipamentos do personagem</h2>
+        <div>
+          <p class="tool-kicker">JANELA DE EQUIPAMENTO (I)</p>
+          <h2 i18n>Equipamentos do personagem</h2>
+        </div>
         <span class="badge">{{ profile()?.name || 'Nenhum personagem selecionado' }}</span>
       </div>
       <p class="help" i18n>
-        Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
-        precisam ser conferidos no jogo.
+        Clique em qualquer slot da roda estilo BDO abaixo para selecionar ou atualizar a peça, o
+        grau de aprimoramento (I a X) e o nível de Caphras.
       </p>
     </section>
   } @else {
@@ -55,42 +58,44 @@
     </section>
   }
   @if (profile(); as current) {
-    <section
-      class="gear-life-summary"
-      aria-label="Informações de profissão da ficha"
-      i18n-aria-label
-    >
-      <h2 i18n>Seu conjunto de Vida</h2>
-      <p i18n>
-        Ferramenta, traje e acessórios para suas profissões. Escolha uma posição para revisar o
-        equipamento.
-      </p>
-      <div class="gear-life-metrics">
-        <div>
-          <label
-            ><span i18n>Maestria de</span
-            ><select appBdoSelect [(ngModel)]="focusSkill">
-              @for (skill of skills; track skill) {
-                <option [value]="skill">{{ skillLabels[skill] }}</option>
-              }
-            </select></label
-          ><strong>{{ current.mastery[focusSkill] }}</strong
-          ><small i18n>Valor informado na ficha</small>
+    @if (!embedded()) {
+      <section
+        class="gear-life-summary"
+        aria-label="Informações de profissão da ficha"
+        i18n-aria-label
+      >
+        <h2 i18n>Seu conjunto de Vida</h2>
+        <p i18n>
+          Ferramenta, traje e acessórios para suas profissões. Escolha uma posição para revisar o
+          equipamento.
+        </p>
+        <div class="gear-life-metrics">
+          <div>
+            <label
+              ><span i18n>Maestria de</span
+              ><select appBdoSelect [(ngModel)]="focusSkill">
+                @for (skill of skills; track skill) {
+                  <option [value]="skill">{{ skillLabels[skill] }}</option>
+                }
+              </select></label
+            ><strong>{{ current.mastery[focusSkill] }}</strong
+            ><small i18n>Valor informado na ficha</small>
+          </div>
+          <div>
+            <span i18n>Energia atual</span><strong>{{ current.energy }}</strong
+            ><small i18n>Informada pelo jogador</small>
+          </div>
+          <div>
+            <span i18n>Limite de peso</span><strong>{{ current.weightLimit }} LT</strong
+            ><small i18n>Sem somar bônus dos itens</small>
+          </div>
         </div>
-        <div>
-          <span i18n>Energia atual</span><strong>{{ current.energy }}</strong
-          ><small i18n>Informada pelo jogador</small>
-        </div>
-        <div>
-          <span i18n>Limite de peso</span><strong>{{ current.weightLimit }} LT</strong
-          ><small i18n>Sem somar bônus dos itens</small>
-        </div>
-      </div>
-      <p class="help" i18n>
-        Os valores vêm da ficha. Zero pode indicar um campo ainda não preenchido; não calculamos sua
-        maestria pela imagem dos equipamentos.
-      </p>
-    </section>
+        <p class="help" i18n>
+          Os valores vêm da ficha. Zero pode indicar um campo ainda não preenchido; não calculamos
+          sua maestria pela imagem dos equipamentos.
+        </p>
+      </section>
+    }
     <app-equipment-sheet
       [profile]="current"
       [activeSlot]="selectedPosition()"
@@ -104,13 +109,7 @@
               Os artefatos usam os complementos já cadastrados na ficha. Revise-os junto às pedras
               de luz para manter um único registro.
             </p>
-            <a
-              hlmBtn
-              variant="outline"
-              routerLink="/family"
-              [queryParams]="{ tab: 'character' }"
-              fragment="character-complements"
-              i18n
+            <a hlmBtn variant="outline" routerLink="/family" fragment="character-complements" i18n
               >Editar complementos da ficha →</a
             >
           </section>
@@ -151,9 +150,25 @@
               }
             </div>
             @if (canEnhance()) {
+              <div
+                class="bdo-enhance-presets"
+                role="group"
+                aria-label="Atalhos de grau de aprimoramento"
+              >
+                @for (preset of enhancementPresets(); track preset.value) {
+                  <button
+                    type="button"
+                    class="bdo-enhance-pill"
+                    [class.active]="level === preset.value"
+                    (click)="level = preset.value"
+                  >
+                    {{ preset.label }}
+                  </button>
+                }
+              </div>
               <p class="help" i18n>
-                0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1
-                a 10. Confira o nível no jogo antes de confirmar.
+                Clique em um grau (I a X) acima ou digite o valor numérico. Confira o nível no jogo
+                antes de confirmar.
               </p>
             } @else {
               <p class="help" i18n>

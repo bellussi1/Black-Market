@@ -642,7 +642,7 @@
     <unit id="7046999303754607171">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:13,14</note>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:102,103</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:107,108</note>
       </notes>
       <segment>
         <source>Artefatos e pedras de luz</source>
@@ -2146,8 +2146,8 @@
     <unit id="663471305194376784">
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:63,64</note>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:39,40</note>
         <note category="location">src/app/features/gear/gear-inventory-page.html:42,43</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:45,46</note>
         <note category="location">src/app/features/scans/scans-page.html:262,263</note>
         <note category="location">src/app/features/scans/scans-page.html:573,574</note>
         <note category="location">src/app/features/scans/scans-page.html:674,675</note>
@@ -2835,25 +2835,24 @@
     </unit>
     <unit id="3455033311548057687">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:5,6</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:7,8</note>
         <note category="location">src/app/shared/equipment-sheet/equipment-sheet.html:1</note>
       </notes>
       <segment>
         <source>Equipamentos do personagem</source>
       </segment>
     </unit>
-    <unit id="7452952455455879352">
+    <unit id="7935443859719285258">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:9,10</note>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:18,19</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:12,13</note>
       </notes>
       <segment>
-        <source> Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras precisam ser conferidos no jogo. </source>
+        <source> Clique em qualquer slot da roda estilo BDO abaixo para selecionar ou atualizar a peça, o grau de aprimoramento (I a X) e o nível de Caphras. </source>
       </segment>
     </unit>
     <unit id="2515434080131507674">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:15,16</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:18,19</note>
       </notes>
       <segment>
         <source>SEU PERSONAGEM</source>
@@ -2861,15 +2860,23 @@
     </unit>
     <unit id="6188279410810459993">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:16,17</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:19,20</note>
       </notes>
       <segment>
         <source>Meus equipamentos</source>
       </segment>
     </unit>
+    <unit id="7452952455455879352">
+      <notes>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:21,22</note>
+      </notes>
+      <segment>
+        <source> Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras precisam ser conferidos no jogo. </source>
+      </segment>
+    </unit>
     <unit id="4981810595544297920">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:30,31</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:33,34</note>
       </notes>
       <segment>
         <source>Importar equipamentos por captura</source>
@@ -2877,7 +2884,7 @@
     </unit>
     <unit id="4232920333214166749">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:31,32</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:34,35</note>
       </notes>
       <segment>
         <source>Ver inventário</source>
@@ -2885,7 +2892,7 @@
     </unit>
     <unit id="5216058178315537102">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:44,45</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:47,48</note>
         <note category="location">src/app/features/world/worker-empire.html:211,212</note>
         <note category="location">src/app/features/world/worker-empire.html:259,260</note>
         <note category="location">src/app/features/world/worker-empire.html:268,269</note>
@@ -2896,7 +2903,7 @@
     </unit>
     <unit id="5541425023812945859">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:51,52</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:54,55</note>
         <note category="location">src/app/features/scans/scans-page.html:579,580</note>
         <note category="location">src/app/features/stock/stock-page.html:362,363</note>
       </notes>
@@ -2906,7 +2913,7 @@
     </unit>
     <unit id="6313273426602585292">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:52,53</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:55,56</note>
         <note category="location">src/app/features/scans/scans-page.html:129,133</note>
       </notes>
       <segment>
@@ -2915,7 +2922,7 @@
     </unit>
     <unit id="7903261741904285804">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:53,54</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:56,57</note>
       </notes>
       <segment>
         <source>Cadastrar</source>
@@ -2923,7 +2930,7 @@
     </unit>
     <unit id="5705459520633451793">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:60,61</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:64,65</note>
       </notes>
       <segment>
         <source>Informações de profissão da ficha</source>
@@ -2931,7 +2938,7 @@
     </unit>
     <unit id="548273195177229648">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:63,64</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:67,68</note>
       </notes>
       <segment>
         <source>Seu conjunto de Vida</source>
@@ -2939,7 +2946,7 @@
     </unit>
     <unit id="617661854021453641">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:65,66</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:69,70</note>
       </notes>
       <segment>
         <source> Ferramenta, traje e acessórios para suas profissões. Escolha uma posição para revisar o equipamento. </source>
@@ -2947,7 +2954,7 @@
     </unit>
     <unit id="6258612096474138127">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:71,72</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:75,76</note>
       </notes>
       <segment>
         <source>Maestria de</source>
@@ -2955,7 +2962,7 @@
     </unit>
     <unit id="7095332515949422901">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:78,79</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:82,83</note>
       </notes>
       <segment>
         <source>Valor informado na ficha</source>
@@ -2963,7 +2970,7 @@
     </unit>
     <unit id="9002223788191879952">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:81</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:85</note>
       </notes>
       <segment>
         <source>Energia atual</source>
@@ -2971,7 +2978,7 @@
     </unit>
     <unit id="4216415927257494556">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:82,83</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:86,87</note>
       </notes>
       <segment>
         <source>Informada pelo jogador</source>
@@ -2979,7 +2986,7 @@
     </unit>
     <unit id="4362207494348137756">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:85</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:89</note>
       </notes>
       <segment>
         <source>Limite de peso</source>
@@ -2987,7 +2994,7 @@
     </unit>
     <unit id="5992444185571230562">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:86,87</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:90,91</note>
       </notes>
       <segment>
         <source>Sem somar bônus dos itens</source>
@@ -2995,7 +3002,7 @@
     </unit>
     <unit id="1159254626495101734">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:90,91</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:94,95</note>
       </notes>
       <segment>
         <source> Os valores vêm da ficha. Zero pode indicar um campo ainda não preenchido; não calculamos sua maestria pela imagem dos equipamentos. </source>
@@ -3003,7 +3010,7 @@
     </unit>
     <unit id="1943646402939425738">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:104,105</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:109,110</note>
       </notes>
       <segment>
         <source> Os artefatos usam os complementos já cadastrados na ficha. Revise-os junto às pedras de luz para manter um único registro. </source>
@@ -3011,7 +3018,7 @@
     </unit>
     <unit id="4704476686251701206">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:114,115</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:118,119</note>
       </notes>
       <segment>
         <source>Editar complementos da ficha →</source>
@@ -3019,7 +3026,7 @@
     </unit>
     <unit id="6599291441493702939">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:119,120</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:123,124</note>
       </notes>
       <segment>
         <source>Adicionar ou corrigir equipamento manualmente</source>
@@ -3027,7 +3034,7 @@
     </unit>
     <unit id="5449016724233185474">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:127,128</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:131,132</note>
         <note category="location">src/app/features/scans/scans-page.html:948,949</note>
       </notes>
       <segment>
@@ -3036,7 +3043,7 @@
     </unit>
     <unit id="6313285399535659797">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:136,143</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:140,147</note>
       </notes>
       <segment>
         <source>Aprimoramento confirmado no jogo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -3050,7 +3057,7 @@
     </unit>
     <unit id="2398358354772223606">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:144,151</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:148,155</note>
       </notes>
       <segment>
         <source>Caphras confirmado no jogo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -3062,17 +3069,17 @@
                 /&gt;"/></source>
       </segment>
     </unit>
-    <unit id="8124080645917221127">
+    <unit id="5682285599797376002">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:155,156</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:171,172</note>
       </notes>
       <segment>
-        <source> 0 representa nível base. I a X usam 16 a 25 em armas e armaduras; acessórios usam 1 a 10. Confira o nível no jogo antes de confirmar. </source>
+        <source> Clique em um grau (I a X) acima ou digite o valor numérico. Confira o nível no jogo antes de confirmar. </source>
       </segment>
     </unit>
     <unit id="6462341279409219892">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:160,161</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:176,177</note>
       </notes>
       <segment>
         <source> Esta posição não usa o nível numérico de armas/armaduras. O item é registrado pela sua identidade, sem atribuir aprimoramento ou Caphras. </source>
@@ -3080,7 +3087,7 @@
     </unit>
     <unit id="4778469279164550525">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:173</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:189</note>
       </notes>
       <segment>
         <source> Confirmar equipamento nesta posição </source>

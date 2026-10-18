@@ -50,6 +50,7 @@ import { GearInventoryPage } from '../gear/gear-inventory-page';
     TutorialSurfaceDirective,
   ],
   templateUrl: './player-page.html',
+  styleUrl: './player-page.scss',
 })
 export class PlayerPage {
   readonly store = inject(WorkspaceStore);

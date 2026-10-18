@@ -101,4 +101,19 @@ describe('Progressive player workspace', () => {
         ?.getAttribute('title'),
     ).toContain('Artefato de Culinária');
   });
+
+  it('renders character sheet (P), equipment wheel (I), and family benefits in one unified page without requiring tab switches', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const page = fixture.componentInstance;
+    page.name = 'ShaiGuru';
+    page.create();
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.bdo-roster-panel')).not.toBeNull();
+    expect(element.querySelector('.bdo-p-window')).not.toBeNull();
+    expect(element.querySelector('.bdo-i-window app-gear-inventory-page')).not.toBeNull();
+    expect(element.querySelector('.bdo-family-grid')).not.toBeNull();
+    expect(element.querySelectorAll('.bdo-mastery-cell').length).toBeGreaterThanOrEqual(8);
+  });
 });

@@ -58,8 +58,26 @@
   font-size: 11px;
   color: var(--bm-muted);
 }
+.gear-embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gear-embedded > header.gear-embedded-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gear-embedded > .help {
+  margin: 0;
+}
+
 .equipment-editor {
-  margin-top: 16px;
+  margin-top: 14px;
   padding: 16px;
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
@@ -74,7 +92,7 @@
 }
 .equipment-editor .form-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
-  margin-block: 16px;
+  margin-block: 14px;
 }
 .equipment-editor label {
   font-size: 12px;
@@ -82,6 +100,44 @@
 .equipment-editor .help {
   font-size: 12px;
   line-height: 1.65;
+}
+.bdo-enhance-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--bm-border) 80%, transparent);
+  background: color-mix(in srgb, var(--bm-input) 85%, transparent);
+}
+.bdo-enhance-presets > span {
+  font-size: 11px;
+  color: var(--bm-muted);
+  margin-right: 4px;
+}
+.bdo-enhance-pill {
+  min-height: 28px;
+  padding: 3px 8px;
+  border: 1px solid var(--bm-control-border);
+  background: var(--bm-surface);
+  color: var(--bm-text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    border-color var(--bm-motion-fast) ease,
+    background-color var(--bm-motion-fast) ease,
+    color var(--bm-motion-fast) ease;
+}
+.bdo-enhance-pill:hover {
+  border-color: var(--bm-accent);
+}
+.bdo-enhance-pill.active {
+  border-color: var(--bm-accent);
+  background: color-mix(in srgb, var(--bm-accent) 18%, var(--bm-surface));
+  color: #f2dda4;
+  font-weight: 600;
 }
 .artifact-editor h4 {
   font-size: 14px;

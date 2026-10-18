@@ -101,6 +101,40 @@ export class GearInventoryPage {
   canEnhance(): boolean {
     return !['alchemyStone', 'tome'].includes(this.slot);
   }
+  isAccessorySlot(): boolean {
+    return /^(ring|earring|necklace|belt)/.test(this.slot);
+  }
+  enhancementPresets(): { label: string; value: number }[] {
+    if (this.isAccessorySlot()) {
+      return [
+        { label: 'Base', value: 0 },
+        { label: 'I (PRI)', value: 1 },
+        { label: 'II (DUO)', value: 2 },
+        { label: 'III (TRI)', value: 3 },
+        { label: 'IV (TET)', value: 4 },
+        { label: 'V (PEN)', value: 5 },
+        { label: 'VI (HEX)', value: 6 },
+        { label: 'VII (SEP)', value: 7 },
+        { label: 'VIII (OCT)', value: 8 },
+        { label: 'IX (NON)', value: 9 },
+        { label: 'X (DEC)', value: 10 },
+      ];
+    }
+    return [
+      { label: 'Base', value: 0 },
+      { label: '+15', value: 15 },
+      { label: 'I (PRI)', value: 16 },
+      { label: 'II (DUO)', value: 17 },
+      { label: 'III (TRI)', value: 18 },
+      { label: 'IV (TET)', value: 19 },
+      { label: 'V (PEN)', value: 20 },
+      { label: 'VI (HEX)', value: 21 },
+      { label: 'VII (SEP)', value: 22 },
+      { label: 'VIII (OCT)', value: 23 },
+      { label: 'IX (NON)', value: 24 },
+      { label: 'X (DEC)', value: 25 },
+    ];
+  }
   select(id: string) {
     this.store.update((state) => ({ ...state, activeCharacterId: id }));
   }

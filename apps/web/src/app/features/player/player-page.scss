@@ -1,0 +1,318 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.bdo-family-sheet {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 1360px;
+  padding-bottom: 2.5rem;
+}
+
+.bdo-jump-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.bdo-jump-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.3rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+  color: var(--bm-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
+
+  &:hover {
+    border-color: var(--bm-gold);
+    color: var(--bm-text);
+    background: rgba(201, 166, 107, 0.08);
+  }
+}
+
+.bdo-roster-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.bdo-roster-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0;
+}
+
+.bdo-roster-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.bdo-roster-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 1rem;
+  align-items: end;
+}
+
+.bdo-character-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.bdo-char-pill {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 150px;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-input);
+  color: var(--bm-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+
+  strong {
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  small {
+    font-size: 0.74rem;
+    color: var(--bm-muted);
+  }
+
+  &:hover {
+    border-color: var(--bm-border-strong);
+  }
+
+  &.active {
+    border-color: var(--bm-gold);
+    background: linear-gradient(180deg, rgba(201, 166, 107, 0.16), rgba(20, 18, 15, 0.96));
+    box-shadow: inset 0 0 0 1px rgba(201, 166, 107, 0.25);
+
+    strong {
+      color: var(--bm-gold-strong);
+    }
+  }
+}
+
+.bdo-quick-create-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bdo-sheet-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.bdo-p-window {
+  display: grid;
+  gap: 1.15rem;
+  min-width: 0;
+}
+
+.bdo-i-window {
+  min-width: 0;
+}
+
+.bdo-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.bdo-subpanel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: rgba(12, 12, 14, 0.55);
+}
+
+.bdo-subpanel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  h3 {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--bm-gold-strong);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: var(--bm-muted);
+  }
+}
+
+.bdo-mastery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.bdo-mastery-cell,
+.bdo-stat-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+
+  span {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bm-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  input {
+    width: 78px;
+    min-height: 2rem;
+    padding: 0.2rem 0.45rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--bm-gold-strong);
+  }
+}
+
+.bdo-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 0.5rem;
+}
+
+.bdo-complements-stack,
+.bdo-family-extras {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.bdo-complement-drawer {
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.55rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--bm-text);
+  }
+}
+
+.bdo-complement-body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem 0.8rem;
+  border-top: 1px solid var(--bm-border);
+}
+
+.bdo-complement-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  background: var(--bm-input);
+}
+
+.bdo-preset-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.bdo-family-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.bdo-skill-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.bdo-skill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid rgba(201, 166, 107, 0.35);
+  border-radius: 2px;
+  background: rgba(201, 166, 107, 0.1);
+  font-size: 0.78rem;
+  color: var(--bm-text);
+
+  strong {
+    color: var(--bm-gold-strong);
+  }
+}
+
+@media (max-width: 1120px) {
+  .bdo-sheet-grid,
+  .bdo-family-grid,
+  .bdo-roster-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .bdo-identity-grid,
+  .bdo-preset-grid,
+  .bdo-quick-create-row {
+    grid-template-columns: 1fr;
+  }
+}
