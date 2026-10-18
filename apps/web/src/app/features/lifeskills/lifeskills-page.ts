@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   type ActivityInput,
   activitySchema,
@@ -36,6 +38,7 @@ import { compareObservedSessions } from './observed-session-comparison';
     HlmButton,
     BdoSelect,
     FormsModule,
+    RouterLink,
     TaxOptionsComponent,
     PresetBar,
     CalculationProof,
@@ -46,6 +49,7 @@ import { compareObservedSessions } from './observed-session-comparison';
 })
 export class LifeskillsPage {
   private readonly analytics = inject(AnalyticsService);
+  private readonly route = inject(ActivatedRoute, { optional: true });
   readonly store = inject(WorkspaceStore);
   readonly skills = [
     { id: 'gathering', label: 'Coleta' },
@@ -71,6 +75,14 @@ export class LifeskillsPage {
         return 'lifeskills-sessions';
     }
   });
+  constructor() {
+    this.route?.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const requested = params.get('tab');
+      if (requested === 'sessions' || requested === 'mastery' || requested === 'training') {
+        this.tab.set(requested);
+      }
+    });
+  }
   readonly form = signal<ActivityInput>({
     ...defaultTax,
     name: 'Minha sessão',

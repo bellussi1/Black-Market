@@ -4,13 +4,28 @@
   [appTutorialSurfaceReady]="!!snapshot()"
 >
   <header class="tool-heading coach-heading">
-    <p class="tool-kicker">RECOMENDAÇÕES DE PRODUÇÃO</p>
+    <p class="tool-kicker">PROFISSÕES & O QUE FAZER</p>
     <h1>Faça prata com suas Life Skills</h1>
     <p>
-      Priorize produção dentro das atividades que você gosta e use o retorno para evoluir seu gear
-      de Life Skill e PvPvE.
+      Informe sua maestria, veja o que já pode produzir com seu armazém ou completando faltantes no
+      mercado e priorize itens com giro real de vendas.
     </p>
   </header>
+
+  <nav class="coach-hub-nav" aria-label="Ferramentas de Profissões e O que fazer">
+    <a class="coach-hub-tab active" routerLink="/recommendations" aria-current="page">
+      O que fazer (Receitas de Produção)
+    </a>
+    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'sessions' }">
+      Sessões em Campo (Coleta, Caça, Pesca)
+    </a>
+    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'mastery' }">
+      Retorno de Maestria
+    </a>
+    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'training' }">
+      Tempo de Treino
+    </a>
+  </nav>
 
   @if (message()) {
     <p class="notice" role="status" aria-live="polite">{{ message() }}</p>
@@ -51,10 +66,15 @@
   @if (snapshot(); as data) {
     @if (profile(); as player) {
       <section class="coach-context panel" aria-label="Perfil usado nas recomendações">
-        <div class="panel-heading">
-          <h2>Perfil da sessão</h2>
+        <div class="panel-heading coach-context-header">
+          <div>
+            <p class="tool-kicker">1. SEU PERSONAGEM & MAESTRIA</p>
+            <h2>Ajuste rápido de maestria e sessão</h2>
+          </div>
+          <a class="coach-family-link" routerLink="/family">Editar perfil completo e gear</a>
         </div>
-        <div class="context-character">
+
+        <div class="coach-inline-profile">
           <label class="field">
             <span>Personagem</span>
             <select
@@ -68,10 +88,72 @@
               }
             </select>
           </label>
-          <a routerLink="/family">Editar perfil e gear</a>
+          <label class="field">
+            <span>Maestria Culinária</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="3000"
+              step="50"
+              [ngModel]="player.mastery.cooking"
+              (change)="updateMastery('cooking', $any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
+          <label class="field">
+            <span>Maestria Alquimia</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="3000"
+              step="50"
+              [ngModel]="player.mastery.alchemy"
+              (change)="updateMastery('alchemy', $any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
+          <label class="field">
+            <span>Maestria Processamento</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="3000"
+              step="50"
+              [ngModel]="player.mastery.processing"
+              (change)="updateMastery('processing', $any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
+          <label class="field">
+            <span>Tempo de sessão (min)</span>
+            <input
+              hlmInput
+              type="number"
+              min="1"
+              max="1440"
+              step="15"
+              [ngModel]="player.activeMinutes"
+              (change)="updateSessionMinutes($any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
+          <label class="field">
+            <span>Orçamento livre (prata)</span>
+            <input
+              hlmInput
+              inputmode="numeric"
+              [ngModel]="player.silver"
+              (change)="updateSessionSilver($any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
         </div>
+
         <div class="profile-summary">
-          <span><small>Prata</small>{{ silver(player.silver) }}</span>
+          <span><small>Prata livre</small>{{ silver(player.silver) }}</span>
           <span><small>Sessão</small>{{ player.activeMinutes }} min</span>
           <span><small>Culinária</small>{{ player.mastery.cooking }} maestria</span>
           <span><small>Alquimia</small>{{ player.mastery.alchemy }} maestria</span>
@@ -79,7 +161,7 @@
           <span><small>Peso</small>{{ player.carriedWeight }} / {{ player.weightLimit }} LT</span>
         </div>
         <details class="gear-context">
-          <summary>Gear do personagem</summary>
+          <summary>Gear do personagem e premissas automáticas</summary>
           <p>
             @for (part of player.gear; track part.slot) {
               <span>{{ part.name }} · </span>
@@ -88,8 +170,9 @@
               <span>{{ outfit.name }} · </span>
             }
             <small
-              >O gear fica como contexto de progressão. Nesta versão, o cálculo usa as maestrias do
-              perfil e não atribui rendimento presumido aos equipamentos.</small
+              >Assumimos tempos padrão de 1,2s (Culinária/Alquimia) e 6,0s (Simples/Processamento)
+              ajustados pelo cozimento em massa da sua maestria. Você pode fazer o ajuste fino
+              abaixo.</small
             >
           </p>
         </details>
@@ -113,22 +196,45 @@
         <div>
           <h2 id="activity-preferences-title">Quais atividades você quer priorizar?</h2>
           <p>
-            As opções iniciais usam as receitas e modelos de produção disponíveis no Black Market.
+            Exibimos apenas consumíveis, refeições, elixires e materiais reais de Life Skill
+            (excluindo trajes, armaduras e equipamentos).
           </p>
         </div>
       </div>
-      <div class="skill-options">
-        @for (skill of activityOptions; track skill.id) {
-          <label class="skill-option">
-            <input
-              type="checkbox"
-              [checked]="preferredSkills().includes(skill.id)"
-              [disabled]="busy()"
-              (change)="toggleSkill(skill.id, $any($event.target).checked)"
-            />
-            <span>{{ skill.label }}</span>
-          </label>
-        }
+      <div class="coach-filters-bar">
+        <div class="skill-options">
+          @for (skill of activityOptions; track skill.id) {
+            <label class="skill-option">
+              <input
+                type="checkbox"
+                [checked]="preferredSkills().includes(skill.id)"
+                [disabled]="busy()"
+                (change)="toggleSkill(skill.id, $any($event.target).checked)"
+              />
+              <span>{{ skill.label }}</span>
+            </label>
+          }
+        </div>
+        <label class="skill-option liquidity-toggle">
+          <input
+            type="checkbox"
+            [checked]="requireLiquidity()"
+            (change)="requireLiquidity.set($any($event.target).checked)"
+          />
+          <span>Garantir volume de venda no mercado</span>
+        </label>
+      </div>
+      <div class="coach-search-bar">
+        <label class="field">
+          <span>Filtrar receita por nome</span>
+          <input
+            hlmInput
+            type="search"
+            placeholder="Ex.: Refeição de Cron, Fármaco da Harmonia, Madeira Compensada…"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event)"
+          />
+        </label>
       </div>
     </section>
 
@@ -157,6 +263,35 @@
           </p>
         }
       </div>
+
+      @if (plans()) {
+        <div class="coach-mode-tabs" role="group" aria-label="Recorte de estoque e faltantes">
+          <button
+            type="button"
+            class="coach-mode-tab"
+            [class.active]="viewTab() === 'all'"
+            (click)="viewTab.set('all')"
+          >
+            Melhor Lucro/Hora ({{ liquidPlans().length }})
+          </button>
+          <button
+            type="button"
+            class="coach-mode-tab"
+            [class.active]="viewTab() === 'storage'"
+            (click)="viewTab.set('storage')"
+          >
+            Usando seu Armazém ({{ storageReadyCount() }})
+          </button>
+          <button
+            type="button"
+            class="coach-mode-tab"
+            [class.active]="viewTab() === 'missing'"
+            (click)="viewTab.set('missing')"
+          >
+            Completando Itens Faltantes
+          </button>
+        </div>
+      }
 
       @if (!profile()) {
         <p class="coach-empty">
@@ -187,7 +322,15 @@
                       <a [routerLink]="['/recipes', row.recipeId]">{{ row.name }}</a>
                     </h3>
                     <p>{{ recommendationReason(row) }}</p>
-                    <small>{{ scenarioNames[row.scenario] }}</small>
+                    <div class="opportunity-badges">
+                      <span class="scenario-badge">{{ scenarioNames[row.scenario] }}</span>
+                      <span class="liquidity-badge">{{ tradeVolumeLabel(row.recipeId) }}</span>
+                      @if (ownedMaterials(row).length) {
+                        <span class="storage-badge">
+                          Usa {{ ownedMaterials(row).length }} item(ns) do seu armazém
+                        </span>
+                      }
+                    </div>
                     @if ($first) {
                       <small class="opportunity-leading-label">
                         Maior lucro líquido por hora entre os cenários completos deste recorte
@@ -208,8 +351,51 @@
                     {{ rounded((row.seconds ?? 0) / 60) }} min</span
                   >
                 </div>
+
+                @if (ownedMaterials(row).length || missingMaterials(row).length) {
+                  <div class="opportunity-stock-breakdown">
+                    @if (ownedMaterials(row).length) {
+                      <div class="stock-pill-group owned-group">
+                        <small>No seu Armazém:</small>
+                        <div class="stock-pills">
+                          @for (part of ownedMaterials(row); track part.itemId) {
+                            <span class="stock-pill owned">
+                              <app-item-icon
+                                [url]="icon(part.itemId)"
+                                [name]="name(part.itemId)"
+                                [grade]="grade(part.itemId)"
+                              />
+                              <span>{{ name(part.itemId) }} × {{ rounded(part.owned) }}</span>
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                    @if (missingMaterials(row).length) {
+                      <div class="stock-pill-group missing-group">
+                        <small>Itens faltantes (comprar / produzir):</small>
+                        <div class="stock-pills">
+                          @for (part of missingMaterials(row); track part.itemId) {
+                            <span class="stock-pill missing">
+                              <app-item-icon
+                                [url]="icon(part.itemId)"
+                                [name]="name(part.itemId)"
+                                [grade]="grade(part.itemId)"
+                              />
+                              <span>
+                                {{ name(part.itemId) }} ×
+                                {{ rounded(part.bought + part.produced) }}
+                              </span>
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
                 <details class="opportunity-details">
-                  <summary>Ver materiais, etapas e dados usados</summary>
+                  <summary>Ver materiais detalhados, etapas e premissas</summary>
                   <p>{{ row.crafts }} operações · {{ rounded(row.peakWeight) }} LT no pico</p>
                   @for (part of row.materials; track part.itemId) {
                     <div class="material-line">
@@ -250,10 +436,15 @@
           </ol>
         } @else {
           <div class="coach-empty">
-            <h3>Ainda não há uma comparação completa</h3>
+            <h3>Ainda não há uma comparação completa para este filtro</h3>
             <p>
-              Confira os tempos medidos e as pendências de preço abaixo. Valores desconhecidos ficam
-              fora do ranking até haver dados suficientes.
+              @if (viewTab() === 'storage') {
+                Nenhum cenário completo usa itens atualmente cadastrados no seu Armazém. Alterne
+                para "Melhor Lucro/Hora" ou cadastre seus itens no Armazém.
+              } @else {
+                Confira as pendências de preço abaixo ou desative o filtro de volume mínimo se
+                quiser inspecionar itens sem giro recente.
+              }
             </p>
           </div>
         }
@@ -343,20 +534,24 @@
 
     @if (profile() && methods().length) {
       <details class="calibration-section panel">
-        <summary>Revisar tempos medidos por atividade</summary>
+        <summary>Ajuste fino: revisar tempos medidos por atividade</summary>
         <p>
-          Informe uma vez o tempo médio por operação observado no seu setup. A maestria de Culinária
-          ajusta o cozimento em massa; gear, traje e buffs não recebem multiplicador presumido.
+          Por padrão assumimos 1,2s para Culinária/Alquimia e 6,0s para Culinária/Alquimia Simples e
+          Processamento. Se o seu setup for mais rápido (ex.: 1,0s), ajuste abaixo.
         </p>
         <div class="calibration-fields">
           @for (type of methods(); track type) {
             <label class="field">
-              <span>{{ methodLabel(type) }} · segundos por operação</span>
+              <span>
+                {{ methodLabel(type) }} · segundos por operação (padrão:
+                {{ defaultSecondsFor(type) }}s)
+              </span>
               <input
                 hlmInput
                 type="number"
                 min="0.001"
                 step="0.1"
+                [placeholder]="defaultSecondsFor(type) + 's'"
                 [ngModel]="calibration[type]?.seconds ?? null"
                 (ngModelChange)="setCalibrationDraft(type, $event)"
                 (blur)="saveCalibration(type)"
@@ -370,8 +565,7 @@
 
     <p class="coverage-note">
       Este ranking cobre produção de Culinária, Alquimia e Processamento com o catálogo da região
-      {{ data.dataset?.region ?? store.data().region }}. Grind/PvE, coleta, pesca e caça só entram
-      quando houver dados de rendimento revisados para comparar.
+      {{ data.dataset?.region ?? store.data().region }}.
       @if (data.dataset) {
         <span>Catálogo {{ data.dataset.version }} · importado {{ data.dataset.importedAt }}</span>
       }

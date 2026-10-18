@@ -6,10 +6,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService } from '../../core/market-cache.service';
 import { ProductionApi } from '../../core/production-api';
+import { defaultRecipeMethodSeconds } from '../../shared/recipe-tree/recipe-production-adapter';
 import { renderComponent as renderRawComponent, useMemoryStorage } from '../../testing/test-setup';
 import {
   canRequestProductionQuote,
   hasNpcPurchaseEvidence,
+  isEligibleLifeSkillRecipe,
   productionCraftSeconds,
   productionQuantity,
   recommendationMarketQuote,
@@ -882,5 +884,107 @@ describe('production recommendations', () => {
     expect(page.plans()).toBeNull();
     expect(page.busy()).toBe(false);
     expect(page.message()).toContain('mudaram durante');
+  });
+
+  it('filters out costumes, armor, weapons, accessories, and non-life-skill items while keeping cooking and alchemy', () => {
+    const baseRecipe = {
+      key: 'test',
+      type: 'COOKING',
+      station: null,
+      inputs: [{ itemId: 1, name: 'Material', quantity: '1' }],
+      outputs: [{ itemId: 2, name: 'Output', quantity: '1' }],
+    };
+    const makeItem = (overrides: Partial<ProductionCatalogResponse['items'][number]> = {}) => ({
+      id: 2,
+      name: 'Refeição de Valência',
+      description: null,
+      grade: '3',
+      category: 'Cook',
+      icon: null,
+      weight: '0.1',
+      categories: [],
+      sourceData: { marketable: true, maxEnhance: 0 },
+      ...overrides,
+    });
+    const mapFor = (item: ReturnType<typeof makeItem>) => new Map([[2, item]]);
+
+    expect(isEligibleLifeSkillRecipe(baseRecipe, mapFor(makeItem()))).toBe(true);
+    expect(canRequestProductionQuote(makeItem({ category: 'Cook' }))).toBe(true);
+    expect(canRequestProductionQuote(makeItem({ category: 'Mine' }))).toBe(true);
+    expect(canRequestProductionQuote(makeItem({ category: 'Leather' }))).toBe(true);
+
+    // Exclude costumes, armor, weapons, crystals, and enhanceable gear
+    expect(
+      isEligibleLifeSkillRecipe(
+        { ...baseRecipe, type: 'MANUFACTURE' },
+        mapFor(makeItem({ name: '[Traje] Armadura de Karlstein', category: 'Costume' })),
+      ),
+    ).toBe(false);
+    expect(
+      isEligibleLifeSkillRecipe(
+        { ...baseRecipe, type: 'MANUFACTURE' },
+        mapFor(makeItem({ name: 'Armadura do Deus Morto', category: 'Armor' })),
+      ),
+    ).toBe(false);
+    expect(
+      isEligibleLifeSkillRecipe(
+        { ...baseRecipe, type: 'MANUFACTURE' },
+        mapFor(
+          makeItem({
+            name: 'Espada Longa de Kzarka',
+            sourceData: { marketable: true, maxEnhance: 20 },
+          }),
+        ),
+      ),
+    ).toBe(false);
+  });
+
+  it('ranks recipes out-of-the-box using default method seconds without manual time calibration and supports storage/liquidity filters', async () => {
+    expect(defaultRecipeMethodSeconds('COOKING')).toBe(1.2);
+    expect(defaultRecipeMethodSeconds('SIMPLE_ALCHEMY')).toBe(6);
+
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'person',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+          weightLimit: 100,
+        }),
+      ],
+      inventory: [
+        {
+          id: 'stock-1',
+          name: 'Material',
+          region: 'sa',
+          itemId: 1,
+          quantity: 10,
+          location: 'Heidel',
+          price: '0',
+          target: 0,
+        },
+      ],
+    }));
+    await page.load();
+    page.manualPrice(1, '10');
+    page.manualPrice(2, '100');
+    // Note: no manual calibration set on page.calibration['ALCHEMY']!
+    await page.compare();
+
+    expect(page.plans()?.ranked.length).toBeGreaterThan(0);
+    const customPlan = page.plans()?.ranked.find((row) => row.scenario === 'produce-all');
+    expect(customPlan).toBeDefined();
+    expect(page.ownedMaterials(customPlan!).length).toBe(1);
+    expect(page.missingMaterials(customPlan!).length).toBe(1);
+
+    page.updateMastery('cooking', 1200);
+    expect(page.profile()?.mastery.cooking).toBe(1200);
   });
 });

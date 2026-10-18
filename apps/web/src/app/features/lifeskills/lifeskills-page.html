@@ -1,11 +1,11 @@
 <div class="tool-page" [appTutorialSurface]="tutorialSurface()">
   <header class="tool-heading">
-    <p class="tool-kicker"><ng-container i18n>06 / PROFISSÕES E TREINO</ng-container></p>
+    <p class="tool-kicker"><ng-container i18n>PROFISSÕES & O QUE FAZER</ng-container></p>
     <h1><ng-container i18n>Meça seu rendimento.</ng-container></h1>
     <p>
       <ng-container i18n
-        >Registre coleta, caça, pesca ou combate. Compare o retorno de uma melhoria de maestria e
-        estime o tempo de treino a partir do seu XP medido.
+        >Alterne entre as recomendações automáticas de receitas de Culinária/Alquimia/Processamento
+        e o registro de sessões em campo (coleta, caça, pesca), retorno de maestria e treino.
       </ng-container>
     </p>
     <p class="help lifeskills-local-note" i18n>
@@ -13,6 +13,39 @@
       dispositivos.
     </p>
   </header>
+  <div class="tabs">
+    <a hlmBtn variant="outline" routerLink="/recommendations">
+      <ng-container i18n>O que fazer (Receitas de Produção)</ng-container>
+    </a>
+    <button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [class.active]="tab() === 'sessions'"
+      [attr.aria-pressed]="tab() === 'sessions'"
+      (click)="tab.set('sessions')"
+    >
+      <ng-container i18n>Sessões e lucro</ng-container></button
+    ><button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [class.active]="tab() === 'mastery'"
+      [attr.aria-pressed]="tab() === 'mastery'"
+      (click)="tab.set('mastery')"
+    >
+      <ng-container i18n>Retorno de mastery</ng-container></button
+    ><button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [class.active]="tab() === 'training'"
+      [attr.aria-pressed]="tab() === 'training'"
+      (click)="tab.set('training')"
+    >
+      <ng-container i18n>Tempo de treino </ng-container>
+    </button>
+  </div>
   <section hlmCard class="panel">
     <h2 i18n>Contexto da atividade</h2>
     <div class="form-grid">
@@ -54,36 +87,6 @@
       sessão; não aplicamos multiplicadores desconhecidos.
     </p>
   </section>
-  <div class="tabs">
-    <button
-      hlmBtn
-      variant="outline"
-      type="button"
-      [class.active]="tab() === 'sessions'"
-      [attr.aria-pressed]="tab() === 'sessions'"
-      (click)="tab.set('sessions')"
-    >
-      <ng-container i18n>Sessões e lucro</ng-container></button
-    ><button
-      hlmBtn
-      variant="outline"
-      type="button"
-      [class.active]="tab() === 'mastery'"
-      [attr.aria-pressed]="tab() === 'mastery'"
-      (click)="tab.set('mastery')"
-    >
-      <ng-container i18n>Retorno de mastery</ng-container></button
-    ><button
-      hlmBtn
-      variant="outline"
-      type="button"
-      [class.active]="tab() === 'training'"
-      [attr.aria-pressed]="tab() === 'training'"
-      (click)="tab.set('training')"
-    >
-      <ng-container i18n>Tempo de treino </ng-container>
-    </button>
-  </div>
   @if (tab() === 'sessions') {
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"

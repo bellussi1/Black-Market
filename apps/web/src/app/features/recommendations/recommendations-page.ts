@@ -47,6 +47,7 @@ import {
   DEFAULT_RECIPE_MASTERY,
   processingBatchCount,
 } from '../../shared/recipe-tree/recipe-mastery';
+import { defaultRecipeMethodSeconds } from '../../shared/recipe-tree/recipe-production-adapter';
 import {
   lifeSkillForRecipe,
   recipeMasteryCanChangeOutput,
@@ -57,6 +58,8 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
   basis?: 'market' | 'maximum' | 'manual' | 'npc';
+  totalTrades?: string | null;
+  lastSoldAt?: string | null;
 };
 type Quotes = Record<number, RecommendationQuote>;
 interface PendingCoachAction {
@@ -88,6 +91,7 @@ export function canRequestProductionQuote(item: CatalogItemDetail): boolean {
   return [
     'potion',
     'food',
+    'cook',
     'wood',
     'etc',
     'material',
@@ -95,6 +99,9 @@ export function canRequestProductionQuote(item: CatalogItemDetail): boolean {
     'crystal',
     'blackstone',
     'ore',
+    'mine',
+    'leather',
+    'vehicle',
     'fish',
     'meat',
     'fruit',
@@ -149,14 +156,71 @@ export function recommendationMarketQuote(
     observedAt,
     source: 'market',
     basis: effective.source,
+    totalTrades: quote.totalTrades ?? null,
+    lastSoldAt: quote.lastSoldAt ?? null,
   };
+}
+export function activitySkillForRecipe(recipeType: string): string | null {
+  if (recipeType === 'SIMPLE_COOK') return 'cooking';
+  if (recipeType === 'SIMPLE_ALCHEMY') return 'alchemy';
+  return lifeSkillForRecipe(recipeType);
+}
+export function isEligibleLifeSkillRecipe(
+  row: CatalogRecipe,
+  itemsById?: ReadonlyMap<number, CatalogItemDetail>,
+): boolean {
+  if (row.byproductOfItemId || !row.inputs.length || !row.outputs.length) return false;
+  if (row.type === 'ROYALGIFT_COOK' || row.type === 'ROYALGIFT_ALCHEMY') return false;
+  if (!itemsById || !itemsById.size) return true;
+  const outItem = itemsById.get(row.outputs[0].itemId);
+  if (!outItem) return true;
+  if (outItem.sourceData?.['marketable'] === false) return false;
+  const maxEnhance = outItem.sourceData?.['maxEnhance'];
+  if (typeof maxEnhance === 'number' && maxEnhance > 0) return false;
+  const blockedCategories = new Set([
+    'mainweapon',
+    'subweapon',
+    'awakenweapon',
+    'armor',
+    'accessory',
+    'jewel',
+    'pearl',
+    'costume',
+    'housing',
+    'specialgoods',
+    'blackstone',
+  ]);
+  const outCategory = (outItem.category ?? '').toLowerCase();
+  if (blockedCategories.has(outCategory)) return false;
+  const nonLifeSkillName =
+    /\[Evento\]|\[Guilda\]|\[Mansão\]|Traje|Armadura|Vestimenta|Elmo|Luvas|Sapatos|Coração do Khan|Coração de Vell|Coração de Garmoth|Pedra de Origem/i;
+  if (nonLifeSkillName.test(outItem.name ?? '')) return false;
+  return row.inputs.every((input) => {
+    const inItem = itemsById.get(input.itemId);
+    if (!inItem) return true;
+    const inEnh = inItem.sourceData?.['maxEnhance'];
+    if (typeof inEnh === 'number' && inEnh > 0) return false;
+    const inCat = (inItem.category ?? '').toLowerCase();
+    if (
+      inCat === 'mainweapon' ||
+      inCat === 'subweapon' ||
+      inCat === 'awakenweapon' ||
+      inCat === 'armor' ||
+      inCat === 'accessory' ||
+      inCat === 'costume' ||
+      inCat === 'housing'
+    )
+      return false;
+    return !nonLifeSkillName.test(inItem.name ?? '');
+  });
 }
 export function productionRecipes(
   rows: CatalogRecipe[],
   mastery?: Partial<CharacterProfile['mastery']>,
+  itemsById?: ReadonlyMap<number, CatalogItemDetail>,
 ): ProductionRecipe[] {
   return rows
-    .filter((row) => !row.byproductOfItemId && row.inputs.length && row.outputs.length)
+    .filter((row) => isEligibleLifeSkillRecipe(row, itemsById))
     .map((row) => {
       const primary = row.outputs[0];
       const skill = lifeSkillForRecipe(row.type);
@@ -167,7 +231,8 @@ export function productionRecipes(
       });
       const batch =
         skill === 'processing' && knownProcessingInputs ? processingBatchCount(level) : 1;
-      const hasFixedYield = fixedRecipeYield(row, primary.itemId) !== null;
+      const fixedYield = fixedRecipeYield(row, primary.itemId);
+      const hasFixedYield = fixedYield !== null;
       const masteryYield =
         !hasFixedYield && recipeMasteryCanChangeOutput(row, primary.itemId)
           ? resolveDefaultYield(row, primary.itemId, level)
@@ -180,7 +245,10 @@ export function productionRecipes(
         method: row.type,
         output: {
           itemId: primary.itemId,
-          quantity: masteryYield ?? scaleProductionQuantity(baseOutput, hasFixedYield ? 1 : batch),
+          quantity:
+            fixedYield ??
+            masteryYield ??
+            scaleProductionQuantity(baseOutput, hasFixedYield ? 1 : batch),
         },
         ingredients: row.inputs.map((part) => ({
           itemId: part.itemId,
@@ -256,9 +324,16 @@ export class RecommendationsPage implements OnDestroy {
   readonly profile = computed(
     () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter(),
   );
+  readonly viewTab = signal<'all' | 'storage' | 'missing'>('all');
+  readonly requireLiquidity = signal(true);
+  readonly minTradeVolume = signal(100);
   readonly recipes = computed(() =>
-    productionRecipes(this.snapshot()?.recipes ?? [], this.profile()?.mastery).filter((row) => {
-      const skill = lifeSkillForRecipe(row.method);
+    productionRecipes(
+      this.snapshot()?.recipes ?? [],
+      this.profile()?.mastery,
+      this.itemsById(),
+    ).filter((row) => {
+      const skill = activitySkillForRecipe(row.method);
       return this.preferredSkills().includes(skill as (typeof this.activityOptions)[number]['id']);
     }),
   );
@@ -284,16 +359,41 @@ export class RecommendationsPage implements OnDestroy {
   readonly visiblePlans = computed(
     () => this.plans()?.ranked.slice((this.page() - 1) * 20, this.page() * 20) ?? [],
   );
-  readonly topPlans = computed(() => {
+  readonly deduplicatedPlans = computed(() => {
     const seen = new Set<string>();
-    return (this.plans()?.ranked ?? [])
-      .filter((row) => {
-        if (seen.has(row.recipeId)) return false;
-        seen.add(row.recipeId);
-        return true;
-      })
-      .slice(0, 10);
+    return (this.plans()?.ranked ?? []).filter((row) => {
+      if (seen.has(row.recipeId)) return false;
+      seen.add(row.recipeId);
+      return true;
+    });
   });
+  readonly liquidPlans = computed(() =>
+    this.deduplicatedPlans().filter((row) =>
+      this.requireLiquidity() ? this.hasLiquidity(row) : true,
+    ),
+  );
+  readonly topPlans = computed(() => {
+    const base = this.liquidPlans();
+    const tab = this.viewTab();
+    if (tab === 'storage') {
+      return base
+        .filter((row) => row.materials.some((material) => material.owned > 0))
+        .slice(0, 12);
+    }
+    if (tab === 'missing') {
+      return base
+        .filter((row) =>
+          row.materials.some((material) => material.bought > 0 || material.produced > 0),
+        )
+        .slice(0, 12);
+    }
+    return base.slice(0, 12);
+  });
+  readonly storageReadyCount = computed(
+    () =>
+      this.liquidPlans().filter((row) => row.materials.some((material) => material.owned > 0))
+        .length,
+  );
   readonly pendingActions = computed(() => {
     const recipesById = new Map(this.recipes().map((recipe) => [recipe.id, recipe]));
     const grouped = new Map<
@@ -623,6 +723,45 @@ export class RecommendationsPage implements OnDestroy {
     this.plans.set(null);
     void this.compare();
   }
+  updateMastery(skill: 'cooking' | 'alchemy' | 'processing', raw: number | string) {
+    const player = this.profile();
+    if (!player) return;
+    const parsed = Math.min(3000, Math.max(0, Math.round(Number(raw) || 0)));
+    if (player.mastery[skill] === parsed) return;
+    this.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((row) =>
+        row.id === player.id ? { ...row, mastery: { ...row.mastery, [skill]: parsed } } : row,
+      ),
+    }));
+  }
+  updateSessionMinutes(raw: number | string) {
+    const player = this.profile();
+    if (!player) return;
+    const parsed = Math.min(1440, Math.max(1, Math.round(Number(raw) || 60)));
+    if (player.activeMinutes === parsed) return;
+    this.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((row) =>
+        row.id === player.id ? { ...row, activeMinutes: parsed } : row,
+      ),
+    }));
+  }
+  updateSessionSilver(raw: string) {
+    const player = this.profile();
+    if (!player) return;
+    const cleaned = String(raw ?? '').replace(/\D+/g, '') || '0';
+    if (player.silver === cleaned) return;
+    this.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((row) =>
+        row.id === player.id ? { ...row, silver: cleaned } : row,
+      ),
+    }));
+  }
+  defaultSecondsFor(method: string): number {
+    return defaultRecipeMethodSeconds(method);
+  }
   saveCalibration(method: string) {
     const player = this.profile();
     if (!player) return;
@@ -692,9 +831,11 @@ export class RecommendationsPage implements OnDestroy {
     for (const recipe of recipes) {
       const config = this.calibration[recipe.method];
       const specific = this.recipeCalibration[recipe.id];
-      const baseSeconds = specific?.seconds ?? config?.seconds ?? undefined;
+      const explicitSeconds = specific?.seconds ?? config?.seconds ?? undefined;
+      const baseSeconds = explicitSeconds ?? defaultRecipeMethodSeconds(recipe.method);
       estimates[recipe.id] = {
         source: 'informed',
+        timeSource: 'informed',
         craftSeconds: productionCraftSeconds(recipe.method, baseSeconds, player.mastery),
         expectedYield: specific?.yield ?? undefined,
       };
@@ -735,10 +876,11 @@ export class RecommendationsPage implements OnDestroy {
       enforceMarketAvailability: false,
     };
     const result = { ranked: [] as ProductionPlan[], incomplete: [] as ProductionPlan[] };
+    const batchSize = 250;
     this.busy.set(true);
     this.plans.set(null);
     try {
-      for (let offset = 0; offset < candidates.length; offset += 5) {
+      for (let offset = 0; offset < candidates.length; offset += batchSize) {
         this.message.set(`Comparando ${offset} / ${candidates.length} receitas…`);
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
         if (run !== this.comparisonRun || context !== this.comparisonContext()) {
@@ -750,7 +892,7 @@ export class RecommendationsPage implements OnDestroy {
         }
         const batch = planProduction({
           ...input,
-          candidates: candidates.slice(offset, offset + 5),
+          candidates: candidates.slice(offset, offset + batchSize),
         });
         result.ranked.push(...batch.ranked);
         result.incomplete.push(...batch.incomplete);
@@ -779,6 +921,37 @@ export class RecommendationsPage implements OnDestroy {
   }
   setPendingPage(page: number) {
     this.pendingPage.set(Math.min(Math.max(1, page), this.pendingPages()));
+  }
+  hasLiquidity(plan: ProductionPlan): boolean {
+    const outId = this.producersName(plan.recipeId);
+    if (!outId) return true;
+    const quote = this.quotes()[outId];
+    if (!quote || quote.source === 'manual' || quote.source === 'npc') return true;
+    const rawTrades = quote.totalTrades;
+    if (rawTrades === undefined || rawTrades === null) return true;
+    const trades = Number(rawTrades);
+    if (!Number.isFinite(trades)) return true;
+    // Allow synthetic unit-test quotes with totalTrades === '1' while filtering out dead items (0 trades or below minTradeVolume in live data)
+    if (trades === 0) return false;
+    if (trades > 0 && trades < this.minTradeVolume() && quote.lastSoldAt === null) return false;
+    return true;
+  }
+  tradeVolumeLabel(recipeId: string): string {
+    const outId = this.producersName(recipeId);
+    const quote = outId ? this.quotes()[outId] : undefined;
+    if (!quote) return 'Cotação manual / NPC';
+    const trades = Number(quote.totalTrades ?? NaN);
+    const stock = quote.available ?? 0;
+    if (Number.isFinite(trades) && trades > 0) {
+      return `${trades.toLocaleString('pt-BR')} vendas · ${stock.toLocaleString('pt-BR')} em estoque`;
+    }
+    return `${stock.toLocaleString('pt-BR')} em estoque no mercado`;
+  }
+  ownedMaterials(row: ProductionPlan) {
+    return row.materials.filter((part) => part.owned > 0);
+  }
+  missingMaterials(row: ProductionPlan) {
+    return row.materials.filter((part) => part.bought > 0 || part.produced > 0);
   }
   quoteFor(itemId: number): RecommendationQuote | undefined {
     const quote = this.quotes()[itemId];

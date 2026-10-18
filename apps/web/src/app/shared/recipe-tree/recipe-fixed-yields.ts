@@ -36,9 +36,16 @@ const draughts: Record<number, number[][]> = {
   ],
 };
 export function fixedRecipeYield(recipe: CatalogRecipe, itemId: number): number | null {
-  if (recipe.type !== 'SIMPLE_ALCHEMY' || recipe.byproductOfItemId) return null;
+  if (recipe.byproductOfItemId) return null;
   const input = (id: number, quantity: number) =>
     recipe.inputs.some((p) => p.itemId === id && Number(p.quantity) === quantity);
+  // Simple Cooking Cron Meals (9691 Seafood, 9692 Simple, 9693 Exquisite):
+  // 1x without Nadia Rowen's Special Sauce (820015), 10x with 1x Nadia Rowen's Special Sauce (820015) and 10x Old Moon/Cron Spice (9019).
+  if (recipe.type === 'SIMPLE_COOK' && (itemId === 9691 || itemId === 9692 || itemId === 9693)) {
+    if (recipe.inputs.length === 4 && input(9019, 1) && !input(820015, 1)) return 1;
+    if (recipe.inputs.length === 5 && input(9019, 10) && input(820015, 1)) return 10;
+  }
+  if (recipe.type !== 'SIMPLE_ALCHEMY') return null;
   if (
     itemId === 1399 &&
     recipe.inputs.length === 5 &&

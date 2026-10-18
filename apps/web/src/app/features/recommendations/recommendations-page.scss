@@ -17,6 +17,43 @@
   max-width: 58rem;
 }
 
+.coach-hub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.coach-hub-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.35rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+  color: var(--bm-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
+
+  &:hover {
+    border-color: var(--bm-border-strong);
+    color: var(--bm-text);
+  }
+
+  &.active {
+    border-color: var(--bm-gold);
+    background: rgba(201, 166, 107, 0.14);
+    color: var(--bm-gold-strong);
+  }
+}
+
 .coach-context,
 .activity-preferences,
 .recommendations-section,
@@ -103,27 +140,173 @@
 
 .coach-context {
   display: grid;
-  grid-template-columns: minmax(12rem, 0.75fr) minmax(0, 2fr);
-  align-items: end;
-  gap: 0.75rem 1.5rem;
+  gap: 0.9rem;
 }
 
-.coach-context > .panel-heading {
-  grid-column: 1 / -1;
+.coach-context-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
   margin-bottom: 0;
 }
 
-.context-character {
-  display: grid;
-  align-content: end;
-  gap: 0.55rem;
-}
-
+.coach-family-link,
 .context-character > a,
 .opportunity-title a {
   color: var(--bm-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
+  font-size: 0.88rem;
+}
+
+.coach-inline-profile {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+}
+
+.coach-inline-profile .field {
+  margin: 0;
+}
+
+.coach-filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.coach-search-bar {
+  margin-top: 0.85rem;
+}
+
+.coach-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0 clamp(0.85rem, 2vw, 1.25rem) 0.85rem;
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.coach-mode-tab {
+  min-height: 38px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--bm-muted);
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.coach-mode-tab:hover {
+  color: var(--bm-text);
+  border-color: var(--bm-control-border);
+}
+
+.coach-mode-tab.active {
+  color: var(--bm-accent);
+  border-color: var(--bm-accent);
+  background: var(--bm-accent-soft);
+}
+
+.opportunity-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.scenario-badge,
+.liquidity-badge,
+.storage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 11px;
+  border-radius: 2px;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-input);
+  color: var(--bm-muted);
+}
+
+.liquidity-badge {
+  color: var(--bm-text);
+  border-color: color-mix(in srgb, var(--bm-accent) 42%, var(--bm-border));
+}
+
+.storage-badge {
+  color: var(--bm-accent);
+  background: var(--bm-accent-soft);
+  border-color: var(--bm-accent);
+}
+
+.opportunity-stock-breakdown {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.65rem 1rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+}
+
+.stock-pill-group {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.stock-pill-group > small {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--bm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.owned-group > small {
+  color: var(--bm-accent);
+}
+
+.stock-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.stock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 3px 8px 3px 4px;
+  font-size: 12px;
+  border-radius: 2px;
+  background: var(--bm-surface);
+  border: 1px solid var(--bm-border);
+}
+
+.stock-pill.owned {
+  border-color: color-mix(in srgb, var(--bm-accent) 55%, var(--bm-border));
+}
+
+.stock-pill app-item-icon {
+  --item-icon-size: 24px;
 }
 
 .profile-summary {
