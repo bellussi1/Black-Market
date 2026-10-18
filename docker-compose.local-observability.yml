@@ -1,0 +1,88 @@
+services:
+  local-observability-api:
+    profiles: ['local-observability']
+    image: black-market-local-observability-api:local
+    build:
+      context: .
+      args:
+        WEB_BUILD_CONFIGURATION: development
+    command: ['pnpm', '--filter', '@bdo/api', 'start:prod']
+    environment:
+      APP_ENV: local
+      NODE_ENV: development
+      LOCAL_METRICS_ENABLED: 'true'
+      PORT: 3000
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4200}
+      DATABASE_URL: ${CONTAINER_DATABASE_URL:-postgresql://bdo:bdo_local_only@postgres:5432/bdo_companion}
+      MARKET_PROVIDER_ENABLED: 'false'
+      MARKET_COLLECTOR_ENABLED: 'false'
+      MARKET_BOARD_COLLECTOR_ENABLED: 'false'
+      TRUST_PROXY: 'false'
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 20s
+
+  prometheus:
+    profiles: ['local-observability']
+    image: prom/prometheus:v3.15.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --web.external-url=http://localhost:9090/
+    ports:
+      - '127.0.0.1:9090:9090'
+    volumes:
+      - ./ops/local-observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - local_prometheus_data:/prometheus
+    depends_on:
+      local-observability-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    profiles: ['local-observability']
+    image: grafana/grafana:13.2.2
+    ports:
+      - '127.0.0.1:3001:3000'
+    environment:
+      GF_SERVER_ROOT_URL: http://localhost:3001/
+      GF_AUTH_ANONYMOUS_ENABLED: 'true'
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_DISABLE_LOGIN_FORM: 'true'
+      GF_AUTH_BASIC_ENABLED: 'false'
+      GF_USERS_VIEWERS_CAN_EDIT: 'false'
+      GF_SECURITY_DISABLE_GRAVATAR: 'true'
+      GF_SECURITY_COOKIE_SAMESITE: strict
+      GF_USERS_DEFAULT_THEME: dark
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+      GF_NEWS_NEWS_FEED_ENABLED: 'false'
+    volumes:
+      - local_grafana_data:/var/lib/grafana
+      - ./ops/local-observability/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/local-observability/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  local_prometheus_data:
+    name: black-market-local-prometheus-data
+  local_grafana_data:
+    name: black-market-local-grafana-data

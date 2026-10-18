@@ -1,0 +1,13 @@
+services:
+  adminer:
+    profiles: ['local-db-viewer']
+    image: adminer:6.1.2-standalone
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DB_DRIVER: pgsql
+    ports:
+      - '127.0.0.1:8082:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
