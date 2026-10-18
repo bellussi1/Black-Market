@@ -3,19 +3,76 @@
     <div class="home-entry" data-tour="home.main-actions">
       <div class="hero-intro">
         <p class="tool-kicker">
-          <ng-container i18n>BLACK MARKET · FERRAMENTA INDEPENDENTE</ng-container>
+          <ng-container i18n>BLACK MARKET · FERRAMENTA INDEPENDENTE · SA</ng-container>
         </p>
         @if (store.activeCharacter(); as profile) {
-          <h1 id="home-title" i18n>O próximo passo de {{ profile.name }}.</h1>
+          <h1 id="home-title" i18n>Maximize a prata por hora de {{ profile.name }}.</h1>
         } @else {
-          <h1 id="home-title" i18n>Menos preparação.<br />Mais possibilidades.</h1>
+          <h1 id="home-title" i18n>Saiba exatamente o que produzir, comprar ou vender no BDO.</h1>
         }
         <p class="hero-copy" i18n>
-          Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só
-          lugar.
+          O planejador de Life Skills e Mercado Central para jogadores da América do Sul: descubra
+          quais receitas realmente dão lucro com a sua maestria, use os itens parados no seu Armazém
+          e evite fabricar produtos sem liquidez de venda.
         </p>
-        <p class="hero-foot" i18n>Comece sem conta. Seus dados ficam salvos neste navegador.</p>
+
+        <ul class="hero-value-list" aria-label="Por que usar o Black Market" i18n-aria-label>
+          <li>
+            <strong i18n>Lucro real e liquidez SA</strong>
+            <span i18n
+              >Compara fabricar vs. comprar intermediários já descontando taxas do Mercado Central e
+              filtrando itens com volume real de venda.</span
+            >
+          </li>
+          <li>
+            <strong i18n>Armazém conectado por OCR</strong>
+            <span i18n
+              >Importe capturas de tela do seu Armazém e equipamentos em segundos para abater
+              automaticamente os insumos que você já possui.</span
+            >
+          </li>
+          <li>
+            <strong i18n>Recomendações sob medida (“O que fazer”)</strong>
+            <span i18n
+              >Informe a maestria do seu personagem uma única vez e receba o ranking instantâneo de
+              Culinária, Alquimia e Processamento em prata/hora.</span
+            >
+          </li>
+        </ul>
       </div>
+
+      @if (!identity.authenticated()) {
+        <section class="panel hero-paywall" aria-labelledby="hero-access-title">
+          <div class="panel-heading hero-paywall-head">
+            <div>
+              <p class="tool-kicker" i18n>ACESSO COMPLETO AO PLANEJADOR</p>
+              <h2 id="hero-access-title" i18n>Desbloqueie seu Armazém, OCR e Recomendações</h2>
+            </div>
+            <span class="badge hero-paywall-badge" i18n>ACESSO COM CONTA</span>
+          </div>
+          <p class="hero-paywall-copy" i18n>
+            A consulta pública de itens e receitas é livre. Entre com Google ou Steam para
+            desbloquear o <strong>Ranking personalizado (“O que fazer”)</strong>, o
+            <strong>Armazém em grade BDO</strong>, o <strong>Leitor de Capturas (OCR)</strong> e a
+            <strong>Ficha da Família (P + I)</strong> sincronizados na nuvem.
+          </p>
+          <div class="hero-unlocked-actions">
+            <button
+              hlmBtn
+              variant="outline"
+              class="btn hero-paywall-cta"
+              type="button"
+              (click)="openLoginPaywall('/recommendations')"
+              i18n
+            >
+              Entrar com Google ou Steam para liberar tudo
+            </button>
+            <a hlmBtn variant="outline" class="btn subtle" routerLink="/account" i18n
+              >Ver detalhes da conta</a
+            >
+          </div>
+        </section>
+      }
 
       <a
         hlmBtn

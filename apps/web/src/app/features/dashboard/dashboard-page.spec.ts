@@ -339,4 +339,27 @@ describe('DashboardPage', () => {
     expect(element.querySelectorAll('.home-focus-card')).toHaveLength(1);
     http.verify();
   });
+
+  it('displays value proposition pillars and opens the login dialog when clicking the hero paywall CTA', async () => {
+    const identity = {
+      authenticated: signal(false),
+      initialize: vi.fn().mockResolvedValue(undefined),
+    };
+    const fixture = await renderComponent(DashboardPage, {}, [
+      { provide: IdentityService, useValue: identity },
+    ]);
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne((request) => request.url.endsWith('/api/v1/roadmap'))
+      .flush({ entries: [], updatedAt: null });
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('.hero-value-list li')).toHaveLength(3);
+    const paywallBtn = element.querySelector<HTMLButtonElement>('.hero-paywall-cta');
+    expect(paywallBtn).not.toBeNull();
+    paywallBtn?.click();
+    expect(fixture.componentInstance.loginIntent.opened()).toBe(true);
+    http.verify();
+  });
 });

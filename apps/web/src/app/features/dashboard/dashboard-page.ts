@@ -20,6 +20,7 @@ import { finalize } from 'rxjs';
 import { isLoginRequiredPath } from '../../core/auth.guard';
 import { safeInternalReturnUrl } from '../../core/auth-return-url';
 import { IdentityService } from '../../core/identity.service';
+import { LoginIntentService } from '../../core/login-intent.service';
 import { isMvpPathEnabled, SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { RegionPreferences } from '../../core/region-preferences';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
@@ -64,6 +65,11 @@ export class DashboardPage implements OnInit {
   readonly isEnabled = isMvpPathEnabled;
   readonly store = inject(WorkspaceStore);
   readonly identity = inject(IdentityService);
+  readonly loginIntent = inject(LoginIntentService);
+
+  openLoginPaywall(targetPath = '/recommendations'): void {
+    this.loginIntent.request(targetPath);
+  }
   readonly preferences = inject(RegionPreferences);
   readonly counts = this.preferences.counts;
   readonly hasWorkspaceData = computed(() =>

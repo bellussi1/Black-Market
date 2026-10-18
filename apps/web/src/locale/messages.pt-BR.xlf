@@ -1808,49 +1808,145 @@
         <source>Esta receita tem quantidades ou rendimento ainda não confirmados. Preencha esses campos para calcular.</source>
       </segment>
     </unit>
-    <unit id="2485284416391546390">
+    <unit id="8653861294752302557">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.html:6</note>
       </notes>
       <segment>
-        <source>BLACK MARKET · FERRAMENTA INDEPENDENTE</source>
+        <source>BLACK MARKET · FERRAMENTA INDEPENDENTE · SA</source>
       </segment>
     </unit>
-    <unit id="7999153287047392623">
+    <unit id="2040672993792987619">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.html:9,10</note>
       </notes>
       <segment>
-        <source>O próximo passo de <ph id="0" equiv="INTERPOLATION" disp="{{ profile.name }}"/>.</source>
+        <source>Maximize a prata por hora de <ph id="0" equiv="INTERPOLATION" disp="{{ profile.name }}"/>.</source>
       </segment>
     </unit>
-    <unit id="6177150166135131125">
+    <unit id="7731407963997444883">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.html:11,12</note>
       </notes>
       <segment>
-        <source>Menos preparação.<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/>Mais possibilidades.</source>
+        <source>Saiba exatamente o que produzir, comprar ou vender no BDO.</source>
       </segment>
     </unit>
-    <unit id="7359609628647147931">
+    <unit id="4133010615027187781">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:14,15</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:14,16</note>
       </notes>
       <segment>
-        <source> Do item que você tem ao plano que quer executar. Consulte, importe e planeje em um só lugar. </source>
+        <source> O planejador de Life Skills e Mercado Central para jogadores da América do Sul: descubra quais receitas realmente dão lucro com a sua maestria, use os itens parados no seu Armazém e evite fabricar produtos sem liquidez de venda. </source>
       </segment>
     </unit>
-    <unit id="5747263918235900747">
+    <unit id="1527123970301722657">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:17,18</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:19</note>
       </notes>
       <segment>
-        <source>Comece sem conta. Seus dados ficam salvos neste navegador.</source>
+        <source>Por que usar o Black Market</source>
+      </segment>
+    </unit>
+    <unit id="1982191254406103656">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:21,22</note>
+      </notes>
+      <segment>
+        <source>Lucro real e liquidez SA</source>
+      </segment>
+    </unit>
+    <unit id="565751840995545750">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:23,24</note>
+      </notes>
+      <segment>
+        <source>Compara fabricar vs. comprar intermediários já descontando taxas do Mercado Central e filtrando itens com volume real de venda.</source>
+      </segment>
+    </unit>
+    <unit id="5883161598535186100">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Armazém conectado por OCR</source>
+      </segment>
+    </unit>
+    <unit id="5297244963866297651">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:30,31</note>
+      </notes>
+      <segment>
+        <source>Importe capturas de tela do seu Armazém e equipamentos em segundos para abater automaticamente os insumos que você já possui.</source>
+      </segment>
+    </unit>
+    <unit id="43461205398803013">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:35,36</note>
+      </notes>
+      <segment>
+        <source>Recomendações sob medida (“O que fazer”)</source>
+      </segment>
+    </unit>
+    <unit id="3200078483112902811">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:37,38</note>
+      </notes>
+      <segment>
+        <source>Informe a maestria do seu personagem uma única vez e receba o ranking instantâneo de Culinária, Alquimia e Processamento em prata/hora.</source>
+      </segment>
+    </unit>
+    <unit id="6358589081857844790">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:48,49</note>
+      </notes>
+      <segment>
+        <source>ACESSO COMPLETO AO PLANEJADOR</source>
+      </segment>
+    </unit>
+    <unit id="1837592050383975578">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:49,50</note>
+      </notes>
+      <segment>
+        <source>Desbloqueie seu Armazém, OCR e Recomendações</source>
+      </segment>
+    </unit>
+    <unit id="6242965231358099629">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:51,52</note>
+      </notes>
+      <segment>
+        <source>ACESSO COM CONTA</source>
+      </segment>
+    </unit>
+    <unit id="4479134444630194585">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:54,59</note>
+      </notes>
+      <segment>
+        <source> A consulta pública de itens e receitas é livre. Entre com Google ou Steam para desbloquear o <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Ranking personalizado (“O que fazer”)</pc>, o <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Armazém em grade BDO</pc>, o <pc id="2" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Leitor de Capturas (OCR)</pc> e a <pc id="3" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Ficha da Família (P + I)</pc> sincronizados na nuvem. </source>
+      </segment>
+    </unit>
+    <unit id="4421397070785202673">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:68</note>
+      </notes>
+      <segment>
+        <source> Entrar com Google ou Steam para liberar tudo </source>
+      </segment>
+    </unit>
+    <unit id="1986284568934428240">
+      <notes>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:71,72</note>
+      </notes>
+      <segment>
+        <source>Ver detalhes da conta</source>
       </segment>
     </unit>
     <unit id="3186839719843195748">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:28,29</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:85,86</note>
         <note category="location">src/app/layout/workspace-layout.ts:284</note>
         <note category="location">src/app/layout/workspace-layout.ts:401</note>
       </notes>
@@ -1860,7 +1956,7 @@
     </unit>
     <unit id="526840575679086725">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:35,36</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:92,93</note>
       </notes>
       <segment>
         <source>CONSULTA PÚBLICA</source>
@@ -1868,7 +1964,7 @@
     </unit>
     <unit id="7624186720784250888">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:36,37</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:93,94</note>
       </notes>
       <segment>
         <source>Busque um item</source>
@@ -1876,7 +1972,7 @@
     </unit>
     <unit id="2680235516322008591">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:38,39</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:95,96</note>
       </notes>
       <segment>
         <source>SEM CADASTRO</source>
@@ -1884,7 +1980,7 @@
     </unit>
     <unit id="3008075174207163656">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:41,42</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:98,99</note>
       </notes>
       <segment>
         <source>Nome ou ID do item</source>
@@ -1892,7 +1988,7 @@
     </unit>
     <unit id="3649760550946179451">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:50,51</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:107,108</note>
       </notes>
       <segment>
         <source>Explorar produção e origens</source>
@@ -1900,7 +1996,7 @@
     </unit>
     <unit id="5622279872749956822">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:58,59</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:115,116</note>
       </notes>
       <segment>
         <source>Consultar preço</source>
@@ -1908,7 +2004,7 @@
     </unit>
     <unit id="2336070232574375018">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:59,60</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:116,117</note>
       </notes>
       <segment>
         <source>Detalhes do item →</source>
@@ -1916,7 +2012,7 @@
     </unit>
     <unit id="4539518045654453416">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:63</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:120</note>
       </notes>
       <segment>
         <source> Selecione um resultado para abrir receitas, preços ou informações do catálogo. </source>
@@ -1924,7 +2020,7 @@
     </unit>
     <unit id="2090431141577291090">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:72,73</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:129,130</note>
       </notes>
       <segment>
         <source>TRILHA ATIVA DO PRODUTO</source>
@@ -1932,7 +2028,7 @@
     </unit>
     <unit id="4780340987072406206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:73,74</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:130,131</note>
       </notes>
       <segment>
         <source>Focos atuais</source>
@@ -1940,7 +2036,7 @@
     </unit>
     <unit id="4834018170348636372">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:77,78</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:134,135</note>
       </notes>
       <segment>
         <source>Ver Roadmap completo</source>
@@ -1948,7 +2044,7 @@
     </unit>
     <unit id="3849618480410693034">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:84,85</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:141,142</note>
       </notes>
       <segment>
         <source>Carregando focos do Roadmap…</source>
@@ -1956,7 +2052,7 @@
     </unit>
     <unit id="932826414627378206">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:112</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:169</note>
         <note category="location">src/app/features/recipes/recipes-page.html:41,42</note>
         <note category="location">src/app/features/roadmap/roadmap-page.html:60,61</note>
         <note category="location">src/app/features/scans/scans-page.html:294</note>
@@ -1968,7 +2064,7 @@
     </unit>
     <unit id="7375370981376205331">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:117,118</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:174,175</note>
       </notes>
       <segment>
         <source>Ainda não há foco ativo definido na trilha.</source>
@@ -1976,7 +2072,7 @@
     </unit>
     <unit id="781928456811062469">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:118,119</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:175,176</note>
       </notes>
       <segment>
         <source>Abrir Roadmap</source>
@@ -1984,8 +2080,8 @@
     </unit>
     <unit id="4857431980662452400">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:152,153</note>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:156,157</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:209,210</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:213,214</note>
       </notes>
       <segment>
         <source>Entrar para acessar</source>
@@ -1993,7 +2089,7 @@
     </unit>
     <unit id="5664887719499267382">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:161,162</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:218,219</note>
       </notes>
       <segment>
         <source>Ver no Roadmap</source>
@@ -2001,7 +2097,7 @@
     </unit>
     <unit id="7908809318381544433">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:181,182</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:238,239</note>
       </notes>
       <segment>
         <source>SEU ESPAÇO</source>
@@ -2009,7 +2105,7 @@
     </unit>
     <unit id="6970209319376830900">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:182,183</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:239,240</note>
       </notes>
       <segment>
         <source>Continue de onde parou</source>
@@ -2017,7 +2113,7 @@
     </unit>
     <unit id="2390245933811334922">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:192</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:249</note>
       </notes>
       <segment>
         <source>Abrir</source>
@@ -2025,7 +2121,7 @@
     </unit>
     <unit id="7612945010818850490">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:204,205</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:261,262</note>
       </notes>
       <segment>
         <source>Saiba de onde vêm os valores</source>
@@ -2033,7 +2129,7 @@
     </unit>
     <unit id="8364700149671171236">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:206,207</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:263,264</note>
       </notes>
       <segment>
         <source> Os cálculos usam os dados que você informa. Nas consultas ao mercado, confira a região, a fonte e o horário da cotação. </source>
@@ -2041,7 +2137,7 @@
     </unit>
     <unit id="266310373278766924">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.html:210,211</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.html:267,268</note>
       </notes>
       <segment>
         <source>Como a plataforma funciona</source>
@@ -2049,7 +2145,7 @@
     </unit>
     <unit id="6949793260909500979">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.ts:110</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.ts:116</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:242,243</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:104</note>
         <note category="location">src/app/features/roadmap/roadmap-page.ts:60</note>
@@ -2060,7 +2156,7 @@
     </unit>
     <unit id="4791265588045339808">
       <notes>
-        <note category="location">src/app/features/dashboard/dashboard-page.ts:110</note>
+        <note category="location">src/app/features/dashboard/dashboard-page.ts:116</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:243,244</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:104</note>
         <note category="location">src/app/features/roadmap/roadmap-page.ts:60</note>
@@ -3018,7 +3114,7 @@
     </unit>
     <unit id="4704476686251701206">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:118,119</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:113,114</note>
       </notes>
       <segment>
         <source>Editar complementos da ficha →</source>
@@ -3026,7 +3122,7 @@
     </unit>
     <unit id="6599291441493702939">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:123,124</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:118,119</note>
       </notes>
       <segment>
         <source>Adicionar ou corrigir equipamento manualmente</source>
@@ -3034,7 +3130,7 @@
     </unit>
     <unit id="5449016724233185474">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:131,132</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:126,127</note>
         <note category="location">src/app/features/scans/scans-page.html:948,949</note>
       </notes>
       <segment>
@@ -3043,7 +3139,7 @@
     </unit>
     <unit id="6313285399535659797">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:140,147</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:135,142</note>
       </notes>
       <segment>
         <source>Aprimoramento confirmado no jogo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -3057,7 +3153,7 @@
     </unit>
     <unit id="2398358354772223606">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:148,155</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:143,150</note>
       </notes>
       <segment>
         <source>Caphras confirmado no jogo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -3071,7 +3167,7 @@
     </unit>
     <unit id="5682285599797376002">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:171,172</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:170,171</note>
       </notes>
       <segment>
         <source> Clique em um grau (I a X) acima ou digite o valor numérico. Confira o nível no jogo antes de confirmar. </source>
@@ -3079,7 +3175,7 @@
     </unit>
     <unit id="6462341279409219892">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:176,177</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:175,176</note>
       </notes>
       <segment>
         <source> Esta posição não usa o nível numérico de armas/armaduras. O item é registrado pela sua identidade, sem atribuir aprimoramento ou Caphras. </source>
@@ -3087,7 +3183,7 @@
     </unit>
     <unit id="4778469279164550525">
       <notes>
-        <note category="location">src/app/features/gear/gear-inventory-page.html:189</note>
+        <note category="location">src/app/features/gear/gear-inventory-page.html:188</note>
       </notes>
       <segment>
         <source> Confirmar equipamento nesta posição </source>
