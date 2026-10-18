@@ -114,6 +114,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
+            "runnerConfig": "vitest-base.config.mts",
             "isolate": true
           }
         },
