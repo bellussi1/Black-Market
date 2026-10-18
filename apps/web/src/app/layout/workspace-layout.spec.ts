@@ -196,22 +196,28 @@ describe('workspace navigation', () => {
     expect(TestBed.inject(LoginIntentService).returnUrl()).toBe('/family?tab=equipment#gear');
   });
 
-  it('uses the supplied logo and preserves the separate wordmark', async () => {
+  it('uses the favicon emblem logo, preserves the separate wordmark, and never repeats sidebar icons', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity() },
     ]);
     const brand = (fixture.nativeElement as HTMLElement).querySelector('.brand')!;
     const wordmark = brand.querySelector('.brand-wordmark')!;
 
-    expect(brand.querySelector('.brand-symbol')?.getAttribute('src')).toBe('/brand-mark.png');
+    expect(brand.querySelector('.brand-emblem')).not.toBeNull();
+    expect(brand.querySelector('.brand-symbol')?.getAttribute('src')).toBe('/favicon.svg');
     expect(brand.querySelector('.brand-symbol')?.getAttribute('alt')).toBe('');
     expect(brand.querySelector('.brand-symbol')?.getAttribute('aria-hidden')).toBe('true');
-    expect(brand.querySelector('.brand-symbol')?.classList.contains('brand-symbol--trimmed')).toBe(
-      true,
-    );
     expect(wordmark.children[0].textContent?.trim()).toBe('BLACK');
     expect(wordmark.children[1].textContent?.trim()).toBe('MARKET');
     expect(brand.querySelector('.brand-market')?.textContent?.trim()).toBe('MARKET');
+
+    const layout = fixture.componentInstance;
+    const allIconNames = [
+      ...layout.primaryLinks().map((l) => l.icon),
+      ...layout.navGroups().map((g) => g.icon),
+      ...layout.navGroups().flatMap((g) => g.links.map((l) => l.icon)),
+    ].filter(Boolean);
+    expect(new Set(allIconNames).size).toBe(allIconNames.length);
   });
 
   it('keeps the non-affiliation disclosure beside the game name in the shell', async () => {

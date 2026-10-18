@@ -17,6 +17,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import type { CatalogItem } from '@bdo/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideBookmarkCheck,
   lucideBookOpenText,
   lucideBoxes,
   lucideChartNoAxesCombined,
@@ -32,6 +33,7 @@ import {
   lucidePickaxe,
   lucideScanLine,
   lucideSettings,
+  lucideShieldQuestionMark,
   lucideSparkles,
   lucideStore,
   lucideUsersRound,
@@ -87,6 +89,7 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
     provideIcons(
       SCREENSHOT_MVP
         ? {
+            lucideBookmarkCheck,
             lucideBookOpenText,
             lucideBoxes,
             lucideChevronDown,
@@ -99,12 +102,14 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
             lucidePickaxe,
             lucideScanLine,
             lucideSettings,
+            lucideShieldQuestionMark,
             lucideStore,
             lucideUsersRound,
             lucideWarehouse,
             lucideX,
           }
         : {
+            lucideBookmarkCheck,
             lucideBookOpenText,
             lucideBoxes,
             lucideChartNoAxesCombined,
@@ -120,6 +125,7 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
             lucidePickaxe,
             lucideScanLine,
             lucideSettings,
+            lucideShieldQuestionMark,
             lucideSparkles,
             lucideStore,
             lucideUsersRound,
@@ -334,14 +340,14 @@ export class WorkspaceLayout {
             {
               path: '/plans',
               label: $localize`Meus planos`,
-              icon: 'lucideListChecks',
+              icon: 'lucideBookmarkCheck',
               requiresAuth: true,
             },
           ],
         },
         {
           title: $localize`Guias e conta`,
-          icon: 'lucideBookOpenText',
+          icon: 'lucideShieldQuestionMark',
           links: [
             {
               path: '/settings',
@@ -437,7 +443,7 @@ export class WorkspaceLayout {
             {
               path: '/plans',
               label: $localize`Meus planos`,
-              icon: 'lucideListChecks',
+              icon: 'lucideBookmarkCheck',
               requiresAuth: true,
             },
 
@@ -447,7 +453,7 @@ export class WorkspaceLayout {
 
         {
           title: $localize`Guias e conta`,
-          icon: 'lucideBookOpenText',
+          icon: 'lucideShieldQuestionMark',
 
           links: [
             { path: '/reference', label: $localize`Guia do mundo`, icon: 'lucideBookOpenText' },
