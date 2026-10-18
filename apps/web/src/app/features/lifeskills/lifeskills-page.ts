@@ -25,6 +25,7 @@ import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
+import { compareObservedSessions } from './observed-session-comparison';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',
@@ -96,6 +97,12 @@ export class LifeskillsPage {
       perHour: minutes > 0 ? String((profit * 60_000n) / BigInt(Math.round(minutes * 1000))) : null,
     };
   });
+  readonly comparisons = computed(() =>
+    compareObservedSessions(this.store.data().sessions, this.store.data().region),
+  );
+  skillLabel(skill: ActivityInput['skill']): string {
+    return this.skills.find((row) => row.id === skill)?.label ?? 'Não informada';
+  }
   readonly silver = silver;
   readonly number = number;
   readonly date = date;

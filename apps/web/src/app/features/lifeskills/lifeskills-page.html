@@ -217,6 +217,82 @@
         </p>
       </section>
     </div>
+    @if (comparisons().length) {
+      <section
+        hlmCard
+        class="panel"
+        data-session-comparison
+        aria-labelledby="session-comparison-title"
+      >
+        <h2 id="session-comparison-title" i18n>
+          Compare suas atividades · {{ store.data().region.toUpperCase() }}
+        </h2>
+        <p class="help" i18n>
+          Ordenado por prata líquida/h observada: lucro total dividido pelo tempo total, sem média
+          simples das taxas. Cada linha reúne a mesma rota, profissão, maestria e modo informados.
+        </p>
+        <div
+          class="max-w-full overflow-x-auto"
+          tabindex="0"
+          role="region"
+          aria-label="Comparação das sessões observadas"
+          i18n-aria-label
+        >
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col" i18n>Atividade / contexto</th>
+                <th scope="col" i18n>Amostra</th>
+                <th scope="col" i18n>Tempo total</th>
+                <th scope="col" i18n>Lucro total</th>
+                <th scope="col" i18n>Prata líquida / h</th>
+                <th scope="col" i18n>Período registrado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of comparisons(); track row.key) {
+                <tr>
+                  <th scope="row" class="min-w-48 whitespace-normal break-words">
+                    {{ row.name }}
+                    <p class="help">
+                      {{ skillLabel(row.skill) }} ·
+                      @if (row.mode === 'active') {
+                        <ng-container i18n>Ativo</ng-container>
+                      } @else if (row.mode === 'afk') {
+                        <ng-container i18n>AFK</ng-container>
+                      } @else {
+                        <ng-container i18n>Modo não informado</ng-container>
+                      }
+                      ·
+                      @if (row.mastery !== undefined) {
+                        <ng-container i18n>Maestria {{ number(row.mastery) }}</ng-container>
+                      } @else {
+                        <ng-container i18n>Maestria não informada</ng-container>
+                      }
+                    </p>
+                  </th>
+                  <td>
+                    <ng-container i18n>{{ number(row.count) }} sessões</ng-container>
+                  </td>
+                  <td>
+                    <ng-container i18n>{{ number(row.minutes, 3) }} min</ng-container>
+                  </td>
+                  <td [class.negative]="row.profit.startsWith('-')">{{ silver(row.profit) }}</td>
+                  <td [class.negative]="row.perHour.startsWith('-')">{{ silver(row.perHour) }}</td>
+                  <td>{{ date(row.firstAt) }} – {{ date(row.lastAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="notice" i18n>
+          São observações pessoais com os preços e impostos registrados, sem atualização para a
+          cotação atual. Patch, equipamento e buffs podem variar dentro da amostra. Não é uma
+          comparação controlada, previsão por maestria ou garantia de drops e vendas. Uma sessão
+          ainda é uma amostra limitada.
+        </p>
+      </section>
+    }
     <section hlmCard class="panel">
       <h2>
         <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
