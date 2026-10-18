@@ -327,3 +327,9 @@ Desktop e 390×844 revisados; a página estreita não tem overflow horizontal. E
 ### Atualização — bundle inicial abaixo do aviso (18/10/2026)
 
 O metafile do Angular mostrou dados `pt` redundantes no bundle inicial: `app.config` registrava dados que os polyfills já carregam, enquanto o único `DecimalPipe` do produto está no importador de captura lazy. Removi o registro eager; a spec confirma formatação `pt-BR` (`1.234,5`). O build passou de 501,06 para 499,60 kB (134,70 kB estimados em transferência), sem alterar o budget. A spec focada passou 6/6, `pnpm check`, `pnpm test:ssr` e build de produção passaram. Commit do código `bb5bd64`; documentação em commit próprio. Sem banco/dados externos ou deploy. PERF-01 fica concluído no alvo local; preservar o plano visual3 não rastreado.
+
+### Atualização — DATA-05 no extrator, Etapas expansíveis e QA visual ao vivo (18/10/2026)
+
+- **`DATA-05` (`4620fe7`)**: `readExtractorDataset` (`apps/api/src/catalog/extractor-dataset.ts`) agora classifica subprodutos aleatórios na importação e grava `sourceData.randomByproduct = true`. `CatalogService` consome `isRandomByproductItem`, mantendo fallback localizado por descrição para datasets já publicados.
+- **Aba “Etapas expansíveis” (`d459a07`)**: `RecipeBranch` exibe selo de método/decisão (`step-action-badge`), quantidade necessária, estoque utilizado (`Estoque: X`) e status (`No estoque` / `Faltam Y`) direto na linha de resumo, mantendo controles secundários recolhidos em `Ajustes`.
+- **QA visual ao vivo (`TOUR-01`, `AUTH-02`, Home, Ficha rápida, Etapas expansíveis)**: validado via Playwright com `localhost:3000` e `localhost:4200` ativos em `1440×900` e `390×844` sem overflow horizontal. `pnpm check`, `pnpm build` (`499,60 kB` brutos / `134,68 kB` transferidos) e `pnpm test:ssr` passaram. Veja `docs/ACTIVE_CONTEXT.md` §177. Preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado.
