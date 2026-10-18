@@ -37,9 +37,7 @@
   border: 1px solid color-mix(in srgb, var(--bm-accent) 42%, var(--bm-border));
   border-left: 2px solid var(--bm-accent);
   border-radius: 2px;
-  background:
-    linear-gradient(135deg, rgb(211 161 111 / 12%), transparent 62%),
-    var(--bm-surface);
+  background: linear-gradient(135deg, rgb(211 161 111 / 12%), transparent 62%), var(--bm-surface);
   transition:
     border-color 160ms ease,
     background-color 160ms ease;
@@ -467,6 +465,10 @@
 
 .content-frame {
   min-width: 0;
+}
+
+#workspace-main {
+  view-transition-name: workspace-page;
 }
 
 .ad-rail {

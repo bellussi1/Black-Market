@@ -7,7 +7,7 @@ import {
   withI18nSupport,
   withNoIncrementalHydration,
 } from '@angular/platform-browser';
-import { provideRouter, TitleStrategy } from '@angular/router';
+import { provideRouter, TitleStrategy, withViewTransitions } from '@angular/router';
 
 import { routes } from './app.routes';
 import { uiLocale } from './core/locale';
@@ -17,7 +17,18 @@ import { SeoService } from './core/seo.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withViewTransitions({
+        skipInitialTransition: true,
+        onViewTransitionCreated: ({ transition, from, to }) => {
+          const path = (snapshot: typeof from): string =>
+            snapshot.url.map((segment) => segment.path).join('/') +
+            (snapshot.firstChild ? '/' + path(snapshot.firstChild) : '');
+          if (path(from) === path(to)) transition.skipTransition();
+        },
+      }),
+    ),
     { provide: TitleStrategy, useExisting: SeoService },
     provideHttpClient(withInterceptors([operationalErrorInterceptor])),
     { provide: ErrorHandler, useClass: SafeFrontendErrorHandler },

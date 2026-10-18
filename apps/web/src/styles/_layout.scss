@@ -104,3 +104,37 @@
     letter-spacing: 0.15em;
   }
 }
+
+/* Route enter/exit (View Transitions API). Must be global: pseudo-elements live on the document. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(workspace-page) {
+  animation: route-exit 120ms ease-in both;
+}
+
+::view-transition-new(workspace-page) {
+  animation: route-enter 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes route-exit {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(workspace-page),
+  ::view-transition-new(workspace-page) {
+    animation: none;
+  }
+}
