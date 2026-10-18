@@ -1982,3 +1982,23 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
   - Inspeção visual ao vivo no Playwright em `1440×900` validou a nova grade BDO de `/storage` (com pílulas de cidade e slots com contador), o ranking instantâneo em `/recommendations` (com abas de Armazém/Faltantes e volume de vendas) e a navegação unificada com `/lifeskills`.
   - `pnpm check`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` passaram. O bundle inicial permaneceu em **`499,98 kB` brutos** (`134,78 kB` estimados em transferência), abaixo do aviso de `500 kB`.
 - **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
+
+## 181. Unificação da tela de Família (`/family`) em janela contínua estilo BDO (Ficha P + Roda de Equipamento I) (Antigravity, 18/10/2026)
+
+- **Pedido do usuário:** remover a fragmentação em 3 abas separadas (`Personagens`, `Equipamentos`, `Família e benefícios`) em `/family` (`http://localhost:4200/family`), unificar tudo em uma única tela contínua e aprimorar a interface para parecer com a janela de Personagem (P) + Equipamento (I) do Black Desert Online, tornando o preenchimento muito mais rápido e direto.
+- **Implementação em `PlayerPage` (`apps/web/src/app/features/player/player-page.ts`, `.html`, `.scss`, `.spec.ts`):**
+  - Eliminado o ocultamento condicional `@if (activeTab() === ...)` que escondia 2/3 da tela por vez; toda a estação de trabalho agora é renderizada junta em `.bdo-family-sheet`, com barra superior de salto rápido por âncora (`.bdo-jump-bar`):
+    1. **Personagens da Região & Criação Rápida (`#section-character` / `.bdo-roster-panel`)**: cartões clicáveis estilo seleção de personagem do BDO (`.bdo-char-pill`) com classe/nível, criação inline pelo nome em 1 clique e atalhos diretos para `/scans?type=gear` e `/storage?tab=inventory`.
+    2. **Ficha do Personagem (P) + Janela de Equipamento (I) lado a lado (`.bdo-sheet-grid`)**:
+       - **Coluna Esquerda — Ficha do Personagem (P) (`.bdo-p-window`)**: dados básicos (`Nome`, `Classe`, `Especialização`), grade de **Maestria por Profissão** (`.bdo-mastery-grid`) sempre aberta em 2 colunas com salvamento automático ao sair do campo (`blur`), grade de **Atributos, Peso, Energia & Combate** (`.bdo-stats-grid`) sempre visível e seção de **Conjuntos e Complementos** (`Artefatos`, `Pedras de Luz`, `Cristais`, `Trajes de Pérola` e `Presets`).
+       - **Coluna Direita — Janela de Equipamento (I) (`#section-equipment` / `.bdo-i-window`)**: exibe `<app-gear-inventory-page [embedded]="true" />` permanentemente ao lado da Ficha P, com a roda orbital de 19 slots (`<app-equipment-sheet>`) e o editor inline da posição selecionada logo abaixo.
+    3. **Conta, Impostos do Mercado Central & Graduações da Família (`#section-family` / `.bdo-family-grid`)**: painel de dados compartilhados da família (`Nome da família`, `CP`, `Energia máxima`, `<app-tax-options>` com pacote econômico/fama/anel) lado a lado com o painel de graduações de Life Skill da família (`Iniciante` a `Guru`) e gavetas de `Pets` e `Montarias`.
+- **Implementação em `GearInventoryPage` e `EquipmentSheet` (`apps/web/src/app/features/gear/gear-inventory-page.ts`, `.html`, `.scss`, `.spec.ts` e `apps/web/src/app/shared/equipment-sheet/equipment-sheet.scss`):**
+  - Adicionados botões rápidos de grau de aprimoramento BDO em 1 clique (`.bdo-enhance-presets` / `.bdo-enhance-pill`): `Base`, `+15`, `I (PRI)` até `X (DEC)` (`16..25` para armas/armaduras/trajes e `1..10` para acessórios como anéis, brincos, colares e cintos).
+  - Ocultado o resumo duplicado `.gear-life-summary` quando `embedded() === true` (já que a Ficha P ao lado exibe todas as maestrias, energia e peso).
+  - Adicionada `@container (max-width: 720px)` em `equipment-sheet.scss` para que a roda de equipamento e o editor de slot empilhem verticalmente com largura total quando embutidos na coluna direita de `/family`.
+- **Verificação e Qualidade:**
+  - `13/13` testes unitários aprovados em `player-page.spec.ts` e `gear-inventory-page.spec.ts`.
+  - Inspeção visual ao vivo no Playwright em `1440×900` e `390×844` confirmou a janela dupla Ficha P + Equipamento I lado a lado no desktop, pílulas romanas `I (PRI)`..`X (DEC)` e empilhamento limpo no mobile sem overflow horizontal.
+  - `pnpm check`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` aprovados, mantendo o bundle inicial abaixo de `500 kB`.
+- **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
