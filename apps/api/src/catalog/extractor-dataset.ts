@@ -160,6 +160,33 @@ function outputItem(output: z.infer<typeof recipeOutputSchema>): {
   return { itemId: output.item, quantity: output.count ?? null };
 }
 
+export const BYPRODUCT_DESCRIPTION_TERMS = ['subproduto', 'subproducto', 'byproduct'] as const;
+export const RANDOM_YIELD_DESCRIPTION_TERMS = [
+  'aleatoriamente',
+  'randomly',
+  'probability',
+  'probabilidade',
+  'probabilidad',
+  'chance',
+] as const;
+
+export function isRandomByproductDescription(description: string | null | undefined): boolean {
+  const normalized = description?.toLocaleLowerCase() ?? '';
+  return (
+    BYPRODUCT_DESCRIPTION_TERMS.some((term) => normalized.includes(term)) &&
+    RANDOM_YIELD_DESCRIPTION_TERMS.some((term) => normalized.includes(term))
+  );
+}
+
+export function isRandomByproductItem(item: {
+  description?: string | null;
+  sourceData?: Record<string, unknown> | null;
+}): boolean {
+  return (
+    item.sourceData?.['randomByproduct'] === true || isRandomByproductDescription(item.description)
+  );
+}
+
 export async function readExtractorDataset(
   inputDirectory: string,
   supplementOptions?: RecipeSupplementOptions,
@@ -250,6 +277,10 @@ export async function readExtractorDataset(
             ? subCategoryNames.get(`${refKey(mainRef)}:${refKey(subRef)}`)
             : undefined))
         : undefined;
+    const randomByproduct = isRandomByproductItem({
+      description: item.description ?? null,
+      sourceData: item,
+    });
     return {
       id: item.id,
       name: item.name || `Item #${item.id} (sem nome no cliente)`,
@@ -260,7 +291,7 @@ export async function readExtractorDataset(
       category: item.category ?? null,
       weight: item.weight ?? null,
       categoryIds: [...new Set([mainId, subId].filter((id): id is string => Boolean(id)))],
-      sourceData: item,
+      sourceData: randomByproduct ? { ...item, randomByproduct: true } : item,
     };
   });
 

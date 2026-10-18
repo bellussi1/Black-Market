@@ -49,26 +49,13 @@ import {
 import { DatabaseService } from '../database/database.service';
 import { CatalogAssetsService } from './catalog-assets.service';
 import { type CatalogQuery, parseCatalogQuery } from './catalog-query';
+import {
+  BYPRODUCT_DESCRIPTION_TERMS,
+  isRandomByproductItem,
+  RANDOM_YIELD_DESCRIPTION_TERMS,
+} from './extractor-dataset';
 import { npcPurchasePriceFromCatalog } from './npc-purchase-price';
 import { deriveRecipeMarketEquivalents } from './recipe-market-equivalents';
-
-const BYPRODUCT_DESCRIPTION_TERMS = ['subproduto', 'subproducto', 'byproduct'] as const;
-const RANDOM_YIELD_DESCRIPTION_TERMS = [
-  'aleatoriamente',
-  'randomly',
-  'probability',
-  'probabilidade',
-  'probabilidad',
-  'chance',
-] as const;
-
-function isRandomByproductDescription(description: string | null | undefined): boolean {
-  const normalized = description?.toLocaleLowerCase() ?? '';
-  return (
-    BYPRODUCT_DESCRIPTION_TERMS.some((term) => normalized.includes(term)) &&
-    RANDOM_YIELD_DESCRIPTION_TERMS.some((term) => normalized.includes(term))
-  );
-}
 
 @Injectable()
 export class CatalogService {
@@ -183,8 +170,8 @@ export class CatalogService {
     const productionRecipes = recipeRows.flatMap((row) => {
       const recipeOutputs = outputs.get(row.key) ?? [];
       const primaryOutput = recipeOutputs[0];
-      if (isRandomByproductDescription(itemMap.get(primaryOutput?.itemId ?? -1)?.description))
-        return [];
+      const outputItem = itemMap.get(primaryOutput?.itemId ?? -1);
+      if (outputItem && isRandomByproductItem(outputItem)) return [];
       return [
         {
           ...row,
@@ -672,7 +659,11 @@ export class CatalogService {
       };
 
     const [itemVersion] = await this.database.db
-      .select({ itemId: itemVersions.itemId, description: itemTranslations.description })
+      .select({
+        itemId: itemVersions.itemId,
+        description: itemTranslations.description,
+        sourceData: itemVersions.sourceData,
+      })
       .from(itemVersions)
       .innerJoin(
         itemTranslations,
@@ -685,7 +676,7 @@ export class CatalogService {
       .where(and(eq(itemVersions.datasetVersionId, dataset.id), eq(itemVersions.itemId, itemId)))
       .limit(1);
     if (!itemVersion) throw new NotFoundException('Item não encontrado no catálogo ativo.');
-    if (direction === 'produces' && isRandomByproductDescription(itemVersion.description))
+    if (direction === 'produces' && isRandomByproductItem(itemVersion))
       return {
         recipes: [],
         total: 0,

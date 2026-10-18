@@ -187,4 +187,29 @@ describe('readExtractorDataset', () => {
     expect(result.recipes).toEqual(original.recipes);
     expect(result.recipes[0]?.outputQuantity).toBeNull();
   });
+
+  it('classifies random byproducts into structured item sourceData during dataset extraction', async () => {
+    await writeFiles({
+      'items.json': [
+        {
+          id: 101,
+          name: 'Test Ore',
+          description: 'Regular material.',
+        },
+        {
+          id: 9711,
+          name: 'Comida Retirada',
+          description: 'Um subproduto da culinária. Recebido aleatoriamente após Cozinhar.',
+        },
+      ],
+      'recipes.json': [],
+    });
+
+    const result = await readExtractorDataset(directory);
+    const regular = result.items.find((entry) => entry.id === 101);
+    const byproduct = result.items.find((entry) => entry.id === 9711);
+
+    expect(regular?.sourceData?.['randomByproduct']).toBeUndefined();
+    expect(byproduct?.sourceData?.['randomByproduct']).toBe(true);
+  });
 });
