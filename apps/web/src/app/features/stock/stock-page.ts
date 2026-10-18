@@ -54,7 +54,11 @@ export class StockPage {
   );
   readonly search = signal('');
   readonly destination = signal('');
-  readonly view = signal<'grid' | 'list'>('list');
+  readonly view = signal<'grid' | 'list'>('grid');
+  readonly selectedId = signal<string | null>(null);
+  readonly selectedRow = computed(
+    () => this.visibleRows().find((row) => row.id === this.selectedId()) ?? null,
+  );
   readonly page = signal(0);
   readonly message = signal('');
   readonly loadingItems = signal(false);
@@ -182,11 +186,16 @@ export class StockPage {
       price: '0',
     };
   }
+  selectSlot(row: Stock) {
+    this.selectedId.set(row.id);
+  }
   edit(row: Stock) {
+    this.selectedId.set(row.id);
     this.pendingRemoval = null;
     this.draft = structuredClone(row);
   }
   remove(row: Stock) {
+    this.selectedId.set(row.id);
     this.pendingRemoval = structuredClone(row);
     this.message.set('');
   }

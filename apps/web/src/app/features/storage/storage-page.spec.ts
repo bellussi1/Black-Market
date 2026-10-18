@@ -131,18 +131,18 @@ describe('Storage import guidance', () => {
     const page = fixture.componentInstance;
     const element: HTMLElement = fixture.nativeElement;
 
-    // Default mode is table
-    expect(page.viewMode()).toBe('table');
+    // Default mode is BDO grid
+    expect(page.viewMode()).toBe('grid');
+    expect(element.querySelector('.data-table')).toBeNull();
+    const card = element.querySelector<HTMLElement>('.storage-game-grid .storage-grid-card');
+    expect(card).not.toBeNull();
+    expect(card?.querySelector('.bdo-slot-count')?.textContent?.trim()).toBe('15');
+    expect(card?.getAttribute('title')).toContain('Fármaco da Harmonia');
+
+    // Switch to detailed table
+    page.viewMode.set('table');
+    fixture.detectChanges();
     expect(element.querySelector('.data-table')).not.toBeNull();
     expect(element.querySelector('.storage-game-grid')).toBeNull();
-
-    // Switch to BDO grid
-    page.viewMode.set('grid');
-    fixture.detectChanges();
-    expect(element.querySelector('.data-table')).toBeNull();
-    const slot = element.querySelector<HTMLElement>('.storage-game-grid .bdo-slot');
-    expect(slot).not.toBeNull();
-    expect(slot?.querySelector('.bdo-slot-count')?.textContent?.trim()).toBe('15');
-    expect(slot?.getAttribute('title')).toContain('Fármaco da Harmonia');
   });
 });

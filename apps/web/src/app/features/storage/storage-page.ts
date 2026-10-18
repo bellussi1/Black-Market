@@ -245,7 +245,7 @@ export class StoragePage implements OnDestroy {
   }
   readonly store = inject(WorkspaceStore);
   readonly tab = signal('stock');
-  readonly viewMode = signal<'grid' | 'table'>('table');
+  readonly viewMode = signal<'grid' | 'table'>('grid');
   search = '';
   location = '';
   draft: Stock = this.newStock();

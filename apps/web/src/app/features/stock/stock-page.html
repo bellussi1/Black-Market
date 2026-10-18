@@ -88,7 +88,31 @@
       >
     </div>
     <div class="stock-toolbar">
-      <span class="help" i18n>Região {{ store.data().region.toUpperCase() }}</span>
+      <div class="stock-summary-chips">
+        <span class="help" i18n>Região {{ store.data().region.toUpperCase() }}</span>
+        @if (locations().length && kind() === 'storage') {
+          <div class="city-filter-pills" role="group" aria-label="Filtro rápido de cidade">
+            <button
+              type="button"
+              class="city-pill"
+              [class.active]="!destination()"
+              (click)="setDestination('')"
+            >
+              Todas ({{ stock().length }})
+            </button>
+            @for (loc of locations(); track loc) {
+              <button
+                type="button"
+                class="city-pill"
+                [class.active]="destination() === loc"
+                (click)="setDestination(loc)"
+              >
+                {{ loc }}
+              </button>
+            }
+          </div>
+        }
+      </div>
       <div
         class="segmented-control"
         role="group"
@@ -133,16 +157,37 @@
       data-stock-items
       [attr.data-tour]="kind() === 'storage' ? 'storage.items' : 'stock-inventory.items'"
       [class.list]="view() === 'list'"
+      [class.bdo-grid]="view() === 'grid'"
       [attr.aria-busy]="loadingItems() ? 'true' : null"
     >
       @for (row of visibleRows(); track row.id) {
-        <article class="stock-item" [attr.data-stock-item]="row.id">
-          <div class="stock-item-icon-slot">
+        <article
+          class="stock-item"
+          [class.is-selected]="selectedId() === row.id || draft?.id === row.id"
+          [attr.data-stock-item]="row.id"
+          [attr.data-grade]="items().get(row.itemId ?? 0)?.grade ?? null"
+        >
+          <div
+            class="stock-item-icon-slot bdo-slot"
+            role="button"
+            tabindex="0"
+            (click)="view() === 'grid' ? edit(row) : selectSlot(row)"
+            (keydown.enter)="edit(row)"
+            [attr.title]="
+              row.name +
+              ' · Quantidade: ' +
+              row.quantity.toLocaleString('pt-BR') +
+              ' · ' +
+              ((row.kind ?? 'storage') === 'storage' ? 'Armazém: ' : 'Personagem: ') +
+              row.location
+            "
+          >
             <app-item-icon
               [url]="catalog.resolveIconUrl(items().get(row.itemId ?? 0) ?? {})"
               [name]="row.name"
               [grade]="items().get(row.itemId ?? 0)?.grade ?? null"
             />
+            <span class="bdo-slot-count">{{ row.quantity.toLocaleString('pt-BR') }}</span>
             <span
               class="stock-icon-skeleton"
               [class.is-active]="
@@ -155,22 +200,37 @@
             ></span>
           </div>
           <div class="stock-item-details">
-            <ng-container>
+            <div class="stock-item-header">
               @if (row.itemId) {
-                <a [routerLink]="['/market/items', row.itemId]">{{ row.name }}</a>
+                <a class="stock-item-title" [routerLink]="['/market/items', row.itemId]">{{
+                  row.name
+                }}</a>
               } @else {
-                <span>{{ row.name }}</span>
-              }</ng-container
-            ><strong i18n>Quantidade: {{ row.quantity.toLocaleString('pt-BR') }}</strong
-            ><small
+                <span class="stock-item-title">{{ row.name }}</span>
+              }
+              <span class="stock-location-badge">{{ row.location }}</span>
+            </div>
+            <strong class="stock-quantity-label" i18n
+              >Quantidade: {{ row.quantity.toLocaleString('pt-BR') }}</strong
+            >
+            <small class="stock-meta-line"
               >{{ (row.kind ?? 'storage') === 'storage' ? 'Cidade ou armazém:' : 'Personagem:' }}
               {{ row.location }}</small
-            ><small i18n>ID do item: #{{ row.itemId ?? 'não vinculado' }}</small
-            ><small i18n>Atualização: {{ date(row.updatedAt) }}</small>
+            >
+            <small class="stock-meta-line" i18n
+              >ID do item: #{{ row.itemId ?? 'não vinculado' }} · Atualização:
+              {{ date(row.updatedAt) }}</small
+            >
           </div>
           <div class="stock-actions">
             @if (row.itemId) {
-              <a [routerLink]="['/recipes/items', row.itemId]" i18n>Receitas e origens</a>
+              <a
+                class="stock-action-link"
+                [routerLink]="['/recipes/items', row.itemId]"
+                title="Ver receitas e origens"
+                i18n
+                >Receitas</a
+              >
             }
             <button
               hlmBtn

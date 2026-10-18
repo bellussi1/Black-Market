@@ -122,7 +122,7 @@ describe('Reviewed stock management', () => {
       filters!.compareDocumentPosition(items!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
-  it('opens the detailed list by default with explicit quantity and destination labels', async () => {
+  it('opens the BDO storage grid by default with quantity badges and switches to detailed list', async () => {
     const fixture = await renderComponent(StockPage);
     const page = fixture.componentInstance;
     page.store.update((state) => ({
@@ -143,12 +143,18 @@ describe('Reviewed stock management', () => {
     fixture.detectChanges();
 
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.stock-items')?.classList.contains('list')).toBe(true);
+    expect(element.querySelector('.stock-items')?.classList.contains('bdo-grid')).toBe(true);
     expect(
       element.querySelector('[aria-label="Visualização dos itens"] [aria-pressed="true"]')
         ?.textContent,
-    ).toContain('Lista');
+    ).toContain('Grade');
     const row = element.querySelector('.stock-item');
+    expect(row?.querySelector('.bdo-slot-count')?.textContent?.trim()).toBe('5');
+    expect(row?.textContent).toContain('Velia');
+
+    page.view.set('list');
+    fixture.detectChanges();
+    expect(element.querySelector('.stock-items')?.classList.contains('list')).toBe(true);
     expect(row?.textContent).toContain('Quantidade: 5');
     expect(row?.textContent).toContain('Cidade ou armazém: Velia');
   });

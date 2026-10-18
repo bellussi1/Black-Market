@@ -370,8 +370,8 @@
             class="storage-game-grid"
             style="
               display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-              gap: 6px;
+              grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+              gap: 8px;
               padding: 12px;
               background: var(--bm-input);
               border: 1px solid var(--bm-border);
@@ -380,7 +380,7 @@
           >
             @for (row of rows; track row.id) {
               <div
-                class="bdo-slot"
+                class="storage-grid-card"
                 tabindex="0"
                 role="button"
                 [attr.title]="
@@ -393,10 +393,37 @@
                 "
                 (click)="edit(row)"
                 (keydown.enter)="edit(row)"
-                style="cursor: pointer"
+                style="
+                  display: grid;
+                  grid-template-columns: 44px minmax(0, 1fr);
+                  gap: 10px;
+                  align-items: center;
+                  padding: 8px 10px;
+                  background: var(--bm-surface);
+                  border: 1px solid var(--bm-border);
+                  border-radius: 2px;
+                  cursor: pointer;
+                "
               >
-                <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
-                <span class="bdo-slot-count">{{ number(row.quantity, 0) }}</span>
+                <div class="bdo-slot">
+                  <app-item-icon [url]="resolveIcon(row)" [name]="row.name" />
+                  <span class="bdo-slot-count">{{ number(row.quantity, 0) }}</span>
+                </div>
+                <div style="display: grid; gap: 2px; min-width: 0">
+                  <strong
+                    style="
+                      font-size: 13px;
+                      color: var(--bm-text);
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    >{{ row.name }}</strong
+                  >
+                  <small style="font-size: 11px; color: var(--bm-muted)"
+                    >{{ row.location }} · {{ number(row.quantity, 0) }} un.</small
+                  >
+                </div>
               </div>
             }
           </div>
