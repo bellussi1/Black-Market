@@ -212,6 +212,7 @@
     <unit id="1226054375921387082">
       <notes>
         <note category="location">src/app/core/login-panel.ts:39,40</note>
+        <note category="location">src/app/core/login-panel.ts:69,70</note>
       </notes>
       <segment>
         <source>Entrar com Google</source>
@@ -219,7 +220,8 @@
     </unit>
     <unit id="3085815342094807098">
       <notes>
-        <note category="location">src/app/core/login-panel.ts:58,59</note>
+        <note category="location">src/app/core/login-panel.ts:79,80</note>
+        <note category="location">src/app/core/login-panel.ts:96,97</note>
       </notes>
       <segment>
         <source>Entrar com Steam</source>
@@ -501,25 +503,25 @@
         <source> Sair da conta </source>
       </segment>
     </unit>
-    <unit id="555094529392608420">
+    <unit id="2230397902099482605">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:76</note>
+        <note category="location">src/app/features/account/account-page.html:102,103</note>
       </notes>
       <segment>
-        <source> Vincular Google </source>
+        <source>Vincular Google</source>
       </segment>
     </unit>
-    <unit id="8489046910855928740">
+    <unit id="5817470869210891249">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:89</note>
+        <note category="location">src/app/features/account/account-page.html:128,129</note>
       </notes>
       <segment>
-        <source> Vincular Steam </source>
+        <source>Vincular Steam</source>
       </segment>
     </unit>
     <unit id="3419533389279521353">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:94,95</note>
+        <note category="location">src/app/features/account/account-page.html:133,134</note>
       </notes>
       <segment>
         <source> Entrar não substitui seus dados automaticamente. Consulte a cópia da conta e escolha o que deseja fazer. </source>
@@ -527,7 +529,7 @@
     </unit>
     <unit id="4778444582805146453">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:100,101</note>
+        <note category="location">src/app/features/account/account-page.html:139,140</note>
       </notes>
       <segment>
         <source>Revisar antes de sincronizar</source>
@@ -535,7 +537,7 @@
     </unit>
     <unit id="5004744071940915274">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:102,106</note>
+        <note category="location">src/app/features/account/account-page.html:141,145</note>
       </notes>
       <segment>
         <source> Você tem <ph id="0" equiv="INTERPOLATION" disp="{{ summary(store.data()).materials }}"/> materiais, <ph id="1" equiv="INTERPOLATION_1" disp="{{ summary(store.data()).characters }}"/> personagens e <ph id="2" equiv="INTERPOLATION_2" disp="{{ summary(store.data()).plans }}"/> planos neste navegador. </source>
@@ -543,7 +545,7 @@
     </unit>
     <unit id="4969966508773279386">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:108,112</note>
+        <note category="location">src/app/features/account/account-page.html:147,151</note>
       </notes>
       <segment>
         <source> A conta tem <ph id="0" equiv="INTERPOLATION" disp="{{ summary(saved).materials }}"/> materiais, <ph id="1" equiv="INTERPOLATION_1" disp="{{ summary(saved).characters }}"/> personagens e <ph id="2" equiv="INTERPOLATION_2" disp="{{ summary(saved).plans }}"/> planos. Última atualização: <ph id="3" equiv="INTERPOLATION_3" disp="{{ updatedAt() }}"/>. </source>
@@ -551,7 +553,7 @@
     </unit>
     <unit id="7117615708630042762">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:114,115</note>
+        <note category="location">src/app/features/account/account-page.html:153,154</note>
       </notes>
       <segment>
         <source>Quero substituir a cópia deste navegador pela cópia da conta.</source>
@@ -559,7 +561,7 @@
     </unit>
     <unit id="5811216560936164537">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:125</note>
+        <note category="location">src/app/features/account/account-page.html:164</note>
       </notes>
       <segment>
         <source> Usar dados da conta </source>
@@ -567,7 +569,7 @@
     </unit>
     <unit id="6057433049867687914">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:130,131</note>
+        <note category="location">src/app/features/account/account-page.html:169,170</note>
       </notes>
       <segment>
         <source>Revisei e quero enviar a cópia deste navegador, substituindo a cópia da conta.</source>
@@ -575,7 +577,7 @@
     </unit>
     <unit id="5739709111731821810">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:141,142</note>
+        <note category="location">src/app/features/account/account-page.html:180,181</note>
       </notes>
       <segment>
         <source> Salvar na conta </source>
@@ -583,7 +585,7 @@
     </unit>
     <unit id="8149211726731507637">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:144,145</note>
+        <note category="location">src/app/features/account/account-page.html:183,184</note>
       </notes>
       <segment>
         <source>Excluir cópia da conta</source>
@@ -591,7 +593,7 @@
     </unit>
     <unit id="8374117624204675748">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:147,148</note>
+        <note category="location">src/app/features/account/account-page.html:186,187</note>
       </notes>
       <segment>
         <source>Quero excluir somente os dados salvos na conta. Meu backup neste navegador será mantido.</source>
@@ -599,7 +601,7 @@
     </unit>
     <unit id="1855016776477968014">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:159</note>
+        <note category="location">src/app/features/account/account-page.html:198</note>
       </notes>
       <segment>
         <source> Excluir cópia na conta </source>
@@ -607,7 +609,7 @@
     </unit>
     <unit id="8730362203491585758">
       <notes>
-        <note category="location">src/app/features/account/account-page.html:173,174</note>
+        <note category="location">src/app/features/account/account-page.html:212,213</note>
       </notes>
       <segment>
         <source> Consultando seus dados salvos… </source>

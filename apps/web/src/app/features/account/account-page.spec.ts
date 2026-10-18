@@ -94,20 +94,15 @@ describe('AccountPage social sign-in', () => {
       'steam',
     ]);
     expect(socialButtons.every((button) => button.classList.contains('social-button'))).toBe(true);
-    expect(
-      socialButtons.every(
-        (button) => button.querySelector('img.provider-art')?.getAttribute('alt') === '',
-      ),
-    ).toBe(true);
+    expect(socialButtons.every((button) => button.querySelector('img') === null)).toBe(true);
     expect(
       socialButtons.map((button) => [
-        button.querySelector('img')?.getAttribute('src'),
-        button.querySelector('img')?.getAttribute('width'),
-        button.querySelector('img')?.getAttribute('height'),
+        button.querySelector('svg.provider-icon')?.getAttribute('data-provider-icon'),
+        button.querySelector('.social-label')?.textContent?.trim(),
       ]),
     ).toEqual([
-      ['/auth/google-sign-in.png', '360', '80'],
-      ['/auth/steam-sign-in.png', '180', '35'],
+      ['google', 'Entrar com Google'],
+      ['steam', 'Entrar com Steam'],
     ]);
     expect(page.querySelector('input[type="email"]')).toBeNull();
     expect(page.textContent).not.toContain('Receber link de acesso');
