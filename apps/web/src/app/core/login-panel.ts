@@ -32,23 +32,39 @@ import { LoginFlowService } from './login-flow.service';
           @if (identity.googleEnabled()) {
             <button
               class="social-button"
+              data-social-provider="google"
               type="button"
               (click)="flow.google()"
               [disabled]="flow.loading()"
               aria-label="Entrar com Google"
+              i18n-aria-label
             >
-              <img src="/auth/google-sign-in.png" alt="Entrar com Google" width="189" height="40" />
+              <img
+                class="provider-art"
+                src="/auth/google-sign-in.png"
+                alt=""
+                width="360"
+                height="80"
+              />
             </button>
           }
           @if (identity.steamEnabled()) {
             <button
               class="social-button"
+              data-social-provider="steam"
               type="button"
               (click)="flow.steam()"
               [disabled]="flow.loading()"
               aria-label="Entrar com Steam"
+              i18n-aria-label
             >
-              <img src="/auth/steam-sign-in.png" alt="Entrar com Steam" width="180" height="35" />
+              <img
+                class="provider-art"
+                src="/auth/steam-sign-in.png"
+                alt=""
+                width="180"
+                height="35"
+              />
             </button>
           }
         </div>
@@ -67,27 +83,42 @@ import { LoginFlowService } from './login-flow.service';
       color: var(--bm-text-muted);
     }
     .social-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
     .social-button {
-      width: 216px;
-      min-height: 44px;
-      padding: 2px;
-      display: grid;
-      place-items: center;
-      background: transparent;
-      border: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
+      min-height: 52px;
+      padding: 5px 10px;
+      border: 1px solid var(--bm-control-border);
+      border-radius: 2px;
+      background: var(--bm-input);
       cursor: pointer;
+      transition:
+        border-color 160ms ease,
+        background-color 160ms ease,
+        box-shadow 160ms ease;
+    }
+    .social-button:hover:not(:disabled) {
+      border-color: var(--bm-accent);
+      background: var(--bm-surface-raised);
     }
     .social-button img {
       object-fit: contain;
       max-width: 100%;
+      max-height: 40px;
+      width: auto;
+      height: auto;
     }
     .social-button:focus-visible {
       outline: 2px solid var(--bm-accent);
       outline-offset: 3px;
+      box-shadow: 0 0 0 4px var(--bm-accent-soft);
     }
     .social-button:disabled {
       opacity: 0.55;
@@ -96,6 +127,19 @@ import { LoginFlowService } from './login-flow.service';
     [role='status'] {
       min-height: 1.5em;
       margin-top: 12px;
+    }
+    @media (max-width: 540px) {
+      .social-actions {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .social-button {
+        min-height: 52px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .social-button {
+        transition: none;
+      }
     }
   `,
 })

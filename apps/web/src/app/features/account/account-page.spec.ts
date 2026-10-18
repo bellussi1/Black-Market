@@ -88,6 +88,27 @@ describe('AccountPage social sign-in', () => {
     );
     expect(labels).toContain('Entrar com Google');
     expect(labels).toContain('Entrar com Steam');
+    const socialButtons = [...page.querySelectorAll<HTMLButtonElement>('[data-social-provider]')];
+    expect(socialButtons.map((button) => button.getAttribute('data-social-provider'))).toEqual([
+      'google',
+      'steam',
+    ]);
+    expect(socialButtons.every((button) => button.classList.contains('social-button'))).toBe(true);
+    expect(
+      socialButtons.every(
+        (button) => button.querySelector('img.provider-art')?.getAttribute('alt') === '',
+      ),
+    ).toBe(true);
+    expect(
+      socialButtons.map((button) => [
+        button.querySelector('img')?.getAttribute('src'),
+        button.querySelector('img')?.getAttribute('width'),
+        button.querySelector('img')?.getAttribute('height'),
+      ]),
+    ).toEqual([
+      ['/auth/google-sign-in.png', '360', '80'],
+      ['/auth/steam-sign-in.png', '180', '35'],
+    ]);
     expect(page.querySelector('input[type="email"]')).toBeNull();
     expect(page.textContent).not.toContain('Receber link de acesso');
   });
