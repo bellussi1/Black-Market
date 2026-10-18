@@ -2002,3 +2002,17 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
   - Inspeção visual ao vivo no Playwright em `1440×900` e `390×844` confirmou a janela dupla Ficha P + Equipamento I lado a lado no desktop, pílulas romanas `I (PRI)`..`X (DEC)` e empilhamento limpo no mobile sem overflow horizontal.
   - `pnpm check`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` aprovados, mantendo o bundle inicial abaixo de `500 kB`.
 - **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
+
+## 182. Hero da Home (`/`) com Proposta de Valor Clara e Paywall/Gate de Acesso (Antigravity, 18/10/2026)
+
+- **Pedido do usuário:** melhorar o Hero de `http://localhost:4200/` com uma descrição breve e objetiva do porquê o Black Market é útil para o jogador de BDO e incluir um bloco de Paywall / Gate de Acesso para desbloqueio das ferramentas pessoais.
+- **Implementação em `DashboardPage` (`apps/web/src/app/features/dashboard/dashboard-page.ts`, `.html`, `.scss`, `.spec.ts`):**
+  - Substituído o texto genérico (“Menos preparação. Mais possibilidades.”) por uma chamada direta focada em resultado (`Saiba exatamente o que produzir, comprar ou vender no BDO` / `Maximize a prata por hora de {{ profile.name }}`) seguida pelos 3 diferenciais práticos do produto (`.hero-value-list`):
+    1. **Lucro real e liquidez SA**: compara fabricar vs. comprar intermediários já descontando taxas do Mercado Central e filtrando itens com volume real de venda.
+    2. **Armazém conectado por OCR**: importa capturas de tela do Armazém e equipamentos em segundos para abater automaticamente os insumos disponíveis.
+    3. **Recomendações sob medida (“O que fazer”)**: informa a maestria uma única vez e entrega o ranking instantâneo de Culinária, Alquimia e Processamento em prata/hora.
+  - Adicionado o painel **Paywall / Gate de Acesso (`.hero-paywall`)** para visitantes deslogados (`!identity.authenticated()`), destacando o que é liberado ao entrar com Google ou Steam (**Ranking personalizado “O que fazer”**, **Armazém em grade BDO**, **Leitor de Capturas OCR** e **Ficha da Família P + I**) e acionando o modal de login (`openLoginPaywall('/recommendations')`).
+- **Verificação e Qualidade:**
+  - `9/9` testes unitários aprovados em `dashboard-page.spec.ts` (incluindo o novo teste do `.hero-value-list` e acionamento do `.hero-paywall-cta`).
+  - `pnpm check`, `pnpm --filter @bdo/web build` (bundle inicial `< 500 kB`) e `pnpm test:ssr` aprovados.
+- **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
