@@ -14,6 +14,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { and, eq, sql } from 'drizzle-orm';
 
 import { DatabaseService } from '../database/database.service';
+import { TUTORIAL_SEED_ENTRIES, TUTORIAL_SEED_UPDATED_AT } from './tutorial-seed-content';
 import { parseTutorialGuideUpdate } from './tutorial-validation';
 
 @Injectable()
@@ -34,7 +35,35 @@ export class TutorialsService {
       .where(and(eq(tutorialGuides.screenKey, screenKey), eq(tutorialGuides.locale, locale)));
 
     const guideRow = guideRows[0];
-    if (!guideRow || !guideRow.enabled) {
+    if (!guideRow) {
+      const seedEntry = TUTORIAL_SEED_ENTRIES.find(
+        (entry) => entry.screenKey === screenKey && entry.locale === locale,
+      );
+      if (!seedEntry?.enabled) return { guide: null };
+
+      const validSeedSteps = [...seedEntry.steps]
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .filter(
+          (step) => step.anchorKey === null || isTutorialAnchorForScreen(screenKey, step.anchorKey),
+        )
+        .map((step, index) => ({
+          sortOrder: index,
+          anchorKey: step.anchorKey,
+          title: step.title,
+          body: step.body,
+        }));
+
+      if (validSeedSteps.length === 0) return { guide: null };
+      return {
+        guide: {
+          screenKey,
+          locale,
+          updatedAt: TUTORIAL_SEED_UPDATED_AT,
+          steps: validSeedSteps,
+        },
+      };
+    }
+    if (!guideRow.enabled) {
       return { guide: null };
     }
 

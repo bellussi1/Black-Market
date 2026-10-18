@@ -8,6 +8,7 @@ export interface TutorialSeedEntry {
 }
 
 export const TUTORIAL_SEED_REVISION = '2026-10-16-workshop-v1';
+export const TUTORIAL_SEED_UPDATED_AT = '2026-10-16T00:00:00.000Z';
 
 export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
   {

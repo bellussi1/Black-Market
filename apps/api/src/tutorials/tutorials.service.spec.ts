@@ -103,13 +103,74 @@ describe('TutorialsService', () => {
       vi.useRealTimers();
     }
   });
-  it('returns null when a registered guide is disabled or missing', async () => {
-    await expect(service.getPublished('market', 'pt-BR')).resolves.toEqual({ guide: null });
+  it('serves the versioned workshop guide when there is no database entry', async () => {
+    const result = await service.getPublished('recipe-workshop', 'pt-BR');
+
+    expect(result.guide).toMatchObject({
+      screenKey: 'recipe-workshop',
+      locale: 'pt-BR',
+      updatedAt: '2026-10-16T00:00:00.000Z',
+      steps: [
+        {
+          sortOrder: 0,
+          anchorKey: 'recipe-workshop.batch-mastery',
+          title: 'Definir lote e maestria',
+        },
+        {
+          sortOrder: 1,
+          anchorKey: 'recipe-workshop.financial',
+          title: 'Ler o resultado financeiro',
+        },
+        {
+          sortOrder: 2,
+          anchorKey: 'recipe-workshop.strategy',
+          title: 'Comparar estratégias',
+        },
+        {
+          sortOrder: 3,
+          anchorKey: 'recipe-workshop.materials-returns',
+          title: 'Revisar materiais e retornos',
+        },
+      ],
+    });
+    expect(guides).toHaveLength(0);
+  });
+
+  it('uses an enabled database guide instead of the versioned fallback', async () => {
+    guides = [
+      {
+        id: '00000000-0000-4000-8000-000000000001',
+        screenKey: 'recipe-workshop',
+        locale: 'pt-BR',
+        enabled: true,
+        updatedAt: new Date('2026-10-17T12:00:00.000Z'),
+      },
+    ];
+    steps = [
+      {
+        id: '00000000-0000-4000-8000-000000000011',
+        guideId: '00000000-0000-4000-8000-000000000001',
+        sortOrder: 0,
+        anchorKey: 'recipe-workshop.batch-mastery',
+        title: 'Edição administrativa',
+        body: 'Conteúdo salvo no banco.',
+      },
+    ];
+
+    await expect(service.getPublished('recipe-workshop', 'pt-BR')).resolves.toMatchObject({
+      guide: { updatedAt: '2026-10-17T12:00:00.000Z', steps: [{ title: 'Edição administrativa' }] },
+    });
+  });
+
+  it('keeps an explicitly disabled database guide disabled', async () => {
+    await expect(service.getPublished('recipe-workshop', 'en-US')).resolves.toEqual({
+      guide: null,
+    });
 
     guides = [
       {
         id: '00000000-0000-4000-8000-000000000001',
-        screenKey: 'market',
+        screenKey: 'recipe-workshop',
         locale: 'pt-BR',
         enabled: false,
         updatedAt: new Date('2026-10-15T12:00:00.000Z'),
@@ -120,13 +181,15 @@ describe('TutorialsService', () => {
         id: '00000000-0000-4000-8000-000000000011',
         guideId: '00000000-0000-4000-8000-000000000001',
         sortOrder: 0,
-        anchorKey: 'market.search',
+        anchorKey: 'recipe-workshop.batch-mastery',
         title: 'Buscar',
         body: 'Pesquise um item.',
       },
     ];
 
-    await expect(service.getPublished('market', 'pt-BR')).resolves.toEqual({ guide: null });
+    await expect(service.getPublished('recipe-workshop', 'pt-BR')).resolves.toEqual({
+      guide: null,
+    });
     await expect(service.getPublished('unknown', 'pt-BR')).rejects.toBeInstanceOf(
       NotFoundException,
     );
