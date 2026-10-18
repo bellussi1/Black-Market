@@ -6,8 +6,8 @@
   display: grid;
   gap: 24px;
   margin: auto;
-  padding: 28px 0 32px;
-  max-width: 1240px;
+  padding: var(--bm-page-pad-top) 0 var(--bm-page-pad-bottom);
+  max-width: var(--bm-page-max);
 }
 
 .home-hero {

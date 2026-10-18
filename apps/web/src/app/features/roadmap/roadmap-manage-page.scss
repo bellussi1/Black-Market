@@ -6,7 +6,7 @@
 .roadmap-admin {
   display: grid;
   gap: 18px;
-  max-width: 1240px;
+  max-width: var(--bm-page-max);
   margin-inline: auto;
 }
 

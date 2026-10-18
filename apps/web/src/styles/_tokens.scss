@@ -28,6 +28,9 @@ $palette: (
 @layer base {
   :root {
     --bm-motion-fast: 140ms;
+    --bm-page-max: 1440px;
+    --bm-page-pad-top: 28px;
+    --bm-page-pad-bottom: 32px;
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }

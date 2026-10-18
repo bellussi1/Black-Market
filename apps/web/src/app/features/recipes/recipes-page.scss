@@ -4,7 +4,7 @@
 }
 .recipe-explorer {
   position: relative;
-  max-width: 1600px;
+  max-width: var(--bm-page-max);
 }
 .pagination-current {
   min-inline-size: 100px;

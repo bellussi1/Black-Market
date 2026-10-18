@@ -5,7 +5,7 @@
 .coach-page {
   display: grid;
   gap: 1.5rem;
-  max-width: 1240px;
+  max-width: var(--bm-page-max);
   padding-bottom: 2rem;
 }
 

@@ -4,7 +4,7 @@
 }
 
 .roadmap-page {
-  max-width: 1240px;
+  max-width: var(--bm-page-max);
   margin-inline: auto;
   display: grid;
   gap: 24px;
