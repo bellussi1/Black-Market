@@ -108,6 +108,7 @@ describe('Unified personal workspace routes', () => {
     ]);
     for (const route of routes[0].children ?? []) {
       expect((route.canActivate?.length ?? 0) > 0).toBe(sessionRoutes.has(route.path ?? ''));
+      if (sessionRoutes.has(route.path ?? '')) expect(route.canActivate).toContain(authGuard);
     }
   });
 
@@ -124,9 +125,8 @@ describe('Unified personal workspace routes', () => {
   });
 
   it('keeps local settings public and preserves legacy Steam callbacks and return intent', async () => {
-    expect(
-      routes[0].children?.find((route) => route.path === 'settings')?.canActivate,
-    ).toBeUndefined();
+    const settings = routes[0].children?.find((route) => route.path === 'settings');
+    expect(settings?.canActivate).toBeUndefined();
     const selected = routes[0]
       .children!.filter((route) => ['account', 'settings'].includes(route.path!))
       .map((route) =>

@@ -18,6 +18,7 @@ import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { GearInventoryPage } from '../gear/gear-inventory-page';
 
@@ -34,6 +35,7 @@ import { GearInventoryPage } from '../gear/gear-inventory-page';
     CatalogItemPicker,
     TaxOptionsComponent,
     GearInventoryPage,
+    TutorialSurfaceDirective,
   ],
   templateUrl: './player-page.html',
 })
@@ -42,6 +44,17 @@ export class PlayerPage {
   readonly identity = inject(IdentityService);
   private readonly router = inject(Router);
   readonly tab = signal<'character' | 'family' | 'equipment'>('character');
+  readonly tutorialSurface = computed(() => {
+    switch (this.tab()) {
+      case 'family':
+        return 'family-family';
+      case 'equipment':
+        return 'family-equipment';
+      default:
+        return 'family-character';
+    }
+  });
+  readonly tutorialReady = computed(() => this.tab() === 'family' || !!this.current());
   readonly message = signal('');
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),

@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page" appTutorialSurface="settings">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>10 / DADOS PESSOAIS</ng-container></p>
     <h1><ng-container i18n>Configurações e backup</ng-container></h1>
@@ -133,5 +133,12 @@
       </ng-container>
     </p>
   </section>
-  <app-account-page />
+  <section hlmCard class="panel" data-tour="settings.tutorials">
+    <h2><ng-container i18n>Ajuda e tutoriais</ng-container></h2>
+    <p class="help" i18n>
+      As apresentações começam automaticamente quando você visita uma tela pela primeira vez. Nesta
+      área você poderá rever as orientações sem alterar seus dados pessoais.
+    </p>
+  </section>
+  <app-account-page data-tour="settings.account" />
 </div>

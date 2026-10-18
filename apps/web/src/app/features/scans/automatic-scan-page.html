@@ -1,4 +1,9 @@
-<main class="tool-page scan-workspace" [class.reviewing]="kind()">
+<main
+  class="tool-page scan-workspace"
+  [class.reviewing]="kind()"
+  [appTutorialSurface]="tutorialSurface()"
+  [appTutorialSurfaceReady]="tutorialReady()"
+>
   @if (!kind()) {
     <header class="tool-heading">
       <p class="tool-kicker">IMPORTAR CAPTURAS</p>
@@ -7,7 +12,6 @@
         Envie uma imagem do armazém, inventário ou informações do personagem. A tela é identificada
         automaticamente.
       </p>
-      <app-tutorial-launcher screenKey="scans" />
     </header>
     <section class="panel capture-panel" data-tour="scans.capture" aria-labelledby="capture-title">
       <div class="upload-area" [attr.aria-busy]="reading() ? 'true' : null">
@@ -33,7 +37,6 @@
     </section>
   } @else {
     <div class="review-toolbar">
-      <app-tutorial-launcher screenKey="scans" />
       <div>
         <p class="tool-kicker">CAPTURA EM REVISÃO</p>
         <h1>Revisar captura</h1>
@@ -107,7 +110,7 @@
         </figcaption>
       </figure>
     }
-    <details class="correction-guide">
+    <details class="correction-guide" [attr.data-tour]="kind() ? null : 'scans.review'">
       <summary>Como corrigir dados reconhecidos incorretamente</summary>
       <ol>
         <li>
@@ -133,9 +136,12 @@
   </section>
 
   @if (kind()) {
-    <section data-tour="scans.review" aria-label="Revisão de captura">
+    <section
+      [attr.data-tour]="profile() ? 'scans-profile.profile-input' : 'scans.review'"
+      aria-label="Revisão de captura"
+    >
       @if (profile()) {
-        <app-profile-screen-import />
+        <app-profile-screen-import [embedded]="true" />
       } @else {
         <app-scans-page />
       }

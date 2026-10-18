@@ -173,12 +173,12 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Produces: chaves `recommendations`, `storage|stock-inventory`, `family-character|family-family|family-equipment`, `lifeskills-sessions|lifeskills-mastery|lifeskills-training`, `scans|scans-review|scans-profile`, `shopping`, `plans` e `settings`.
 - `scans-review` só inicia quando resultados revisáveis aparecem; chaves privadas só são consultadas depois de `authGuard` concluir.
 
-- [ ] **Step 1: Adicionar regressões** — adicionar `it('starts the scan review guide only after review rows exist')`, `it('waits for authentication before starting a private guide')`, `it('maps each real workspace tab to its own surface key')` e `it('does not render a page-level tutorial launcher')`.
-- [ ] **Step 2: Confirmar RED** — executar os specs de Recommendations, Stock, Player, LifeSkills, Scans, Profile Import, Shopping, Plans, Settings e tutorials com `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/recommendations/recommendations-page.spec.ts" --include="app/features/stock/stock-page.spec.ts" --include="app/features/player/player-page.spec.ts" --include="app/features/lifeskills/lifeskills-page.spec.ts" --include="app/features/scans/scans-page.spec.ts" --include="app/features/scans/profile-screen-import.spec.ts" --include="app/features/shopping/shopping-page.spec.ts" --include="app/features/plans/plans-page.spec.ts" --include="app/features/settings/settings-page.spec.ts" --include="app/features/tutorials/tutorial-anchors.spec.ts"`.
-- [ ] **Step 3: Registrar superfícies** — vincular diretiva a raiz/tab/estado existente; manter todos os registros OCR visíveis e não alterar dados ou cálculos.
-- [ ] **Step 4: Atualizar editor administrativo** — listar rótulo humano, rota e aba; validar guias com 12 etapas; manter rascunho quando salvamento/concorrência falha.
-- [ ] **Step 5: Confirmar GREEN** — repetir specs; garantir rota administrativa sem auto-tour e sem expor preview como guia do jogador.
-- [ ] **Step 6: Commit atômico** — `feat(tutorials): cover private MVP routes and workflow states`.
+- [x] **Step 1: Adicionar regressões** — adicionar `it('starts the scan review guide only after review rows exist')`, `it('waits for authentication before starting a private guide')`, `it('maps each real workspace tab to its own surface key')` e `it('does not render a page-level tutorial launcher')`.
+- [x] **Step 2: Confirmar RED** — executar os specs de Recommendations, Stock, Player, LifeSkills, Scans, Profile Import, Shopping, Plans, Settings e tutorials; a primeira execução falhou no limite/contexto ainda ausente, como esperado.
+- [x] **Step 3: Registrar superfícies** — vincular diretiva a raiz/tab/estado existente; manter todos os registros OCR visíveis e não alterar dados ou cálculos.
+- [x] **Step 4: Atualizar editor administrativo** — listar rótulo humano, rota e aba; validar guias com 12 etapas; manter rascunho quando salvamento/concorrência falha.
+- [x] **Step 5: Confirmar GREEN** — repetir specs; garantir rota administrativa sem auto-tour e sem expor preview como guia do jogador.
+- [x] **Step 6: Commit atômico** — `feat(tutorials): cover private MVP routes and workflow states`.
 
 ## Task 6: Permitir rever introduções em Configurações e fechar verificação
 

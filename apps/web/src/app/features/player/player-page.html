@@ -1,4 +1,8 @@
-<div class="tool-page guided-page player-page">
+<div
+  class="tool-page guided-page player-page"
+  [appTutorialSurface]="tutorialSurface()"
+  [appTutorialSurfaceReady]="tutorialReady()"
+>
   <header class="tool-heading">
     <p class="tool-kicker">MEU ESPAÇO · {{ store.data().region.toUpperCase() }}</p>
     <h1>Família</h1>
@@ -10,6 +14,7 @@
       variant="outline"
       type="button"
       [attr.aria-pressed]="tab() === 'character'"
+      [attr.data-tour]="tab() === 'family' ? 'family-family.characters' : null"
       (click)="selectTab('character')"
     >
       Personagens</button
@@ -34,7 +39,11 @@
   </div>
   <p class="save-feedback" role="status">{{ message() || store.message() }}</p>
   @if (tab() !== 'family') {
-    <section hlmCard class="panel">
+    <section
+      hlmCard
+      class="panel"
+      [attr.data-tour]="tab() === 'character' ? 'family-character.character' : null"
+    >
       <div class="panel-heading">
         <h2>Personagem ativo</h2>
       </div>
@@ -138,7 +147,7 @@
               PA e PD são valores da ficha confirmados no jogo. Eles não são deduzidos dos ícones.
             </p>
           </details>
-          <details>
+          <details data-tour="family-character.lifeskills">
             <summary>Maestria por atividade</summary>
             <p class="help">
               Registre a maestria mostrada na ficha com o conjunto atual. O nível da profissão
@@ -284,7 +293,7 @@
       </div>
       <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
     </section>
-    <section hlmCard class="panel">
+    <section hlmCard class="panel" data-tour="family-family.actions">
       <h2>Profissões da família</h2>
       @if (!family().lifeSkills && store.data().familyLifeSkills) {
         <p class="help">

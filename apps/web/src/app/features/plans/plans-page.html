@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page" appTutorialSurface="plans">
   <header class="tool-heading">
     <p class="tool-kicker" i18n>MEUS PLANOS</p>
     <h1 i18n>Do objetivo à próxima tarefa.</h1>
@@ -44,14 +44,14 @@
     @for (taskRow of draft.tasks; track taskRow.id) {
       <p>{{ taskRow.label }}</p>
     }
-    <div class="action-row">
+    <div class="action-row" data-tour="plans.actions">
       <button hlmBtn variant="outline" class="btn" type="button" (click)="save()" i18n>
         Salvar plano
       </button>
     </div>
   </section>
-  @for (plan of plans(); track plan.id) {
-    <section hlmCard class="panel">
+  @for (plan of plans(); track plan.id; let first = $first) {
+    <section hlmCard class="panel" [attr.data-tour]="first ? 'plans.collection' : null">
       <div class="panel-heading">
         <h2>{{ plan.name }}</h2>
         <span class="badge">{{ statusLabel(plan.status) }}</span>
@@ -121,7 +121,7 @@
     </section>
   }
   @if (!plans().length) {
-    <p class="notice" i18n>
+    <p class="notice" data-tour="plans.collection" i18n>
       Comece com um objetivo e alguns materiais, ou transforme uma recomendação em plano.
     </p>
   }

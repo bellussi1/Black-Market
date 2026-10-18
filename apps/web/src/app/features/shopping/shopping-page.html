@@ -1,4 +1,4 @@
-<div class="tool-page shopping-page">
+<div class="tool-page shopping-page" appTutorialSurface="shopping">
   <header class="tool-heading">
     <p class="tool-kicker">PLANEJAMENTO INTEGRADO</p>
     <h1>Lista de materiais</h1>
@@ -31,7 +31,7 @@
       }
     </div>
     <div class="shopping-workbench">
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="shopping.items">
         <div class="panel-heading">
           <h2>Materiais consolidados</h2>
           <span class="badge">ESTOQUE ALOCADO</span>
@@ -92,7 +92,7 @@
           novamente. Quantidades dependem dos rendimentos informados no cenário.
         </p>
       </section>
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="shopping.actions">
         <h2>Planos incluídos</h2>
         @for (plan of plans(); track plan.id) {
           <div class="shopping-plan">
@@ -105,13 +105,15 @@
       </section>
     </div>
   } @else {
-    <section hlmCard class="panel empty-workspace">
+    <section hlmCard class="panel empty-workspace" data-tour="shopping.items">
       <h2>O próximo plano começa em uma receita</h2>
       <p>
         Escolha um produto, defina a quantidade e confirme os rendimentos. Depois use “Salvar lista
         de materiais” na árvore.
       </p>
-      <a hlmBtn variant="outline" class="btn" routerLink="/recipes">Encontrar um produto</a>
+      <a hlmBtn variant="outline" class="btn" routerLink="/recipes" data-tour="shopping.actions"
+        >Encontrar um produto</a
+      >
     </section>
   }
 </div>

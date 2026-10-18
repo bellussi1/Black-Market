@@ -91,6 +91,28 @@ describe('TutorialsManagePage', () => {
     expect(page.anchorLabel('market-saved.actions')).toBe('Ações das cotações');
     expect(page.locales).toEqual(['pt-BR']);
   });
+  it('shows route context and supports the published twelve-step limit', async () => {
+    const { page, fixture } = setup();
+    await page.initialize();
+    fixture.detectChanges();
+
+    expect(page.screenRoute('market')).toBe('/market');
+    expect(
+      fixture.nativeElement.querySelector('[data-tutorial-screen-route]')?.textContent,
+    ).toContain('/market');
+    for (let index = 0; index < 11; index++) page.addStep();
+    expect(page.draft().steps).toHaveLength(12);
+    page.addStep();
+    expect(page.draft().steps).toHaveLength(12);
+    expect(page.validation()['steps']).toBeUndefined();
+  });
+  it('does not start a player tour inside the administrative editor', async () => {
+    const { page, fixture } = setup();
+    await page.initialize();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[appTutorialSurface]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+  });
   it('does not load management content when canManageRoadmap is false', async () => {
     const { page, api } = setup(false);
     await page.initialize();

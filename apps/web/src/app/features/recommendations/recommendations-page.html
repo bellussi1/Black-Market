@@ -1,4 +1,8 @@
-<main class="tool-page coach-page">
+<main
+  class="tool-page coach-page"
+  appTutorialSurface="recommendations"
+  [appTutorialSurfaceReady]="!!snapshot()"
+>
   <header class="tool-heading coach-heading">
     <p class="tool-kicker">RECOMENDAÇÕES DE PRODUÇÃO</p>
     <h1>Faça prata com suas Life Skills</h1>
@@ -6,7 +10,6 @@
       Priorize produção dentro das atividades que você gosta e use o retorno para evoluir seu gear
       de Life Skill e PvPvE.
     </p>
-    <app-tutorial-launcher screenKey="recommendations" />
   </header>
 
   @if (message()) {

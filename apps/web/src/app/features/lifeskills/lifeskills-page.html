@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page" [appTutorialSurface]="tutorialSurface()">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>06 / PROFISSÕES E TREINO</ng-container></p>
     <h1><ng-container i18n>Meça seu rendimento.</ng-container></h1>
@@ -88,7 +88,7 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="lifeskills-sessions.sessions">
         <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
         <div class="form-grid">
           <label class="field"
@@ -185,7 +185,7 @@
           (loaded)="load($event)"
         /><app-calculation-proof tool="activity" [value]="form()" />
       </section>
-      <section>
+      <section data-tour="lifeskills-sessions.results">
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
@@ -370,7 +370,7 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="lifeskills-mastery.profile">
         <h2><ng-container i18n>Investimento e ganho observado</ng-container></h2>
         <div class="form-grid">
           <label class="field"
@@ -412,7 +412,7 @@
           (loaded)="loadInvestment($event)"
         /><app-calculation-proof tool="investment" [value]="investment()" />
       </section>
-      <section>
+      <section data-tour="lifeskills-mastery.inputs">
         @if (investmentResult().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
@@ -445,7 +445,7 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="lifeskills-training.plans">
         <h2><ng-container i18n>Estimador de XP</ng-container></h2>
         <div class="form-grid">
           <label class="field"
@@ -482,7 +482,7 @@
           (loaded)="loadTraining($event)"
         /><app-calculation-proof tool="training" [value]="training()" />
       </section>
-      <section>
+      <section data-tour="lifeskills-training.results">
         @if (trainingResult().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">

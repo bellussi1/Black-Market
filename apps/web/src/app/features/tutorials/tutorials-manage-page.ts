@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import {
   isTutorialAnchorForScreen,
   TUTORIAL_LOCALES,
+  TUTORIAL_MAX_STEPS,
   TUTORIAL_SCREEN_REGISTRY,
   type TutorialGuide,
   type TutorialGuideStepInput,
@@ -51,8 +52,32 @@ const ANCHOR_LABELS: Record<string, string> = {
   'recipe-workshop.materials-returns': $localize`Materiais e retornos`,
   'scans.capture': $localize`Envio de captura`,
   'scans.review': $localize`Revisão da captura`,
+  'scans-review.rows': $localize`Itens para revisar`,
+  'scans-review.save': $localize`Salvar itens conferidos`,
+  'scans-profile.profile-input': $localize`Entrada dos dados do personagem`,
+  'scans-profile.profile-preview': $localize`Prévia e revisão dos dados`,
   'storage.items': $localize`Itens do armazém`,
   'storage.projects': $localize`Projetos de produção`,
+  'stock-inventory.location': $localize`Personagem do inventário`,
+  'stock-inventory.items': $localize`Itens do inventário`,
+  'family-character.character': $localize`Personagem ativo`,
+  'family-character.lifeskills': $localize`Maestria por profissão`,
+  'family-family.characters': $localize`Acesso aos personagens`,
+  'family-family.actions': $localize`Editar dados da família`,
+  'family-equipment.slots': $localize`Posições dos equipamentos`,
+  'family-equipment.stats': $localize`Atributos informados`,
+  'lifeskills-sessions.sessions': $localize`Dados observados da sessão`,
+  'lifeskills-sessions.results': $localize`Resultado e histórico`,
+  'lifeskills-mastery.profile': $localize`Investimento e ganho observado`,
+  'lifeskills-mastery.inputs': $localize`Resultado da comparação`,
+  'lifeskills-training.plans': $localize`Dados de treino`,
+  'lifeskills-training.results': $localize`Tempo de treino estimado`,
+  'shopping.items': $localize`Materiais consolidados`,
+  'shopping.actions': $localize`Ações da lista de materiais`,
+  'plans.collection': $localize`Planos salvos`,
+  'plans.actions': $localize`Ações dos planos`,
+  'settings.account': $localize`Conta e sincronização`,
+  'settings.tutorials': $localize`Ajuda e tutoriais`,
   'recommendations.conditions': $localize`Preferências de atividades`,
   'recommendations.ranking': $localize`Ranking de atividades`,
   'crafting-workshop.recipe': $localize`Produto da oficina`,
@@ -100,8 +125,8 @@ export class TutorialsManagePage implements OnInit {
   readonly validation = computed(() => {
     const errors: Record<string, string> = {};
     const steps = this.draft().steps;
-    if (steps.length < 1 || steps.length > 8)
-      errors['steps'] = $localize`Use de uma a oito etapas.`;
+    if (steps.length < 1 || steps.length > TUTORIAL_MAX_STEPS)
+      errors['steps'] = $localize`Use de uma a doze etapas.`;
     steps.forEach((step, index) => {
       if (step.anchorKey !== null && !isTutorialAnchorForScreen(this.screenKey(), step.anchorKey))
         errors[`steps.${index}.anchorKey`] =
@@ -134,6 +159,9 @@ export class TutorialsManagePage implements OnInit {
   }
   screenLabel(key: TutorialScreenKey): string {
     return this.screens.find((screen) => screen.screenKey === key)?.label ?? key;
+  }
+  screenRoute(key: TutorialScreenKey): string {
+    return this.screens.find((screen) => screen.screenKey === key)?.route ?? '';
   }
   anchorLabel(key: string): string {
     if (ANCHOR_LABELS[key]) return ANCHOR_LABELS[key];
@@ -199,7 +227,7 @@ export class TutorialsManagePage implements OnInit {
     });
   }
   addStep(): void {
-    if (this.draft().steps.length >= 8) return;
+    if (this.draft().steps.length >= TUTORIAL_MAX_STEPS) return;
     this.update({
       ...this.draft(),
       steps: [

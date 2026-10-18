@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   inject,
+  input,
   type OnDestroy,
   signal,
 } from '@angular/core';
@@ -15,6 +16,7 @@ import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
 
 import { WorkspaceStore } from '../../core/workspace-store';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import type { Crop } from './print-reader';
 import { applyProfileFieldCandidates } from './profile-field-application';
@@ -127,11 +129,21 @@ function dedupeCandidates(candidates: readonly ScreenFieldCandidate[]): ScreenFi
 @Component({
   selector: 'app-profile-screen-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, BdoSelect, DecimalPipe, FormsModule, RouterLink],
+  imports: [
+    HlmInput,
+    HlmCard,
+    HlmButton,
+    BdoSelect,
+    DecimalPipe,
+    FormsModule,
+    RouterLink,
+    TutorialSurfaceDirective,
+  ],
   templateUrl: './profile-screen-import.html',
   styleUrl: './profile-screen-import.scss',
 })
 export class ProfileScreenImportComponent implements OnDestroy {
+  readonly embedded = input(false);
   readonly store = inject(WorkspaceStore);
   private readonly reader = inject(ScreenTextReader);
   readonly characters = computed(() =>

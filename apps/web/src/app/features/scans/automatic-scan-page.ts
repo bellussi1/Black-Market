@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { HlmButton } from '@bdo/ui/button';
 
-import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { ProfileScreenImportComponent } from './profile-screen-import';
 import { ScansPage } from './scans-page';
 import { detectScreenPanes, type ScreenKind } from './screen-recognition';
@@ -10,7 +17,7 @@ import { ScreenTextReader } from './screen-text-reader';
 @Component({
   selector: 'app-automatic-scan-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TutorialLauncher, ScansPage, ProfileScreenImportComponent, HlmButton],
+  imports: [TutorialSurfaceDirective, ScansPage, ProfileScreenImportComponent, HlmButton],
   templateUrl: './automatic-scan-page.html',
   styleUrl: './automatic-scan-page.scss',
 })
@@ -19,9 +26,18 @@ export class AutomaticScanPage {
   readonly reading = signal(false);
   readonly message = signal('');
   readonly profile = signal(false);
+  readonly tutorialSurface = computed(() => {
+    if (!this.kind()) return 'scans';
+    return this.profile() ? 'scans-profile' : 'scans-review';
+  });
   private readonly reader = inject(ScreenTextReader);
   private readonly scans = viewChild(ScansPage);
   private readonly profileImport = viewChild(ProfileScreenImportComponent);
+  readonly tutorialReady = computed(() => {
+    if (!this.kind()) return true;
+    if (this.profile()) return !!this.profileImport()?.imageUrl();
+    return (this.scans()?.cells().length ?? 0) > 0;
+  });
 
   async choose(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];

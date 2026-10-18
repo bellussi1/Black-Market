@@ -19,10 +19,11 @@ import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { silver } from '../../shared/formatters';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 @Component({
   selector: 'app-plans-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmInput, HlmCard, HlmButton, FormsModule, CatalogItemPicker],
+  imports: [HlmInput, HlmCard, HlmButton, FormsModule, CatalogItemPicker, TutorialSurfaceDirective],
   templateUrl: './plans-page.html',
 })
 export class PlansPage {

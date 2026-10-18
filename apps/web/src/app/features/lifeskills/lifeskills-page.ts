@@ -24,6 +24,7 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { date, number, silver } from '../../shared/formatters';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { compareObservedSessions } from './observed-session-comparison';
 @Component({
@@ -39,6 +40,7 @@ import { compareObservedSessions } from './observed-session-comparison';
     PresetBar,
     CalculationProof,
     CatalogItemPicker,
+    TutorialSurfaceDirective,
   ],
   templateUrl: './lifeskills-page.html',
 })
@@ -59,6 +61,16 @@ export class LifeskillsPage {
     { id: 'trading', label: 'Comércio' },
   ];
   readonly tab = signal('sessions');
+  readonly tutorialSurface = computed(() => {
+    switch (this.tab()) {
+      case 'mastery':
+        return 'lifeskills-mastery';
+      case 'training':
+        return 'lifeskills-training';
+      default:
+        return 'lifeskills-sessions';
+    }
+  });
   readonly form = signal<ActivityInput>({
     ...defaultTax,
     name: 'Minha sessão',

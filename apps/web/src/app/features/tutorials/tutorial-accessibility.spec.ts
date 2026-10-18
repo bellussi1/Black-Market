@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -5,8 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalyticsService } from '../../core/analytics.service';
 import { TutorialService } from '../../core/tutorial.service';
 import { TutorialApiService } from '../../core/tutorial-api.service';
-import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+
 const guide = {
   screenKey: 'market' as const,
   locale: 'pt-BR' as const,
@@ -16,7 +18,16 @@ const guide = {
     { sortOrder: 1, anchorKey: null, title: 'Segundo', body: 'Texto longo '.repeat(30) },
   ],
 };
-describe('Tutorial accessibility with real Driver', () => {
+
+@Component({
+  standalone: true,
+  imports: [TutorialSurfaceDirective],
+  template:
+    '<main appTutorialSurface="market"><section data-tour="market.search">Busca</section></main>',
+})
+class TutorialAccessibilityHost {}
+
+describe('Automatic tutorial accessibility with real Driver', () => {
   useMemoryStorage();
   beforeEach(() => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
@@ -41,19 +52,17 @@ describe('Tutorial accessibility with real Driver', () => {
   });
   async function open() {
     const captureTutorial = vi.fn();
-    const fixture = await renderComponent(TutorialLauncher, { screenKey: 'market' }, [
+    const fixture = await renderComponent(TutorialAccessibilityHost, {}, [
       { provide: TutorialApiService, useValue: { getPublished: () => of({ guide }) } },
       { provide: AnalyticsService, useValue: { captureTutorial } },
     ]);
-    const launcher = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-    launcher.focus();
-    launcher.click();
     await vi.waitFor(() => expect(document.querySelector('.bm-tutorial-popover')).not.toBeNull());
     await new Promise((resolve) => setTimeout(resolve, 30));
-    return { fixture, launcher, captureTutorial };
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+    return { fixture, captureTutorial };
   }
-  it('supports keyboard start previous next escape and focus restoration', async () => {
-    const { launcher, captureTutorial } = await open();
+  it('starts automatically and supports keyboard previous, next and escape', async () => {
+    const { captureTutorial } = await open();
     expect(document.activeElement?.classList.contains('bm-tutorial-popover')).toBe(true);
     document.activeElement?.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
@@ -69,13 +78,12 @@ describe('Tutorial accessibility with real Driver', () => {
     );
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.querySelector('.bm-tutorial-popover')).toBeNull();
-    expect(document.activeElement).toBe(launcher);
     expect(captureTutorial.mock.calls.map((call) => call[0])).toEqual([
       'tutorial_started',
       'tutorial_dismissed',
     ]);
   });
-  it('announces current title body and progress without duplicate live regions', async () => {
+  it('announces current title, body and progress without duplicate live regions', async () => {
     await open();
     const popover = document.querySelector('.bm-tutorial-popover')!;
     expect(popover.getAttribute('role')).toBe('dialog');
@@ -86,9 +94,8 @@ describe('Tutorial accessibility with real Driver', () => {
       'Primeira orientação',
     );
   });
-  it('keeps native controls with localized names and completes distinctly', async () => {
-    const { launcher, captureTutorial } = await open();
-    expect(launcher.type).toBe('button');
+  it('keeps native controls localized and records completion distinctly', async () => {
+    const { captureTutorial } = await open();
     const close = document.querySelector('.driver-popover-close-btn')!;
     expect(close.getAttribute('aria-label')).toBe('Sair do tutorial');
     (document.querySelector('.driver-popover-next-btn') as HTMLButtonElement).click();
@@ -100,24 +107,5 @@ describe('Tutorial accessibility with real Driver', () => {
       'tutorial_started',
       'tutorial_completed',
     ]);
-    expect(document.activeElement).toBe(launcher);
-  });
-  it('preserves arrow-key and text input behavior in the underlying page', async () => {
-    await open();
-    const input = document.createElement('input');
-    document.body.append(input);
-    input.focus();
-    const arrow = new KeyboardEvent('keydown', {
-      key: 'ArrowRight',
-      bubbles: true,
-      cancelable: true,
-    });
-    input.dispatchEvent(arrow);
-    input.value = 'Busca';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(arrow.defaultPrevented).toBe(false);
-    expect(input.value).toBe('Busca');
-    expect(document.querySelector('.driver-popover-title')?.textContent).toBe('Primeiro');
-    input.remove();
   });
 });

@@ -1,4 +1,8 @@
-<main class="tool-page guided-page profile-screen-import">
+<main
+  class="tool-page guided-page profile-screen-import"
+  appTutorialSurface="scans-profile"
+  [appTutorialSurfaceReady]="!embedded()"
+>
   <header class="tool-heading">
     <p class="tool-kicker" i18n>SEUS DADOS, COM SUA REVISÃO</p>
     <h1 id="profile-import-title" i18n>Importar dados do personagem</h1>
@@ -27,9 +31,11 @@
   </ol>
 
   <details class="profile-capture-tools" [open]="!imageUrl()">
-    <summary>Captura original e substituição</summary>
+    <summary data-tour="scans-profile.profile-preview">Captura original e substituição</summary>
     <section hlmCard class="panel">
-      <h2 i18n>1. Escolha uma captura</h2>
+      <h2 i18n [attr.data-tour]="embedded() ? null : 'scans-profile.profile-input'">
+        1. Escolha uma captura
+      </h2>
       <p class="help" i18n>
         Envie uma tela nítida. Chat, HUD e diálogos não são usados. A captura permanece na memória
         desta página e não é salva no backup.

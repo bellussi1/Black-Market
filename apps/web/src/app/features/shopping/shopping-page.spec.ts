@@ -1,6 +1,8 @@
+import { By } from '@angular/platform-browser';
 import { personalPlanSchema } from '@bdo/calculators';
 import { describe, expect, it } from 'vitest';
 
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { ShoppingPage } from './shopping-page';
 describe('Integrated shopping list', () => {
@@ -46,5 +48,34 @@ describe('Integrated shopping list', () => {
     page.undo();
     expect(page.plans()).toHaveLength(2);
     expect(page.store.data().inventory[0].quantity).toBe(30);
+  });
+
+  it('guides both the empty and populated shopping workflows without a launcher', async () => {
+    const fixture = await renderComponent(ShoppingPage);
+    const element = fixture.nativeElement as HTMLElement;
+    const tutorial = fixture.debugElement
+      .query(By.directive(TutorialSurfaceDirective))
+      ?.injector.get(TutorialSurfaceDirective);
+
+    expect(tutorial?.appTutorialSurface()).toBe('shopping');
+    expect(element.querySelector('[data-tour="shopping.items"]')).not.toBeNull();
+    expect(element.querySelector('[data-tour="shopping.actions"]')).not.toBeNull();
+    expect(element.querySelector('app-tutorial-launcher')).toBeNull();
+
+    fixture.componentInstance.store.update((state) => ({
+      ...state,
+      personalPlans: [
+        personalPlanSchema.parse({
+          id: 'tour-plan',
+          region: 'sa',
+          name: 'Produção de teste',
+          sourceItemId: 5301,
+          createdAt: new Date().toISOString(),
+        }),
+      ],
+    }));
+    fixture.detectChanges();
+    expect(element.querySelector('[data-tour="shopping.items"]')).not.toBeNull();
+    expect(element.querySelector('[data-tour="shopping.actions"]')).not.toBeNull();
   });
 });

@@ -1,5 +1,4 @@
-<div class="tool-page stock-page">
-  <app-tutorial-launcher screenKey="storage" />
+<div class="tool-page stock-page" [appTutorialSurface]="tutorialSurface()">
   <header class="tool-heading">
     <p class="tool-kicker" i18n>SEUS ITENS, CONFERIDOS POR VOCÊ</p>
     <h1 i18n>Armazém</h1>
@@ -14,8 +13,16 @@
         i18n
         >Importar capturas</a
       ><button hlmBtn variant="outline" class="btn subtle" type="button" (click)="newItem()" i18n>
-        Adicionar item manualmente
-      </button>
+        Adicionar item manualmente</button
+      ><a
+        hlmBtn
+        variant="outline"
+        class="btn subtle"
+        routerLink="/plans"
+        data-tour="storage.projects"
+        i18n
+        >Meus planos de materiais</a
+      >
     </div>
   </header>
   <div class="workspace-tabs" role="group" aria-label="Itens do armazém" i18n-aria-label>
@@ -52,7 +59,7 @@
           type="search"
           [ngModel]="search()"
           (ngModelChange)="search.set($event); resetPage()" /></label
-      ><label
+      ><label [attr.data-tour]="kind() === 'inventory' ? 'stock-inventory.location' : null"
         >{{ kind() === 'storage' ? 'Cidade ou armazém' : 'Personagem'
         }}<select
           appBdoSelect
@@ -113,7 +120,7 @@
     <div
       class="stock-items"
       data-stock-items
-      data-tour="storage.items"
+      [attr.data-tour]="kind() === 'storage' ? 'storage.items' : 'stock-inventory.items'"
       [class.list]="view() === 'list'"
       [attr.aria-busy]="loadingItems() ? 'true' : null"
     >

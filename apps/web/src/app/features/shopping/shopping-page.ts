@@ -8,11 +8,12 @@ import { HlmCard } from '@bdo/ui/card';
 import { IdentityService } from '../../core/identity.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { stockLocationKey } from '../../shared/recipe-tree/recipe-tree-model';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 
 @Component({
   selector: 'app-shopping-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, RouterLink],
+  imports: [HlmCard, HlmButton, RouterLink, TutorialSurfaceDirective],
   templateUrl: './shopping-page.html',
 })
 export class ShoppingPage {

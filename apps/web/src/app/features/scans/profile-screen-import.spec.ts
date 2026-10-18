@@ -1,5 +1,7 @@
+import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { ProfileScreenImportComponent } from './profile-screen-import';
 
@@ -22,6 +24,18 @@ describe('Profile screen import destination', () => {
     expect(review?.querySelector('.profile-actions button')?.textContent).toContain(
       'Aplicar campos selecionados',
     );
+  });
+  it('starts the profile import guide on the upload workflow without adding a launcher', async () => {
+    const fixture = await renderComponent(ProfileScreenImportComponent);
+    const element = fixture.nativeElement as HTMLElement;
+    const tutorial = fixture.debugElement
+      .query(By.directive(TutorialSurfaceDirective))
+      ?.injector.get(TutorialSurfaceDirective);
+
+    expect(tutorial?.appTutorialSurface()).toBe('scans-profile');
+    expect(element.querySelector('[data-tour="scans-profile.profile-input"]')).not.toBeNull();
+    expect(element.querySelector('[data-tour="scans-profile.profile-preview"]')).not.toBeNull();
+    expect(element.querySelector('app-tutorial-launcher')).toBeNull();
   });
   it('marks the profile capture as busy and keeps OCR progress in a live status region', async () => {
     const fixture = await renderComponent(ProfileScreenImportComponent);

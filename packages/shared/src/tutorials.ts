@@ -141,7 +141,7 @@ export const TUTORIAL_SCREEN_REGISTRY: readonly TutorialScreenDefinition[] = [
   ]),
   screen('shopping', '/shopping', 'authenticated', 'Lista de materiais', ['items', 'actions']),
   screen('plans', '/plans', 'authenticated', 'Meus planos', ['collection', 'actions']),
-  screen('settings', '/settings', 'authenticated', 'Configurações', ['account', 'tutorials']),
+  screen('settings', '/settings', 'public', 'Configurações', ['account', 'tutorials']),
 ] as const;
 
 export interface TutorialGuideStep {

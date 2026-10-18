@@ -52,11 +52,13 @@
             (click)="selectScreen(screen.screenKey)"
           >
             {{ screenLabel(screen.screenKey) }}
+            <small>{{ screen.route }}</small>
           </button>
         }
       </nav>
       <section class="panel tutorials-editor-panel">
         <h2>{{ screenLabel(screenKey()) }} · pt-BR</h2>
+        <p data-tutorial-screen-route>{{ screenRoute(screenKey()) }}</p>
         <p i18n>Estado: {{ dirty() ? 'Alterações não salvas' : 'Sem alterações' }}</p>
         @if (draft().expectedUpdatedAt) {
           <p>

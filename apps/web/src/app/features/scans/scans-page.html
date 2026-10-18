@@ -604,7 +604,7 @@
         </button>
       </section>
     } @else if (cells().length) {
-      <section hlmCard class="panel scan-review">
+      <section hlmCard class="panel scan-review" data-tour="scans-review.rows">
         <div class="panel-heading">
           <h2 id="scan-review-title" i18n>Revisar itens</h2>
           <span class="badge" i18n>{{ pendingBatchCount() }} pendentes</span>
@@ -634,7 +634,7 @@
               <strong>{{ pendingBatchCount() }}</strong> pendentes ficam fora até a validação.
             </p>
           </div>
-          <div class="master-bar-actions">
+          <div class="master-bar-actions" data-tour="scans-review.save">
             <button
               hlmBtn
               variant="outline"

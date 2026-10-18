@@ -29,7 +29,7 @@ import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item
 import { download } from '../../shared/download';
 import { number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
-import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 type Stock = Workspace['inventory'][number];
 type Project = Workspace['projects'][number];
@@ -37,7 +37,7 @@ type Project = Workspace['projects'][number];
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-storage-page',
   imports: [
-    TutorialLauncher,
+    TutorialSurfaceDirective,
     HlmInput,
     HlmCard,
     HlmButton,

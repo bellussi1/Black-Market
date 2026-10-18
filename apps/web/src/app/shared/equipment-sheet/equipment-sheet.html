@@ -38,6 +38,7 @@
       </div>
       <div
         class="equipment-orbit"
+        data-tour="family-equipment.slots"
         role="group"
         aria-label="Posições de equipamento conforme a interface do jogo"
         i18n-aria-label
@@ -77,7 +78,7 @@
       </div>
       <p class="equipment-hint" i18n>Selecione uma posição para consultar ou corrigir o item.</p>
       @if (showStatistics()) {
-        <details class="combat-attributes">
+        <details class="combat-attributes" data-tour="family-equipment.stats">
           <summary i18n>Atributos de combate informados</summary>
           <div class="equipment-stats">
             <span
