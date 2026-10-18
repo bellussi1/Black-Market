@@ -1952,3 +1952,33 @@ Etapa 22 atualizada: skill ui-design e agente criados/validados, Brain e Helm bu
   - QA ao vivo no Playwright em `1440×900` e `390×844` (`scrollWidth = clientWidth`, zero overflow horizontal) confirmou apenas as 2 abas (`Árvore visual` e `Etapas expansíveis`), ausência de `.production-entry`, ícones BDO na sidebar e responsividade nas rotas `/recipes/...`, `/plans`, `/shopping`, `/family` e `/recommendations`.
   - `pnpm check`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` passaram. O bundle inicial de produção permaneceu abaixo do aviso de `500 kB`: **`499,98 kB` brutos** (`134,80 kB` estimados em transferência), sem alterar os budgets em `angular.json`.
 - **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
+
+## 180. Grade BDO por padrão no Armazém e unificação do Hub de Recomendações & Profissões (Antigravity, 18/10/2026)
+
+- **Pedido do usuário:**
+  1. Abrir o Armazém (`/storage`) na visão **Grade (`grid`) por padrão** e aprimorar a UI da grade no estilo BDO (slots de ícone com raridade, badge de quantidade no canto inferior direito, pílulas rápidas de cidade e cards mais limpos).
+  2. Melhorar a tela de Recomendações (`/recommendations`) e unificar a navegação com Profissões (`/lifeskills`):
+     - Resolver o bloqueio de tempo de cálculo assumindo os tempos padrão de cada método (`1.2s` para Culinária/Alquimia, `6.0s` para Culinária Simples/Alquimia Simples/Processamento, `4.0s` para Coleta) e manter ajuste fino recolhível.
+     - Excluir trajes, armaduras, armas, acessórios, cristais, decoração de residência e itens aprimoráveis (`maxEnhance > 0`) das recomendações de Life Skill.
+     - Permitir que o usuário preencha/edite suas maestrias (Culinária, Alquimia, Processamento), tempo de sessão e prata livre diretamente no topo da tela.
+     - Sugerir receitas usando o Armazém do usuário e completando itens faltantes, com filtro de liquidez real de vendas no mercado (`totalTrades >= 100` ou venda recente).
+- **Implementação no Armazém (`StockPage` e `StoragePage`):**
+  - Alterado o sinal de visualização padrão de `'list'` para `'grid'` em `apps/web/src/app/features/stock/stock-page.ts` e `apps/web/src/app/features/storage/storage-page.ts`.
+  - Redesenho de `.stock-items.bdo-grid` e `.stock-item` (`stock-page.html`, `stock-page.scss`) com slots BDO `52×52 px` (`.bdo-slot`), molduras de raridade (`green`, `blue`, `yellow`, `orange`/`red`), badge numérico `.bdo-slot-count` no canto inferior direito do ícone, pílulas rápidas de filtro por cidade (`Todas`, `Calpheon`, `Heidel`, `Valência`, `Velia`) e barra de ações compacta (`Receitas`, `Editar`, `Remover`).
+  - Atualizados `stock-page.spec.ts` e `storage-page.spec.ts` (`16/16` aprovados).
+- **Implementação em Recomendações e Unificação com Profissões (`RecommendationsPage`, `LifeskillsPage`, `recipe-fixed-yields.ts`):**
+  - **Correções críticas de cobertura no Coach (`recommendations-page.ts`)**:
+    1. `canRequestProductionQuote` agora aceita categorias `'cook'`, `'mine'`, `'leather'` e `'vehicle'`, desbloqueando a consulta de preços no Mercado Central para todas as 506 receitas de Culinária e itens de Processamento de minérios/couros.
+    2. `productionRecipes` agora atribui `fixedYield` a `output.quantity` (antes descartava o retorno de `fixedRecipeYield` e deixava `null`), e `recipe-fixed-yields.ts` passou a cobrir também as Refeições de Cron de Culinária Simples (`9691`, `9692`, `9693`: `1x` normal e `10x` com Nadia Rowen `820015`).
+    3. `compare()` usa `defaultRecipeMethodSeconds(recipe.method)` quando não há calibração manual salva e processa em lotes de `250` receitas (em vez de `5`), gerando recomendações completas instantaneamente (658 cenários completos ranqueados no catálogo SA em `< 1s`).
+  - **Filtro estrito de Life Skills (`isEligibleLifeSkillRecipe` e `activitySkillForRecipe`)**: exclui trajes, vestimentas, armaduras, armas, acessórios, cristais, mobília/mansão e equipamentos aprimoráveis (`maxEnhance > 0`).
+  - **Edição inline de Personagem/Maestria, Liquidez e Armazém vs. Faltantes**:
+    - Inputs diretos de Maestria (Culinária, Alquimia, Processamento), duração da sessão e orçamento em prata no painel superior, com seção recolhível para ajuste fino de tempos e preços.
+    - Filtro ativo por padrão `Garantir volume de venda no mercado` (`hasLiquidity`, `tradeVolumeLabel` exibindo vendas acumuladas e estoque).
+    - Abas rápidas `Melhor Lucro/Hora`, `Usando seu Armazém` e `Completando Itens Faltantes`, com pílulas visuais de itens com ícone BDO separando **No seu Armazém** e **Itens faltantes (comprar / produzir)** em cada card.
+  - **Navegação Unificada (`/recommendations` ↔ `/lifeskills`)**: barra de abas unificada `PROFISSÕES & O QUE FAZER` em ambas as telas alternando entre `O que fazer (Receitas de Produção)`, `Sessões em Campo (Coleta, Caça, Pesca)`, `Retorno de Maestria` e `Tempo de Treino` (com suporte a `?tab=sessions|mastery|training`), preservando os contratos públicos/privados de rota e SSR.
+- **Verificação e Qualidade:**
+  - `58/58` testes unitários aprovados nas 5 suítes modificadas (`recommendations-page.spec.ts`, `lifeskills-page.spec.ts`, `stock-page.spec.ts`, `storage-page.spec.ts`, `recipe-yield.spec.ts`).
+  - Inspeção visual ao vivo no Playwright em `1440×900` validou a nova grade BDO de `/storage` (com pílulas de cidade e slots com contador), o ranking instantâneo em `/recommendations` (com abas de Armazém/Faltantes e volume de vendas) e a navegação unificada com `/lifeskills`.
+  - `pnpm check`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` passaram. O bundle inicial permaneceu em **`499,98 kB` brutos** (`134,78 kB` estimados em transferência), abaixo do aviso de `500 kB`.
+- **Continuidade:** preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado; sem push/deploy.
