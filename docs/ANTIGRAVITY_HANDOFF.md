@@ -6,7 +6,7 @@
 
 Este é um índice de retomada, não substitui as instruções nem os documentos detalhados do projeto. Leia primeiro `AGENTS.md`, `docs/ACTIVE_CONTEXT.md` e [`docs/project-feature-checklist.md`](project-feature-checklist.md); depois confira `git status`, `git log -n 3 --oneline` e o código atual. O checklist mestre relaciona pedidos, origem nos chats, status e próximos passos; os documentos de especificação e implementação listados abaixo são a fonte de detalhes.
 
-> **Retomada de 18/10/2026:** veja ACTIVE_CONTEXT §183 e checklist UIQ-01..06. Mercado agora tem duas entradas principais; etapas expansíveis mostram o mesmo plano sem formulários repetidos, com editor compartilhado; decisões de compra/produção e venda/guarda explícitas; containers por tokens e transições de rota revisados. A logo/fav icon já estava em `0d5568a`. `pnpm check` e suíte completa passaram (1.218 aprovados/1 ignorado). Pesquisa pública dos quatro concorrentes em `research/recipe-market-flow-review-2026-10-18.md`; auditoria numérica externa e cobertura de todo o catálogo permanecem parciais. Branch `codex/audit-remediation`; preservar plano visual3 não rastreado; sem push/deploy.
+> **Retomada de 18/10/2026:** veja ACTIVE_CONTEXT §185 para cotações e catálogo local, e §184 para bootstrap/atividade. Analytics passou a iniciar após renderização; logs operacionais usam classificador puro separado. Bundle parcial 500,75 kB, ainda cerca de 0,75 kB acima do aviso, budget intacto. Recomendações/Home corrigidas: negociações acumuladas não são volume diário/liquidez garantida; estoque ausente explícito e contagem exata por BigInt. Não mudou a política de ranking. Pesquisa e limites em `research/market-activity-and-bootstrap-review-2026-10-18.md`. Preservar plano visual3 não rastreado; sem push/deploy.
 
 ## Registro histórico de passagens anteriores
 
@@ -21,6 +21,10 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 - Prompt reutilizável para a continuidade: `docs/ANTIGRAVITY_CONTINUATION_PROMPT.md`; o commit documental mais recente deve ser conferido com `git log`.
 - A seção 128 de `docs/ACTIVE_CONTEXT.md` registra a validação visual do Chart.js em desktop e mobile, para métricas de preço, estoque e negociações por intervalo. A seção 126 é o histórico da implementação inicial, anterior à validação visual.
 - O Market Board tem subcategorias expansíveis, ação para limpar filtros, paginação/itens por página acima da tabela e skeletons no primeiro carregamento. A revisão adicional em 390×844 e por teclado passou sem overflow/falha de foco; a cobertura de liquidez continua parcial porque negociação observada não equivale a unidades vendidas garantidas.
+
+## Fechamento mais recente: cotações e catálogo (18/10/2026)
+
+Leia ACTIVE_CONTEXT §185 antes do histórico. Cotações sem estoque usam preço-base de referência quando falta máxima; atualização manual repassa forceRefresh. Lula fresca continua sem cotação e sem proporção culinária validada para desidratado. Novo catálogo local corresponde ao cliente instalado: 74.523 itens/10.683 receitas, backup completo e checksums pessoais preservados. API Docker 3000 e Web 4200 ativos; Google/Steam habilitados. 1.224 testes aprovados/1 ignorado, check/build/SSR passaram; bundle 500,75 kB continua acima do aviso. Consulte o relatório recipe-quotes-and-client-patch-2026-10-18.md. Não refazer entregas commitadas nem presumir que as pendências de fonte foram encerradas.
 
 ## Prioridades de continuação
 

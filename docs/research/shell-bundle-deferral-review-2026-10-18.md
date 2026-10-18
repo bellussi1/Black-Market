@@ -61,3 +61,7 @@ O código está no commit `bb5bd64`; a documentação de continuidade e do check
 ## Snapshot após containers e transições de rota — 18/10/2026
 
 O build Angular final após a rodada de UI mediu **503,37 kB** brutos e **135,47 kB** estimados em transferência. O aviso inicial de 500 kB voltou a ser excedido, em 3,37 kB; PERF-01 foi reaberto no checklist, sem elevar budgets. Não foi atribuído todo o delta a uma dependência isolada sem novo metafile; a rodada incorpora transições do Router e estilos globais. O primeiro build indicou CSS da árvore em 16,21 kB; substituir o estilo dos botões de cenário por utilitários eliminou esse aviso na medição final. Ver ACTIVE_CONTEXT §183 para testes e alcance.
+
+## Snapshot após separar bootstrap de analytics — 18/10/2026
+
+O `main` incluía analytics por dois caminhos: inicialização da raiz e o classificador importado pelos logs operacionais. A raiz passou a usar import dinâmico após renderização; o classificador puro foi movido para um módulo independente. Build medido de **500,75 kB/134,88 kB** (bruto/transferência) contra **503,37/135,47 kB** anteriores. Continua acima do aviso de 500 kB; budget preservado. O registro de tutoriais permanece no `main` devido ao grafo do pacote compartilhado, e uma experiência de anotações de pureza não reduziu o inicial e foi revertida. Não afirmar lazy-loading integral de tutoriais nem PERF-01 concluído. Próxima investigação: consumidores e entrypoints do pacote compartilhado, antes de alterar a arquitetura.

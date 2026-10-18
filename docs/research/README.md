@@ -1,5 +1,7 @@
 # Mapa público das referências de BDO
 
+- [Atividade de mercado e bootstrap — 18/10/2026](market-activity-and-bootstrap-review-2026-10-18.md): contador acumulado, estoque desconhecido e separação de dependências iniciais.
+
 - [Receitas, Mercado e consistência de navegação — 18/10/2026](recipe-market-flow-review-2026-10-18.md): fluxo público dos quatro concorrentes, decisões de UI e limites de validação numérica.
 
 Para consulta por funcionalidade, veja [links úteis e anexos de referência](useful-links.md), incluindo os 21 links fornecidos em 9 de outubro de 2026 e a planilha de subprodutos de alquimia.
@@ -79,3 +81,5 @@ As fontes diretas, datas e distinções entre declaração, observação e infer
 3. Usar CSV/manual agora; implementar [prints revisáveis](../storage-import-strategy.md) após avaliar exemplos reais.
 4. Validar fórmulas por patch e região. Os guias pesquisados contêm divergências de números de maestria; não copiar automaticamente uma tabela antiga.
 5. Preparar anúncios no layout; resolver a licença não comercial do extractor antes de ativar monetização.
+
+- [Cotações de receitas e cliente instalado — 18/10/2026](recipe-quotes-and-client-patch-2026-10-18.md): referência de preço sem estoque, atualização forçada, extração e revisão do suplemento.
