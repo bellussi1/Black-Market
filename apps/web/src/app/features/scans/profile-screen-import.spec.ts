@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
@@ -7,6 +8,10 @@ import { ProfileScreenImportComponent } from './profile-screen-import';
 
 describe('Profile screen import destination', () => {
   useMemoryStorage();
+  it('formats OCR confidence values with the Brazilian Portuguese locale', () => {
+    expect(new DecimalPipe('pt-BR').transform(1234.5, '1.0-1')).toBe('1.234,5');
+  });
+
   it('keeps preview, field selection and apply action under the shared import heading', async () => {
     const fixture = await renderComponent(ProfileScreenImportComponent);
     const page = fixture.componentInstance;

@@ -1,6 +1,4 @@
-import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import pt from '@angular/common/locales/pt';
 import type { ApplicationConfig } from '@angular/core';
 import { ErrorHandler, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import {
@@ -15,8 +13,6 @@ import { routes } from './app.routes';
 import { uiLocale } from './core/locale';
 import { operationalErrorInterceptor, SafeFrontendErrorHandler } from './core/operational-errors';
 import { SeoService } from './core/seo.service';
-
-registerLocaleData(pt, 'pt-BR');
 
 export const appConfig: ApplicationConfig = {
   providers: [
