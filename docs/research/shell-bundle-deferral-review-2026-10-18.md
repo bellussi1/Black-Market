@@ -51,3 +51,9 @@ O teste focado do layout passou 15/15; `pnpm check`, build de produção, `pnpm 
 ## Snapshot após alterações de SEO e aviso de independência — 18/10/2026
 
 Build Angular de produção serial com `ng build --stats-json`: bundle inicial **500,82 kB**, transferência estimada **135,16 kB**. O aviso de 500 kB permanece excedido por 819 bytes; o budget não foi alterado. O grafo segue concentrado no router Angular (85,72 kB do chunk principal), shell/layout (31,37 kB), registry Lucide (13,11 kB) e serviços compartilhados. Não foi removido controle nem recurso para forçar o limite. Locale `pt-BR`→`pt` e CommonJS do Tesseract permanecem avisos separados.
+
+## Snapshot após remoção de dados de locale redundantes — 18/10/2026
+
+O metafile de `ng build --stats-json` mostrou `@angular/common/locales/pt` no bundle `main` por causa do registro global `registerLocaleData(pt, 'pt-BR')`. O build também carrega os dados globais de `pt` nos polyfills e emite aviso de fallback `pt-BR`→`pt`; o produto usa `DecimalPipe` somente no importador de captura, que é lazy. A retirada do registro eager reduziu o bundle inicial de **501,06 kB/135,31 kB** para **499,60 kB/134,70 kB** (bruto/transferência estimada), corte de 1,46 kB e 0,61 kB, respectivamente. A medida ficou abaixo do aviso de 500 kB, sem mudar o budget ou remover funcionalidades. A spec focal confirma `DecimalPipe('pt-BR')` para `1.234,5`; build de produção, `pnpm check` e `pnpm test:ssr` passaram. Os avisos de fallback de locale e CommonJS do Tesseract continuam independentes.
+
+O código está no commit `bb5bd64`; a documentação de continuidade e do checklist fica em commit separado. A suíte integral de 1.209 aprovados/1 ignorado pertence à alteração anterior de privacidade; a otimização teve spec focal 6/6 e não repetiu a suíte integral.
