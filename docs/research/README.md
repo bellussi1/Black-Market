@@ -1,5 +1,7 @@
 # Mapa público das referências de BDO
 
+- [Receitas, Mercado e consistência de navegação — 18/10/2026](recipe-market-flow-review-2026-10-18.md): fluxo público dos quatro concorrentes, decisões de UI e limites de validação numérica.
+
 Para consulta por funcionalidade, veja [links úteis e anexos de referência](useful-links.md), incluindo os 21 links fornecidos em 9 de outubro de 2026 e a planilha de subprodutos de alquimia.
 
 Antes de desenhar ou alterar qualquer feature de produto, siga o [protocolo de análise competitiva](competitor-review-playbook.md): consultar BDO Workshop, BDO Codex, BDOLytics e Garmoth, registrar evidências e limites e comparar cálculos com entradas pareadas.
