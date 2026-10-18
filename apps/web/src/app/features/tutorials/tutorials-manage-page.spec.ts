@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { TUTORIAL_SCREEN_REGISTRY } from '@bdo/shared';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
@@ -85,14 +86,9 @@ describe('TutorialsManagePage', () => {
 
   it('lists only code-registered screens and locales and offers no selector input', () => {
     const { page } = setup();
-    expect(page.screens.map((screen) => screen.screenKey)).toEqual([
-      'market',
-      'recipes',
-      'recipe-workshop',
-      'scans',
-      'storage',
-      'recommendations',
-    ]);
+    expect(page.screens).toEqual(TUTORIAL_SCREEN_REGISTRY);
+    expect(page.screenLabel('crafting-library')).toBe('Produção · Biblioteca');
+    expect(page.anchorLabel('market-saved.actions')).toBe('Ações das cotações');
     expect(page.locales).toEqual(['pt-BR']);
   });
   it('does not load management content when canManageRoadmap is false', async () => {

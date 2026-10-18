@@ -76,8 +76,14 @@ export const TUTORIAL_SCREEN_REGISTRY: readonly TutorialScreenDefinition[] = [
   screen('market-item', '/market/items/:id', 'public', 'Mercado · Detalhe do item', [
     'summary',
     'history',
+    'details',
   ]),
-  screen('recipes', '/recipes', 'public', 'Receitas · Catálogo', ['search', 'methods', 'tree']),
+  screen('recipes', '/recipes', 'public', 'Receitas · Catálogo', [
+    'search',
+    'methods',
+    'tree',
+    'catalogue',
+  ]),
   screen('recipe-workshop', '/recipes/items/:id', 'public', 'Receitas · Oficina', [
     'batch-mastery',
     'financial',

@@ -1,4 +1,9 @@
-<div class="tool-page guided-page item-detail-page" [attr.aria-busy]="loading()">
+<div
+  class="tool-page guided-page item-detail-page"
+  [attr.aria-busy]="loading()"
+  appTutorialSurface="market-item"
+  [appTutorialSurfaceReady]="!loading() && !!item()"
+>
   <a routerLink="/market" i18n>← Mercado</a>
   @if (loading()) {
     <section class="item-detail-loading-skeleton" role="status" aria-live="polite" aria-busy="true">
@@ -23,7 +28,7 @@
     <p class="error-box" role="alert">{{ message() }}</p>
   }
   @if (item(); as selected) {
-    <header class="page-heading item-identity">
+    <header class="page-heading item-identity" data-tour="market-item.summary">
       <app-item-icon
         [url]="api.resolveIconUrl(selected)"
         [name]="selected.name"
@@ -44,11 +49,12 @@
         class="btn subtle"
         routerLink="/market"
         [queryParams]="{ item: selected.id }"
+        data-tour="market-item.history"
         i18n
         >Consultar mercado</a
       >
     </div>
-    <div class="item-detail-layout">
+    <div class="item-detail-layout" data-tour="market-item.details">
       <app-item-dossier [item]="selected" [iconUrl]="api.resolveIconUrl(selected)" />
       <details class="panel item-additional-facts">
         <summary i18n>Informações adicionais do catálogo</summary>

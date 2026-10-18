@@ -1,9 +1,11 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
 import { IdentityService } from '../../core/identity.service';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent } from '../../testing/test-setup';
 import { RoadmapPage } from './roadmap-page';
 
@@ -66,6 +68,15 @@ const entries = [
 ];
 
 describe('RoadmapPage', () => {
+  it('registers roadmap onboarding on the existing page shell', async () => {
+    const fixture = await renderComponent(RoadmapPage);
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('roadmap');
+    expect(fixture.nativeElement.querySelector('[data-tour="roadmap.progress"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+  });
+
   it('reserves the roadmap trail with an accessible skeleton while loading', async () => {
     const identity = {
       canManageRoadmap: signal(false),

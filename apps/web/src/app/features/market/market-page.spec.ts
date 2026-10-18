@@ -1,9 +1,11 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import type { CatalogItem, MarketBoardItem } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
 
 import { WorkspaceStore } from '../../core/workspace-store';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { MarketPage } from './market-page';
 
@@ -31,6 +33,31 @@ async function render(component: typeof MarketPage) {
 
 describe('MarketPage', () => {
   useMemoryStorage();
+  it('maps each market tab to its own tutorial without a launcher or extra host', async () => {
+    const fixture = await render(MarketPage);
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface).not.toBeNull();
+    if (!surface) return;
+    const directive = surface.injector.get(TutorialSurfaceDirective);
+    const page = fixture.nativeElement.querySelector('.market-page');
+
+    expect(directive.appTutorialSurface()).toBe('market');
+    expect(surface.nativeElement).toBe(page);
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+    for (const [tab, expected, anchor] of [
+      ['quote', 'market-quote', 'market-quote.search'],
+      ['calculator', 'market-calculator', 'market-calculator.inputs'],
+      ['saved', 'market-saved', 'market-saved.actions'],
+      ['board', 'market', 'market.search'],
+    ] as const) {
+      fixture.componentInstance.workspaceView.set(tab);
+      fixture.detectChanges();
+      expect(directive.appTutorialSurface()).toBe(expected);
+      expect(fixture.nativeElement.querySelectorAll(`[data-tour="${anchor}"]`)).toHaveLength(1);
+      expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+    }
+  });
+
   it('targets the local API on the published port for market queries', async () => {
     await renderComponent(MarketPage);
     const request = TestBed.inject(HttpTestingController).expectOne(

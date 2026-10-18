@@ -1,4 +1,4 @@
-<div class="tool-page">
+<div class="tool-page" [appTutorialSurface]="tutorialSurface()">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>03 / OFICINA DE PRODUÇÃO</ng-container></p>
     <h1><ng-container i18n>Calcular produção</ng-container></h1>
@@ -49,13 +49,16 @@
           <p class="tool-kicker" i18n>OFICINA DE UMA RECEITA</p>
           <h2 i18n>Escolha o produto que você quer planejar</h2>
         </div>
-        <span class="badge" i18n>LOTE · MAESTRIA · RECURSOS</span>
+        <span class="badge" data-tour="crafting-workshop.settings" i18n
+          >LOTE · MAESTRIA · RECURSOS</span
+        >
       </div>
       <p class="help" i18n>
         A oficina usa o catálogo e o cache do Mercado da região ativa. Confira a origem e a idade de
         preços e materiais antes de confiar no resultado; valores ausentes ficam pendentes.
       </p>
       <app-catalog-item-picker
+        data-tour="crafting-workshop.recipe"
         label="Qual produto você quer produzir?"
         i18n-label
         scope="life-skill"
@@ -114,6 +117,7 @@
           </div>
         }
         <app-recipe-tree
+          data-tour="crafting-workshop.result"
           [recipe]="workshopRecipe()"
           [recipes]="workshopRecipes()"
           [selectedItem]="selected"
@@ -140,7 +144,7 @@
           >
         </div>
       } @else if (!workshopLoading()) {
-        <div class="empty-workspace">
+        <div class="empty-workspace" data-tour="crafting-workshop.result">
           <h3 i18n>Comece pelo produto final</h3>
           <p class="help" i18n>
             A seleção abre a receita, os materiais e as escolhas de aquisição. O planejamento não
@@ -157,6 +161,7 @@
       <section hlmCard class="panel">
         <h2 i18n>Comece pelo que deseja produzir</h2>
         <app-catalog-item-picker
+          data-tour="crafting-manual.recipe"
           [selectionName]="recipeProduct()?.name || ''"
           (selected)="chooseRecipeProduct($event)"
         />
@@ -198,7 +203,7 @@
             Preparar esta receita para minha biblioteca
           </button>
         }
-        <div class="form-grid">
+        <div class="form-grid" data-tour="crafting-manual.settings">
           <label class="field"
             ><ng-container i18n>Número de crafts</ng-container
             ><input
@@ -410,14 +415,14 @@
       </section>
     </div>
   } @else {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel" data-tour="crafting-library.catalogue">
       <div class="panel-heading">
         <h2><ng-container i18n>Biblioteca de receitas manuais</ng-container></h2>
         <span class="badge"
           ><ng-container i18n>{{ store.data().recipes.length }} RECEITAS</ng-container></span
         >
       </div>
-      <div class="form-grid">
+      <div class="form-grid" data-tour="crafting-library.search">
         <div class="field">
           <app-catalog-item-picker
             [selectionName]="draft.name"

@@ -30,8 +30,7 @@ describe('recipe workshop tutorial seed', () => {
     const workshop = TUTORIAL_SEED_ENTRIES.find((entry) => entry.screenKey === 'recipe-workshop');
     expect(catalogue?.steps.map((step) => step.anchorKey)).toEqual([
       'recipes.search',
-      'recipes.methods',
-      'recipes.tree',
+      'recipes.catalogue',
     ]);
     expect(workshop?.steps.map((step) => step.anchorKey)).toEqual([
       'recipe-workshop.batch-mastery',

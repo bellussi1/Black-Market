@@ -25,19 +25,24 @@ import { TutorialApiService } from '../../core/tutorial-api.service';
 
 const MARKUP =
   /<\/?[a-z!][^>]*>|\[[^\]]+\]\([^)]+\)|(?:^|\s)#{1,6}\s|```|`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|(?:^|\s)\*[^*]+\*(?=\s|$|[.,!?])|(?:^|\s)_[^_]+_(?=\s|$|[.,!?])|~~[^~]+~~|(?:^|\n)\s*(?:>\s|[-+*]\s|\d+[.)]\s)/i;
-const SCREEN_LABELS: Record<TutorialScreenKey, string> = {
-  market: $localize`Mercado`,
-  recipes: $localize`Receitas`,
-  'recipe-workshop': $localize`Oficina de receitas`,
-  scans: $localize`Capturas`,
-  storage: $localize`Armazém`,
-  recommendations: $localize`O que fazer?`,
-};
 const ANCHOR_LABELS: Record<string, string> = {
+  'home.main-actions': $localize`Atalhos principais`,
+  'home.lifeskill-entry': $localize`Acesso a profissões`,
+  'roadmap.progress': $localize`Progresso do Roadmap`,
+  'roadmap.feature-cards': $localize`Recursos do Roadmap`,
   'market.search': $localize`Busca de itens`,
   'market.filters': $localize`Filtros de mercado`,
   'market.results': $localize`Resultados do mercado`,
+  'market-quote.search': $localize`Busca para cotação`,
+  'market-quote.quote-panel': $localize`Painel de cotação`,
+  'market-calculator.inputs': $localize`Entradas da venda`,
+  'market-calculator.result': $localize`Resultado líquido`,
+  'market-saved.list': $localize`Cotações salvas`,
+  'market-saved.actions': $localize`Ações das cotações`,
+  'market-item.summary': $localize`Resumo do item`,
+  'market-item.details': $localize`Dados do catálogo`,
   'recipes.search': $localize`Busca de receitas`,
+  'recipes.catalogue': $localize`Catálogo de receitas`,
   'recipes.methods': $localize`Fórmulas de produção`,
   'recipes.tree': $localize`Árvore de receitas`,
   'recipe-workshop.batch-mastery': $localize`Lote e maestria`,
@@ -50,6 +55,13 @@ const ANCHOR_LABELS: Record<string, string> = {
   'storage.projects': $localize`Projetos de produção`,
   'recommendations.conditions': $localize`Preferências de atividades`,
   'recommendations.ranking': $localize`Ranking de atividades`,
+  'crafting-workshop.recipe': $localize`Produto da oficina`,
+  'crafting-workshop.settings': $localize`Configurações da receita`,
+  'crafting-workshop.result': $localize`Plano de produção`,
+  'crafting-manual.recipe': $localize`Produto da simulação`,
+  'crafting-manual.settings': $localize`Premissas da simulação`,
+  'crafting-library.catalogue': $localize`Biblioteca de receitas`,
+  'crafting-library.search': $localize`Busca na biblioteca`,
 };
 const empty = (): TutorialGuideUpdateRequest => ({
   expectedUpdatedAt: null,
@@ -121,10 +133,13 @@ export class TutorialsManagePage implements OnInit {
     }
   }
   screenLabel(key: TutorialScreenKey): string {
-    return SCREEN_LABELS[key];
+    return this.screens.find((screen) => screen.screenKey === key)?.label ?? key;
   }
   anchorLabel(key: string): string {
-    return ANCHOR_LABELS[key] ?? $localize`Âncora removida`;
+    if (ANCHOR_LABELS[key]) return ANCHOR_LABELS[key];
+    return this.anchors().some((anchor) => anchor.key === key)
+      ? key.slice(key.indexOf('.') + 1).replaceAll('-', ' ')
+      : $localize`Âncora removida`;
   }
   anchors() {
     return this.screens.find((screen) => screen.screenKey === this.screenKey())?.anchors ?? [];

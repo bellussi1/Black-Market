@@ -1,6 +1,6 @@
 # Onboarding Automático por Rota e Aba — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Iniciar automaticamente uma introdução acessível e versionada na primeira visita a cada superfície funcional ativa do MVP, sem launcher em página nem mudança de layout.
 
@@ -73,11 +73,11 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Produces: `TutorialScreenKey` com as 27 chaves listadas acima; `TutorialScreenDefinition` com `screenKey`, rota canônica, nível de acesso, rótulo editorial e âncoras permitidas.
 - Produces: `isTutorialScreenKey`, `getTutorialScreenDefinition` e `isTutorialAnchorForScreen` continuam como validadores públicos do contrato.
 
-- [ ] **Step 1: Escrever testes de contrato que falham** — adicionar `it('registers every active MVP surface exactly once')`, que compara as 27 chaves com o conjunto acima; `it('preserves the six published screen keys')`, que valida as seis chaves legadas; e `it('accepts twelve guide steps and rejects thirteen')`, que verifica limites sem alterar título/corpo.
-- [ ] **Step 2: Confirmar RED** — executar `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-registry.spec.ts src/tutorials/tutorial-validation.spec.ts`; esperar falha por superfícies ainda não registradas.
-- [ ] **Step 3: Implementar o registro e o limite de 12 passos** — adicionar rotas/tab labels e âncoras estáveis; ajustar o validador para 12 passos sem afrouxar os limites de título/corpo ou validar seletor livre.
-- [ ] **Step 4: Confirmar GREEN** — repetir os dois specs; garantir todos os casos da matriz aprovados.
-- [ ] **Step 5: Commit atômico** — `feat(tutorials): register active route and tab surfaces`.
+- [x] **Step 1: Escrever testes de contrato que falham** — adicionar `it('registers every active MVP surface exactly once')`, que compara as 27 chaves com o conjunto acima; `it('preserves the six published screen keys')`, que valida as seis chaves legadas; e `it('accepts twelve guide steps and rejects thirteen')`, que verifica limites sem alterar título/corpo.
+- [x] **Step 2: Confirmar RED** — executar `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-registry.spec.ts src/tutorials/tutorial-validation.spec.ts`; esperar falha por superfícies ainda não registradas.
+- [x] **Step 3: Implementar o registro e o limite de 12 passos** — adicionar rotas/tab labels e âncoras estáveis; ajustar o validador para 12 passos sem afrouxar os limites de título/corpo ou validar seletor livre.
+- [x] **Step 4: Confirmar GREEN** — repetir os dois specs; garantir todos os casos da matriz aprovados.
+- [x] **Step 5: Commit atômico** — `feat(tutorials): register active route and tab surfaces`.
 
 ## Task 2: Publicar fallback versionado para todas as superfícies
 
@@ -93,12 +93,12 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Consumes: registro e tipos da Task 1.
 - Produces: uma entrada pt-BR de pelo menos duas etapas válidas por chave sem introduzir regra de jogo ou cálculo novo; `getPublished(screenKey, locale)` mantém o contrato de resposta atual.
 
-- [ ] **Step 1: Escrever testes de precedência que falham** — adicionar `it('serves a versioned pt-BR fallback for each registered surface')`, `it('prefers an active row and suppresses fallback for a disabled row')` e `it('does not write during a public guide read')`.
-- [ ] **Step 2: Confirmar RED** — executar `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-workshop-seed.spec.ts src/tutorials/tutorials.service.spec.ts`; esperar falha para as novas chaves.
-- [ ] **Step 3: Escrever guias pt-BR** — 2–12 passos curtos por superfície, exemplos claramente ilustrativos, orientação prioritária a Life Skills e sem afirmar preço listado como venda garantida.
-- [ ] **Step 4: Manter precedência editorial** — usar fallback somente quando não houver linha; uma linha `enabled=false` retorna guia nulo; conteúdo ativo do banco continua prevalecendo; não chamar `tutorials:seed`.
-- [ ] **Step 5: Confirmar GREEN** — repetir os specs e verificar o endpoint local público para uma chave sem linha persistida.
-- [ ] **Step 6: Commit atômico** — `feat(tutorials): add versioned guides for MVP surfaces`.
+- [x] **Step 1: Escrever testes de precedência que falham** — adicionar `it('serves a versioned pt-BR fallback for each registered surface')`, `it('prefers an active row and suppresses fallback for a disabled row')` e `it('does not write during a public guide read')`.
+- [x] **Step 2: Confirmar RED** — executar `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-workshop-seed.spec.ts src/tutorials/tutorials.service.spec.ts`; esperar falha para as novas chaves.
+- [x] **Step 3: Escrever guias pt-BR** — 2–12 passos curtos por superfície, exemplos claramente ilustrativos, orientação prioritária a Life Skills e sem afirmar preço listado como venda garantida.
+- [x] **Step 4: Manter precedência editorial** — usar fallback somente quando não houver linha; uma linha `enabled=false` retorna guia nulo; conteúdo ativo do banco continua prevalecendo; não chamar `tutorials:seed`.
+- [x] **Step 5: Confirmar GREEN** — repetir os specs e verificar o endpoint local público para uma chave sem linha persistida.
+- [x] **Step 6: Commit atômico** — `feat(tutorials): add versioned guides for MVP surfaces`.
 
 ## Task 3: Criar progresso local e iniciar tours sem launcher
 
@@ -119,14 +119,14 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Produces: diretiva `[appTutorialSurface]="screenKey"` que só vincula estado e não adiciona filhos, estilos de layout ou controles visíveis.
 - Produces: `TutorialService.startTour(guide: TutorialPublicGuide, returnFocusTo?: HTMLElement | null): Promise<string>` sem parâmetro obrigatório de botão launcher.
 
-- [ ] **Step 1: Escrever specs RED do estado** — adicionar `it('starts unseen surface and suppresses completed or dismissed revision')`, `it('allows a new published revision to start once')`, `it('resetAll clears only tutorial progress')` e `it('uses in-memory progress when localStorage is unavailable')`.
-- [ ] **Step 2: Confirmar RED do estado** — executar `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial-onboarding-state.service.spec.ts"`.
-- [ ] **Step 3: Implementar e verificar estado** — implementar persistência mínima; repetir o spec e confirmar os quatro casos.
-- [ ] **Step 4: Escrever specs RED do runtime sem launcher** — adicionar `it('starts without requiring a launcher element')`, `it('does not mark a tour seen when navigation interrupts it')`, `it('returns focus after explicit replay')` e `it('loads Driver.js only in the browser')`.
-- [ ] **Step 5: Confirmar RED do runtime** — executar `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial.service.spec.ts"`.
-- [ ] **Step 6: Refatorar runtime e criar diretiva** — `TutorialService.startTour(guide, returnFocusTo?)`; conclusão/dispensa gravam estado, navegação não grava; a diretiva inputs `screenKey`/`ready` aguarda guia/alvos únicos visíveis e cancela trabalho ao mudar de superfície/destruir.
-- [ ] **Step 7: Confirmar GREEN** — executar specs de estado, runtime e `tutorial-anchor-resolver`; testar renderização server sem `localStorage`/DOM.
-- [ ] **Step 8: Commit atômico** — `feat(tutorials): auto-start guides without page launchers`.
+- [x] **Step 1: Escrever specs RED do estado** — adicionar `it('starts unseen surface and suppresses completed or dismissed revision')`, `it('allows a new published revision to start once')`, `it('resetAll clears only tutorial progress')` e `it('uses in-memory progress when localStorage is unavailable')`.
+- [x] **Step 2: Confirmar RED do estado** — executar `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial-onboarding-state.service.spec.ts"`.
+- [x] **Step 3: Implementar e verificar estado** — implementar persistência mínima; repetir o spec e confirmar os quatro casos.
+- [x] **Step 4: Escrever specs RED do runtime sem launcher** — adicionar `it('starts without requiring a launcher element')`, `it('does not mark a tour seen when navigation interrupts it')`, `it('returns focus after explicit replay')` e `it('loads Driver.js only in the browser')`.
+- [x] **Step 5: Confirmar RED do runtime** — executar `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial.service.spec.ts"`.
+- [x] **Step 6: Refatorar runtime e criar diretiva** — `TutorialService.startTour(guide, returnFocusTo?)`; conclusão/dispensa gravam estado, navegação não grava; a diretiva inputs `screenKey`/`ready` aguarda guia/alvos únicos visíveis e cancela trabalho ao mudar de superfície/destruir.
+- [x] **Step 7: Confirmar GREEN** — executar specs de estado, runtime e `tutorial-anchor-resolver`; testar renderização server sem `localStorage`/DOM.
+- [x] **Step 8: Commit atômico** — `feat(tutorials): auto-start guides without page launchers`.
 
 ## Task 4: Integrar onboarding às rotas públicas e abas de produção
 
@@ -146,12 +146,12 @@ Preserve existing keys `market`, `recipes`, `recipe-workshop`, `scans`, `storage
 - Consumes: diretiva headless da Task 3 e keys/tipos da Task 1.
 - Produces: mercado vincula `market|market-quote|market-calculator|market-saved`; Oficina vincula `crafting-workshop|crafting-manual|crafting-library`; Receitas usa `recipes|recipe-workshop`; detalhes do Mercado usam `market-item`.
 
-- [ ] **Step 1: Adicionar regressões** — adicionar `it('uses the active market tab as the tutorial surface')`, `it('uses the active crafting tab as the tutorial surface')`, `it('preserves the published market and recipe screen keys')` e `it('does not render a page-level tutorial launcher')`.
-- [ ] **Step 2: Confirmar RED** — executar os specs existentes de Dashboard, Roadmap, Market, Recipes, Crafting e `tutorial-anchors.spec.ts` com `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/dashboard/dashboard-page.spec.ts" --include="app/features/roadmap/roadmap-page.spec.ts" --include="app/features/market/market-page.spec.ts" --include="app/features/recipes/recipes-page.spec.ts" --include="app/features/crafting/crafting-page.spec.ts" --include="app/features/tutorials/tutorial-anchors.spec.ts"`.
-- [ ] **Step 3: Vincular as superfícies existentes** — colocar a diretiva nos elementos raiz existentes; usar o valor da aba atual; adicionar `ready` à resolução/carregamento do componente; não criar markup de tutorial na página.
-- [ ] **Step 4: Validar conteúdos dinâmicos** — em Receitas e detalhes, iniciar somente quando o item e a árvore atuais estiverem prontos; não forçar seleção nem expandir árvore para fabricar âncoras.
-- [ ] **Step 5: Confirmar GREEN** — repetir specs; assertar que troca de aba mantém geometria dos wrappers e não cria botões de tutorial.
-- [ ] **Step 6: Commit atômico** — `feat(tutorials): onboard public MVP surfaces automatically`.
+- [x] **Step 1: Adicionar regressões** — adicionar `it('uses the active market tab as the tutorial surface')`, `it('uses the active crafting tab as the tutorial surface')`, `it('preserves the published market and recipe screen keys')` e `it('does not render a page-level tutorial launcher')`.
+- [x] **Step 2: Confirmar RED** — executar os specs existentes de Dashboard, Roadmap, Market, Recipes, Crafting e `tutorial-anchors.spec.ts` com `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/dashboard/dashboard-page.spec.ts" --include="app/features/roadmap/roadmap-page.spec.ts" --include="app/features/market/market-page.spec.ts" --include="app/features/recipes/recipes-page.spec.ts" --include="app/features/crafting/crafting-page.spec.ts" --include="app/features/tutorials/tutorial-anchors.spec.ts"`.
+- [x] **Step 3: Vincular as superfícies existentes** — colocar a diretiva nos elementos raiz existentes; usar o valor da aba atual; adicionar `ready` à resolução/carregamento do componente; não criar markup de tutorial na página.
+- [x] **Step 4: Validar conteúdos dinâmicos** — em Receitas e detalhes, iniciar somente quando o item e a árvore atuais estiverem prontos; não forçar seleção nem expandir árvore para fabricar âncoras.
+- [x] **Step 5: Confirmar GREEN** — repetir specs; assertar que troca de aba mantém geometria dos wrappers e não cria botões de tutorial.
+- [x] **Step 6: Commit atômico** — `feat(tutorials): onboard public MVP surfaces automatically`.
 
 ## Task 5: Integrar onboarding às rotas de jogador e fluxos privados
 

@@ -7,8 +7,8 @@ export interface TutorialSeedEntry {
   steps: readonly TutorialGuideStepInput[];
 }
 
-export const TUTORIAL_SEED_REVISION = '2026-10-18-active-mvp-v1';
-export const TUTORIAL_SEED_UPDATED_AT = '2026-10-18T00:00:00.000Z';
+export const TUTORIAL_SEED_REVISION = '2026-10-18-active-mvp-v2';
+export const TUTORIAL_SEED_UPDATED_AT = '2026-10-18T07:45:00.000Z';
 
 export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
   {
@@ -49,15 +49,9 @@ export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
       },
       {
         sortOrder: 1,
-        anchorKey: 'recipes.methods',
-        title: 'Alternar fórmula ou atividade',
-        body: 'Compare métodos de produção disponíveis ou filtre a lista por profissão.',
-      },
-      {
-        sortOrder: 2,
-        anchorKey: 'recipes.tree',
-        title: 'Explorar árvore de materiais',
-        body: 'Expanda etapas para verificar ingredientes, quantidades, subprodutos e origens conhecidas.',
+        anchorKey: 'recipes.catalogue',
+        title: 'Explorar receitas disponíveis',
+        body: 'Confira as receitas publicadas, filtre por profissão e abra um produto para analisar sua árvore de produção e origens.',
       },
     ],
   },
@@ -257,9 +251,9 @@ export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
       },
       {
         sortOrder: 1,
-        anchorKey: 'market-item.history',
-        title: 'Usar o histórico como referência',
-        body: 'Compare cotações e volume observados. Histórico ajuda a avaliar materiais de Life Skills, mas não promete disponibilidade futura.',
+        anchorKey: 'market-item.details',
+        title: 'Conferir os dados do catálogo',
+        body: 'Revise categoria, peso, descrição e os campos publicados para entender a origem do item antes de usá-lo em uma atividade de Life Skill.',
       },
     ],
   },
@@ -278,7 +272,7 @@ export const TUTORIAL_SEED_ENTRIES: readonly TutorialSeedEntry[] = [
         sortOrder: 1,
         anchorKey: 'crafting-workshop.settings',
         title: 'Definir lote e origem',
-        body: 'Informe quantidade e maestria e escolha quais materiais comprar, coletar ou retirar do seu estoque.',
+        body: 'Após selecionar o produto, escolha uma fórmula e ajuste lote e maestria quando disponíveis. Indique quais materiais comprar, coletar ou retirar do estoque.',
       },
       {
         sortOrder: 2,

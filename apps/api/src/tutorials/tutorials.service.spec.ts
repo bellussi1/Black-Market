@@ -110,7 +110,7 @@ describe('TutorialsService', () => {
     expect(result.guide).toMatchObject({
       screenKey: 'recipe-workshop',
       locale: 'pt-BR',
-      updatedAt: '2026-10-18T00:00:00.000Z',
+      updatedAt: '2026-10-18T07:45:00.000Z',
       steps: [
         {
           sortOrder: 0,

@@ -1,4 +1,5 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { RoadmapEntry } from '@bdo/shared';
@@ -6,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { IdentityService } from '../../core/identity.service';
 import { RegionPreferences } from '../../core/region-preferences';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent } from '../../testing/test-setup';
 import { DashboardPage } from './dashboard-page';
 
@@ -55,6 +57,18 @@ const roadmapFixture: RoadmapEntry[] = [
 ];
 
 describe('DashboardPage', () => {
+  it('registers the home tutorial without adding a page control', async () => {
+    const fixture = await renderComponent(DashboardPage);
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('home');
+    expect(fixture.nativeElement.querySelector('[data-tour="home.main-actions"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-tour="home.lifeskill-entry"]'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+  });
+
   it('prioritizes public profession access and item search before the roadmap', async () => {
     const fixture = await renderComponent(DashboardPage, {}, [
       {

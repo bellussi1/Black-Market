@@ -26,6 +26,7 @@ import { RoadmapApiService } from '../../core/roadmap-api.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { PlayerOverview } from '../../shared/player-overview/player-overview';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { ROADMAP_ICONS } from '../roadmap/roadmap-icons';
 
 export interface HomeFocusView {
@@ -40,7 +41,15 @@ export interface HomeFocusView {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-page',
-  imports: [HlmCard, HlmButton, NgIcon, RouterLink, PlayerOverview, CatalogItemPicker],
+  imports: [
+    HlmCard,
+    HlmButton,
+    NgIcon,
+    RouterLink,
+    PlayerOverview,
+    CatalogItemPicker,
+    TutorialSurfaceDirective,
+  ],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',

@@ -15,12 +15,13 @@ import { SeoService } from '../../core/seo.service';
 import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemDossier } from '../../shared/item-dossier/item-dossier';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { referenceFields } from '../reference/reference-fields';
 
 @Component({
   selector: 'app-item-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmCard, HlmButton, RouterLink, ItemIcon, ItemDossier],
+  imports: [HlmCard, HlmButton, RouterLink, ItemIcon, ItemDossier, TutorialSurfaceDirective],
   templateUrl: './item-detail-page.html',
   styleUrl: './item-detail-page.scss',
 })

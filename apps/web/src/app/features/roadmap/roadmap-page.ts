@@ -18,12 +18,13 @@ import { finalize } from 'rxjs';
 import { isLoginRequiredPath } from '../../core/auth.guard';
 import { IdentityService } from '../../core/identity.service';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { ROADMAP_ICONS } from './roadmap-icons';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-roadmap-page',
-  imports: [NgIcon, RouterLink],
+  imports: [NgIcon, RouterLink, TutorialSurfaceDirective],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './roadmap-page.html',
   styleUrl: './roadmap-page.scss',

@@ -1,6 +1,6 @@
-<div class="home-page">
+<div class="home-page" appTutorialSurface="home">
   <section class="home-hero" aria-labelledby="home-title">
-    <div class="home-entry">
+    <div class="home-entry" data-tour="home.main-actions">
       <div class="hero-intro">
         <p class="tool-kicker">
           <ng-container i18n>BLACK MARKET · BLACK DESERT ONLINE</ng-container>
@@ -23,6 +23,7 @@
         class="btn home-professions-link"
         routerLink="/lifeskills"
         data-home-professions-link
+        data-tour="home.lifeskill-entry"
       >
         <span i18n>Profissões e rendimento</span>
         <span class="home-professions-arrow" aria-hidden="true">→</span>

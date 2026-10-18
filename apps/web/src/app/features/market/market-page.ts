@@ -26,6 +26,7 @@ import type {
   MarketBoardItem,
   MarketItemQuote,
   MarketLookupResponse,
+  TutorialScreenKey,
 } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
@@ -46,7 +47,7 @@ import { date, number, silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
-import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 type CalculationQuoteContext = {
@@ -70,7 +71,7 @@ type MarketHistoryRange = 'day' | 'week' | 'month';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-market-page',
   imports: [
-    TutorialLauncher,
+    TutorialSurfaceDirective,
     HlmInput,
     HlmCard,
     HlmButton,
@@ -140,6 +141,18 @@ export class MarketPage implements OnDestroy {
     : null;
   readonly lookupId = signal('');
   readonly workspaceView = signal<'board' | 'quote' | 'calculator' | 'saved'>('board');
+  readonly tutorialSurface = computed<TutorialScreenKey>(() => {
+    switch (this.workspaceView()) {
+      case 'quote':
+        return 'market-quote';
+      case 'calculator':
+        return 'market-calculator';
+      case 'saved':
+        return 'market-saved';
+      default:
+        return 'market';
+    }
+  });
   readonly lookupLoading = signal(false);
   readonly live = signal<MarketLookupResponse | null>(null);
   readonly lookupError = signal('');

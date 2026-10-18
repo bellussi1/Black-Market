@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { defaultTax } from '@bdo/calculators';
 import type { CatalogItem, CatalogRecipe, MarketLookupResponse } from '@bdo/shared';
 import { Subject } from 'rxjs';
@@ -8,11 +9,71 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { MarketCacheService } from '../../core/market-cache.service';
 import { emptyWorkspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent as render, useMemoryStorage } from '../../testing/test-setup';
 import { CraftingPage } from './crafting-page';
 
 describe('CraftingPage', () => {
   useMemoryStorage();
+  it('maps each production workspace tab to its own tutorial on the same shell', async () => {
+    const fixture = await render(CraftingPage);
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface).not.toBeNull();
+    if (!surface) return;
+    const directive = surface.injector.get(TutorialSurfaceDirective);
+    const page = fixture.nativeElement.querySelector('.tool-page');
+
+    expect(directive.appTutorialSurface()).toBe('crafting-workshop');
+    expect(surface.nativeElement).toBe(page);
+    expect(directive.ready()).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-tour="crafting-workshop.recipe"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-tour="crafting-workshop.settings"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-tour="crafting-workshop.result"]'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+    for (const [tab, expected] of [
+      ['manual', 'crafting-manual'],
+      ['library', 'crafting-library'],
+      ['workshop', 'crafting-workshop'],
+    ] as const) {
+      fixture.componentInstance.tab.set(tab);
+      fixture.detectChanges();
+      expect(directive.appTutorialSurface()).toBe(expected);
+      if (tab === 'manual') {
+        expect(
+          fixture.nativeElement.querySelector('[data-tour="crafting-manual.recipe"]'),
+        ).not.toBeNull();
+        expect(
+          fixture.nativeElement.querySelector('[data-tour="crafting-manual.settings"]'),
+        ).not.toBeNull();
+      }
+      if (tab === 'library') {
+        expect(
+          fixture.nativeElement.querySelector('[data-tour="crafting-library.catalogue"]'),
+        ).not.toBeNull();
+        expect(
+          fixture.nativeElement.querySelector('[data-tour="crafting-library.search"]'),
+        ).not.toBeNull();
+      }
+      expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
+    }
+    fixture.componentInstance.workshopItem.set({
+      id: 100,
+      name: 'Produto',
+      categories: [],
+      sourceData: {},
+    } as never);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-tour="crafting-workshop.result"]'),
+    ).toHaveLength(1);
+  });
+
   it('opens on a recipe workbench and explains how it differs from recipe discovery', async () => {
     const fixture = await render(CraftingPage);
     const element = fixture.nativeElement as HTMLElement;

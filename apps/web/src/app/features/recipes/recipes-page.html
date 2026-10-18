@@ -1,4 +1,8 @@
-<div class="tool-page recipe-explorer">
+<div
+  class="tool-page recipe-explorer"
+  [appTutorialSurface]="workshopRoute() ? 'recipe-workshop' : 'recipes'"
+  [appTutorialSurfaceReady]="!loading() && (workshopRoute() ? !!item() : listMode())"
+>
   @if (!item()) {
     <header class="tool-heading">
       <p class="tool-kicker" i18n>RECEITAS & ORIGENS</p>
@@ -8,11 +12,6 @@
         e aproveite o que já está no seu armazém.
       </p>
     </header>
-  }
-  @if (workshopRoute()) {
-    <app-tutorial-launcher screenKey="recipe-workshop" />
-  } @else {
-    <app-tutorial-launcher screenKey="recipes" />
   }
   <details data-tour="recipes.search" class="panel search-panel" [open]="!item()">
     <summary>
@@ -128,7 +127,6 @@
     <app-recipe-tree
       #productionWorkspace
       [primaryHeading]="true"
-      data-tour="recipes.tree"
       [recipe]="recipe()"
       [recipes]="alternatives()"
       [selectedItem]="selected"
@@ -137,7 +135,7 @@
     >
       <div recipe-method>
         @if (alternatives().length) {
-          <section class="recipe-methods" data-tour="recipes.methods">
+          <section class="recipe-methods">
             <label for="root-recipe" i18n>Fórmula</label
             ><select appBdoSelect id="root-recipe" (change)="choose($event)">
               <option value="" [selected]="!recipe()" i18n>Obter pronto / consultar fontes</option>
@@ -175,6 +173,7 @@
     <section
       class="recipe-browser panel"
       aria-labelledby="recipe-browser-title"
+      data-tour="recipes.catalogue"
       [attr.aria-busy]="loading()"
     >
       <div class="panel-heading recipe-browser-heading">
@@ -188,7 +187,7 @@
         </div>
         <div class="recipe-browser-controls">
           <span class="badge">{{ list.total }} receitas</span>
-          <label class="field recipe-group-filter" for="recipe-group">
+          <label class="field recipe-group-filter" for="recipe-group" data-tour="recipes.methods">
             <ng-container i18n>Atividade</ng-container>
             <select
               appBdoSelect

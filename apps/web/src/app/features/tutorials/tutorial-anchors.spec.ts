@@ -2,6 +2,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
 import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { MarketPage } from '../market/market-page';
 import { RecipesPage } from '../recipes/recipes-page';
@@ -16,16 +17,16 @@ describe('Tutorial page anchors', () => {
     const fixture = await renderComponent(MarketPage);
     for (const key of ['market.search', 'market.filters', 'market.results'])
       expect(fixture.nativeElement.querySelectorAll(`[data-tour="${key}"]`)).toHaveLength(1);
-    expect(
-      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
-    ).toBe('market');
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('market');
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
   });
-  it('recipesPage keeps the launcher available while a recipe is selected', async () => {
+  it('recipesPage registers its catalogue tutorial without a page launcher', async () => {
     const fixture = await renderComponent(RecipesPage);
     expect(fixture.nativeElement.querySelector('[data-tour="recipes.search"]')).not.toBeNull();
-    expect(
-      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
-    ).toBe('recipes');
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('recipes');
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
   });
   it('automaticScanPage exposes capture and review only in visible states', async () => {
     const fixture = await renderComponent(AutomaticScanPage);

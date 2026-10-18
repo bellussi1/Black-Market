@@ -6,7 +6,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
-import { TutorialLauncher } from '../../shared/tutorials/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { RecipesPage } from './recipes-page';
 const dataset = {
@@ -75,9 +75,11 @@ describe('Universal recipe explorer', () => {
     productionShortcut.click();
     expect(document.activeElement).toBe(count);
     expect(count.value).toBe('42');
-    expect(
-      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
-    ).toBe('recipe-workshop');
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe(
+      'recipe-workshop',
+    );
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
     for (const anchor of [
       'recipe-workshop.batch-mastery',
       'recipe-workshop.financial',
@@ -232,9 +234,12 @@ describe('Universal recipe explorer', () => {
     };
     flushList(1, null);
     fixture.detectChanges();
-    expect(
-      fixture.debugElement.query(By.directive(TutorialLauncher)).componentInstance.screenKey(),
-    ).toBe('recipes');
+    expect(fixture.nativeElement.querySelectorAll('[data-tour="recipes.catalogue"]')).toHaveLength(
+      1,
+    );
+    const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
+    expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('recipes');
+    expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
     const picker = fixture.debugElement.query(By.directive(CatalogItemPicker))
       .componentInstance as CatalogItemPicker;
     picker.query.set('carne');

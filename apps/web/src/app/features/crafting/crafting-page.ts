@@ -21,7 +21,7 @@ import {
   type ManualRecipe,
   recipeSchema,
 } from '@bdo/calculators';
-import type { CatalogItem, CatalogItemDetail, CatalogRecipe } from '@bdo/shared';
+import type { CatalogItem, CatalogItemDetail, CatalogRecipe, TutorialScreenKey } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
@@ -44,6 +44,7 @@ import {
 } from '../../shared/recipe-tree/recipe-equivalents';
 import { RecipeTree } from '../../shared/recipe-tree/recipe-tree';
 import { TaxOptionsComponent } from '../../shared/tax-options';
+import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,6 +61,7 @@ import { BdoSelect } from '../../ui/native-select/bdo-select';
     CatalogItemPicker,
     RecipeTree,
     RouterLink,
+    TutorialSurfaceDirective,
   ],
   templateUrl: './crafting-page.html',
   styleUrl: './crafting-page.scss',
@@ -400,6 +402,16 @@ export class CraftingPage implements OnDestroy {
   }
   readonly store = inject(WorkspaceStore);
   readonly tab = signal<'workshop' | 'manual' | 'library'>('workshop');
+  readonly tutorialSurface = computed<TutorialScreenKey>(() => {
+    switch (this.tab()) {
+      case 'manual':
+        return 'crafting-manual';
+      case 'library':
+        return 'crafting-library';
+      default:
+        return 'crafting-workshop';
+    }
+  });
   readonly form = signal<CraftingInput>({
     ...defaultTax,
     crafts: 1,

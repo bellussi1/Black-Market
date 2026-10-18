@@ -1,5 +1,10 @@
-<section class="tool-page roadmap-page" aria-labelledby="roadmap-title">
-  <header class="tool-heading roadmap-heading">
+<section
+  class="tool-page roadmap-page"
+  aria-labelledby="roadmap-title"
+  appTutorialSurface="roadmap"
+  [appTutorialSurfaceReady]="!loading()"
+>
+  <header class="tool-heading roadmap-heading" data-tour="roadmap.progress">
     <div>
       <p class="tool-kicker" i18n>BLACK MARKET · DIREÇÃO DO PRODUTO</p>
       <h1 id="roadmap-title" i18n>Roadmap</h1>
@@ -60,7 +65,11 @@
       O Roadmap ainda não tem conteúdo.
     </p>
   } @else if (loaded()) {
-    <section class="roadmap-trail-section" aria-labelledby="roadmap-trail-title">
+    <section
+      class="roadmap-trail-section"
+      aria-labelledby="roadmap-trail-title"
+      data-tour="roadmap.feature-cards"
+    >
       <div class="roadmap-section-heading">
         <p class="tool-kicker" i18n>TRILHA DO PRODUTO</p>
         <h2 id="roadmap-trail-title" i18n>Fases e pilares em sequência</h2>

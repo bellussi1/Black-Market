@@ -1,4 +1,4 @@
-<div class="tool-page market-page">
+<div class="tool-page market-page" [appTutorialSurface]="tutorialSurface()">
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>02 / MERCADO CENTRAL</ng-container></p>
     <h1><ng-container i18n>Mercado Central</ng-container></h1>
@@ -9,7 +9,6 @@
         disponíveis; não representam garantia de venda nem unidades negociadas.
       </ng-container>
     </p>
-    <app-tutorial-launcher screenKey="market" />
   </header>
   <nav class="workspace-tabs" aria-label="Ferramentas do mercado" i18n-aria-label>
     <button
@@ -71,8 +70,8 @@
         </button>
       }
     </header>
-    <section hlmCard class="panel">
-      <details class="market-search" [open]="!catalogItem()">
+    <section hlmCard class="panel" data-tour="market-quote.quote-panel">
+      <details class="market-search" [open]="!catalogItem()" data-tour="market-quote.search">
         <summary>
           <span i18n>Buscar item</span
           ><strong>{{
@@ -544,7 +543,7 @@
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section hlmCard class="panel">
+      <section hlmCard class="panel" data-tour="market-calculator.inputs">
         <h2><ng-container i18n>Calculadora de imposto</ng-container></h2>
         <p class="help" i18n>
           Simule o recebimento líquido para uma quantidade e um custo de aquisição. A cotação só é
@@ -593,7 +592,7 @@
         </p>
         <app-calculation-proof tool="market" [value]="form()" />
       </section>
-      <section>
+      <section data-tour="market-calculator.result">
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
@@ -638,7 +637,7 @@
     </div>
   }
   @if (workspaceView() === 'saved') {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel" data-tour="market-saved.list">
       <div class="panel-heading">
         <h2>
           <ng-container i18n
@@ -652,7 +651,7 @@
         observações e histórico para consulta; use “Calcular” para simular venda ou abra a receita e
         a oficina para continuar o planejamento.
       </p>
-      <div class="row-editor">
+      <div class="row-editor" data-tour="market-saved.actions">
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Item</ng-container
