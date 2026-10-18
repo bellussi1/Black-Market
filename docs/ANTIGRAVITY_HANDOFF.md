@@ -264,6 +264,12 @@ Tours automáticos cobrem as superfícies MVP já registradas; Configurações a
 
 Commits de código: `a0974a4` (normalização mecânica de lint/imports) e `5e1d97c` (reiniciar progresso em Configurações); documentação será commit próprio. Preservar o plano visual 3 não rastreado; sem push/deploy.
 
+### Rebuild local e próximo escopo (18/10/2026)
+
+Rebuild local realizado com cache Angular limpo e Node 24.21.0. PostgreSQL local reiniciado com o volume preservado; antes/depois foram iguais: 24 tabelas, 445.580 versões de item e 209.177 referências. Backup staging e restore drill passaram. Backup local existe e seu checksum foi validado; o restore drill local fez o container reiniciar durante carga no banco temporário, mas a base original voltou saudável e o temporário foi removido. Sem `down -v`, migrations, seed ou exclusão de dados.
+
+API local `/health` e `/ready` e Web 4200 respondem; teste de configuração Auth Google/Steam passou. O staging não foi reconstruído. Bundle inicial ficou em 500,42 kB (+416 bytes sobre o aviso de 500 kB). Antes de implementar observabilidade/visualização, confirmar se o viewer abrangerá somente desenvolvimento local ou também staging. Desenho recomendado: dashboard local OSS, métricas sem PII e viewer de banco read-only preso ao loopback. Veja `docs/ACTIVE_CONTEXT.md` §170 e OPS-01 em `docs/project-feature-checklist.md`.
+
 ### Atualização — rebuild e redução do shell (18/10/2026)
 
 O build serial completo, `pnpm check`, `pnpm test` (1.153 aprovados/1 ignorado) e `pnpm test:ssr` passaram em Node 24.21.0. O shell inicial caiu de 546,01 kB para 503,18 kB; transferência estimada 135,20 kB. Ainda excede o aviso de 500 kB em 3,18 kB, sem alteração do budget. Ver `docs/research/shell-bundle-deferral-review-2026-10-18.md`, checklist e `docs/ACTIVE_CONTEXT.md` §163.
@@ -291,3 +297,9 @@ O Scan inicia em “Todos os itens”, mantendo visíveis as decisões “Inclu�
 `pnpm check` passou. `pnpm test` passou com 1.164 aprovados e 1 ignorado (PostgreSQL descartável): 78 Calculators, 252 API, 756 Web e 78 scripts/OCR. A revisão estática abrange Recomendações, Profissões, Armazém, Família e Scan em `docs/research/authenticated-workflows-ui-review-2026-10-18.md`.
 
 O host local responde em `localhost:4200`, mas o browser integrado retorna `ERR_CONNECTION_REFUSED`; o DevTools disponível não contém a sessão Google. E2E autenticado e revisão visual continuam pendentes. O Armazém tem uma proposta para lista operacional como padrão, edição contextual e confirmação de remoção, mantendo a grade do jogo; aguardar aprovação do desenho antes de implementar. Preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` e não tocar nos dados reais da conta.
+
+### Observabilidade e visualização do PostgreSQL local (18/10/2026)
+
+OPS-01 local foi implementado. A stack ativa fornece Web em `http://localhost:4200`, API monitorada em `http://localhost:3000`, Grafana em `http://localhost:3001`, Prometheus em `http://localhost:9090` e Adminer em `http://localhost:8082`. Use `docs/local-operations.md` para os comandos, login local e desligamento seguro. Adminer usa `bdo_viewer`, somente leitura; a senha está no arquivo ignorado `data/local-ops/db-viewer.env` e não deve ser copiada para commits/chats. A API de observabilidade ocupa a porta 3000: pare-a antes de iniciar `pnpm dev:api` no host.
+
+`pnpm check`, `pnpm test` (1.200 aprovados, 1 ignorado), `pnpm build` e `pnpm test:ssr` passaram. Prometheus vê a API e `black_market_database_ready=1`; Grafana carrega o dashboard local. Após provisionar o papel, as contagens foram: 23 tabelas-base públicas, 445.580 `item_versions` e 209.177 `reference_records`; leitura permitida, escrita negada. Volume e backup local foram preservados; nenhuma linha da aplicação mudou. Pesquisa/arquitetura em `docs/research/local-observability-db-viewer-design-2026-10-18.md`; ACTIVE_CONTEXT §171. O build inicial 500,42 kB excede o aviso em 416 bytes. Resto do roadmap continua separado: fontes de dados, OAuth/leitor de tela, corpus OCR, pesquisa visual autenticada do Armazém e decisões legais/produto não estão concluídos por esta entrega.
