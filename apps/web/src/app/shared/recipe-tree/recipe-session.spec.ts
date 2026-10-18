@@ -13,13 +13,13 @@ describe('Recipe exploration sessions', () => {
       root,
       target: 500,
       craftCount: 20,
-      view: 'list',
+      view: 'graph',
       excludedLocations: [],
     });
     expect(sessions.get('sa/v1/1/external')).toMatchObject({
       target: 500,
       craftCount: 20,
-      view: 'list',
+      view: 'graph',
       root: { loading: false },
     });
     expect(sessions.get('sa/v2/1/external')).toBeUndefined();
@@ -105,13 +105,13 @@ describe('Recipe exploration sessions', () => {
     sessions.save('sa/v1/1/external', {
       root,
       target: 5,
-      view: 'list',
+      view: 'graph',
       excludedLocations: [],
     });
 
     expect(sessions.get('sa/v1/1/external')).toMatchObject({
       target: 5,
-      view: 'list',
+      view: 'graph',
     });
     expect(sessions.get('sa/v1/1/external')).not.toHaveProperty('methodTimes');
     expect(sessions.get('sa/v1/1/external')).not.toHaveProperty('gatherEstimates');
