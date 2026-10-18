@@ -1,9 +1,13 @@
-import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { By } from '@angular/platform-browser';
+import { describe, expect, it, vi } from 'vitest';
 
 import { IdentityService } from '../../core/identity.service';
+import {
+  TUTORIAL_ONBOARDING_STORAGE_KEY,
+  TutorialOnboardingStateService,
+} from '../../core/tutorial-onboarding-state.service';
 import { emptyWorkspace } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
@@ -55,5 +59,46 @@ describe('SettingsPage', () => {
     page.confirmReplace = true;
     page.replace();
     expect(TestBed.inject(WorkspaceStore).data().region).toBe('eu');
+  });
+
+  it('resets onboarding only after confirmation and reports success', async () => {
+    const fixture = await render(SettingsPage);
+    const content = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(WorkspaceStore);
+    const onboarding = TestBed.inject(TutorialOnboardingStateService);
+    const beforeData = structuredClone(store.data());
+    const exportBackup = vi.spyOn(store, 'exportBackup');
+    localStorage.setItem('black-market-privacy', 'necessary');
+    onboarding.markSeen('settings', 'revision-1', 'completed');
+
+    const request = content.querySelector<HTMLButtonElement>('[data-action="reset-tutorials"]');
+    expect(request).not.toBeNull();
+    request!.click();
+    fixture.detectChanges();
+
+    expect(content.querySelector('[data-reset-confirmation][role="group"]')).not.toBeNull();
+    expect(onboarding.hasSeen('settings', 'revision-1')).toBe(true);
+
+    content.querySelector<HTMLButtonElement>('[data-action="cancel-tutorial-reset"]')!.click();
+    fixture.detectChanges();
+    expect(content.querySelector('[data-reset-confirmation]')).toBeNull();
+    expect(content.querySelector('[data-action="reset-tutorials-confirm"]')).toBeNull();
+    expect(onboarding.hasSeen('settings', 'revision-1')).toBe(true);
+    expect(document.activeElement).toBe(request);
+
+    content.querySelector<HTMLButtonElement>('[data-action="reset-tutorials"]')!.click();
+    fixture.detectChanges();
+    content.querySelector<HTMLButtonElement>('[data-action="reset-tutorials-confirm"]')!.click();
+    fixture.detectChanges();
+
+    expect(onboarding.hasSeen('settings', 'revision-1')).toBe(false);
+    expect(localStorage.getItem('black-market-privacy')).toBe('necessary');
+    expect(store.data()).toEqual(beforeData);
+    expect(exportBackup).not.toHaveBeenCalled();
+    expect(content.querySelector('[role="status"]')?.textContent).toContain(
+      'As apresentações serão exibidas novamente',
+    );
+    expect(document.activeElement).toBe(request);
+    expect(localStorage.getItem(TUTORIAL_ONBOARDING_STORAGE_KEY)).toBeNull();
   });
 });

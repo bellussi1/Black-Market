@@ -136,9 +136,63 @@
   <section hlmCard class="panel" data-tour="settings.tutorials">
     <h2><ng-container i18n>Ajuda e tutoriais</ng-container></h2>
     <p class="help" i18n>
-      As apresentações começam automaticamente quando você visita uma tela pela primeira vez. Nesta
-      área você poderá rever as orientações sem alterar seus dados pessoais.
+      As apresentações começam automaticamente quando você visita uma tela pela primeira vez.
+      Reinicie o progresso para que elas apareçam novamente, sem alterar seus dados pessoais nem
+      seus backups.
     </p>
+    <button
+      hlmBtn
+      variant="outline"
+      type="button"
+      class="btn"
+      data-action="reset-tutorials"
+      aria-controls="tutorial-reset-confirmation"
+      [attr.aria-expanded]="tutorialResetConfirmation()"
+      (click)="requestTutorialReset($event)"
+    >
+      <ng-container i18n>Reiniciar tutoriais</ng-container>
+    </button>
+    @if (tutorialResetConfirmation()) {
+      <div
+        class="notice"
+        id="tutorial-reset-confirmation"
+        role="group"
+        aria-labelledby="tutorial-reset-title"
+        data-reset-confirmation
+      >
+        <h3 id="tutorial-reset-title" i18n>Reiniciar as apresentações?</h3>
+        <p class="help" i18n>
+          Ao visitar cada tela novamente, o tutorial será aberto automaticamente. Seus dados e
+          backups continuarão intactos.
+        </p>
+        <div class="action-row">
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn danger"
+            data-action="reset-tutorials-confirm"
+            (click)="confirmTutorialReset()"
+          >
+            <ng-container i18n>Confirmar reinício</ng-container></button
+          ><button
+            hlmBtn
+            variant="outline"
+            type="button"
+            class="btn subtle"
+            data-action="cancel-tutorial-reset"
+            (click)="cancelTutorialReset()"
+          >
+            <ng-container i18n>Cancelar</ng-container>
+          </button>
+        </div>
+      </div>
+    }
+    @if (tutorialResetMessage()) {
+      <p class="status-message" role="status" aria-live="polite">
+        {{ tutorialResetMessage() }}
+      </p>
+    }
   </section>
   <app-account-page data-tour="settings.account" />
 </div>

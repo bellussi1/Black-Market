@@ -4,6 +4,7 @@ import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
 
 import { MAX_BACKUP_BYTES } from '../../core/region-preferences';
+import { TutorialOnboardingStateService } from '../../core/tutorial-onboarding-state.service';
 import { emptyWorkspace, type Workspace, workspaceSchema } from '../../core/workspace-models';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { validationMessage } from '../../shared/calculation-feedback';
@@ -16,9 +17,13 @@ import { AccountPage } from '../account/account-page';
   templateUrl: './settings-page.html',
 })
 export class SettingsPage {
+  private tutorialResetTrigger: HTMLButtonElement | null = null;
   readonly store = inject(WorkspaceStore);
+  private readonly tutorialOnboarding = inject(TutorialOnboardingStateService);
   readonly candidate = signal<Workspace | null>(null);
   readonly error = signal('');
+  readonly tutorialResetConfirmation = signal(false);
+  readonly tutorialResetMessage = signal('');
   confirmReplace = false;
   confirmRecoveryReset = false;
   readonly counts = computed(() => this.summary(this.store.data()));
@@ -62,5 +67,26 @@ export class SettingsPage {
   recoverEmpty(): void {
     if (this.confirmRecoveryReset)
       this.store.replace({ ...emptyWorkspace(), region: this.store.data().region });
+  }
+
+  requestTutorialReset(event: Event): void {
+    this.tutorialResetTrigger = event.currentTarget as HTMLButtonElement;
+    this.tutorialResetMessage.set('');
+    this.tutorialResetConfirmation.set(true);
+  }
+
+  cancelTutorialReset(): void {
+    this.tutorialResetConfirmation.set(false);
+    this.tutorialResetTrigger?.focus();
+  }
+
+  confirmTutorialReset(): void {
+    if (!this.tutorialResetConfirmation()) return;
+    this.tutorialOnboarding.resetAll();
+    this.tutorialResetConfirmation.set(false);
+    this.tutorialResetMessage.set(
+      $localize`As apresentações serão exibidas novamente quando você visitar cada tela.`,
+    );
+    this.tutorialResetTrigger?.focus();
   }
 }

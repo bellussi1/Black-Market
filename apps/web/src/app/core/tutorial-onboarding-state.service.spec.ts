@@ -2,7 +2,10 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TutorialOnboardingStateService } from './tutorial-onboarding-state.service';
+import {
+  TUTORIAL_ONBOARDING_STORAGE_KEY,
+  TutorialOnboardingStateService,
+} from './tutorial-onboarding-state.service';
 
 describe('TutorialOnboardingStateService', () => {
   let values: Map<string, string>;
@@ -47,11 +50,14 @@ describe('TutorialOnboardingStateService', () => {
   it('resetAll clears only tutorial progress', () => {
     localStorage.setItem('black-market-privacy', 'necessary');
     service.markSeen('market', 'revision-1', 'dismissed');
+    service.markSeen('settings', 'revision-1', 'completed');
 
     service.resetAll();
 
     expect(service.hasSeen('market', 'revision-1')).toBe(false);
+    expect(service.hasSeen('settings', 'revision-1')).toBe(false);
     expect(localStorage.getItem('black-market-privacy')).toBe('necessary');
+    expect(localStorage.getItem(TUTORIAL_ONBOARDING_STORAGE_KEY)).toBeNull();
   });
 
   it('uses in-memory progress when localStorage is unavailable', () => {
