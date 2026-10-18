@@ -15,31 +15,11 @@
       hlmBtn
       variant="outline"
       type="button"
-      [attr.aria-pressed]="workspaceView() === 'board'"
+      [attr.aria-pressed]="workspaceView() !== 'saved'"
       (click)="workspaceView.set('board')"
     >
-      <span class="market-tab-title" i18n>Encontrar item</span>
-      <small class="market-tab-description" i18n>Preço, estoque e atividade</small>
-    </button>
-    <button
-      hlmBtn
-      variant="outline"
-      type="button"
-      [attr.aria-pressed]="workspaceView() === 'quote'"
-      (click)="workspaceView.set('quote')"
-    >
-      <span class="market-tab-title" i18n>Detalhes do item</span>
-      <small class="market-tab-description" i18n>Origem e histórico</small>
-    </button>
-    <button
-      hlmBtn
-      variant="outline"
-      type="button"
-      [attr.aria-pressed]="workspaceView() === 'calculator'"
-      (click)="workspaceView.set('calculator')"
-    >
-      <span class="market-tab-title" i18n>Simular venda líquida</span>
-      <small class="market-tab-description" i18n>Quantidade e taxas</small>
+      <span class="market-tab-title" i18n>Mercado</span>
+      <small class="market-tab-description" i18n>Buscar, conferir e simular venda</small>
     </button>
     <button
       hlmBtn
@@ -52,6 +32,18 @@
       <small class="market-tab-description" i18n>Seus registros e histórico</small>
     </button>
   </nav>
+  @if (workspaceView() === 'board' || workspaceView() === 'calculator') {
+    <div class="quote-actions">
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        (click)="workspaceView.set(workspaceView() === 'calculator' ? 'board' : 'calculator')"
+      >
+        {{ workspaceView() === 'calculator' ? 'Voltar ao mercado' : 'Simular uma venda' }}
+      </button>
+    </div>
+  }
   <app-market-board
     [active]="workspaceView() === 'board'"
     [hidden]="workspaceView() !== 'board'"

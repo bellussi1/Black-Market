@@ -175,17 +175,12 @@ describe('MarketPage', () => {
       Array.from(element.querySelectorAll<HTMLElement>('.market-tab-title'), (label) =>
         label.textContent?.trim(),
       ),
-    ).toEqual(['Encontrar item', 'Detalhes do item', 'Simular venda líquida', 'Cotações pessoais']);
+    ).toEqual(['Mercado', 'Cotações pessoais']);
     expect(
       Array.from(element.querySelectorAll<HTMLElement>('.market-tab-description'), (label) =>
         label.textContent?.trim(),
       ),
-    ).toEqual([
-      'Preço, estoque e atividade',
-      'Origem e histórico',
-      'Quantidade e taxas',
-      'Seus registros e histórico',
-    ]);
+    ).toEqual(['Buscar, conferir e simular venda', 'Seus registros e histórico']);
     expect(element.querySelector('a[href="/recipes/items/676"]')?.textContent).toContain(
       'Explorar receitas',
     );
@@ -369,14 +364,14 @@ describe('MarketPage', () => {
     page.patch({ price: '10000', quantity: 3 });
     page.lookupId.set('676');
     const tabs = element.querySelectorAll<HTMLButtonElement>('.workspace-tabs button');
-    tabs[2].click();
+    (element.querySelector('.quote-actions button') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Calculadora de imposto');
     expect(element.textContent).not.toContain('Buscar item e consultar mercado');
-    tabs[3].click();
+    tabs[1].click();
     fixture.detectChanges();
     expect(element.textContent).toContain('Minhas cotações');
-    tabs[1].click();
+    tabs[0].click();
     fixture.detectChanges();
     expect(page.lookupId()).toBe('676');
     expect(page.form().price).toBe('10000');
