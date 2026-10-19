@@ -248,3 +248,9 @@ pnpm test:staging
 `Rollback` também faz um backup e volta a imagem preservando o banco. Ele não desfaz migrations nem alterações de dados; confira `Status` e `images.json` antes de repetir, pois a ação alterna as tags anterior/atual. Uma migration incompatível exige recuperação separada: suspenda escritas, preserve o volume atual, valide um dump pelo [restore drill](docs/backup-recovery.md), restaure em novo volume/banco e só faça a troca depois de conferir dados, assets e smoke. Esse rollback de banco ainda não é automatizado. Nunca restaure sobre o único banco ou use `down -v`.
 
 Migrations ficam versionadas em `packages/database`; revise-as antes do commit, use `pnpm db:check` e aplique localmente com `pnpm db:migrate`. O catálogo também tem versão: use um rótulo `--version` novo quando o conteúdo importado mudar; dump de banco não substitui os assets `data/assets/<checksum>`. `.env`, `.env.staging`, backups e dados privados não entram em commits. Backups de staging ficam no próprio computador em `data/staging/backups`, sem cópia externa cifrada ativa; consulte [backup e recuperação](docs/backup-recovery.md) para limites e procedimentos.
+
+## Desempenho local e SSR
+
+`pnpm dev:web` mantém SSR de desenvolvimento e recarregamento automático, com HMR desativado para respeitar os gatilhos de `@defer`. Para preferir HMR durante edição, execute `pnpm --filter @bdo/web exec ng serve --hmr`; nesse modo Angular baixa antecipadamente as dependências adiadas.
+
+Para avaliar desempenho de publicação, use o build otimizado com o gateway do staging descrito acima. O servidor de desenvolvimento inclui módulos e diagnósticos adicionais. SSR atende a primeira navegação pública; trocas internas usam o roteador no navegador. As áreas pessoais permanecem CSR. Veja [medições e limites de navegação/SSR](docs/research/navigation-ssr-performance-2026-10-18.md).

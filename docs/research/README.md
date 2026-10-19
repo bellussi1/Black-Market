@@ -83,3 +83,5 @@ As fontes diretas, datas e distinções entre declaração, observação e infer
 5. Preparar anúncios no layout; resolver a licença não comercial do extractor antes de ativar monetização.
 
 - [Cotações de receitas e cliente instalado — 18/10/2026](recipe-quotes-and-client-patch-2026-10-18.md): referência de preço sem estoque, atualização forçada, extração e revisão do suplemento.
+
+- [Desempenho de navegação e SSR — 18/10/2026](navigation-ssr-performance-2026-10-18.md): traces locais, espera nos resolvers, normalização da origem no transfer cache, DOM recolhido e HMR.
