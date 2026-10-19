@@ -84,6 +84,17 @@ async function renderComponent<T>(
 }
 describe('production recommendations', () => {
   useMemoryStorage();
+  it('embeds production without another page heading or navigation', async () => {
+    const fixture = await renderComponent(RecommendationsPage, { embedded: true }, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('h1')).toBeNull();
+    expect(element.querySelector('main')).toBeNull();
+    expect(element.querySelector('.tool-page')).toBeNull();
+    expect(element.querySelector('app-life-skills-hub-nav')).toBeNull();
+    expect(element.querySelector('.coach-page')).not.toBeNull();
+  });
   it('labels cumulative negotiations without inventing stock or guaranteeing sales', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },
@@ -175,7 +186,7 @@ describe('production recommendations', () => {
     ) as HTMLAnchorElement[];
 
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/recommendations?tab=production',
+      '/lifeskills?tab=production',
       '/lifeskills?tab=sessions',
     ]);
     expect(links.filter((link) => link.getAttribute('aria-current') === 'page')).toHaveLength(1);

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -19,6 +27,8 @@ import { HlmCard } from '@bdo/ui/card';
 import { HlmInput } from '@bdo/ui/input';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { IdentityService } from '../../core/identity.service';
+import { LoginIntentService } from '../../core/login-intent.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { evaluate } from '../../shared/calculation-feedback';
 import { CalculationProof } from '../../shared/calculation-proof';
@@ -28,6 +38,7 @@ import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
+import { RecommendationsPage } from '../recommendations/recommendations-page';
 import { LifeSkillsHubNav } from './life-skills-hub-nav';
 import { compareObservedSessions } from './observed-session-comparison';
 
@@ -41,6 +52,7 @@ type LifeSkillsTab = 'production' | 'sessions' | 'mastery' | 'training';
     HlmCard,
     HlmButton,
     LifeSkillsHubNav,
+    RecommendationsPage,
     BdoSelect,
     FormsModule,
     RouterLink,
@@ -53,6 +65,15 @@ type LifeSkillsTab = 'production' | 'sessions' | 'mastery' | 'training';
   templateUrl: './lifeskills-page.html',
 })
 export class LifeskillsPage {
+  readonly identity = inject(IdentityService);
+  private readonly loginIntent = inject(LoginIntentService);
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly checkingProductionAccess = computed(() => this.browser && !this.identity.ready());
+  readonly canUseProduction = computed(() => this.browser && this.identity.authenticated());
+  openProductionLogin(): void {
+    this.loginIntent.request('/lifeskills?tab=production');
+  }
+
   private readonly analytics = inject(AnalyticsService);
   private readonly route = inject(ActivatedRoute, { optional: true });
   readonly store = inject(WorkspaceStore);

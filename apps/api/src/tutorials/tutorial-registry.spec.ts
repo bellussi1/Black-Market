@@ -70,7 +70,7 @@ describe('tutorial screen and anchor registry', () => {
     expect(screens.get('scans')).toMatchObject({ route: '/scans', access: 'authenticated' });
     expect(screens.get('storage')).toMatchObject({ route: '/storage', access: 'authenticated' });
     expect(screens.get('recommendations')).toMatchObject({
-      route: '/recommendations',
+      route: '/lifeskills?tab=production',
       access: 'authenticated',
     });
   });

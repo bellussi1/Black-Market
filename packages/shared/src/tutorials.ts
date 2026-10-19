@@ -100,7 +100,7 @@ export const TUTORIAL_SCREEN_REGISTRY: readonly TutorialScreenDefinition[] = [
     'catalogue',
     'search',
   ]),
-  screen('recommendations', '/recommendations', 'authenticated', 'O que fazer', [
+  screen('recommendations', '/lifeskills?tab=production', 'authenticated', 'O que fazer', [
     'conditions',
     'ranking',
   ]),

@@ -3,11 +3,7 @@ import { type RedirectFunction, Router, type Routes } from '@angular/router';
 
 import { authGuard } from './core/auth.guard';
 import { mvpRouteGuard, SCREENSHOT_MVP } from './core/mvp-scope';
-import {
-  marketRouteResolver,
-  recipesRouteResolver,
-  recommendationsRouteResolver,
-} from './core/public-route-resolvers';
+import { marketRouteResolver, recipesRouteResolver } from './core/public-route-resolvers';
 import { WorkspaceLayout } from './layout/workspace-layout';
 
 const personalRedirect =
@@ -173,17 +169,8 @@ export const routes: Routes = [
 
       {
         path: 'recommendations',
-
-        title: $localize`Black Market · O que fazer`,
-
-        data: { private: true },
-        canActivate: [authGuard],
-        resolve: { productionCatalog: recommendationsRouteResolver },
-
-        loadComponent: () =>
-          import('./features/recommendations/recommendations-page').then(
-            (module) => module.RecommendationsPage,
-          ),
+        pathMatch: 'full' as const,
+        redirectTo: personalRedirect('/lifeskills', 'production'),
       },
 
       {

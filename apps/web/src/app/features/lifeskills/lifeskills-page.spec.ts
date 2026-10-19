@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { Component, PLATFORM_ID, signal } from '@angular/core';
+import { DeferBlockState, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -9,6 +9,9 @@ import { BehaviorSubject, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { IdentityService } from '../../core/identity.service';
+import { LoginIntentService } from '../../core/login-intent.service';
+import { ProductionApi } from '../../core/production-api';
 import { TutorialApiService } from '../../core/tutorial-api.service';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { LifeskillsPage } from './lifeskills-page';
@@ -28,7 +31,7 @@ describe('lifeskill session analytics', () => {
     ) as HTMLAnchorElement[];
 
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/recommendations?tab=production',
+      '/lifeskills?tab=production',
       '/lifeskills?tab=sessions',
     ]);
     expect(links.filter((link) => link.getAttribute('aria-current') === 'page')).toHaveLength(1);
@@ -43,11 +46,66 @@ describe('lifeskill session analytics', () => {
     const page = fixture.componentInstance;
     const element = fixture.nativeElement as HTMLElement;
 
+    TestBed.inject(IdentityService).ready.set(true);
+    fixture.detectChanges();
     expect(page.tab()).toBe('production');
     expect(element.textContent).toContain('Recomendações de produção exigem uma conta');
-    expect(element.querySelector('a[href="/recommendations?tab=production"]')).not.toBeNull();
+    expect(element.querySelector('[data-production-login]')).not.toBeNull();
+    expect(element.querySelector('app-recommendations-page')).toBeNull();
     expect(element.querySelector('[data-tour="lifeskills-sessions.sessions"]')).toBeNull();
     expect(element.textContent).not.toContain('Melhores retornos completos');
+    element.querySelector<HTMLButtonElement>('[data-production-login]')!.click();
+    expect(TestBed.inject(LoginIntentService).returnUrl()).toBe('/lifeskills?tab=production');
+    expect(TestBed.inject(LoginIntentService).opened()).toBe(true);
+  });
+
+  it('shows a loading state instead of a login prompt while identity is initializing', async () => {
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'production' }));
+    const ready = signal(false);
+    const fixture = await renderComponent(LifeskillsPage, {}, [
+      { provide: IdentityService, useValue: { authenticated: signal(false), ready } },
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+    expect(fixture.nativeElement.querySelector('[data-production-login]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-production-access-loading]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-recommendations-page')).toBeNull();
+    ready.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-production-login]')).not.toBeNull();
+  });
+
+  it('mounts production only when authenticated and removes it after logout', async () => {
+    const authenticated = signal(true);
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'production' }));
+    const catalog = vi.fn(() => of({ dataset: null, recipes: [], items: [] }));
+    const fixture = await renderComponent(LifeskillsPage, {}, [
+      { provide: IdentityService, useValue: { authenticated, ready: signal(true) } },
+      { provide: ProductionApi, useValue: { catalog } },
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[0].render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('app-recommendations-page')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('h1')).toHaveLength(1);
+    expect(catalog).toHaveBeenCalledOnce();
+    authenticated.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('app-recommendations-page')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-production-login]')).not.toBeNull();
+  });
+
+  it('never mounts private production during server rendering even with an authenticated identity', async () => {
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'production' }));
+    const fixture = await renderComponent(LifeskillsPage, {}, [
+      { provide: PLATFORM_ID, useValue: 'server' },
+      { provide: IdentityService, useValue: { authenticated: signal(true), ready: signal(true) } },
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+    expect(fixture.componentInstance.canUseProduction()).toBe(false);
+    expect(fixture.nativeElement.querySelector('app-recommendations-page')).toBeNull();
   });
 
   it.each(['mastery', 'training'] as const)(
@@ -109,6 +167,9 @@ describe('lifeskill session analytics', () => {
     }).compileComponents();
     const harness = await RouterTestingHarness.create('/lifeskills?tab=mastery');
     const router = TestBed.inject(Router);
+    TestBed.inject(IdentityService).ready.set(true);
+    const originalPage = harness.routeDebugElement!.componentInstance as LifeskillsPage;
+    originalPage.patch({ name: 'Sessão em andamento' });
     expect(router.url).toBe('/lifeskills?tab=mastery');
 
     harness
@@ -118,13 +179,16 @@ describe('lifeskill session analytics', () => {
     expect(router.url).toBe('/lifeskills?tab=sessions');
 
     harness
-      .routeNativeElement!.querySelector<HTMLAnchorElement>(
-        'a[href="/recommendations?tab=production"]',
-      )!
+      .routeNativeElement!.querySelector<HTMLAnchorElement>('a[href="/lifeskills?tab=production"]')!
       .click();
     await harness.fixture.whenStable();
-    expect(router.url).toBe('/recommendations?tab=production');
-    expect(harness.routeNativeElement?.querySelector('[data-protected-route]')).not.toBeNull();
+    expect(router.url).toBe('/lifeskills?tab=production');
+    expect(harness.routeDebugElement!.componentInstance).toBe(originalPage);
+    expect(originalPage.form().name).toBe('Sessão em andamento');
+    expect(
+      harness.routeNativeElement?.querySelector('[data-public-production-denied]'),
+    ).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelectorAll('h1')).toHaveLength(1);
 
     const publicPage = await harness.navigateByUrl('/lifeskills?tab=sessions', LifeskillsPage);
     expect(router.url).toBe('/lifeskills?tab=sessions');
@@ -186,7 +250,9 @@ describe('lifeskill session analytics', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const form = element.querySelector('[data-tour="lifeskills-sessions.sessions"]')!;
+    const target = element.querySelector('[data-tour="lifeskills-sessions.sessions"]')!;
+    expect(target).toBe(element.querySelector('[data-session-context]'));
+    const form = target.closest('section')!;
     const result = element.querySelector('[data-tour="lifeskills-sessions.results"]')!;
     const secondary = element.querySelector<HTMLDetailsElement>('[data-session-secondary]');
 

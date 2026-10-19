@@ -11,7 +11,6 @@ import { serverRoutes } from './app.routes.server';
 import { authGuard } from './core/auth.guard';
 import { IdentityService } from './core/identity.service';
 import { mvpRouteGuard } from './core/mvp-scope';
-import { recommendationsRouteResolver } from './core/public-route-data';
 
 @Component({ template: '' })
 class RouteDestination {}
@@ -36,7 +35,6 @@ describe('Unified personal workspace routes', () => {
       'tutorials/manage': 'app-tutorials-manage-page',
       'roadmap/manage': 'app-roadmap-manage-page',
       roadmap: 'app-roadmap-page',
-      recommendations: 'app-recommendations-page',
       family: 'app-player-page',
       shopping: 'app-shopping-page',
       plans: 'app-plans-page',
@@ -53,6 +51,7 @@ describe('Unified personal workspace routes', () => {
       '**': 'app-not-found-page',
     };
     const redirectPaths = [
+      'recommendations',
       'inventory',
       'database/items/:id',
       'account',
@@ -67,7 +66,6 @@ describe('Unified personal workspace routes', () => {
       'scans',
       'tutorials/manage',
       'roadmap/manage',
-      'recommendations',
       'family',
       'shopping',
       'plans',
@@ -107,6 +105,7 @@ describe('Unified personal workspace routes', () => {
 
   it('preserves declared redirect-only records as redirects', () => {
     const redirectPaths = [
+      'recommendations',
       'inventory',
       'database/items/:id',
       'account',
@@ -205,7 +204,6 @@ describe('Unified personal workspace routes', () => {
     const sessionRoutes = new Set([
       'scans',
       'scans/profile',
-      'recommendations',
       'tutorials/manage',
       'roadmap/manage',
       'storage',
@@ -258,10 +256,15 @@ describe('Unified personal workspace routes', () => {
     );
   });
 
-  it('warms only the public production catalog after the private route guard', () => {
-    const route = routes[0].children?.find((candidate) => candidate.path === 'recommendations');
-    expect(route?.canActivate?.length).toBeGreaterThan(0);
-    expect(route?.resolve?.['productionCatalog']).toBe(recommendationsRouteResolver);
+  it('redirects recommendations into the canonical hub while preserving context', async () => {
+    const route = routes[0].children!.find((candidate) => candidate.path === 'recommendations')!;
+    expect(route.loadComponent).toBeUndefined();
+    expect(route.resolve).toBeUndefined();
+    TestBed.configureTestingModule({
+      providers: [provideRouter([route, { path: 'lifeskills', component: RouteDestination }])],
+    });
+    await RouterTestingHarness.create('/recommendations?region=sa#results');
+    expect(TestBed.inject(Router).url).toBe('/lifeskills?region=sa&tab=production#results');
   });
 
   it('protects the tutorial editor and serves it privately without indexing', () => {
@@ -284,7 +287,6 @@ describe('Unified personal workspace routes', () => {
       'shopping',
       'plans',
       'settings',
-      'recommendations',
       'tutorials/manage',
       'roadmap/manage',
       'storage',

@@ -70,7 +70,9 @@ import { silver } from '../formatters';
             sessão do exemplo é simulada.
           </p>
           @if (identity.authenticated()) {
-            <a routerLink="/recommendations" i18n>Ver cálculo e limitações →</a>
+            <a routerLink="/lifeskills" [queryParams]="{ tab: 'production' }" i18n
+              >Ver cálculo e limitações →</a
+            >
           }
         } @else {
           <p i18n>

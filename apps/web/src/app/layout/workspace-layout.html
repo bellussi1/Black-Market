@@ -172,7 +172,9 @@
             seus dados anteriores estão preservados.</span
           >
           @if (identity.authenticated()) {
-            <a routerLink="/recommendations" i18n>Comparar produção</a>
+            <a routerLink="/lifeskills" [queryParams]="{ tab: 'production' }" i18n
+              >Comparar produção</a
+            >
           }
           <button class="btn subtle" (click)="store()?.exitDemo()" i18n>
             Sair da demonstração

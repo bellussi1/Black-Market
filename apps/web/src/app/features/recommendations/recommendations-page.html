@@ -1,18 +1,22 @@
-<main
-  class="tool-page coach-page"
+<section
+  aria-label="Recomendações de produção"
+  class="coach-page"
+  [class.tool-page]="!embedded()"
   appTutorialSurface="recommendations"
   [appTutorialSurfaceReady]="!!snapshot()"
 >
-  <header class="tool-heading coach-heading">
-    <p class="tool-kicker">PROFISSÕES & O QUE FAZER</p>
-    <h1>Faça prata com suas Life Skills</h1>
-    <p>
-      Informe sua maestria, veja o que já pode produzir com seu armazém ou completando faltantes no
-      mercado e priorize itens com giro real de vendas.
-    </p>
-  </header>
+  @if (!embedded()) {
+    <header class="tool-heading coach-heading">
+      <p class="tool-kicker">PROFISSÕES & O QUE FAZER</p>
+      <h1>Faça prata com suas Life Skills</h1>
+      <p>
+        Informe sua maestria, veja o que já pode produzir com seu armazém ou completando faltantes
+        no mercado e priorize itens com giro real de vendas.
+      </p>
+    </header>
 
-  <app-life-skills-hub-nav [activeTab]="'production'" />
+    <app-life-skills-hub-nav [activeTab]="'production'" />
+  }
 
   @if (message()) {
     <p class="notice" role="status" aria-live="polite">{{ message() }}</p>
@@ -562,4 +566,4 @@
       }
     </p>
   }
-</main>
+</section>

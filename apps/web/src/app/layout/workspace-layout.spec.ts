@@ -239,7 +239,7 @@ describe('workspace navigation', () => {
     const paths = [...nav.querySelectorAll('a')].map((link) => link.getAttribute('href'));
     expect(paths.filter((path) => path === '/storage')).toHaveLength(1);
     expect(paths.filter((path) => path === '/scans')).toHaveLength(1);
-    expect(paths.filter((path) => path === '/recommendations')).toHaveLength(1);
+    expect(paths).not.toContain('/recommendations');
     expect(paths.filter((path) => path === '/family')).toHaveLength(1);
     expect(paths.filter((path) => path === '/shopping')).toHaveLength(1);
     expect(paths.filter((path) => path === '/plans')).toHaveLength(1);
@@ -259,7 +259,7 @@ describe('workspace navigation', () => {
     expect(nav.textContent).toContain('Roadmap');
   });
 
-  it('keeps six Life Skills actions visible and groups secondary destinations', async () => {
+  it('keeps five unified Life Skills actions visible and groups secondary destinations', async () => {
     const fixture = await renderComponent(WorkspaceLayout, {}, [
       { provide: IdentityService, useValue: identity(true) },
     ]);
@@ -272,14 +272,7 @@ describe('workspace navigation', () => {
       group.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim(),
     );
 
-    expect(primaryPaths).toEqual([
-      '/',
-      '/recommendations',
-      '/lifeskills',
-      '/market',
-      '/recipes',
-      '/crafting',
-    ]);
+    expect(primaryPaths).toEqual(['/', '/lifeskills', '/market', '/recipes', '/crafting']);
     expect(groupTitles).toEqual(['Materiais e planos', 'Guias e conta']);
     expect(
       groups.flatMap((group) =>
@@ -295,15 +288,7 @@ describe('workspace navigation', () => {
     const nav = (fixture.nativeElement as HTMLElement).querySelector('#workspace-navigation')!;
     const links = [...nav.querySelectorAll('a')].map((link) => link.getAttribute('href'));
 
-    for (const path of [
-      '/scans',
-      '/storage',
-      '/recommendations',
-      '/family',
-      '/shopping',
-      '/plans',
-      '/settings',
-    ])
+    for (const path of ['/scans', '/storage', '/family', '/shopping', '/plans', '/settings'])
       expect(links.filter((href) => href === path)).toHaveLength(1);
   });
 

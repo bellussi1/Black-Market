@@ -5,11 +5,11 @@
 >
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>PROFISSÕES & O QUE FAZER</ng-container></p>
-    <h1><ng-container i18n>Meça seu rendimento.</ng-container></h1>
+    <h1><ng-container i18n>Profissões e produção.</ng-container></h1>
     <p>
       <ng-container i18n
-        >Registre o resultado das suas sessões e compare atividades observadas. Para planejar
-        receitas e produção, use a outra área deste painel.
+        >Planeje o que produzir com sua maestria e armazém ou registre sessões para comparar seu
+        rendimento observado.
       </ng-container>
     </p>
     <p class="help lifeskills-local-note" i18n>
@@ -19,33 +19,49 @@
   </header>
   <app-life-skills-hub-nav [activeTab]="hubTab()" />
   @if (tab() === 'production') {
-    <section
-      hlmCard
-      class="panel public-production-access"
-      data-public-production-denied
-      aria-labelledby="public-production-title"
-    >
-      <h2 id="public-production-title" i18n>Recomendações de produção exigem uma conta</h2>
-      <p i18n>
-        O painel de produção usa seu personagem, maestria e armazém. Entre para consultar receitas,
-        cotações e cenários com esses dados privados.
-      </p>
-      <a
-        hlmBtn
-        variant="outline"
-        routerLink="/recommendations"
-        [queryParams]="{ tab: 'production' }"
-        i18n
-        >Entrar e abrir recomendações</a
+    @if (checkingProductionAccess()) {
+      <section class="panel" role="status" aria-busy="true" data-production-access-loading i18n>
+        Preparando recomendações…
+      </section>
+    } @else if (canUseProduction()) {
+      @defer (on immediate) {
+        <app-recommendations-page [embedded]="true" />
+      } @placeholder {
+        <section class="panel" role="status" aria-busy="true" i18n>
+          Preparando recomendações…
+        </section>
+      }
+    } @else {
+      <section
+        hlmCard
+        class="panel public-production-access"
+        data-public-production-denied
+        aria-labelledby="public-production-title"
       >
-    </section>
+        <h2 id="public-production-title" i18n>Recomendações de produção exigem uma conta</h2>
+        <p i18n>
+          O painel de produção usa seu personagem, maestria e armazém. Entre para consultar
+          receitas, cotações e cenários com esses dados privados.
+        </p>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          data-production-login
+          (click)="openProductionLogin()"
+          i18n
+        >
+          Entrar e abrir recomendações
+        </button>
+      </section>
+    }
   } @else if (tab() === 'sessions') {
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
-      <section hlmCard class="panel" data-tour="lifeskills-sessions.sessions">
+      <section hlmCard class="panel">
         <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
-        <div class="session-context" data-session-context>
+        <div class="session-context" data-session-context data-tour="lifeskills-sessions.sessions">
           <h3 i18n>Contexto da atividade</h3>
           <div class="form-grid">
             <label class="field"

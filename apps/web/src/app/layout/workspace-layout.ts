@@ -280,14 +280,8 @@ export class WorkspaceLayout {
     ? [
         { path: '/', label: $localize`Início`, icon: 'lucideHouse' },
         {
-          path: '/recommendations',
-          label: $localize`O que fazer`,
-          icon: 'lucideCompass',
-          requiresAuth: true,
-        },
-        {
           path: '/lifeskills',
-          label: $localize`Profissões e rendimento`,
+          label: $localize`Profissões e produção`,
           icon: 'lucidePickaxe',
         },
         { path: '/market', label: $localize`Mercado`, icon: 'lucideStore' },

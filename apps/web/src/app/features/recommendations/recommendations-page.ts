@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   type OnDestroy,
   signal,
 } from '@angular/core';
@@ -279,6 +280,7 @@ export function productionRecipes(
   styleUrl: './recommendations-page.scss',
 })
 export class RecommendationsPage implements OnDestroy {
+  readonly embedded = input(false);
   readonly store = inject(WorkspaceStore);
   readonly api = inject(ProductionApi);
   readonly catalogApi = inject(CatalogApiService);
