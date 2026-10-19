@@ -37,7 +37,6 @@
       [queryParams]="{ tab: 'family' }"
       queryParamsHandling="merge"
       [attr.aria-current]="tab() === 'family' ? 'page' : null"
-      [attr.data-tour]="tab() === 'family' ? 'family-family.characters' : null"
     >
       Família & Profissões
     </a>
@@ -53,7 +52,6 @@
     class="panel bdo-roster-panel"
     id="bdo-character-section"
     aria-labelledby="bdo-roster-title"
-    data-tour="family-character.character"
   >
     <div class="panel-heading bdo-roster-heading">
       <div>
@@ -82,7 +80,12 @@
       }
     </div>
 
-    <div class="bdo-roster-bar">
+    <div
+      class="bdo-roster-bar"
+      [attr.data-tour]="
+        tab() === 'family' ? 'family-family.characters' : 'family-character.character'
+      "
+    >
       <div class="bdo-character-pills" role="list" aria-label="Personagens cadastrados">
         @for (profile of profiles(); track profile.id) {
           <button
@@ -176,8 +179,8 @@
             >
           </div>
 
-          <div class="bdo-subpanel" data-tour="family-character.lifeskills">
-            <div class="bdo-subpanel-header">
+          <div class="bdo-subpanel">
+            <div class="bdo-subpanel-header" data-tour="family-character.lifeskills">
               <h3>Maestria por Profissão (Ficha P)</h3>
               <small>Salva automaticamente ao sair do campo (0 a 3000)</small>
             </div>
@@ -430,7 +433,7 @@
         <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
       </section>
 
-      <section hlmCard class="panel" data-tour="family-family.actions">
+      <section hlmCard class="panel">
         <div class="panel-heading">
           <div>
             <p class="tool-kicker">GRADUAÇÃO DE LIFE SKILLS</p>
@@ -471,7 +474,7 @@
             <input hlmInput type="number" min="0" max="100" [(ngModel)]="skillXp"
           /></label>
         </div>
-        <div class="action-row">
+        <div class="action-row" data-tour="family-family.actions">
           <button hlmBtn variant="outline" type="button" (click)="saveSkill()">
             Salvar profissão
           </button>

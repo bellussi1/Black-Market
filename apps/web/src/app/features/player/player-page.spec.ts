@@ -9,6 +9,39 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { PlayerPage } from './player-page';
 describe('Progressive player workspace', () => {
   useMemoryStorage();
+  it('anchors the family tour to character controls and save actions instead of tabs or whole panels', async () => {
+    const fixture = await renderComponent(PlayerPage, {}, [
+      {
+        provide: ActivatedRoute,
+        useValue: { queryParamMap: new BehaviorSubject(convertToParamMap({ tab: 'family' })) },
+      },
+    ]);
+    const element: HTMLElement = fixture.nativeElement;
+    const characters = element.querySelector('[data-tour="family-family.characters"]')!;
+    const actions = element.querySelector('[data-tour="family-family.actions"]')!;
+    expect(characters).toBe(element.querySelector('.bdo-roster-bar'));
+    expect(characters.querySelector('input')).not.toBeNull();
+    expect(actions.classList.contains('action-row')).toBe(true);
+    expect(actions.textContent).toContain('Salvar profissão');
+    expect(actions.textContent).toContain('Desfazer última alteração');
+    expect(element.querySelector('nav [data-tour]')).toBeNull();
+  });
+
+  it('offers the character tutorial before creating a character and keeps its targets compact', async () => {
+    const fixture = await renderComponent(PlayerPage);
+    const page = fixture.componentInstance;
+    expect(page.current()).toBeNull();
+    expect(page.tutorialReady()).toBe(true);
+    expect(fixture.nativeElement.querySelector('[data-tour="family-character.character"]')).toBe(
+      fixture.nativeElement.querySelector('.bdo-roster-bar'),
+    );
+    page.name = 'Personagem sintético';
+    page.create();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-tour="family-character.lifeskills"]')).toBe(
+      fixture.nativeElement.querySelector('.bdo-mastery-grid')?.previousElementSibling,
+    );
+  });
   it('presents family tabs and character selection within the shared page hierarchy', async () => {
     const fixture = await renderComponent(PlayerPage);
     const element: HTMLElement = fixture.nativeElement;
@@ -156,7 +189,11 @@ describe('Progressive player workspace', () => {
       expect(
         roster.compareDocumentPosition(selectedPanel) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
-      expect(element.querySelector('[data-tour="family-character.character"]')).not.toBeNull();
+      expect(
+        element.querySelector(
+          `[data-tour="${tab === 'family' ? 'family-family.characters' : 'family-character.character'}"]`,
+        ),
+      ).toBe(roster.querySelector('.bdo-roster-bar'));
       expect(
         element.querySelectorAll('nav[aria-label="Áreas da Família"] a[aria-current="page"]'),
       ).toHaveLength(1);

@@ -69,7 +69,7 @@ export class PlayerPage {
         return 'family-character';
     }
   });
-  readonly tutorialReady = computed(() => this.tab() === 'family' || !!this.current());
+  readonly tutorialReady = computed(() => this.tab() !== 'equipment' || !!this.current());
   readonly message = signal('');
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
