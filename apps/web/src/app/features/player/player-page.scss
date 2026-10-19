@@ -36,19 +36,19 @@
     background-color var(--bm-motion-fast) ease;
 
   &:hover {
-    border-color: var(--bm-gold);
+    border-color: var(--bm-accent);
     color: var(--bm-text);
     background: rgba(201, 166, 107, 0.08);
   }
 
   &[aria-current='page'] {
-    border-color: var(--bm-gold);
+    border-color: var(--bm-accent);
     background: rgba(201, 166, 107, 0.14);
-    color: var(--bm-gold-strong);
+    color: var(--bm-accent-hover);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--bm-gold-strong);
+    outline: 2px solid var(--bm-focus);
     outline-offset: 2px;
   }
 }
@@ -112,16 +112,16 @@
   }
 
   &:hover {
-    border-color: var(--bm-border-strong);
+    border-color: var(--bm-control-border);
   }
 
   &.active {
-    border-color: var(--bm-gold);
+    border-color: var(--bm-accent);
     background: linear-gradient(180deg, rgba(201, 166, 107, 0.16), rgba(20, 18, 15, 0.96));
     box-shadow: inset 0 0 0 1px rgba(201, 166, 107, 0.25);
 
     strong {
-      color: var(--bm-gold-strong);
+      color: var(--bm-accent-hover);
     }
   }
 }
@@ -171,7 +171,7 @@
     margin: 0;
     font-size: 0.92rem;
     font-weight: 700;
-    color: var(--bm-gold-strong);
+    color: var(--bm-accent-hover);
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
@@ -213,7 +213,7 @@
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-weight: 700;
-    color: var(--bm-gold-strong);
+    color: var(--bm-accent-hover);
   }
 }
 
@@ -306,7 +306,7 @@
   color: var(--bm-text);
 
   strong {
-    color: var(--bm-gold-strong);
+    color: var(--bm-accent-hover);
   }
 }
 

@@ -198,7 +198,7 @@
   transition: border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    border-color: var(--bm-border-strong, #544b3f);
+    border-color: var(--bm-control-border);
   }
 
   .metric-label {

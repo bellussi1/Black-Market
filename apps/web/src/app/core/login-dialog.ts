@@ -67,7 +67,7 @@ import { LoginPanel } from './login-panel';
     }
     p {
       margin-block: 0 20px;
-      color: var(--bm-text-muted);
+      color: var(--bm-muted);
     }
   `,
 })

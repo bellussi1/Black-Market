@@ -9,7 +9,7 @@
   transition: border-color 160ms ease;
 }
 .ingredient.expanded {
-  border-color: var(--bm-border-strong, var(--bm-accent));
+  border-color: var(--bm-accent);
 }
 .step-toggle {
   display: flex;
@@ -229,7 +229,7 @@ summary:focus-visible,
 .branch-children {
   margin: 0 16px 12px 26px;
   padding-left: 18px;
-  border-left: 1px solid var(--bm-border-strong, var(--bm-border));
+  border-left: 1px solid var(--bm-border);
 }
 .children-heading {
   margin: 0;
