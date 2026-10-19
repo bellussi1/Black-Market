@@ -1147,17 +1147,31 @@
 }
 
 .economic-summary-header .help {
-  font-size: 10px;
+  font-size: var(--bm-text-meta);
 }
 
-.economic-summary-header [role='group'] {
-  gap: 4px;
+.economic-summary-header .scenario-actions {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bm-space-2);
 }
 
-.economic-summary-header [role='group'] button {
-  min-height: 32px;
-  padding-inline: 8px;
-  font-size: 11px;
+.economic-summary-header .scenario-actions button {
+  width: 100%;
+  min-height: var(--bm-control-height);
+  height: auto;
+  padding: var(--bm-space-2) var(--bm-space-3);
+  font-size: var(--bm-text-support);
+  line-height: 1.4;
+  white-space: normal;
+  align-items: flex-start;
+
+  small {
+    font-size: var(--bm-text-meta);
+    line-height: 1.4;
+  }
 }
 
 .economic-dashboard .metric-card {
