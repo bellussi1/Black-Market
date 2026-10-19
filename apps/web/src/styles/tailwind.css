@@ -14,7 +14,7 @@
 :root {
   --bm-panel-padding: var(--bm-space-4);
   color-scheme: dark;
-  --radius: 2px;
+  --radius: var(--bm-radius);
   --background: var(--bm-background, #17181b);
   --foreground: var(--bm-text, #eee9de);
   --card: var(--bm-surface, #242529);

@@ -47,12 +47,12 @@ import { LoginPanel } from './login-panel';
       padding: 24px;
       background: var(--bm-surface, #202020);
       color: var(--bm-text);
-      border: 1px solid var(--bm-accent);
-      border-radius: 2px;
+      border: var(--bm-border-width) solid var(--bm-accent);
+      border-radius: var(--bm-radius);
     }
     dialog::backdrop {
-      background: rgb(0 0 0 / 65%);
-      backdrop-filter: blur(6px);
+      background: var(--bm-overlay-scrim);
+      backdrop-filter: blur(var(--bm-overlay-blur));
     }
     .dialog-heading {
       display: flex;

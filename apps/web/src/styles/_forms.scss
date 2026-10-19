@@ -26,14 +26,14 @@
   .data-table select {
     min-width: 0;
     width: 100%;
-    border: 1px solid var(--bm-control-border);
+    border: var(--bm-border-width) solid var(--bm-control-border);
     background: var(--bm-input);
     color: var(--bm-text);
     font: inherit;
     font-size: 14px;
     min-height: 44px;
     padding: 8px 12px;
-    border-radius: 2px;
+    border-radius: var(--bm-radius);
   }
   .field small {
     color: var(--bm-muted);
@@ -57,7 +57,7 @@
     opacity: 1;
   }
   .tax-options {
-    border: 1px solid var(--bm-border);
+    border: var(--bm-border-width) solid var(--bm-border);
     padding: 18px;
     margin: 24px 0;
     min-width: 0;
@@ -98,12 +98,12 @@
     gap: 8px;
     background: var(--bm-accent);
     color: var(--bm-background);
-    border: 1px solid var(--bm-accent);
+    border: var(--bm-border-width) solid var(--bm-accent);
     font: inherit;
     font-size: 14px;
     padding: 10px 16px;
     text-decoration: none;
-    border-radius: 2px;
+    border-radius: var(--bm-radius);
     transition:
       background-color 160ms,
       border-color 160ms,
@@ -146,8 +146,8 @@
     gap: 8px;
     min-height: 44px;
     padding: 8px 14px;
-    border: 1px solid var(--bm-control-border);
-    border-radius: 2px;
+    border: var(--bm-border-width) solid var(--bm-control-border);
+    border-radius: var(--bm-radius);
     background: var(--bm-input);
     color: var(--bm-text);
     font: inherit;
@@ -177,7 +177,7 @@
     width: 100%;
     max-width: 100%;
     padding: 10px;
-    border: 1px solid var(--bm-border);
+    border: var(--bm-border-width) solid var(--bm-border);
     background: var(--bm-input);
     color: var(--bm-muted);
     font: inherit;
@@ -191,7 +191,7 @@
   .tool-page input[type='file']::file-selector-button {
     margin-right: 12px;
     padding: 8px 12px;
-    border: 1px solid var(--bm-control-border);
+    border: var(--bm-border-width) solid var(--bm-control-border);
     background: var(--bm-surface-raised);
     color: var(--bm-text);
     cursor: pointer;

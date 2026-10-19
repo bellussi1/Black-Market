@@ -20,7 +20,7 @@ export class HlmCard {
   constructor() {
     classes(
       () =>
-        'bg-card text-card-foreground min-w-0 rounded-[2px] border border-border p-[var(--bm-panel-padding,1.25rem)] text-sm data-[size=sm]:p-4 group/card block',
+        'bg-card text-card-foreground min-w-0 rounded-[var(--bm-radius)] border-[length:var(--bm-border-width)] border-border p-[var(--bm-panel-padding,1.25rem)] text-sm data-[size=sm]:p-4 group/card block',
     );
   }
 }

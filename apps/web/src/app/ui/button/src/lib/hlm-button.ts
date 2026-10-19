@@ -7,7 +7,7 @@ import type { ClassValue } from 'clsx';
 import { injectBrnButtonConfig } from './hlm-button.token';
 
 export const buttonVariants = cva(
-  "focus-visible:border-ring focus-visible:ring-ring/50 data-[matches-spartan-invalid=true]:ring-destructive/20 dark:data-[matches-spartan-invalid=true]:ring-destructive/40 data-[matches-spartan-invalid=true]:border-destructive dark:data-[matches-spartan-invalid=true]:border-destructive/50 rounded-[2px] border border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 active:not-aria-[haspopup]:translate-y-px data-[matches-spartan-invalid=true]:ring-3 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(4)] group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0",
+  "focus-visible:border-ring focus-visible:ring-ring/50 data-[matches-spartan-invalid=true]:ring-destructive/20 dark:data-[matches-spartan-invalid=true]:ring-destructive/40 data-[matches-spartan-invalid=true]:border-destructive dark:data-[matches-spartan-invalid=true]:border-destructive/50 rounded-[var(--bm-radius)] border-[length:var(--bm-border-width)] border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 active:not-aria-[haspopup]:translate-y-px data-[matches-spartan-invalid=true]:ring-3 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(4)] group/button inline-flex shrink-0 items-center justify-center max-w-full whitespace-normal text-center [overflow-wrap:anywhere] transition-[background-color,border-color,color,box-shadow,transform] duration-[var(--bm-motion-fast)] ease-out outline-none select-none disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0",
   {
     variants: {
       variant: {
@@ -24,15 +24,15 @@ export const buttonVariants = cva(
       },
       size: {
         default:
-          'h-[var(--bm-control-height)] gap-2 px-3 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2',
-        xs: "h-[var(--bm-control-height-compact)] gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-[2px] has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3)]",
-        sm: "h-[var(--bm-control-height-compact)] gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-[2px] has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3.5)]",
-        lg: 'h-[var(--bm-control-height-compact)] gap-1.5 px-2.5 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3',
+          'min-h-[var(--bm-control-height)] gap-2 px-3 py-2 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2',
+        xs: "min-h-[var(--bm-control-height-compact)] py-1 gap-1 px-2 text-xs in-data-[slot=button-group]:rounded-[var(--bm-radius)] has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3)]",
+        sm: "min-h-[var(--bm-control-height-compact)] py-1 gap-1 px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-[var(--bm-radius)] has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3.5)]",
+        lg: 'min-h-[var(--bm-control-height-compact)] py-1 gap-1.5 px-2.5 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3',
         icon: 'size-[var(--bm-control-height-compact)]',
         'icon-xs':
-          "size-[var(--bm-control-height-compact)] rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-[2px] [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3)]",
+          "size-[var(--bm-control-height-compact)] in-data-[slot=button-group]:rounded-[var(--bm-radius)] [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3)]",
         'icon-sm':
-          'size-[var(--bm-control-height-compact)] rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-[2px]',
+          'size-[var(--bm-control-height-compact)] in-data-[slot=button-group]:rounded-[var(--bm-radius)]',
         'icon-lg': 'size-[var(--bm-control-height-compact)]',
       },
     },

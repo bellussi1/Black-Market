@@ -59,19 +59,22 @@
     margin-top: 16px;
     padding: 16px;
     background: var(--bm-input);
-    border: 1px solid var(--bm-border);
+    border: var(--bm-border-width) solid var(--bm-border);
   }
   .row-editor .form-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .badge {
     display: inline-block;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     padding: 5px 7px;
-    border: 1px solid var(--bm-border);
+    border: var(--bm-border-width) solid var(--bm-border);
     font-size: 12px;
     color: var(--bm-accent);
     letter-spacing: 0.05em;
-    border-radius: 2px;
+    border-radius: var(--bm-radius);
   }
   .bdo-diamond {
     display: inline-block;
@@ -84,33 +87,29 @@
   }
   .bdo-window {
     background: var(--bm-surface);
-    border: 1px solid var(--bm-border);
-    border-radius: 2px;
-    box-shadow:
-      0 4px 16px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(216, 185, 120, 0.12);
+    border: var(--bm-border-width) solid var(--bm-border);
+    border-radius: var(--bm-radius);
+    box-shadow: var(--bm-shadow-window);
   }
   .bdo-slot {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
+    width: var(--bm-slot-size);
+    height: var(--bm-slot-size);
+    min-width: var(--bm-slot-size);
     background: var(--bm-input);
-    border: 1px solid var(--bm-border);
-    border-radius: 2px;
+    border: var(--bm-border-width) solid var(--bm-border);
+    border-radius: var(--bm-radius);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--bm-shadow-slot);
     transition:
-      border-color 140ms ease-out,
-      box-shadow 140ms ease-out;
+      border-color var(--bm-motion-fast) ease-out,
+      box-shadow var(--bm-motion-fast) ease-out;
   }
   .bdo-slot:hover {
     border-color: var(--bm-accent);
-    box-shadow:
-      inset 0 0 6px rgba(0, 0, 0, 0.6),
-      0 0 4px var(--bm-accent-soft);
+    box-shadow: var(--bm-shadow-slot-hover);
   }
   .bdo-slot-count {
     position: absolute;
@@ -128,8 +127,8 @@
   .bdo-meter {
     height: 6px;
     background: var(--bm-input);
-    border: 1px solid var(--bm-border);
-    border-radius: 1px;
+    border: var(--bm-border-width) solid var(--bm-border);
+    border-radius: var(--bm-radius-inset);
     overflow: hidden;
     position: relative;
   }
@@ -167,7 +166,7 @@
     width: fit-content;
     gap: 0;
     padding: var(--bm-space-1);
-    border: 1px solid var(--bm-border);
+    border: var(--bm-border-width) solid var(--bm-border);
     background: var(--bm-input);
   }
   .segmented-control button {

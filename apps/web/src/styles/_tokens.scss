@@ -27,6 +27,16 @@ $palette: (
 
 @layer base {
   :root {
+    --bm-radius: 2px;
+    --bm-radius-inset: 1px;
+    --bm-border-width: 1px;
+    --bm-slot-size: 44px;
+    --bm-overlay-scrim: rgb(0 0 0 / 65%);
+    --bm-overlay-blur: 6px;
+    --bm-shadow-window: 0 4px 16px rgb(0 0 0 / 45%), inset 0 1px 0 rgb(216 185 120 / 12%);
+    --bm-shadow-slot: inset 0 0 6px rgb(0 0 0 / 60%);
+    --bm-shadow-slot-hover: var(--bm-shadow-slot), 0 0 4px var(--bm-accent-soft);
+    --bm-shadow-selected: inset 0 0 0 1px rgb(201 166 107 / 25%);
     --bm-motion-fast: 140ms;
     --bm-motion-route-enter: 220ms;
     --bm-motion-route-exit: 120ms;
