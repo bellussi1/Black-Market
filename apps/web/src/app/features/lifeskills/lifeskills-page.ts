@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   type ActivityInput,
   activitySchema,
@@ -30,6 +30,9 @@ import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surfac
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { LifeSkillsHubNav } from './life-skills-hub-nav';
 import { compareObservedSessions } from './observed-session-comparison';
+
+type LifeSkillsTab = 'production' | 'sessions' | 'mastery' | 'training';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lifeskills-page',
@@ -40,6 +43,7 @@ import { compareObservedSessions } from './observed-session-comparison';
     LifeSkillsHubNav,
     BdoSelect,
     FormsModule,
+    RouterLink,
     TaxOptionsComponent,
     PresetBar,
     CalculationProof,
@@ -65,7 +69,11 @@ export class LifeskillsPage {
     { id: 'barter', label: 'Permuta' },
     { id: 'trading', label: 'Comércio' },
   ];
-  readonly tab = signal('sessions');
+  readonly tab = signal<LifeSkillsTab>('sessions');
+  readonly hubTab = computed(() => {
+    const selected = this.tab();
+    return selected === 'production' || selected === 'sessions' ? selected : null;
+  });
   readonly tutorialSurface = computed(() => {
     switch (this.tab()) {
       case 'mastery':
@@ -79,8 +87,15 @@ export class LifeskillsPage {
   constructor() {
     this.route?.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const requested = params.get('tab');
-      if (requested === 'sessions' || requested === 'mastery' || requested === 'training') {
+      if (
+        requested === 'production' ||
+        requested === 'sessions' ||
+        requested === 'mastery' ||
+        requested === 'training'
+      ) {
         this.tab.set(requested);
+      } else {
+        this.tab.set('sessions');
       }
     });
   }

@@ -1,11 +1,15 @@
-<div class="tool-page" [appTutorialSurface]="tutorialSurface()">
+<div
+  class="tool-page"
+  [appTutorialSurface]="tutorialSurface()"
+  [appTutorialSurfaceReady]="tab() !== 'production'"
+>
   <header class="tool-heading">
     <p class="tool-kicker"><ng-container i18n>PROFISSÕES & O QUE FAZER</ng-container></p>
     <h1><ng-container i18n>Meça seu rendimento.</ng-container></h1>
     <p>
       <ng-container i18n
-        >Alterne entre as recomendações automáticas de receitas de Culinária/Alquimia/Processamento
-        e o registro de sessões em campo (coleta, caça, pesca), retorno de maestria e treino.
+        >Registre o resultado das suas sessões e compare atividades observadas. Para planejar
+        receitas e produção, use a outra área deste painel.
       </ng-container>
     </p>
     <p class="help lifeskills-local-note" i18n>
@@ -13,49 +17,72 @@
       dispositivos.
     </p>
   </header>
-  <app-life-skills-hub-nav [activeTab]="'sessions'" />
-  <section hlmCard class="panel">
-    <h2 i18n>Contexto da atividade</h2>
-    <div class="form-grid">
-      <label class="field"
-        ><span i18n>Uso do tempo</span
-        ><select
-          appBdoSelect
-          [ngModel]="form().mode ?? 'active'"
-          (ngModelChange)="patch({ mode: $event })"
-        >
-          <option value="active" i18n>Ativo</option>
-          <option value="afk" i18n>AFK</option>
-        </select></label
-      ><label class="field"
-        ><span i18n>Profissão desta sessão</span
-        ><select
-          appBdoSelect
-          [ngModel]="form().skill ?? ''"
-          (ngModelChange)="patch({ skill: $event || undefined })"
-        >
-          <option value="" i18n>Não informada</option>
-          @for (skill of skills; track skill.id) {
-            <option [value]="skill.id">{{ skill.label }}</option>
-          }
-        </select></label
-      ><label class="field"
-        ><span i18n>Maestria usada na sessão</span
-        ><input
-          hlmInput
-          type="number"
-          min="0"
-          max="5000"
-          [ngModel]="form().mastery"
-          (ngModelChange)="patch({ mastery: $event ?? undefined })"
-      /></label>
-    </div>
-    <p class="help" i18n>
-      As recomendações comparam o rendimento observado. Uma mudança de maestria exige uma nova
-      sessão; não aplicamos multiplicadores desconhecidos.
-    </p>
-  </section>
+  <app-life-skills-hub-nav [activeTab]="hubTab()" />
   @if (tab() === 'sessions') {
+    <section hlmCard class="panel">
+      <h2 i18n>Contexto da atividade</h2>
+      <div class="form-grid">
+        <label class="field"
+          ><span i18n>Uso do tempo</span
+          ><select
+            appBdoSelect
+            [ngModel]="form().mode ?? 'active'"
+            (ngModelChange)="patch({ mode: $event })"
+          >
+            <option value="active" i18n>Ativo</option>
+            <option value="afk" i18n>AFK</option>
+          </select></label
+        ><label class="field"
+          ><span i18n>Profissão desta sessão</span
+          ><select
+            appBdoSelect
+            [ngModel]="form().skill ?? ''"
+            (ngModelChange)="patch({ skill: $event || undefined })"
+          >
+            <option value="" i18n>Não informada</option>
+            @for (skill of skills; track skill.id) {
+              <option [value]="skill.id">{{ skill.label }}</option>
+            }
+          </select></label
+        ><label class="field"
+          ><span i18n>Maestria usada na sessão</span
+          ><input
+            hlmInput
+            type="number"
+            min="0"
+            max="5000"
+            [ngModel]="form().mastery"
+            (ngModelChange)="patch({ mastery: $event ?? undefined })"
+        /></label>
+      </div>
+      <p class="help" i18n>
+        As recomendações comparam o rendimento observado. Uma mudança de maestria exige uma nova
+        sessão; não aplicamos multiplicadores desconhecidos.
+      </p>
+    </section>
+  }
+  @if (tab() === 'production') {
+    <section
+      hlmCard
+      class="panel public-production-access"
+      data-public-production-denied
+      aria-labelledby="public-production-title"
+    >
+      <h2 id="public-production-title" i18n>Recomendações de produção exigem uma conta</h2>
+      <p i18n>
+        O painel de produção usa seu personagem, maestria e armazém. Entre para consultar receitas,
+        cotações e cenários com esses dados privados.
+      </p>
+      <a
+        hlmBtn
+        variant="outline"
+        routerLink="/recommendations"
+        [queryParams]="{ tab: 'production' }"
+        i18n
+        >Entrar e abrir recomendações</a
+      >
+    </section>
+  } @else if (tab() === 'sessions') {
     <div
       class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
     >
@@ -337,146 +364,157 @@
         </div>
       }
     </section>
-  } @else if (tab() === 'mastery') {
-    <div
-      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
-    >
-      <section hlmCard class="panel" data-tour="lifeskills-mastery.profile">
-        <h2><ng-container i18n>Investimento e ganho observado</ng-container></h2>
-        <div class="form-grid">
-          <label class="field"
-            ><ng-container i18n>Custo líquido do upgrade</ng-container
-            ><input
-              hlmInput
-              inputmode="numeric"
-              [ngModel]="investment().upgradeCost"
-              (ngModelChange)="patchInvestment({ upgradeCost: $event })" /></label
-          ><label class="field"
-            ><ng-container i18n>Lucro atual por hora</ng-container
-            ><input
-              hlmInput
-              inputmode="numeric"
-              [ngModel]="investment().currentHourly"
-              (ngModelChange)="patchInvestment({ currentHourly: $event })" /></label
-          ><label class="field"
-            ><ng-container i18n>Lucro previsto / medido por hora</ng-container
-            ><input
-              hlmInput
-              inputmode="numeric"
-              [ngModel]="investment().nextHourly"
-              (ngModelChange)="patchInvestment({ nextHourly: $event })" /></label
-          ><label class="field"
-            ><ng-container i18n>Horas de atividade por dia</ng-container
-            ><input
-              hlmInput
-              type="number"
-              min="0.001"
-              max="24"
-              step="0.001"
-              [ngModel]="investment().dailyHours"
-              (ngModelChange)="patchInvestment({ dailyHours: $event })"
-          /></label>
-        </div>
-        <app-preset-bar
-          tool="investment"
-          [value]="investment()"
-          (loaded)="loadInvestment($event)"
-        /><app-calculation-proof tool="investment" [value]="investment()" />
-      </section>
-      <section data-tour="lifeskills-mastery.inputs">
-        @if (investmentResult().value; as r) {
-          <div class="metric-grid">
-            <div class="metric hero-metric">
-              <span><ng-container i18n>Tempo para recuperar investimento</ng-container></span
-              ><strong>{{
-                r.hours === null ? 'Sem retorno positivo' : number(r.hours) + ' h'
-              }}</strong>
-            </div>
-            <div class="metric">
-              <span><ng-container i18n>Ganho por hora</ng-container></span
-              ><strong>{{ silver(r.hourlyIncrease) }}</strong>
-            </div>
-            <div class="metric">
-              <span><ng-container i18n>Dias de atividade</ng-container></span
-              ><strong>{{ number(r.days) }}</strong>
-            </div>
-          </div>
-        } @else {
-          <p class="error-box" role="alert">{{ investmentResult().error }}</p>
-        }
-        <p class="notice">
-          <ng-container i18n
-            >Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço,
-            estoque ou tempo de compra do upgrade.
-          </ng-container>
-        </p>
-      </section>
-    </div>
   } @else {
-    <div
-      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
-    >
-      <section hlmCard class="panel" data-tour="lifeskills-training.plans">
-        <h2><ng-container i18n>Estimador de XP</ng-container></h2>
-        <div class="form-grid">
-          <label class="field"
-            ><ng-container i18n>XP que falta para o alvo</ng-container
-            ><input
-              hlmInput
-              type="number"
-              min="1"
-              [ngModel]="training().remainingXp"
-              (ngModelChange)="patchTraining({ remainingXp: $event })" /></label
-          ><label class="field"
-            ><ng-container i18n>XP por hora medido</ng-container
-            ><input
-              hlmInput
-              type="number"
-              min="0.001"
-              step="0.001"
-              [ngModel]="training().xpPerHour"
-              (ngModelChange)="patchTraining({ xpPerHour: $event })" /></label
-          ><label class="field"
-            ><ng-container i18n>Duração de cada sessão (minutos)</ng-container
-            ><input
-              hlmInput
-              type="number"
-              min="1"
-              max="1440"
-              [ngModel]="training().sessionMinutes"
-              (ngModelChange)="patchTraining({ sessionMinutes: $event })"
-          /></label>
-        </div>
-        <app-preset-bar
-          tool="training"
-          [value]="training()"
-          (loaded)="loadTraining($event)"
-        /><app-calculation-proof tool="training" [value]="training()" />
-      </section>
-      <section data-tour="lifeskills-training.results">
-        @if (trainingResult().value; as r) {
-          <div class="metric-grid">
-            <div class="metric hero-metric">
-              <span><ng-container i18n>Tempo de treino estimado</ng-container></span
-              ><strong
-                ><ng-container i18n>{{ number(r.hours, 3) }} h</ng-container></strong
-              >
-            </div>
-            <div class="metric">
-              <span><ng-container i18n>Sessões necessárias</ng-container></span
-              ><strong>{{ number(r.sessions, 0) }}</strong>
-            </div>
-          </div>
-        } @else {
-          <p class="error-box" role="alert">{{ trainingResult().error }}</p>
-        }
-        <p class="notice">
-          <ng-container i18n
-            >Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de níveis,
-            breeding ou stats de cavalos.
-          </ng-container>
-        </p>
-      </section>
+    <div class="notice legacy-tool-notice" role="status" data-legacy-tool-notice>
+      <p i18n>
+        Esta ferramenta continua disponível por links salvos, mas saiu da navegação principal. Os
+        valores e presets existentes foram mantidos.
+      </p>
+      <a routerLink="/lifeskills" [queryParams]="{ tab: 'sessions' }" i18n>
+        Voltar para sessões observadas
+      </a>
     </div>
+    @if (tab() === 'mastery') {
+      <div
+        class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+      >
+        <section hlmCard class="panel" data-tour="lifeskills-mastery.profile">
+          <h2><ng-container i18n>Investimento e ganho observado</ng-container></h2>
+          <div class="form-grid">
+            <label class="field"
+              ><ng-container i18n>Custo líquido do upgrade</ng-container
+              ><input
+                hlmInput
+                inputmode="numeric"
+                [ngModel]="investment().upgradeCost"
+                (ngModelChange)="patchInvestment({ upgradeCost: $event })" /></label
+            ><label class="field"
+              ><ng-container i18n>Lucro atual por hora</ng-container
+              ><input
+                hlmInput
+                inputmode="numeric"
+                [ngModel]="investment().currentHourly"
+                (ngModelChange)="patchInvestment({ currentHourly: $event })" /></label
+            ><label class="field"
+              ><ng-container i18n>Lucro previsto / medido por hora</ng-container
+              ><input
+                hlmInput
+                inputmode="numeric"
+                [ngModel]="investment().nextHourly"
+                (ngModelChange)="patchInvestment({ nextHourly: $event })" /></label
+            ><label class="field"
+              ><ng-container i18n>Horas de atividade por dia</ng-container
+              ><input
+                hlmInput
+                type="number"
+                min="0.001"
+                max="24"
+                step="0.001"
+                [ngModel]="investment().dailyHours"
+                (ngModelChange)="patchInvestment({ dailyHours: $event })"
+            /></label>
+          </div>
+          <app-preset-bar
+            tool="investment"
+            [value]="investment()"
+            (loaded)="loadInvestment($event)"
+          /><app-calculation-proof tool="investment" [value]="investment()" />
+        </section>
+        <section data-tour="lifeskills-mastery.inputs">
+          @if (investmentResult().value; as r) {
+            <div class="metric-grid">
+              <div class="metric hero-metric">
+                <span><ng-container i18n>Tempo para recuperar investimento</ng-container></span
+                ><strong>{{
+                  r.hours === null ? 'Sem retorno positivo' : number(r.hours) + ' h'
+                }}</strong>
+              </div>
+              <div class="metric">
+                <span><ng-container i18n>Ganho por hora</ng-container></span
+                ><strong>{{ silver(r.hourlyIncrease) }}</strong>
+              </div>
+              <div class="metric">
+                <span><ng-container i18n>Dias de atividade</ng-container></span
+                ><strong>{{ number(r.days) }}</strong>
+              </div>
+            </div>
+          } @else {
+            <p class="error-box" role="alert">{{ investmentResult().error }}</p>
+          }
+          <p class="notice">
+            <ng-container i18n
+              >Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço,
+              estoque ou tempo de compra do upgrade.
+            </ng-container>
+          </p>
+        </section>
+      </div>
+    } @else {
+      <div
+        class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+      >
+        <section hlmCard class="panel" data-tour="lifeskills-training.plans">
+          <h2><ng-container i18n>Estimador de XP</ng-container></h2>
+          <div class="form-grid">
+            <label class="field"
+              ><ng-container i18n>XP que falta para o alvo</ng-container
+              ><input
+                hlmInput
+                type="number"
+                min="1"
+                [ngModel]="training().remainingXp"
+                (ngModelChange)="patchTraining({ remainingXp: $event })" /></label
+            ><label class="field"
+              ><ng-container i18n>XP por hora medido</ng-container
+              ><input
+                hlmInput
+                type="number"
+                min="0.001"
+                step="0.001"
+                [ngModel]="training().xpPerHour"
+                (ngModelChange)="patchTraining({ xpPerHour: $event })" /></label
+            ><label class="field"
+              ><ng-container i18n>Duração de cada sessão (minutos)</ng-container
+              ><input
+                hlmInput
+                type="number"
+                min="1"
+                max="1440"
+                [ngModel]="training().sessionMinutes"
+                (ngModelChange)="patchTraining({ sessionMinutes: $event })"
+            /></label>
+          </div>
+          <app-preset-bar
+            tool="training"
+            [value]="training()"
+            (loaded)="loadTraining($event)"
+          /><app-calculation-proof tool="training" [value]="training()" />
+        </section>
+        <section data-tour="lifeskills-training.results">
+          @if (trainingResult().value; as r) {
+            <div class="metric-grid">
+              <div class="metric hero-metric">
+                <span><ng-container i18n>Tempo de treino estimado</ng-container></span
+                ><strong
+                  ><ng-container i18n>{{ number(r.hours, 3) }} h</ng-container></strong
+                >
+              </div>
+              <div class="metric">
+                <span><ng-container i18n>Sessões necessárias</ng-container></span
+                ><strong>{{ number(r.sessions, 0) }}</strong>
+              </div>
+            </div>
+          } @else {
+            <p class="error-box" role="alert">{{ trainingResult().error }}</p>
+          }
+          <p class="notice">
+            <ng-container i18n
+              >Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de
+              níveis, breeding ou stats de cavalos.
+            </ng-container>
+          </p>
+        </section>
+      </div>
+    }
   }
 </div>
