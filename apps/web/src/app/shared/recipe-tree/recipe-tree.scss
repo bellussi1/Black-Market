@@ -694,8 +694,8 @@
 }
 
 .production-configuration {
-  grid-template-columns: minmax(210px, 1.5fr) minmax(0, 2fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
   padding: 10px 14px;
 }
 
@@ -710,19 +710,36 @@
 
 :host(:not(.summary-only)) {
   .production-configuration {
-    grid-template-columns: minmax(210px, 1.5fr) repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
-  .scenario-settings,
-  .craft-count-card.craft-parameters-card,
+  .scenario-settings {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .craft-count-card.craft-parameters-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 12px;
+  }
+
   .craft-parameters-grid {
-    display: contents;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 
-  .craft-yield-meta,
+  .craft-yield-meta {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+  }
+
   .production-options {
-    grid-column: 1 / -1;
     margin: 0;
   }
 }
@@ -735,8 +752,8 @@
 }
 
 .craft-parameters-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
 }
 
 .control-label-text {
@@ -774,7 +791,7 @@
 }
 
 .production-options {
-  margin-top: 6px;
+  margin-top: 0;
 }
 
 .root-yield {
@@ -1018,8 +1035,8 @@
 }
 
 @media (max-width: 640px) {
-  :host(:not(.summary-only)) .production-configuration {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  :host(:not(.summary-only)) > .production-settings .production-configuration {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   :host(:not(.summary-only)) .production-method {
@@ -1048,5 +1065,127 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.recipe-settings-disclosure {
+  margin-top: 0;
+  border: 1px solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.recipe-settings-disclosure > summary {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 10px;
+  color: var(--bm-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.recipe-settings-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.recipe-settings-disclosure > summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.recipe-settings-disclosure[open] > summary::after {
+  content: '−';
+}
+
+.recipe-mastery-settings {
+  padding: 12px 14px;
+  border-top: 1px solid var(--bm-border);
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.recipe-mastery-settings > .eyebrow {
+  margin: 0 0 10px;
+  color: var(--bm-muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.recipe-mastery-settings .craft-parameters-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.recipe-settings-disclosure > .help {
+  margin: 10px 14px;
+}
+
+.recipe-settings-disclosure > .root-yield {
+  margin: 10px 14px;
+}
+
+.recipe-settings-disclosure > .production-calibration,
+.recipe-settings-disclosure > .stock-settings {
+  margin-inline: 12px;
+}
+
+.recipe-settings-disclosure > .production-calibration > summary,
+.recipe-settings-disclosure > .stock-settings > summary {
+  padding-block: 10px;
+}
+
+.recipe-settings-disclosure .tax-config-panel {
+  margin: 8px 12px 12px;
+  padding: 0 12px 8px;
+  border: 1px solid var(--bm-border);
+}
+
+.economic-summary-header {
+  gap: 6px 10px;
+  padding: 8px 10px;
+}
+
+.economic-summary-header .help {
+  font-size: 10px;
+}
+
+.economic-summary-header [role='group'] {
+  gap: 4px;
+}
+
+.economic-summary-header [role='group'] button {
+  min-height: 32px;
+  padding-inline: 8px;
+  font-size: 11px;
+}
+
+.economic-dashboard .metric-card {
+  min-height: 62px;
+  padding: 7px 10px;
+}
+
+.economic-summary-footer {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  padding: 7px 10px;
+}
+
+@media (max-width: 640px) {
+  :host(:not(.summary-only)) .craft-count-card.craft-parameters-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host(:not(.summary-only)) .craft-yield-meta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .economic-summary-header [role='group'] {
+    width: 100%;
+  }
+
+  .economic-summary-header [role='group'] button {
+    flex: 1 1 auto;
   }
 }
