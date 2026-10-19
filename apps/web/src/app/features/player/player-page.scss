@@ -10,35 +10,46 @@
   padding-bottom: 2.5rem;
 }
 
-.bdo-jump-bar {
+.family-view-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-bottom: 0.75rem;
+  gap: var(--bm-space-2);
+  padding-bottom: var(--bm-space-3);
   border-bottom: 1px solid var(--bm-border);
 }
 
-.bdo-jump-pill {
+.family-view-link {
   display: inline-flex;
   align-items: center;
-  min-height: 2.3rem;
-  padding: 0.4rem 0.9rem;
+  min-height: var(--bm-control-height);
+  padding: var(--bm-space-2) var(--bm-space-4);
   border: 1px solid var(--bm-border);
   border-radius: 2px;
   background: var(--bm-surface);
   color: var(--bm-muted);
-  font-size: 0.82rem;
+  font-size: var(--bm-text-support);
   font-weight: 700;
   text-decoration: none;
   transition:
-    border-color 140ms ease,
-    color 140ms ease,
-    background 140ms ease;
+    border-color var(--bm-motion-fast) ease,
+    color var(--bm-motion-fast) ease,
+    background-color var(--bm-motion-fast) ease;
 
   &:hover {
     border-color: var(--bm-gold);
     color: var(--bm-text);
     background: rgba(201, 166, 107, 0.08);
+  }
+
+  &[aria-current='page'] {
+    border-color: var(--bm-gold);
+    background: rgba(201, 166, 107, 0.14);
+    color: var(--bm-gold-strong);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bm-gold-strong);
+    outline-offset: 2px;
   }
 }
 
@@ -120,13 +131,6 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: center;
-}
-
-.bdo-sheet-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 1.25rem;
-  align-items: start;
 }
 
 .bdo-p-window {
@@ -302,7 +306,6 @@
 }
 
 @media (max-width: 1120px) {
-  .bdo-sheet-grid,
   .bdo-family-grid,
   .bdo-roster-bar {
     grid-template-columns: 1fr;

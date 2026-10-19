@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   type CharacterProfile,
   characterSchema,
@@ -58,7 +58,6 @@ export class PlayerPage {
   readonly catalog = inject(CatalogApiService);
   readonly items = signal(new Map<number, CatalogItem>());
   private catalogRegion = '';
-  private readonly router = inject(Router);
   readonly tab = signal<'character' | 'family' | 'equipment'>('character');
   readonly tutorialSurface = computed(() => {
     switch (this.tab()) {
@@ -154,12 +153,6 @@ export class PlayerPage {
           });
         });
       cleanup(() => sub.unsubscribe());
-    });
-  }
-  selectTab(tab: 'character' | 'family' | 'equipment') {
-    void this.router.navigate(['/family'], {
-      queryParams: { tab },
-      queryParamsHandling: 'merge',
     });
   }
   create() {

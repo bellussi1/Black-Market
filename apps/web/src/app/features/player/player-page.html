@@ -7,25 +7,39 @@
     <p class="tool-kicker">MEU ESPAÇO · {{ store.data().region.toUpperCase() }}</p>
     <h1 id="player-page-title">Família</h1>
     <p>
-      Gerencie em uma única janela estilo BDO seus personagens, maestrias de Life Skill, roda de
-      equipamentos e benefícios compartilhados da família.
+      Gerencie personagens, maestrias de Life Skill, equipamentos e dados compartilhados. O
+      personagem ativo permanece no cabeçalho enquanto você alterna entre estas áreas.
     </p>
   </header>
 
-  <nav class="workspace-tabs bdo-jump-bar" role="group" aria-label="Dados pessoais">
-    <a class="bdo-jump-pill" href="#bdo-character-section" (click)="selectTab('character')">
-      1. Personagem & Maestrias
-    </a>
-    <a class="bdo-jump-pill" href="#bdo-equipment-section" (click)="selectTab('equipment')">
-      2. Roda de Equipamentos (I)
+  <nav class="workspace-tabs family-view-nav" aria-label="Áreas da Família">
+    <a
+      class="family-view-link"
+      routerLink="/family"
+      [queryParams]="{ tab: 'character' }"
+      queryParamsHandling="merge"
+      [attr.aria-current]="tab() === 'character' ? 'page' : null"
+    >
+      Personagem & Maestrias (P)
     </a>
     <a
-      class="bdo-jump-pill"
-      href="#bdo-family-section"
-      [attr.data-tour]="tab() === 'family' ? 'family-family.characters' : null"
-      (click)="selectTab('family')"
+      class="family-view-link"
+      routerLink="/family"
+      [queryParams]="{ tab: 'equipment' }"
+      queryParamsHandling="merge"
+      [attr.aria-current]="tab() === 'equipment' ? 'page' : null"
     >
-      3. Família, Impostos & Profissões (P)
+      Equipamento (I)
+    </a>
+    <a
+      class="family-view-link"
+      routerLink="/family"
+      [queryParams]="{ tab: 'family' }"
+      queryParamsHandling="merge"
+      [attr.aria-current]="tab() === 'family' ? 'page' : null"
+      [attr.data-tour]="tab() === 'family' ? 'family-family.characters' : null"
+    >
+      Família & Profissões
     </a>
   </nav>
 
@@ -117,445 +131,474 @@
     </div>
   </section>
 
-  @if (current(); as profile) {
-    <!-- 2. FICHA DO PERSONAGEM (P) + RODA DE EQUIPAMENTOS (I) LADO A LADO -->
-    <div class="bdo-sheet-grid">
-      <!-- COLUNA ESQUERDA: FICHA DE PERSONAGEM & MAESTRIAS (TECLA P DO BDO) -->
-      <section hlmCard class="panel bdo-p-window">
-        <div class="panel-heading">
-          <div>
-            <p class="tool-kicker">FICHA DO PERSONAGEM (P)</p>
-            <h2>{{ profile.name }}</h2>
-          </div>
-          <span class="badge"
-            >{{ profile.className || 'Classe opcional' }} · Nv. {{ profile.level }}</span
-          >
-        </div>
-
-        <div class="bdo-identity-grid">
-          <label class="field"
-            ><span>Nome</span>
-            <input
-              hlmInput
-              [ngModel]="profile.name"
-              (blur)="saveCharacter({ name: $any($event.target).value })"
-              maxlength="80"
-          /></label>
-          <label class="field"
-            ><span>Classe</span>
-            <input
-              hlmInput
-              [ngModel]="profile.className"
-              (blur)="saveCharacter({ className: $any($event.target).value })"
-              maxlength="40"
-              placeholder="Ex.: Shai, Musa, Bruxa…"
-          /></label>
-          <label class="field"
-            ><span>Especialização</span>
-            <select
-              appBdoSelect
-              [ngModel]="profile.specialization"
-              (ngModelChange)="saveCharacter({ specialization: $event })"
+  @if (tab() === 'character') {
+    <section id="character-panel" aria-label="Ficha do personagem">
+      @if (current(); as profile) {
+        <section hlmCard class="panel bdo-p-window">
+          <div class="panel-heading">
+            <div>
+              <p class="tool-kicker">FICHA DO PERSONAGEM (P)</p>
+              <h2>{{ profile.name }}</h2>
+            </div>
+            <span class="badge"
+              >{{ profile.className || 'Classe opcional' }} · Nv. {{ profile.level }}</span
             >
-              <option value="succession">Sucessão / Talento</option>
-              <option value="awakening">Despertar</option>
-            </select></label
-          >
-        </div>
+          </div>
 
-        <div class="bdo-subpanel" data-tour="family-character.lifeskills">
-          <div class="bdo-subpanel-header">
-            <h3>Maestria por Profissão (Ficha P)</h3>
-            <small>Salva automaticamente ao sair do campo (0 a 3000)</small>
-          </div>
-          <div class="bdo-mastery-grid">
-            @for (skill of skills; track skill) {
-              <label class="bdo-mastery-cell">
-                <span>{{ skillLabels[skill] }}</span>
-                <input
-                  hlmInput
-                  type="number"
-                  min="0"
-                  max="5000"
-                  [ngModel]="profile.mastery[skill]"
-                  (blur)="saveMastery(skill, $any($event.target).value)"
-                />
-              </label>
-            }
-          </div>
-        </div>
-
-        <div class="bdo-subpanel">
-          <div class="bdo-subpanel-header">
-            <h3>Atributos, Peso, Energia & Combate</h3>
-            <small>Valores diretos da janela do jogo</small>
-          </div>
-          <div class="bdo-stats-grid">
-            @for (field of numericFields; track field.key) {
-              <label class="bdo-stat-cell">
-                <span>{{ field.label }}</span>
-                <input
-                  hlmInput
-                  type="number"
-                  [min]="field.key === 'level' ? 1 : 0"
-                  [max]="field.max"
-                  [ngModel]="profile[field.key]"
-                  (blur)="saveNumber(field.key, $any($event.target).value)"
-                />
-              </label>
-            }
-          </div>
-        </div>
-
-        <!-- COMPLEMENTOS: ARTEFATOS, PEDRAS DE LUZ, CRISTAIS E PRESETS -->
-        <div class="bdo-subpanel" id="character-complements">
-          <div class="bdo-subpanel-header">
-            <h3>Conjuntos e complementos</h3>
-            <small>Artefatos, Pedras de Luz, Cristais e Trajes</small>
-          </div>
-          <div class="bdo-complements-stack">
-            @for (
-              group of [
-                { key: 'artifacts', label: 'Artefatos', limit: 2 },
-                { key: 'lightstones', label: 'Pedras de luz', limit: 4 },
-                { key: 'crystals', label: 'Cristais', limit: 20 },
-                { key: 'pearlOutfits', label: 'Trajes de pérola', limit: 20 },
-              ];
-              track group.key
-            ) {
-              <details
-                class="bdo-complement-drawer"
-                [open]="($any(profile)[group.key]?.length ?? 0) > 0"
+          <div class="bdo-identity-grid">
+            <label class="field"
+              ><span>Nome</span>
+              <input
+                hlmInput
+                [ngModel]="profile.name"
+                (blur)="saveCharacter({ name: $any($event.target).value })"
+                maxlength="80"
+            /></label>
+            <label class="field"
+              ><span>Classe</span>
+              <input
+                hlmInput
+                [ngModel]="profile.className"
+                (blur)="saveCharacter({ className: $any($event.target).value })"
+                maxlength="40"
+                placeholder="Ex.: Shai, Musa, Bruxa…"
+            /></label>
+            <label class="field"
+              ><span>Especialização</span>
+              <select
+                appBdoSelect
+                [ngModel]="profile.specialization"
+                (ngModelChange)="saveCharacter({ specialization: $event })"
               >
+                <option value="succession">Sucessão / Talento</option>
+                <option value="awakening">Despertar</option>
+              </select></label
+            >
+          </div>
+
+          <div class="bdo-subpanel" data-tour="family-character.lifeskills">
+            <div class="bdo-subpanel-header">
+              <h3>Maestria por Profissão (Ficha P)</h3>
+              <small>Salva automaticamente ao sair do campo (0 a 3000)</small>
+            </div>
+            <div class="bdo-mastery-grid">
+              @for (skill of skills; track skill) {
+                <label class="bdo-mastery-cell">
+                  <span>{{ skillLabels[skill] }}</span>
+                  <input
+                    hlmInput
+                    type="number"
+                    min="0"
+                    max="5000"
+                    [ngModel]="profile.mastery[skill]"
+                    (blur)="saveMastery(skill, $any($event.target).value)"
+                  />
+                </label>
+              }
+            </div>
+          </div>
+
+          <details class="bdo-complement-drawer" data-family-secondary>
+            <summary>
+              <span>Atributos, peso, energia e combate</span>
+              <span class="badge">Valores informados</span>
+            </summary>
+            <div class="bdo-complement-body">
+              <div class="bdo-subpanel">
+                <div class="bdo-subpanel-header">
+                  <h3>Atributos, Peso, Energia & Combate</h3>
+                  <small>Valores diretos da janela do jogo</small>
+                </div>
+                <div class="bdo-stats-grid">
+                  @for (field of numericFields; track field.key) {
+                    <label class="bdo-stat-cell">
+                      <span>{{ field.label }}</span>
+                      <input
+                        hlmInput
+                        type="number"
+                        [min]="field.key === 'level' ? 1 : 0"
+                        [max]="field.max"
+                        [ngModel]="profile[field.key]"
+                        (blur)="saveNumber(field.key, $any($event.target).value)"
+                      />
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- COMPLEMENTOS: ARTEFATOS, PEDRAS DE LUZ, CRISTAIS E PRESETS -->
+          <div class="bdo-subpanel" id="character-complements">
+            <div class="bdo-subpanel-header">
+              <h3>Conjuntos e complementos</h3>
+              <small>Artefatos, Pedras de Luz, Cristais e Trajes</small>
+            </div>
+            <div class="bdo-complements-stack">
+              @for (
+                group of [
+                  { key: 'artifacts', label: 'Artefatos', limit: 2 },
+                  { key: 'lightstones', label: 'Pedras de luz', limit: 4 },
+                  { key: 'crystals', label: 'Cristais', limit: 20 },
+                  { key: 'pearlOutfits', label: 'Trajes de pérola', limit: 20 },
+                ];
+                track group.key
+              ) {
+                <details
+                  class="bdo-complement-drawer"
+                  [open]="($any(profile)[group.key]?.length ?? 0) > 0"
+                >
+                  <summary>
+                    <span>{{ group.label }}</span>
+                    <span class="badge"
+                      >{{ $any(profile)[group.key]?.length ?? 0 }} / {{ group.limit }}</span
+                    >
+                  </summary>
+                  <div class="bdo-complement-body">
+                    <app-catalog-item-picker
+                      [label]="group.label"
+                      (selected)="accessory($any(group.key), $event)"
+                    />
+                    @for (item of $any(profile)[group.key] ?? []; track $index) {
+                      <div class="bdo-complement-row">
+                        <a
+                          class="inline-flex items-center gap-2.5"
+                          [routerLink]="['/market/items', item.itemId]"
+                        >
+                          <app-item-icon
+                            style="--item-icon-size: 36px"
+                            [url]="catalog.resolveIconUrl(items().get(item.itemId) ?? {})"
+                            [name]="item.name"
+                            [grade]="items().get(item.itemId)?.grade ?? null"
+                          />
+                          <span>{{ item.name }}</span>
+                        </a>
+                        <button
+                          hlmBtn
+                          variant="outline"
+                          type="button"
+                          (click)="removeAccessory($any(group.key), $index)"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </details>
+              }
+
+              <details class="bdo-complement-drawer">
                 <summary>
-                  <span>{{ group.label }}</span>
-                  <span class="badge"
-                    >{{ $any(profile)[group.key]?.length ?? 0 }} / {{ group.limit }}</span
-                  >
+                  <span>Presets de equipamentos e cristais</span>
+                  <span class="badge">{{ (profile.activityPresets ?? []).length }} salvos</span>
                 </summary>
                 <div class="bdo-complement-body">
-                  <app-catalog-item-picker
-                    [label]="group.label"
-                    (selected)="accessory($any(group.key), $event)"
-                  />
-                  @for (item of $any(profile)[group.key] ?? []; track $index) {
-                    <div class="bdo-complement-row">
-                      <a
-                        class="inline-flex items-center gap-2.5"
-                        [routerLink]="['/market/items', item.itemId]"
-                      >
-                        <app-item-icon
-                          style="--item-icon-size: 36px"
-                          [url]="catalog.resolveIconUrl(items().get(item.itemId) ?? {})"
-                          [name]="item.name"
-                          [grade]="items().get(item.itemId)?.grade ?? null"
-                        />
-                        <span>{{ item.name }}</span>
-                      </a>
+                  <div class="bdo-preset-grid">
+                    <label class="field"
+                      ><span>Nome do conjunto</span>
+                      <input
+                        hlmInput
+                        [(ngModel)]="presetName"
+                        maxlength="80"
+                        placeholder="Coleta, combate, culinária…"
+                    /></label>
+                    <button hlmBtn variant="outline" type="button" (click)="savePreset()">
+                      Salvar conjunto atual
+                    </button>
+                  </div>
+                  <div class="bdo-preset-grid">
+                    <label class="field"
+                      ><span>Conjunto salvo</span>
+                      <select appBdoSelect [(ngModel)]="presetId">
+                        <option value="">Escolha</option>
+                        @for (preset of profile.activityPresets ?? []; track preset.id) {
+                          <option [value]="preset.id">{{ preset.name }}</option>
+                        }
+                      </select></label
+                    >
+                    <div class="action-row">
                       <button
                         hlmBtn
                         variant="outline"
                         type="button"
-                        (click)="removeAccessory($any(group.key), $index)"
+                        (click)="applyPreset()"
+                        [disabled]="!presetId"
                       >
-                        Remover
+                        Aplicar ao personagem
+                      </button>
+                      <button hlmBtn variant="outline" type="button" (click)="undoPreset()">
+                        Desfazer aplicação
                       </button>
                     </div>
-                  }
-                </div>
-              </details>
-            }
-
-            <details class="bdo-complement-drawer">
-              <summary>
-                <span>Presets de equipamentos e cristais</span>
-                <span class="badge">{{ (profile.activityPresets ?? []).length }} salvos</span>
-              </summary>
-              <div class="bdo-complement-body">
-                <div class="bdo-preset-grid">
-                  <label class="field"
-                    ><span>Nome do conjunto</span>
-                    <input
-                      hlmInput
-                      [(ngModel)]="presetName"
-                      maxlength="80"
-                      placeholder="Coleta, combate, culinária…"
-                  /></label>
-                  <button hlmBtn variant="outline" type="button" (click)="savePreset()">
-                    Salvar conjunto atual
-                  </button>
-                </div>
-                <div class="bdo-preset-grid">
-                  <label class="field"
-                    ><span>Conjunto salvo</span>
-                    <select appBdoSelect [(ngModel)]="presetId">
-                      <option value="">Escolha</option>
-                      @for (preset of profile.activityPresets ?? []; track preset.id) {
-                        <option [value]="preset.id">{{ preset.name }}</option>
-                      }
-                    </select></label
-                  >
-                  <div class="action-row">
-                    <button
-                      hlmBtn
-                      variant="outline"
-                      type="button"
-                      (click)="applyPreset()"
-                      [disabled]="!presetId"
-                    >
-                      Aplicar ao personagem
-                    </button>
-                    <button hlmBtn variant="outline" type="button" (click)="undoPreset()">
-                      Desfazer aplicação
-                    </button>
                   </div>
                 </div>
-              </div>
-            </details>
+              </details>
+            </div>
           </div>
-        </div>
-      </section>
-
-      <!-- COLUNA DIREITA: RODA DE EQUIPAMENTOS DO PERSONAGEM (TECLA I DO BDO) -->
-      <div id="bdo-equipment-section" class="bdo-i-window">
-        <app-gear-inventory-page [embedded]="true" />
-      </div>
-    </div>
-  } @else {
-    <section hlmCard class="panel empty-workspace">
-      <p class="eyebrow">SEU PRIMEIRO PERSONAGEM</p>
-      <h2>Um nome é suficiente para começar</h2>
-      <p class="help">
-        Adicione um personagem acima para liberar a ficha de maestrias e a roda de equipamentos.
-      </p>
-      <div class="action-row">
-        <a hlmBtn variant="outline" class="btn subtle" routerLink="/recipes">Explorar receitas</a>
-        <a hlmBtn variant="outline" class="btn subtle" routerLink="/market">Consultar mercado</a>
-      </div>
+        </section>
+      } @else {
+        <section hlmCard class="panel empty-workspace">
+          <p class="eyebrow">SEU PRIMEIRO PERSONAGEM</p>
+          <h2>Um nome é suficiente para começar</h2>
+          <p class="help">Adicione um personagem acima para abrir sua ficha de maestrias.</p>
+          <div class="action-row">
+            <a hlmBtn variant="outline" class="btn subtle" routerLink="/recipes"
+              >Explorar receitas</a
+            >
+            <a hlmBtn variant="outline" class="btn subtle" routerLink="/market"
+              >Consultar mercado</a
+            >
+          </div>
+        </section>
+      }
     </section>
   }
 
   <!-- 3. DADOS COMPARTILHADOS DA FAMÍLIA, IMPOSTOS & GRADUAÇÃO DE PROFISSÕES -->
-  <div id="bdo-family-section" class="bdo-family-grid">
-    <section hlmCard class="panel">
-      <div class="panel-heading">
-        <div>
-          <p class="tool-kicker">CONTA & MERCADO CENTRAL</p>
-          <h2>Dados compartilhados da família</h2>
+  @if (tab() === 'equipment') {
+    <section id="equipment-panel" aria-label="Roda de equipamentos do personagem">
+      @if (current()) {
+        <div id="bdo-equipment-section" class="bdo-i-window">
+          <app-gear-inventory-page [embedded]="true" />
         </div>
-        <span class="badge">Região {{ store.data().region.toUpperCase() }}</span>
-      </div>
-      <p class="help">
-        Energia máxima, Pontos de Contribuição e bônus de coleta do Mercado Central valem para toda
-        a família nesta região.
-      </p>
-      <div class="form-grid">
-        <label class="field"
-          ><span>Nome da família</span>
-          <input
-            hlmInput
-            [ngModel]="family().name"
-            (blur)="saveFamily({ name: $any($event.target).value })"
-            maxlength="80"
-            placeholder="Ex.: Bellussi"
-        /></label>
-        <label class="field"
-          ><span>Pontos de Contribuição (CP)</span>
-          <input
-            hlmInput
-            type="number"
-            min="0"
-            max="2000"
-            [ngModel]="family().contribution"
-            (blur)="
-              saveFamily({
-                contribution: $any($event.target).value === '' ? null : +$any($event.target).value,
-              })
-            "
-        /></label>
-        <label class="field"
-          ><span>Energia máxima</span>
-          <input
-            hlmInput
-            type="number"
-            min="0"
-            max="2000"
-            [ngModel]="family().energyMax"
-            (blur)="
-              saveFamily({
-                energyMax: $any($event.target).value === '' ? null : +$any($event.target).value,
-              })
-            "
-        /></label>
-      </div>
-      <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
+      } @else {
+        <section hlmCard class="panel empty-workspace">
+          <p class="eyebrow">EQUIPAMENTO DO PERSONAGEM</p>
+          <h2>Crie ou selecione um personagem</h2>
+          <p class="help">
+            A roda de equipamentos é vinculada ao personagem selecionado no cabeçalho desta página.
+          </p>
+        </section>
+      }
     </section>
+  }
 
-    <section hlmCard class="panel" data-tour="family-family.actions">
-      <div class="panel-heading">
-        <div>
-          <p class="tool-kicker">GRADUAÇÃO DE LIFE SKILLS</p>
-          <h2>Profissões da família</h2>
+  @if (tab() === 'family') {
+    <div id="family-panel" class="bdo-family-grid" aria-label="Dados compartilhados da família">
+      <section hlmCard class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker">CONTA & MERCADO CENTRAL</p>
+            <h2>Dados compartilhados da família</h2>
+          </div>
+          <span class="badge">Região {{ store.data().region.toUpperCase() }}</span>
         </div>
-      </div>
-      @if (!family().lifeSkills && store.data().familyLifeSkills) {
         <p class="help">
-          Há níveis salvos no modelo anterior. Confirme a região antes de reutilizar.
+          Energia máxima, Pontos de Contribuição e bônus de coleta do Mercado Central valem para
+          toda a família nesta região.
         </p>
-        <button hlmBtn variant="outline" type="button" (click)="importLegacySkills()">
-          Usar níveis anteriores nesta família
-        </button>
-      }
-      <div class="form-grid">
-        <label class="field"
-          ><span>Atividade</span>
-          <select appBdoSelect [(ngModel)]="skill" (ngModelChange)="chooseSkill()">
-            @for (key of skills; track key) {
-              <option [value]="key">{{ skillLabels[key] }}</option>
-            }
-          </select></label
-        >
-        <label class="field"
-          ><span>Graduação</span>
-          <select appBdoSelect [(ngModel)]="tier">
-            @for (value of tiers; track value) {
-              <option>{{ value }}</option>
-            }
-          </select></label
-        >
-        <label class="field"
-          ><span>Nível (1 a 100)</span>
-          <input hlmInput type="number" min="1" max="100" [(ngModel)]="skillLevel"
-        /></label>
-        <label class="field"
-          ><span>Experiência (%)</span>
-          <input hlmInput type="number" min="0" max="100" [(ngModel)]="skillXp"
-        /></label>
-      </div>
-      <div class="action-row">
-        <button hlmBtn variant="outline" type="button" (click)="saveSkill()">
-          Salvar profissão
-        </button>
-        <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="undoFamily()">
-          Desfazer última alteração da família
-        </button>
-      </div>
-      @if (family().lifeSkills; as levels) {
-        <div class="family-skills bdo-skill-badges">
-          @for (key of skills; track key) {
-            @if (levels[key]; as level) {
-              <span class="bdo-skill-badge"
-                >{{ skillLabels[key] }} <strong>{{ level.tier }} {{ level.level }}</strong></span
-              >
-            }
-          }
+        <div class="form-grid">
+          <label class="field"
+            ><span>Nome da família</span>
+            <input
+              hlmInput
+              [ngModel]="family().name"
+              (blur)="saveFamily({ name: $any($event.target).value })"
+              maxlength="80"
+              placeholder="Ex.: Bellussi"
+          /></label>
+          <label class="field"
+            ><span>Pontos de Contribuição (CP)</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="2000"
+              [ngModel]="family().contribution"
+              (blur)="
+                saveFamily({
+                  contribution:
+                    $any($event.target).value === '' ? null : +$any($event.target).value,
+                })
+              "
+          /></label>
+          <label class="field"
+            ><span>Energia máxima</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="2000"
+              [ngModel]="family().energyMax"
+              (blur)="
+                saveFamily({
+                  energyMax: $any($event.target).value === '' ? null : +$any($event.target).value,
+                })
+              "
+          /></label>
         </div>
-      }
+        <app-tax-options [value]="store.data().taxOptions" (changed)="setTaxes($event)" />
+      </section>
 
-      <div class="bdo-family-extras">
-        <details class="bdo-complement-drawer">
-          <summary>
-            <span>Pets · {{ family().pets.length }}</span>
-          </summary>
-          <div class="bdo-complement-body">
-            <div class="form-grid">
-              <label class="field"
-                ><span>Nome</span><input hlmInput [(ngModel)]="pet.name" maxlength="80"
-              /></label>
-              <label class="field"
-                ><span>Tier</span
-                ><input hlmInput type="number" min="1" max="5" [(ngModel)]="pet.tier"
-              /></label>
-              <label class="field"
-                ><span>Nível</span
-                ><input hlmInput type="number" min="1" max="10" [(ngModel)]="pet.level"
-              /></label>
-              <label class="field"
-                ><span>Habilidades</span><input hlmInput [(ngModel)]="pet.skills" maxlength="500"
-              /></label>
-            </div>
-            <div class="action-row">
-              <button hlmBtn variant="outline" type="button" (click)="addPet()">
-                {{ petId ? 'Salvar pet' : 'Adicionar pet' }}
-              </button>
-              <button hlmBtn variant="outline" type="button" (click)="petId = ''">Novo pet</button>
-            </div>
-            @for (item of family().pets; track item.id) {
-              <div class="bdo-complement-row">
-                <span
-                  >{{ item.name }} · T{{ item.tier }} · Nv. {{ item.level }} ·
-                  {{ item.skills }}</span
+      <section hlmCard class="panel" data-tour="family-family.actions">
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker">GRADUAÇÃO DE LIFE SKILLS</p>
+            <h2>Profissões da família</h2>
+          </div>
+        </div>
+        @if (!family().lifeSkills && store.data().familyLifeSkills) {
+          <p class="help">
+            Há níveis salvos no modelo anterior. Confirme a região antes de reutilizar.
+          </p>
+          <button hlmBtn variant="outline" type="button" (click)="importLegacySkills()">
+            Usar níveis anteriores nesta família
+          </button>
+        }
+        <div class="form-grid">
+          <label class="field"
+            ><span>Atividade</span>
+            <select appBdoSelect [(ngModel)]="skill" (ngModelChange)="chooseSkill()">
+              @for (key of skills; track key) {
+                <option [value]="key">{{ skillLabels[key] }}</option>
+              }
+            </select></label
+          >
+          <label class="field"
+            ><span>Graduação</span>
+            <select appBdoSelect [(ngModel)]="tier">
+              @for (value of tiers; track value) {
+                <option>{{ value }}</option>
+              }
+            </select></label
+          >
+          <label class="field"
+            ><span>Nível (1 a 100)</span>
+            <input hlmInput type="number" min="1" max="100" [(ngModel)]="skillLevel"
+          /></label>
+          <label class="field"
+            ><span>Experiência (%)</span>
+            <input hlmInput type="number" min="0" max="100" [(ngModel)]="skillXp"
+          /></label>
+        </div>
+        <div class="action-row">
+          <button hlmBtn variant="outline" type="button" (click)="saveSkill()">
+            Salvar profissão
+          </button>
+          <button hlmBtn variant="outline" type="button" class="btn subtle" (click)="undoFamily()">
+            Desfazer última alteração da família
+          </button>
+        </div>
+        @if (family().lifeSkills; as levels) {
+          <div class="family-skills bdo-skill-badges">
+            @for (key of skills; track key) {
+              @if (levels[key]; as level) {
+                <span class="bdo-skill-badge"
+                  >{{ skillLabels[key] }} <strong>{{ level.tier }} {{ level.level }}</strong></span
                 >
-                <div class="action-row">
-                  <button hlmBtn variant="outline" type="button" (click)="editPet(item.id)">
-                    Editar pet
-                  </button>
-                  <button
-                    hlmBtn
-                    variant="outline"
-                    type="button"
-                    (click)="removeFamilyItem('pets', item.id)"
-                  >
-                    Remover pet
-                  </button>
-                </div>
-              </div>
+              }
             }
           </div>
-        </details>
+        }
 
-        <details class="bdo-complement-drawer">
-          <summary>
-            <span>Montarias · {{ family().mounts.length }}</span>
-          </summary>
-          <div class="bdo-complement-body">
-            <div class="form-grid">
-              <label class="field"
-                ><span>Nome</span><input hlmInput [(ngModel)]="mount.name" maxlength="80"
-              /></label>
-              <label class="field"
-                ><span>Tipo</span><input hlmInput [(ngModel)]="mount.kind" maxlength="80"
-              /></label>
-              <label class="field"
-                ><span>Nível</span
-                ><input hlmInput type="number" min="1" max="100" [(ngModel)]="mount.level"
-              /></label>
-              <label class="field"
-                ><span>Notas e habilidades</span
-                ><input hlmInput [(ngModel)]="mount.notes" maxlength="500"
-              /></label>
-            </div>
-            <div class="action-row">
-              <button hlmBtn variant="outline" type="button" (click)="addMount()">
-                {{ mountId ? 'Salvar montaria' : 'Adicionar montaria' }}
-              </button>
-              <button hlmBtn variant="outline" type="button" (click)="mountId = ''">
-                Nova montaria
-              </button>
-            </div>
-            @for (item of family().mounts; track item.id) {
-              <div class="bdo-complement-row">
-                <span
-                  >{{ item.name }} · {{ item.kind }} · Nv. {{ item.level }} · {{ item.notes }}</span
-                >
-                <div class="action-row">
-                  <button hlmBtn variant="outline" type="button" (click)="editMount(item.id)">
-                    Editar montaria
-                  </button>
-                  <button
-                    hlmBtn
-                    variant="outline"
-                    type="button"
-                    (click)="removeFamilyItem('mounts', item.id)"
-                  >
-                    Remover montaria
-                  </button>
-                </div>
+        <div class="bdo-family-extras">
+          <details class="bdo-complement-drawer">
+            <summary>
+              <span>Pets · {{ family().pets.length }}</span>
+            </summary>
+            <div class="bdo-complement-body">
+              <div class="form-grid">
+                <label class="field"
+                  ><span>Nome</span><input hlmInput [(ngModel)]="pet.name" maxlength="80"
+                /></label>
+                <label class="field"
+                  ><span>Tier</span
+                  ><input hlmInput type="number" min="1" max="5" [(ngModel)]="pet.tier"
+                /></label>
+                <label class="field"
+                  ><span>Nível</span
+                  ><input hlmInput type="number" min="1" max="10" [(ngModel)]="pet.level"
+                /></label>
+                <label class="field"
+                  ><span>Habilidades</span><input hlmInput [(ngModel)]="pet.skills" maxlength="500"
+                /></label>
               </div>
-            }
-          </div>
-        </details>
-      </div>
-    </section>
-  </div>
+              <div class="action-row">
+                <button hlmBtn variant="outline" type="button" (click)="addPet()">
+                  {{ petId ? 'Salvar pet' : 'Adicionar pet' }}
+                </button>
+                <button hlmBtn variant="outline" type="button" (click)="petId = ''">
+                  Novo pet
+                </button>
+              </div>
+              @for (item of family().pets; track item.id) {
+                <div class="bdo-complement-row">
+                  <span
+                    >{{ item.name }} · T{{ item.tier }} · Nv. {{ item.level }} ·
+                    {{ item.skills }}</span
+                  >
+                  <div class="action-row">
+                    <button hlmBtn variant="outline" type="button" (click)="editPet(item.id)">
+                      Editar pet
+                    </button>
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      (click)="removeFamilyItem('pets', item.id)"
+                    >
+                      Remover pet
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </details>
+
+          <details class="bdo-complement-drawer">
+            <summary>
+              <span>Montarias · {{ family().mounts.length }}</span>
+            </summary>
+            <div class="bdo-complement-body">
+              <div class="form-grid">
+                <label class="field"
+                  ><span>Nome</span><input hlmInput [(ngModel)]="mount.name" maxlength="80"
+                /></label>
+                <label class="field"
+                  ><span>Tipo</span><input hlmInput [(ngModel)]="mount.kind" maxlength="80"
+                /></label>
+                <label class="field"
+                  ><span>Nível</span
+                  ><input hlmInput type="number" min="1" max="100" [(ngModel)]="mount.level"
+                /></label>
+                <label class="field"
+                  ><span>Notas e habilidades</span
+                  ><input hlmInput [(ngModel)]="mount.notes" maxlength="500"
+                /></label>
+              </div>
+              <div class="action-row">
+                <button hlmBtn variant="outline" type="button" (click)="addMount()">
+                  {{ mountId ? 'Salvar montaria' : 'Adicionar montaria' }}
+                </button>
+                <button hlmBtn variant="outline" type="button" (click)="mountId = ''">
+                  Nova montaria
+                </button>
+              </div>
+              @for (item of family().mounts; track item.id) {
+                <div class="bdo-complement-row">
+                  <span
+                    >{{ item.name }} · {{ item.kind }} · Nv. {{ item.level }} ·
+                    {{ item.notes }}</span
+                  >
+                  <div class="action-row">
+                    <button hlmBtn variant="outline" type="button" (click)="editMount(item.id)">
+                      Editar montaria
+                    </button>
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      type="button"
+                      (click)="removeFamilyItem('mounts', item.id)"
+                    >
+                      Remover montaria
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+  }
 </div>
