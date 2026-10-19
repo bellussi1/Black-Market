@@ -28,9 +28,31 @@ $palette: (
 @layer base {
   :root {
     --bm-motion-fast: 140ms;
+    --bm-motion-route-enter: 220ms;
+    --bm-motion-route-exit: 120ms;
+    --bm-space-1: 4px;
+    --bm-space-2: 8px;
+    --bm-space-3: 12px;
+    --bm-space-4: 16px;
+    --bm-space-5: 24px;
+    --bm-space-6: 32px;
+    --bm-space-7: 40px;
+    --bm-space-8: 48px;
+    --bm-text-display: 32px;
+    --bm-text-page-min: 26px;
+    --bm-text-page-max: 30px;
+    --bm-text-page-mobile: 28px;
+    --bm-text-section: 19px;
+    --bm-text-body: 16px;
+    --bm-text-support: 14px;
+    --bm-text-meta: 12px;
+    --bm-control-height: 44px;
+    --bm-control-height-compact: 36px;
     --bm-page-max: 1440px;
-    --bm-page-pad-top: 28px;
-    --bm-page-pad-bottom: 32px;
+    --bm-page-max-wide: 1760px;
+    --bm-page-pad-top: var(--bm-space-6);
+    --bm-page-pad-top-mobile: var(--bm-space-5);
+    --bm-page-pad-bottom: var(--bm-space-6);
     @each $name, $value in $palette {
       --bm-#{$name}: #{$value};
     }

@@ -4,51 +4,55 @@
     max-width: var(--bm-page-max);
     margin: auto;
   }
+  .tool-page--wide {
+    max-width: var(--bm-page-max-wide);
+  }
   .tool-heading {
-    margin-bottom: 24px;
+    margin-bottom: var(--bm-space-5);
   }
   .tool-kicker {
-    font-size: 12px;
+    font-size: var(--bm-text-meta);
     letter-spacing: 0.16em;
     color: var(--bm-accent);
-    margin: 0 0 15px;
+    margin: 0 0 16px;
     text-transform: uppercase;
   }
   .tool-heading h1 {
-    font: 500 clamp(26px, 3vw, 30px)/1.25 var(--bm-font-display);
+    font: 500 clamp(var(--bm-text-page-min), 3vw, var(--bm-text-page-max)) / 1.25
+      var(--bm-font-display);
     letter-spacing: -0.015em;
-    margin: 0 0 15px;
+    margin: 0 0 16px;
   }
   .tool-heading p:last-child {
     max-width: 68ch;
     color: var(--bm-muted);
-    font-size: 14px;
+    font-size: var(--bm-text-support);
     line-height: 1.6;
   }
   .panel {
-    padding: 20px;
+    padding: var(--bm-space-4);
     border: 1px solid var(--bm-border);
     background: var(--bm-surface);
     min-width: 0;
-    margin-bottom: 16px;
+    margin-bottom: var(--bm-space-4);
     border-radius: 2px;
   }
   .panel h2 {
-    margin: 0 0 16px;
-    font: 500 19px/1.35 var(--bm-font-display);
+    margin: 0 0 var(--bm-space-4);
+    font: 500 var(--bm-text-section) / 1.35 var(--bm-font-display);
   }
   .panel h3 {
-    font-size: 16px;
+    font-size: var(--bm-text-body);
     font-weight: 500;
-    margin: 20px 0 12px;
+    margin: var(--bm-space-4) 0 var(--bm-space-3);
   }
   .panel-heading {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: var(--bm-space-4);
   }
   .panel-heading h2 {
     margin: 0;
@@ -57,8 +61,8 @@
   }
   .panel > h2:first-child,
   .panel > .panel-heading {
-    margin: -20px -20px 20px;
-    padding: 12px 20px;
+    margin: -16px -16px 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--bm-border);
     background: var(--bm-titlebar);
     color: var(--bm-text);
@@ -80,27 +84,28 @@
   }
   .tool-heading,
   .page-heading {
-    padding-bottom: 20px;
+    padding-bottom: var(--bm-space-4);
     border-bottom: 1px solid var(--bm-border);
   }
   .page-heading > p:last-of-type {
     margin-bottom: 0;
-    font-size: 14px;
+    font-size: var(--bm-text-support);
     line-height: 1.6;
     max-width: 78ch;
     color: var(--bm-muted);
   }
   .page-heading {
-    margin-bottom: 24px;
+    margin-bottom: var(--bm-space-5);
   }
   .page-heading h1 {
     margin: 0 0 12px;
-    font: 500 clamp(26px, 3vw, 30px)/1.25 var(--bm-font-display);
+    font: 500 clamp(var(--bm-text-page-min), 3vw, var(--bm-text-page-max)) / 1.25
+      var(--bm-font-display);
     letter-spacing: -0.015em;
   }
   .eyebrow {
     color: var(--bm-accent);
-    font-size: 12px;
+    font-size: var(--bm-text-meta);
     letter-spacing: 0.15em;
   }
 }
@@ -112,11 +117,11 @@
 }
 
 ::view-transition-old(workspace-page) {
-  animation: route-exit 120ms ease-in both;
+  animation: route-exit var(--bm-motion-route-exit) ease-in both;
 }
 
 ::view-transition-new(workspace-page) {
-  animation: route-enter 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: route-enter var(--bm-motion-route-enter) cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes route-exit {

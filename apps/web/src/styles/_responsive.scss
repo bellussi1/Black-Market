@@ -14,15 +14,15 @@
   }
   @media (max-width: 600px) {
     .tool-page {
-      padding-top: 30px;
+      padding-top: var(--bm-page-pad-top-mobile);
     }
     .panel {
-      padding: 18px;
+      padding: var(--bm-space-4);
     }
     .panel > h2:first-child,
     .panel > .panel-heading {
-      margin: -18px -18px 18px;
-      padding: 12px 18px;
+      margin: -16px -16px 16px;
+      padding: 12px 16px;
     }
     .form-grid,
     .row-editor .form-grid {
@@ -35,7 +35,7 @@
       flex-grow: 1;
     }
     .tool-heading h1 {
-      font-size: 28px;
+      font-size: var(--bm-text-page-mobile);
     }
     .field,
     .check-row label,
@@ -47,7 +47,7 @@
     .metric span,
     .metric small,
     .data-table {
-      font-size: 16px;
+      font-size: var(--bm-text-body);
     }
     .panel-heading {
       align-items: start;
@@ -60,11 +60,11 @@
     }
     .workspace-tabs {
       flex-wrap: wrap;
-      gap: 4px 16px;
+      gap: var(--bm-space-1) var(--bm-space-4);
     }
     .workspace-summary {
       flex-wrap: wrap;
-      padding: 14px;
+      padding: var(--bm-space-3) var(--bm-space-4);
     }
     .segmented-control {
       max-width: 100%;
