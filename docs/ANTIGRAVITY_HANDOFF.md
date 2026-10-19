@@ -8,7 +8,7 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 
 > **Retomada de 18/10/2026:** leia ACTIVE_CONTEXT §186 para desempenho/SSR, §185 para catálogo/cotações e §184 para bootstrap/atividade. Corrigidos resolver bloqueante no browser, DOM de categorias recolhidas, mismatch de origem HTTP transfer cache e HMR antecipando @defer. Produção com API atrasada monta Mercado em 52 ms, antes 1.762 ms; dados ainda levam 1.636 ms. HTML de 454→245 kB, hidratação sem repetir catálogo/quadro. Bundle de 501,04 kB continua acima do aviso; budgets intactos. Consulte research/navigation-ssr-performance-2026-10-18.md e gates do contexto antes de continuar. Preservar plano visual3 não rastreado; sem push/deploy.
 
-> **UI MMORPG de 18/10/2026:** ACTIVE_CONTEXT §187 registra a auditoria e a especificação `docs/design-system/ui-standardization-spec-2026-10-18.md`, aguardando revisão do usuário. A direção está aprovada para especificação; plano e implementação ainda não. Nenhuma mudança de produto foi aplicada. Preservar o plano visual3 não rastreado.
+> **UI MMORPG de 19/10/2026:** ACTIVE_CONTEXT §187–188 registra auditoria, especificação aprovada e quatro planos aguardando revisão: fundação visual, hub Life Skills, tabs de Família e rollout das rotas. Nenhum código foi alterado. Após aprovação dos planos, executar em sequência nativa com commits atômicos. Preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado.
 
 ## Registro histórico de passagens anteriores
 
