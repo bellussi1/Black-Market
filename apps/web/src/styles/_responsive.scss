@@ -16,13 +16,11 @@
     .tool-page {
       padding-top: var(--bm-page-pad-top-mobile);
     }
-    .panel {
-      padding: var(--bm-space-4);
-    }
     .panel > h2:first-child,
     .panel > .panel-heading {
-      margin: -16px -16px 16px;
-      padding: 12px 16px;
+      margin: calc(0px - var(--bm-panel-padding)) calc(0px - var(--bm-panel-padding))
+        var(--bm-panel-padding);
+      padding: var(--bm-space-3) var(--bm-panel-padding);
     }
     .form-grid,
     .row-editor .form-grid {

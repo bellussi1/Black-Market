@@ -10,6 +10,11 @@ function readSharedStyles() {
     tokens: readFileSync(join(stylesPath, '_tokens.scss'), 'utf8'),
     layout: readFileSync(join(stylesPath, '_layout.scss'), 'utf8'),
     responsive: readFileSync(join(stylesPath, '_responsive.scss'), 'utf8'),
+    tailwind: readFileSync(join(stylesPath, 'tailwind.css'), 'utf8'),
+    card: readFileSync(
+      join(cwd(), 'src', 'app', 'ui', 'card', 'src', 'lib', 'hlm-card.ts'),
+      'utf8',
+    ),
   };
 }
 
@@ -57,5 +62,14 @@ describe('shared BDO UI token contract', () => {
     expect(styles.layout).toContain('var(--bm-motion-route-enter)');
     expect(styles.layout).toContain('var(--bm-motion-route-exit)');
     expect(styles.responsive).toContain('var(--bm-space-');
+  });
+
+  it('shares the panel padding token across global panels and Helm cards', () => {
+    const styles = readSharedStyles();
+    expect(styles.tailwind).toMatch(/--bm-panel-padding:\s*var\(--bm-space-4\);/);
+    expect(styles.layout).toMatch(/\.panel\s*\{[^}]*padding:\s*var\(--bm-panel-padding\)/s);
+    expect(styles.layout).toContain('calc(0px - var(--bm-panel-padding))');
+    expect(styles.responsive).not.toMatch(/\.panel\s*\{\s*padding:/);
+    expect(styles.card).toContain('p-[var(--bm-panel-padding,1.25rem)]');
   });
 });
