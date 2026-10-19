@@ -212,6 +212,8 @@ Especificação aprovada em `design-system/ui-standardization-spec-2026-10-18.md
 
 Complemento de 19/10/2026: [reconciliação da auditoria](research/ui-standardization-completion-2026-10-19.md). UI-STD-05 inclui a substituição de 18 referências de tokens inexistentes em sete arquivos por tokens canônicos, inclusive foco da Família; a varredura de 1.912 referências terminou sem nomes desconhecidos. A skill persistente agora contém navegação real, matriz de componentes/estados, exemplos e checklists; conflitos de zoom, clique e densidade foram removidos. Geometria/efeitos com literais compartilhados e QA autenticada preenchida continuam explicitamente pendentes, sem alterar o alcance dos gates históricos acima.
 
+Continuação de 19/10/2026: [Família preenchida, administração e zoom](research/ui-filled-zoom-controls-2026-10-19.md) complementa UI-STD-04..07. Família com nomes longos, maestrias, equipamento e pets/montarias foi renderizada com fixtures isoladas; corrigidos overflow mobile, trilhas dos formulários e compressão do cabeçalho. Roadmap/Tutoriais migraram às primitivas compartilhadas, com erro/rascunho/sucesso exercitados. Tokens de raio, borda, slots, sombras e overlays têm consumidores ativos no núcleo e Helm. Runner `pnpm test:ui:layout`: 35 amostras, cinco resoluções e zoom equivalente 125%/150%, sem overflow ou erros de página não tratados. Autenticação/persistência real e zoom nativo continuam fora dessa certificação; nenhuma gravação de QA chegou à API. Geometria especializada e efeitos locais não são declarados integralmente tokenizados.
+
 ## Documentos relacionados
 
 - Estado entre turnos: [`ACTIVE_CONTEXT.md`](ACTIVE_CONTEXT.md) e [`ANTIGRAVITY_HANDOFF.md`](ANTIGRAVITY_HANDOFF.md).

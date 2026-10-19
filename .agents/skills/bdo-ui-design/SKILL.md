@@ -28,6 +28,7 @@ Antes de alterar UI, leia este arquivo e o catálogo; escolha as referências ab
 - Use a escala `--bm-space-1` a `--bm-space-8`; tipografia `--bm-text-display`, `--bm-text-page-min/max`, `--bm-text-page-mobile`, `--bm-text-section`, `--bm-text-body`, `--bm-text-support` e `--bm-text-meta`.
 - O container padrão é `.tool-page` / `--bm-page-max` (1440 px); use `.tool-page--wide` / `--bm-page-max-wide` (1760 px) somente para superfícies densas que precisem da largura extra. O token de card/painel `--bm-panel-padding` deriva de `--bm-space-4`.
 - Controles padrão usam `--bm-control-height` (44 px); variantes compactas de toolbar usam `--bm-control-height-compact` (36 px). Tabs e controles segmentados compartilham os estilos de `.tabs`, `.workspace-tabs` e `.segmented-control`; semântica de link ou tab é definida no template conforme o comportamento.
+- Raio/borda comuns usam `--bm-radius`, `--bm-radius-inset` e `--bm-border-width`; slots, janelas e overlays usam os tokens de geometria/efeitos registrados no catálogo. Botões com texto têm altura mínima e permitem quebra de rótulo; não fixar a altura quando o texto precisa de mais espaço.
 - Durações são `--bm-motion-fast`, `--bm-motion-route-enter` (220 ms) e `--bm-motion-route-exit` (120 ms). As transições de rota ficam restritas ao conteúdo e `prefers-reduced-motion` as desativa.
 - Árvore de crafting, roda de equipamento e slots podem manter geometria SCSS própria. Devem continuar usando tipografia, estados de foco e espaçamento compartilhados quando não prejudicarem a interação de domínio.
 

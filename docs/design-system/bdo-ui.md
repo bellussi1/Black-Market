@@ -58,12 +58,13 @@ Um token novo precisa de papel e consumidores claros. Registre-o aqui, defina na
 | Bordas/foco       | `--bm-border`, `--bm-control-border`, `--bm-focus`; foco não herda a cor de seleção                                                                                    |
 | Feedback          | `--bm-success`, `--bm-warning`, `--bm-danger`, `--bm-info`; sempre acompanhados por texto/ícone significativo                                                          |
 | Raridade          | `--bm-grade-white`, `--bm-grade-green`, `--bm-grade-blue`, `--bm-grade-yellow`, `--bm-grade-orange`, `--bm-grade-red`, `--bm-grade-purple`; manter ID/grau do catálogo |
-| Raio/borda        | Helm `--radius: 2px`; painéis/slots atuais usam 2 px e borda 1 px. Não arredondar por página                                                                           |
-| Elevação          | Superfície elevada usa `--bm-surface-raised`; janela `.bdo-window` tem sombra compartilhada em `_controls.scss`. Não adicionar glow em cada card                       |
-| Overlay           | `LoginDialog` usa backdrop escuro e dimensão limitada à viewport; o dialog de otimização já implementa seu contexto. Não copiar overlays com z-index arbitrário        |
+| Raio/borda        | `--bm-radius` (2 px), `--bm-radius-inset` (1 px), `--bm-border-width` (1 px); Helm deriva `--radius` do token comum. Não arredondar por página                         |
+| Slots             | `--bm-slot-size` (44 px), `--bm-shadow-slot` e `--bm-shadow-slot-hover`; geometria especializada de equipamento continua local                                         |
+| Elevação          | `--bm-shadow-window` para janela; `--bm-shadow-selected` para seleção da Família; superfície elevada usa `--bm-surface-raised`. Não adicionar glow em cada card        |
+| Overlay           | `--bm-overlay-scrim` (preto 65%) no login/otimizador; `--bm-overlay-blur` (6 px) no login. Preservar limite de viewport e contexto de cada dialog                      |
 | Ritmo de texto    | Título de página 500/1,25; seção 500/1,35; texto de apoio 1,6, definidos nos estilos compartilhados; métricas usam `font-variant-numeric: tabular-nums`                |
 
-Geometria, sombras, backdrop e alguns valores do adaptador Helm ainda incluem literais compartilhados. São dívida localizada, não tokens semânticos que já existam. Não anunciar tokenização integral de todo o SCSS. Uma migração futura deve substituir o valor na origem e consumidores reais, com evidência visual, sem acumular aliases sem uso.
+Raio/borda das primitivas Helm, controles, formulários e painéis compartilhados usam os tokens acima; janelas, slots e overlays têm consumidores reais para seus efeitos. Geometria de domínio e efeitos específicos ainda podem conter literais locais. Não anunciar tokenização integral de todo o SCSS nem substituir valores com papéis diferentes só por coincidirem numericamente.
 
 ## Matriz de botões
 
@@ -80,7 +81,7 @@ Todas as variantes vêm de `buttonVariants`/`HlmButton`, com `BrnButton` para di
 | Ícone                 | `size="icon"`, papel via `variant`        | Ação contextual com `aria-label`; ícone decorativo não repete o nome                                                 |
 | Toggle                | `.segmented-control` com `aria-pressed`   | Opções mutuamente exclusivas ou modo; seleção não muda o rótulo da ação                                              |
 
-Tamanho `default`: 44 px de altura, padding horizontal 12 px e gap 8 px. `xs`/`sm`: 36 px, padding 8/10 px e gap 4 px; ícones `icon*`: 36×36 px. Por compatibilidade, o tamanho existente `lg` também é compacto (36 px); ele não é uma opção maior para novas telas. Use o padrão para ações principais. A classe `.btn` é compatibilidade legada; não é outra API de variantes.
+Tamanho `default`: altura mínima de 44 px, padding horizontal 12 px e gap 8 px. `xs`/`sm`: altura mínima de 36 px, padding 8/10 px e gap 4 px; ícones `icon*`: 36×36 px. Rótulos quebram e aumentam a altura quando necessário, sem ultrapassar o container. Por compatibilidade, o tamanho existente `lg` também é compacto (36 px); ele não é uma opção maior para novas telas. Use o padrão para ações principais. A classe `.btn` é compatibilidade legada; não é outra API de variantes.
 
 | Estado        | Comportamento comum                                                                                                         |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------- |

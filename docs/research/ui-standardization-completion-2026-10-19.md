@@ -1,5 +1,7 @@
 # Reconciliação da auditoria MMORPG — 19/10/2026
 
+> Continuação posterior desta mesma data: [Família preenchida, administração e zoom](ui-filled-zoom-controls-2026-10-19.md). As pendências abaixo representam o estado desta primeira rodada; consulte ACTIVE_CONTEXT §196 para a implementação e a matriz sintética subsequentes.
+
 ## Escopo e base real
 
 Entrega desta rodada: branch `codex/ui-ux-audit-completion`; correção visual no commit `b7407e3`, documentação em commit separado. Trabalho preservado no worktree para revisão; não foi integrado a `main` nem ao checkout que atende 4200.

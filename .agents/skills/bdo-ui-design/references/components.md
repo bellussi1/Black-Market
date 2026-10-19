@@ -2,7 +2,7 @@
 
 ## Janela e barra de título
 
-Screenshots 01, 04, 09 e 12: faixa bronze horizontal sobre painel carvão. Na web, usar borda 1 px, raio 0–3 px e faixa opaca; textura geométrica, quando usada, apenas em pseudo-elemento de fundo com baixo contraste e `pointer-events: none`.
+Screenshots 01, 04, 09 e 12: faixa bronze horizontal sobre painel carvão. Na web, usar `--bm-border-width` (1 px), `--bm-radius` (2 px) e faixa opaca; textura geométrica, quando usada, apenas em pseudo-elemento de fundo com baixo contraste e `pointer-events: none`.
 
 ## Slot e card
 
@@ -28,7 +28,7 @@ Screenshots 06, 07 e 14: slot escuro, ícone proporcional, contorno fino. Reserv
 
 ## Botões, campos e tabs
 
-Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Controles padrão têm 44 px; variantes compartilhadas compactas/ícone têm 36 px, reservadas a toolbars e linhas densas. Fonte legível, foco visível e espaçamento continuam obrigatórios. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível. Consulte a API, estados e exemplos no [catálogo técnico](../../../../docs/design-system/bdo-ui.md).
+Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Controles padrão têm pelo menos 44 px; variantes compartilhadas compactas têm pelo menos 36 px e ícones têm 36×36 px, reservados a toolbars e linhas densas. Botões com texto quebram o rótulo e crescem em altura quando necessário. Fonte legível, foco visível e espaçamento continuam obrigatórios. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível. Consulte a API, estados e exemplos no [catálogo técnico](../../../../docs/design-system/bdo-ui.md).
 
 ## Indicadores econômicos e ações de origem
 
