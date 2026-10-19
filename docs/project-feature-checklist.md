@@ -196,6 +196,20 @@ Critério para fechar: código + testes do contrato + documentação. Validaçã
 
 Pesquisa dos quatro concorrentes, alcance e limites em `research/recipe-market-flow-review-2026-10-18.md`. Estado dos gates e commits em ACTIVE_CONTEXT §183. As demais pendências de fonte/corpus e produto da fila acima não foram encerradas por esta revisão de UI.
 
+### Padronização MMORPG e unificação de navegação — auditoria 18/10/2026
+
+| ID        | Escopo                                         | Estado                                                                                                                                        | Próximo passo                                                                                                                                |
+| --------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| UI-STD-01 | Inventário visual e pesquisa pública           | Auditoria registrada; não altera comportamento nem dados                                                                                      | Usar `research/ui-standardization-audit-2026-10-18.md` como base e ampliar o inventário por rota durante a migração.                         |
+| UI-STD-02 | Uma navegação para Recomendações e Life Skills | Proposta: hub compartilhado sob `/recommendations` e `/lifeskills`, sem redirects; query param como estado navegável                          | Revisar e aprovar desenho e compatibilidade de acesso antes da especificação.                                                                |
+| UI-STD-03 | Retorno de maestria e tempo de treino          | Proposta: remover da navegação principal; cálculos manuais atuais não demonstram ligação suficiente com progressão real                       | Após aprovação, preservar dados persistidos e deep links antigos enquanto houver consumidores; remover apenas após migração/compatibilidade. |
+| UI-STD-04 | Família                                        | Proposta: transformar ficha/equipamento/família em tabs reais exclusivas com personagem selecionado no topo                                   | Após aprovação, preservar campos, ações e dados existentes.                                                                                  |
+| UI-STD-05 | Design system MMORPG                           | Auditoria identifica tokens globais e wrappers locais existentes com variantes divergentes                                                    | Consolidar tokens e componentes em fatias; atualizar `bdo-ui-design` como fonte canônica e delimitar `ui-design` como workflow/revisão.      |
+| UI-STD-06 | Densidade, estados e motion                    | Life Skills observada com aproximadamente 2.325 px de altura em desktop; transição interrompida só apareceu durante rota protegida sem sessão | Reduzir rolagem sem esconder premissas; validar animações em navegação autorizada, teclado e `prefers-reduced-motion`.                       |
+| UI-STD-07 | QA desktop-first                               | Proposta de matriz 1920×1080, 2560×1440, 1600×900 e 1366×768; áreas privadas sem QA visual autenticada nesta auditoria                        | Validar acesso direto, refresh, back/forward, estados vazios, teclado e conteúdo autenticado ao implementar.                                 |
+
+Nenhuma destas propostas foi implementada nesta auditoria. Decisões e evidências estão em `research/ui-standardization-audit-2026-10-18.md` e `ACTIVE_CONTEXT.md` §187.
+
 ## Documentos relacionados
 
 - Estado entre turnos: [`ACTIVE_CONTEXT.md`](ACTIVE_CONTEXT.md) e [`ANTIGRAVITY_HANDOFF.md`](ANTIGRAVITY_HANDOFF.md).

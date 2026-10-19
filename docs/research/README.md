@@ -85,3 +85,4 @@ As fontes diretas, datas e distinções entre declaração, observação e infer
 - [Cotações de receitas e cliente instalado — 18/10/2026](recipe-quotes-and-client-patch-2026-10-18.md): referência de preço sem estoque, atualização forçada, extração e revisão do suplemento.
 
 - [Desempenho de navegação e SSR — 18/10/2026](navigation-ssr-performance-2026-10-18.md): traces locais, espera nos resolvers, normalização da origem no transfer cache, DOM recolhido e HMR.
+- [Auditoria de padronização MMORPG — 18/10/2026](ui-standardization-audit-2026-10-18.md): rotas de Recomendações/Life Skills e Família, divergências de tabs/controles, pesquisa competitiva pública, limites de QA e proposta aguardando revisão.
