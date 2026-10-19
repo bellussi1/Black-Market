@@ -32,6 +32,8 @@ View Transitions animam apenas `workspace-page`: entrada usa `cubic-bezier(0.2, 
 
 ## Exceções de domínio
 
+O hub de Profissões usa `LifeSkillsHubNav` para distinguir planejamento e sessões observadas: dois links de destino com ícone decorativo, título, descrição e seleção por `aria-current`. A superfície inteira do link é interativa, usando os tokens de painel/foco existentes; em mobile os destinos empilham. São links de URL, não tabs ARIA locais. O destaque visual ajuda a escolher entre os dois fluxos sem criar uma variante de botão ou outra biblioteca.
+
 O grafo especializado de crafting e a roda/slots de equipamento mantêm SCSS para posicionamento e interação do jogo. Reutilize tokens, foco e tipografia quando isso não prejudicar a geometria. Não converter posições em utilities sem testes de medição, pan e zoom nem remover estilos ativos só para declarar uma migração completa de sintaxe.
 
 ## Mapa de implementação
