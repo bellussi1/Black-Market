@@ -19,6 +19,8 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 
 ## Relatórios e cobertura
 
+- [Hub único de Profissões, Família e revisão de todas as rotas](unified-professions-ui-review-2026-10-19.md): rota canônica, proteções de dados, controles alinhados, QA desktop/autenticado e limites de amostra.
+
 - [Inventário de rotas para padronização de UI](ui-route-inventory-2026-10-19.md): owners, guardas, SSR, redirects, componentes, testes e limite da navegação MVP.
 - [Auditoria de padronização MMORPG](ui-standardization-audit-2026-10-18.md): baseline da auditoria; especificação e execução estão em `docs/design-system/` e `docs/superpowers/plans/`.
 - [Life Skills e navegação compartilhada](lifeskills-hub-competitor-review-2026-10-19.md): pesquisa pública sobre sessões, recomendações e organização do hub.
