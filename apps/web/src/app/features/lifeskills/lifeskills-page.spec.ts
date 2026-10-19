@@ -7,6 +7,22 @@ import { LifeskillsPage } from './lifeskills-page';
 describe('lifeskill session analytics', () => {
   useMemoryStorage();
 
+  it('links the shared hub to production and keeps the public sessions route active', async () => {
+    const fixture = await renderComponent(LifeskillsPage);
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'nav[aria-label="Navegação de Life Skills e recomendações"] a',
+      ),
+    ) as HTMLAnchorElement[];
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/recommendations?tab=production',
+      '/lifeskills?tab=sessions',
+    ]);
+    expect(links.filter((link) => link.getAttribute('aria-current') === 'page')).toHaveLength(1);
+    expect(links[1].getAttribute('aria-current')).toBe('page');
+  });
+
   it('compares saved observations by context and refreshes the sample after deletion', async () => {
     const fixture = await renderComponent(LifeskillsPage);
     const page = fixture.componentInstance;

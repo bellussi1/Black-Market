@@ -1,0 +1,23 @@
+<nav
+  class="workspace-tabs life-skills-hub-nav"
+  aria-label="Navegação de Life Skills e recomendações"
+>
+  <a
+    routerLink="/recommendations"
+    [queryParams]="{ tab: 'production' }"
+    [class.active]="activeTab() === 'production'"
+    [attr.aria-current]="activeTab() === 'production' ? 'page' : null"
+  >
+    <span i18n>O que fazer</span>
+    <small i18n>Receitas e produção</small>
+  </a>
+  <a
+    routerLink="/lifeskills"
+    [queryParams]="{ tab: 'sessions' }"
+    [class.active]="activeTab() === 'sessions'"
+    [attr.aria-current]="activeTab() === 'sessions' ? 'page' : null"
+  >
+    <span i18n>Sessões em campo</span>
+    <small i18n>Seu rendimento observado</small>
+  </a>
+</nav>

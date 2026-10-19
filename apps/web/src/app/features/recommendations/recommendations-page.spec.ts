@@ -163,6 +163,25 @@ describe('production recommendations', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Consultar mercado');
     expect(fixture.nativeElement.textContent).not.toContain('Comparar lucro por hora');
   });
+
+  it('links the shared sessions tab to the public Life Skills URL', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'nav[aria-label="Navegação de Life Skills e recomendações"] a',
+      ),
+    ) as HTMLAnchorElement[];
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/recommendations?tab=production',
+      '/lifeskills?tab=sessions',
+    ]);
+    expect(links.filter((link) => link.getAttribute('aria-current') === 'page')).toHaveLength(1);
+    expect(links[0].getAttribute('aria-current')).toBe('page');
+  });
+
   it('emphasizes the leading complete opportunity but not incomplete scenarios', async () => {
     const fixture = await renderComponent(RecommendationsPage, {}, [
       { provide: ProductionApi, useValue: api() },

@@ -55,6 +55,7 @@ import {
 } from '../../shared/recipe-tree/recipe-yield';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
+import { LifeSkillsHubNav } from '../lifeskills/life-skills-hub-nav';
 
 type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
   basis?: 'market' | 'maximum' | 'reference' | 'manual' | 'npc';
@@ -272,6 +273,7 @@ export function productionRecipes(
     FormsModule,
     RouterLink,
     ItemIcon,
+    LifeSkillsHubNav,
   ],
   templateUrl: './recommendations-page.html',
   styleUrl: './recommendations-page.scss',

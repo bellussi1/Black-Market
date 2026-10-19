@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+.life-skills-hub-nav {
+  align-items: stretch;
+  gap: var(--bm-space-2);
+  margin: 0 0 var(--bm-space-5);
+}
+
+.life-skills-hub-nav a {
+  display: grid;
+  align-content: center;
+  gap: var(--bm-space-1);
+  min-height: var(--bm-control-height);
+  padding: var(--bm-space-2) var(--bm-space-4);
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  color: var(--bm-muted);
+  text-decoration: none;
+  transition:
+    color var(--bm-motion-fast) ease-out,
+    background-color var(--bm-motion-fast) ease-out,
+    border-color var(--bm-motion-fast) ease-out;
+}
+
+.life-skills-hub-nav a:hover {
+  color: var(--bm-text);
+  background: var(--bm-surface-raised);
+}
+
+.life-skills-hub-nav a.active {
+  border-color: var(--bm-border);
+  border-bottom-color: var(--bm-accent);
+  background: var(--bm-accent-soft);
+  color: var(--bm-accent);
+}
+
+.life-skills-hub-nav small {
+  color: var(--bm-muted);
+  font-size: var(--bm-text-meta);
+  font-weight: 400;
+}
+
+.life-skills-hub-nav a:focus-visible {
+  outline: 3px solid var(--bm-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .life-skills-hub-nav a {
+    flex: 1 1 10rem;
+    padding-inline: var(--bm-space-2);
+  }
+}

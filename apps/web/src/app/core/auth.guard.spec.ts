@@ -70,6 +70,13 @@ describe('authGuard', () => {
     expect(attempt.intent.request).toHaveBeenCalledWith('/scans?tab=review#space-4');
   });
 
+  it('keeps production recommendations protected when opened from the shared hub', async () => {
+    const attempt = evaluate(false, '/recommendations?tab=production');
+
+    await expect(attempt.result).resolves.toBe(attempt.redirect);
+    expect(attempt.intent.request).toHaveBeenCalledWith('/recommendations?tab=production');
+  });
+
   it('cancels internal navigation without losing the current page', async () => {
     const attempt = evaluate(
       false,

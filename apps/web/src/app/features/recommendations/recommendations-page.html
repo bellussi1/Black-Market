@@ -12,20 +12,7 @@
     </p>
   </header>
 
-  <nav class="coach-hub-nav" aria-label="Ferramentas de Profissões e O que fazer">
-    <a class="coach-hub-tab active" routerLink="/recommendations" aria-current="page">
-      O que fazer (Receitas de Produção)
-    </a>
-    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'sessions' }">
-      Sessões em Campo (Coleta, Caça, Pesca)
-    </a>
-    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'mastery' }">
-      Retorno de Maestria
-    </a>
-    <a class="coach-hub-tab" [routerLink]="['/lifeskills']" [queryParams]="{ tab: 'training' }">
-      Tempo de Treino
-    </a>
-  </nav>
+  <app-life-skills-hub-nav [activeTab]="'production'" />
 
   @if (message()) {
     <p class="notice" role="status" aria-live="polite">{{ message() }}</p>

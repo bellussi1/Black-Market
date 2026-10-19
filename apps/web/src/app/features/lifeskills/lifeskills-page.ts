@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   type ActivityInput,
   activitySchema,
@@ -28,6 +28,7 @@ import { PresetBar } from '../../shared/preset-bar';
 import { TaxOptionsComponent } from '../../shared/tax-options';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
+import { LifeSkillsHubNav } from './life-skills-hub-nav';
 import { compareObservedSessions } from './observed-session-comparison';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,9 +37,9 @@ import { compareObservedSessions } from './observed-session-comparison';
     HlmInput,
     HlmCard,
     HlmButton,
+    LifeSkillsHubNav,
     BdoSelect,
     FormsModule,
-    RouterLink,
     TaxOptionsComponent,
     PresetBar,
     CalculationProof,

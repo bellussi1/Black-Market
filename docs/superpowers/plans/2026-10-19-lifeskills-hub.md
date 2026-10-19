@@ -50,18 +50,18 @@
 - Consumes: `@angular/router` `RouterLink`; the route paths and access rules in `app.routes.ts` remain unchanged.
 - Produces: standalone `LifeSkillsHubNav` with `activeTab = input.required<'production' | 'sessions'>()` and two router links: `/recommendations?tab=production` and `/lifeskills?tab=sessions`. Route links expose `aria-current="page"`; they are not buttons with `aria-pressed`.
 
-- [ ] **Step 1: Add failing navigation assertions to both page specs**
+- [x] **Step 1: Add failing navigation assertions to both page specs**
   - Assert the production anchor targets `/recommendations?tab=production`, the sessions anchor targets `/lifeskills?tab=sessions`, and exactly the current route link exposes `aria-current="page"`.
-- [ ] **Step 2: Run both page specs and verify the new assertions fail**
+- [x] **Step 2: Run both page specs and verify the new assertions fail**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/lifeskills/lifeskills-page.spec.ts" --include="src/app/features/recommendations/recommendations-page.spec.ts"`
   - Expected: the new common-navigation assertions fail against the current duplicate navs.
-- [ ] **Step 3: Implement the shared navigation component**
+- [x] **Step 3: Implement the shared navigation component**
   - Add the typed input, two `RouterLink` anchors, translated labels, active styling from the shared tabs contract and keyboard focus.
-- [ ] **Step 4: Replace duplicate navigation on both pages**
+- [x] **Step 4: Replace duplicate navigation on both pages**
   - Render `LifeSkillsHubNav` in Life Skills and Recommendations; remove their competing tab markup and local styles only after both pages pass their view tests. Do not change route guards, resolvers, page title, analytics or calculations.
-- [ ] **Step 5: Re-run both page specs**
+- [x] **Step 5: Re-run both page specs**
   - Run the same command; Expected: PASS.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Commit message: `feat(lifeskills): share recommendations navigation`
 
 ### Task 2: Sync query state and preserve legacy tools
