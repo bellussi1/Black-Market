@@ -172,6 +172,10 @@ describe('Automatic tutorial surfaces', () => {
       ?.injector.get(TutorialSurfaceDirective);
     expect(tutorial?.appTutorialSurface()).toBe('storage');
     expect(fixture.nativeElement.querySelector('[data-tour="storage.items"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-tour="storage.projects"]')).toBeNull();
+    fixture.componentInstance.tab.set('projects');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-tour="storage.items"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-tour="storage.projects"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();
   });

@@ -109,6 +109,7 @@
   }
   @if (item(); as selected) {
     <app-recipe-tree
+      [attr.data-tour]="workshopRoute() ? null : 'recipes.tree'"
       [primaryHeading]="true"
       [recipe]="recipe()"
       [recipes]="alternatives()"
@@ -116,7 +117,7 @@
       [datasetVersion]="dataset()?.version ?? ''"
       (rootMethod)="setMethod($event)"
     >
-      <div recipe-method>
+      <div recipe-method [attr.data-tour]="workshopRoute() ? null : 'recipes.methods'">
         @if (alternatives().length) {
           <section class="recipe-methods">
             <label for="root-recipe" i18n>Fórmula</label

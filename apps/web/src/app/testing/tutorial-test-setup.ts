@@ -33,7 +33,7 @@ export function expectTutorialAnchors<T>(
   ).toBe(screenKey);
   const element = fixture.nativeElement as HTMLElement;
   expect(element.querySelector('app-tutorial-launcher')).toBeNull();
-  const anchors = [...element.querySelectorAll<HTMLElement>('[data-tour]')];
+  const anchors = [...element.querySelectorAll<HTMLElement>(`[data-tour^="${screenKey}."]`)];
   for (const anchor of anchors) {
     expect(isTutorialAnchorForScreen(screenKey, anchor.dataset['tour'] ?? '')).toBe(true);
   }
