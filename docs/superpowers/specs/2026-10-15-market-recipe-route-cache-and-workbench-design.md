@@ -4,6 +4,8 @@
 **Estado:** implementado parcialmente; validação concluída em staging local em 15/10/2026
 **Escopo:** experiência de navegação e apresentação em Mercado e Receitas; manter os cálculos de domínio existentes.
 
+> Atualização de 19/10: o pedido posterior de reduzir a altura dos boxes substitui a proporção 2:1 destes painéis pela composição compacta 1:1. Ver [comparação e validação](../../research/recipe-decision-panels-density-2026-10-19.md). As decisões de cache e cálculos deste documento permanecem válidas.
+
 ## Objetivo
 
 Deixar Mercado e Receitas prontos para aparecer rapidamente, evitar mudanças bruscas ao filtrar categorias e aproximar a Oficina de Receitas da composição mostrada pelo usuário. O conteúdo continua vindo do catálogo e das cotações da aplicação; nomes, itens, categorias, fórmulas e imagens não serão embutidos no código.
