@@ -99,4 +99,15 @@ describe('Integrated shopping list', () => {
     expect(element.querySelector('[data-tour="shopping.items"]')).not.toBeNull();
     expect(element.querySelector('[data-tour="shopping.actions"]')).not.toBeNull();
   });
+
+  it('uses the shared page hierarchy and exposes recipe discovery from the heading', async () => {
+    const fixture = await renderComponent(ShoppingPage);
+    const page = fixture.nativeElement as HTMLElement;
+    const heading = page.querySelector('.tool-page.shopping-page > header.tool-heading');
+
+    expect(heading?.querySelector('h1')?.textContent).toContain('Lista de materiais');
+    expect(heading?.querySelector('a[routerLink="/recipes"]')?.textContent).toContain(
+      'Explorar uma receita',
+    );
+  });
 });

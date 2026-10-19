@@ -8,6 +8,17 @@ import { BuffsPage } from './buffs-page';
 
 describe('BuffsPage', () => {
   useMemoryStorage();
+
+  it('uses the shared page hierarchy and groups the active setup action', async () => {
+    const fixture = await render(BuffsPage);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.tool-page > header.tool-heading h1')?.textContent).toContain(
+      'Sua combinação, pronta',
+    );
+    expect(element.querySelector('button')?.textContent).toContain('Salvar buff');
+  });
+
   it('activates one buff per exclusive group and removes expired effects from totals', async () => {
     const fixture = await render(BuffsPage);
     const page = fixture.componentInstance;

@@ -11,6 +11,18 @@ import { PlansPage } from './plans-page';
 describe('PlansPage tutorial surface', () => {
   useMemoryStorage();
 
+  it('uses the shared page heading and keeps the save action visible for a new plan', async () => {
+    const fixture = await renderComponent(PlansPage);
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect(page.querySelector('.tool-page > header.tool-heading h1')?.textContent).toContain(
+      'Do objetivo à próxima tarefa',
+    );
+    expect(page.querySelector('[data-tour="plans.actions"] button')?.textContent).toContain(
+      'Salvar plano',
+    );
+  });
+
   it('shows collection and action anchors even when the user has no plans yet', async () => {
     const fixture = await renderComponent(PlansPage);
     const element = fixture.nativeElement as HTMLElement;

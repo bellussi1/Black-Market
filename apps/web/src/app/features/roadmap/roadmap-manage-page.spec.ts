@@ -81,6 +81,16 @@ async function setup(canManageRoadmap = true, initialEntries: RoadmapEntry[] = s
 }
 
 describe('RoadmapManagePage', () => {
+  it('uses the shared management heading and exposes the public roadmap', async () => {
+    const { fixture } = await setup();
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect(page.querySelector('.roadmap-admin > header.tool-heading h1')?.textContent).toContain(
+      'Editar Roadmap',
+    );
+    expect(page.querySelector('a[href="/roadmap"]')?.textContent).toContain('Ver Roadmap público');
+  });
+
   it('loads persisted entries only after verifying the administrator role', async () => {
     const { fixture, identity, api } = await setup();
 

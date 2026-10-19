@@ -78,6 +78,10 @@ describe('CraftingPage', () => {
     const fixture = await render(CraftingPage);
     const element = fixture.nativeElement as HTMLElement;
 
+    expect(element.querySelector('.tool-page > header.tool-heading h1')?.textContent).toContain(
+      'Calcular produção',
+    );
+    expect(element.querySelector('.tool-heading a[routerLink="/recipes"]')).not.toBeNull();
     expect(fixture.componentInstance.tab()).toBe('workshop');
     expect(element.textContent).toContain('Configure lote, maestria e recursos');
     expect(element.textContent).toContain('comparar comprar, produzir e coletar');

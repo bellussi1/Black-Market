@@ -36,6 +36,16 @@ function setup(admin = true) {
   return { page: fixture.componentInstance, fixture, api };
 }
 describe('TutorialsManagePage', () => {
+  it('uses the shared heading hierarchy before loading administration content', () => {
+    const { fixture } = setup();
+    fixture.detectChanges();
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect(
+      page.querySelector('.tool-page.tutorials-manage-page > header.tool-heading h1')?.textContent,
+    ).toContain('Editar tutoriais');
+  });
+
   it('reserves the tutorial editor while the initial management read is pending', async () => {
     const { page, fixture, api } = setup();
     let finish!: (result: { guides: (typeof saved)[]; screens: []; locales: [] }) => void;
