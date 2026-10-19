@@ -238,3 +238,5 @@ Especificação aprovada em `design-system/ui-standardization-spec-2026-10-18.md
 - Evidência, comparabilidade e pendências: ACTIVE_CONTEXT §186 e relatório navigation-ssr-performance-2026-10-18.md.
 
 Revisão complementar solicitada em 19/10: [hub canônico, alinhamento de Família e revisão de todas as rotas](research/unified-professions-ui-review-2026-10-19.md). A solicitação explícita de uma só rota substitui a arquitetura anterior de duas páginas com navegação compartilhada. Frontend atualizado servido em `localhost:4200` pelo worktree; sem alteração de registros ou banco.
+
+- [x] FIX-FAMILY-TOUR-01: corrigir alvos de personagens/ações do tutorial e permitir orientação inicial sem personagem. Destaques compactos; Próximo/Anterior/Escape verificados. Evidências e limites em [correção do tutorial de Família](research/family-tutorial-target-fix-2026-10-19.md).

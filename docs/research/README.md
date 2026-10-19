@@ -19,6 +19,8 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 
 ## Relatórios e cobertura
 
+- [Correção dos alvos do tutorial de Família — 19/10/2026](family-tutorial-target-fix-2026-10-19.md): âncoras compactas, orientação inicial sem personagem e validação de navegação do guia.
+
 - [Hub único de Profissões, Família e revisão de todas as rotas](unified-professions-ui-review-2026-10-19.md): rota canônica, proteções de dados, controles alinhados, QA desktop/autenticado e limites de amostra.
 
 - [Inventário de rotas para padronização de UI](ui-route-inventory-2026-10-19.md): owners, guardas, SSR, redirects, componentes, testes e limite da navegação MVP.
