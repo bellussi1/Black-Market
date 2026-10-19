@@ -2,25 +2,25 @@
   .tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 16px;
-    margin-bottom: 20px;
+    gap: var(--bm-space-1) var(--bm-space-4);
+    margin-bottom: var(--bm-space-5);
     border-bottom: 1px solid var(--bm-border);
   }
   .tabs button {
     cursor: pointer;
     border: 0;
     border-bottom: 2px solid transparent;
-    min-height: 44px;
-    min-width: 44px;
+    min-height: var(--bm-control-height);
+    min-width: var(--bm-control-height);
     background: transparent;
-    padding: 10px 8px;
+    padding: var(--bm-space-3) var(--bm-space-2);
     color: var(--bm-muted);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--bm-text-support);
     overflow-wrap: anywhere;
     transition:
-      background-color 160ms,
-      border-color 160ms;
+      background-color var(--bm-motion-fast) ease-out,
+      border-color var(--bm-motion-fast) ease-out;
   }
   .tabs button:hover {
     background: var(--bm-surface-raised);
@@ -140,20 +140,20 @@
   }
   .workspace-tabs {
     display: flex;
-    gap: 24px;
-    margin-bottom: 24px;
+    gap: var(--bm-space-5);
+    margin-bottom: var(--bm-space-5);
     border-bottom: 1px solid var(--bm-border);
   }
   .workspace-tabs button {
-    padding: 12px 4px;
+    padding: var(--bm-space-3) var(--bm-space-1);
     border: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--bm-muted);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--bm-text-support);
     cursor: pointer;
-    min-height: 44px;
+    min-height: var(--bm-control-height);
   }
   .workspace-tabs button[aria-pressed='true'] {
     color: var(--bm-accent);
@@ -166,19 +166,19 @@
     display: flex;
     width: fit-content;
     gap: 0;
-    padding: 3px;
+    padding: var(--bm-space-1);
     border: 1px solid var(--bm-border);
     background: var(--bm-input);
   }
   .segmented-control button {
     margin: 0;
-    padding: 9px 14px;
+    padding: var(--bm-space-3) var(--bm-space-4);
     border: 0;
     color: var(--bm-muted);
     background: transparent;
     cursor: pointer;
-    font-size: 13px;
-    min-height: 44px;
+    font-size: var(--bm-text-support);
+    min-height: var(--bm-control-height);
   }
   .segmented-control button[aria-pressed='true'] {
     color: var(--bm-accent);
