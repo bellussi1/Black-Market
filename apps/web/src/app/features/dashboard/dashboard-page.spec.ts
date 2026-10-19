@@ -105,7 +105,13 @@ describe('DashboardPage', () => {
 
     expect(entry).not.toBeNull();
     expect(professionLink?.getAttribute('href')).toBe('/lifeskills');
-    expect(entry?.contains(itemSearch)).toBe(true);
+    expect(element.querySelector('.home-hero')?.contains(itemSearch)).toBe(true);
+    expect(entry?.querySelector('a[href="/recipes"]')).not.toBeNull();
+    expect(entry?.querySelector('a[href="/market"]')).not.toBeNull();
+    const access = element.querySelector('.hero-paywall');
+    expect(
+      Boolean(itemSearch!.compareDocumentPosition(access!) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
     expect(itemSearch?.querySelector('app-catalog-item-picker select')).toBeNull();
     expect(
       Boolean(itemSearch!.compareDocumentPosition(focus!) & Node.DOCUMENT_POSITION_FOLLOWING),

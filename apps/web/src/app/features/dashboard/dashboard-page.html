@@ -2,231 +2,228 @@
   <section class="home-hero" aria-labelledby="home-title">
     <div class="home-entry" data-tour="home.main-actions">
       <div class="hero-intro">
-        <p class="tool-kicker">
-          <ng-container i18n>BLACK MARKET · FERRAMENTA INDEPENDENTE · SA</ng-container>
-        </p>
+        <p class="tool-kicker" i18n>BLACK MARKET · FERRAMENTA INDEPENDENTE · SA</p>
         @if (store.activeCharacter(); as profile) {
           <h1 id="home-title" i18n>Maximize a prata por hora de {{ profile.name }}.</h1>
         } @else {
-          <h1 id="home-title" i18n>Saiba exatamente o que produzir, comprar ou vender no BDO.</h1>
+          <h1 id="home-title" i18n>Planeje o que produzir, comprar ou vender no BDO.</h1>
         }
         <p class="hero-copy" i18n>
-          O planejador de Life Skills e Mercado Central para jogadores da América do Sul: descubra o
-          lucro estimado das receitas com a sua maestria, use os itens parados no seu Armazém e
-          confira os dados de mercado antes de produzir.
+          Compare receitas com a sua maestria, aproveite os itens do Armazém e confira o mercado SA
+          antes de produzir.
         </p>
-
-        <ul class="hero-value-list" aria-label="Por que usar o Black Market" i18n-aria-label>
-          <li>
-            <strong i18n>Lucro estimado e atividade SA</strong>
-            <span i18n
-              >Compara fabricar vs. comprar intermediários já descontando taxas do Mercado Central e
-              indicando estoque e negociações acumuladas quando informados pela fonte.</span
-            >
-          </li>
-          <li>
-            <strong i18n>Armazém conectado por OCR</strong>
-            <span i18n
-              >Importe capturas de tela do seu Armazém e equipamentos em segundos para abater
-              automaticamente os insumos que você já possui.</span
-            >
-          </li>
-          <li>
-            <strong i18n>Recomendações sob medida (“O que fazer”)</strong>
-            <span i18n
-              >Informe a maestria do seu personagem uma única vez e receba o ranking instantâneo de
-              Culinária, Alquimia e Processamento em prata/hora.</span
-            >
-          </li>
-        </ul>
       </div>
-
-      @if (!identity.authenticated()) {
-        <section class="panel hero-paywall" aria-labelledby="hero-access-title">
-          <div class="panel-heading hero-paywall-head">
-            <div>
-              <p class="tool-kicker" i18n>ACESSO COMPLETO AO PLANEJADOR</p>
-              <h2 id="hero-access-title" i18n>Desbloqueie seu Armazém, OCR e Recomendações</h2>
-            </div>
-            <span class="badge hero-paywall-badge" i18n>ACESSO COM CONTA</span>
-          </div>
-          <p class="hero-paywall-copy" i18n>
-            A consulta pública de itens e receitas é livre. Entre com Google ou Steam para
-            desbloquear o <strong>Ranking personalizado (“O que fazer”)</strong>, o
-            <strong>Armazém em grade BDO</strong>, o <strong>Leitor de Capturas (OCR)</strong> e a
-            <strong>Ficha da Família (P + I)</strong> sincronizados na nuvem.
-          </p>
-          <div class="hero-unlocked-actions">
-            <button
-              hlmBtn
-              variant="outline"
-              class="btn hero-paywall-cta"
-              type="button"
-              (click)="openLoginPaywall('/recommendations')"
-              i18n
-            >
-              Entrar com Google ou Steam para liberar tudo
-            </button>
-            <a hlmBtn variant="outline" class="btn subtle" routerLink="/account" i18n
-              >Ver detalhes da conta</a
-            >
-          </div>
-        </section>
-      }
-
-      <a
-        hlmBtn
-        variant="outline"
-        class="btn home-professions-link"
-        routerLink="/lifeskills"
-        data-home-professions-link
-        data-tour="home.lifeskill-entry"
+      <nav
+        class="home-primary-actions"
+        aria-label="Ferramentas de produção e mercado"
+        i18n-aria-label
       >
-        <span i18n>Profissões e rendimento</span>
-        <span class="home-professions-arrow" aria-hidden="true">→</span>
-      </a>
-
-      <section hlmCard class="panel home-search">
-        <div class="panel-heading">
-          <div>
-            <p class="tool-kicker" i18n>CONSULTA PÚBLICA</p>
-            <h2 i18n>Busque um item</h2>
-          </div>
-          <span class="badge" i18n>SEM CADASTRO</span>
+        <a hlmBtn routerLink="/recipes" i18n>Explorar receitas</a>
+        <a
+          hlmBtn
+          variant="outline"
+          class="home-professions-link"
+          routerLink="/lifeskills"
+          data-home-professions-link
+          data-tour="home.lifeskill-entry"
+          i18n
+          >Profissões e rendimento</a
+        >
+        <a hlmBtn variant="ghost" routerLink="/market" i18n>Consultar mercado</a>
+      </nav>
+    </div>
+    <section hlmCard class="panel home-search">
+      <div class="panel-heading">
+        <div>
+          <p class="tool-kicker" i18n>CONSULTA PÚBLICA</p>
+          <h2 i18n>Busque um item</h2>
         </div>
-        <app-catalog-item-picker
-          label="Nome ou ID do item"
-          i18n-label
-          [compact]="true"
-          [selectionName]="selectedItem()?.name ?? ''"
-          (selected)="selectedItem.set($event)"
-        />
-        @if (selectedItem(); as item) {
-          <div class="action-row">
-            <a hlmBtn variant="outline" class="btn" [routerLink]="['/recipes/items', item.id]" i18n
-              >Explorar produção e origens</a
-            ><a
-              hlmBtn
-              variant="outline"
-              class="btn subtle"
-              routerLink="/market"
-              [queryParams]="{ item: item.id }"
-              i18n
-              >Consultar preço</a
-            ><a [routerLink]="['/market/items', item.id]" i18n>Detalhes do item →</a>
-          </div>
-        } @else {
-          <p class="help" i18n>
-            Selecione um resultado para abrir receitas, preços ou informações do catálogo.
-          </p>
-        }
-      </section>
+        <span class="badge" i18n>SEM CADASTRO</span>
+      </div>
+      <app-catalog-item-picker
+        label="Nome ou ID do item"
+        i18n-label
+        [compact]="true"
+        [selectionName]="selectedItem()?.name ?? ''"
+        (selected)="selectedItem.set($event)"
+      />
+      @if (selectedItem(); as item) {
+        <div class="action-row">
+          <a hlmBtn variant="outline" class="btn" [routerLink]="['/recipes/items', item.id]" i18n
+            >Explorar produção e origens</a
+          ><a
+            hlmBtn
+            variant="outline"
+            class="btn subtle"
+            routerLink="/market"
+            [queryParams]="{ item: item.id }"
+            i18n
+            >Consultar preço</a
+          ><a [routerLink]="['/market/items', item.id]" i18n>Detalhes do item →</a>
+        </div>
+      } @else {
+        <p class="help" i18n>
+          Selecione um resultado para abrir receitas, preços ou informações do catálogo.
+        </p>
+      }
+    </section>
+  </section>
+
+  <ul class="hero-value-list" aria-label="Por que usar o Black Market" i18n-aria-label>
+    <li>
+      <span class="home-benefit-number" aria-hidden="true">01</span>
+      <div>
+        <strong i18n>Compare antes de produzir</strong>
+        <p i18n>
+          Estime o lucro das receitas e compare comprar ou fabricar intermediários, considerando as
+          taxas.
+        </p>
+      </div>
+    </li>
+    <li>
+      <span class="home-benefit-number" aria-hidden="true">02</span>
+      <div>
+        <strong i18n>Aproveite seu Armazém</strong>
+        <p i18n>Importe capturas com OCR e use seu estoque no planejamento. Requer conta.</p>
+      </div>
+    </li>
+    <li>
+      <span class="home-benefit-number" aria-hidden="true">03</span>
+      <div>
+        <strong i18n>Decida com a sua maestria</strong>
+        <p i18n>
+          Compare Culinária, Alquimia e Processamento em prata por hora. Recomendações com conta.
+        </p>
+      </div>
+    </li>
+  </ul>
+
+  @if (!identity.authenticated()) {
+    <section class="panel hero-paywall" aria-labelledby="hero-access-title">
+      <div class="hero-access-copy">
+        <p class="tool-kicker" i18n>SEU PLANEJAMENTO CONECTADO</p>
+        <h2 id="hero-access-title" i18n>Seu estoque e sua Família no mesmo lugar</h2>
+        <p class="hero-paywall-copy" i18n>
+          Entre com Google ou Steam para usar Armazém, OCR e recomendações personalizadas. Itens e
+          receitas continuam livres para consulta.
+        </p>
+      </div>
+      <div class="hero-unlocked-actions">
+        <button
+          hlmBtn
+          variant="outline"
+          class="hero-paywall-cta"
+          type="button"
+          (click)="openLoginPaywall('/recommendations')"
+          i18n
+        >
+          Entrar na minha conta
+        </button>
+        <a hlmBtn variant="ghost" routerLink="/account" i18n>Conhecer os recursos</a>
+      </div>
+    </section>
+  }
+
+  <section class="home-focus-section panel" aria-labelledby="home-focus-title">
+    <div class="home-focus-heading panel-heading">
+      <div>
+        <p class="tool-kicker" i18n>TRILHA ATIVA DO PRODUTO</p>
+        <h2 id="home-focus-title" i18n>Focos atuais</h2>
+      </div>
+      @if (!roadmapLoaded() || homeFocuses().length > 0) {
+        <a class="btn subtle home-roadmap-link" routerLink="/roadmap" i18n>Ver Roadmap completo</a>
+      }
     </div>
 
-    <section class="home-focus-section panel" aria-labelledby="home-focus-title">
-      <div class="home-focus-heading panel-heading">
-        <div>
-          <p class="tool-kicker" i18n>TRILHA ATIVA DO PRODUTO</p>
-          <h2 id="home-focus-title" i18n>Focos atuais</h2>
-        </div>
-        @if (!roadmapLoaded() || homeFocuses().length > 0) {
-          <a class="btn subtle home-roadmap-link" routerLink="/roadmap" i18n
-            >Ver Roadmap completo</a
-          >
-        }
-      </div>
-
-      @if (roadmapLoading()) {
-        <div class="home-focus-loading" role="status" aria-live="polite" aria-busy="true">
-          <p class="home-focus-loading-copy" i18n>Carregando focos do Roadmap…</p>
-          <ol class="home-focus-list" aria-hidden="true">
-            @for (slot of [0, 1]; track slot) {
-              <li class="home-focus-item">
-                <article class="home-focus-card home-focus-skeleton">
-                  <div class="home-skeleton-row">
-                    <span class="home-skeleton home-skeleton-chip"></span>
-                    <span class="home-skeleton home-skeleton-chip home-skeleton-chip-short"></span>
-                  </div>
-                  <span class="home-skeleton home-skeleton-title"></span>
-                  <span class="home-skeleton home-skeleton-line"></span>
-                  <span class="home-skeleton home-skeleton-line home-skeleton-line-medium"></span>
-                  <span class="home-skeleton home-skeleton-line home-skeleton-line-short"></span>
-                  <div class="home-skeleton-row">
-                    <span class="home-skeleton home-skeleton-action"></span>
-                    <span
-                      class="home-skeleton home-skeleton-action home-skeleton-action-short"
-                    ></span>
-                  </div>
-                </article>
-              </li>
-            }
-          </ol>
-        </div>
-      } @else if (roadmapError()) {
-        <div class="home-focus-state home-focus-error" role="alert">
-          <p>{{ roadmapError() }}</p>
-          <button class="btn subtle home-focus-retry" type="button" (click)="loadRoadmap()" i18n>
-            Tentar novamente
-          </button>
-        </div>
-      } @else if (roadmapLoaded() && homeFocuses().length === 0) {
-        <div class="home-focus-state home-focus-empty" role="status">
-          <p i18n>Ainda não há foco ativo definido na trilha.</p>
-          <a class="btn subtle" routerLink="/roadmap" i18n>Abrir Roadmap</a>
-        </div>
-      } @else if (roadmapLoaded()) {
-        <ol class="home-focus-list">
-          @for (focus of homeFocuses(); track focus.entry.id) {
+    @if (roadmapLoading()) {
+      <div class="home-focus-loading" role="status" aria-live="polite" aria-busy="true">
+        <p class="home-focus-loading-copy" i18n>Carregando focos do Roadmap…</p>
+        <ol class="home-focus-list" aria-hidden="true">
+          @for (slot of [0, 1]; track slot) {
             <li class="home-focus-item">
-              <article class="home-focus-card" [attr.data-kind]="focus.entry.kind">
-                <div class="home-focus-card-top">
-                  <div class="home-focus-meta">
-                    <ng-icon [name]="focus.entry.icon" aria-hidden="true" />
-                    <span class="home-focus-kind">{{ focus.kindLabel }}</span>
-                  </div>
-                  @if (focus.entry.statusLabel) {
-                    <span class="home-focus-status">{{ focus.entry.statusLabel }}</span>
-                  }
+              <article class="home-focus-card home-focus-skeleton">
+                <div class="home-skeleton-row">
+                  <span class="home-skeleton home-skeleton-chip"></span>
+                  <span class="home-skeleton home-skeleton-chip home-skeleton-chip-short"></span>
                 </div>
-                <h3>{{ focus.entry.title }}</h3>
-                <p class="home-focus-summary">{{ focus.entry.summary }}</p>
-                @if (focus.entry.description) {
-                  <p class="home-focus-description">{{ focus.entry.description }}</p>
-                }
-                <div class="home-focus-actions">
-                  @if (focus.primaryLink; as primary) {
-                    <a hlmBtn variant="outline" class="btn" [routerLink]="primary.path">{{
-                      primary.label
-                    }}</a>
-                    @for (link of focus.secondaryLinks; track link.path) {
-                      <a hlmBtn variant="outline" class="btn subtle" [routerLink]="link.path">{{
-                        link.label
-                      }}</a>
-                    }
-                  } @else if (focus.requiresLoginToAccess) {
-                    @if (focus.loginReturnUrl; as returnUrl) {
-                      <a hlmBtn variant="outline" class="btn subtle" [routerLink]="returnUrl" i18n
-                        >Entrar para acessar</a
-                      >
-                    } @else {
-                      <a hlmBtn variant="outline" class="btn subtle" routerLink="/settings" i18n
-                        >Entrar para acessar</a
-                      >
-                    }
-                  } @else {
-                    <a hlmBtn variant="outline" class="btn subtle" routerLink="/roadmap" i18n
-                      >Ver no Roadmap</a
-                    >
-                  }
+                <span class="home-skeleton home-skeleton-title"></span>
+                <span class="home-skeleton home-skeleton-line"></span>
+                <span class="home-skeleton home-skeleton-line home-skeleton-line-medium"></span>
+                <span class="home-skeleton home-skeleton-line home-skeleton-line-short"></span>
+                <div class="home-skeleton-row">
+                  <span class="home-skeleton home-skeleton-action"></span>
+                  <span
+                    class="home-skeleton home-skeleton-action home-skeleton-action-short"
+                  ></span>
                 </div>
               </article>
             </li>
           }
         </ol>
-      }
-    </section>
+      </div>
+    } @else if (roadmapError()) {
+      <div class="home-focus-state home-focus-error" role="alert">
+        <p>{{ roadmapError() }}</p>
+        <button class="btn subtle home-focus-retry" type="button" (click)="loadRoadmap()" i18n>
+          Tentar novamente
+        </button>
+      </div>
+    } @else if (roadmapLoaded() && homeFocuses().length === 0) {
+      <div class="home-focus-state home-focus-empty" role="status">
+        <p i18n>Ainda não há foco ativo definido na trilha.</p>
+        <a class="btn subtle" routerLink="/roadmap" i18n>Abrir Roadmap</a>
+      </div>
+    } @else if (roadmapLoaded()) {
+      <ol class="home-focus-list">
+        @for (focus of homeFocuses(); track focus.entry.id) {
+          <li class="home-focus-item">
+            <article class="home-focus-card" [attr.data-kind]="focus.entry.kind">
+              <div class="home-focus-card-top">
+                <div class="home-focus-meta">
+                  <ng-icon [name]="focus.entry.icon" aria-hidden="true" />
+                  <span class="home-focus-kind">{{ focus.kindLabel }}</span>
+                </div>
+                @if (focus.entry.statusLabel) {
+                  <span class="home-focus-status">{{ focus.entry.statusLabel }}</span>
+                }
+              </div>
+              <h3>{{ focus.entry.title }}</h3>
+              <p class="home-focus-summary">{{ focus.entry.summary }}</p>
+              @if (focus.entry.description) {
+                <p class="home-focus-description">{{ focus.entry.description }}</p>
+              }
+              <div class="home-focus-actions">
+                @if (focus.primaryLink; as primary) {
+                  <a hlmBtn variant="outline" class="btn" [routerLink]="primary.path">{{
+                    primary.label
+                  }}</a>
+                  @for (link of focus.secondaryLinks; track link.path) {
+                    <a hlmBtn variant="outline" class="btn subtle" [routerLink]="link.path">{{
+                      link.label
+                    }}</a>
+                  }
+                } @else if (focus.requiresLoginToAccess) {
+                  @if (focus.loginReturnUrl; as returnUrl) {
+                    <a hlmBtn variant="outline" class="btn subtle" [routerLink]="returnUrl" i18n
+                      >Entrar para acessar</a
+                    >
+                  } @else {
+                    <a hlmBtn variant="outline" class="btn subtle" routerLink="/settings" i18n
+                      >Entrar para acessar</a
+                    >
+                  }
+                } @else {
+                  <a hlmBtn variant="outline" class="btn subtle" routerLink="/roadmap" i18n
+                    >Ver no Roadmap</a
+                  >
+                }
+              </div>
+            </article>
+          </li>
+        }
+      </ol>
+    }
   </section>
-
   @if (!screenshotMvp) {
     <app-player-overview />
   }
