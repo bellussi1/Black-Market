@@ -1,10 +1,10 @@
 <div class="tool-page gear-page" [class.gear-embedded]="embedded()">
   @if (embedded()) {
-    <section hlmCard class="panel gear-embedded-header">
+    <section hlmCard class="panel gear-embedded-header" aria-labelledby="gear-embedded-title">
       <div class="panel-heading">
         <div>
           <p class="tool-kicker">JANELA DE EQUIPAMENTO (I)</p>
-          <h2 i18n>Equipamentos do personagem</h2>
+          <h2 id="gear-embedded-title" i18n>Equipamentos do personagem</h2>
         </div>
         <span class="badge">{{ profile()?.name || 'Nenhum personagem selecionado' }}</span>
       </div>
@@ -14,9 +14,9 @@
       </p>
     </section>
   } @else {
-    <header class="tool-heading">
+    <header class="tool-heading" aria-labelledby="gear-page-title">
       <p class="tool-kicker" i18n>SEU PERSONAGEM</p>
-      <h1 i18n>Meus equipamentos</h1>
+      <h1 id="gear-page-title" i18n>Meus equipamentos</h1>
       <p i18n>
         Identifique os equipamentos pelas imagens e confirme suas posições. Aprimoramento e Caphras
         precisam ser conferidos no jogo.
@@ -37,9 +37,9 @@
     </header>
   }
   @if (!embedded()) {
-    <section hlmCard class="panel">
+    <section hlmCard class="panel" aria-labelledby="gear-character-title">
       <div class="panel-heading">
-        <h2 i18n>Personagem</h2>
+        <h2 id="gear-character-title" i18n>Personagem ativo</h2>
       </div>
       <label
         ><span i18n>Personagem</span

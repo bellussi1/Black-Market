@@ -15,9 +15,13 @@ describe('Progressive player workspace', () => {
     const selection = selectionPanel?.querySelector('.panel-heading');
 
     expect(heading?.querySelector('h1')?.textContent).toContain('Família');
+    expect(heading?.getAttribute('aria-labelledby')).toBe('player-page-title');
+    expect(heading?.querySelector('#player-page-title')).not.toBeNull();
     expect(heading?.querySelector('.tool-kicker')?.textContent).toContain('MEU ESPAÇO');
     expect(tabs?.getAttribute('aria-label')).toContain('Dados pessoais');
     expect(selection?.querySelector('h2')?.textContent).toContain('Personagem ativo');
+    expect(selectionPanel?.getAttribute('aria-labelledby')).toBe('bdo-roster-title');
+    expect(selectionPanel?.querySelector('#bdo-roster-title')).not.toBeNull();
     expect(selectionPanel?.querySelector('select')).not.toBeNull();
   });
   it('opens equipment inside family while retaining the active character and family data', async () => {

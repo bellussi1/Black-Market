@@ -222,8 +222,13 @@ summary {
 .review-toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+}
+.review-heading-copy {
+  min-width: min(100%, 16rem);
+  flex: 1 1 16rem;
 }
 .review-toolbar span {
   color: var(--bm-muted);

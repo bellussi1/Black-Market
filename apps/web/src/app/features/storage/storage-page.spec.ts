@@ -24,7 +24,9 @@ describe('Storage import guidance', () => {
   it('offers screenshots first, explains CSV provenance and retains manual entry', async () => {
     const fixture = await renderComponent(StoragePage);
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('header.tool-heading h1')?.textContent).toContain(
+    const heading = element.querySelector('header.tool-heading');
+    expect(heading?.getAttribute('aria-labelledby')).toBe('storage-page-title');
+    expect(heading?.querySelector('#storage-page-title')?.textContent).toContain(
       'O que você tem. O que falta.',
     );
     expect(

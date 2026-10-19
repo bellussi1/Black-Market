@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { beforeEach, expect } from 'vitest';
 
 import { TutorialApiService } from '../core/tutorial-api.service';
-import { TutorialLauncher } from '../shared/tutorial-launcher/tutorial-launcher';
+import { TutorialSurfaceDirective } from '../shared/tutorials/tutorial-surface.directive';
 
 /** Keep page contracts independent of publication and HTTP guide loading. */
 export function useTutorialGuideStub(): void {
@@ -24,10 +24,15 @@ export function expectTutorialAnchors<T>(
   screenKey: TutorialScreenKey,
   expected: string[],
 ): void {
-  const launchers = fixture.debugElement.queryAll(By.directive(TutorialLauncher));
-  expect(launchers).toHaveLength(1);
-  expect((launchers[0].componentInstance as TutorialLauncher).screenKey()).toBe(screenKey);
+  const surfaces = fixture.debugElement.queryAll(By.directive(TutorialSurfaceDirective));
+  expect(surfaces).toHaveLength(1);
+  expect(
+    (
+      surfaces[0].injector.get(TutorialSurfaceDirective) as TutorialSurfaceDirective
+    ).appTutorialSurface(),
+  ).toBe(screenKey);
   const element = fixture.nativeElement as HTMLElement;
+  expect(element.querySelector('app-tutorial-launcher')).toBeNull();
   const anchors = [...element.querySelectorAll<HTMLElement>('[data-tour]')];
   for (const anchor of anchors) {
     expect(isTutorialAnchorForScreen(screenKey, anchor.dataset['tour'] ?? '')).toBe(true);

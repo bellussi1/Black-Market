@@ -5,7 +5,7 @@
   [appTutorialSurfaceReady]="tutorialReady()"
 >
   @if (!kind()) {
-    <header class="tool-heading">
+    <header class="tool-heading" aria-labelledby="capture-title">
       <p class="tool-kicker">IMPORTAR CAPTURAS</p>
       <h1 id="capture-title">Seus dados do jogo, em uma captura</h1>
       <p>
@@ -36,15 +36,15 @@
       </aside>
     </section>
   } @else {
-    <div class="review-toolbar">
-      <div>
+    <header class="tool-heading review-toolbar" aria-labelledby="scan-review-heading">
+      <div class="review-heading-copy">
         <p class="tool-kicker">CAPTURA EM REVISÃO</p>
-        <h1>Revisar captura</h1>
+        <h1 id="scan-review-heading">Revisar captura</h1>
       </div>
       <button hlmBtn variant="outline" type="button" (click)="kind.set(null)">
         Importar outra tela
       </button>
-    </div>
+    </header>
   }
 
   <section

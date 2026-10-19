@@ -8,6 +8,16 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('groups the stock heading and item list with accessible names', async () => {
+    const fixture = await renderComponent(StockPage);
+    const element: HTMLElement = fixture.nativeElement;
+    const heading = element.querySelector('header.tool-heading');
+    const list = element.querySelector('section[aria-labelledby="stock-items-title"]');
+
+    expect(heading?.getAttribute('aria-labelledby')).toBe('stock-page-title');
+    expect(heading?.querySelector('#stock-page-title')?.textContent).toContain('Armazém');
+    expect(list?.querySelector('#stock-items-title')?.textContent).toContain('Itens cadastrados');
+  });
   it('reserves the item icon slot while catalog metadata is fetched and reuses the lookup for local edits', async () => {
     const response = new Subject<{ items: { id: number; name: string; grade: number }[] }>();
     const catalog = {

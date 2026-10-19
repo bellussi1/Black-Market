@@ -46,8 +46,16 @@ describe('Character equipment management', () => {
       'Meus equipamentos',
     );
     expect(
+      standaloneElement.querySelector('header.tool-heading')?.getAttribute('aria-labelledby'),
+    ).toBe('gear-page-title');
+    expect(
       standaloneElement.querySelector('section.panel .panel-heading h2')?.textContent,
     ).toContain('Personagem');
+    expect(
+      standaloneElement.querySelector(
+        'section[aria-labelledby="gear-character-title"] #gear-character-title',
+      )?.textContent,
+    ).toContain('Personagem ativo');
     expect(standaloneElement.querySelector('details summary')?.textContent).toContain(
       'Cadastrar personagem',
     );
@@ -61,6 +69,10 @@ describe('Character equipment management', () => {
     expect(embeddedElement.querySelector('.panel-heading h2')?.textContent).toContain(
       'Equipamentos do personagem',
     );
+    expect(
+      embeddedElement.querySelector('.gear-embedded-header')?.getAttribute('aria-labelledby'),
+    ).toBe('gear-embedded-title');
+    expect(embeddedElement.querySelector('#gear-embedded-title')).not.toBeNull();
     expect(embeddedElement.querySelector('app-equipment-sheet')).not.toBeNull();
     expect(embeddedElement.querySelector('.equipment-editor summary')?.textContent).toContain(
       'Adicionar ou corrigir equipamento manualmente',
