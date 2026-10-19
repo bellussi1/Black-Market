@@ -184,17 +184,17 @@
 
 .bdo-mastery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 0.5rem;
 }
 
 .bdo-mastery-cell,
 .bdo-stat-cell {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.35rem 0.6rem;
+  gap: var(--bm-space-3);
+  padding: var(--bm-space-2) var(--bm-space-3);
   border: 1px solid var(--bm-border);
   border-radius: 2px;
   background: var(--bm-surface);
@@ -203,14 +203,12 @@
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--bm-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
   }
 
   input {
-    width: 78px;
-    min-height: 2rem;
+    width: 100%;
+    min-height: var(--bm-control-height);
     padding: 0.2rem 0.45rem;
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -221,7 +219,7 @@
 
 .bdo-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 0.5rem;
 }
 
@@ -279,7 +277,14 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
+
+  > .panel {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: var(--bm-space-4);
+  }
 }
 
 .bdo-skill-badges {
