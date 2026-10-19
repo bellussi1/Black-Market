@@ -40,7 +40,8 @@
 /* The two decision boxes share a row; the recipe workspace spans both columns. */
 :host(:not(.summary-only)) {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 16px;
 
   > * {
@@ -61,7 +62,7 @@
   }
 
   > .production-settings .production-configuration {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   > .production-settings .production-method {
@@ -73,15 +74,7 @@
   }
 
   > .economic-dashboard .economic-metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  > .economic-dashboard .metric-card:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--bm-border);
-  }
-
-  > .economic-dashboard .metric-card:nth-child(2) {
-    border-right: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -880,7 +873,7 @@
 }
 
 .optimization-status {
-  min-height: 40px;
+  min-height: 0;
   margin: 0;
   padding: 4px 14px;
   overflow-wrap: anywhere;
@@ -1020,7 +1013,7 @@
   color: var(--bm-warning, var(--bm-accent));
 }
 
-@media (max-width: 900px) {
+@container economic-dashboard (max-width: 479px) {
   .economic-dashboard .economic-metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1154,12 +1147,13 @@
   width: 100%;
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--bm-space-2);
 }
 
 .economic-summary-header .scenario-actions button {
   width: 100%;
+  min-width: 0;
   min-height: var(--bm-control-height);
   height: auto;
   padding: var(--bm-space-2) var(--bm-space-3);
@@ -1171,6 +1165,34 @@
   small {
     font-size: var(--bm-text-meta);
     line-height: 1.4;
+  }
+}
+
+.economic-summary-header .scenario-actions .optimize-action {
+  grid-column: 1 / -1;
+}
+
+@container economic-dashboard (min-width: 480px) {
+  .economic-summary-header .scenario-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .economic-summary-header .scenario-actions .optimize-action {
+    grid-column: auto;
+  }
+}
+
+@container economic-dashboard (max-width: 479px) {
+  :host(:not(.summary-only)) > .economic-dashboard .economic-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host(:not(.summary-only)) > .economic-dashboard .metric-card:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--bm-border);
+  }
+
+  :host(:not(.summary-only)) > .economic-dashboard .metric-card:nth-child(2) {
+    border-right: 0;
   }
 }
 
