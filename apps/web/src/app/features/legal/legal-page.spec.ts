@@ -42,15 +42,12 @@ describe('legal navigation and privacy controls', () => {
       );
     });
   }
-  it('describes tutorial start, completion and dismissal as optional aggregate analytics', () => {
+  it('describes optional tutorial analytics without implementation field names', () => {
     const policy = JSON.stringify(legalDocuments['privacy']);
-    expect(policy).toContain('tutorial_started');
-    expect(policy).toContain('tutorial_completed');
-    expect(policy).toContain('tutorial_dismissed');
-    expect(policy).toContain('screenKey');
-    expect(policy).toContain('guideUpdatedAt');
+    expect(policy).toContain('início, conclusão ou encerramento de um tutorial');
+    expect(policy).toContain('revisão editorial do guia');
+    expect(policy).toContain('não registram passos individuais do tutorial');
     expect(policy).toContain('opcionais');
-    expect(policy).toContain('agregados');
   });
 
   it('navigates all four public legal routes and marks the current document', async () => {
