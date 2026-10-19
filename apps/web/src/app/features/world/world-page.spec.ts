@@ -8,6 +8,20 @@ import { WorldPage } from './world-page';
 describe('WorldPage loading state', () => {
   useMemoryStorage();
 
+  it('uses the shared page workspace and keeps map controls under the primary heading', async () => {
+    const fixture = await renderComponent(WorldPage, {}, [
+      { provide: HttpClient, useValue: { get: () => new Subject<unknown>() } },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.tool-page')).not.toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain('Conecte sua produção');
+    expect(element.querySelector('input[type="search"]')).not.toBeNull();
+    expect(
+      element.querySelector('app-worker-empire .empire[aria-labelledby="empire-title"]'),
+    ).not.toBeNull();
+  });
+
   it('reserves the map dimensions and exposes a busy status while connections load', async () => {
     const fixture = await renderComponent(WorldPage, {}, [
       { provide: HttpClient, useValue: { get: () => new Subject<unknown>() } },

@@ -11,7 +11,7 @@ svg {
   background: var(--bm-background);
   border: 1px solid var(--bm-border);
   border-radius: 2px;
-  margin-block: 20px;
+  margin-block: var(--bm-space-5);
   animation: world-map-enter 180ms ease-out both;
 }
 
@@ -21,7 +21,7 @@ svg {
   aspect-ratio: 1;
   max-height: 640px;
   overflow: hidden;
-  margin-block: 20px;
+  margin-block: var(--bm-space-5);
   border: 1px solid var(--bm-border);
   background: var(--bm-background);
 }
@@ -72,7 +72,7 @@ svg {
 .world-map-skeleton {
   height: min(64vw, 640px);
   min-height: 320px;
-  margin-block: 20px;
+  margin-block: var(--bm-space-5);
 }
 .world-map-skeleton app-loading-skeleton,
 .world-map-skeleton .skeleton-status,

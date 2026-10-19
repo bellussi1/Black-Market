@@ -17,6 +17,16 @@ describe('WorkerEmpireComponent', () => {
       main: true,
     },
   ];
+  it('keeps the worker empire as one labelled workspace with a clear first action', async () => {
+    const fixture = await renderComponent(WorkerEmpireComponent, { nodes });
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.empire[aria-labelledby="empire-title"]')).not.toBeNull();
+    expect(element.querySelector('#empire-title')?.textContent).toContain('contribuição');
+    expect(element.querySelector('button[type="button"]')?.textContent).toContain('Novo império');
+    expect(element.querySelector('#empire-settings')).not.toBeNull();
+  });
+
   it('renders labelled inputs and saves a plan in the existing workspace backup', async () => {
     const fixture = await renderComponent(WorkerEmpireComponent, { nodes });
     const page = fixture.componentInstance;

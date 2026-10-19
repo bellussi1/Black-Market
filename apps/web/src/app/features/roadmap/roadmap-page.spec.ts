@@ -72,6 +72,10 @@ describe('RoadmapPage', () => {
     const fixture = await renderComponent(RoadmapPage);
     const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));
 
+    expect(fixture.nativeElement.querySelector('.roadmap-page.tool-page')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('h1#roadmap-title')?.textContent).toContain(
+      'Roadmap',
+    );
     expect(surface?.injector.get(TutorialSurfaceDirective).appTutorialSurface()).toBe('roadmap');
     expect(fixture.nativeElement.querySelector('[data-tour="roadmap.progress"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-tutorial-launcher')).toBeNull();

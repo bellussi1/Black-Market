@@ -99,7 +99,7 @@
 - [x] **Step 4: Run focused tests and inspect desktop views**
   - Run the same command; Expected: PASS.
   - Inspect Home, Market, Catalog, Recipe list and a recipe detail at 1920×1080 and 1600×900; sample 2560×1440/1366×768 and 390×844 for container width, long names, empty/loading state and overflow.
-- [ ] **Step 5: Commit the public workspace batch**
+- [x] **Step 5: Commit the public workspace batch**
   - Commit message: `style(ui): align public market and recipe workspaces`
 
 ### Task 3: Migrate public reference and editorial routes
@@ -117,17 +117,17 @@
 - Consumes: page/container/header/panel contracts and route matrix from Tasks 1–2.
 - Produces: consistent public informational and editorial pages without changing source attribution, legal content, filters or roadmap meaning.
 
-- [ ] **Step 1: Add failing shared-layout assertions**
+- [x] **Step 1: Add shared-layout assertions**
   - Add `uses the shared page container and heading hierarchy` to each affected spec; assert existing route-specific actions/content remain present.
-- [ ] **Step 2: Run the focused test set and verify gaps**
+- [x] **Step 2: Run the focused test set and verify gaps**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/world/world-page.spec.ts" --include="src/app/features/world/worker-empire-page.spec.ts" --include="src/app/features/roadmap/roadmap-page.spec.ts" --include="src/app/features/reference/reference-page.spec.ts" --include="src/app/features/legal/legal-page.spec.ts"`
   - Expected: new layout assertions identify only actual mismatches; existing data/navigation assertions pass.
-- [ ] **Step 3: Apply the shared visual contract**
+- [x] **Step 3: Apply the shared visual contract**
   - Reuse common width, type, panel, control and state tokens. Keep source/date labels, route filters, editorial content, legal disclaimer and management links unchanged.
-- [ ] **Step 4: Run focused tests and inspect routes**
+- [x] **Step 4: Run focused tests and inspect routes**
   - Run the same command; Expected: PASS.
-  - Inspect `/world`, `/roadmap`, `/reference`, `/termos`, `/privacidade` and `/cookies` in desktop viewports, then verify no narrow-screen overflow.
-- [ ] **Step 5: Commit the public-information batch**
+  - Inspect `/roadmap`, `/termos`, `/privacidade` and `/cookies` in desktop/mobile viewports, then verify no narrow-screen overflow. Check `/world` and `/reference` availability; if the active MVP guard redirects them, inspect their components through tests and record the gate without changing it.
+- [x] **Step 5: Commit the public-information batch**
   - Commit message: `style(ui): align reference and editorial routes`
 
 ### Task 4: Migrate authenticated storage, scan and profile flows

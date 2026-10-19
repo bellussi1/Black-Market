@@ -4,15 +4,15 @@
 
 .empire {
   display: grid;
-  gap: 1.25rem;
-  margin-top: 2rem;
+  gap: var(--bm-space-5);
+  margin-top: var(--bm-space-6);
 }
 
 .empire-heading {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--bm-space-5);
 }
 
 .empire-heading h2 {
@@ -48,13 +48,13 @@
 }
 
 .empire h3 {
-  margin-block: 0 1.25rem;
+  margin-block: 0 var(--bm-space-4);
 }
 
 .empire-metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--bm-space-4);
 }
 
 .summary {
@@ -62,7 +62,7 @@
 }
 
 .worker-list {
-  margin-block: 1.25rem;
+  margin-block: var(--bm-space-4);
 }
 
 .worker-row,
@@ -70,8 +70,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  padding-block: 0.75rem;
+  gap: var(--bm-space-3);
+  padding-block: var(--bm-space-3);
   border-bottom: 1px solid var(--bm-border);
 }
 
@@ -88,14 +88,14 @@
 .task-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-block: 1rem;
+  gap: var(--bm-space-4);
+  margin-block: var(--bm-space-4);
 }
 
 .task-card {
   border: 1px solid var(--bm-border);
   border-radius: 2px;
-  padding: 1.25rem;
+  padding: var(--bm-space-5);
   background: var(--bm-background);
   overflow-wrap: anywhere;
 }
@@ -105,7 +105,7 @@
 }
 
 .task-card h4 {
-  margin-block: 0.5rem;
+  margin-block: var(--bm-space-2);
   font-size: 1.2rem;
 }
 
@@ -113,7 +113,7 @@
   display: block;
   color: var(--bm-text);
   font-size: 1.5rem;
-  margin-block: 1rem;
+  margin-block: var(--bm-space-4);
 }
 
 .task-actions,
@@ -121,28 +121,28 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: var(--bm-space-3);
+  margin-top: var(--bm-space-4);
 }
 
 fieldset {
   min-width: 0;
   border: 1px solid var(--bm-border);
   border-radius: 2px;
-  margin-block: 1rem;
-  padding: 1rem;
+  margin-block: var(--bm-space-4);
+  padding: var(--bm-space-4);
 }
 
 summary {
   cursor: pointer;
-  margin-block: 0.75rem;
+  margin-block: var(--bm-space-3);
   min-height: 44px;
 }
 
 .check {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--bm-space-3);
   min-height: 44px;
   cursor: pointer;
 }

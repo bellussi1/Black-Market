@@ -32,6 +32,9 @@ describe('ReferencePage loading states', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const resultsRegion = element.querySelector('[data-reference-results]');
+    expect(element.querySelector('.tool-page .tool-heading')).not.toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain('Referências do jogo');
+    expect(element.querySelector('input[type="search"]')).not.toBeNull();
     expect(api.list).toHaveBeenCalledOnce();
     expect(resultsRegion?.getAttribute('aria-busy')).toBe('true');
     expect(resultsRegion?.querySelectorAll('.reference-skeleton-card')).toHaveLength(24);

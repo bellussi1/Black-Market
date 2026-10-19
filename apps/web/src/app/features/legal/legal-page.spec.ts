@@ -23,6 +23,7 @@ describe('legal navigation and privacy controls', () => {
         .flush({ contactEmail: 'enzobellussi3@gmail.com', controllerName: 'Bellussi' });
       fixture.detectChanges();
       const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelector('.legal-page.tool-page .tool-heading')).not.toBeNull();
       expect(element.querySelector('h1')?.textContent).toContain(legalDocuments[key].title);
       expect(element.querySelector('a[href="mailto:enzobellussi3@gmail.com"]')).not.toBeNull();
       expect(element.querySelectorAll('nav[aria-label="Documentos da plataforma"] a').length).toBe(

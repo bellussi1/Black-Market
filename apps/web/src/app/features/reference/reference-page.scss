@@ -33,9 +33,9 @@
 .reference-skeleton-card {
   display: grid;
   align-content: start;
-  gap: 1rem;
+  gap: var(--bm-space-4);
   min-height: 7rem;
-  padding: 1rem;
+  padding: var(--bm-space-4);
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
 }
@@ -65,7 +65,7 @@
 
 .reference-detail-loading {
   display: grid;
-  gap: 1rem;
+  gap: var(--bm-space-4);
   min-height: 22rem;
   animation: reference-loading-enter 180ms ease-out both;
 }
@@ -73,7 +73,7 @@
 .reference-detail-skeleton {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+  gap: var(--bm-space-3);
   align-content: start;
 }
 
