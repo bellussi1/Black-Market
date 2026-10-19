@@ -1,10 +1,22 @@
 import type { CatalogItemDetail } from '@bdo/shared';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { renderComponent } from '../../testing/test-setup';
 import { RecipeItemQuickInfo } from './recipe-item-quick-info';
 
 describe('recipe item quick information', () => {
+  it('consumes wheel scrolling inside details without zooming or scrolling its ancestors', async () => {
+    const fixture = await renderComponent(RecipeItemQuickInfo, { fallbackName: 'Item' });
+    const element = fixture.nativeElement as HTMLElement;
+    const outsideWheel = vi.fn();
+    element.addEventListener('wheel', outsideWheel);
+    const panel = element.querySelector('.quick-item-info') as HTMLElement;
+    const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 120 });
+    panel.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
+    expect(panel.scrollTop).toBe(120);
+    expect(outsideWheel).not.toHaveBeenCalled();
+  });
   it('keeps the game item identity compact and reveals long descriptions on demand', async () => {
     const item: CatalogItemDetail = {
       id: 1,

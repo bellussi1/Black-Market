@@ -3,13 +3,14 @@
   [attr.data-grade]="item()?.grade"
   role="dialog"
   aria-modal="false"
+  data-scrollable
   [attr.aria-label]="'Detalhes de ' + (item()?.name || fallbackName())"
   [attr.aria-busy]="loading()"
   animate.enter="quick-info-enter"
   animate.leave="quick-info-leave"
   (pointerdown)="$event.stopPropagation()"
   (click)="$event.stopPropagation()"
-  (wheel)="$event.stopPropagation()"
+  (wheel)="scrollDetails($event)"
   (keydown.escape)="dismiss.emit()"
 >
   <div class="quick-titlebar">

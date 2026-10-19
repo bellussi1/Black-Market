@@ -54,7 +54,7 @@ export class RecipeGraph {
   readonly focus = signal('');
   readonly dragging = signal(false);
   readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
-  readonly quickInfoPosition = signal({ left: 12, top: 12 });
+  readonly quickInfoPosition = signal({ left: 12, top: 12, maxHeight: 340 });
   readonly ancestor = isGraphAncestor;
   readonly typeLabel = recipeTypeLabel;
   readonly families = (node: RecipeNode) => recipeFamilies(node.options).map((family) => family[0]);
@@ -114,6 +114,7 @@ export class RecipeGraph {
   private observer?: ResizeObserver;
   private observed = new Set<Element>();
   private measureFrame = 0;
+  private positionFrame = 0;
   private wheelFrame = 0;
   private pendingWheel = { delta: 0, x: 0, y: 0 };
   private suppressClick = false;
@@ -176,6 +177,8 @@ export class RecipeGraph {
       if (!viewport) return;
       viewport.addEventListener('wheel', this.wheel, { passive: false });
       viewport.addEventListener('click', this.clickCapture, true);
+      window.addEventListener('scroll', this.onViewportChange, { passive: true });
+      window.addEventListener('resize', this.onViewportChange);
       if (typeof ResizeObserver !== 'undefined') {
         this.observer = new ResizeObserver(() => {
           this.scheduleMeasure();
@@ -188,8 +191,11 @@ export class RecipeGraph {
       this.destroyRef.onDestroy(() => {
         viewport.removeEventListener('wheel', this.wheel);
         viewport.removeEventListener('click', this.clickCapture, true);
+        window.removeEventListener('scroll', this.onViewportChange);
+        window.removeEventListener('resize', this.onViewportChange);
         this.observer?.disconnect();
         cancelAnimationFrame(this.measureFrame);
+        cancelAnimationFrame(this.positionFrame);
         cancelAnimationFrame(this.wheelFrame);
         this.end();
       });
@@ -208,7 +214,9 @@ export class RecipeGraph {
   private refreshObservedNodes() {
     const viewport = this.viewport()?.nativeElement;
     if (!viewport) return;
-    const nodes = new Set(viewport.querySelectorAll<HTMLElement>('[data-node-path]'));
+    const nodes = new Set(
+      viewport.querySelectorAll<HTMLElement>('[data-node-path], app-recipe-item-quick-info'),
+    );
     for (const node of this.observed)
       if (!nodes.has(node as HTMLElement)) {
         this.observer?.unobserve(node);
@@ -231,22 +239,41 @@ export class RecipeGraph {
     if (!node) return;
     const bounds = viewport.getBoundingClientRect(),
       target = node.getBoundingClientRect(),
-      width = Math.max(0, Math.min(340, viewport.clientWidth - 24)),
-      height = Math.max(0, Math.min(340, viewport.clientHeight - 24));
+      panel = viewport.querySelector<HTMLElement>('app-recipe-item-quick-info'),
+      visibleLeft = Math.max(0, -bounds.left),
+      visibleRight = Math.min(viewport.clientWidth, window.innerWidth - bounds.left),
+      visibleTop = Math.max(0, -bounds.top),
+      visibleBottom = Math.min(viewport.clientHeight, window.innerHeight - bounds.top);
+    if (visibleRight <= visibleLeft || visibleBottom <= visibleTop) return;
+    const maxHeight = Math.max(0, Math.min(340, visibleBottom - visibleTop - 24)),
+      width = Math.min(panel?.offsetWidth || 340, viewport.clientWidth - 24),
+      height = Math.min(panel?.offsetHeight || maxHeight, maxHeight);
     let left = target.right - bounds.left + 12;
-    if (left + width > viewport.clientWidth - 12) left = target.left - bounds.left - width - 12;
+    if (left + width > visibleRight - 12) left = target.left - bounds.left - width - 12;
     const top = Math.max(
-      12,
-      Math.min(target.top - bounds.top, viewport.clientHeight - height - 12),
+      visibleTop + 12,
+      Math.min(target.top - bounds.top, visibleBottom - height - 12),
     );
     const next = {
-      left: Math.max(12, Math.min(left, viewport.clientWidth - width - 12)),
+      left: Math.max(visibleLeft + 12, Math.min(left, visibleRight - width - 12)),
       top,
+      maxHeight,
     };
     const current = this.quickInfoPosition();
-    if (Math.abs(current.left - next.left) > 1 || Math.abs(current.top - next.top) > 1)
+    if (
+      Math.abs(current.left - next.left) > 1 ||
+      Math.abs(current.top - next.top) > 1 ||
+      current.maxHeight !== next.maxHeight
+    )
       this.quickInfoPosition.set(next);
   }
+  private onViewportChange = () => {
+    if (!this.quickInfo() || this.positionFrame) return;
+    this.positionFrame = requestAnimationFrame(() => {
+      this.positionFrame = 0;
+      this.refreshQuickInfoPosition();
+    });
+  };
   private focusNewQuickInfo() {
     const path = this.quickInfo()?.path ?? '';
     if (!path) {
@@ -294,7 +321,29 @@ export class RecipeGraph {
   }
   emit(path: string, action: BranchAction['action'], selectionPath = path) {
     this.localSelection.set({ path: selectionPath, ownerPath: path });
+    if (action === 'expand') this.revealExpandedItem(path);
     this.action.emit({ path, action });
+  }
+  private revealExpandedItem(path: string) {
+    const node = this.layout().nodes.find((entry) => entry.node.path === path);
+    const viewport = this.viewport()?.nativeElement;
+    if (!node || !viewport?.clientWidth || !viewport.clientHeight) return;
+    this.initialFitPending = false;
+    const bounds = viewport.getBoundingClientRect();
+    const top = Math.max(0, -bounds.top);
+    const bottom = Math.min(viewport.clientHeight, window.innerHeight - bounds.top);
+    const halfHeight = (node.height * this.zoom()) / 2;
+    const targetY =
+      bottom > top
+        ? Math.max(
+            top + halfHeight + 12,
+            Math.min(top + (bottom - top) / 3, bottom - halfHeight - 12),
+          )
+        : viewport.clientHeight / 3;
+    this.pan.set({
+      x: viewport.clientWidth / 2 - (node.x + node.width / 2) * this.zoom(),
+      y: targetY - (node.y + node.height / 2) * this.zoom(),
+    });
   }
   selectLocation(path: string, itemPath: string, source: ItemSources['nodes'][number]) {
     this.localSelection.set({ path, ownerPath: itemPath });

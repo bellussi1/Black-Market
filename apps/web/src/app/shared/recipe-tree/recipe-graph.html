@@ -296,6 +296,7 @@
         <app-recipe-item-quick-info
           [style.left.px]="quickInfoPosition().left"
           [style.top.px]="quickInfoPosition().top"
+          [style.--quick-info-max-height]="quickInfoPosition().maxHeight + 'px'"
           [item]="info.item"
           [fallbackName]="entry.node.part.name"
           [fallbackCategory]="entry.node.category ?? 'Item'"

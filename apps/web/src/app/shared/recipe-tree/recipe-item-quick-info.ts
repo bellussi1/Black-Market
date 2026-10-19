@@ -19,6 +19,14 @@ export interface RecipeItemQuickInfoState {
   styleUrl: './recipe-item-quick-info.scss',
 })
 export class RecipeItemQuickInfo {
+  scrollDetails(event: WheelEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    const panel = event.currentTarget as HTMLElement;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? panel.clientHeight : 1;
+    panel.scrollTop += event.deltaY * unit;
+    panel.scrollLeft += event.deltaX * unit;
+  }
   readonly item = input<CatalogItemDetail | null>(null);
   readonly fallbackName = input('Item não informado');
   readonly fallbackCategory = input('Item');

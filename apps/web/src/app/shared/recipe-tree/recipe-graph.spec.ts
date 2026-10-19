@@ -6,6 +6,59 @@ import { layoutRecipeGraph } from './recipe-graph-model';
 import { nodeFor } from './recipe-tree-model';
 describe('Accessible graph controls', () => {
   useMemoryStorage();
+  it('reveals a manually expanded item once without changing zoom or recentering collapse', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    root.expanded = true;
+    root.children = [nodeFor({ itemId: 2, name: 'Material', quantity: '1' }, 'root/0')];
+    const fixture = await renderComponent(RecipeGraph, { root });
+    const viewport = fixture.nativeElement.querySelector('.graph-viewport') as HTMLElement;
+    Object.defineProperties(viewport, {
+      clientWidth: { value: 800 },
+      clientHeight: { value: 600 },
+    });
+    vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 800, 600));
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const graph = fixture.componentInstance;
+    graph.zoom.set(0.7);
+    graph.pan.set({ x: -500, y: -300 });
+    graph.emit('root/0', 'expand');
+    const node = graph.layout().nodes.find((entry) => entry.node.path === 'root/0')!;
+    expect((node.x + node.width / 2) * graph.zoom() + graph.pan().x).toBeCloseTo(400);
+    expect((node.y + node.height / 2) * graph.zoom() + graph.pan().y).toBeCloseTo(200);
+    expect(graph.zoom()).toBe(0.7);
+    const pan = graph.pan();
+    graph.emit('root/0', 'collapse');
+    expect(graph.pan()).toEqual(pan);
+  });
+
+  it('keeps item details inside the browser-visible portion of a scrolled canvas', async () => {
+    const root = nodeFor({ itemId: 1, name: 'Produto', quantity: '1' }, 'root');
+    const fixture = await renderComponent(RecipeGraph, {
+      root,
+      quickInfo: { path: 'root', item: null, loading: true },
+    });
+    const viewport = fixture.nativeElement.querySelector('.graph-viewport') as HTMLElement;
+    const node = fixture.nativeElement.querySelector('.graph-node') as HTMLElement;
+    const panel = fixture.nativeElement.querySelector('app-recipe-item-quick-info') as HTMLElement;
+    Object.defineProperties(viewport, {
+      clientWidth: { value: 800 },
+      clientHeight: { value: 600 },
+    });
+    Object.defineProperties(panel, { offsetWidth: { value: 340 }, offsetHeight: { value: 300 } });
+    vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, -400, 800, 600));
+    vi.spyOn(node, 'getBoundingClientRect').mockReturnValue(new DOMRect(200, 100, 220, 100));
+    (
+      fixture.componentInstance as unknown as { refreshQuickInfoPosition(): void }
+    ).refreshQuickInfoPosition();
+    const position = fixture.componentInstance.quickInfoPosition() as {
+      left: number;
+      top: number;
+      maxHeight?: number;
+    };
+    expect(position.top).toBeGreaterThanOrEqual(412);
+    expect(position.maxHeight).toBe(176);
+    expect(position.top + position.maxHeight!).toBeLessThanOrEqual(588);
+  });
   it('reserves all shallow ingredients before spending the node limit on earlier branches', () => {
     const root = nodeFor({ itemId: 1, name: 'Raiz', quantity: '1' }, 'root');
     root.expanded = true;

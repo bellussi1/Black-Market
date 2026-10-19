@@ -41,7 +41,7 @@
 .graph-viewport {
   position: relative;
   height: clamp(460px, 65vh, 760px);
-  overflow: hidden;
+  overflow: clip;
   border: 1px solid var(--bm-border);
   background: var(--bm-input);
   touch-action: none;
