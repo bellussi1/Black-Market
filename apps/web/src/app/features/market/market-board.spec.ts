@@ -62,6 +62,16 @@ async function renderMarketBoard(categories: CatalogCategory[] = []) {
 
 describe('MarketBoard', () => {
   useMemoryStorage();
+  it('keeps market navigation and the table state inside its domain window', async () => {
+    const fixture = await renderMarketBoard();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.market-window h2')).not.toBeNull();
+    expect(element.querySelector('.market-window .board-search input')).not.toBeNull();
+    expect(element.querySelector('.market-categories button[aria-pressed="true"]')).not.toBeNull();
+    expect(element.querySelector('.board-table-scroll[role="region"]')).not.toBeNull();
+  });
+
   it('reserves the category tree and announces taxonomy loading', async () => {
     const fixture = await renderComponent(MarketBoard);
     const http = TestBed.inject(HttpTestingController);

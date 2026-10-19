@@ -4,16 +4,13 @@
 
 .home-page {
   display: grid;
-  gap: 24px;
-  margin: auto;
-  padding: var(--bm-page-pad-top) 0 var(--bm-page-pad-bottom);
-  max-width: var(--bm-page-max);
+  gap: var(--bm-space-4);
 }
 
 .home-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
-  gap: 24px;
+  gap: var(--bm-space-5);
   padding: 0;
   align-items: start;
 }
@@ -21,12 +18,13 @@
 .home-entry {
   display: grid;
   min-width: 0;
-  gap: 14px;
+  gap: var(--bm-space-4);
 }
 
 .hero-intro h1 {
-  margin: 10px 0 10px;
-  font: 500 clamp(26px, 2.8vw, 34px)/1.2 var(--bm-font-display);
+  margin: var(--bm-space-3) 0;
+  font: 500 clamp(var(--bm-text-page-min), 2.8vw, var(--bm-text-page-max))/1.2
+    var(--bm-font-display);
   letter-spacing: -0.015em;
   max-width: 30ch;
 }
@@ -574,7 +572,7 @@
 @media (max-width: 900px) {
   .home-hero {
     grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    gap: var(--bm-space-5);
     padding-top: 10px;
   }
 
@@ -584,14 +582,10 @@
 }
 
 @media (max-width: 760px) {
-  .home-page {
-    padding-top: 28px;
-  }
-
   .hero-intro h1 {
     max-width: 15ch;
-    margin: 10px 0 8px;
-    font-size: 30px;
+    margin: var(--bm-space-3) 0;
+    font-size: var(--bm-text-page-mobile);
   }
 
   .hero-copy {

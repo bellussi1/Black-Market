@@ -10,6 +10,24 @@ import { ItemCatalogPage } from './item-catalog-page';
 describe('catalog product analytics', () => {
   useMemoryStorage();
 
+  it('uses the shared page container and exposes catalog search as the primary action', async () => {
+    const catalog = {
+      getCategories: () => of({ categories: [] }),
+      getItems: () => of({ items: [], total: 0, dataset: null }),
+      resolveIconUrl: () => null,
+    } as unknown as CatalogApiService;
+    const fixture = await renderComponent(ItemCatalogPage, {}, [
+      { provide: CatalogApiService, useValue: catalog },
+      { provide: AnalyticsService, useValue: { capture: vi.fn() } },
+    ]);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.catalog-shell.tool-page')).not.toBeNull();
+    expect(element.querySelector('h1#catalog-title')?.textContent).toContain('Catálogo de itens');
+    expect(element.querySelector('.catalog-tools input[type="search"]')).not.toBeNull();
+    expect(element.querySelector('.catalog-results')).not.toBeNull();
+  });
+
   it('records search outcomes and detail opens without the query or item identity', async () => {
     const capture = vi.fn();
     const item = {

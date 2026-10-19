@@ -89,14 +89,14 @@
 - Consumes: shared tokens/controls from the foundation plan and existing Market/Recipe data contracts.
 - Produces: consistent page/container/heading/control rhythm while preserving Home focus card, Market filters/table/chart and recipe search/tree/details.
 
-- [ ] **Step 1: Add failing view-contract assertions**
+- [x] **Step 1: Add failing view-contract assertions**
   - Add one assertion in each listed page spec for shared page container, heading hierarchy, main action/state and active-navigation semantics. Add long-title and empty-result cases where the existing fixture permits.
-- [ ] **Step 2: Run focused public-workspace tests**
+- [x] **Step 2: Run focused public-workspace tests**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/dashboard/dashboard-page.spec.ts" --include="src/app/features/market/market-page.spec.ts" --include="src/app/features/market/market-board.spec.ts" --include="src/app/features/recipes/recipes-page.spec.ts" --include="src/app/features/catalog/item-catalog-page.spec.ts" --include="src/app/features/catalog/item-detail-page.spec.ts"`
   - Expected: any new structural assertion fails only where a route diverges from the shared contract; existing calculations and filters pass.
-- [ ] **Step 3: Align only evidenced layout/control divergence**
+- [x] **Step 3: Align only evidenced layout/control divergence**
   - Replace local common margins, header typography, buttons/tabs and state spacing with shared tokens. Preserve all domain-specific table, chart, tree, search and detail interactions; do not change API or calculations.
-- [ ] **Step 4: Run focused tests and inspect desktop views**
+- [x] **Step 4: Run focused tests and inspect desktop views**
   - Run the same command; Expected: PASS.
   - Inspect Home, Market, Catalog, Recipe list and a recipe detail at 1920×1080 and 1600×900; sample 2560×1440/1366×768 and 390×844 for container width, long names, empty/loading state and overflow.
 - [ ] **Step 5: Commit the public workspace batch**

@@ -57,6 +57,16 @@ const roadmapFixture: RoadmapEntry[] = [
 ];
 
 describe('DashboardPage', () => {
+  it('uses the shared page container and keeps a clear primary heading and public entry actions', async () => {
+    const fixture = await renderComponent(DashboardPage);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.home-page.tool-page')).not.toBeNull();
+    expect(element.querySelectorAll('h1')).toHaveLength(1);
+    expect(element.querySelector('[data-home-professions-link]')).not.toBeNull();
+    expect(element.querySelector('.home-search app-catalog-item-picker')).not.toBeNull();
+  });
+
   it('avoids an unqualified game-name claim in the home kicker', async () => {
     const fixture = await renderComponent(DashboardPage);
     const kicker = fixture.nativeElement.querySelector('.tool-kicker')?.textContent ?? '';

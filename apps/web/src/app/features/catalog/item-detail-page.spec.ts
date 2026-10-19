@@ -12,6 +12,35 @@ import { ItemDetailPage } from './item-detail-page';
 describe('ItemDetailPage loading state', () => {
   useMemoryStorage();
 
+  it('keeps the shared detail container, item title and route actions together', async () => {
+    const api = {
+      getItem: () => new Subject<unknown>(),
+      getItemRecipes: () => new Subject<unknown>(),
+      resolveIconUrl: () => null,
+    } as unknown as CatalogApiService;
+    const fixture = await renderComponent(ItemDetailPage, {}, [
+      {
+        provide: ActivatedRoute,
+        useValue: { paramMap: of(convertToParamMap({ id: '9001' })) },
+      },
+      { provide: CatalogApiService, useValue: api },
+      { provide: SeoService, useValue: { unavailable: vi.fn(), describe: vi.fn() } },
+    ]);
+    fixture.componentInstance.item.set({
+      id: 9001,
+      name: 'Item de teste',
+      categories: [],
+      sourceData: {},
+    } as never);
+    fixture.componentInstance.loading.set(false);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.item-detail-page.tool-page')).not.toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain('Item de teste');
+    expect(element.querySelector('.action-row a[routerLink]')).not.toBeNull();
+  });
+
   it('reserves the item detail layout while catalog requests are pending', async () => {
     const api = {
       getItem: () => new Subject<unknown>(),

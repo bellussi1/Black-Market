@@ -4,7 +4,6 @@
 }
 .recipe-explorer {
   position: relative;
-  max-width: var(--bm-page-max);
 }
 .pagination-current {
   min-inline-size: 100px;
@@ -31,14 +30,6 @@
   .recipe-explorer a {
     transition: none;
   }
-}
-.recipe-explorer .tool-heading {
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-}
-.recipe-explorer .tool-heading h1 {
-  font-size: 23px;
-  margin-bottom: 0;
 }
 .recipe-explorer .tool-heading p[hidden] {
   display: none;

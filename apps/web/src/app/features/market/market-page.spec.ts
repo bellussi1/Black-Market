@@ -33,6 +33,22 @@ async function render(component: typeof MarketPage) {
 
 describe('MarketPage', () => {
   useMemoryStorage();
+  it('uses the shared page heading and exposes one selected workspace view', async () => {
+    const fixture = await render(MarketPage);
+    const element = fixture.nativeElement as HTMLElement;
+    const pageButtons = Array.from(
+      element.querySelectorAll<HTMLButtonElement>('.workspace-tabs button'),
+    );
+
+    expect(element.querySelector('.tool-page.market-page')).not.toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain('Mercado Central');
+    expect(pageButtons).toHaveLength(2);
+    expect(
+      pageButtons.filter((button) => button.getAttribute('aria-pressed') === 'true'),
+    ).toHaveLength(1);
+    expect(element.querySelector('.market-window h2')).not.toBeNull();
+  });
+
   it('maps each market tab to its own tutorial without a launcher or extra host', async () => {
     const fixture = await render(MarketPage);
     const surface = fixture.debugElement.query(By.directive(TutorialSurfaceDirective));

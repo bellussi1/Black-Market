@@ -22,6 +22,15 @@ const dataset = {
 describe('Universal recipe explorer', () => {
   useMemoryStorage();
   useTutorialGuideStub();
+  it('uses the shared page container and keeps search and result content under one heading', async () => {
+    const fixture = await renderComponent(RecipesPage);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.recipe-explorer.tool-page')).not.toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain('Explorar receitas e origens');
+    expect(element.querySelector('.search-panel app-catalog-item-picker')).not.toBeNull();
+  });
+
   it('registers only unique tutorial anchors for the active page state', async () => {
     const fixture = await renderComponent(RecipesPage);
     expectTutorialAnchors(fixture, 'recipes', ['recipes.search']);
