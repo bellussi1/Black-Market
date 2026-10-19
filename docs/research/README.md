@@ -86,3 +86,4 @@ As fontes diretas, datas e distinções entre declaração, observação e infer
 
 - [Desempenho de navegação e SSR — 18/10/2026](navigation-ssr-performance-2026-10-18.md): traces locais, espera nos resolvers, normalização da origem no transfer cache, DOM recolhido e HMR.
 - [Auditoria de padronização MMORPG — 18/10/2026](ui-standardization-audit-2026-10-18.md): rotas de Recomendações/Life Skills e Família, divergências de tabs/controles, pesquisa competitiva pública, limites de QA e proposta aguardando revisão.
+- [Especificação de padronização MMORPG — 18/10/2026](../design-system/ui-standardization-spec-2026-10-18.md): requisitos de design system, rotas, compatibilidade, Família, densidade e critérios de aceite; aguarda revisão do usuário.

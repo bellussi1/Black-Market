@@ -43,7 +43,7 @@ Conclusão da comparação: ferramentas de experiência fazem a ligação entre 
 4. Migrar outras superfícies em fatias: layout/tipografia/tokens; botões e tabs; formulários e feedback; painéis/tabelas; transições; depois as rotas restantes do inventário. Preservar as correções UIQ-01..06 já registradas no checklist.
 5. Validar em 1920×1080, 2560×1440, 1600×900 e 1366×768; revisar mobile depois; testar acesso direto, refresh, back/forward, estados sem dados, foco/teclado, reduced-motion e guards. Commits atômicos por responsabilidade.
 
-Esta é uma proposta, não uma decisão aplicada. Remoção de cálculos ou migração visual em larga escala não começou. O registro por rota e implementação será expandido em fatias; as telas privadas precisam ser revisitadas com uma sessão autenticada disponível.
+O usuário aprovou esta direção arquitetural para elaboração da especificação em 18/10/2026. A especificação escrita está em [`../design-system/ui-standardization-spec-2026-10-18.md`](../design-system/ui-standardization-spec-2026-10-18.md) e aguarda revisão. Ainda não foi aprovado plano nem iniciada implementação. O registro por rota será expandido no plano; telas privadas precisam ser revisitadas com uma sessão autenticada disponível.
 
 ## Referências locais
 
