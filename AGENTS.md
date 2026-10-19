@@ -26,8 +26,9 @@ Para que você (Codex ou Antigravity) saiba exatamente o que o outro agente fez 
    - Execute `git status` e `git log -n 3 --oneline` para checar o estado exato da branch.
 2. **Durante o Desenvolvimento**:
    - Mantenha alterações coesas e evite deixar arquivos quebrados ao terminar um turno.
-   - Siga as regras de UI definidas na skill `.agents/skills/bdo-ui-design/SKILL.md`.
-   - Para composição e revisão visual, use `.agents/skills/ui-design/SKILL.md` e seu agente `.agents/skills/ui-design/agents/design-ui.md`. Para implementação, consulte as skills oficiais `angular-developer` e `spartan`.
+   - Use `.agents/skills/bdo-ui-design/SKILL.md` como fonte canônica da identidade BDO, paleta, tokens, tamanhos e exceções de componentes; confira o catálogo técnico em `docs/design-system/bdo-ui.md`.
+   - Use `.agents/skills/ui-design/SKILL.md` e `.agents/skills/ui-design/agents/design-ui.md` para hierarquia, composição e revisão. Eles não definem um segundo tema nem substituem os tokens da fonte canônica.
+   - Para implementação Angular e primitivas, consulte as skills oficiais `angular-developer` e `spartan`; preserve os contratos documentados do catálogo BDO.
    - **Pesquisa competitiva obrigatória para funcionalidades**: antes de desenhar ou alterar uma feature visível ao usuário, consulte a superfície pública relevante de BDO Workshop, BDO Codex, BDOLytics e Garmoth. Registre em `docs/research/` o que cada um oferece, o que não tem equivalente ou não pôde ser verificado, a data da consulta e as fontes. Para cálculos, compare entradas e saídas com premissas pareadas e separe observação da interface, hipótese de algoritmo e regra confirmada do jogo. Siga `docs/research/competitor-review-playbook.md`.
    - Use essa pesquisa para entender alternativas de fluxo e cobertura, não para copiar implementação ou transformar métricas/snapshots de concorrentes em dados ou fórmulas do Black Market. Consulte apenas páginas públicas e APIs documentadas/autorizadas; respeite licença, termos, rate limits e controles de acesso. Se uma fonte estiver indisponível, registre a tentativa e continue com o código e as fontes verificáveis.
 3. **Ao Finalizar o Turno (ou quando o limite de mensagens estiver próximo)**:

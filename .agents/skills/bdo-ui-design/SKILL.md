@@ -5,7 +5,7 @@ description: Construir e revisar interfaces do Black Market inspiradas nos menus
 
 # Black Market · BDO UI
 
-Use as imagens em `assets/` como referência primária. Preserve a densidade e o material visual do jogo, adaptando contraste, alvos de toque e navegação à web. Não identifique a fonte original sem evidência.
+Esta é a fonte canônica da identidade, dos tokens e das variantes compartilhadas do Black Market. Consulte o catálogo técnico em [`docs/design-system/bdo-ui.md`](../../../docs/design-system/bdo-ui.md) para nomes e valores ativos. Use as imagens em `assets/` como referência primária. Preserve a densidade e o material visual do jogo, adaptando contraste, alvos de toque e navegação à web. Não identifique a fonte original sem evidência.
 
 ## Decisões essenciais
 
@@ -20,6 +20,14 @@ Use as imagens em `assets/` como referência primária. Preserve a densidade e o
 - Mercado: ler primeiro a resposta da mesma chave de consulta; exibir cache vencido com idade enquanto revalida e mantê-lo em caso de erro. Não apresentar cache de outro filtro como resultado atual. Busca textual usa debounce de 250 ms.
 - Crafting orientado à venda: separar estoque do produto da receita de venda. Rendimento estimado é aplicado sem confirmação; ajustes permanecem opcionais. Uma combinação incompleta nunca recebe lucro/hora definitivo.
 - Na comparação de cenários, preservar lucro total e lucro/hora como métricas distintas. A prévia do otimizador mantém o cenário atual até aplicar; cotação, quantidade ou política alteradas invalidam a proposta. Pré-ordem não inclui espera no tempo de produção, e produzir esgotados não garante disponibilidade do lote inteiro.
+
+## Contratos compartilhados
+
+- Use a escala `--bm-space-1` a `--bm-space-8`; tipografia `--bm-text-display`, `--bm-text-page-min/max`, `--bm-text-page-mobile`, `--bm-text-section`, `--bm-text-body`, `--bm-text-support` e `--bm-text-meta`.
+- O container padrão é `.tool-page` / `--bm-page-max` (1440 px); use `.tool-page--wide` / `--bm-page-max-wide` (1760 px) somente para superfícies densas que precisem da largura extra. O token de card/painel `--bm-panel-padding` deriva de `--bm-space-4`.
+- Controles padrão usam `--bm-control-height` (44 px); variantes compactas de toolbar usam `--bm-control-height-compact` (36 px). Tabs e controles segmentados compartilham os estilos de `.tabs`, `.workspace-tabs` e `.segmented-control`; semântica de link ou tab é definida no template conforme o comportamento.
+- Durações são `--bm-motion-fast`, `--bm-motion-route-enter` (220 ms) e `--bm-motion-route-exit` (120 ms). As transições de rota ficam restritas ao conteúdo e `prefers-reduced-motion` as desativa.
+- Árvore de crafting, roda de equipamento e slots podem manter geometria SCSS própria. Devem continuar usando tipografia, estados de foco e espaçamento compartilhados quando não prejudicarem a interação de domínio.
 
 ## Referências por tarefa
 

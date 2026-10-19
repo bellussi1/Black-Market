@@ -1,8 +1,8 @@
 # Especificação: padronização MMORPG da interface
 
-- **Status:** aprovado pelo usuário em 19/10/2026; plano de implementação aguardando revisão.
+- **Status:** especificação aprovada pelo usuário em 19/10/2026; planos de implementação aprovados e execução iniciada em 19/10/2026.
 - **Base aprovada para especificação:** proposta de arquitetura aprovada pelo usuário em 18/10/2026.
-- **Escopo desta aprovação:** direção e especificação. Não autoriza ainda iniciar alterações no produto; o plano concreto está separado em subplanos.
+- **Histórico de aprovação:** a aprovação inicial autorizou a direção e a especificação; a implementação começou após a aprovação posterior dos quatro planos separados.
 - **Auditoria e evidências:** [`../research/ui-standardization-audit-2026-10-18.md`](../research/ui-standardization-audit-2026-10-18.md).
 
 ## Problema
