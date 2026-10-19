@@ -69,7 +69,7 @@ export class MarketBoard implements OnDestroy {
   readonly fullCatalog = computed(() => !!this.search().trim() || !!this.category());
   readonly result = signal<MarketBoardResponse | null>(null);
   readonly cacheEntry = signal<CachedBoardEntry | null>(null);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly taxonomy = signal<CatalogCategory[]>([]);
   readonly taxonomyLoading = signal(true);

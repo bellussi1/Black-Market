@@ -19,6 +19,7 @@ import type { calculateProduction } from '@bdo/calculators';
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
+import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 import type { BranchAction } from './recipe-branch';
 import { batchAlternatives, recipeFamilies } from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
@@ -31,7 +32,7 @@ import type { RecipeNode } from './recipe-tree-model';
 @Component({
   selector: 'app-recipe-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemIcon, RecipeIngredientAlternatives, RecipeItemQuickInfo],
+  imports: [ItemIcon, LoadingSkeleton, RecipeIngredientAlternatives, RecipeItemQuickInfo],
   templateUrl: './recipe-graph.html',
   styleUrl: './recipe-graph.scss',
 })

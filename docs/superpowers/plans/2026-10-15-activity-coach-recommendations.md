@@ -1,8 +1,8 @@
 # Plano de implementação — Coach de Atividades
 
-**Especificação:** `docs/superpowers/specs/2026-10-15-activity-coach-recommendations-design.md`  
-**Pesquisa de referências:** `docs/research/activity-coach-competitive-review.md`  
-**Objetivo:** refazer `/recommendations` para priorizar lucro líquido/hora de produção Life Skill que ajude a financiar gear Life Skill e PvPvE, removendo a preparação manual do catálogo/mercado/comparação.
+- **Especificação:** `docs/superpowers/specs/2026-10-15-activity-coach-recommendations-design.md`
+- **Pesquisa de referências:** `docs/research/activity-coach-competitive-review.md`
+- **Objetivo:** refazer `/recommendations` para priorizar lucro líquido/hora de produção Life Skill que ajude a financiar gear Life Skill e PvPvE, removendo a preparação manual do catálogo/mercado/comparação.
 
 ## Estado inicial confirmado
 

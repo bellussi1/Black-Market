@@ -15,6 +15,7 @@
     "data:import": "pnpm build && node dist/catalog/import-game-data.js",
     "tutorials:seed": "pnpm build && node dist/tutorials/tutorial-seed.cli.js",
     "workspace:seed-test-profile": "node dist/workspace/seed-test-workspace.cli.js",
+    "tutorials:seed": "pnpm build && node dist/tutorials/tutorial-seed.cli.js",
     "lint:fix": "pnpm --filter @bdo/calculators build && pnpm --filter @bdo/database build && eslint \"src/**/*.ts\" --max-warnings=0 --fix"
   },
   "dependencies": {

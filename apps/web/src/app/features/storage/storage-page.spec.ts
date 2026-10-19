@@ -5,10 +5,22 @@ import { describe, expect, it, vi } from 'vitest';
 import { AnalyticsService } from '../../core/analytics.service';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
+import { expectTutorialAnchors, useTutorialGuideStub } from '../../testing/tutorial-test-setup';
 import { StoragePage } from './storage-page';
 
 describe('Storage import guidance', () => {
   useMemoryStorage();
+  useTutorialGuideStub();
+  it('registers only unique tutorial anchors for the active page state', async () => {
+    const fixture = await renderComponent(StoragePage);
+    expectTutorialAnchors(fixture, 'storage', ['storage.items']);
+    fixture.componentInstance.tab.set('projects');
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'storage', ['storage.projects']);
+    fixture.componentInstance.tab.set('stock');
+    fixture.detectChanges();
+    expectTutorialAnchors(fixture, 'storage', ['storage.items']);
+  });
   it('offers screenshots first, explains CSV provenance and retains manual entry', async () => {
     const fixture = await renderComponent(StoragePage);
     const element: HTMLElement = fixture.nativeElement;

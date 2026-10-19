@@ -9,6 +9,9 @@ describe('tutorial persistence schema', () => {
 
     const guidesConfig = getTableConfig(tutorialGuides);
     expect(guidesConfig.name).toBe('tutorial_guides');
+    expect(guidesConfig.columns.find((col) => col.name === 'locale')?.getSQLType()).toBe(
+      'varchar(16)',
+    );
     expect(guidesConfig.columns.map((col) => col.name)).toEqual([
       'id',
       'screen_key',
@@ -36,6 +39,10 @@ describe('tutorial persistence schema', () => {
     ]);
     const anchorCol = stepsConfig.columns.find((col) => col.name === 'anchor_key');
     expect(anchorCol?.notNull).toBe(false);
+    expect(anchorCol?.getSQLType()).toBe('varchar(120)');
+    expect(stepsConfig.columns.find((col) => col.name === 'body')?.getSQLType()).toBe(
+      'varchar(360)',
+    );
 
     const stepOrderIdx = stepsConfig.indexes.find(
       (idx) => idx.config.name === 'tutorial_guide_steps_guide_order_uidx',

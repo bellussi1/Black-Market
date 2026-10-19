@@ -62,19 +62,19 @@
 - Helpers puros: `isTutorialScreenKey(value: string)` e `isTutorialAnchorForScreen(screenKey, anchorKey)`; a API e o cliente não reinterpretam chave desconhecida como seletor.
 - Chaves iniciais das âncoras: `market.search`, `market.filters`, `market.results`; `recipes.search`, `recipes.methods`, `recipes.tree`; `scans.capture`, `scans.review`; `storage.items`, `storage.projects`; `recommendations.conditions`, `recommendations.ranking`.
 
-- [ ] **Step 1: Escrever os testes de contrato que falham** em `apps/api/src/tutorials/tutorial-registry.spec.ts`:
+- [x] **Step 1: Escrever os testes de contrato que falham** em `apps/api/src/tutorials/tutorial-registry.spec.ts`:
   - `lists only the five first-publication screens with the specified access boundary`: nomes/rotas esperados e classificação pública/autenticada acima.
   - `keeps every anchor unique and scoped to its registered screen`: não há chave duplicada e a chave de outra tela não é aceita.
   - `rejects unknown screen and anchor keys`: lookup de tela/chave inexistente falha fechado.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-registry.spec.ts`
 Expected: FAIL porque o registro e os tipos exportados ainda não existem.
 
-- [ ] **Step 3: Implementar os contratos** em `packages/shared/src/tutorials.ts` e exportá-los por `packages/shared/src/index.ts`; manter nomes, caminhos, chaves e níveis de acesso apenas no registro de código.
+- [x] **Step 3: Implementar os contratos** em `packages/shared/src/tutorials.ts` e exportá-los por `packages/shared/src/index.ts`; manter nomes, caminhos, chaves e níveis de acesso apenas no registro de código.
 
-- [ ] **Step 4: Verificar build e testes**
+- [x] **Step 4: Verificar build e testes**
 
 Run: `pnpm --filter @bdo/shared build`
 Expected: PASS com declarações/artefatos CommonJS e browser compilados.
@@ -82,7 +82,7 @@ Expected: PASS com declarações/artefatos CommonJS e browser compilados.
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-registry.spec.ts`
 Expected: PASS nos três testes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/shared/src/tutorials.ts packages/shared/src/index.ts apps/api/src/tutorials/tutorial-registry.spec.ts
@@ -94,7 +94,7 @@ git commit -m "feat(tutorials): define shared screen registry"
 **Files:**
 
 - Modify: `packages/database/src/schema.ts`
-- Create: `packages/database/drizzle/0011_tutorial_guides.sql`
+- Create: `packages/database/drizzle/0012_tutorial_guides.sql` (the Roadmap plan already uses migration `0011`)
 - Modify: `packages/database/drizzle/meta/_journal.json` e snapshot Drizzle gerado
 - Modify: `deploy/runtime-role.sql`
 - Modify: `apps/api/src/database/runtime-role.ts`, `runtime-role.spec.ts`
@@ -108,11 +108,11 @@ git commit -m "feat(tutorials): define shared screen registry"
 - A role `black_market_app` precisa de SELECT/INSERT/UPDATE/DELETE nas tabelas de guias e passos para leitura e substituição administrativa; manter os privilégios atuais das demais tabelas.
 - `RuntimePrivileges`/`RUNTIME_PRIVILEGES_QUERY` adicionam `tutorial_guides_select|insert|update|delete` e `tutorial_steps_select|insert|update|delete`, todos obrigatórios para o fluxo API definido.
 
-- [ ] **Step 1: Escrever testes de esquema/privilégios que falham** em `apps/api/src/tutorials/tutorial-schema.spec.ts` e ampliar `apps/api/src/database/runtime-role.spec.ts`:
+- [x] **Step 1: Escrever testes de esquema/privilégios que falham** em `apps/api/src/tutorials/tutorial-schema.spec.ts` e ampliar `apps/api/src/database/runtime-role.spec.ts`:
   - `models unique screen and locale and the tutorial step cascade/order constraints`: verificar colunas, unicidades, FK cascade e check não negativo via `getTableConfig`.
   - `requires only the four tutorial table privileges used by the API`: a role aceita o conjunto exato e falha quando qualquer grant necessário falta.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/database build`
 Expected: FAIL porque as tabelas novas ainda não estão exportadas.
@@ -120,9 +120,9 @@ Expected: FAIL porque as tabelas novas ainda não estão exportadas.
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-schema.spec.ts src/database/runtime-role.spec.ts`
 Expected: FAIL nas asserções de schema e privilégio tutorial.
 
-- [ ] **Step 3: Implementar schema, migração e grants**; gerar e revisar o SQL Drizzle, aplicar constraints descritas na interface e adicionar grants explícitos somente para `tutorial_guides` e `tutorial_guide_steps`. Atualizar a query de privilégios e o objeto esperado sem ampliar grants preexistentes.
+- [x] **Step 3: Implementar schema, migração e grants**; gerar e revisar o SQL Drizzle, aplicar constraints descritas na interface e adicionar grants explícitos somente para `tutorial_guides` e `tutorial_guide_steps`. Atualizar a query de privilégios e o objeto esperado sem ampliar grants preexistentes.
 
-- [ ] **Step 4: Verificar schema, migração e role**
+- [x] **Step 4: Verificar schema, migração e role**
 
 Run: `pnpm --filter @bdo/database build`
 Expected: PASS.
@@ -133,7 +133,7 @@ Expected: PASS.
 Run: `pnpm db:check`
 Expected: PASS com journal ordenado e sem conflitos de migração.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/database/src/schema.ts packages/database/drizzle apps/api/src/tutorials/tutorial-schema.spec.ts apps/api/src/database/runtime-role.ts apps/api/src/database/runtime-role.spec.ts deploy/runtime-role.sql
@@ -153,25 +153,25 @@ git commit -m "feat(tutorials): add guide persistence schema"
 - Cada passo recebe ordem inteira não negativa e âncora nula ou permitida para a tela. A validação ordena pela ordem recebida e normaliza `sortOrder` para `0..n-1`.
 - Rejeitar quantidade fora de 1–8, título/corpo vazios ou acima de 100/360 caracteres, HTML, Markdown e campos extras; não aceitar campos de rota, seletor, callback ou ação.
 
-- [ ] **Step 1: Escrever testes de validação que falham** em `apps/api/src/tutorials/tutorial-validation.spec.ts`:
+- [x] **Step 1: Escrever testes de validação que falham** em `apps/api/src/tutorials/tutorial-validation.spec.ts`:
   - `accepts one to eight pt-BR plain-text steps and normalizes their order`: limites inclusivos e entradas fora de sequência resultam em ordens densas `0..n-1`.
   - `rejects unsupported locales, unknown screens, zero or nine steps, and overlong fields`: confirmar erros de payload.
   - `rejects HTML, Markdown, extra selector fields, and cross-screen anchors`: texto malicioso, rota/seletor e chave incompatível são rejeitados.
   - `accepts a null anchor as an intentional general step`: a etapa sem destaque continua válida.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-validation.spec.ts`
 Expected: FAIL porque o parser ainda não existe.
 
-- [ ] **Step 3: Implementar `parseTutorialGuideUpdate`** com Zod estrito e validação de âncora por `isTutorialAnchorForScreen`; manter mensagens de erro com `path` do campo para o editor.
+- [x] **Step 3: Implementar `parseTutorialGuideUpdate`** com Zod estrito e validação de âncora por `isTutorialAnchorForScreen`; manter mensagens de erro com `path` do campo para o editor.
 
-- [ ] **Step 4: Executar os testes focados**
+- [x] **Step 4: Executar os testes focados**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorial-validation.spec.ts`
 Expected: PASS nos quatro testes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/api/src/tutorials/tutorial-validation.ts apps/api/src/tutorials/tutorial-validation.spec.ts
@@ -194,23 +194,23 @@ git commit -m "feat(tutorials): validate guide edits"
 - `TutorialsService.replace(screenKey, locale, input: TutorialGuideUpdateRequest): Promise<TutorialGuide>` valida, compara `expectedUpdatedAt`, troca guia/passos numa transação e retorna a revisão salva. `null` cria somente quando não existe; timestamp só grava em igualdade.
 - `seedTutorialGuides(revision, entries)` insere guias e passos apenas para chaves ausentes; conflito preserva todos os campos já editados. CLI `pnpm --filter @bdo/api tutorials:seed` carrega a constante versionada `TUTORIAL_SEED_REVISION` de `tutorial-seed-content.ts`.
 
-- [ ] **Step 1: Escrever os testes de serviço e seed que falham**:
+- [x] **Step 1: Escrever os testes de serviço e seed que falham**:
   - `apps/api/src/tutorials/tutorials.service.spec.ts`: `returns null when a registered guide is disabled or missing`; `lists registered screens and locales including disabled guides`; `replaces metadata and ordered steps atomically on matching version`; `creates only with a null expectedUpdatedAt`; `rejects stale versions without deleting the current guide`.
   - `apps/api/src/tutorials/tutorial-seed.spec.ts`: `inserts missing guides once and preserves later administrative edits when rerun` usando conteúdo sintético exclusivo do teste.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorials.service.spec.ts src/tutorials/tutorial-seed.spec.ts`
 Expected: FAIL porque o serviço e o seed não existem.
 
-- [ ] **Step 3: Implementar serviço, conteúdo inicial e runner** com transação, lock de concorrência e `onConflictDoNothing`; registrar o comando CLI no pacote. Escrever passos curtos a partir dos controles reais de cada tela, armazená-los somente na lista de dados do seed e conferir os rótulos/âncoras contra a UI atual. Esse seed é apenas bootstrap do banco e preserva qualquer edição posterior; o cliente sempre lê o conteúdo publicado pela API, sem cópia/fallback no bundle.
+- [x] **Step 3: Implementar serviço, conteúdo inicial e runner** com transação, lock de concorrência e `onConflictDoNothing`; registrar o comando CLI no pacote. Escrever passos curtos a partir dos controles reais de cada tela, armazená-los somente na lista de dados do seed e conferir os rótulos/âncoras contra a UI atual. Esse seed é apenas bootstrap do banco e preserva qualquer edição posterior; o cliente sempre lê o conteúdo publicado pela API, sem cópia/fallback no bundle.
 
-- [ ] **Step 4: Executar os testes focados**
+- [x] **Step 4: Executar os testes focados**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorials.service.spec.ts src/tutorials/tutorial-seed.spec.ts`
 Expected: PASS nos seis testes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/api/src/tutorials/tutorials.service.ts apps/api/src/tutorials/tutorials.service.spec.ts apps/api/src/tutorials/tutorial-seed.ts apps/api/src/tutorials/tutorial-seed-content.ts apps/api/src/tutorials/tutorial-seed.cli.ts apps/api/src/tutorials/tutorial-seed.module.ts apps/api/src/tutorials/tutorial-seed.spec.ts apps/api/package.json pnpm-lock.yaml
@@ -231,20 +231,20 @@ git commit -m "feat(tutorials): persist and seed guide content"
 - `PUT /api/v1/tutorials/manage/:screenKey?locale=pt-BR`: mesma autorização server-side, substituição validada e `private, no-store`.
 - Declarar rota estática `manage` antes de `:screenKey` no controller para impedir colisão com o segmento dinâmico.
 
-- [ ] **Step 1: Escrever testes do controller que falham** em `apps/api/src/tutorials/tutorials.controller.spec.ts`:
+- [x] **Step 1: Escrever testes do controller que falham** em `apps/api/src/tutorials/tutorials.controller.spec.ts`:
   - `serves a public registered guide without checking identity and keeps the public cache policy`.
   - `returns 404 for an unregistered public screen`.
   - `checks the roadmap administrator before both management operations` e confirma que serviço não é chamado após negação.
   - `keeps manage routes distinct from the dynamic screen route`: verificar caminhos/metadados Nest das três operações.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorials.controller.spec.ts`
 Expected: FAIL porque controller e módulo não existem.
 
-- [ ] **Step 3: Implementar controller e módulo** usando `IdentityService` e `TutorialsService`; declarar os headers exatos da especificação e registrar `TutorialsModule` em `AppModule`.
+- [x] **Step 3: Implementar controller e módulo** usando `IdentityService` e `TutorialsService`; declarar os headers exatos da especificação e registrar `TutorialsModule` em `AppModule`.
 
-- [ ] **Step 4: Executar os testes focados e lint da API**
+- [x] **Step 4: Executar os testes focados e lint da API**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/tutorials/tutorials.controller.spec.ts`
 Expected: PASS nos quatro testes.
@@ -252,7 +252,7 @@ Expected: PASS nos quatro testes.
 Run: `pnpm --filter @bdo/api lint`
 Expected: PASS sem warnings.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/api/src/tutorials/tutorials.controller.ts apps/api/src/tutorials/tutorials.controller.spec.ts apps/api/src/tutorials/tutorials.module.ts apps/api/src/app.module.ts
@@ -273,11 +273,11 @@ git commit -m "feat(tutorials): expose public and managed endpoints"
 - `resolveTutorialSteps(document: Document, screenKey, steps)` compara `data-tour` com âncoras permitidas e retorna somente etapas gerais ou elementos únicos, visíveis e registrados; reporta etapas omitidas para a UI acessível.
 - Resolver percorre elementos `[data-tour]` e compara o valor à chave permitida; nunca compõe seletor com texto vindo da API.
 
-- [ ] **Step 1: Escrever testes que falham**:
+- [x] **Step 1: Escrever testes que falham**:
   - `apps/web/src/app/core/tutorial-api.service.spec.ts`: `loads public content with ui locale without identity`; `adds a verified bearer token to management read and replacement`.
   - `apps/web/src/app/core/tutorial-anchor-resolver.spec.ts`: `resolves only keys registered for the requested screen`; `omits hidden and duplicate targets`; `resolves exactly one visible target among responsive variants`; `keeps null-anchor steps centered`.
 
-- [ ] **Step 2: Executar testes para confirmar a falha**
+- [x] **Step 2: Executar testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/shared build`
 Expected: PASS, preparando os contratos consumidos pelo Angular.
@@ -285,14 +285,14 @@ Expected: PASS, preparando os contratos consumidos pelo Angular.
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial-api.service.spec.ts" --include="app/core/tutorial-anchor-resolver.spec.ts"`
 Expected: FAIL porque serviços e resolver ainda não existem.
 
-- [ ] **Step 3: Implementar cliente e resolver**; usar `uiLocale()` como default no ponto de chamada, bearer só nas rotas de gestão e geometria/estilo computado no browser para a condição de visibilidade.
+- [x] **Step 3: Implementar cliente e resolver**; usar `uiLocale()` como default no ponto de chamada, bearer só nas rotas de gestão e geometria/estilo computado no browser para a condição de visibilidade.
 
-- [ ] **Step 4: Executar testes focados**
+- [x] **Step 4: Executar testes focados**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial-api.service.spec.ts" --include="app/core/tutorial-anchor-resolver.spec.ts"`
 Expected: PASS nos seis testes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/app/core/tutorial-api.service.ts apps/web/src/app/core/tutorial-api.service.spec.ts apps/web/src/app/core/tutorial-anchor-resolver.ts apps/web/src/app/core/tutorial-anchor-resolver.spec.ts
@@ -318,20 +318,20 @@ git commit -m "feat(tutorials): fetch guides and resolve anchors"
 - Configuração local do tour fornece botões localizados, progresso, overlay sem ação, saída por Escape, rolagem quando necessária, skip de alvo desaparecido após `ANCHOR_RECHECK_DELAY_MS = 150`, restauração de foco e encerramento na navegação.
 - Tema importa CSS base do Driver.js e aplica classe própria com tokens carvão/bronze; movimento reduzido desativa animação e rolagem suave.
 
-- [ ] **Step 1: Escrever testes que falham**:
+- [x] **Step 1: Escrever testes que falham**:
   - `apps/web/src/app/core/tutorial.service.spec.ts`: `does not import or construct Driver before a browser click`; `renders hostile title and body with textContent only`; `starts every replay at step one and distinguishes completion from dismissal`; `destroys the active tour on route navigation and restores connected focus`; `skips a future target removed during the tour`; `does not open an empty tour and announces that the guide needs an update`; `disables motion and smooth scrolling when reduced motion is requested`.
   - `apps/web/src/app/shared/tutorial-launcher/tutorial-launcher.spec.ts`: `hides when no published guide exists`; `shows retry after a failed guide request without blocking the screen`; `starts only after keyboard or pointer activation`.
 
-- [ ] **Step 2: Executar testes para confirmar a falha**
+- [x] **Step 2: Executar testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial.service.spec.ts" --include="app/shared/tutorial-launcher/tutorial-launcher.spec.ts"`
 Expected: FAIL porque o serviço e launcher ainda não existem.
 
-- [ ] **Step 3: Fixar Driver.js e implementar o ciclo de vida**; carregar com `import('driver.js')` dentro do início do tour no browser, montar passos a partir do resolver, encerrar ao iniciar navegação e não persistir estado.
+- [x] **Step 3: Fixar Driver.js e implementar o ciclo de vida**; carregar com `import('driver.js')` dentro do início do tour no browser, montar passos a partir do resolver, encerrar ao iniciar navegação e não persistir estado.
 
-- [ ] **Step 4: Implementar popover e launcher** com conteúdo textual, controles nativos/localizados, retry, progresso e estados acessíveis; não incluir copy editorial do guia.
+- [x] **Step 4: Implementar popover e launcher** com conteúdo textual, controles nativos/localizados, retry, progresso e estados acessíveis; não incluir copy editorial do guia.
 
-- [ ] **Step 5: Executar testes focados e build SSR**
+- [x] **Step 5: Executar testes focados e build SSR**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/tutorial.service.spec.ts" --include="app/shared/tutorial-launcher/tutorial-launcher.spec.ts"`
 Expected: PASS nos dez testes.
@@ -339,7 +339,7 @@ Expected: PASS nos dez testes.
 Run: `pnpm --filter @bdo/web build`
 Expected: PASS com bundle browser e servidor SSR; nenhum import de Driver.js toca `window`/DOM no servidor.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/package.json pnpm-lock.yaml apps/web/src/styles.scss apps/web/src/app/core/tutorial.service.ts apps/web/src/app/core/tutorial.service.spec.ts apps/web/src/app/shared/tutorial-launcher apps/web/src/app/features/tutorials/tutorial-popover.scss
@@ -362,7 +362,7 @@ git commit -m "feat(tutorials): add on-demand guided tour runtime"
 - Adicionar os `data-tour` literais do registro em grupos/controles sem alterar suas ações. Elementos responsivos/abas escondidas não podem resultar em mais de um alvo visível com a mesma chave.
 - Mercado e Receitas mantêm browsing público. Scan, Armazém e Recomendações mantêm os guards/rotas existentes; nenhum dado pessoal entra no pedido tutorial.
 
-- [ ] **Step 1: Escrever testes de template que falham** nos arquivos `.spec.ts` listados:
+- [x] **Step 1: Escrever testes de template que falham** nos arquivos `.spec.ts` listados:
   - `marketPage registers search, filters and results anchors exactly once`.
   - `recipesPage registers search, methods and recipe tree anchors exactly once`.
   - `automaticScanPage exposes capture and review anchors only in their visible states`.
@@ -370,21 +370,21 @@ git commit -m "feat(tutorials): add on-demand guided tour runtime"
   - `recommendationsPage registers conditions and ranking anchors exactly once`.
     Em cada teste conferir que o launcher usa a chave esperada e os alvos usam apenas as chaves registradas.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/market/market-page.spec.ts" --include="app/features/recipes/recipes-page.spec.ts" --include="app/features/scans/automatic-scan-page.spec.ts" --include="app/features/storage/storage-page.spec.ts" --include="app/features/stock/stock-page.spec.ts" --include="app/features/recommendations/recommendations-page.spec.ts"`
 Expected: FAIL nas novas asserções de launcher e `data-tour`.
 
-- [ ] **Step 3: Marcar âncoras nas telas** com namespaces estáveis do Task 1; conferir as duas variantes da rota Armazém e os estados de captura/revisão do Scan.
+- [x] **Step 3: Marcar âncoras nas telas** com namespaces estáveis do Task 1; conferir as duas variantes da rota Armazém e os estados de captura/revisão do Scan.
 
-- [ ] **Step 4: Inserir o launcher nos headers/áreas de ajuda** e adicionar `TutorialLauncher` às imports Angular necessárias; não alterar `authGuard` nem fluxo de dados.
+- [x] **Step 4: Inserir o launcher nos headers/áreas de ajuda** e adicionar `TutorialLauncher` às imports Angular necessárias; não alterar `authGuard` nem fluxo de dados.
 
-- [ ] **Step 5: Executar os seis testes de tela**
+- [x] **Step 5: Executar os seis testes de tela**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/market/market-page.spec.ts" --include="app/features/recipes/recipes-page.spec.ts" --include="app/features/scans/automatic-scan-page.spec.ts" --include="app/features/storage/storage-page.spec.ts" --include="app/features/stock/stock-page.spec.ts" --include="app/features/recommendations/recommendations-page.spec.ts"`
 Expected: PASS com uma instância visível por chave em cada estado coberto.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app/features/market apps/web/src/app/features/recipes apps/web/src/app/features/scans/automatic-scan-page* apps/web/src/app/features/scans/scans-page.html apps/web/src/app/features/storage apps/web/src/app/features/stock apps/web/src/app/features/recommendations
@@ -408,7 +408,7 @@ git commit -m "feat(tutorials): register anchors on first-release screens"
 - Âncora antiga removida do registro aparece como inválida e bloqueia salvar até seleção válida ou etapa geral; depois de PUT bem-sucedido, a versão retornada atualiza imediatamente o estado local do editor.
 - Roadmap só mostra o link localizado **Editar tutoriais** para `canManageRoadmap`; acesso direto permanece tratado pela página/API.
 
-- [ ] **Step 1: Escrever testes do editor que falham** em `apps/web/src/app/features/tutorials/tutorials-manage-page.spec.ts` e `roadmap-page.spec.ts`:
+- [x] **Step 1: Escrever testes do editor que falham** em `apps/web/src/app/features/tutorials/tutorials-manage-page.spec.ts` e `roadmap-page.spec.ts`:
   - `lists only code-registered screens and locales and offers no selector input`.
   - `creates, edits, removes and reorders steps with a null general anchor option`.
   - `shows field validation and blocks invalid anchors or step counts`.
@@ -420,21 +420,21 @@ git commit -m "feat(tutorials): register anchors on first-release screens"
   - `does not load management content when canManageRoadmap is false`.
   - `shows Editar tutoriais only to a roadmap administrator`.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/tutorials/tutorials-manage-page.spec.ts" --include="app/features/roadmap/roadmap-page.spec.ts"`
 Expected: FAIL porque rota, editor e link ainda não existem.
 
-- [ ] **Step 3: Implementar editor e rota** usando os contratos e serviço HTTP dos Tasks 1/6; converter mensagens de validação da API em erros por campo, manter cópia imutável do rascunho em 409 e mostrar no editor a revisão retornada pelo PUT sem repetir a leitura pública cacheada.
+- [x] **Step 3: Implementar editor e rota** usando os contratos e serviço HTTP dos Tasks 1/6; converter mensagens de validação da API em erros por campo, manter cópia imutável do rascunho em 409 e mostrar no editor a revisão retornada pelo PUT sem repetir a leitura pública cacheada.
 
-- [ ] **Step 4: Adicionar link no Roadmap** com a flag já derivada da identidade, sem tratá-la como autorização backend.
+- [x] **Step 4: Adicionar link no Roadmap** com a flag já derivada da identidade, sem tratá-la como autorização backend.
 
-- [ ] **Step 5: Executar testes focados**
+- [x] **Step 5: Executar testes focados**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/tutorials/tutorials-manage-page.spec.ts" --include="app/features/roadmap/roadmap-page.spec.ts"`
 Expected: PASS nos dez testes.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app/features/tutorials/tutorials-manage-page.ts apps/web/src/app/features/tutorials/tutorials-manage-page.html apps/web/src/app/features/tutorials/tutorials-manage-page.scss apps/web/src/app/features/tutorials/tutorials-manage-page.spec.ts apps/web/src/app/app.routes.ts apps/web/src/app/features/roadmap/roadmap-page.html apps/web/src/app/features/roadmap/roadmap-page.spec.ts
@@ -456,24 +456,24 @@ git commit -m "feat(tutorials): add administrator guide editor"
 - Respeitar `AnalyticsService` configurado e `PrivacyService.allowsAnalytics()`; revogação cancela pendências pelo mecanismo existente. Não criar identificador, cookie ou consentimento novo.
 - Atualizar somente a descrição da política para informar categorias dos três eventos e os campos agregados permitidos; não inserir dados de tutorial nos eventos genéricos existentes.
 
-- [ ] **Step 1: Escrever testes que falham**:
+- [x] **Step 1: Escrever testes que falham**:
   - `apps/web/src/app/core/analytics.service.spec.ts`: `sends only allowlisted tutorial properties after consent`; `does not send tutorial events without consent or when analytics is disabled`; `stops tutorial events immediately when analytics consent is revoked`.
   - `apps/web/src/app/core/tutorial.service.spec.ts`: `emits exactly one start and one terminal event for completion or dismissal, never per step`.
   - `apps/web/src/app/features/legal/legal-page.spec.ts`: `describes tutorial start, completion and dismissal as optional aggregate analytics`.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/analytics.service.spec.ts" --include="app/core/tutorial.service.spec.ts" --include="app/features/legal/legal-page.spec.ts"`
 Expected: FAIL porque o evento/tutorial não existe e a política não o descreve.
 
-- [ ] **Step 3: Implementar a via allowlisted de tutorial** preservando o consentimento/identificador existentes e transmitindo apenas `screenKey` e `guideUpdatedAt` como campos do evento.
+- [x] **Step 3: Implementar a via allowlisted de tutorial** preservando o consentimento/identificador existentes e transmitindo apenas `screenKey` e `guideUpdatedAt` como campos do evento.
 
-- [ ] **Step 4: Atualizar a política e executar testes focados**
+- [x] **Step 4: Atualizar a política e executar testes focados**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/core/analytics.service.spec.ts" --include="app/core/tutorial.service.spec.ts" --include="app/features/legal/legal-page.spec.ts"`
 Expected: PASS; após revogação não há evento em voo nem novo evento de tutorial.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/app/core/analytics.service.ts apps/web/src/app/core/analytics.service.spec.ts apps/web/src/app/core/tutorial.service.ts apps/web/src/app/core/tutorial.service.spec.ts apps/web/src/app/features/legal/legal-content.ts apps/web/src/app/features/legal/legal-page.spec.ts
@@ -493,18 +493,18 @@ git commit -m "feat(tutorials): track consented aggregate tour events"
 - Testar semântica anunciada de título, corpo e progresso; botões nativos com nomes, foco visível e dimensão mínima 44 × 44 px.
 - Verificar comportamento visual em desktop e viewport estreita, incluindo texto de até 360 caracteres, ausência de overflow horizontal, alvos fixos/ocultos e preferência de movimento reduzido.
 
-- [ ] **Step 1: Escrever testes de acessibilidade integrados que falham** em `apps/web/src/app/features/tutorials/tutorial-accessibility.spec.ts`:
+- [x] **Step 1: Escrever testes de acessibilidade integrados que falham** em `apps/web/src/app/features/tutorials/tutorial-accessibility.spec.ts`:
   - `supports keyboard start, previous, next, escape and focus restoration`.
   - `announces current title, body and progress without duplicate live regions`.
   - `keeps native controls at least 44 by 44 pixels with visible focus styles`.
   - `preserves arrow-key and text input behavior in the underlying page`.
 
-- [ ] **Step 2: Executar os testes para confirmar a falha**
+- [x] **Step 2: Executar os testes para confirmar a falha**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="app/features/tutorials/tutorial-accessibility.spec.ts"`
 Expected: FAIL nas asserções de teclado, foco e controles.
 
-- [ ] **Step 3: Corrigir somente os comportamentos de tour necessários** no launcher/tema/páginas que os testes identificarem; conteúdo longo deve quebrar linha sem reticências, e popover nunca pode cobrir ou perder o passo atual.
+- [x] **Step 3: Corrigir somente os comportamentos de tour necessários** no launcher/tema/páginas que os testes identificarem; conteúdo longo deve quebrar linha sem reticências, e popover nunca pode cobrir ou perder o passo atual.
 
 - [ ] **Step 4: Rodar testes de acessibilidade e compilação SSR**
 
@@ -534,7 +534,7 @@ Run in terminal 2: `pnpm dev:web`
 
 Expected: usando apenas dados temporários de um banco local de desenvolvimento, em Mercado/Receitas públicos e Scan/Armazém/Recomendações autenticados, o launcher aparece apenas com guia ativo; tour não abre sozinho; confirmar com teclado/leitor de tela, zoom alto, viewport estreita, movimento reduzido, alvo ausente e retry após falha de API. Não copiar esse conteúdo temporário para seed/migração. Rotas autenticadas continuam bloqueadas sem sessão e a tela principal segue utilizável quando API/tutorial falha.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app/features/tutorials/tutorial-accessibility.spec.ts apps/web/src/app/core/tutorial.service.ts apps/web/src/app/shared/tutorial-launcher apps/web/src/app/features/tutorials/tutorial-popover.scss

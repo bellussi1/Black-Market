@@ -118,16 +118,23 @@ export class AnalyticsService {
     if (page === this.lastPage) return;
     if (this.capture('page_viewed', { feature: page })) this.lastPage = page;
   }
-  capture(event: AnalyticsEvent, properties: EventProperties): boolean {
-    const config = this.config();
+  captureTutorial(
+    event: 'tutorial_started' | 'tutorial_completed' | 'tutorial_dismissed',
+    screenKey: TutorialScreenKey,
+    guideUpdatedAt: string,
+  ): boolean {
     if (
-      !this.browser ||
-      !environment.production ||
-      !config?.enabled ||
-      !config.key ||
-      !config.host ||
-      !this.privacy.allowsAnalytics() ||
-      this.events >= 100 ||
+      !['tutorial_started', 'tutorial_completed', 'tutorial_dismissed'].includes(event) ||
+      !isTutorialScreenKey(screenKey) ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(guideUpdatedAt) ||
+      !Number.isFinite(Date.parse(guideUpdatedAt)) ||
+      new Date(guideUpdatedAt).toISOString() !== guideUpdatedAt
+    )
+      return false;
+    return this.send(event, { screenKey, guideUpdatedAt });
+  }
+  capture(event: AnalyticsEvent, properties: EventProperties): boolean {
+    if (
       ![
         'page_viewed',
         'item_detail_opened',
@@ -137,34 +144,13 @@ export class AnalyticsService {
       ].includes(event)
     )
       return false;
-    if (!this.id) {
-      this.id = this.privacy.ensureAnalyticsIdentifier() ?? '';
-      if (!this.id) return false;
-    }
-    this.events++;
-    this.http
-      .post(
-        config.host + '/i/v0/e/',
-        {
-          api_key: config.key,
-          event,
-          properties: {
-            ...cleanProperties(properties),
-            distinct_id: this.id,
-            $process_person_profile: false,
-            $ip: null,
-          },
-        },
-        { transferCache: false },
-      )
-      .pipe(takeUntil(this.revoked), takeUntilDestroyed(this.destroy))
-      .subscribe({ error: () => undefined });
-    return true;
+    return this.send(event, cleanProperties(properties));
   }
-  captureTutorial(
-    event: TutorialAnalyticsEvent,
-    screenKey: TutorialScreenKey,
-    guideUpdatedAt: string,
+  private send(
+    event: AnalyticsEvent | 'tutorial_started' | 'tutorial_completed' | 'tutorial_dismissed',
+    properties:
+      | ReturnType<typeof cleanProperties>
+      | { screenKey: TutorialScreenKey; guideUpdatedAt: string },
   ): boolean {
     const config = this.config();
     if (
@@ -174,11 +160,7 @@ export class AnalyticsService {
       !config.key ||
       !config.host ||
       !this.privacy.allowsAnalytics() ||
-      this.events >= 100 ||
-      !['tutorial_started', 'tutorial_completed', 'tutorial_dismissed'].includes(event) ||
-      !isTutorialScreenKey(screenKey) ||
-      !guideUpdatedAt ||
-      !Number.isFinite(Date.parse(guideUpdatedAt))
+      this.events >= 100
     )
       return false;
     if (!this.id) {
@@ -193,8 +175,7 @@ export class AnalyticsService {
           api_key: config.key,
           event,
           properties: {
-            screenKey,
-            guideUpdatedAt,
+            ...properties,
             distinct_id: this.id,
             $process_person_profile: false,
             $ip: null,

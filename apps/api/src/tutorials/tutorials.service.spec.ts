@@ -26,10 +26,12 @@ describe('TutorialsService', () => {
   let guides: GuideRow[];
   let steps: StepRow[];
   let service: TutorialsService;
+  let transactionOptions: unknown[];
 
   beforeEach(() => {
     guides = [];
     steps = [];
+    transactionOptions = [];
 
     const createSelect = () => ({
       from: (table: unknown) => {
@@ -37,6 +39,7 @@ describe('TutorialsService', () => {
         const promise = Promise.resolve(rows);
         return Object.assign(promise, {
           where: () => Promise.resolve(rows),
+          orderBy: () => Promise.resolve(rows),
         });
       },
     });
@@ -75,7 +78,12 @@ describe('TutorialsService', () => {
     const database = {
       db: {
         select: vi.fn(createSelect),
-        transaction: vi.fn((callback: (value: typeof tx) => Promise<unknown>) => callback(tx)),
+        transaction: vi.fn(
+          (callback: (value: typeof tx) => Promise<unknown>, options?: unknown) => {
+            transactionOptions.push(options);
+            return callback(tx);
+          },
+        ),
       },
     };
 
@@ -209,6 +217,16 @@ describe('TutorialsService', () => {
     await service.getPublished('home', 'pt-BR');
     expect(guides).toEqual([]);
     expect(steps).toEqual([]);
+  });
+
+  it('reads published and management guides from read-only repeatable-read snapshots', async () => {
+    await service.getPublished('recipe-workshop', 'pt-BR');
+    await service.getManagement();
+
+    expect(transactionOptions).toEqual([
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    ]);
   });
 
   it('lists registered screens and locales including disabled guides', async () => {

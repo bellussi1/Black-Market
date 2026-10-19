@@ -1,0 +1,389 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+:host(.inline-skeleton-host) {
+  display: inline-block;
+  vertical-align: middle;
+  width: 128px;
+}
+:host(.button-skeleton-host) {
+  display: inline-block;
+  width: 190px;
+  min-height: 40px;
+  vertical-align: middle;
+}
+
+.skeleton-status {
+  min-width: 0;
+  height: 100%;
+  color: var(--bm-muted);
+}
+.skeleton-status.inline-status {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skeleton-visual {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.skeleton-block {
+  display: block;
+  border-radius: 3px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bm-surface-raised) 76%, var(--bm-border)) 20%,
+    color-mix(in srgb, var(--bm-surface-raised) 44%, var(--bm-accent)) 38%,
+    color-mix(in srgb, var(--bm-surface-raised) 76%, var(--bm-border)) 56%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-row,
+.skeleton-detail-heading,
+.skeleton-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--bm-border) 65%, transparent);
+}
+
+.row-icon,
+.card-icon,
+.detail-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+}
+
+.row-value {
+  flex: 0 0 72px;
+  height: 16px;
+  margin-left: auto;
+}
+
+.skeleton-lines {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 7px;
+  min-width: 0;
+}
+
+.line {
+  height: 12px;
+}
+
+.line-primary {
+  width: min(72%, 300px);
+}
+
+.line-secondary {
+  width: min(46%, 190px);
+  height: 9px;
+}
+
+.line-tertiary {
+  width: min(61%, 250px);
+  height: 9px;
+}
+
+.skeleton-card-grid,
+.skeleton-detail-grid,
+.skeleton-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.skeleton-card {
+  min-height: 156px;
+  padding: 12px;
+  border: 1px solid var(--bm-border);
+  background: color-mix(in srgb, var(--bm-surface) 80%, transparent);
+}
+
+.skeleton-detail-heading {
+  min-height: 76px;
+  margin-bottom: 16px;
+}
+
+.skeleton-detail-grid {
+  padding-block: 12px;
+}
+
+.skeleton-fact,
+.skeleton-metric {
+  display: grid;
+  gap: 8px;
+  min-height: 55px;
+  align-content: center;
+}
+
+.line-label {
+  width: 35%;
+  height: 9px;
+}
+
+.line-value {
+  width: 64%;
+  height: 15px;
+}
+
+.skeleton-table-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 2fr) repeat(5, minmax(64px, 1fr));
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  padding-inline: 10px;
+  border-bottom: 1px solid var(--bm-border);
+}
+
+.table-name,
+.table-cell {
+  height: 13px;
+}
+
+.table-name {
+  width: 72%;
+}
+
+.table-cell {
+  width: 82%;
+  justify-self: end;
+}
+
+.chart {
+  height: 100%;
+  min-height: 260px;
+  align-content: end;
+}
+
+.skeleton-chart {
+  display: flex;
+  align-items: end;
+  justify-content: space-around;
+  gap: 8px;
+  min-height: 210px;
+  padding: 16px 12px 0;
+  border-bottom: 1px solid var(--bm-border);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 51px,
+    color-mix(in srgb, var(--bm-border) 65%, transparent) 52px
+  );
+}
+
+.chart-bar {
+  width: min(8%, 34px);
+  min-height: 30px;
+}
+
+.chart-axis {
+  width: 100%;
+  height: 10px;
+  margin-top: 6px;
+}
+
+.map {
+  height: 100%;
+}
+
+.skeleton-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--bm-border);
+  border-radius: 2px;
+  background-color: var(--bm-background);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--bm-border) 42%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bm-border) 42%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 8% 8%;
+}
+
+.skeleton-map-land {
+  position: absolute;
+  background: color-mix(in srgb, var(--bm-surface-raised) 66%, var(--bm-border));
+  opacity: 0.62;
+  animation: none;
+}
+
+.land-north {
+  top: 8%;
+  left: 23%;
+  width: 42%;
+  height: 23%;
+  border-radius: 49% 29% 54% 42%;
+  transform: rotate(-8deg);
+}
+
+.land-center {
+  top: 31%;
+  left: 33%;
+  width: 29%;
+  height: 34%;
+  border-radius: 36% 53% 42% 51%;
+  transform: rotate(12deg);
+}
+
+.land-east {
+  top: 33%;
+  right: 8%;
+  width: 23%;
+  height: 28%;
+  border-radius: 47% 52% 34% 58%;
+  transform: rotate(-15deg);
+}
+
+.land-south {
+  bottom: 7%;
+  left: 20%;
+  width: 38%;
+  height: 25%;
+  border-radius: 52% 40% 58% 33%;
+  transform: rotate(9deg);
+}
+
+.skeleton-map-route {
+  position: absolute;
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--bm-accent) 72%, var(--bm-border));
+  opacity: 0.55;
+}
+
+.route-main {
+  top: 49%;
+  left: 14%;
+  width: 70%;
+  transform: rotate(16deg);
+}
+
+.route-branch {
+  top: 53%;
+  left: 33%;
+  width: 38%;
+  transform: rotate(-39deg);
+}
+
+.skeleton-map-marker {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--bm-background);
+  border-radius: 50%;
+  background: var(--bm-accent);
+}
+
+.metric-value {
+  width: 72%;
+  height: 20px;
+}
+
+.skeleton-recipe-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.skeleton-recipe-controls,
+.skeleton-recipe-result,
+.skeleton-form {
+  display: grid;
+  gap: 14px;
+}
+
+.skeleton-recipe-controls,
+.skeleton-recipe-result {
+  min-height: 440px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bm-surface) 75%, transparent);
+}
+
+.skeleton-field {
+  display: grid;
+  gap: 8px;
+}
+
+.field-control {
+  width: 100%;
+  height: 38px;
+}
+
+.inline {
+  display: inline-flex;
+  width: 128px;
+  vertical-align: middle;
+}
+
+.inline-bar {
+  width: 100%;
+  height: 12px;
+}
+.button-bar {
+  width: 100%;
+  height: 40px;
+}
+
+@keyframes skeleton-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@media (max-width: 760px) {
+  .skeleton-recipe-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skeleton-table-row {
+    grid-template-columns: minmax(100px, 1.7fr) repeat(3, minmax(52px, 1fr));
+  }
+
+  .skeleton-table-row .table-cell:nth-last-child(-n + 2) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .skeleton-card-grid,
+  .skeleton-detail-grid,
+  .skeleton-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}

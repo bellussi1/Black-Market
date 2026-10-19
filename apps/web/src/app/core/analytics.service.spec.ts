@@ -176,6 +176,83 @@ describe('privacy and product analytics', () => {
     failure.flush({ status: 1 });
     http.verify();
   });
+  it('sends only allowlisted tutorial properties after consent', () => {
+    const { service, http, privacy } = setup();
+    privacy.save(true);
+    TestBed.tick();
+    http.expectOne('https://eu.i.posthog.com/i/v0/e/').flush({ status: 1 });
+    for (const event of ['tutorial_started', 'tutorial_completed', 'tutorial_dismissed'] as const) {
+      expect(service.captureTutorial(event, 'market', '2026-10-15T15:00:00.000Z')).toBe(true);
+      const request = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+      expect(request.request.body).toEqual({
+        api_key: 'phc_public_test_only',
+        event,
+        properties: {
+          screenKey: 'market',
+          guideUpdatedAt: '2026-10-15T15:00:00.000Z',
+          distinct_id: expect.any(String),
+          $process_person_profile: false,
+          $ip: null,
+        },
+      });
+      request.flush({ status: 1 });
+    }
+    expect(
+      service.captureTutorial(
+        'tutorial_started',
+        'private@example.com' as never,
+        '2026-10-15T15:00:00.000Z',
+      ),
+    ).toBe(false);
+    expect(service.captureTutorial('tutorial_started', 'market', 'private@example.com')).toBe(
+      false,
+    );
+    expect(
+      service.captureTutorial('tutorial_step' as never, 'market', '2026-10-15T15:00:00.000Z'),
+    ).toBe(false);
+    expect(
+      cleanProperties({
+        feature: 'market',
+        screenKey: 'market',
+        guideUpdatedAt: '2026-10-15T15:00:00.000Z',
+      } as never),
+    ).toEqual({ feature: 'market' });
+    http.verify();
+  });
+
+  it('does not send tutorial events without consent or when analytics is disabled', () => {
+    const { service, http, privacy } = setup(false);
+    expect(service.captureTutorial('tutorial_started', 'market', '2026-10-15T15:00:00.000Z')).toBe(
+      false,
+    );
+    privacy.save(true);
+    TestBed.tick();
+    expect(service.captureTutorial('tutorial_started', 'market', '2026-10-15T15:00:00.000Z')).toBe(
+      false,
+    );
+    http.expectNone('https://eu.i.posthog.com/i/v0/e/');
+    expect(cookieValue(ANALYTICS_ID_COOKIE)).toBeNull();
+    http.verify();
+  });
+
+  it('stops tutorial events immediately when analytics consent is revoked', () => {
+    const { service, http, privacy } = setup();
+    expect(service.captureTutorial('tutorial_started', 'market', '2026-10-15T15:00:00.000Z')).toBe(
+      false,
+    );
+    privacy.save(true);
+    TestBed.tick();
+    http.expectOne('https://eu.i.posthog.com/i/v0/e/').flush({ status: 1 });
+    service.captureTutorial('tutorial_started', 'market', '2026-10-15T15:00:00.000Z');
+    const pending = http.expectOne('https://eu.i.posthog.com/i/v0/e/');
+    privacy.save(false);
+    expect(pending.cancelled).toBe(true);
+    expect(
+      service.captureTutorial('tutorial_completed', 'market', '2026-10-15T15:00:00.000Z'),
+    ).toBe(false);
+    http.expectNone('https://eu.i.posthog.com/i/v0/e/');
+    http.verify({ ignoreCancelled: true });
+  });
   it('does not initialize analytics in development', () => {
     environment.production = false;
     TestBed.configureTestingModule({

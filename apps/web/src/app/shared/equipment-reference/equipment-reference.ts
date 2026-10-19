@@ -113,6 +113,7 @@ export class EquipmentReference implements OnDestroy {
     this.enhancements.set(null);
     this.caphras.set(null);
     this.message.set('');
+    this.loading.set(false);
     this.level.set(0);
     this.from.set(0);
     this.to.set(1);
@@ -142,6 +143,7 @@ export class EquipmentReference implements OnDestroy {
       )
       .subscribe({
         next: (result) => {
+          this.loading.set(false);
           const parsed = enhancement.safeParse(result.enhancement?.data);
           const cap = caphras.safeParse(result.caphras?.data);
           if (parsed.success) {
@@ -153,8 +155,10 @@ export class EquipmentReference implements OnDestroy {
             parsed.success ? '' : 'Este item não tem uma tabela de aprimoramento disponível.',
           );
         },
-        error: () =>
-          this.message.set('Não foi possível carregar esta referência. Escolha novamente o item.'),
+        error: () => {
+          this.loading.set(false);
+          this.message.set('Não foi possível carregar esta referência. Escolha novamente o item.');
+        },
       });
   }
   ngOnDestroy() {

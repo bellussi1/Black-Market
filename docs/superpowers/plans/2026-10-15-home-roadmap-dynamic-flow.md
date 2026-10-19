@@ -68,24 +68,24 @@
 - Consumes: tabela PostgreSQL existente `roadmap_entries`, com índice `roadmap_entries_kind_order_uidx` e `sort_order` único apenas por `kind`.
 - Produces: índice único global `roadmap_entries_sort_order_uidx`; `sort_order` legado reatribuído de zero em diante, primeiro por `kind = 'flow'`, depois `kind = 'pillar'`, preservando ordem anterior por `sort_order` e usando `id` como desempate determinístico. Todos os outros valores por linha permanecem iguais.
 
-- [ ] **Step 1: Escrever o teste de migração legado em `apps/api/src/roadmap/roadmap-migration.integration.spec.ts`**
+- [x] **Step 1: Escrever o teste de migração legado em `apps/api/src/roadmap/roadmap-migration.integration.spec.ts`**
 
 Adicionar `it('migratesLegacyOrderToGlobalSequenceAndPreservesAllOtherColumns', ...)`. Com `ROADMAP_MIGRATION_TEST_URL` apontando para PostgreSQL descartável, criar `roadmap_entries` temporária com o índice antigo e registros `flow`/`pillar` intercalados, executar o SQL real de `0011_global_roadmap_order.sql` e verificar: posições finais `0..N-1`, todas as fases antes dos pilares, ordem relativa antiga por tipo, igualdade de IDs/slugs/tipos/textos/status/ícones/foco/links e rejeição de uma posição repetida entre tipos. O teste deve ser marcado como ignorável apenas quando a variável de ambiente não estiver definida.
 
-- [ ] **Step 2: Rodar o teste para confirmar que a migração ainda falta**
+- [x] **Step 2: Rodar o teste para confirmar que a migração ainda falta**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/roadmap/roadmap-migration.integration.spec.ts`
 Expected: FAIL porque `0011_global_roadmap_order.sql` ainda não existe; com `ROADMAP_MIGRATION_TEST_URL` ausente, a execução deve indicar o teste como ignorado e não conta como verificação da migração.
 
-- [ ] **Step 3: Atualizar o schema e gerar o esqueleto da migração**
+- [x] **Step 3: Atualizar o schema e gerar o esqueleto da migração**
 
 Em `packages/database/src/schema.ts`, trocar `roadmap_entries_kind_order_uidx` (`kind`, `sortOrder`) por `roadmap_entries_sort_order_uidx` (`sortOrder`), sem adicionar restrição para `featured`. Em seguida rodar `pnpm --filter @bdo/database exec drizzle-kit generate --name global_roadmap_order --breakpoints`; confirmar os nomes gerados e usar `0011_global_roadmap_order.sql` e `0010_snapshot.json` no plano de arquivos.
 
-- [ ] **Step 4: Completar a migração antes de criar o índice global**
+- [x] **Step 4: Completar a migração antes de criar o índice global**
 
 Em `0011_global_roadmap_order.sql`, remover o índice antigo, atribuir os novos valores com `row_number() over (order by case kind when 'flow' then 0 else 1 end, sort_order, id) - 1`, e então criar o índice único global gerado. O `UPDATE` deve alterar somente `sort_order`; não recriar, excluir ou reescrever conteúdo editorial.
 
-- [ ] **Step 5: Rodar a integração e validar o estado Drizzle**
+- [x] **Step 5: Rodar a integração e validar o estado Drizzle**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/roadmap/roadmap-migration.integration.spec.ts`
 Expected: PASS quando `ROADMAP_MIGRATION_TEST_URL` estiver configurada para banco PostgreSQL descartável.
@@ -93,7 +93,7 @@ Expected: PASS quando `ROADMAP_MIGRATION_TEST_URL` estiver configurada para banc
 Run: `pnpm db:check` e `pnpm --filter @bdo/database build`
 Expected: journal/snapshots consistentes e build do pacote de banco concluído.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/database/src/schema.ts packages/database/drizzle/0011_global_roadmap_order.sql packages/database/drizzle/meta/0010_snapshot.json packages/database/drizzle/meta/_journal.json apps/api/src/roadmap/roadmap-migration.integration.spec.ts
@@ -114,25 +114,25 @@ git commit -m "feat(roadmap): migrate to global ordering"
 - Consumes: índice global da Task 1; os contratos existentes `RoadmapUpdateRequest`, `RoadmapEntry` e `RoadmapResponse` de `packages/shared/src/roadmap.ts`.
 - Produces: `parseRoadmapUpdate(input: unknown): RoadmapUpdateInput` com `sortOrder` globalmente único, sem teto de coleção/posição e com caminhos distintos dentro de cada entrada; `RoadmapService.list(): Promise<RoadmapResponse>` ordenado somente por `sortOrder`.
 
-- [ ] **Step 1: Escrever os testes de validação e ordenação global**
+- [x] **Step 1: Escrever os testes de validação e ordenação global**
 
 Em `roadmap-validation.spec.ts`, adicionar `it('acceptsMoreThan32EntriesAndSortOrderAbove1000', ...)`, com pelo menos 33 itens, última posição `1001` e duas entradas `featured: true`; adicionar `it('rejectsDuplicateSortOrdersAcrossKinds', ...)` e `it('rejectsRepeatedPathsInOneEntryButAllowsTheSamePathAcrossEntries', ...)`. Em `roadmap.service.spec.ts`, alterar a fixture para posições globalmente distintas e adicionar `it('returnsPersistedEntriesInGlobalSortOrderRegardlessOfKind', ...)` com tipos intercalados.
 
-- [ ] **Step 2: Rodar as specs para confirmar falhas**
+- [x] **Step 2: Rodar as specs para confirmar falhas**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/roadmap/roadmap-validation.spec.ts src/roadmap/roadmap.service.spec.ts`
 Expected: FAIL nos testes novos por limite de 32/1000, unicidade ainda por tipo, caminhos repetidos ainda aceitos e serviço ainda agrupando por tipo.
 
-- [ ] **Step 3: Implementar as regras globais em `roadmap-validation.ts` e `roadmap.service.ts`**
+- [x] **Step 3: Implementar as regras globais em `roadmap-validation.ts` e `roadmap.service.ts`**
 
 Remover `.max(1000)` de `sortOrder` e `.max(32)` de `entries`; manter os demais limites atuais por campo. Fazer a unicidade usar apenas `sortOrder`, com mensagem de erro de ordem única no Roadmap inteiro. Validar caminhos repetidos com escopo por entrada; a mesma rota em entradas diferentes deve continuar válida. Manter `featured` como booleano independente sem regra de exclusividade. Ordenar `list()` com `left.sortOrder - right.sortOrder` sem comparar `kind`.
 
-- [ ] **Step 4: Rodar as specs de API para confirmar aprovação**
+- [x] **Step 4: Rodar as specs de API para confirmar aprovação**
 
 Run: `pnpm --filter @bdo/api exec vitest run src/roadmap/roadmap-validation.spec.ts src/roadmap/roadmap.service.spec.ts`
 Expected: PASS nos testes novos e existentes, incluindo HTML/caminho interno, coleção vazia, conflito `expectedUpdatedAt` e transação de substituição.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/api/src/roadmap/roadmap-validation.ts apps/api/src/roadmap/roadmap-validation.spec.ts apps/api/src/roadmap/roadmap.service.ts apps/api/src/roadmap/roadmap.service.spec.ts
@@ -153,24 +153,24 @@ git commit -m "feat(roadmap): validate global order and links"
 - Consumes: `RoadmapApiService.getPublic(): Observable<RoadmapResponse>`, `IdentityService.authenticated()` e `isLoginRequiredPath(path: string)`.
 - Produces: uma lista computada pela posição global; cada item conserva `RoadmapEntry`, mostra “Fase” para `flow` e “Pilar” para `pillar`, e expõe somente links permitidos para a sessão atual.
 
-- [ ] **Step 1: Escrever os testes da trilha e filtragem de links**
+- [x] **Step 1: Escrever os testes da trilha e filtragem de links**
 
 Em `roadmap-page.spec.ts`, substituir as expectativas de duas seções por `it('rendersMixedKindsInOneOrderedListWithTextualTypeAndFocus', ...)`: API retorna tipos intercalados com `sortOrder` distintos; verificar uma única `<ol>`, `<li><article>`, sequência global idêntica, rótulos textuais de tipo e “Foco da Home”, status em texto e links separados. Adicionar `it('filtersProtectedLinksUntilIdentityInitializationCompletes', ...)` com `initialize()` pendente: rota pública visível, rota protegida ausente enquanto visitante e visível quando o sinal de autenticação passa a `true`. Manter/ajustar testes de vazio, falha, retry e permissão do link de gestão.
 
-- [ ] **Step 2: Rodar a spec para confirmar falhas**
+- [x] **Step 2: Rodar a spec para confirmar falhas**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/roadmap/roadmap-page.spec.ts`
 Expected: FAIL porque a tela ainda separa `flow` e `pillar` e não rotula o tipo/foco em uma lista comum.
 
-- [ ] **Step 3: Implementar a lista e os estados em `roadmap-page.ts`/`.html`**
+- [x] **Step 3: Implementar a lista e os estados em `roadmap-page.ts`/`.html`**
 
 Remover `flowEntries` e `pillars`; expor uma coleção ordenada pela API/`sortOrder` e filtrar todos os `entry.links` com `isLoginRequiredPath()` enquanto `authenticated()` for falso. Preservar a chamada a `IdentityService.initialize()` no navegador e a API pública sem estado de usuário. Renderizar uma `<ol>` contendo um `<li>` e `<article>` por entrada; apresentar o tipo, o rótulo textual “Foco da Home” quando `featured`, ícone decorativo com `aria-hidden="true"`, status textual opcional e um link por ação. Não tornar o cartão inteiro linkável. Preservar o estado vazio “O Roadmap ainda não tem conteúdo”, carregamento `role="status"`, falha `role="alert"` com “Tentar novamente” e link de gestão apenas para administrador.
 
-- [ ] **Step 4: Estilizar eixo desktop e coluna mobile em `roadmap-page.scss`**
+- [x] **Step 4: Estilizar eixo desktop e coluna mobile em `roadmap-page.scss`**
 
 Usar o eixo central e alternância visual de cartões por posição da lista no desktop; no breakpoint estreito, usar um eixo lateral e uma coluna, sem mudar DOM/ordem nem gerar overflow horizontal. Remover alturas rígidas que cortem conteúdo, permitir quebra de títulos/descrições/links, aplicar alvos mínimos de 44 × 44 px, contorno de foco visível e zerar movimento no `prefers-reduced-motion: reduce`. Tipo, foco e estado devem ter texto além da cor; números ornamentais ficam `aria-hidden`.
 
-- [ ] **Step 5: Rodar a spec e revisar viewport/teclado**
+- [x] **Step 5: Rodar a spec e revisar viewport/teclado**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/roadmap/roadmap-page.spec.ts`
 Expected: PASS com ordem mista, filtragem de visitante/autenticado e estados de vazio/falha/retry.
@@ -178,7 +178,7 @@ Expected: PASS com ordem mista, filtragem de visitante/autenticado e estados de 
 Run: `pnpm dev:web`
 Expected: em `http://localhost:4200/roadmap`, confirmar manualmente no desktop (1440 px) cartões alternados e no viewport estreito (390 px) uma coluna na mesma ordem; percorrer links com Tab e confirmar foco visível, rótulos compreensíveis e movimento reduzido respeitado. Não há harness de viewport/E2E configurado no repositório.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app/features/roadmap/roadmap-page.ts apps/web/src/app/features/roadmap/roadmap-page.html apps/web/src/app/features/roadmap/roadmap-page.scss apps/web/src/app/features/roadmap/roadmap-page.spec.ts
@@ -199,29 +199,29 @@ git commit -m "feat(roadmap): render one accessible global trail"
 - Consumes: os tipos `RoadmapEntryInput`/`RoadmapEntryKind` e `RoadmapApiService.getManaged()`/`replace()` existentes.
 - Produces: `move(draftKey: string, direction: -1 | 1)` sobre a lista global; `changeKind(draftKey: string, kind: RoadmapEntryKind)` que conserva `sortOrder`; adicionar ao final e normalizar posições `0..N-1` ao mover/remover; campo de foco rotulado “Mostrar como foco na Home”.
 
-- [ ] **Step 1: Preparar fixture válida e escrever testes de lista global**
+- [x] **Step 1: Preparar fixture válida e escrever testes de lista global**
 
 Em `roadmap-manage-page.spec.ts`, corrigir `storedEntries` para não repetir posições entre tipos e adicionar `it('rendersOneEditorListInGlobalOrder', ...)`, `it('movesEntriesAcrossKindsAndNormalizesGlobalOrder', ...)`, `it('changingKindPreservesGlobalPosition', ...)`, `it('addsAtEndAndRenumbersAfterRemoval', ...)`, `it('allowsMultipleHomeFocusEntriesAndCollectionsAbove32', ...)` e `it('validatesRepeatedDestinationsBeforeSaving', ...)`. Asserções devem cobrir os dados enviados a `replace()`, duas ou mais caixas `featured` marcadas, 33 entradas, ordem contínua, rejeição local de caminhos repetidos na mesma entrada e nome acessível exato do controle de foco.
 
-- [ ] **Step 2: Rodar a spec para confirmar falhas**
+- [x] **Step 2: Rodar a spec para confirmar falhas**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/roadmap/roadmap-manage-page.spec.ts`
 Expected: FAIL porque a página ainda agrupa tipos, muda a posição ao alterar tipo, move/remover só dentro do grupo e impede mais de 32 entradas.
 
-- [ ] **Step 3: Implementar a ordem global em `roadmap-manage-page.ts`**
+- [x] **Step 3: Implementar a ordem global em `roadmap-manage-page.ts`**
 
 Substituir `EditorGroup`, `flowEntries`, `pillars` e `editorGroups` por uma única coleção ordenada e rótulos derivados do tipo da entrada. Fazer `move()` trocar vizinhos na sequência total e renumerar todas; `changeKind()` alterar somente `kind`; `addEntry()` inserir na última posição global; `confirmRemove()` remover e renumerar todos os restantes. Remover a validação `entries.length > 32` e a desativação do botão de adicionar por contagem. Validar destinos duplicados localmente por entrada usando caminhos normalizados antes de enviar; a API continua sendo a validação final. Manter confirmação de remoção, rascunho, validação de campos, controle de concorrência, conflito e feedback.
 
-- [ ] **Step 4: Implementar a lista e o foco acessível no template/styles**
+- [x] **Step 4: Implementar a lista e o foco acessível no template/styles**
 
 Renderizar uma única seção/lista com cada entrada mostrando “Fase” ou “Pilar”, botões mover para cima/baixo desabilitados somente nos extremos globais e todos os campos atuais. Renomear o texto da caixa de seleção para “Mostrar como foco na Home”; não limitar quantas são selecionadas. Preservar layout adaptável, labels, foco visível e controles de toque utilizáveis.
 
-- [ ] **Step 5: Rodar a spec para confirmar aprovação**
+- [x] **Step 5: Rodar a spec para confirmar aprovação**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/roadmap/roadmap-manage-page.spec.ts`
 Expected: PASS com reordenação entre tipos, posição preservada ao trocar tipo, adição/remoção global, múltiplos focos e 33 registros; testes existentes de acesso negado, conflito e salvamento continuam passando.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app/features/roadmap/roadmap-manage-page.ts apps/web/src/app/features/roadmap/roadmap-manage-page.html apps/web/src/app/features/roadmap/roadmap-manage-page.scss apps/web/src/app/features/roadmap/roadmap-manage-page.spec.ts
@@ -242,24 +242,24 @@ git commit -m "feat(roadmap): manage entries in global order"
 - Consumes: `RoadmapApiService.getPublic(): Observable<RoadmapResponse>`, `IdentityService.authenticated()`/`initialize()`, `isLoginRequiredPath(path: string)` e `safeInternalReturnUrl(candidate: string | null): string | null`.
 - Produces: `homeFocuses`, uma lista computada, filtrada por `featured` e ordenada por `sortOrder`; cada foco contém a entrada da API, links públicos permitidos e, para visitantes sem links públicos, `returnUrl` seguro ou `null`.
 
-- [ ] **Step 1: Escrever os testes da Home dinâmica e estados da API**
+- [x] **Step 1: Escrever os testes da Home dinâmica e estados da API**
 
 Em `dashboard-page.spec.ts`, adicionar `it('rendersEveryFeaturedEntryInGlobalOrder', ...)` para múltiplos focos mistos, verificando que títulos, resumo, descrição, estado, ícone e links vêm da resposta API em ordem global. Adicionar `it('doesNotPromoteUnfeaturedEntriesAndShowsRoadmapFallback', ...)`, `it('filtersProtectedFocusLinksUntilIdentityInitializationCompletes', ...)` (inclua um foco só com `/recommendations` e outro só com `/family`; validar ausência dos caminhos protegidos, botão “Entrar para acessar” e `returnUrl` apenas no destino aceito por `safeInternalReturnUrl()`), e `it('keepsSearchAndContinueSectionsAvailableWhenRoadmapFailsAndCanRetry', ...)`. Verificar também que não existem `.flow-card`, `.journey-grid` ou `details.more-tools`, e que busca por item e “Continue de onde parou” permanecem.
 
-- [ ] **Step 2: Rodar a spec para confirmar falhas**
+- [x] **Step 2: Rodar a spec para confirmar falhas**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/dashboard/dashboard-page.spec.ts`
 Expected: FAIL porque a Home ainda renderiza conteúdo de `journeyOptions`/`tools` e não consulta `/api/v1/roadmap`.
 
-- [ ] **Step 3: Carregar, filtrar e expor os focos em `dashboard-page.ts`**
+- [x] **Step 3: Carregar, filtrar e expor os focos em `dashboard-page.ts`**
 
 Injetar `RoadmapApiService`, iniciar a leitura pública no ciclo de vida da Home e inicializar `IdentityService` no navegador. Criar sinais distintos para `loading`, `error`, `loaded` e `entries`; calcular `homeFocuses` com `featured === true` em ordem crescente de `sortOrder`, sem promover não destacados. Filtrar links via `isLoginRequiredPath()` antes de expô-los ao template. Se todos os destinos forem protegidos para visitante, calcular o retorno exclusivamente por `safeInternalReturnUrl(entry.links[0]?.path ?? null)`; se não aceitar, apontar para `/account` sem query. Falha de leitura deve ficar explícita e ter um método de retry; não carregar arrays de substituição.
 
-- [ ] **Step 4: Trocar o hero, estados e cards no template/styles**
+- [x] **Step 4: Trocar o hero, estados e cards no template/styles**
 
 Remover `journeyOptions`, `journeys`, `tools`, botões fixos de hero, o fluxo “Um caminho simples”, a grade de jornadas e o diretório “Ver todas as ferramentas”. No espaço promocional ao lado do hero, adicionar a seção “Focos atuais” com todos os `homeFocuses` e os dados editoriais recebidos. Para cada foco, usar o primeiro link permitido como ação principal e os demais como secundários; sem links, usar só o acesso genérico ao `/roadmap`; para links todos protegidos, oferecer “Entrar para acessar”. Incluir estados `role="status"` de carregamento/vazio e `role="alert"` com retry. Preservar busca, navegação contextual do item, retomada local, nota de fonte e navegação principal. Estilizar cartões sem altura fixa, com quebra de texto, links de pelo menos 44 × 44 px, foco visível e movimento reduzido.
 
-- [ ] **Step 5: Rodar a spec e revisar Home responsiva**
+- [x] **Step 5: Rodar a spec e revisar Home responsiva**
 
 Run: `pnpm --filter @bdo/web exec ng test --watch=false --include=app/features/dashboard/dashboard-page.spec.ts`
 Expected: PASS para foco único/múltiplo/ausente, sessão visitante/autenticada, retorno seguro, falha/retry e manutenção dos módulos contextuais.
@@ -267,7 +267,7 @@ Expected: PASS para foco único/múltiplo/ausente, sessão visitante/autenticada
 Run: `pnpm dev:web`
 Expected: em `http://localhost:4200/`, confirmar no desktop (1440 px) a promoção de focos ao lado do hero; em 390 px, conteúdo em coluna sem corte/overflow. Usar Tab/Shift+Tab para confirmar a ordem de foco e contornos; testar redução de movimento. Verificar que não há duplicação estática de jornada/ferramentas.
 
-- [ ] **Step 6: Verificar os contratos e o build em conjunto**
+- [x] **Step 6: Verificar os contratos e o build em conjunto**
 
 Run: `pnpm test`
 Expected: PASS em API, Web, calculators e scripts; o teste de migração PostgreSQL deve executar com a URL descartável configurada ou aparecer explicitamente como ignorado quando ela não estiver definida.
@@ -275,7 +275,7 @@ Expected: PASS em API, Web, calculators e scripts; o teste de migração Postgre
 Run: `pnpm check` e `pnpm build`
 Expected: lint, Prettier, typecheck e builds sem erros. Confirmar que as telas consomem `{ entries, updatedAt }`, preservam `flow | pillar` e usam a mesma posição global; API e Web devem ser liberadas juntas.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/web/src/app/features/dashboard/dashboard-page.ts apps/web/src/app/features/dashboard/dashboard-page.html apps/web/src/app/features/dashboard/dashboard-page.scss apps/web/src/app/features/dashboard/dashboard-page.spec.ts

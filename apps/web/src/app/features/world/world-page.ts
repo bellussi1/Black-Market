@@ -46,7 +46,7 @@ export class WorldPage implements OnDestroy {
   private request?: Subscription;
   readonly nodes = signal<WorldNode[]>([]);
   readonly message = signal('');
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly start = signal('');
   readonly destination = signal('');
   readonly search = signal('');
@@ -130,9 +130,6 @@ export class WorldPage implements OnDestroy {
     this.request?.unsubscribe();
     this.loading.set(true);
     this.message.set('');
-    this.nodes.set([]);
-    this.start.set('');
-    this.destination.set('');
     this.request = this.http
       .get<{
         nodes: WorldNode[];
@@ -142,6 +139,9 @@ export class WorldPage implements OnDestroy {
       .subscribe({
         next: (result) => {
           this.nodes.set(result.nodes);
+          const availableNodeIds = new Set(result.nodes.map((node) => node.id));
+          if (!availableNodeIds.has(this.start())) this.start.set('');
+          if (!availableNodeIds.has(this.destination())) this.destination.set('');
           this.loading.set(false);
         },
         error: () => {
