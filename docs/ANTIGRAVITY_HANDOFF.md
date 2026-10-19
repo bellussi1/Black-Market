@@ -353,3 +353,11 @@ Revisadas e incorporadas as alterações locais de containers/transições; corr
 93/93 focados, `pnpm check` e suíte integral (1.218 aprovados/1 ignorado) passaram. Ver ACTIVE_CONTEXT §183 para build, commits e limites. QA desktop/390px da receita, Mercado e Home; sem overflow móvel, campos repetidos ou ícones principais ausentes na amostra. Recomendações privadas não foram revistas nesta sessão. Sem alteração de dados, seed, migration, reset, staging ou produção. Manter a comparação numérica com fontes pareadas pendente quando faltarem cotações; não certificar todo o catálogo pela amostra.
 
 Fechamento §183: build serial do monorepo e smoke SSR passaram. Após ajuste final de classes visuais, Angular mediu **503,37 kB/135,47 kB** (bruto/transferência); PERF-01 reaberto por exceder o aviso em 3,37 kB. Sem warning CSS da árvore; budgets mantidos. Commits: `0a98d44` fixtures, `4f2a00c` etapas/editor, `52fb5c2` decisões, `975bcd9` Mercado, `a727ba4` containers, `a29b4a6` transições, `f452b34` XLIFF. Documentação em commit próprio. Watcher Web reaberto depois dos gates; API host mantida, sem seed/reset/migration.
+
+### Atualização — Hub Life Skills e painéis de Família (19/10/2026)
+
+Commits `e46fb76`, `1783b8b`, `c6b38b6` e `62849f2` implementam navegação compartilhada Life Skills/Recomendações, estado de URL e conteúdo exclusivo em Família. As duas rotas mantêm seus guards; dados privados não são exibidos em `/lifeskills`, queries legadas continuam acessíveis e dados de Família seguem salvos pelos fluxos existentes. Não houve escrita em banco nem alteração de dados reais.
+
+Pesquisas competitivas: `docs/research/lifeskills-hub-competitor-review-2026-10-19.md` e `docs/research/family-workspace-tabs-review-2026-10-19.md`. Validação recente: 74 testes focados, `pnpm check`, build Web e `pnpm test:ssr` passaram; avisos de bundle/CSS, locale e CommonJS seguem documentados em `docs/ACTIVE_CONTEXT.md` §§190–191. QA visual autenticado de Família permanece pendente: o origin isolado não tinha sessão. A aba de usuário em `localhost:4200` foi preservada.
+
+Próximo: executar `docs/superpowers/plans/2026-10-19-ui-route-rollout.md`, mantendo inventário por rota, pesquisa pública registrada, commits por lote e o plano visual não rastreado de 16/10 intacto. Não fazer push/deploy durante o rollout.

@@ -81,21 +81,21 @@
 - Consumes: `LifeSkillsHubNav`, `tab` query contract and existing `calculateInvestment`, `calculateTraining`, `PresetBar` behavior.
 - Produces: `production|sessions` canonical views, protected/public route gates, legacy-only panels for `mastery|training`, and safe defaults for missing/invalid values.
 
-- [ ] **Step 1: Add failing tests for access, canonical, legacy and invalid queries**
+- [x] **Step 1: Add failing tests for access, canonical, legacy and invalid queries**
   - Add `keeps recommendations behind authGuard` to `auth.guard.spec.ts`.
   - Add `does not render production data from the public Life Skills route` with `tab=production` and a visible `/recommendations` link.
   - Add `links the shared sessions tab to the public Life Skills URL` to `recommendations-page.spec.ts`.
   - Assert `tab=sessions` renders sessions; `tab=production` on public `/lifeskills` shows only an access CTA; `tab=mastery` and `tab=training` keep their current panels and show a legacy notice; missing/unknown query uses the route default.
   - Assert changing routes with RouterLink updates browser history and back/forward restores the expected tab.
   - Assert legacy preset JSON in `WorkspaceStore` is byte-for-byte unchanged after opening each legacy view.
-- [ ] **Step 2: Run the focused tests and verify failure**
+- [x] **Step 2: Run the focused tests and verify failure**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/lifeskills/lifeskills-page.spec.ts" --include="src/app/features/recommendations/recommendations-page.spec.ts" --include="src/app/core/auth.guard.spec.ts"`
   - Expected: new public-gate/history/legacy-notice assertions fail before implementation; existing auth behavior remains passing.
-- [ ] **Step 3: Implement query parsing and safe route state**
+- [x] **Step 3: Implement query parsing and safe route state**
   - Parse `production|sessions|mastery|training`; derive route default by URL. Render no Recommendations content from public `/lifeskills`; expose a link to the protected path. Keep legacy tools out of primary nav, preserve their existing calculation and preset inputs, and add a concise notice above the requested legacy panel.
-- [ ] **Step 4: Run focused tests and preserve access boundaries**
+- [x] **Step 4: Run focused tests and preserve access boundaries**
   - Run the same command; Expected: PASS and no guard test is weakened.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - Commit message: `feat(lifeskills): preserve legacy links and route state`
 
 ### Task 3: Compact the observed-session workspace
@@ -111,17 +111,17 @@
 - Consumes: existing session form, result/comparison signals and route state from Task 2.
 - Produces: a desktop arrangement that shows action, data confidence and current result early; secondary history/help can be disclosed without removing actions.
 
-- [ ] **Step 1: Add failing tests for session data states and action placement**
+- [x] **Step 1: Add failing tests for session data states and action placement**
   - Add `places the session action and result before secondary history` and `keeps missing optional data distinct from a user-entered zero`.
-- [ ] **Step 2: Run the session tests and verify the layout assertion fails**
+- [x] **Step 2: Run the session tests and verify the layout assertion fails**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/lifeskills/lifeskills-page.spec.ts"`
   - Expected: new view-order assertion fails; existing math/comparison tests remain passing.
-- [ ] **Step 3: Recompose the session layout**
+- [x] **Step 3: Recompose the session layout**
   - Use shared page/container/panel contracts; at desktop place the session form and result/quality summary together, with history/comparison in an accessible secondary panel. Keep labels, units, saving/deletion affordances and formula outputs.
-- [ ] **Step 4: Run focused tests and browser checks**
-  - Run the same focused command; Expected: PASS.
-  - Inspect both routes anonymous and authorized at all four desktop viewports; verify direct URL, refresh, back/forward, legacy links, no layout shift during tour and no horizontal overflow at 390×844. Do not edit real session data.
-- [ ] **Step 5: Commit**
+- [x] **Step 4: Run focused tests and browser checks**
+  - Focused Life Skills, Recommendations, auth and tutorial tests passed. Public `/lifeskills` was inspected at 1920×1080, 2560×1440, 1600×900, 1366×768 and 390×844; no horizontal overflow. Direct legacy navigation and browser back restored `tab=mastery`; `/lifeskills?tab=production` showed an access CTA without production data.
+  - Authenticated Recommendations and tour layout-shift inspection remain unavailable in the isolated browser because `/recommendations` redirects to Home without a session. No real session data was edited.
+- [x] **Step 5: Commit**
   - Commit message: `style(lifeskills): prioritize session results`
 
 ## Final Verification

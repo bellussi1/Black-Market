@@ -40,25 +40,25 @@
 
 **Interfaces:**
 
-- Consumes: current `tab` signal (`character|equipment|family`), `selectTab`, Router query handling and selected-character state.
+- Consumes: current `tab` signal (`character|equipment|family`), RouterLink query handling and selected-character state.
 - Produces: route-backed tabs with stable panel ids `character-panel`, `equipment-panel`, `family-panel`; exactly one domain panel is rendered while shared character context remains visible.
 
-- [ ] **Step 1: Add failing exclusive-panel tests**
+- [x] **Step 1: Add failing exclusive-panel tests**
   - Add `renders exactly one primary panel for each supported tab` for `character`, `equipment` and `family`; each case asserts its selected panel exists and the other two do not.
   - Add `uses character as the default for missing and invalid tab values`.
   - Add `updates the family query when a tab is selected` with a Router spy or RouterTestingHarness.
-- [ ] **Step 2: Add the data-preservation regression test**
+- [x] **Step 2: Add the data-preservation regression test**
   - Extend `opens equipment inside family while retaining the active character and family data` to switch `character → equipment → family → character` and assert name, mastery, gear slots and family profile are unchanged. Add a blur-save assertion for an edited character field before navigating away.
-- [ ] **Step 3: Run the player page test and verify the expected failure**
+- [x] **Step 3: Run the player page test and verify the expected failure**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/player/player-page.spec.ts"`
   - Expected: exclusive-panel assertion fails because the current template renders the sections together.
-- [ ] **Step 4: Conditionally render the selected domain section**
+- [x] **Step 4: Conditionally render the selected domain section**
   - Put character sheet/masteries/attributes under `character-panel`, embedded `app-gear-inventory-page` under `equipment-panel`, and family/tax/profession sections under `family-panel`.
   - Do not conditionally remove the character selector, create form, route navigation, global save feedback or tutorials. Normalize only invalid/missing tab state to `character`; preserve unrelated query parameters.
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
   - Run the same command; Expected: PASS, including exactly-one-panel, blur-save, active character and family persistence tests.
-- [ ] **Step 6: Commit**
-  - Commit message: `feat(family): render selected workspace tab`
+- [x] **Step 6: Commit**
+  - Commit: `62849f2 feat(family): render selected workspace tab` (includes secondary-details refinement in the same Family workspace responsibility).
 
 ### Task 3: Refine the shared Family header and secondary details
 
@@ -73,21 +73,21 @@
 - Consumes: exclusive panels from Task 1 and shared tokens/control variants from the design-foundation plan.
 - Produces: one visible character context, clear panel heading and compact secondary groups while keeping all data and actions discoverable.
 
-- [ ] **Step 1: Add failing context and secondary-group assertions**
+- [x] **Step 1: Add failing context and secondary-group assertions**
   - Add `keeps the active-character selector and create action above every selected panel`.
   - Add `keeps secondary attributes accessible without exposing inactive panels`.
-- [ ] **Step 2: Run focused player tests and confirm the context/group assertions fail**
+- [x] **Step 2: Run focused player tests and confirm the context/group assertions fail**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/player/player-page.spec.ts"`
-- [ ] **Step 3: Align markup and secondary group behavior**
+- [x] **Step 3: Align markup and secondary group behavior**
   - Reuse global page/panel/tabs tokens; keep all fields labelled and make secondary sections disclosed via native accessible details or an existing shared disclosure primitive. Do not hide the primary identity, key mastery, active gear or saved state.
-- [ ] **Step 4: Run focused tests and inspect the browser**
-  - Run the same player test command; Expected: PASS.
-  - Inspect all four desktop viewports plus 390×844 with one saved character, no character and long character name. Verify no overflow or layout shift, keyboard tab movement, URL update, and preserved workspace data without editing the real account.
-- [ ] **Step 5: Commit**
-  - Commit message: `style(family): clarify character workspace hierarchy`
+- [x] **Step 4: Run focused tests and inspect the browser**
+  - Player, gear, tutorial, Life Skills, Recommendations and auth guard specs passed. Component tests cover selected-only panels, no-character states, focusable route links, URL updates, blur-save and preservation of character/family/gear.
+  - Browser inspection of `/family` is deferred: the isolated 4201 origin has no session and its guard redirects to Home. The real 4200 tab and account data were left untouched; repeat the private visual matrix with an authorized session.
+- [x] **Step 5: Commit**
+  - Commit: `62849f2 feat(family): render selected workspace tab`.
 
 ## Final Verification
 
 - Run `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/player/player-page.spec.ts" --include="src/app/features/gear/gear-inventory-page.spec.ts"`, `pnpm check` and `pnpm --filter @bdo/web build`.
-- Verify `/family?tab=character`, `/family?tab=equipment` and `/family?tab=family` directly with a test profile and with the authorized local session; do not modify user data.
+- Component tests cover `/family?tab=character`, `/family?tab=equipment` and `/family?tab=family` with empty and synthetic profiles. The direct browser route reached Home due to the session guard; repeat visual QA with the authorized local session without editing user data.
 - Update checklist and handoff with the exact commits and any authenticated browser limitations.
