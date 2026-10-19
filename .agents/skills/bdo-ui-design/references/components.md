@@ -28,7 +28,7 @@ Screenshots 06, 07 e 14: slot escuro, ícone proporcional, contorno fino. Reserv
 
 ## Botões, campos e tabs
 
-Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Alvos web têm pelo menos 44 px de altura, fonte legível e foco visível. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível.
+Screenshots 03, 04, 07, 08 e 16: retângulos de cinza e bronze, seleção por faixa fina. Controles padrão têm 44 px; variantes compartilhadas compactas/ícone têm 36 px, reservadas a toolbars e linhas densas. Fonte legível, foco visível e espaçamento continuam obrigatórios. Bordas permanecem com espessura constante. Botões destrutivos usam texto explícito; não replicar ícone de lixeira sem nome acessível. Consulte a API, estados e exemplos no [catálogo técnico](../../../../docs/design-system/bdo-ui.md).
 
 ## Indicadores econômicos e ações de origem
 

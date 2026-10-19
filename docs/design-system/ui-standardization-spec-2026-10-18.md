@@ -3,6 +3,7 @@
 - **Status:** especificação aprovada pelo usuário em 19/10/2026; planos de implementação aprovados e execução iniciada em 19/10/2026.
 - **Base aprovada para especificação:** proposta de arquitetura aprovada pelo usuário em 18/10/2026.
 - **Histórico de aprovação:** a aprovação inicial autorizou a direção e a especificação; a implementação começou após a aprovação posterior dos quatro planos separados.
+- **Decisão substitutiva de 19/10/2026:** o usuário solicitou depois uma única rota para Profissões e produção. O contrato abaixo foi reconciliado com `6bcc0f0` e com a revisão `unified-professions-ui-review-2026-10-19.md`; a proposta inicial de manter duas páginas foi substituída.
 - **Auditoria e evidências:** [`../research/ui-standardization-audit-2026-10-18.md`](../research/ui-standardization-audit-2026-10-18.md).
 
 ## Problema
@@ -12,7 +13,7 @@ O Black Market já usa paleta carvão/bronze, fontes e componentes locais inspir
 ## Objetivos
 
 1. Dar a todas as rotas uma linguagem visual MMORPG própria, consistente e reconhecível, sem imitar um dashboard SaaS.
-2. Unificar o fluxo de Recomendações e Life Skills sem remover nem redirecionar as duas URLs existentes e sem ampliar acesso a conteúdo privado.
+2. Unificar o fluxo de Recomendações e Life Skills em `/lifeskills`, preservando `/recommendations` como alias compatível e o acesso autenticado ao conteúdo privado.
 3. Simplificar Família com conteúdo exclusivo por aba, preservando personagens, equipamentos, maestrias, benefícios, ações e dados armazenados.
 4. Reduzir rolagem e esforço de interpretação, exibindo decisão, estado e resultado principais cedo, sem esconder premissas ou inventar valores.
 5. Estabelecer uma referência única para futuras alterações de UI e uma migração verificável por rotas.
@@ -22,7 +23,7 @@ O Black Market já usa paleta carvão/bronze, fontes e componentes locais inspir
 
 - Alterar fórmulas, preço, cotação, maestria do jogo, modelo de domínio ou dados de mercado.
 - Excluir registros, presets, perfis ou dados do usuário; resetar banco, workspace ou sessão.
-- Remover as URLs `/recommendations`, `/lifeskills` ou `/family`, mudar guards ou publicar/deployar.
+- Quebrar as URLs `/recommendations`, `/lifeskills` ou `/family`, ampliar acesso privado ou publicar/deployar.
 - Instalar outra biblioteca visual ou reescrever a aplicação inteira em um framework diferente.
 - Copiar componentes, números ou dados de concorrentes. A pesquisa pública informa padrões de fluxo e está limitada conforme o relatório.
 - Certificar em mobile todas as composições agora; manter regressão funcional e sem overflow é obrigatório.
@@ -47,17 +48,18 @@ O Black Market já usa paleta carvão/bronze, fontes e componentes locais inspir
 
 ## Navegação de Life Skills e Recomendações
 
-As duas rotas renderizam o mesmo shell/hub de navegação, com política de acesso definida pela própria rota. Não haverá redirect de rota nem duplicação de cabeçalhos e tabs.
+`/lifeskills` renderiza o hub único, com cabeçalho, tabs e container compartilhados. `/recommendations` redireciona para a aba de produção por compatibilidade. Esta é a decisão posterior do usuário, já implementada; não restaurar o antigo desenho de duas páginas.
 
-| URL                | Acesso atual a preservar    | Estado inicial   | Conteúdo permitido                           |
-| ------------------ | --------------------------- | ---------------- | -------------------------------------------- |
-| `/recommendations` | Privado; manter `authGuard` | `tab=production` | Recomendações e fluxo de produção existentes |
-| `/lifeskills`      | Público                     | `tab=sessions`   | Registro e comparação de sessões observadas  |
+| URL                          | Acesso e comportamento                                      | Conteúdo                                         |
+| ---------------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| `/lifeskills?tab=production` | Hub público; conteúdo de produção exige sessão e navegador  | Recomendações lazy autenticadas ou ação de login |
+| `/lifeskills?tab=sessions`   | Público                                                     | Registro e comparação de sessões observadas      |
+| `/recommendations`           | Alias: preserva demais queries/hash e fixa `tab=production` | Encaminha ao hub canônico                        |
 
 - O parâmetro `tab` será a representação navegável do estado: `production` ou `sessions`. Abre por link direto, sobrevive a refresh e responde a back/forward.
-- Ao trocar a aba, navegação interna escolhe a rota correspondente: produção usa `/recommendations?tab=production`; sessões usa `/lifeskills?tab=sessions`. Isso preserva o guard de recomendações e o acesso público a sessões.
-- Abrir `/lifeskills?tab=production` diretamente não concede conteúdo privado: a página mostra explicação e ação para acessar `/recommendations`, sem redirect silencioso. `/recommendations` segue protegida mesmo que a query solicite outra aba.
-- Queries ausentes/inválidas usam a aba padrão da rota. Consultas antigas `tab=mastery` e `tab=training` continuam abrindo os painéis atuais em modo legado, com aviso de que deixaram a navegação principal. Essa compatibilidade preserva deep links e acesso aos presets salvos sem dar destaque às ferramentas.
+- Ao trocar a aba, muda apenas a query de `/lifeskills`; o mesmo componente mantém o estado de sessão em edição. Produção privada não monta durante a verificação de identidade, no SSR público ou após logout.
+- Abrir `/lifeskills?tab=production` sem sessão mostra explicação e ação de login no hub. O alias não concede conteúdo privado. Família e demais rotas pessoais mantêm seus guards.
+- Queries ausentes/inválidas em `/lifeskills` usam `sessions`. Consultas antigas `tab=mastery` e `tab=training` continuam abrindo os painéis atuais em modo legado, com aviso de que deixaram a navegação principal. Essa compatibilidade preserva deep links e acesso aos presets salvos sem dar destaque às ferramentas.
 - Remover “Retorno de mastery” e “Tempo de treino” das tabs principais. Não apagar cálculos, dados `investment`/`training` ou presets existentes; qualquer remoção posterior exige decisão de produto separada.
 - Sessões mantêm registro, histórico e comparação observada. Valores opcionais não informados aparecem como ausentes; zero só significa zero quando informado. Não mudar fórmulas de sessão.
 - No desktop, organizar formulário, resumo/resultado e estado de dados para que a tarefa principal seja entendida na primeira dobra sempre que a altura comportar. Histórico e explicações complementares podem ser recolhidos ou organizados em painéis; premissas e ações de salvar/remover continuam descobríveis e acessíveis.
@@ -81,7 +83,7 @@ Prioridade da migração: fundação de tokens/variantes; Home e shell; hub Life
 
 1. Cada superfície do inventário tem container, escala de títulos, ritmo de espaçamento e estados de controle identificáveis no catálogo BDO; exceções de domínio estão justificadas.
 2. Não permanecem variantes locais concorrentes para o mesmo papel visual comum (tabs, botões, campos e cabeçalhos) sem justificativa documentada.
-3. `/recommendations`, `/lifeskills` e `/family` continuam acessíveis diretamente, sem redirect novo; as guards permanecem nos mesmos limites de acesso.
+3. `/lifeskills` e `/family` continuam acessíveis diretamente; `/recommendations` encaminha ao hub preservando query/hash. Conteúdo de produção só monta com sessão no navegador; demais rotas pessoais preservam guards e limites de acesso.
 4. A seleção das abas sincroniza a URL e suporta refresh/back/forward; combinações privadas em rota pública não mostram dados protegidos.
 5. Links antigos `mastery`/`training` continuam abrindo seus painéis legados com aviso, sem exclusão ou alteração de presets; as duas opções ficam fora das tabs principais.
 6. Ficha, equipamento e família deixam de ser exibidos simultaneamente como uma única página longa; nenhum dado ou ação existente é perdido.
@@ -93,7 +95,7 @@ Prioridade da migração: fundação de tokens/variantes; Home e shell; hub Life
 
 ## Riscos e tratamentos
 
-- **Guards e abas compartilhadas:** manter a autorização vinculada à rota; a query não é mecanismo de autorização. Testar URL direta anônima e autenticada.
+- **Guards e abas compartilhadas:** a query não é mecanismo de autorização. O hub público só monta produção no navegador autenticado; as demais rotas pessoais mantêm seus guards. Testar URL direta anônima/autenticada, SSR, verificação de identidade e logout.
 - **Dados/presets antigos:** retirar controles principais pode esconder acesso a presets antigos. Não deletar nem migrar o payload antes de teste de compatibilidade e mensagem visível.
 - **Refactor amplo de estilos:** trocar classes globalmente pode quebrar grafo, medidas, foco ou telas especializadas. Migrar por famílias e manter exceções documentadas.
 - **Redução de altura:** comprimir campos pode esconder contexto. Priorizar hierarquia e divulgação progressiva; não remover premissas, estados ou confirmação visual.

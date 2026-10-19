@@ -16,7 +16,7 @@ Botões usam centro do viewport como âncora. Fit considera largura E altura do 
 
 ## Pan
 
-Pointer capture somente durante drag confirmado; soltar em up/cancel, limpar estado ao destruir o componente. Limiar separa click de drag. Fundo com grab/grabbing e `user-select: none` limitado ao canvas. Painéis de detalhes continuam selecionáveis. Preservar atalhos das setas quando viewport tem foco; controles dos cards não herdam os atalhos.
+Mouse recebe pointer capture somente após drag confirmado; touch recebe captura imediata para manter os dois pointers do pinch, conforme `recipe-graph.ts`. Soltar em up/cancel e limpar estado ao destruir o componente. Limiar separa click de drag. Fundo com grab/grabbing e `user-select: none` limitado ao canvas. Painéis de detalhes continuam selecionáveis. Preservar atalhos das setas quando viewport tem foco; controles dos cards não herdam os atalhos.
 
 ## Dimensões e estabilidade
 

@@ -1,11 +1,13 @@
 ---
 name: bdo-ui-design
-description: Construir e revisar interfaces do Black Market inspiradas nos menus de Black Desert Online, incluindo receitas, inventário, mercado e árvores de crafting. Usar nas alterações de UI deste projeto; não generalizar o tema para outros produtos.
+description: Usar antes de criar, modificar ou auditar qualquer interface do Black Market BDO, incluindo layouts, navegação, formulários, botões, estados, receitas, inventário, mercado e crafting. Não aplicar este tema a outros produtos.
 ---
 
 # Black Market · BDO UI
 
 Esta é a fonte canônica da identidade, dos tokens e das variantes compartilhadas do Black Market. Consulte o catálogo técnico em [`docs/design-system/bdo-ui.md`](../../../docs/design-system/bdo-ui.md) para nomes e valores ativos. Use as imagens em `assets/` como referência primária. Preserve a densidade e o material visual do jogo, adaptando contraste, alvos de toque e navegação à web. Não identifique a fonte original sem evidência.
+
+Antes de alterar UI, leia este arquivo e o catálogo; escolha as referências abaixo conforme a tarefa. `ui-design` orienta composição, `angular-developer` implementação e `spartan` primitivas. Evolua essa base; não instale uma segunda biblioteca ou crie outro tema. Consulte a pesquisa pública exigida em `AGENTS.md` antes de alterar uma funcionalidade.
 
 ## Decisões essenciais
 
@@ -29,6 +31,38 @@ Esta é a fonte canônica da identidade, dos tokens e das variantes compartilhad
 - Durações são `--bm-motion-fast`, `--bm-motion-route-enter` (220 ms) e `--bm-motion-route-exit` (120 ms). As transições de rota ficam restritas ao conteúdo e `prefers-reduced-motion` as desativa.
 - Árvore de crafting, roda de equipamento e slots podem manter geometria SCSS própria. Devem continuar usando tipografia, estados de foco e espaçamento compartilhados quando não prejudicarem a interação de domínio.
 
+## Layout e navegação
+
+- Desktop-first: referência 1920×1080; conferir 2560×1440, 1600×900, 1366×768 e reflow funcional em 390×844. Use largura ampla somente quando a informação precisar dela; não estique textos de leitura ou cards só para preencher o monitor.
+- Mantenha ação, premissas essenciais e resultado próximos. Informações secundárias usam detalhes contextuais, sem um modo avançado global. Texto longo pode aumentar a altura; grids usam `minmax(0, 1fr)` e filhos `min-width: 0`.
+- Profissões tem rota canônica `/lifeskills?tab=production|sessions`; `/recommendations` é alias que preserva query/hash. Produção só monta no navegador autenticado; SSR público não mostra dados privados. Os painéis `mastery|training` continuam acessíveis por URL com aviso e presets preservados, fora da navegação principal.
+- Família usa `/family?tab=character|equipment|family`, um painel por vez e seleção de personagem compartilhada. Preserve salvamento e estado ao navegar. Links de URL usam `aria-current`; toggles usam `aria-pressed`; tabs ARIA locais exigem `tablist`, `tab`, `tabpanel`, seleção e teclado completos.
+
+## Anatomia e estados
+
+- Use `HlmButton` de `@bdo/ui/button`: `default` para ação principal, `outline`/`secondary` para alternativa, `ghost` para ação discreta e `destructive` para exclusão. Ícone é um tamanho, toggle é um comportamento; não criar variantes de cor por página. A matriz de API/estados está no catálogo técnico.
+- Rótulo identifica a ação; ícone sem texto recebe nome acessível. Loading preserva espaço, anuncia progresso e bloqueia duplicação. Disabled não pode ser a única explicação de uma pendência. Foco, seleção e hover são estados distintos.
+- Campos usam label persistente, unidade/dica e erro associados. Reutilize `HlmInput`, `HlmTextarea`, `BdoSelect` e os editores existentes; vazio não vira zero. Agrupe campos relacionados, mantenha ações perto do grupo e preserve o método de salvar vigente.
+- Modais precisam de título, fechamento, foco inicial, teclado contido e retorno ao acionador. Reutilize `LoginDialog` e o dialog de otimização quando aplicáveis. O painel não modal de item mantém `aria-modal="false"`; não prender o foco nele.
+- Tabelas alinham números, exibem unidade e ordenação explícita; ícones de catálogo têm espaço reservado. Loading, vazio e erro ocupam o contexto dos dados; conteúdo anterior só permanece identificado quando for da mesma consulta.
+- Use somente custom properties declaradas. Nomes parecidos não são aliases: texto de apoio é `--bm-muted`, destaque é `--bm-accent`, foco é `--bm-focus` e borda de controle é `--bm-control-border`. Um fallback não registra um token.
+
+## Checklist de criação
+
+- [ ] Ler o componente atual, catálogo e pesquisa da família funcional; identificar decisão principal e dados desconhecidos.
+- [ ] Escolher container, escala, primitiva e variante existentes antes de escrever CSS. Registrar justificativa e contrato no catálogo se um padrão novo for necessário.
+- [ ] Definir URL/estado selecionado, política de acesso, refresh e Voltar/Avançar; preservar dados e contratos de domínio.
+- [ ] Definir loading, vazio, erro, disabled, seleção, feedback e foco antes de considerar o fluxo pronto.
+- [ ] Conferir label, teclado, contraste, texto longo, reflow e reduced-motion; não usar cor ou tooltip como única explicação.
+
+## Checklist de revisão
+
+- [ ] Comparar alturas, gaps, tipografia, variante e estados com o catálogo; verificar que todos os tokens usados existem e remover estilos locais duplicados na origem.
+- [ ] Revisar as quatro resoluções desktop e mobile; zoom de 125%/150%, nomes extensos, listas grandes, ausência de dado e scroll independente quando afetados.
+- [ ] Exercitar navegação direta, refresh, histórico, teclado, Escape/retorno de foco, async e tutorial relevantes; mudanças no grafo incluem pan/zoom/expansão.
+- [ ] Executar `pnpm check`, `pnpm test` e build/SSR quando pertinentes. Registrar comandos, resultados, capturas e limites reais de acesso; fixture ou build não comprovam QA autenticada.
+- [ ] Atualizar catálogo, inventário e handoff quando o contrato mudar. Corrigir referência antiga conflitante em vez de acrescentar uma regra contrária ao final.
+
 ## Referências por tarefa
 
 - [Guia Interface In Game](references/bdo-interface-in-game-guide.md): catálogo completo de componentes e padrões visuais oficiais (Interface In Game).
@@ -36,6 +70,7 @@ Esta é a fonte canônica da identidade, dos tokens e das variantes compartilhad
 - [Paleta](references/color-palette.md): tokens semânticos e cores propostas.
 - [Tipografia](references/typography.md): escolha de fonte e hierarquia.
 - [Componentes](references/components.md): slots, barras, cards, inputs e feedback.
+- [Catálogo e exemplos concretos](../../../docs/design-system/bdo-ui.md): API real, variantes, estados, composições corretas e erros a evitar.
 - [Interações](references/interaction-patterns.md): divulgação progressiva e estados.
 - [Crafting tree](references/crafting-tree.md): zoom, pan, medição e estabilidade.
 - [Acessibilidade](references/accessibility.md): foco, teclado, contraste e movimento.

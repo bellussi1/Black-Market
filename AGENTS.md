@@ -26,6 +26,7 @@ Para que você (Codex ou Antigravity) saiba exatamente o que o outro agente fez 
    - Execute `git status` e `git log -n 3 --oneline` para checar o estado exato da branch.
 2. **Durante o Desenvolvimento**:
    - Mantenha alterações coesas e evite deixar arquivos quebrados ao terminar um turno.
+   - Antes de criar ou modificar componentes visuais, consultar o Design System e a Skill de UI/UX do projeto. Reutilizar os componentes e tokens existentes. Qualquer novo padrão visual precisa ter justificativa explícita e ser incorporado à documentação compartilhada.
    - Use `.agents/skills/bdo-ui-design/SKILL.md` como fonte canônica da identidade BDO, paleta, tokens, tamanhos e exceções de componentes; confira o catálogo técnico em `docs/design-system/bdo-ui.md`.
    - Use `.agents/skills/ui-design/SKILL.md` e `.agents/skills/ui-design/agents/design-ui.md` para hierarquia, composição e revisão. Eles não definem um segundo tema nem substituem os tokens da fonte canônica.
    - Para implementação Angular e primitivas, consulte as skills oficiais `angular-developer` e `spartan`; preserve os contratos documentados do catálogo BDO.

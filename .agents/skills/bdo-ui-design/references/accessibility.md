@@ -3,7 +3,7 @@
 Adaptações web, não reprodução literal das limitações do jogo:
 
 - Texto normal com contraste mínimo 4.5:1; elementos gráficos e controles relevantes 3:1.
-- Alvos de toque de pelo menos 44 × 44 px. Sem informação exclusiva de hover.
+- Controles padrão têm pelo menos 44 px; ícones e toolbars densas podem usar a variante compartilhada de 36 px, com espaçamento e nome acessível. Medir a área interativa em mobile, sem reduzir controles primários. Essa exceção é de densidade do produto e não comprova certificação de acessibilidade. Sem informação exclusiva de hover.
 - Botões reais, `aria-label` para ícones, `aria-expanded` para dependências, `aria-pressed` para modo/seleção quando apropriado.
 - Card não pode conter button dentro de button; escolher estrutura semântica adequada e ações separadas.
 - Ordem de Tab previsível. Setas navegam a viewport quando ela tem foco. Enter/Space operam ações; atalhos não interceptam inputs/selects.

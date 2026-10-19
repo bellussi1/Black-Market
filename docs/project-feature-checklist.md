@@ -210,6 +210,8 @@ Pesquisa dos quatro concorrentes, alcance e limites em `research/recipe-market-f
 
 Especificação aprovada em `design-system/ui-standardization-spec-2026-10-18.md`. Fundação, hub Life Skills, abas de Família, rotas públicas, fluxos privados e planejamento/utilitários estão implementados e registrados em `docs/superpowers/plans/2026-10-19-ui-route-rollout.md`. Gates finais passaram; a revisão complementar teve sessão autenticada com workspace vazio. Ficha preenchida e edição administrativa permanecem limitadas à cobertura sintética/permissão. Preserve o plano visual de 16/10 não rastreado.
 
+Complemento de 19/10/2026: [reconciliação da auditoria](research/ui-standardization-completion-2026-10-19.md). UI-STD-05 inclui a substituição de 18 referências de tokens inexistentes em sete arquivos por tokens canônicos, inclusive foco da Família; a varredura de 1.912 referências terminou sem nomes desconhecidos. A skill persistente agora contém navegação real, matriz de componentes/estados, exemplos e checklists; conflitos de zoom, clique e densidade foram removidos. Geometria/efeitos com literais compartilhados e QA autenticada preenchida continuam explicitamente pendentes, sem alterar o alcance dos gates históricos acima.
+
 ## Documentos relacionados
 
 - Estado entre turnos: [`ACTIVE_CONTEXT.md`](ACTIVE_CONTEXT.md) e [`ANTIGRAVITY_HANDOFF.md`](ANTIGRAVITY_HANDOFF.md).

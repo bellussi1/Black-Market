@@ -1,5 +1,7 @@
 # Auditoria de UI e proposta de padronização — 18/10/2026
 
+> Registro histórico da investigação inicial. A proposta de duas rotas abaixo foi substituída pelo pedido posterior de hub único em `/lifeskills`, implementado em `6bcc0f0`. Consulte a [especificação atual](../design-system/ui-standardization-spec-2026-10-18.md), o [inventário de rotas](ui-route-inventory-2026-10-19.md) e a [reconciliação da auditoria](ui-standardization-completion-2026-10-19.md). As aprovações e implementações posteriores estão em `ACTIVE_CONTEXT.md` §§189–194; os gates históricos ao final deste registro não são pendências atuais.
+
 ## Objetivo e escopo
 
 O pedido é unificar a experiência visual do Black Market com identidade própria inspirada em interfaces de MMORPG/BDO, priorizando desktop (1920×1080, monitores maiores e intermediários), clareza, menos rolagem e uso consistente de componentes. Também pede uma rota coerente para Recomendações e Profissões, avaliação das ferramentas de retorno de maestria/tempo de treino e simplificação de Família.
