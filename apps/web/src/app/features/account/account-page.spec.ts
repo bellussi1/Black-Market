@@ -108,6 +108,18 @@ describe('AccountPage social sign-in', () => {
     expect(page.textContent).not.toContain('Receber link de acesso');
   });
 
+  it('renders as a compact account section rather than a nested page workspace', async () => {
+    const { fixture } = createPage();
+    await fixture.whenStable();
+
+    const page = fixture.nativeElement as HTMLElement;
+    expect(
+      page.querySelector('.account-workspace > header.account-heading h2#account-page-title')
+        ?.textContent,
+    ).toContain('Conta e sincronização');
+    expect(page.querySelector('.account-workspace.tool-page')).toBeNull();
+  });
+
   it('reserves the account panel while identity is being resolved', () => {
     const identity = createIdentity({ ready: signal(false) });
     const { fixture } = createPage(identity);

@@ -2,6 +2,23 @@
   display: block;
 }
 
+.account-heading {
+  margin-bottom: var(--bm-space-4);
+}
+
+.account-heading h2 {
+  margin: 0 0 var(--bm-space-2);
+  font: 500 var(--bm-text-section) / 1.35 var(--bm-font-display);
+}
+
+.account-heading p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--bm-muted);
+  font-size: var(--bm-text-support);
+  line-height: 1.6;
+}
+
 .account-loading {
   min-height: 13rem;
   display: grid;

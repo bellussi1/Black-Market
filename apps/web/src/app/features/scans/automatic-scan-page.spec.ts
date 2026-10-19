@@ -6,6 +6,18 @@ import { AutomaticScanPage } from './automatic-scan-page';
 describe('Automatic capture loading state', () => {
   useMemoryStorage();
 
+  it('keeps capture setup under the shared page heading', async () => {
+    const fixture = await renderComponent(AutomaticScanPage);
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect(
+      page
+        .querySelector('.tool-page.scan-workspace > header.tool-heading h1#capture-title')
+        ?.textContent?.trim().length,
+    ).toBeGreaterThan(0);
+    expect(page.querySelector('.upload-area')).not.toBeNull();
+  });
+
   it('announces screen detection without changing the upload panel height', async () => {
     const fixture = await renderComponent(AutomaticScanPage);
     const page = fixture.componentInstance;

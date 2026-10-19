@@ -28,6 +28,16 @@ describe('SettingsPage', () => {
     expect(element.querySelector('[data-tour="settings.tutorials"]')).not.toBeNull();
     expect(element.querySelector('app-tutorial-launcher')).toBeNull();
   });
+  it('keeps one page title and nests account synchronization as a section', async () => {
+    const fixture = await render(SettingsPage);
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('h1')).toHaveLength(1);
+    expect(
+      element.querySelector('app-account-page .account-heading h2#account-page-title')?.textContent,
+    ).toContain('Conta e sincronização');
+    expect(element.querySelector('app-account-page .tool-page')).toBeNull();
+  });
   it('previews a valid backup and replaces only after the checkbox is selected', async () => {
     const fixture = await render(SettingsPage, {}, [
       {

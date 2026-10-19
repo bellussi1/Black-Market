@@ -276,14 +276,18 @@ describe('Unified personal workspace routes', () => {
     });
   });
 
-  it('keeps personal data routes client-rendered and non-cacheable', () => {
+  it('keeps all personal data routes explicit, client-rendered and non-cacheable', () => {
     for (const path of [
+      'scans',
+      'scans/profile',
       'family',
       'shopping',
       'plans',
       'settings',
       'recommendations',
       'tutorials/manage',
+      'roadmap/manage',
+      'storage',
     ]) {
       const route = serverRoutes.find((candidate) => candidate.path === path);
       expect(route?.renderMode).toBe(RenderMode.Client);

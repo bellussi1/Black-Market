@@ -1,6 +1,6 @@
-<div class="tool-page" [attr.aria-busy]="!identity.ready() || loading() ? 'true' : null">
-  <header class="tool-heading">
-    <h2>Conta e sincronização</h2>
+<div class="account-workspace" [attr.aria-busy]="!identity.ready() || loading() ? 'true' : null">
+  <header class="account-heading" aria-labelledby="account-page-title">
+    <h2 id="account-page-title">Conta e sincronização</h2>
     <p>A cópia da conta é opcional e separada do backup deste navegador.</p>
   </header>
   @if (message()) {
