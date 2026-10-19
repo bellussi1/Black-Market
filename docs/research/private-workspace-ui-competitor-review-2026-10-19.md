@@ -1,0 +1,26 @@
+# Revisão pública de perfis, armazenagem e capturas
+
+**Consulta:** 19/10/2026 · **Escopo:** superfícies públicas de gestão de personagem/equipamento, armazenamento e leitura de capturas. A análise informa somente hierarquia e cobertura de UI; não altera regras, preços ou dados do jogo.
+
+## Evidência observada
+
+| Fonte                                                                                                                                           | Resultado desta consulta                                                                                                                                                                                                          | Limite                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [BDO Workshop — Gear Progression](https://bdoworkshop.com/gear-progression)                                                                     | A resposta pública mostra apenas o shell que exige JavaScript, consentimento de cookies e a descrição do próprio site como ferramenta de progressão, mercado/crafting e leitura de capturas de inventário, armazém e equipamento. | O planejador e suas interações não renderizaram. [Storage Tracker](https://bdoworkshop.com/crafting-workshop/storage-tracker) não ficou acessível. As funções são declarações públicas, não um fluxo de revisão reproduzido. |
+| [BDOLytics — Character](https://bdolytics.com/en/character) e [Crafting](https://bdolytics.com/en/crafting)                                     | As tentativas de abrir as rotas retornaram erro 502 nesta consulta; a busca pública não trouxe uma tela de armazém pessoal ou revisão de captura que pudesse ser verificada.                                                      | Não inferir ausência de recurso. A pesquisa de 18/10 registrada em `authenticated-workflows-ui-review-2026-10-18.md` também não conseguiu conferir gestão pessoal.                                                           |
+| [BDO Codex — itens](https://bdocodex.com/us/items/)                                                                                             | O acesso direto à listagem foi bloqueado pelo leitor. A busca encontrou páginas de itens e instalações de Storage do jogo, úteis como referência de catálogo/nomenclatura.                                                        | Essas páginas não demonstram uma ferramenta de inventário pessoal, OCR ou sincronização de conta. Nenhum conteúdo foi copiado para a aplicação.                                                                              |
+| [Garmoth — Gear Builder](https://garmoth.com/character/default/) e [guia do Gear Planner](https://garmoth.com/guides/post/garmoth-gear-planner) | A página pública indexada descreve presets, slots de equipamento, comparações e quebra de atributos. O guia público cita builds de Life Skill e campos de maestria por profissão.                                                 | A página interativa não foi reproduzida nesta tentativa. A documentação descreve o planejador de gear; não confirma equivalência para armazém ou OCR. Não se inferiu fórmula de bônus ou upgrade.                            |
+
+## Aplicação ao Black Market
+
+- A configuração é uma página com um único título principal; a conta/sincronização é uma seção subordinada. Por isso, `AccountPage` não deve criar outro container `.tool-page` nem outro `h1` dentro de `/settings`.
+- As rotas privadas de revisão continuam sem SSR de dados pessoais e recebem explicitamente `Client`, `noindex` e `no-store`. Guardas e confirmação da revisão não mudam.
+- Estados de carregamento, destino selecionado, itens incertos, correções e ação de aplicação continuam definidos pelo fluxo local e cobertos por testes. A comparação pública não autoriza inferir lógica interna.
+
+## Fontes abertas
+
+- [BDO Workshop Gear Progression](https://bdoworkshop.com/gear-progression) — shell com aviso de JavaScript e descrição pública.
+- [BDO Workshop Storage Tracker](https://bdoworkshop.com/crafting-workshop/storage-tracker) — indisponível para inspeção nesta consulta.
+- [BDOLytics Character](https://bdolytics.com/en/character) e [Crafting](https://bdolytics.com/en/crafting) — erro 502 ao abrir nesta consulta.
+- [BDO Codex Items](https://bdocodex.com/us/items/) — acesso direto bloqueado; resultados de busca limitados a referências de itens/Storage do jogo.
+- [Garmoth Gear Builder](https://garmoth.com/character/default/) e [guia público](https://garmoth.com/guides/post/garmoth-gear-planner) — descrição indexada e conteúdo editorial.

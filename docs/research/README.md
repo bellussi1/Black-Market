@@ -34,6 +34,8 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 - [Home, acesso público a Profissões e botões sociais](home-social-login-ui-review-2026-10-18.md): primeira dobra da Home, mudança de acesso de `/lifeskills`, padronização dos botões Google/Steam e pesquisa pública atual.
 - [Ficha compacta de item na árvore de receitas](recipe-item-quick-info-review-2026-10-18.md): tooltip inspirado no jogo, pesquisa pública, acesso separado à ficha completa e revisão estática das etapas expansíveis.
 - [Revisão de fluxos pessoais e leitura de capturas](authenticated-workflows-ui-review-2026-10-18.md): cobertura automatizada de Scan/Armazém/Família/Recomendações/Profissões, correção do filtro inicial do Scan, pesquisa competitiva e limites do browser autenticado.
+- [Pesquisa pública de perfis, armazenagem e capturas](private-workspace-ui-competitor-review-2026-10-19.md): comparação atual de superfícies de equipamento e OCR; limitações de JavaScript, erro 502 e acesso restrito.
+- [Pesquisa pública de planejamento e utilitários](planning-utility-competitor-review-2026-10-19.md): comparação de crafting, aprimoramento e presets; distingue páginas indexadas de fórmulas verificadas.
 
 | Documento                                                                                                                     | Cobertura                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
