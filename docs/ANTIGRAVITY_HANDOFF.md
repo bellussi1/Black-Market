@@ -361,3 +361,13 @@ Commits `e46fb76`, `1783b8b`, `c6b38b6` e `62849f2` implementam navegação comp
 Pesquisas competitivas: `docs/research/lifeskills-hub-competitor-review-2026-10-19.md` e `docs/research/family-workspace-tabs-review-2026-10-19.md`. Validação recente: 74 testes focados, `pnpm check`, build Web e `pnpm test:ssr` passaram; avisos de bundle/CSS, locale e CommonJS seguem documentados em `docs/ACTIVE_CONTEXT.md` §§190–191. QA visual autenticado de Família permanece pendente: o origin isolado não tinha sessão. A aba de usuário em `localhost:4200` foi preservada.
 
 Próximo: executar `docs/superpowers/plans/2026-10-19-ui-route-rollout.md`, mantendo inventário por rota, pesquisa pública registrada, commits por lote e o plano visual não rastreado de 16/10 intacto. Não fazer push/deploy durante o rollout.
+
+### Atualização — rollout geral de UI (19/10/2026)
+
+O rollout de todas as famílias de rota terminou em commits atômicos: `3104956` páginas públicas de alto tráfego, `76c199e` conteúdo público/editorial, `aedd5ce` contratos privados/SSR, `2326835` planejamento e utilitários. Pesquisas atuais dos quatro concorrentes e inventário completo foram registrados sob `docs/research/`; checklist UI-STD-01..07 e plano de execução reconciliados.
+
+Gates finais: `pnpm check`; `pnpm test` com 1.290 aprovados/1 ignorado (PostgreSQL descartável); build Web e `pnpm test:ssr` passaram. O build está em 502,82 kB inicial (+2,82 kB), árvore de receitas em 18,19 kB (+2,19 kB) e SCSS do catálogo em 16,03 kB (+30 B). Alertas de locale pt-BR→pt e CommonJS OCR persistem; limites não foram alterados.
+
+QA visual público cobriu cinco resoluções. `/crafting` não teve overflow nos mesmos tamanhos; reduced motion foi confirmado. A navegação MVP suspende `/demo`, `/world`, `/reference/**`, `/enhancement`, `/rng` e `/buffs`. QA visual autenticado de rotas privadas permanece pendente porque o origin isolado não possui sessão; não copiar a sessão do usuário da aba `localhost:4200`. Chamadas de identidade/tutorial em `127.0.0.1:4201` falham apenas por CORS. Não houve alteração de dados nem uso de staging/produção. Preservar o plano visual3 não rastreado.
+
+Estado: branch `codex/integrate-all-branches` no worktree isolado. A revisão, checklist, inventário e handoff estão consolidados no commit documental desta branch. QA autenticado segue como pendência de validação visual, sem bloquear a padronização entregue. Conciliar o pedido anterior de push/merge com `origin/main` antes de integrar esta branch; nenhum deploy foi feito.

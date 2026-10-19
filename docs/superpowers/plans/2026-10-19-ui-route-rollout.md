@@ -148,20 +148,21 @@
 - Consumes: shared foundation and the preserved visual phase-3 plan; current guards, session/account state, storage review and OCR application boundary.
 - Produces: common hierarchy across private operational flows with all review/confirmation controls intact.
 
-- [ ] **Step 1: Reconcile the existing phase-3 plan and current code**
+- [x] **Step 1: Reconcile the existing phase-3 plan and current code**
   - Read each item in the preserved plan and compare it with the route inventory, current source, tests and commits. Do not edit/delete that untracked plan; do not repeat any already completed work.
-- [ ] **Step 2: Add failing layout assertions to the affected page specs**
+- [x] **Step 2: Add failing layout assertions to the affected page specs**
   - Assert shared header/container, visible review status, explicit destination, uncertainty/error state and primary action grouping for each route. Assert a signed-out visitor still cannot see personal storage/scan shortcuts.
-- [ ] **Step 3: Run focused tests and verify only presentation assertions fail**
+- [x] **Step 3: Run focused tests and verify only presentation assertions fail**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/stock/stock-page.spec.ts" --include="src/app/features/storage/storage-page.spec.ts" --include="src/app/features/scans/automatic-scan-page.spec.ts" --include="src/app/features/scans/scans-page.spec.ts" --include="src/app/features/scans/profile-screen-import.spec.ts" --include="src/app/features/account/account-page.spec.ts" --include="src/app/features/gear/gear-inventory-page.spec.ts"`
   - Expected: view assertions expose visual gaps; OCR confidence, undo, auth and saved equipment behavior tests pass unchanged.
-- [ ] **Step 4: Apply shared hierarchy without changing review semantics**
+- [x] **Step 4: Apply shared hierarchy without changing review semantics**
   - Keep scan items visible during validation, distinguish valid/removal/uncertain states, preserve preview/edit/destination/apply confirmation, and keep storage location/quantity/actions explicit. Use shared tokens for container, buttons, fields and panels.
-- [ ] **Step 5: Run focused tests and authorized browser review**
+- [x] **Step 5: Run focused tests and authorized browser review (visual session unavailable)**
   - Run the same command; Expected: PASS.
-  - With the already authorized local account, inspect screens at the four desktop sizes and 390×844 without changing real profile/inventory data; if the session is unavailable, stop at access gate and report the missing visual check.
-- [ ] **Step 6: Commit the personal-workspace batch**
+  - Focused suite passed: 9 files / 94 tests. The isolated browser origin had no user session, so private routes were not opened with the user's Google session. Authenticated visual review remains pending.
+- [x] **Step 6: Commit the personal-workspace batch**
   - Commit message: `style(ui): align private storage and review flows`
+  - Commit: `aedd5ce style(ui): complete private route contracts` (includes explicit private SSR route entries and Settings account-section hierarchy).
 
 ### Task 5: Migrate planning, management and utility routes
 
@@ -184,18 +185,19 @@
 - Consumes: shared tokens/components and route matrix; current persistence, guard, calculation and tutorial behaviors.
 - Produces: common page hierarchy and input/feedback states on all remaining registered end-user, utility and management pages.
 
-- [ ] **Step 1: Add or extend route view-contract tests**
+- [x] **Step 1: Add or extend route view-contract tests**
   - For each listed page, assert shared page container/heading and visible primary action, empty state or result; for persisted pages also assert save/load behavior remains unchanged.
-- [ ] **Step 2: Run focused utility tests before markup changes**
+- [x] **Step 2: Run focused utility tests before markup changes**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/features/shopping/shopping-page.spec.ts" --include="src/app/features/plans/plans-page.spec.ts" --include="src/app/features/crafting/crafting-page.spec.ts" --include="src/app/features/enhancement/enhancement-page.spec.ts" --include="src/app/features/rng/rng-page.spec.ts" --include="src/app/features/buffs/buffs-page.spec.ts" --include="src/app/features/settings/settings-page.spec.ts" --include="src/app/features/tutorials/tutorials-manage-page.spec.ts" --include="src/app/features/roadmap/roadmap-manage-page.spec.ts" --include="src/app/features/demo/demo-page.spec.ts" --include="src/app/features/not-found/not-found-page.spec.ts"`
   - Expected: newly added view-contract checks fail only where hierarchy is absent; existing calculations/guards remain passing.
-- [ ] **Step 3: Align the shared hierarchy and field feedback**
+- [x] **Step 3: Align the shared hierarchy and field feedback**
   - Use the common page, panel, input, button, tabs and feedback contract. Preserve every domain control and existing validation message. Do not combine or remove workflows as part of styling.
-- [ ] **Step 4: Run focused tests and inspect direct routes**
+- [x] **Step 4: Run focused tests and inspect direct routes (partial browser coverage)**
   - Run the same command; Expected: PASS.
-  - Inspect utility, settings and management routes with their existing permissions; validate focus, loading/error states, long labels and viewport behavior.
-- [ ] **Step 5: Commit the utility-route batch**
+  - Focused suite passed: 11 files / 51 tests. On the isolated browser origin, `/crafting` and the 404 were checked for overflow; `/demo`, `/enhancement`, `/rng` and `/buffs` redirected Home under the active MVP gate. Settings/management screens were not visually inspected with an authenticated profile. These are explicit limits, not passing visual claims.
+- [x] **Step 5: Commit the utility-route batch**
   - Commit message: `style(ui): align planning and utility routes`
+  - Commit: `2326835 style(ui): align planning and utility routes`.
 
 ### Task 6: Complete route audit and quality gates
 
@@ -207,16 +209,17 @@
 - Modify: `docs/ANTIGRAVITY_HANDOFF.md`
 - Modify: `docs/research/README.md`
 
-- [ ] **Step 1: Re-audit the complete route matrix against current source**
+- [x] **Step 1: Re-audit the complete route matrix against current source**
   - Every registered route is marked with current shared container/control pattern, focused test, guard and browser QA outcome. No route is marked complete solely because it compiles.
-- [ ] **Step 2: Run all verification gates serially**
+- [x] **Step 2: Run all verification gates serially**
   - Run: `pnpm check`, `pnpm test`, `pnpm --filter @bdo/web build` and `pnpm test:ssr`.
-  - Expected: all pass; report pre-existing budgets/warnings faithfully. Do not raise bundle/style budgets to hide regression.
-- [ ] **Step 3: Perform final browser review**
+  - `pnpm check`, complete `pnpm test`, production web build and SSR smoke passed. Tests: 1,290 passed, 1 skipped (disposable PostgreSQL). Existing build warnings are recorded in ACTIVE_CONTEXT; budgets were not changed.
+- [x] **Step 3: Perform final browser review (with access limits)**
   - Revisit the changed routes in 1920×1080, 2560×1440, 1600×900, 1366×768 and 390×844; verify no layout shift, page overflow, focus loss, inaccessible state or console error. Test reduced motion.
-- [ ] **Step 4: Update the checklists and handoff**
+  - Existing public-route matrix covers all five sizes. Final isolated `/crafting` review in all five sizes found no horizontal overflow; `/404` remains verified at 1920×1080, 1366×768 and 390×844. Reduced motion computed to `0.00001s`. Suspended MVP and private routes were not represented as visually passed. Two CORS-blocked API calls appear only from the isolated QA origin `127.0.0.1:4201`.
+- [x] **Step 4: Update the checklists and handoff**
   - Record only verified route families as complete and list any blocked private route or unverified external source separately.
-- [ ] **Step 5: Commit the final audit record**
+- [x] **Step 5: Commit the final audit record**
   - Run: `pnpm exec prettier --check <changed markdown files>` and `git diff --check`; Expected: exit 0.
   - Commit message: `docs(ui): close application-wide route audit`
 
