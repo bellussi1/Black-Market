@@ -10,12 +10,119 @@ import { routes } from './app.routes';
 import { serverRoutes } from './app.routes.server';
 import { authGuard } from './core/auth.guard';
 import { IdentityService } from './core/identity.service';
+import { mvpRouteGuard } from './core/mvp-scope';
 import { recommendationsRouteResolver } from './core/public-route-data';
 
 @Component({ template: '' })
 class RouteDestination {}
 
 describe('Unified personal workspace routes', () => {
+  it('keeps every route in the UI inventory registered with its current guard and owner', async () => {
+    const childRoutes = routes[0].children ?? [];
+    const ownerByPath: Record<string, string> = {
+      '': 'app-dashboard-page',
+      demo: 'app-demo-page',
+      termos: 'app-legal-page',
+      privacidade: 'app-legal-page',
+      cookies: 'app-legal-page',
+      contato: 'app-legal-page',
+      'scans/profile': 'app-profile-screen-import',
+      scans: 'app-automatic-scan-page',
+      'recipes/items/:id': 'app-recipes-page',
+      'recipes/:key': 'app-recipes-page',
+      recipes: 'app-recipes-page',
+      'market/items/:id': 'app-item-detail-page',
+      world: 'app-world-page',
+      'tutorials/manage': 'app-tutorials-manage-page',
+      'roadmap/manage': 'app-roadmap-manage-page',
+      roadmap: 'app-roadmap-page',
+      recommendations: 'app-recommendations-page',
+      family: 'app-player-page',
+      shopping: 'app-shopping-page',
+      plans: 'app-plans-page',
+      'reference/:kind/:id': 'app-reference-page',
+      'reference/:kind': 'app-reference-page',
+      market: 'app-market-page',
+      crafting: 'app-crafting-page',
+      enhancement: 'app-enhancement-page',
+      lifeskills: 'app-lifeskills-page',
+      storage: 'app-storage-page|app-stock-page',
+      rng: 'app-rng-page',
+      buffs: 'app-buffs-page',
+      settings: 'app-settings-page',
+      '**': 'app-not-found-page',
+    };
+    const redirectPaths = [
+      'inventory',
+      'database/items/:id',
+      'account',
+      'profile',
+      'reference',
+      'database/items',
+      'gear',
+    ];
+    const expectedPaths = [...Object.keys(ownerByPath), ...redirectPaths].sort();
+    const authGuardPaths = [
+      'scans/profile',
+      'scans',
+      'tutorials/manage',
+      'roadmap/manage',
+      'recommendations',
+      'family',
+      'shopping',
+      'plans',
+      'storage',
+    ];
+
+    expect(childRoutes.map((route) => route.path ?? '').sort()).toEqual(expectedPaths);
+
+    for (const route of childRoutes) {
+      const path = route.path ?? '';
+      expect((route.canActivate ?? []).includes(authGuard), `authGuard policy for /${path}`).toBe(
+        authGuardPaths.includes(path),
+      );
+
+      if (redirectPaths.includes(route.path ?? '')) {
+        expect(route.redirectTo, `redirect owner for /${route.path}`).toBeDefined();
+        expect(route.canMatch).toBeUndefined();
+        continue;
+      }
+
+      expect(route.canMatch).toContain(mvpRouteGuard);
+      expect(route.loadComponent, `lazy owner for /${route.path}`).toBeTypeOf('function');
+      const loadedOwner = (await route.loadComponent!()) as {
+        ɵcmp?: { selectors?: Array<Array<string | number>> };
+        default?: { ɵcmp?: { selectors?: Array<Array<string | number>> } };
+      };
+      const selector =
+        loadedOwner.ɵcmp?.selectors?.[0]?.[0] ?? loadedOwner.default?.ɵcmp?.selectors?.[0]?.[0];
+      const ownerName = typeof selector === 'string' ? selector : 'unknown';
+      const expectedOwner = ownerByPath[route.path ?? ''];
+      expect(
+        expectedOwner?.split('|').includes(ownerName),
+        `component selector for /${route.path}: ${ownerName}`,
+      ).toBe(true);
+    }
+  });
+
+  it('preserves declared redirect-only records as redirects', () => {
+    const redirectPaths = [
+      'inventory',
+      'database/items/:id',
+      'account',
+      'profile',
+      'reference',
+      'database/items',
+      'gear',
+    ];
+
+    for (const path of redirectPaths) {
+      const route = routes[0].children?.find((candidate) => candidate.path === path);
+      expect(route?.redirectTo, `redirect record for /${path}`).toBeDefined();
+      expect(route?.loadComponent, `redirect has no page owner for /${path}`).toBeUndefined();
+    }
+  });
+
   it('serializes a direct protected URL into the public Home redirect for reload and SSR continuity', async () => {
     TestBed.configureTestingModule({
       providers: [

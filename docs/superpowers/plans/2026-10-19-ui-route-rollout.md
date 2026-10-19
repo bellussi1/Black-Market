@@ -48,18 +48,18 @@
 - Consumes: registered routes, route owners, guards/resolvers and existing feature/research checklists.
 - Produces: one route-to-component/test/guard/layout matrix for `/`, `/demo`, `/termos`, `/privacidade`, `/cookies`, `/contato`, `/inventory` (redirect), `/scans`, `/scans/profile`, `/recipes`, `/recipes/:key`, `/recipes/items/:id`, `/market`, `/market/items/:id`, `/database/items`, `/database/items/:id` (redirects), `/world`, `/tutorials/manage`, `/roadmap/manage`, `/roadmap`, `/recommendations`, `/account` (redirect), `/profile` (redirect), `/family`, `/shopping`, `/plans`, `/reference` (redirect), `/reference/:kind`, `/reference/:kind/:id`, `/crafting`, `/enhancement`, `/gear` (redirect), `/lifeskills`, `/storage`, `/rng`, `/buffs`, `/settings` and the not-found route. Include redirects as redirects, not page owners.
 
-- [ ] **Step 1: Inventory every route and its owner**
+- [x] **Step 1: Inventory every route and its owner**
   - Record component/template/style/test files, auth guard, resolver, public/private status and existing shared layout contract in the new inventory.
-- [ ] **Step 2: Reconcile existing evidence and checklist state**
+- [x] **Step 2: Reconcile existing evidence and checklist state**
   - Link relevant current research for Market, Recipes, Storage/Scans, Family, Gear and public references. For areas without a verified competitor equivalent, record attempted pages and “not verified”; do not infer formulas or copy data.
-- [ ] **Step 3: Add one coverage test for route records**
+- [x] **Step 3: Add one coverage test for route records**
   - Add `apps/web/src/app/app.routes.spec.ts` with `keeps every route in the UI inventory registered with its current guard and owner` and `preserves declared redirect-only records as redirects`.
-- [ ] **Step 4: Run the new route test**
+- [x] **Step 4: Run the new route test**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/app.routes.spec.ts"`
   - Expected: PASS against the current route table; any mismatch is resolved in the inventory, not by silently changing routing.
-- [ ] **Step 5: Commit the route inventory and checklist link**
+- [x] **Step 5: Commit the route inventory and checklist link**
   - Run: `pnpm exec prettier --check docs/research/ui-route-inventory-2026-10-19.md docs/project-feature-checklist.md` and `git diff --check`; Expected: exit 0.
-  - Commit message: `docs(ui): inventory route standardization scope`
+  - Commit message: `docs(ui): inventory route standardization scope`.
 
 ### Task 2: Migrate high-traffic public workspaces
 
