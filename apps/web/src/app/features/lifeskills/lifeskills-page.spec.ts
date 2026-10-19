@@ -178,6 +178,45 @@ describe('lifeskill session analytics', () => {
     expect(comparison()).toBeNull();
   });
 
+  it('keeps the session action and current result ahead of a collapsed history panel', async () => {
+    const fixture = await renderComponent(LifeskillsPage);
+    const page = fixture.componentInstance;
+    page.patch({ name: 'Sessão para compactação' });
+    page.save();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const form = element.querySelector('[data-tour="lifeskills-sessions.sessions"]')!;
+    const result = element.querySelector('[data-tour="lifeskills-sessions.results"]')!;
+    const secondary = element.querySelector<HTMLDetailsElement>('[data-session-secondary]');
+
+    expect(form.textContent).toContain('Registrar sessão');
+    expect(form.compareDocumentPosition(result) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(secondary?.tagName).toBe('DETAILS');
+    expect(secondary?.open).toBe(false);
+    expect(secondary?.querySelector('[data-session-comparison]')).not.toBeNull();
+    expect(secondary?.textContent).toContain('Meu histórico');
+  });
+
+  it('keeps a missing optional mastery distinct from an entered zero in the form', async () => {
+    const fixture = await renderComponent(LifeskillsPage);
+    const page = fixture.componentInstance;
+    const mastery = () =>
+      fixture.nativeElement.querySelector(
+        'input[type="number"][max="5000"]',
+      ) as HTMLInputElement | null;
+
+    expect(page.form().mastery).toBeUndefined();
+    expect(mastery()?.value).toBe('');
+
+    mastery()!.value = '0';
+    mastery()!.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(page.form().mastery).toBe(0);
+    expect(mastery()?.value).toBe('0');
+  });
+
   it('shows unknown legacy context separately from zero mastery and updates with region', async () => {
     const fixture = await renderComponent(LifeskillsPage);
     const page = fixture.componentInstance;

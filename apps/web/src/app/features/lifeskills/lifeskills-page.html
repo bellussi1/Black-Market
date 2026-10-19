@@ -18,49 +18,6 @@
     </p>
   </header>
   <app-life-skills-hub-nav [activeTab]="hubTab()" />
-  @if (tab() === 'sessions') {
-    <section hlmCard class="panel">
-      <h2 i18n>Contexto da atividade</h2>
-      <div class="form-grid">
-        <label class="field"
-          ><span i18n>Uso do tempo</span
-          ><select
-            appBdoSelect
-            [ngModel]="form().mode ?? 'active'"
-            (ngModelChange)="patch({ mode: $event })"
-          >
-            <option value="active" i18n>Ativo</option>
-            <option value="afk" i18n>AFK</option>
-          </select></label
-        ><label class="field"
-          ><span i18n>Profissão desta sessão</span
-          ><select
-            appBdoSelect
-            [ngModel]="form().skill ?? ''"
-            (ngModelChange)="patch({ skill: $event || undefined })"
-          >
-            <option value="" i18n>Não informada</option>
-            @for (skill of skills; track skill.id) {
-              <option [value]="skill.id">{{ skill.label }}</option>
-            }
-          </select></label
-        ><label class="field"
-          ><span i18n>Maestria usada na sessão</span
-          ><input
-            hlmInput
-            type="number"
-            min="0"
-            max="5000"
-            [ngModel]="form().mastery"
-            (ngModelChange)="patch({ mastery: $event ?? undefined })"
-        /></label>
-      </div>
-      <p class="help" i18n>
-        As recomendações comparam o rendimento observado. Uma mudança de maestria exige uma nova
-        sessão; não aplicamos multiplicadores desconhecidos.
-      </p>
-    </section>
-  }
   @if (tab() === 'production') {
     <section
       hlmCard
@@ -88,6 +45,47 @@
     >
       <section hlmCard class="panel" data-tour="lifeskills-sessions.sessions">
         <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
+        <div class="session-context" data-session-context>
+          <h3 i18n>Contexto da atividade</h3>
+          <div class="form-grid">
+            <label class="field"
+              ><span i18n>Uso do tempo</span
+              ><select
+                appBdoSelect
+                [ngModel]="form().mode ?? 'active'"
+                (ngModelChange)="patch({ mode: $event })"
+              >
+                <option value="active" i18n>Ativo</option>
+                <option value="afk" i18n>AFK</option>
+              </select></label
+            ><label class="field"
+              ><span i18n>Profissão desta sessão</span
+              ><select
+                appBdoSelect
+                [ngModel]="form().skill ?? ''"
+                (ngModelChange)="patch({ skill: $event || undefined })"
+              >
+                <option value="" i18n>Não informada</option>
+                @for (skill of skills; track skill.id) {
+                  <option [value]="skill.id">{{ skill.label }}</option>
+                }
+              </select></label
+            ><label class="field"
+              ><span i18n>Maestria usada na sessão</span
+              ><input
+                hlmInput
+                type="number"
+                min="0"
+                max="5000"
+                [ngModel]="form().mastery"
+                (ngModelChange)="patch({ mastery: $event ?? undefined })"
+            /></label>
+          </div>
+          <p class="help" i18n>
+            As comparações agrupam apenas sessões com o mesmo contexto informado. Maestria vazia
+            significa “não informada”; zero é um valor registrado.
+          </p>
+        </div>
         <div class="form-grid">
           <label class="field"
             ><ng-container i18n>Atividade / rota</ng-container
@@ -183,7 +181,13 @@
           (loaded)="load($event)"
         /><app-calculation-proof tool="activity" [value]="form()" />
       </section>
-      <section data-tour="lifeskills-sessions.results">
+      <section
+        hlmCard
+        class="panel session-result"
+        data-tour="lifeskills-sessions.results"
+        aria-labelledby="session-result-title"
+      >
+        <h2 id="session-result-title" i18n>Resultado desta sessão</h2>
         @if (result().value; as r) {
           <div class="metric-grid">
             <div class="metric hero-metric">
@@ -219,151 +223,169 @@
         </p>
       </section>
     </div>
-    @if (comparisons().length) {
-      <section
-        hlmCard
-        class="panel"
-        data-session-comparison
-        aria-labelledby="session-comparison-title"
-      >
-        <h2 id="session-comparison-title" i18n>
-          Compare suas atividades · {{ store.data().region.toUpperCase() }}
-        </h2>
+    <details class="session-secondary" data-session-secondary>
+      <summary class="panel session-secondary-summary">
+        <h2 i18n>Comparações e histórico</h2>
         <p class="help" i18n>
-          Ordenado por prata líquida/h observada: lucro total dividido pelo tempo total, sem média
-          simples das taxas. Cada linha reúne a mesma rota, profissão, maestria e modo informados.
+          {{ number(sessions().length) }} sessões salvas · {{ number(comparisons().length) }} grupos
+          comparáveis
         </p>
-        <div
-          class="max-w-full overflow-x-auto"
-          tabindex="0"
-          role="region"
-          aria-label="Comparação das sessões observadas"
-          i18n-aria-label
-        >
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th scope="col" i18n>Atividade / contexto</th>
-                <th scope="col" i18n>Amostra</th>
-                <th scope="col" i18n>Tempo total</th>
-                <th scope="col" i18n>Lucro total</th>
-                <th scope="col" i18n>Prata líquida / h</th>
-                <th scope="col" i18n>Período registrado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of comparisons(); track row.key) {
-                <tr>
-                  <th scope="row" class="min-w-48 whitespace-normal break-words">
-                    {{ row.name }}
-                    <p class="help">
-                      {{ skillLabel(row.skill) }} ·
-                      @if (row.mode === 'active') {
-                        <ng-container i18n>Ativo</ng-container>
-                      } @else if (row.mode === 'afk') {
-                        <ng-container i18n>AFK</ng-container>
-                      } @else {
-                        <ng-container i18n>Modo não informado</ng-container>
-                      }
-                      ·
-                      @if (row.mastery !== undefined) {
-                        <ng-container i18n>Maestria {{ number(row.mastery) }}</ng-container>
-                      } @else {
-                        <ng-container i18n>Maestria não informada</ng-container>
-                      }
-                    </p>
-                  </th>
-                  <td>
-                    <ng-container i18n>{{ number(row.count) }} sessões</ng-container>
-                  </td>
-                  <td>
-                    <ng-container i18n>{{ number(row.minutes, 3) }} min</ng-container>
-                  </td>
-                  <td [class.negative]="row.profit.startsWith('-')">{{ silver(row.profit) }}</td>
-                  <td [class.negative]="row.perHour.startsWith('-')">{{ silver(row.perHour) }}</td>
-                  <td>{{ date(row.firstAt) }} – {{ date(row.lastAt) }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <p class="notice" i18n>
-          São observações pessoais com os preços e impostos registrados, sem atualização para a
-          cotação atual. Patch, equipamento e buffs podem variar dentro da amostra. Não é uma
-          comparação controlada, previsão por maestria ou garantia de drops e vendas. Uma sessão
-          ainda é uma amostra limitada.
-        </p>
-      </section>
-    }
-    <section hlmCard class="panel">
-      <h2>
-        <ng-container i18n>Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container>
-      </h2>
-      <div class="metric-grid">
-        <div class="metric">
-          <span><ng-container i18n>Tempo registrado</ng-container></span
-          ><strong
-            ><ng-container i18n>{{ number(totals().minutes) }} min</ng-container></strong
+      </summary>
+      <div class="session-secondary-content">
+        @if (comparisons().length) {
+          <section
+            hlmCard
+            class="panel"
+            data-session-comparison
+            aria-labelledby="session-comparison-title"
           >
-        </div>
-        <div class="metric">
-          <span><ng-container i18n>Média ponderada por tempo</ng-container></span
-          ><strong>{{ silver(totals().perHour) }}</strong
-          ><small><ng-container i18n>Prata líquida / hora</ng-container></small>
-        </div>
+            <h2 id="session-comparison-title" i18n>
+              Compare suas atividades · {{ store.data().region.toUpperCase() }}
+            </h2>
+            <p class="help" i18n>
+              Ordenado por prata líquida/h observada: lucro total dividido pelo tempo total, sem
+              média simples das taxas. Cada linha reúne a mesma rota, profissão, maestria e modo
+              informados.
+            </p>
+            <div
+              class="max-w-full overflow-x-auto"
+              tabindex="0"
+              role="region"
+              aria-label="Comparação das sessões observadas"
+              i18n-aria-label
+            >
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col" i18n>Atividade / contexto</th>
+                    <th scope="col" i18n>Amostra</th>
+                    <th scope="col" i18n>Tempo total</th>
+                    <th scope="col" i18n>Lucro total</th>
+                    <th scope="col" i18n>Prata líquida / h</th>
+                    <th scope="col" i18n>Período registrado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of comparisons(); track row.key) {
+                    <tr>
+                      <th scope="row" class="min-w-48 whitespace-normal break-words">
+                        {{ row.name }}
+                        <p class="help">
+                          {{ skillLabel(row.skill) }} ·
+                          @if (row.mode === 'active') {
+                            <ng-container i18n>Ativo</ng-container>
+                          } @else if (row.mode === 'afk') {
+                            <ng-container i18n>AFK</ng-container>
+                          } @else {
+                            <ng-container i18n>Modo não informado</ng-container>
+                          }
+                          ·
+                          @if (row.mastery !== undefined) {
+                            <ng-container i18n>Maestria {{ number(row.mastery) }}</ng-container>
+                          } @else {
+                            <ng-container i18n>Maestria não informada</ng-container>
+                          }
+                        </p>
+                      </th>
+                      <td>
+                        <ng-container i18n>{{ number(row.count) }} sessões</ng-container>
+                      </td>
+                      <td>
+                        <ng-container i18n>{{ number(row.minutes, 3) }} min</ng-container>
+                      </td>
+                      <td [class.negative]="row.profit.startsWith('-')">
+                        {{ silver(row.profit) }}
+                      </td>
+                      <td [class.negative]="row.perHour.startsWith('-')">
+                        {{ silver(row.perHour) }}
+                      </td>
+                      <td>{{ date(row.firstAt) }} – {{ date(row.lastAt) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="notice" i18n>
+              São observações pessoais com os preços e impostos registrados, sem atualização para a
+              cotação atual. Patch, equipamento e buffs podem variar dentro da amostra. Não é uma
+              comparação controlada, previsão por maestria ou garantia de drops e vendas. Uma sessão
+              ainda é uma amostra limitada.
+            </p>
+          </section>
+        }
+        <section hlmCard class="panel">
+          <h2>
+            <ng-container i18n
+              >Meu histórico · {{ store.data().region.toUpperCase() }}</ng-container
+            >
+          </h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <span><ng-container i18n>Tempo registrado</ng-container></span
+              ><strong
+                ><ng-container i18n>{{ number(totals().minutes) }} min</ng-container></strong
+              >
+            </div>
+            <div class="metric">
+              <span><ng-container i18n>Média ponderada por tempo</ng-container></span
+              ><strong>{{ silver(totals().perHour) }}</strong
+              ><small><ng-container i18n>Prata líquida / hora</ng-container></small>
+            </div>
+          </div>
+          @if (sessions().length) {
+            <div class="max-w-full overflow-x-auto">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th><ng-container i18n>Atividade</ng-container></th>
+                    <th><ng-container i18n>Data</ng-container></th>
+                    <th><ng-container i18n>Duração</ng-container></th>
+                    <th><ng-container i18n>Lucro</ng-container></th>
+                    <th><ng-container i18n>Ações</ng-container></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (session of sessions(); track session.id) {
+                    <tr>
+                      <td>{{ session.input.name }}</td>
+                      <td>{{ date(session.createdAt) }}</td>
+                      <td>
+                        <ng-container i18n>{{ number(session.input.minutes) }} min</ng-container>
+                      </td>
+                      <td>{{ silver(sessionProfit(session.input)) }}</td>
+                      <td>
+                        <button
+                          hlmBtn
+                          variant="outline"
+                          type="button"
+                          class="btn subtle"
+                          (click)="useSession(session.id)"
+                        >
+                          <ng-container i18n>Usar cenário </ng-container>
+                        </button>
+                        <button
+                          hlmBtn
+                          variant="outline"
+                          type="button"
+                          class="btn danger"
+                          (click)="removeSession(session.id)"
+                        >
+                          <ng-container i18n>Excluir </ng-container>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty">
+              <ng-container i18n>Registre uma sessão para comparar o rendimento.</ng-container>
+            </div>
+          }
+        </section>
       </div>
-      @if (sessions().length) {
-        <div class="max-w-full overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th><ng-container i18n>Atividade</ng-container></th>
-                <th><ng-container i18n>Data</ng-container></th>
-                <th><ng-container i18n>Duração</ng-container></th>
-                <th><ng-container i18n>Lucro</ng-container></th>
-                <th><ng-container i18n>Ações</ng-container></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (session of sessions(); track session.id) {
-                <tr>
-                  <td>{{ session.input.name }}</td>
-                  <td>{{ date(session.createdAt) }}</td>
-                  <td>
-                    <ng-container i18n>{{ number(session.input.minutes) }} min</ng-container>
-                  </td>
-                  <td>{{ silver(sessionProfit(session.input)) }}</td>
-                  <td>
-                    <button
-                      hlmBtn
-                      variant="outline"
-                      type="button"
-                      class="btn subtle"
-                      (click)="useSession(session.id)"
-                    >
-                      <ng-container i18n>Usar cenário </ng-container>
-                    </button>
-                    <button
-                      hlmBtn
-                      variant="outline"
-                      type="button"
-                      class="btn danger"
-                      (click)="removeSession(session.id)"
-                    >
-                      <ng-container i18n>Excluir </ng-container>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <div class="empty">
-          <ng-container i18n>Registre uma sessão para comparar o rendimento.</ng-container>
-        </div>
-      }
-    </section>
+    </details>
   } @else {
     <div class="notice legacy-tool-notice" role="status" data-legacy-tool-notice>
       <p i18n>
