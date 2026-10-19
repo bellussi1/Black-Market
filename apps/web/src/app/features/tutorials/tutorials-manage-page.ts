@@ -20,9 +20,13 @@ import {
   type TutorialGuideUpdateRequest,
   type TutorialScreenKey,
 } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
+import { HlmTextarea } from '@bdo/ui/textarea';
 
 import { IdentityService } from '../../core/identity.service';
 import { TutorialApiService } from '../../core/tutorial-api.service';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 
 const MARKUP =
   /<\/?[a-z!][^>]*>|\[[^\]]+\]\([^)]+\)|(?:^|\s)#{1,6}\s|```|`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|(?:^|\s)\*[^*]+\*(?=\s|$|[.,!?])|(?:^|\s)_[^_]+_(?=\s|$|[.,!?])|~~[^~]+~~|(?:^|\n)\s*(?:>\s|[-+*]\s|\d+[.)]\s)/i;
@@ -96,7 +100,7 @@ const empty = (): TutorialGuideUpdateRequest => ({
 @Component({
   selector: 'app-tutorials-manage-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, HlmButton, HlmInput, HlmTextarea, BdoSelect],
   templateUrl: './tutorials-manage-page.html',
   styleUrl: './tutorials-manage-page.scss',
 })
@@ -106,6 +110,7 @@ export class TutorialsManagePage implements OnInit {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly screens = TUTORIAL_SCREEN_REGISTRY;
   readonly locales = TUTORIAL_LOCALES;
+  readonly maxSteps = TUTORIAL_MAX_STEPS;
   readonly screenKey = signal<TutorialScreenKey>('market');
   readonly authorized = signal(false);
   readonly loading = signal(true);

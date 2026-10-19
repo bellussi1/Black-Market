@@ -1,19 +1,12 @@
 :host {
   display: block;
 }
-nav,
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-block: 1rem;
   align-items: center;
-}
-.panel {
-  background: var(--bm-surface, #242424);
-  padding: var(--bm-panel-padding);
-  border: 1px solid var(--bm-border, #715b37);
-  border-radius: 2px;
 }
 .tutorials-loading-state {
   display: grid;
@@ -31,14 +24,14 @@ nav,
   gap: 0.9rem;
   min-height: 7rem;
   padding: 1.25rem;
-  border: 1px solid var(--bm-border, #715b37);
+  border: var(--bm-border-width) solid var(--bm-border, #715b37);
   background: var(--bm-surface, #242424);
 }
 .tutorials-skeleton-title,
 .tutorials-skeleton-line {
   display: block;
   min-height: 1rem;
-  border-radius: 2px;
+  border-radius: var(--bm-radius);
   background: linear-gradient(
     100deg,
     color-mix(in srgb, var(--bm-border, #715b37) 55%, transparent) 20%,
@@ -99,46 +92,8 @@ label {
   gap: 0.75rem;
   min-height: var(--bm-control-height);
 }
-input:not([type='checkbox']),
-textarea,
-select {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100%;
-  min-height: var(--bm-control-height);
-  padding: 0.65rem;
-  background: var(--bm-background, #181818);
-  color: var(--bm-text, #eee);
-  border: 1px solid var(--bm-border, #715b37);
-  border-radius: 2px;
-  font: inherit;
-}
 textarea {
   resize: vertical;
-}
-button {
-  min-height: var(--bm-control-height);
-  min-width: var(--bm-control-height);
-  padding: 0.5rem 1rem;
-  background: var(--bm-surface, #242424);
-  color: var(--bm-text, #eee);
-  border: 1px solid var(--bm-border, #715b37);
-  border-radius: 2px;
-  font: inherit;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-button[aria-pressed='true'],
-.primary {
-  background: var(--bm-accent, #c6a66a);
-  color: #151515;
-}
-:is(button, input, textarea, select):focus-visible {
-  outline: 2px solid var(--bm-accent, #c6a66a);
-  outline-offset: 3px;
 }
 .field-error {
   color: var(--bm-danger, #e3a39b);
@@ -156,4 +111,9 @@ time {
   .tutorials-skeleton-line {
     animation: none;
   }
+}
+
+.tutorial-screen-field {
+  max-width: 40rem;
+  margin-block: var(--bm-space-4);
 }

@@ -450,14 +450,14 @@
         <note category="location">src/app/features/demo/demo-page.html:32,34</note>
         <note category="location">src/app/features/market/market-page.html:261,268</note>
         <note category="location">src/app/features/reference/reference-page.html:64,66</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:80,81</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:92,95</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:385,387</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:83,84</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:95,98</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:411,413</note>
         <note category="location">src/app/features/scans/scans-page.html:647,648</note>
         <note category="location">src/app/features/scans/scans-page.html:1204,1205</note>
         <note category="location">src/app/features/stock/stock-page.html:150,152</note>
         <note category="location">src/app/features/stock/stock-page.html:376,383</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:43,45</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:52,54</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ loading() ? &apos;Operação em andamento…&apos; : &apos;&apos; }}"/> </source>
@@ -1642,7 +1642,7 @@
     <unit id="703525928219118838">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:562</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:85</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:89</note>
       </notes>
       <segment>
         <source>Plano de produção</source>
@@ -2137,8 +2137,8 @@
     <unit id="6949793260909500979">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:116</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:242,243</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:104</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:256,257</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:108</note>
         <note category="location">src/app/features/roadmap/roadmap-page.ts:60</note>
       </notes>
       <segment>
@@ -2148,8 +2148,8 @@
     <unit id="4791265588045339808">
       <notes>
         <note category="location">src/app/features/dashboard/dashboard-page.ts:116</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:243,244</note>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:104</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:257,258</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:108</note>
         <note category="location">src/app/features/roadmap/roadmap-page.ts:60</note>
       </notes>
       <segment>
@@ -2979,7 +2979,7 @@
     <unit id="942944710455044109">
       <notes>
         <note category="location">src/app/features/gear/gear-inventory-page.html:42,43</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:63</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:67</note>
       </notes>
       <segment>
         <source>Personagem ativo</source>
@@ -3383,7 +3383,7 @@
     <unit id="5449288526138603373">
       <notes>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:63</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:69</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:73</note>
       </notes>
       <segment>
         <source>Dados observados da sessão</source>
@@ -3780,7 +3780,7 @@
     <unit id="3577050251951603299">
       <notes>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:420</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:71</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:75</note>
       </notes>
       <segment>
         <source>Investimento e ganho observado</source>
@@ -3885,7 +3885,7 @@
     <unit id="6685564502508561749">
       <notes>
         <note category="location">src/app/features/lifeskills/lifeskills-page.html:535</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:74</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:78</note>
       </notes>
       <segment>
         <source>Tempo de treino estimado</source>
@@ -5609,7 +5609,7 @@
     </unit>
     <unit id="8348732175730602681">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:70,71</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:71,72</note>
       </notes>
       <segment>
         <source> Recarregar conteúdo </source>
@@ -5617,7 +5617,7 @@
     </unit>
     <unit id="3600964635451066033">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:109</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:113</note>
       </notes>
       <segment>
         <source> Recarregar e descartar alterações </source>
@@ -5625,7 +5625,7 @@
     </unit>
     <unit id="2862245507895395597">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:118,119</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:122,123</note>
       </notes>
       <segment>
         <source>SEQUÊNCIA GLOBAL DA TRILHA</source>
@@ -5633,7 +5633,7 @@
     </unit>
     <unit id="7721527034163001941">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:119,120</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:123,124</note>
       </notes>
       <segment>
         <source>Fases e pilares</source>
@@ -5641,7 +5641,7 @@
     </unit>
     <unit id="5104527141080300287">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:129</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:134</note>
       </notes>
       <segment>
         <source> Adicionar fase </source>
@@ -5649,7 +5649,7 @@
     </unit>
     <unit id="5880939221905006133">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:138</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:144</note>
       </notes>
       <segment>
         <source> Adicionar pilar </source>
@@ -5657,7 +5657,7 @@
     </unit>
     <unit id="6380119497553044388">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:144,145</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:150,151</note>
       </notes>
       <segment>
         <source>O Roadmap ainda não tem conteúdo.</source>
@@ -5665,7 +5665,7 @@
     </unit>
     <unit id="16093222977618023">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:164</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:170</note>
       </notes>
       <segment>
         <source>Reordenar trilha</source>
@@ -5673,7 +5673,7 @@
     </unit>
     <unit id="2162361820513649217">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:191,192</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:201,202</note>
       </notes>
       <segment>
         <source>Remover este conteúdo?</source>
@@ -5681,7 +5681,7 @@
     </unit>
     <unit id="2807771428747763120">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:199</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:210</note>
         <note category="location">src/app/features/stock/stock-page.html:283</note>
       </notes>
       <segment>
@@ -5690,7 +5690,7 @@
     </unit>
     <unit id="6060080757060540228">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:202</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:213</note>
         <note category="location">src/app/features/storage/storage-page.html:255</note>
       </notes>
       <segment>
@@ -5699,10 +5699,10 @@
     </unit>
     <unit id="812363076773060252">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:214</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:226</note>
         <note category="location">src/app/features/scans/scans-page.html:1045</note>
         <note category="location">src/app/features/stock/stock-page.html:254</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:156</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:176</note>
         <note category="location">src/app/features/world/worker-empire.html:193</note>
         <note category="location">src/app/features/world/worker-empire.html:353</note>
         <note category="location">src/app/features/world/worker-empire.html:535</note>
@@ -5713,7 +5713,7 @@
     </unit>
     <unit id="2677103464003237253">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:222,223</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:234,235</note>
       </notes>
       <segment>
         <source>Identificador</source>
@@ -5721,7 +5721,7 @@
     </unit>
     <unit id="2759773909798147145">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:235,236</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:248,249</note>
         <note category="location">src/app/features/scans/scans-page.html:245,246</note>
       </notes>
       <segment>
@@ -5730,7 +5730,7 @@
     </unit>
     <unit id="568760989511868037">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:247,248</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:261,262</note>
       </notes>
       <segment>
         <source>Ícone</source>
@@ -5738,7 +5738,7 @@
     </unit>
     <unit id="4963172891871550734">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:260,261</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:275,276</note>
       </notes>
       <segment>
         <source>Estado</source>
@@ -5746,7 +5746,7 @@
     </unit>
     <unit id="4590850055665060909">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:268,269</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:284,285</note>
       </notes>
       <segment>
         <source>Opcional</source>
@@ -5754,7 +5754,7 @@
     </unit>
     <unit id="8331458230102334089">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:272,273</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:288,289</note>
       </notes>
       <segment>
         <source>Título</source>
@@ -5762,7 +5762,7 @@
     </unit>
     <unit id="5860198706411904862">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:283,284</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:300,301</note>
       </notes>
       <segment>
         <source>Resumo</source>
@@ -5770,7 +5770,7 @@
     </unit>
     <unit id="5269978570089659028">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:295,296</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:313,314</note>
       </notes>
       <segment>
         <source>Descrição</source>
@@ -5778,7 +5778,7 @@
     </unit>
     <unit id="2302886640830716569">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:313,314</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:332,333</note>
       </notes>
       <segment>
         <source>Mostrar como foco na Home</source>
@@ -5786,7 +5786,7 @@
     </unit>
     <unit id="7478707800710038759">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:318,319</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:337,338</note>
       </notes>
       <segment>
         <source>Links internos</source>
@@ -5794,7 +5794,7 @@
     </unit>
     <unit id="9049479235889038790">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:321</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:340</note>
       </notes>
       <segment>
         <source> Adicione um destino para conectar esta área à aplicação. </source>
@@ -5802,7 +5802,7 @@
     </unit>
     <unit id="2540463506861661322">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:327,328</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:346,347</note>
       </notes>
       <segment>
         <source>Texto do link</source>
@@ -5810,7 +5810,7 @@
     </unit>
     <unit id="2547120308285894453">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:337,338</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:357,358</note>
       </notes>
       <segment>
         <source>Caminho interno</source>
@@ -5818,7 +5818,7 @@
     </unit>
     <unit id="5915861300978930695">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:344,345</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:365,366</note>
       </notes>
       <segment>
         <source>/mercado</source>
@@ -5826,7 +5826,7 @@
     </unit>
     <unit id="1068792270352938524">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:356</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:378</note>
       </notes>
       <segment>
         <source> Remover link </source>
@@ -5834,7 +5834,7 @@
     </unit>
     <unit id="5365774464581555889">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:368</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.html:392</note>
       </notes>
       <segment>
         <source> Adicionar link </source>
@@ -5842,7 +5842,7 @@
     </unit>
     <unit id="7873984908645153684">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:108</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:112</note>
       </notes>
       <segment>
         <source>Fase sem título</source>
@@ -5850,7 +5850,7 @@
     </unit>
     <unit id="2775453745336582527">
       <notes>
-        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:108</note>
+        <note category="location">src/app/features/roadmap/roadmap-manage-page.ts:112</note>
       </notes>
       <segment>
         <source>Pilar sem título</source>
@@ -6916,7 +6916,7 @@
       <notes>
         <note category="location">src/app/features/scans/scans-page.html:544,545</note>
         <note category="location">src/app/features/stock/stock-page.html:28</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:59</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:63</note>
       </notes>
       <segment>
         <source>Itens do armazém</source>
@@ -7062,7 +7062,7 @@
     <unit id="4327248618256060">
       <notes>
         <note category="location">src/app/features/scans/scans-page.html:631,632</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:56</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:60</note>
       </notes>
       <segment>
         <source>Salvar itens conferidos</source>
@@ -7769,7 +7769,7 @@
     <unit id="1570165393863713677">
       <notes>
         <note category="location">src/app/features/settings/settings-page.html:137</note>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:80</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:84</note>
       </notes>
       <segment>
         <source>Ajuda e tutoriais</source>
@@ -8701,17 +8701,17 @@
         <source>Acesso reservado à administração.</source>
       </segment>
     </unit>
-    <unit id="4057509022420944700">
+    <unit id="4902228513925971169">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:31,32</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:32,33</note>
       </notes>
       <segment>
-        <source>Verificar acesso novamente</source>
+        <source> Verificar acesso novamente </source>
       </segment>
     </unit>
     <unit id="6435012747817751642">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:34,35</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:43,44</note>
       </notes>
       <segment>
         <source> Recarregar versão salva e descartar rascunhos </source>
@@ -8719,7 +8719,7 @@
     </unit>
     <unit id="5623620740588311188">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:46</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:56,57</note>
       </notes>
       <segment>
         <source>Tela do tutorial</source>
@@ -8727,7 +8727,7 @@
     </unit>
     <unit id="8040607172856865530">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:62,63</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:73,74</note>
       </notes>
       <segment>
         <source>Estado: <ph id="0" equiv="INTERPOLATION" disp="{{ dirty() ? &apos;Alterações não salvas&apos; : &apos;Sem alterações&apos; }}"/></source>
@@ -8735,7 +8735,7 @@
     </unit>
     <unit id="4725013754627587474">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:65</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:76</note>
       </notes>
       <segment>
         <source>Revisão salva:</source>
@@ -8743,7 +8743,7 @@
     </unit>
     <unit id="7956605432388926361">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:69,70</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:80,81</note>
       </notes>
       <segment>
         <source>Publicação e etapas</source>
@@ -8751,7 +8751,7 @@
     </unit>
     <unit id="7151619778861587915">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:76</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:87</note>
       </notes>
       <segment>
         <source>Tutorial publicado</source>
@@ -8759,7 +8759,7 @@
     </unit>
     <unit id="1472728931556887295">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:83,84</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:94,95</note>
       </notes>
       <segment>
         <source>Etapa <ph id="0" equiv="INTERPOLATION" disp="{{ index + 1 }}"/></source>
@@ -8767,7 +8767,7 @@
     </unit>
     <unit id="8434015492123534532">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:84,85</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:95,96</note>
       </notes>
       <segment>
         <source>Destaque</source>
@@ -8775,7 +8775,7 @@
     </unit>
     <unit id="7622823501755746052">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:92,93</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:104,105</note>
       </notes>
       <segment>
         <source>Etapa geral, sem destaque</source>
@@ -8783,7 +8783,7 @@
     </unit>
     <unit id="1655846735872740708">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:95</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:107</note>
       </notes>
       <segment>
         <source> Âncora removida — selecione outra opção </source>
@@ -8791,7 +8791,7 @@
     </unit>
     <unit id="3706280812574915975">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:105,106</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:117,118</note>
       </notes>
       <segment>
         <source>Título (até 100 caracteres)</source>
@@ -8799,7 +8799,7 @@
     </unit>
     <unit id="1984111699595600865">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:119,120</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:132,133</note>
       </notes>
       <segment>
         <source>Orientação (até 360 caracteres, texto simples)</source>
@@ -8807,7 +8807,7 @@
     </unit>
     <unit id="9085986789754257698">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:141</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:157</note>
       </notes>
       <segment>
         <source> Subir</source>
@@ -8815,7 +8815,7 @@
     </unit>
     <unit id="1561550586049158708">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:149</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:167</note>
       </notes>
       <segment>
         <source> Descer</source>
@@ -8823,7 +8823,7 @@
     </unit>
     <unit id="7622471059051807543">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:162</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.html:189</note>
       </notes>
       <segment>
         <source> Adicionar etapa </source>
@@ -8831,7 +8831,7 @@
     </unit>
     <unit id="2360912928590131434">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:30</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:34</note>
       </notes>
       <segment>
         <source>Atalhos principais</source>
@@ -8839,7 +8839,7 @@
     </unit>
     <unit id="8302011845643157528">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:31</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:35</note>
       </notes>
       <segment>
         <source>Acesso a profissões</source>
@@ -8847,7 +8847,7 @@
     </unit>
     <unit id="2283438420519312503">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:32</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:36</note>
       </notes>
       <segment>
         <source>Progresso do Roadmap</source>
@@ -8855,7 +8855,7 @@
     </unit>
     <unit id="3622818503903918032">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:33</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:37</note>
       </notes>
       <segment>
         <source>Recursos do Roadmap</source>
@@ -8863,7 +8863,7 @@
     </unit>
     <unit id="8440441747605425875">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:34</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:38</note>
       </notes>
       <segment>
         <source>Busca de itens</source>
@@ -8871,7 +8871,7 @@
     </unit>
     <unit id="3580514508455773662">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:35</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:39</note>
       </notes>
       <segment>
         <source>Filtros de mercado</source>
@@ -8879,7 +8879,7 @@
     </unit>
     <unit id="4515229251022048120">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:36</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:40</note>
       </notes>
       <segment>
         <source>Resultados do mercado</source>
@@ -8887,7 +8887,7 @@
     </unit>
     <unit id="708916256989562354">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:37</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:41</note>
       </notes>
       <segment>
         <source>Busca para cotação</source>
@@ -8895,7 +8895,7 @@
     </unit>
     <unit id="2010435793648977270">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:38</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:42</note>
       </notes>
       <segment>
         <source>Painel de cotação</source>
@@ -8903,7 +8903,7 @@
     </unit>
     <unit id="562807260161270852">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:39</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:43</note>
       </notes>
       <segment>
         <source>Entradas da venda</source>
@@ -8911,7 +8911,7 @@
     </unit>
     <unit id="4217630762381456429">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:40</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:44</note>
       </notes>
       <segment>
         <source>Resultado líquido</source>
@@ -8919,7 +8919,7 @@
     </unit>
     <unit id="6597860924843996966">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:41</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:45</note>
       </notes>
       <segment>
         <source>Cotações salvas</source>
@@ -8927,7 +8927,7 @@
     </unit>
     <unit id="2082587361042486455">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:42</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:46</note>
       </notes>
       <segment>
         <source>Ações das cotações</source>
@@ -8935,7 +8935,7 @@
     </unit>
     <unit id="488136797433291188">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:43</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:47</note>
       </notes>
       <segment>
         <source>Resumo do item</source>
@@ -8943,7 +8943,7 @@
     </unit>
     <unit id="8459057950529719681">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:44</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:48</note>
       </notes>
       <segment>
         <source>Dados do catálogo</source>
@@ -8951,7 +8951,7 @@
     </unit>
     <unit id="1943016731569884747">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:45</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:49</note>
       </notes>
       <segment>
         <source>Busca de receitas</source>
@@ -8959,7 +8959,7 @@
     </unit>
     <unit id="1560781284226390625">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:46</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:50</note>
       </notes>
       <segment>
         <source>Catálogo de receitas</source>
@@ -8967,7 +8967,7 @@
     </unit>
     <unit id="3197229105476547631">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:47</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:51</note>
       </notes>
       <segment>
         <source>Fórmulas de produção</source>
@@ -8975,7 +8975,7 @@
     </unit>
     <unit id="3232186939719756952">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:48</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:52</note>
       </notes>
       <segment>
         <source>Árvore de receitas</source>
@@ -8983,7 +8983,7 @@
     </unit>
     <unit id="8164462631023392582">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:49</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:53</note>
       </notes>
       <segment>
         <source>Lote e maestria</source>
@@ -8991,7 +8991,7 @@
     </unit>
     <unit id="4384347778876546104">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:50</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:54</note>
       </notes>
       <segment>
         <source>Resultado financeiro</source>
@@ -8999,7 +8999,7 @@
     </unit>
     <unit id="5154503255413963628">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:51</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:55</note>
       </notes>
       <segment>
         <source>Estratégia e otimizador</source>
@@ -9007,7 +9007,7 @@
     </unit>
     <unit id="7530918062151925332">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:52</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:56</note>
       </notes>
       <segment>
         <source>Materiais e retornos</source>
@@ -9015,7 +9015,7 @@
     </unit>
     <unit id="2214882543947155127">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:53</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:57</note>
       </notes>
       <segment>
         <source>Envio de captura</source>
@@ -9023,7 +9023,7 @@
     </unit>
     <unit id="1677765012632724876">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:54</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:58</note>
       </notes>
       <segment>
         <source>Revisão da captura</source>
@@ -9031,7 +9031,7 @@
     </unit>
     <unit id="3539763391950786334">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:55</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:59</note>
       </notes>
       <segment>
         <source>Itens para revisar</source>
@@ -9039,7 +9039,7 @@
     </unit>
     <unit id="3936522578002745297">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:57</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:61</note>
       </notes>
       <segment>
         <source>Entrada dos dados do personagem</source>
@@ -9047,7 +9047,7 @@
     </unit>
     <unit id="4940758837177181738">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:58</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:62</note>
       </notes>
       <segment>
         <source>Prévia e revisão dos dados</source>
@@ -9055,7 +9055,7 @@
     </unit>
     <unit id="1257737485119725750">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:60</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:64</note>
       </notes>
       <segment>
         <source>Projetos de produção</source>
@@ -9063,7 +9063,7 @@
     </unit>
     <unit id="557915346546711274">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:61</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:65</note>
       </notes>
       <segment>
         <source>Personagem do inventário</source>
@@ -9071,7 +9071,7 @@
     </unit>
     <unit id="4833063077044674581">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:62</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:66</note>
       </notes>
       <segment>
         <source>Itens do inventário</source>
@@ -9079,7 +9079,7 @@
     </unit>
     <unit id="8165981328073303548">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:64</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:68</note>
       </notes>
       <segment>
         <source>Maestria por profissão</source>
@@ -9087,7 +9087,7 @@
     </unit>
     <unit id="4745637403277348061">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:65</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:69</note>
       </notes>
       <segment>
         <source>Acesso aos personagens</source>
@@ -9095,7 +9095,7 @@
     </unit>
     <unit id="5384518608754717508">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:66</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:70</note>
       </notes>
       <segment>
         <source>Editar dados da família</source>
@@ -9103,7 +9103,7 @@
     </unit>
     <unit id="2845855424991649388">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:67</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:71</note>
       </notes>
       <segment>
         <source>Posições dos equipamentos</source>
@@ -9111,7 +9111,7 @@
     </unit>
     <unit id="8274437684258610526">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:68</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:72</note>
       </notes>
       <segment>
         <source>Atributos informados</source>
@@ -9119,7 +9119,7 @@
     </unit>
     <unit id="8580659542552313449">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:70</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:74</note>
       </notes>
       <segment>
         <source>Resultado e histórico</source>
@@ -9127,7 +9127,7 @@
     </unit>
     <unit id="7514824712086475144">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:72</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:76</note>
       </notes>
       <segment>
         <source>Resultado da comparação</source>
@@ -9135,7 +9135,7 @@
     </unit>
     <unit id="7253406829495064963">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:73</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:77</note>
       </notes>
       <segment>
         <source>Dados de treino</source>
@@ -9143,7 +9143,7 @@
     </unit>
     <unit id="1827549188274321808">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:75</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:79</note>
       </notes>
       <segment>
         <source>Materiais consolidados</source>
@@ -9151,7 +9151,7 @@
     </unit>
     <unit id="5340197481786224957">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:76</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:80</note>
       </notes>
       <segment>
         <source>Ações da lista de materiais</source>
@@ -9159,7 +9159,7 @@
     </unit>
     <unit id="4019402596197398351">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:77</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:81</note>
       </notes>
       <segment>
         <source>Planos salvos</source>
@@ -9167,7 +9167,7 @@
     </unit>
     <unit id="34646870538738278">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:78</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:82</note>
       </notes>
       <segment>
         <source>Ações dos planos</source>
@@ -9175,7 +9175,7 @@
     </unit>
     <unit id="570220564023337466">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:79</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:83</note>
       </notes>
       <segment>
         <source>Conta e sincronização</source>
@@ -9183,7 +9183,7 @@
     </unit>
     <unit id="6383901960757281690">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:81</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:85</note>
       </notes>
       <segment>
         <source>Preferências de atividades</source>
@@ -9191,7 +9191,7 @@
     </unit>
     <unit id="1017046620804090091">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:82</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:86</note>
       </notes>
       <segment>
         <source>Ranking de atividades</source>
@@ -9199,7 +9199,7 @@
     </unit>
     <unit id="8937711356444574666">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:83</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:87</note>
       </notes>
       <segment>
         <source>Produto da oficina</source>
@@ -9207,7 +9207,7 @@
     </unit>
     <unit id="6802085046667312031">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:84</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:88</note>
       </notes>
       <segment>
         <source>Configurações da receita</source>
@@ -9215,7 +9215,7 @@
     </unit>
     <unit id="9029951389463260818">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:86</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:90</note>
       </notes>
       <segment>
         <source>Produto da simulação</source>
@@ -9223,7 +9223,7 @@
     </unit>
     <unit id="6619755198099020805">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:87</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:91</note>
       </notes>
       <segment>
         <source>Premissas da simulação</source>
@@ -9231,7 +9231,7 @@
     </unit>
     <unit id="7245365002683823694">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:88</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:92</note>
       </notes>
       <segment>
         <source>Biblioteca de receitas</source>
@@ -9239,7 +9239,7 @@
     </unit>
     <unit id="5236594374672299115">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:89</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:93</note>
       </notes>
       <segment>
         <source>Busca na biblioteca</source>
@@ -9247,7 +9247,7 @@
     </unit>
     <unit id="6865464969341694738">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:129</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:134</note>
       </notes>
       <segment>
         <source>Use de uma a doze etapas.</source>
@@ -9255,7 +9255,7 @@
     </unit>
     <unit id="4616403243337533243">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:133</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:138</note>
       </notes>
       <segment>
         <source>Selecione uma âncora válida ou uma etapa geral.</source>
@@ -9263,7 +9263,7 @@
     </unit>
     <unit id="3300043990546179017">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:139</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:144</note>
       </notes>
       <segment>
         <source>Use texto simples, preenchido e dentro do limite de caracteres.</source>
@@ -9271,7 +9271,7 @@
     </unit>
     <unit id="7369141867383003281">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:156</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:161</note>
       </notes>
       <segment>
         <source>Não foi possível verificar o acesso. Tente novamente.</source>
@@ -9279,7 +9279,7 @@
     </unit>
     <unit id="8297183235650723441">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:170</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:175</note>
       </notes>
       <segment>
         <source>Âncora removida</source>
@@ -9287,7 +9287,7 @@
     </unit>
     <unit id="1220682362322612620">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:201</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:206</note>
       </notes>
       <segment>
         <source>Não foi possível carregar os tutoriais. Seu rascunho foi preservado.</source>
@@ -9295,7 +9295,7 @@
     </unit>
     <unit id="6183491371386811104">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:271</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:276</note>
       </notes>
       <segment>
         <source>Tutorial salvo.</source>
@@ -9303,7 +9303,7 @@
     </unit>
     <unit id="7337361804478461416">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:275</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:280</note>
       </notes>
       <segment>
         <source>Outra pessoa alterou este tutorial. Seu rascunho foi preservado. Recarregue a versão salva antes de editar novamente.</source>
@@ -9311,7 +9311,7 @@
     </unit>
     <unit id="7548267174026661776">
       <notes>
-        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:278</note>
+        <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:283</note>
       </notes>
       <segment>
         <source>Não foi possível salvar. Seu rascunho foi preservado.</source>

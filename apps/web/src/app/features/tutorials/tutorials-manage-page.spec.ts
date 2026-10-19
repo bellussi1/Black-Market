@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { TUTORIAL_SCREEN_REGISTRY } from '@bdo/shared';
+import { TUTORIAL_MAX_STEPS, TUTORIAL_SCREEN_REGISTRY } from '@bdo/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { IdentityService } from '../../core/identity.service';
@@ -36,6 +36,22 @@ function setup(admin = true) {
   return { page: fixture.componentInstance, fixture, api };
 }
 describe('TutorialsManagePage', () => {
+  it('lets the editor add a ninth step and stops at the shared publication limit', async () => {
+    const { fixture, page } = setup();
+    await page.initialize();
+    while (page.draft().steps.length < 8) page.addStep();
+    fixture.detectChanges();
+    const add = [...fixture.nativeElement.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Adicionar etapa'),
+    ) as HTMLButtonElement;
+    expect(add.disabled).toBe(false);
+    add.click();
+    fixture.detectChanges();
+    expect(page.draft().steps).toHaveLength(9);
+    while (page.draft().steps.length < TUTORIAL_MAX_STEPS) page.addStep();
+    fixture.detectChanges();
+    expect(add.disabled).toBe(true);
+  });
   it('uses the shared heading hierarchy before loading administration content', () => {
     const { fixture } = setup();
     fixture.detectChanges();

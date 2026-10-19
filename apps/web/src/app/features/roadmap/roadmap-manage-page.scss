@@ -31,7 +31,7 @@
   display: grid;
   gap: 14px;
   min-height: 190px;
-  border: 1px solid var(--bm-border);
+  border: var(--bm-border-width) solid var(--bm-border);
   background: var(--bm-surface-raised, var(--bm-surface));
   padding: 16px;
 }
@@ -41,7 +41,7 @@
 .roadmap-skeleton-field-row span {
   display: block;
   min-height: 14px;
-  border-radius: 2px;
+  border-radius: var(--bm-radius);
   background: linear-gradient(
     100deg,
     color-mix(in srgb, var(--bm-border) 55%, transparent) 20%,
@@ -120,7 +120,7 @@
 .roadmap-admin-group,
 .roadmap-admin-notice,
 .roadmap-admin-toolbar {
-  border: 1px solid var(--bm-border);
+  border: var(--bm-border-width) solid var(--bm-border);
   background: var(--bm-surface);
   padding: 16px;
 }
@@ -170,7 +170,7 @@
 
 .roadmap-editor-entry {
   min-width: 0;
-  border: 1px solid var(--bm-border);
+  border: var(--bm-border-width) solid var(--bm-border);
   background: var(--bm-surface-raised, var(--bm-surface));
   padding: 16px;
 }
@@ -208,16 +208,6 @@
   letter-spacing: 0.06em;
 }
 
-.icon-button {
-  min-width: 44px;
-  padding-inline: 10px;
-  font-size: 18px;
-}
-
-.roadmap-admin .btn {
-  min-height: 44px;
-}
-
 .roadmap-editor-fields {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -232,34 +222,9 @@
   font-size: 13px;
 }
 
-.roadmap-field input,
-.roadmap-field textarea,
-.roadmap-field select {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
-  border: 1px solid var(--bm-control-border);
-  border-radius: 2px;
-  background: var(--bm-input);
-  color: var(--bm-text);
-  padding: 9px 10px;
-  font: inherit;
-}
-
 .roadmap-field textarea {
   resize: vertical;
   line-height: 1.45;
-}
-
-.roadmap-field input:focus-visible,
-.roadmap-field textarea:focus-visible,
-.roadmap-field select:focus-visible,
-.roadmap-featured-field input:focus-visible,
-.roadmap-admin button:focus-visible,
-.roadmap-admin a:focus-visible {
-  outline: 2px solid var(--bm-accent);
-  outline-offset: 2px;
 }
 
 .roadmap-field-short {
@@ -294,7 +259,7 @@
   display: grid;
   gap: 10px;
   margin: 16px 0 0;
-  border: 1px solid var(--bm-border);
+  border: var(--bm-border-width) solid var(--bm-border);
   padding: 12px;
 }
 
@@ -332,12 +297,6 @@
   border-inline-start: 3px solid var(--bm-success, var(--bm-accent));
 }
 
-.roadmap-save {
-  border-color: var(--bm-accent);
-  background: var(--bm-accent);
-  color: var(--bm-background);
-}
-
 .roadmap-admin-footer {
   justify-content: flex-end;
 }
@@ -354,15 +313,6 @@
   gap: 7px;
   color: var(--bm-text);
   font-size: 13px;
-}
-
-.danger {
-  color: var(--bm-danger);
-}
-
-.roadmap-admin button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 @media (max-width: 900px) {

@@ -12,8 +12,8 @@
         prazos.
       </p>
     </div>
-    <a class="btn subtle" routerLink="/roadmap" i18n>Ver Roadmap público</a>
-    <a class="btn subtle" routerLink="/tutorials/manage" i18n>Editar tutoriais guiados</a>
+    <a hlmBtn variant="outline" routerLink="/roadmap" i18n>Ver Roadmap público</a>
+    <a hlmBtn variant="outline" routerLink="/tutorials/manage" i18n>Editar tutoriais guiados</a>
   </header>
 
   @if (!accessVerified()) {
@@ -27,7 +27,7 @@
       } @else {
         <h2 i18n>Acesso restrito</h2>
         <p i18n>Entre com uma conta que tenha a permissão administrativa do Roadmap.</p>
-        <a class="btn subtle" routerLink="/settings" i18n>Ir para minha conta</a>
+        <a hlmBtn variant="outline" routerLink="/settings" i18n>Ir para minha conta</a>
       }
     </section>
   } @else if (loading() && !loaded()) {
@@ -61,7 +61,8 @@
       </div>
       <div class="roadmap-admin-actions">
         <button
-          class="btn subtle"
+          hlmBtn
+          variant="outline"
           type="button"
           (click)="load()"
           [disabled]="saving() || hasChanges()"
@@ -70,7 +71,9 @@
           Recarregar conteúdo
         </button>
         <button
-          class="btn roadmap-save"
+          hlmBtn
+          variant="default"
+          class="roadmap-save"
           type="button"
           data-action="save"
           (click)="save()"
@@ -100,7 +103,8 @@
         <p>{{ error() }}</p>
         @if (error().includes('alterado por outra pessoa')) {
           <button
-            class="btn subtle"
+            hlmBtn
+            variant="outline"
             type="button"
             data-action="reload-discard"
             (click)="load()"
@@ -120,7 +124,8 @@
         </div>
         <div class="roadmap-admin-add-actions">
           <button
-            class="btn subtle"
+            hlmBtn
+            variant="outline"
             type="button"
             data-action="add-flow"
             (click)="addEntry('flow')"
@@ -129,7 +134,8 @@
             Adicionar fase
           </button>
           <button
-            class="btn subtle"
+            hlmBtn
+            variant="outline"
             type="button"
             data-action="add-pillar"
             (click)="addEntry('pillar')"
@@ -163,7 +169,9 @@
               </div>
               <div class="roadmap-entry-order" aria-label="Reordenar trilha" i18n-aria-label>
                 <button
-                  class="btn icon-button"
+                  hlmBtn
+                  variant="outline"
+                  size="icon"
                   type="button"
                   data-action="move-up"
                   [attr.aria-label]="
@@ -175,7 +183,9 @@
                   ↑
                 </button>
                 <button
-                  class="btn icon-button"
+                  hlmBtn
+                  variant="outline"
+                  size="icon"
                   type="button"
                   data-action="move-down"
                   [attr.aria-label]="
@@ -190,7 +200,8 @@
                   <span class="roadmap-remove-confirm" role="group">
                     <span i18n>Remover este conteúdo?</span>
                     <button
-                      class="btn danger"
+                      hlmBtn
+                      variant="destructive"
                       type="button"
                       data-action="confirm-remove"
                       (click)="confirmRemove(entry.draftKey)"
@@ -198,13 +209,14 @@
                     >
                       Confirmar remoção
                     </button>
-                    <button class="btn subtle" type="button" (click)="cancelRemove()" i18n>
+                    <button hlmBtn variant="outline" type="button" (click)="cancelRemove()" i18n>
                       Cancelar
                     </button>
                   </span>
                 } @else {
                   <button
-                    class="btn danger"
+                    hlmBtn
+                    variant="destructive"
                     type="button"
                     data-action="remove"
                     [attr.aria-label]="'Remover: ' + (entry.title || untitledLabel(entry.kind))"
@@ -221,6 +233,7 @@
               <label class="roadmap-field roadmap-field-short">
                 <span i18n>Identificador</span>
                 <input
+                  hlmInput
                   [ngModel]="entry.slug"
                   (ngModelChange)="patch(entry.draftKey, { slug: $event })"
                   [ngModelOptions]="{ standalone: true }"
@@ -234,6 +247,7 @@
               <label class="roadmap-field roadmap-field-short">
                 <span i18n>Tipo</span>
                 <select
+                  appBdoSelect
                   [ngModel]="entry.kind"
                   (ngModelChange)="changeKind(entry.draftKey, $event)"
                   [ngModelOptions]="{ standalone: true }"
@@ -246,6 +260,7 @@
               <label class="roadmap-field roadmap-field-short">
                 <span i18n>Ícone</span>
                 <select
+                  appBdoSelect
                   [ngModel]="entry.icon"
                   (ngModelChange)="patch(entry.draftKey, { icon: $event })"
                   [ngModelOptions]="{ standalone: true }"
@@ -259,6 +274,7 @@
               <label class="roadmap-field roadmap-field-short">
                 <span i18n>Estado</span>
                 <input
+                  hlmInput
                   [ngModel]="entry.statusLabel ?? ''"
                   (ngModelChange)="patch(entry.draftKey, { statusLabel: $event || null })"
                   [ngModelOptions]="{ standalone: true }"
@@ -271,6 +287,7 @@
               <label class="roadmap-field roadmap-field-title">
                 <span i18n>Título</span>
                 <input
+                  hlmInput
                   [ngModel]="entry.title"
                   (ngModelChange)="patch(entry.draftKey, { title: $event })"
                   [ngModelOptions]="{ standalone: true }"
@@ -282,6 +299,7 @@
               <label class="roadmap-field roadmap-field-wide">
                 <span i18n>Resumo</span>
                 <textarea
+                  hlmTextarea
                   [ngModel]="entry.summary"
                   (ngModelChange)="patch(entry.draftKey, { summary: $event })"
                   [ngModelOptions]="{ standalone: true }"
@@ -294,6 +312,7 @@
               <label class="roadmap-field roadmap-field-wide">
                 <span i18n>Descrição</span>
                 <textarea
+                  hlmTextarea
                   [ngModel]="entry.description"
                   (ngModelChange)="patch(entry.draftKey, { description: $event })"
                   [ngModelOptions]="{ standalone: true }"
@@ -326,6 +345,7 @@
                   <label class="roadmap-field">
                     <span i18n>Texto do link</span>
                     <input
+                      hlmInput
                       [ngModel]="link.label"
                       (ngModelChange)="patchLink(entry.draftKey, linkIndex, { label: $event })"
                       [ngModelOptions]="{ standalone: true }"
@@ -336,6 +356,7 @@
                   <label class="roadmap-field">
                     <span i18n>Caminho interno</span>
                     <input
+                      hlmInput
                       [ngModel]="link.path"
                       (ngModelChange)="patchLink(entry.draftKey, linkIndex, { path: $event })"
                       [ngModelOptions]="{ standalone: true }"
@@ -346,7 +367,8 @@
                     />
                   </label>
                   <button
-                    class="btn subtle"
+                    hlmBtn
+                    variant="outline"
                     type="button"
                     data-action="remove-link"
                     [attr.aria-label]="'Remover link ' + (link.label || linkIndex + 1)"
@@ -358,7 +380,9 @@
                 </div>
               }
               <button
-                class="btn subtle roadmap-add-link"
+                hlmBtn
+                variant="outline"
+                class="roadmap-add-link"
                 type="button"
                 data-action="add-link"
                 (click)="addLink(entry.draftKey)"
@@ -375,7 +399,9 @@
 
     <footer class="roadmap-admin-footer">
       <button
-        class="btn roadmap-save"
+        hlmBtn
+        variant="default"
+        class="roadmap-save"
         type="button"
         data-action="save"
         (click)="save()"

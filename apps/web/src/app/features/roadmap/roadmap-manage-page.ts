@@ -12,10 +12,14 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { RoadmapEntryInput, RoadmapEntryKind } from '@bdo/shared';
+import { HlmButton } from '@bdo/ui/button';
+import { HlmInput } from '@bdo/ui/input';
+import { HlmTextarea } from '@bdo/ui/textarea';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 
 import { IdentityService } from '../../core/identity.service';
 import { RoadmapApiService } from '../../core/roadmap-api.service';
+import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { ROADMAP_ICON_OPTIONS, ROADMAP_ICONS } from './roadmap-icons';
 
 type DraftEntry = RoadmapEntryInput & { draftKey: string };
@@ -23,7 +27,7 @@ type DraftEntry = RoadmapEntryInput & { draftKey: string };
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-roadmap-manage-page',
-  imports: [FormsModule, NgIcon, RouterLink],
+  imports: [FormsModule, NgIcon, RouterLink, HlmButton, HlmInput, HlmTextarea, BdoSelect],
   providers: [provideIcons(ROADMAP_ICONS)],
   templateUrl: './roadmap-manage-page.html',
   styleUrl: './roadmap-manage-page.scss',

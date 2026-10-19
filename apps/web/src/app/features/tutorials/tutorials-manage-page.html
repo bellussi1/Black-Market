@@ -28,9 +28,18 @@
     </section>
   } @else if (!authorized()) {
     <p i18n>Acesso reservado à administração.</p>
-    <button type="button" (click)="initialize()" i18n>Verificar acesso novamente</button>
+    <button hlmBtn variant="outline" type="button" (click)="initialize()" i18n>
+      Verificar acesso novamente
+    </button>
   } @else {
-    <button type="button" [disabled]="saving() || loading()" (click)="load()" i18n>
+    <button
+      hlmBtn
+      variant="outline"
+      type="button"
+      [disabled]="saving() || loading()"
+      (click)="load()"
+      i18n
+    >
       Recarregar versão salva e descartar rascunhos
     </button>
     <p
@@ -43,19 +52,21 @@
       {{ loading() ? 'Atualizando versão salva…' : '' }}
     </p>
     @if (loaded()) {
-      <nav aria-label="Tela do tutorial" i18n-aria-label>
-        @for (screen of screens; track screen.screenKey) {
-          <button
-            type="button"
-            [disabled]="saving()"
-            [attr.aria-pressed]="screenKey() === screen.screenKey"
-            (click)="selectScreen(screen.screenKey)"
-          >
-            {{ screenLabel(screen.screenKey) }}
-            <small>{{ screen.route }}</small>
-          </button>
-        }
-      </nav>
+      <label class="field tutorial-screen-field">
+        <span i18n>Tela do tutorial</span>
+        <select
+          appBdoSelect
+          [ngModel]="screenKey()"
+          (ngModelChange)="selectScreen($event)"
+          [disabled]="saving()"
+        >
+          @for (screen of screens; track screen.screenKey) {
+            <option [ngValue]="screen.screenKey">
+              {{ screenLabel(screen.screenKey) }} · {{ screen.route }}
+            </option>
+          }
+        </select>
+      </label>
       <section class="panel tutorials-editor-panel">
         <h2>{{ screenLabel(screenKey()) }} · pt-BR</h2>
         <p data-tutorial-screen-route>{{ screenRoute(screenKey()) }}</p>
@@ -83,6 +94,7 @@
               <h3 i18n>Etapa {{ index + 1 }}</h3>
               <label [for]="'anchor-' + index" i18n>Destaque</label>
               <select
+                appBdoSelect
                 [id]="'anchor-' + index"
                 [ngModel]="step.anchorKey"
                 (ngModelChange)="patchStep(index, 'anchorKey', $event)"
@@ -104,6 +116,7 @@
               </p>
               <label [for]="'title-' + index" i18n>Título (até 100 caracteres)</label>
               <input
+                hlmInput
                 [id]="'title-' + index"
                 type="text"
                 maxlength="100"
@@ -119,6 +132,7 @@
                 >Orientação (até 360 caracteres, texto simples)</label
               >
               <textarea
+                hlmTextarea
                 [id]="'body-' + index"
                 rows="4"
                 maxlength="360"
@@ -132,6 +146,8 @@
               </p>
               <div class="actions">
                 <button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   [disabled]="index === 0"
                   (click)="moveStep(index, -1)"
@@ -140,6 +156,8 @@
                 >
                   Subir</button
                 ><button
+                  hlmBtn
+                  variant="outline"
                   type="button"
                   [disabled]="index === draft().steps.length - 1"
                   (click)="moveStep(index, 1)"
@@ -148,6 +166,8 @@
                 >
                   Descer</button
                 ><button
+                  hlmBtn
+                  variant="destructive"
                   type="button"
                   (click)="removeStep(index)"
                   [attr.aria-label]="'Remover etapa ' + (index + 1)"
@@ -158,13 +178,21 @@
               </div>
             </article>
           }
-          <button type="button" [disabled]="draft().steps.length >= 8" (click)="addStep()" i18n>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            [disabled]="draft().steps.length >= maxSteps"
+            (click)="addStep()"
+            i18n
+          >
             Adicionar etapa
           </button>
         </fieldset>
         <div class="actions">
           <button
-            class="primary"
+            hlmBtn
+            variant="default"
             type="button"
             [disabled]="saving() || !dirty() || !valid()"
             (click)="save()"
