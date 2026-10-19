@@ -1,6 +1,6 @@
 # Handoff do Black Market para Antigravity
 
-- **Atualizado em:** 18/10/2026
+- **Atualizado em:** 19/10/2026
 - **Projeto:** Black Market — planejador para Black Desert Online
 - **Objetivo:** permitir que o Antigravity retome o trabalho sem depender do histórico dos chats do Codex.
 
@@ -8,7 +8,7 @@ Este é um índice de retomada, não substitui as instruções nem os documentos
 
 > **Retomada de 18/10/2026:** leia ACTIVE_CONTEXT §186 para desempenho/SSR, §185 para catálogo/cotações e §184 para bootstrap/atividade. Corrigidos resolver bloqueante no browser, DOM de categorias recolhidas, mismatch de origem HTTP transfer cache e HMR antecipando @defer. Produção com API atrasada monta Mercado em 52 ms, antes 1.762 ms; dados ainda levam 1.636 ms. HTML de 454→245 kB, hidratação sem repetir catálogo/quadro. Bundle de 501,04 kB continua acima do aviso; budgets intactos. Consulte research/navigation-ssr-performance-2026-10-18.md e gates do contexto antes de continuar. Preservar plano visual3 não rastreado; sem push/deploy.
 
-> **UI MMORPG de 19/10/2026:** ACTIVE_CONTEXT §187–188 registra auditoria, especificação aprovada e quatro planos aguardando revisão: fundação visual, hub Life Skills, tabs de Família e rollout das rotas. Nenhum código foi alterado. Após aprovação dos planos, executar em sequência nativa com commits atômicos. Preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md` não rastreado.
+> **UI MMORPG de 19/10/2026:** ACTIVE_CONTEXT §189 registra a fundação visual implementada e os gates. Commits `1ad9800`, `921eca8`, `1a291bc`, `92b68ec` e `a149196` definem tokens, controles/tabs/motion, padding comum e a fonte canônica do design system. `pnpm check`, build de produção e SSR passaram; confira os avisos de bundle descritos no contexto. Próxima sequência aprovada: `docs/superpowers/plans/2026-10-19-lifeskills-hub.md`, depois `2026-10-19-family-tabs.md`, então `2026-10-19-ui-route-rollout.md`; usar TDD e commits atômicos. A worktree isolada está em `C:\Users\Bellussi\.codex\worktrees\all-branches-integration\Site de BDO`, branch `codex/integrate-all-branches`, baseada em `origin/main` no commit de integração `f7eb91b`. Não mexer no banco/dados, não fazer deploy durante as fatias e preservar `docs/superpowers/plans/2026-10-16-roadmap-visual-phase-3.md`.
 
 ## Registro histórico de passagens anteriores
 

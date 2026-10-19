@@ -1,6 +1,6 @@
 # MMORPG UI Design Foundation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Establish one tested BDO-inspired visual contract for tokens, layout, controls and future UI work.
 
@@ -44,18 +44,18 @@
 - Consumes: existing `--bm-*` palette, 1440 px default page max, Barlow Semi Condensed, shared `tool-page` and responsive layout.
 - Produces: token contract for spacing, typography roles, standard/compact control heights, standard/wide page containers and motion timing. Keep existing palette and standard 44 px control height.
 
-- [ ] **Step 1: Write the failing token contract test**
+- [x] **Step 1: Write the failing token contract test**
   - Add test `defines the shared spacing, typography, control, page-width and motion tokens`.
   - Assert the 4 px spacing ladder (4, 8, 12, 16, 24, 32, 40, 48 px), type roles (32 px display, current 26–30 px page title, 19 px section title, 16 px body, 14 px support, 12 px metadata), standard 44 px and compact 36 px controls, current 1440 px page width plus an explicit 1760 px wide variant, and named route enter/exit durations matching the current 220/120 ms transition.
-- [ ] **Step 2: Run the new test and verify it fails**
+- [x] **Step 2: Run the new test and verify it fails**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/styles/ui-token-contract.spec.ts"`
   - Expected: missing token assertions fail before Sass changes.
-- [ ] **Step 3: Implement the tokens and page-container variants**
+- [x] **Step 3: Implement the tokens and page-container variants**
   - Add semantic custom properties in `_tokens.scss`; make `tool-page` use the 1440 px token and add an explicit wide modifier using the 1760 px token. Map responsive page padding and spacing to the scale without changing domain layouts.
-- [ ] **Step 4: Run the contract test and visual viewport check**
+- [x] **Step 4: Run the contract test and visual viewport check**
   - Run the same focused test; Expected: PASS.
   - In browser, inspect Home, Market, recipe tree and Gear at the four desktop viewports; verify no page-level horizontal overflow at 390×844 and no change to gear/tree geometry.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - Commit message: `style(ui): define shared BDO layout tokens`
 
 ### Task 2: Normalize shared controls and motion hooks
@@ -72,19 +72,19 @@
 - Consumes: token names and heights from Task 1; existing `HlmButton`, `.tabs`, `.workspace-tabs`, route View Transitions and reduced-motion media query.
 - Produces: shared default/compact button contracts, one visual tab contract for existing markup, semantic route-transition tokens and no new motion behavior.
 
-- [ ] **Step 1: Write failing button-contract tests**
+- [x] **Step 1: Write failing button-contract tests**
   - Add tests `keeps standard and compact buttons at the shared heights` and `keeps every icon action at least 36px` for `buttonVariants`.
-- [ ] **Step 2: Run the focused tests and verify failure**
+- [x] **Step 2: Run the focused tests and verify failure**
   - Run: `pnpm --filter @bdo/web exec ng test --watch=false --include="src/app/ui/button/src/lib/hlm-button.spec.ts"`
   - Expected: compact/icon size assertions fail before changes.
-- [ ] **Step 3: Align the primitive variants and shared tabs**
+- [x] **Step 3: Align the primitive variants and shared tabs**
   - Keep the default button at 44 px; map `xs`, `sm` and `lg` button sizes to the 36 px compact height; give all icon button sizes a minimum 36 px box. Retain the focus-visible ring. Map `.tabs`, `.workspace-tabs` and `.segmented-control` to shared spacing/type/selection tokens while preserving markup compatibility. Keep `aria-current`/tab semantics at call sites, not in CSS.
-- [ ] **Step 4: Tokenize existing route transitions and reduced motion**
+- [x] **Step 4: Tokenize existing route transitions and reduced motion**
   - Replace local 120/220 ms literals with named tokens; keep animation limited to the page transition element and retain `prefers-reduced-motion: reduce` behavior.
-- [ ] **Step 5: Run focused tests and browser review**
+- [x] **Step 5: Run focused tests and browser review**
   - Run the same focused test command and the token contract from Task 1; Expected: PASS.
   - Verify focus ring, disabled state, active tabs, 44/36 px sizing and reduced-motion in browser.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Commit message: `style(ui): unify buttons tabs and route motion`
 
 ### Task 3: Publish the source-of-truth design guidance
@@ -102,17 +102,17 @@
 - Consumes: tokens and shared control behavior from Tasks 1–2.
 - Produces: one product identity reference and a separate workflow/review reference, linked from project agent instructions.
 
-- [ ] **Step 1: Compare current documentation with the implemented contract**
+- [x] **Step 1: Compare current documentation with the implemented contract**
   - Inspect each listed document and write down stale or missing canonical-source, token, typography/control/page-variant, route-vs-content tab and exception-policy statements before editing.
-- [ ] **Step 2: Update BDO UI skill and catalogue**
+- [x] **Step 2: Update BDO UI skill and catalogue**
   - Document actual token names and components from Tasks 1–2; keep existing recipe/gear-specific rules and explicit-data constraints.
-- [ ] **Step 3: Scope the UI design skill and agent**
+- [x] **Step 3: Scope the UI design skill and agent**
   - State that they govern hierarchy/composition/review and defer identity, tokens and component variants to `bdo-ui-design`.
-- [ ] **Step 4: Update AGENTS and verify documentation**
+- [x] **Step 4: Update AGENTS and verify documentation**
   - Clarify canonical/workflow roles in the existing UI instructions; do not add a third skill or contradictory design values.
   - Run: `pnpm exec prettier --check .agents/skills/bdo-ui-design/SKILL.md .agents/skills/ui-design/SKILL.md .agents/skills/ui-design/agents/design-ui.md docs/design-system/bdo-ui.md AGENTS.md` and `git diff --check`.
   - Expected: both exit 0 and the documented token names match the implemented styles.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - Commit message: `docs(ui): establish canonical BDO design guidance`
 
 ## Final Verification
