@@ -312,6 +312,8 @@
 
 .topbar-tools {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   align-items: center;
   gap: 18px;
 }
@@ -336,8 +338,11 @@
 }
 
 .topbar-character {
+  min-width: 0;
+  max-width: 18rem;
   border-left: 1px solid var(--bm-border);
   padding-left: 18px;
+  overflow-wrap: anywhere;
 }
 
 .topbar-account {
@@ -408,6 +413,10 @@
 .workspace-topbar nav,
 .workspace-topbar ol {
   min-width: 0;
+}
+
+.workspace-topbar nav {
+  flex-shrink: 0;
 }
 
 .workspace-topbar ol {
