@@ -1,9 +1,9 @@
 <div
-  class="tool-page"
+  class="tool-page lifeskills-page"
   [appTutorialSurface]="tutorialSurface()"
   [appTutorialSurfaceReady]="tab() !== 'production'"
 >
-  <header class="tool-heading">
+  <header class="tool-heading lifeskills-heading">
     <p class="tool-kicker"><ng-container i18n>PROFISSÕES & O QUE FAZER</ng-container></p>
     <h1><ng-container i18n>Profissões e produção.</ng-container></h1>
     <p>
@@ -12,10 +12,11 @@
         rendimento observado.
       </ng-container>
     </p>
-    <p class="help lifeskills-local-note" i18n>
-      Comece sem conta: seus registros ficam neste navegador. Entre para sincronizar entre
-      dispositivos.
-    </p>
+    @if (tab() === 'sessions') {
+      <p class="help lifeskills-local-note" i18n>
+        Sessões sem conta · Registros neste navegador, com sincronização ao entrar.
+      </p>
+    }
   </header>
   <app-life-skills-hub-nav [activeTab]="hubTab()" />
   @if (tab() === 'production') {
@@ -38,29 +39,39 @@
         data-public-production-denied
         aria-labelledby="public-production-title"
       >
+        <p class="tool-kicker" i18n>PLANEJAMENTO PERSONALIZADO</p>
         <h2 id="public-production-title" i18n>Recomendações de produção exigem uma conta</h2>
         <p i18n>
           O painel de produção usa seu personagem, maestria e armazém. Entre para consultar
           receitas, cotações e cenários com esses dados privados.
         </p>
-        <button
-          hlmBtn
-          variant="outline"
-          type="button"
-          data-production-login
-          (click)="openProductionLogin()"
-          i18n
+        <ul
+          class="production-access-features"
+          aria-label="Dados usados no planejamento"
+          i18n-aria-label
         >
-          Entrar e abrir recomendações
-        </button>
+          <li><strong i18n>Sua maestria</strong><span i18n>Rendimento do personagem</span></li>
+          <li><strong i18n>Seu Armazém</strong><span i18n>Materiais já disponíveis</span></li>
+          <li><strong i18n>Mercado</strong><span i18n>Custos e cenários de produção</span></li>
+        </ul>
+        <div class="action-row">
+          <button hlmBtn type="button" data-production-login (click)="openProductionLogin()" i18n>
+            Entrar e abrir recomendações
+          </button>
+          <a hlmBtn variant="outline" routerLink="/recipes" i18n>Explorar receitas sem conta</a>
+        </div>
       </section>
     }
   } @else if (tab() === 'sessions') {
-    <div
-      class="grid min-w-0 items-start gap-6 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
-    >
-      <section hlmCard class="panel">
-        <h2><ng-container i18n>Dados observados da sessão</ng-container></h2>
+    <div class="session-layout">
+      <section hlmCard class="panel session-editor">
+        <div class="panel-heading">
+          <div>
+            <p class="tool-kicker" i18n>REGISTRAR ATIVIDADE</p>
+            <h2 i18n>Dados observados da sessão</h2>
+          </div>
+          <span class="session-region">{{ store.data().region.toUpperCase() }}</span>
+        </div>
         <div class="session-context" data-session-context data-tour="lifeskills-sessions.sessions">
           <h3 i18n>Contexto da atividade</h3>
           <div class="form-grid">
@@ -102,7 +113,7 @@
             significa “não informada”; zero é um valor registrado.
           </p>
         </div>
-        <div class="form-grid">
+        <div class="form-grid session-basics">
           <label class="field"
             ><ng-container i18n>Atividade / rota</ng-container
             ><input
@@ -143,7 +154,9 @@
               (ngModelChange)="patch({ cost: $event })"
           /></label>
         </div>
-        <h3><ng-container i18n>Itens para vender no mercado</ng-container></h3>
+        <h3 class="session-items-title">
+          <ng-container i18n>Itens para vender no mercado</ng-container>
+        </h3>
         @for (item of form().items; track $index; let k = $index) {
           <div class="row-editor">
             <div class="form-grid">
@@ -184,9 +197,8 @@
         </div>
         <app-tax-options [value]="form()" (changed)="patch($event)" /><button
           hlmBtn
-          variant="outline"
           type="button"
-          class="btn"
+          class="session-save"
           [disabled]="!result().value"
           (click)="save()"
         >

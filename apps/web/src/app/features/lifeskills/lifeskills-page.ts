@@ -63,6 +63,7 @@ type LifeSkillsTab = 'production' | 'sessions' | 'mastery' | 'training';
     TutorialSurfaceDirective,
   ],
   templateUrl: './lifeskills-page.html',
+  styleUrl: './lifeskills-page.scss',
 })
 export class LifeskillsPage {
   readonly identity = inject(IdentityService);

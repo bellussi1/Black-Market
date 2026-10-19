@@ -8,8 +8,11 @@
     [class.active]="activeTab() === 'production'"
     [attr.aria-current]="activeTab() === 'production' ? 'page' : null"
   >
-    <span i18n>O que fazer</span>
-    <small i18n>Receitas e produção</small>
+    <ng-icon class="hub-nav-icon" name="lucideCompass" aria-hidden="true" />
+    <span class="hub-nav-copy"
+      ><span i18n>O que fazer</span><small i18n>Receitas e produção</small></span
+    >
+    <span class="hub-nav-arrow" aria-hidden="true">→</span>
   </a>
   <a
     routerLink="/lifeskills"
@@ -17,7 +20,10 @@
     [class.active]="activeTab() === 'sessions'"
     [attr.aria-current]="activeTab() === 'sessions' ? 'page' : null"
   >
-    <span i18n>Sessões em campo</span>
-    <small i18n>Seu rendimento observado</small>
+    <ng-icon class="hub-nav-icon" name="lucideChartNoAxesCombined" aria-hidden="true" />
+    <span class="hub-nav-copy"
+      ><span i18n>Sessões em campo</span><small i18n>Seu rendimento observado</small></span
+    >
+    <span class="hub-nav-arrow" aria-hidden="true">→</span>
   </a>
 </nav>

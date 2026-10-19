@@ -51,6 +51,9 @@ describe('lifeskill session analytics', () => {
     expect(page.tab()).toBe('production');
     expect(element.textContent).toContain('Recomendações de produção exigem uma conta');
     expect(element.querySelector('[data-production-login]')).not.toBeNull();
+    expect(
+      element.querySelector('[data-public-production-denied] a[href="/recipes"]'),
+    ).not.toBeNull();
     expect(element.querySelector('app-recommendations-page')).toBeNull();
     expect(element.querySelector('[data-tour="lifeskills-sessions.sessions"]')).toBeNull();
     expect(element.textContent).not.toContain('Melhores retornos completos');

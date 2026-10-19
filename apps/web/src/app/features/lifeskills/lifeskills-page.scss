@@ -1,0 +1,216 @@
+:host {
+  display: block;
+}
+
+.lifeskills-page {
+  container: lifeskills / inline-size;
+}
+
+.lifeskills-heading {
+  border-inline-start: 2px solid var(--bm-accent);
+  padding-inline-start: var(--bm-space-5);
+}
+
+.lifeskills-heading h1 {
+  font-size: var(--bm-text-display);
+}
+
+.lifeskills-heading > p:not(.tool-kicker) {
+  max-width: 90ch;
+  color: var(--bm-muted);
+  line-height: 1.6;
+}
+
+.lifeskills-heading .lifeskills-local-note {
+  margin: var(--bm-space-2) 0 0;
+  font-size: var(--bm-text-meta);
+}
+
+.session-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: var(--bm-space-5);
+  align-items: start;
+}
+
+.session-editor {
+  container: session-editor / inline-size;
+}
+
+.session-editor > .panel-heading .tool-kicker {
+  margin: 0 0 var(--bm-space-1);
+}
+
+.session-region {
+  border: var(--bm-border-width) solid var(--bm-control-border);
+  padding: var(--bm-space-1) var(--bm-space-2);
+  background: var(--bm-input);
+  font-size: var(--bm-text-meta);
+}
+
+.session-context {
+  padding: var(--bm-space-4);
+  margin-bottom: var(--bm-space-4);
+  border: var(--bm-border-width) solid var(--bm-border);
+  background: var(--bm-input);
+}
+
+.session-context h3 {
+  margin: 0 0 var(--bm-space-3);
+}
+
+.session-context .form-grid,
+.session-basics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bm-space-3);
+}
+
+.session-context .field {
+  justify-content: end;
+}
+
+.session-basics > label:first-child {
+  grid-column: span 2;
+}
+
+.session-items-title {
+  padding-top: var(--bm-space-4);
+  border-top: var(--bm-border-width) solid var(--bm-border);
+}
+
+.session-editor .row-editor {
+  margin-bottom: var(--bm-space-3);
+}
+
+.session-save {
+  margin-block: var(--bm-space-4);
+}
+
+.session-result {
+  position: sticky;
+  top: var(--bm-space-4);
+}
+
+.session-result .metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bm-space-2);
+  margin-bottom: var(--bm-space-4);
+  border: 0;
+  background: transparent;
+}
+
+.session-result .metric {
+  padding: var(--bm-space-4);
+  border: var(--bm-border-width) solid var(--bm-border);
+  background: var(--bm-input);
+}
+
+.session-result .metric span {
+  margin-bottom: var(--bm-space-2);
+}
+
+.session-result .hero-metric {
+  padding: var(--bm-space-5) var(--bm-space-4);
+  border-color: var(--bm-accent);
+  background: var(--bm-accent-soft);
+}
+
+.session-result .hero-metric strong {
+  font-size: var(--bm-text-display);
+}
+
+.session-result .notice {
+  margin: 0;
+  padding: var(--bm-space-3);
+  font-size: var(--bm-text-support);
+  line-height: 1.6;
+}
+
+.session-secondary-summary {
+  cursor: pointer;
+}
+
+.session-secondary-summary h2 {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.session-secondary-summary .help {
+  margin: var(--bm-space-2) 0 0;
+}
+
+.session-secondary-summary:focus-visible {
+  outline: 2px solid var(--bm-focus);
+  outline-offset: 2px;
+}
+
+.public-production-access {
+  border-top: 2px solid var(--bm-accent);
+}
+
+.public-production-access > p:not(.tool-kicker) {
+  max-width: 85ch;
+  color: var(--bm-muted);
+  line-height: 1.6;
+}
+
+.production-access-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bm-space-3);
+  list-style: none;
+  padding: 0;
+  margin: var(--bm-space-5) 0;
+}
+
+.production-access-features li {
+  display: grid;
+  gap: var(--bm-space-1);
+  padding: var(--bm-space-4);
+  border: var(--bm-border-width) solid var(--bm-border);
+  background: var(--bm-input);
+}
+
+.production-access-features strong {
+  color: var(--bm-text);
+  font-weight: 500;
+}
+
+.production-access-features span {
+  color: var(--bm-muted);
+  font-size: var(--bm-text-support);
+}
+
+@container lifeskills (max-width: 900px) {
+  .session-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .session-result {
+    position: static;
+  }
+}
+
+@container session-editor (max-width: 480px) {
+  .session-context .form-grid,
+  .session-basics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .session-basics > label:first-child {
+    grid-column: auto;
+  }
+}
+
+@container lifeskills (max-width: 600px) {
+  .lifeskills-heading {
+    padding-inline-start: var(--bm-space-4);
+  }
+  .lifeskills-heading h1 {
+    font-size: var(--bm-text-page-mobile);
+  }
+  .production-access-features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

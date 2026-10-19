@@ -3,25 +3,53 @@
 }
 
 .life-skills-hub-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: var(--bm-space-2);
   margin: 0 0 var(--bm-space-5);
+  border: 0;
 }
 
 .life-skills-hub-nav a {
-  display: grid;
-  align-content: center;
-  gap: var(--bm-space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--bm-space-3);
+  min-width: 0;
   min-height: var(--bm-control-height);
-  padding: var(--bm-space-2) var(--bm-space-4);
-  border: 1px solid transparent;
-  border-bottom: 2px solid transparent;
+  padding: var(--bm-space-4);
+  border: var(--bm-border-width) solid var(--bm-border);
+  border-bottom: 2px solid var(--bm-border);
+  background: var(--bm-surface);
   color: var(--bm-muted);
   text-decoration: none;
   transition:
     color var(--bm-motion-fast) ease-out,
     background-color var(--bm-motion-fast) ease-out,
     border-color var(--bm-motion-fast) ease-out;
+}
+
+.hub-nav-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--bm-space-1);
+  overflow-wrap: anywhere;
+}
+
+.hub-nav-copy > span {
+  font-size: var(--bm-text-section);
+  font-weight: 500;
+}
+
+.hub-nav-icon {
+  flex: none;
+  color: var(--bm-accent);
+  font-size: 24px;
+}
+
+.hub-nav-arrow {
+  margin-inline-start: auto;
+  color: var(--bm-muted);
 }
 
 .life-skills-hub-nav a:hover {
@@ -48,8 +76,10 @@
 }
 
 @media (max-width: 600px) {
+  .life-skills-hub-nav {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .life-skills-hub-nav a {
-    flex: 1 1 10rem;
-    padding-inline: var(--bm-space-2);
+    padding: var(--bm-space-3);
   }
 }
