@@ -31,7 +31,8 @@
     "test:staging": "node scripts/smoke-staging.mjs",
     "test:auth:local": "node scripts/smoke-staging.mjs --url=http://localhost:3000 --auth-only --require-social-auth",
     "test:auth:staging": "node scripts/smoke-staging.mjs --url=http://localhost:8081 --require-social-auth",
-    "test:legal:layout": "node scripts/check-legal-layout.mjs"
+    "test:legal:layout": "node scripts/check-legal-layout.mjs",
+    "test:ui:layout": "node scripts/qa-ui-layout.mjs"
   },
   "pnpm": {
     "overrides": {
