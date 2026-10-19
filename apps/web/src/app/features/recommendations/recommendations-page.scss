@@ -160,9 +160,9 @@
 }
 
 .coach-mode-tab {
-  min-height: 38px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
+  min-height: var(--bm-control-height);
+  padding: var(--bm-space-2) var(--bm-space-4);
+  font-size: var(--bm-text-support);
   font-weight: 500;
   color: var(--bm-muted);
   background: var(--bm-input);
@@ -603,7 +603,7 @@
   align-items: center;
   gap: 0.4rem 0.75rem;
   width: min(100%, 32rem);
-  font-size: 0.85rem;
+  font-size: var(--bm-text-support);
 }
 
 .manual-price-field span {
@@ -633,7 +633,7 @@
 
 .coverage-note {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--bm-text-support);
 }
 
 .recommendations-section > .coach-empty {

@@ -16,9 +16,9 @@
 }
 
 .city-pill {
-  min-height: 32px;
+  min-height: var(--bm-control-height-compact);
   padding: 0.25rem 0.65rem;
-  font-size: 12px;
+  font-size: var(--bm-text-support);
   color: var(--bm-muted);
   background: var(--bm-input);
   border: 1px solid var(--bm-border);
@@ -227,7 +227,7 @@ a.stock-item-title:hover {
 }
 
 .stock-action-link {
-  font-size: 12px;
+  font-size: var(--bm-text-support);
   color: var(--bm-muted);
   padding: 4px 8px;
   border: 1px solid var(--bm-border);
@@ -245,7 +245,7 @@ a.stock-item-title:hover {
 .stock-undo button {
   min-height: 34px;
   padding: 4px 9px;
-  font-size: 12px;
+  font-size: var(--bm-text-support);
 }
 
 .stock-items:not(.list) .stock-actions {
