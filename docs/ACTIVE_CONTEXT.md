@@ -4,14 +4,14 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Checkout e continuidade
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `06aa17f` publicadas em `origin/main`.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `d354640` publicadas em `origin/main`.
 - Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
 - Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
 ## Últimas entregas verificadas
 
 - UI compartilhada, Família/administração/zoom e tokens: [evidências](research/ui-filled-zoom-controls-2026-10-19.md).
-- Receitas: [boxes compactos e maestrias visíveis](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
+- Receitas: [boxes compactos, maestrias visíveis e plano lateral alinhado](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
 - Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
 - Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
 - Ranking personalizado: personagem ativo/tempos sincronizados, intermediários secundários preservados, melhores variantes por produto após filtros e busca recalculada automaticamente. [Diagnóstico e limites](research/home-recommendations-competitive-review-2026-10-16.md#ranking-personalizado--revisão-de-20102026). Sessão Google real indisponível no QA; não anunciar homologação pessoal.

@@ -63,29 +63,6 @@
         [class.is-buying]="item.source === 'buy'"
         [class.is-selected]="selectedItemId() === item.itemId"
       >
-        <label
-          class="material-source-checkbox bdo-checkbox-container"
-          [title]="
-            !item.canProduce
-              ? 'Sem método de produção conhecido; obter pronto'
-              : item.source === 'buy'
-                ? 'Comprar no Mercado Central'
-                : 'Fazer ou coletar por conta própria'
-          "
-        >
-          <input
-            type="checkbox"
-            [checked]="item.source !== 'buy'"
-            [disabled]="!item.canProduce"
-            (change)="toggleSource.emit(item.itemId)"
-            [attr.aria-label]="
-              (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') + item.name
-            "
-          />
-          <span class="bdo-checkbox-visual"></span>
-          <span class="source-choice-label">Produzir</span>
-        </label>
-
         <button
           type="button"
           class="sidebar-material-details"
@@ -98,13 +75,6 @@
           <span class="sidebar-item-info">
             <span class="sidebar-item-name-line">
               <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
-              <span class="sidebar-item-qty">
-                @if (item.quantityPending) {
-                  Quantidade pendente
-                } @else {
-                  {{ item.required.toLocaleString('pt-BR') }} un
-                }
-              </span>
             </span>
             <span class="sidebar-item-price-line">
               @if (item.unitPrice !== null) {
@@ -149,20 +119,40 @@
           </span>
         </button>
 
-        <div
-          class="sidebar-source-badge"
-          [class.is-make]="item.source !== 'buy'"
-          [class.is-buy]="item.source === 'buy'"
-        >
-          {{
-            !item.canProduce
-              ? 'Obter pronto'
-              : item.source === 'buy'
-                ? 'Comprar'
-                : item.sourceLabel === 'Coletar'
-                  ? 'Coletar'
-                  : 'Produzir'
-          }}
+        <div class="sidebar-material-actions">
+          <span class="sidebar-item-qty">
+            @if (item.quantityPending) {
+              Quantidade pendente
+            } @else {
+              {{ item.required.toLocaleString('pt-BR') }} un
+            }
+          </span>
+          <label
+            class="material-source-checkbox bdo-checkbox-container"
+            [title]="
+              !item.canProduce
+                ? 'Sem método de produção conhecido; obter pronto'
+                : item.source === 'buy'
+                  ? 'Comprar no Mercado Central'
+                  : 'Fazer ou coletar por conta própria'
+            "
+          >
+            <input
+              type="checkbox"
+              [checked]="item.source !== 'buy'"
+              [disabled]="!item.canProduce"
+              (change)="toggleSource.emit(item.itemId)"
+              [attr.aria-label]="
+                (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') +
+                item.name
+              "
+            />
+            <span class="bdo-checkbox-visual"></span>
+            <span class="source-choice-label">Produzir</span>
+          </label>
+          @if (!item.canProduce) {
+            <span class="sidebar-source-badge is-buy" i18n>Obter pronto</span>
+          }
         </div>
       </div>
     } @empty {

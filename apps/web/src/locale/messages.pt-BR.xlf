@@ -5250,7 +5250,7 @@
     </unit>
     <unit id="8822963951110133710">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:354,355</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:358,359</note>
       </notes>
       <segment>
         <source> Comparar lucro/h da receita e das subreceitas (<ph id="0" equiv="INTERPOLATION" disp="{{ chain.length }}"/>) </source>
@@ -5258,7 +5258,7 @@
     </unit>
     <unit id="552536289157314340">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:357,359</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:361,363</note>
       </notes>
       <segment>
         <source> Cada linha simula produzir e vender esse produto separadamente, com o mesmo personagem, preços e limites da sessão. O tempo inclui as etapas produzidas no cenário indicado. Não some os lucros: as alternativas usam os mesmos recursos. </source>
@@ -5266,7 +5266,7 @@
     </unit>
     <unit id="2675230851304212436">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:373,374</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:377,378</note>
       </notes>
       <segment>
         <source>Receita final</source>
@@ -5274,7 +5274,7 @@
     </unit>
     <unit id="2430836280731066806">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:375,376</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:379,380</note>
       </notes>
       <segment>
         <source>Subreceita · nível <ph id="0" equiv="INTERPOLATION" disp="{{ part.depth }}"/></source>
@@ -5282,7 +5282,7 @@
     </unit>
     <unit id="7557033353995670168">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:386,387</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:393,394</note>
       </notes>
       <segment>
         <source>Supera o lucro/h da final</source>
@@ -5290,7 +5290,7 @@
     </unit>
     <unit id="903657676227336926">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:392,393</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:399,400</note>
       </notes>
       <segment>
         <source>Lucro líquido/h</source>
@@ -5298,7 +5298,7 @@
     </unit>
     <unit id="4065306257840930879">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:403,404</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:410,411</note>
       </notes>
       <segment>
         <source>Lucro do lote</source>
@@ -5306,7 +5306,7 @@
     </unit>
     <unit id="1049887966519098090">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:413,414</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:420,421</note>
       </notes>
       <segment>
         <source>Tempo do lote</source>
@@ -5314,7 +5314,7 @@
     </unit>
     <unit id="3281725698593127163">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:431,432</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:438,439</note>
       </notes>
       <segment>
         <source>Baixa atividade de venda conhecida</source>
@@ -11856,7 +11856,7 @@
     <unit id="3383907643333341583">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:74,75</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:200,201</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:190,191</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -11929,15 +11929,23 @@
     </unit>
     <unit id="1051153516446623837">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:133,134</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:103,104</note>
       </notes>
       <segment>
         <source>Sem cotação</source>
       </segment>
     </unit>
+    <unit id="4164884994895329083">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:154,155</note>
+      </notes>
+      <segment>
+        <source>Obter pronto</source>
+      </segment>
+    </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:169,171</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:159,161</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -11945,8 +11953,8 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:174</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:176,177</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:164</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:166,167</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
@@ -11954,7 +11962,7 @@
     </unit>
     <unit id="6431746344747902792">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:180,181</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:170,171</note>
       </notes>
       <segment>
         <source> Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda. </source>
@@ -11962,7 +11970,7 @@
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:202,203</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:192,193</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returns().length - 2 }}"/>)</source>
@@ -11970,7 +11978,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:213,214</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:203,204</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -11978,7 +11986,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:220,222</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:210,212</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>

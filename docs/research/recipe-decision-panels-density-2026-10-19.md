@@ -81,3 +81,13 @@ Home, Profissões, catálogo de receitas e Mercado conferidos como visitante em 
 Conferência final em 1366 px: os três campos na mesma baseline, todos com 44 px; configuração em cerca de 385 px. Edição de Culinária/Processamento, atalho 10x, abertura/fechamento dos detalhes e disclosure funcionaram sem `pageerror`. Revisão independente concluída após corrigir o espaçamento do resumo. `pnpm check`, suíte integral (1.304 aprovados/1 ignorado), produção e SSR aprovados; avisos existentes de CSS da árvore, locale e CommonJS do OCR permanecem. Sem mudanças em budgets, fórmulas, perfil ou banco.
 
 Alturas iguais verificadas após o esclarecimento: diferença entre bordas inferiores de 0 px em 1920/1366/1536/1280, inclusive com ajustes abertos. Em 390 px, alturas independentes preservadas; sem overflow ou `pageerror`. Check e suíte integral repetidos e aprovados (1.304 aprovados/1 ignorado).
+
+## Alinhamento do plano de materiais — 20/10/2026
+
+A captura posterior mostrou quantidade comprimida pelo status, checkbox em uma segunda linha desconectada e texto dos retornos começando em outro recuo. Materiais passam a separar detalhes e coluna de quantidade/controle; o status duplicado foi retirado quando há a opção Produzir. Ícones têm slot estável, nomes quebram sem corte e retornos usam as mesmas colunas de ícone/texto/ação. O rodapé vazio não ocupa espaço. Os bindings de produção, seleção, venda e salvamento permanecem iguais.
+
+Consulta pública específica: [Workshop #9601](https://bdoworkshop.com/crafting-workshop/plan/9601) indisponível, [BDOLytics #9601](https://bdolytics.com/en/crafting/9601:558d95547e1d) sem conteúdo textual e [Codex #9209](https://bdocodex.com/us/item/9209/) bloqueado no leitor. [Garmoth — frutos do mar](https://garmoth.com/market/category/material/seafood) apresenta linhas com ícone, nome e preço; não foi verificado um controle de compra/produção equivalente. A composição segue os tokens do projeto, sem copiar implementação ou cálculos concorrentes.
+
+QA da rota pública em 1920/2560/1600/1366/390 px e reflow 1536/1280: mesmos eixos dos nomes nos quatro materiais e no retorno, quantidades alinhadas à direita, sem overflow horizontal ou `pageerror`. Nomes extensos/unidos testados temporariamente no DOM do contexto descartável, sem invadir os controles. Produzir e Incluir venda alternaram e foram restaurados. Capturas ignoradas `.playwright-mcp/sidebar-1920.png` e `sidebar-390.png`.
+
+`pnpm check`, suíte integral (**1.318 aprovados/1 ignorado**), extração i18n, produção e SSR aprovados; revisão independente sem achados. Inicial 499,84 kB e budgets preservados; avisos existentes de CSS da árvore, locale e CommonJS de OCR permanecem. Sem nova lógica de cálculo ou escrita em banco.

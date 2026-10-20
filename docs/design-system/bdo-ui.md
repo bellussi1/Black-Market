@@ -149,6 +149,8 @@ Incorreto: ação sem botão/nome, geometria e paleta locais, token inexistente 
 
 Avisos de pendências em receitas ocupam uma linha completa no rodapé; resumo e lista ficam alinhados à esquerda, permitindo quebra de texto. Substitutos desidratados revisados usam o SKU real, preservando o fresco no seletor e escolhas por URL; [escopo e fontes](../research/fish-price-equivalence-review-2026-10-16.md).
 
+O plano lateral reserva colunas estáveis para ícone/nome e quantidade/controle; retornos compartilham o mesmo recuo dos nomes. Não repetir status Comprar junto do checkbox Produzir. Nomes e quantidades longos quebram sem invadir a ação; o rodapé vazio fica oculto.
+
 Em Produção, a comparação de subreceitas usa `details` contextual no card, inicialmente aberto no primeiro resultado. Lista produto, nível, lucro líquido/h, lucro e tempo do lote com o cenário usado; mobile empilha identidade e métricas. Cada linha representa venda independente com os mesmos recursos do personagem: não somar os lucros. Ausência de dados mantém estado pendente; baixa atividade de venda recebe texto explícito, e lucro/h superior ao da final recebe rótulo além da cor.
 
 Os checklists obrigatórios de criação e revisão ficam na [skill canônica](../../.agents/skills/bdo-ui-design/SKILL.md). Matriz: 1920×1080, 2560×1440, 1600×900, 1366×768 e 390×844; avaliar zoom 125%/150% e conteúdo longo quando alterados. Testar navegação direta, refresh, histórico, teclado, foco, loading/erro/vazio, reduced-motion e tutorial afetado. Medir overflow e observar a renderização, sem confundir build/specs com QA autenticada.
