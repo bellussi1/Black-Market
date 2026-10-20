@@ -311,8 +311,8 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 
 ### `[~]` “O que fazer?” / Coach de Atividades
 
-- **Estado e escopo (base 18/10):** Classifica opções de produção/crafting com perfil, tempo, orçamento, energia, estoque e preços quando disponíveis. O profiling de catálogo foi otimizado sem alterar o ranking; existem cenários pendentes por falta de dados.
-- **Evidência e lacuna:** `docs/research/activity-coach-competitive-review.md`, `docs/research/implementation-gap-matrix.md`, `docs/ACTIVE_CONTEXT.md` §§121–134. Repetir carga/fluxos após as correções de mercado e registrar custo medido.
+- **Estado e escopo (20/10):** Ranking sincronizado ao personagem ativo, com alternativas por produto e profissões secundárias preservadas. Comparação contextual de venda independente da final e dos intermediários em todos os níveis, respeitando os mesmos recursos e mostrando pendências.
+- **Evidência e lacuna:** [Ranking e cadeias](research/home-recommendations-competitive-review-2026-10-16.md), `docs/research/activity-coach-competitive-review.md` e `docs/research/implementation-gap-matrix.md`. Homologação da conta Google real e cobertura de dados continuam pendentes; não somar lucros independentes nem prometer ótimo global.
 - **Origem:** Refinar prompt de melhorias BDO; Coach de Atividades; Analisar respostas do formulário
 
 ### `[x]` Usar sessões observadas do próprio jogador

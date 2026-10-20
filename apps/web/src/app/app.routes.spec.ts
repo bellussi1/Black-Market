@@ -101,7 +101,7 @@ describe('Unified personal workspace routes', () => {
         `component selector for /${route.path}: ${ownerName}`,
       ).toBe(true);
     }
-  });
+  }, 15_000); // Imports every lazy page; allow cold transforms alongside the other test worker.
 
   it('preserves declared redirect-only records as redirects', () => {
     const redirectPaths = [

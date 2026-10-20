@@ -347,6 +347,109 @@
                   >
                 </div>
 
+                @if (chainComparisons().get(row.recipeId); as chain) {
+                  @if (chain.length > 1) {
+                    <details class="chain-comparison" [open]="$first">
+                      <summary i18n>
+                        Comparar lucro/h da receita e das subreceitas ({{ chain.length }})
+                      </summary>
+                      <p class="help" i18n>
+                        Cada linha simula produzir e vender esse produto separadamente, com o mesmo
+                        personagem, preços e limites da sessão. O tempo inclui as etapas produzidas
+                        no cenário indicado. Não some os lucros: as alternativas usam os mesmos
+                        recursos.
+                      </p>
+                      <ol class="chain-comparison-list">
+                        @for (part of chain; track part.itemId) {
+                          <li data-chain-comparison-row [attr.data-depth]="part.depth">
+                            <div class="chain-product">
+                              <app-item-icon
+                                [url]="icon(part.itemId)"
+                                [name]="name(part.itemId)"
+                                [grade]="grade(part.itemId)"
+                              />
+                              <div>
+                                @if (part.depth === 0) {
+                                  <small i18n>Receita final</small>
+                                } @else {
+                                  <small i18n>Subreceita · nível {{ part.depth }}</small>
+                                }
+                                <a
+                                  [routerLink]="
+                                    part.plan
+                                      ? ['/recipes', part.plan.recipeId]
+                                      : ['/recipes/items', part.itemId]
+                                  "
+                                  >{{ name(part.itemId) }}</a
+                                >
+                                @if (part.betterThanFinal) {
+                                  <span class="chain-better" i18n>Supera o lucro/h da final</span>
+                                }
+                              </div>
+                            </div>
+                            <dl class="chain-metrics">
+                              <div>
+                                <dt i18n>Lucro líquido/h</dt>
+                                <dd>
+                                  {{
+                                    part.plan?.profitPerHour !== null &&
+                                    part.plan?.profitPerHour !== undefined
+                                      ? silver(part.plan!.profitPerHour)
+                                      : 'Pendente'
+                                  }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt i18n>Lucro do lote</dt>
+                                <dd>
+                                  {{
+                                    part.plan?.profit !== null && part.plan?.profit !== undefined
+                                      ? silver(part.plan!.profit)
+                                      : 'Pendente'
+                                  }}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt i18n>Tempo do lote</dt>
+                                <dd>
+                                  {{
+                                    part.plan?.seconds !== null && part.plan?.seconds !== undefined
+                                      ? rounded(part.plan!.seconds! / 60) + ' min'
+                                      : 'Pendente'
+                                  }}
+                                </dd>
+                              </div>
+                            </dl>
+                            @if (part.plan; as compared) {
+                              <small class="chain-context"
+                                >{{ scenarioNames[compared.scenario] }} ·
+                                {{ compared.crafts }} operações · {{ rounded(compared.output) }} un.
+                                · {{ tradeVolumeLabel(compared.recipeId) }}</small
+                              >
+                              @if (!hasLiquidity(compared)) {
+                                <small class="chain-liquidity-warning" i18n
+                                  >Baixa atividade de venda conhecida</small
+                                >
+                              }
+                              @if (compared.issues.length) {
+                                <ul class="chain-issues">
+                                  @for (issue of compared.issues; track $index) {
+                                    <li>{{ issue.message }}</li>
+                                  }
+                                </ul>
+                              }
+                            } @else {
+                              <p class="chain-context">
+                                Sem comparação disponível para esta fórmula.
+                              </p>
+                            }
+                          </li>
+                        }
+                      </ol>
+                    </details>
+                  }
+                }
+
                 @if (ownedMaterials(row).length || missingMaterials(row).length) {
                   <div class="opportunity-stock-breakdown">
                     @if (ownedMaterials(row).length) {

@@ -5248,6 +5248,78 @@
         <source> Usa negociações acumuladas e registro de última venda. Dados ausentes permanecem visíveis; isso não mede vendas por dia nem garante liquidez. </source>
       </segment>
     </unit>
+    <unit id="8822963951110133710">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:354,355</note>
+      </notes>
+      <segment>
+        <source> Comparar lucro/h da receita e das subreceitas (<ph id="0" equiv="INTERPOLATION" disp="{{ chain.length }}"/>) </source>
+      </segment>
+    </unit>
+    <unit id="552536289157314340">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:357,359</note>
+      </notes>
+      <segment>
+        <source> Cada linha simula produzir e vender esse produto separadamente, com o mesmo personagem, preços e limites da sessão. O tempo inclui as etapas produzidas no cenário indicado. Não some os lucros: as alternativas usam os mesmos recursos. </source>
+      </segment>
+    </unit>
+    <unit id="2675230851304212436">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:373,374</note>
+      </notes>
+      <segment>
+        <source>Receita final</source>
+      </segment>
+    </unit>
+    <unit id="2430836280731066806">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:375,376</note>
+      </notes>
+      <segment>
+        <source>Subreceita · nível <ph id="0" equiv="INTERPOLATION" disp="{{ part.depth }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7557033353995670168">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:386,387</note>
+      </notes>
+      <segment>
+        <source>Supera o lucro/h da final</source>
+      </segment>
+    </unit>
+    <unit id="903657676227336926">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:392,393</note>
+      </notes>
+      <segment>
+        <source>Lucro líquido/h</source>
+      </segment>
+    </unit>
+    <unit id="4065306257840930879">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:403,404</note>
+      </notes>
+      <segment>
+        <source>Lucro do lote</source>
+      </segment>
+    </unit>
+    <unit id="1049887966519098090">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:413,414</note>
+      </notes>
+      <segment>
+        <source>Tempo do lote</source>
+      </segment>
+    </unit>
+    <unit id="3281725698593127163">
+      <notes>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:431,432</note>
+      </notes>
+      <segment>
+        <source>Baixa atividade de venda conhecida</source>
+      </segment>
+    </unit>
     <unit id="8827000391731483786">
       <notes>
         <note category="location">src/app/features/reference/reference-page.html:3,4</note>

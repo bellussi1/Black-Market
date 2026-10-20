@@ -57,6 +57,12 @@ import {
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { LifeSkillsHubNav } from '../lifeskills/life-skills-hub-nav';
+import {
+  buildRecipeChainIndex,
+  compareRecipeChain,
+  type RecipeChainComparison,
+  relatedRecipeIds,
+} from './recipe-chain-comparison';
 
 type RecommendationQuote = ProductionPlannerInput['quotes'][number] & {
   basis?: 'market' | 'maximum' | 'reference' | 'manual' | 'npc';
@@ -299,6 +305,9 @@ export class RecommendationsPage implements OnDestroy {
   readonly quotes = signal<Quotes>({});
   readonly npcPrices = signal(new Map<number, NpcPurchasePrice>());
   readonly plans = signal<{ ranked: ProductionPlan[]; incomplete: ProductionPlan[] } | null>(null);
+  readonly chainPlans = signal<{ ranked: ProductionPlan[]; incomplete: ProductionPlan[] } | null>(
+    null,
+  );
   readonly progress = signal({ done: 0, total: 0 });
   readonly page = signal(1);
   readonly pendingPage = signal(1);
@@ -334,6 +343,7 @@ export class RecommendationsPage implements OnDestroy {
   private readonly recipesById = computed(
     () => new Map(this.recipes().map((recipe) => [recipe.id, recipe])),
   );
+  private readonly chainIndex = computed(() => buildRecipeChainIndex(this.recipes()));
   readonly activityRecipes = computed(() =>
     this.recipes().filter((row) => {
       const skill = activitySkillForRecipe(row.method);
@@ -401,6 +411,16 @@ export class RecommendationsPage implements OnDestroy {
         ),
       ).length,
   );
+  readonly chainComparisons = computed((): Map<string, RecipeChainComparison[]> => {
+    const result = this.chainPlans();
+    if (!result || !this.plans()) return new Map();
+    return new Map(
+      this.topPlans().map((root) => [
+        root.recipeId,
+        compareRecipeChain(this.chainIndex(), root, result.ranked, result.incomplete),
+      ]),
+    );
+  });
   readonly pendingActions = computed(() => {
     const recipesById = this.recipesById();
     const grouped = new Map<
@@ -893,10 +913,15 @@ export class RecommendationsPage implements OnDestroy {
       if (item.weight !== null && Number.isFinite(Number(item.weight)))
         weights[item.id] = Number(item.weight);
     const focusedId = this.focus();
-    const candidates = this.candidates().map((row) => ({
+    const primaryCandidates = this.candidates().map((row) => ({
       recipeId: row.id,
       ...(row.id === focusedId ? { optimizeCrafts: this.optimizationCrafts } : {}),
     }));
+    const primaryIds = new Set(primaryCandidates.map((row) => row.recipeId));
+    const candidates = [...primaryCandidates];
+    for (const recipeId of relatedRecipeIds(this.chainIndex(), [...primaryIds])) {
+      if (!primaryIds.has(recipeId)) candidates.push({ recipeId });
+    }
     const context = this.comparisonContext();
     const workspaceContext = this.workspaceComparisonContext();
     const filterContext = this.filterContext();
@@ -928,6 +953,7 @@ export class RecommendationsPage implements OnDestroy {
     const batchSize = 250;
     this.busy.set(true);
     this.plans.set(null);
+    this.chainPlans.set(null);
     try {
       for (let offset = 0; offset < candidates.length; offset += batchSize) {
         this.message.set(`Comparando ${offset} / ${candidates.length} receitas…`);
@@ -947,11 +973,16 @@ export class RecommendationsPage implements OnDestroy {
         result.incomplete.push(...batch.incomplete);
       }
       result.ranked.sort(compareProductionPlans);
-      this.plans.set(result);
+      this.chainPlans.set(result);
+      const recommendations = {
+        ranked: result.ranked.filter((row) => primaryIds.has(row.recipeId)),
+        incomplete: result.incomplete.filter((row) => primaryIds.has(row.recipeId)),
+      };
+      this.plans.set(recommendations);
       this.page.set(1);
       this.pendingPage.set(1);
       this.message.set(
-        `${candidates.length} receitas comparadas. ${result.ranked.length} cenários completos; ${result.incomplete.length} pendentes. Ranking limitado à busca e ao catálogo carregado, com até 10.000 operações por cenário.`,
+        `${primaryCandidates.length} receitas comparadas. ${recommendations.ranked.length} cenários completos; ${recommendations.incomplete.length} pendentes. ${candidates.length - primaryCandidates.length} fórmulas intermediárias avaliadas separadamente. Ranking limitado à busca e ao catálogo carregado, com até 10.000 operações por cenário.`,
       );
     } catch {
       this.message.set(

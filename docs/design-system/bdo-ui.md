@@ -147,6 +147,8 @@ Incorreto: ação sem botão/nome, geometria e paleta locais, token inexistente 
 
 ## Verificação e limites
 
+Em Produção, a comparação de subreceitas usa `details` contextual no card, inicialmente aberto no primeiro resultado. Lista produto, nível, lucro líquido/h, lucro e tempo do lote com o cenário usado; mobile empilha identidade e métricas. Cada linha representa venda independente com os mesmos recursos do personagem: não somar os lucros. Ausência de dados mantém estado pendente; baixa atividade de venda recebe texto explícito, e lucro/h superior ao da final recebe rótulo além da cor.
+
 Os checklists obrigatórios de criação e revisão ficam na [skill canônica](../../.agents/skills/bdo-ui-design/SKILL.md). Matriz: 1920×1080, 2560×1440, 1600×900, 1366×768 e 390×844; avaliar zoom 125%/150% e conteúdo longo quando alterados. Testar navegação direta, refresh, histórico, teclado, foco, loading/erro/vazio, reduced-motion e tutorial afetado. Medir overflow e observar a renderização, sem confundir build/specs com QA autenticada.
 
 O [inventário de rotas](../research/ui-route-inventory-2026-10-19.md) separa páginas, aliases, conteúdo suspenso pelo MVP e guardas. O [relatório de reconciliação](../research/ui-standardization-completion-2026-10-19.md) registra correções, evidências e validações ainda necessárias. Não declarar conformidade completa de acessibilidade ou de todas as combinações de dados a partir da amostra visual.

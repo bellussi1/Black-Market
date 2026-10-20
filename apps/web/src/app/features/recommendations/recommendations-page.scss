@@ -701,3 +701,94 @@ select {
     animation: none;
   }
 }
+
+.chain-comparison {
+  grid-column: 1 / -1;
+  min-width: 0;
+  border-block: var(--bm-border-width) solid var(--bm-border);
+}
+.chain-comparison > summary {
+  min-height: var(--bm-control-height-compact);
+  padding-block: var(--bm-space-2);
+  cursor: pointer;
+  color: var(--bm-accent);
+  overflow-wrap: anywhere;
+}
+.chain-comparison > .help {
+  margin: var(--bm-space-2) 0 var(--bm-space-3);
+  font-size: var(--bm-text-support);
+  color: var(--bm-muted);
+}
+.chain-comparison-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chain-comparison-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr);
+  gap: var(--bm-space-2) var(--bm-space-4);
+  padding-block: var(--bm-space-3);
+  border-top: var(--bm-border-width) solid var(--bm-border);
+}
+.chain-product {
+  display: flex;
+  align-items: center;
+  gap: var(--bm-space-3);
+  min-width: 0;
+}
+.chain-product app-item-icon {
+  --item-icon-size: var(--bm-slot-size);
+}
+.chain-product > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--bm-space-1);
+  overflow-wrap: anywhere;
+}
+.chain-product small,
+.chain-context,
+.chain-metrics dt {
+  font-size: var(--bm-text-meta);
+  color: var(--bm-muted);
+}
+.chain-better {
+  color: var(--bm-accent);
+  font-size: var(--bm-text-meta);
+}
+.chain-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bm-space-3);
+  margin: 0;
+  align-self: center;
+}
+.chain-metrics dd {
+  margin: var(--bm-space-1) 0 0;
+  font-size: var(--bm-text-body);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.chain-context,
+.chain-issues {
+  grid-column: 1 / -1;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.chain-issues,
+.chain-liquidity-warning {
+  padding-left: var(--bm-space-4);
+  font-size: var(--bm-text-support);
+  color: var(--bm-warning);
+}
+
+.chain-liquidity-warning {
+  grid-column: 1 / -1;
+  padding-left: 0;
+}
+@media (max-width: 760px) {
+  .chain-comparison-list > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

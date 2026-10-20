@@ -1221,6 +1221,95 @@ describe('production recommendations', () => {
     expect(page.storageReadyCount()).toBe(1);
   });
 
+  it('compares selling all recursive intermediates even when only the final profession is selected', async () => {
+    const chain: ProductionCatalogResponse = {
+      ...snapshot,
+      recipes: ['ALCHEMY', 'GRIND', 'DRY', 'COOK'].map((type, i) => ({
+        key: `chain-${i + 2}`,
+        type,
+        station: null,
+        inputs: [{ itemId: i + 1, name: `Produto ${i + 1}`, quantity: '1' }],
+        outputs: [{ itemId: i + 2, name: `Produto ${i + 2}`, quantity: '1' }],
+      })),
+      items: [1, 2, 3, 4, 5].map((id) => ({ ...snapshot.items[0], id, name: `Produto ${id}` })),
+    };
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: { ...api(), catalog: () => of(chain) } },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'main',
+          name: 'Main',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 1,
+          weightLimit: 100,
+        }),
+      ],
+      activeCharacterId: 'main',
+      activityCoach: { ...state.activityCoach, preferredSkills: ['cooking'] },
+    }));
+    await page.load();
+    page.quotes.set(
+      Object.fromEntries(
+        [1, 2, 3, 4, 5].map((id) => [
+          id,
+          {
+            unitPrice: String(id * 20),
+            available: null,
+            source: 'manual' as const,
+            observedAt: new Date().toISOString(),
+          },
+        ]),
+      ),
+    );
+    await page.compare();
+    expect(page.plans()?.ranked.length).toBeGreaterThan(0);
+    expect(page.plans()?.ranked.every((row) => row.recipeId === 'chain-5')).toBe(true);
+    const rows = page.chainComparisons().get('chain-5')!;
+    expect(rows.map((row) => [row.itemId, row.depth])).toEqual([
+      [5, 0],
+      [4, 1],
+      [3, 2],
+      [2, 3],
+    ]);
+    expect(rows.every((row) => row.plan !== null && row.plan.profitPerHour !== null)).toBe(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('[data-chain-comparison-row]')).toHaveLength(4);
+    expect(fixture.nativeElement.querySelector('.chain-comparison')?.open).toBe(true);
+
+    page.quotes.update((quotes) => ({
+      ...quotes,
+      4: { ...quotes[4], source: 'market', totalTrades: '0' },
+    }));
+    await page.compare();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('[data-chain-comparison-row]')).toHaveLength(4);
+    expect(fixture.nativeElement.querySelector('[data-depth="1"]').textContent).toContain(
+      'Baixa atividade de venda conhecida',
+    );
+
+    page.quotes.update((quotes) => {
+      const next = { ...quotes };
+      delete next[2];
+      return next;
+    });
+    await page.compare();
+    expect(
+      page
+        .chainComparisons()
+        .get('chain-5')
+        ?.find((row) => row.itemId === 2)?.plan?.profitPerHour,
+    ).toBeNull();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-depth="3"]').textContent).toContain(
+      'Pendente',
+    );
+  });
+
   it('ranks recipes out-of-the-box using default method seconds without manual time calibration and supports storage/liquidity filters', async () => {
     expect(defaultRecipeMethodSeconds('COOKING')).toBe(1.2);
     expect(defaultRecipeMethodSeconds('SIMPLE_ALCHEMY')).toBe(6);
