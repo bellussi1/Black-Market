@@ -4,14 +4,14 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Checkout e continuidade
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Todas as entregas até `054f865` integradas por fast-forward e publicadas em `origin/main`.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `5a4be46` publicadas em `origin/main`.
 - Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
 - Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
 ## Últimas entregas verificadas
 
 - UI compartilhada, Família/administração/zoom e tokens: [evidências](research/ui-filled-zoom-controls-2026-10-19.md).
-- Receitas: [boxes compactos](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
+- Receitas: [boxes compactos e maestrias visíveis](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
 - Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
 - Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
 - PERF-01: imports compartilhados isolados e CSS/ícone sem uso removidos; produção abaixo do budget inicial. [Medição, testes e limites](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
@@ -28,3 +28,4 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
 - Limpeza atual concluída: seletores sem uso e 25 declarações sobrescritas removidos; comparação Sass/PostCSS e revisão independente preservaram a cascata. Aviso do catálogo eliminado; árvore ainda acima do aviso. Check, suíte completa, produção e SSR passaram; evidência no relatório de performance acima.
 - Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.
+- Maestrias conferidas na receita solicitada também em 320 px; 75 testes do componente, check, suíte integral (1.304 aprovados/1 ignorado), produção e SSR passaram. Sem alteração das fórmulas; detalhes no relatório de receitas acima. Arquivos: `recipe-tree.html/.scss/.spec.ts`, mensagens pt-BR e documentação existente.

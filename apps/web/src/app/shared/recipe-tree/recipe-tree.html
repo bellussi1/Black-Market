@@ -99,60 +99,64 @@
           </div>
         </div>
 
+        <div class="recipe-mastery-settings">
+          <p class="eyebrow" i18n>MAESTRIAS DA RECEITA</p>
+          <div class="craft-parameters-grid">
+            @for (skill of masterySkills(); track skill) {
+              <div class="craft-param-col">
+                <label class="craft-count-control">
+                  <span class="control-label-text">
+                    {{ masterySkillLabel(skill) }}
+                  </span>
+                  <div class="craft-input-box">
+                    <input
+                      type="number"
+                      min="0"
+                      max="3000"
+                      step="10"
+                      class="craft-count-input"
+                      placeholder="Ex: 1250"
+                      [attr.aria-label]="'Maestria de ' + masterySkillLabel(skill)"
+                      [ngModel]="displayedMasteryForSkill(skill)"
+                      (ngModelChange)="setMasteryForSkill(skill, $event)"
+                    />
+                    <span class="craft-count-unit">pts</span>
+                  </div>
+                </label>
+              </div>
+            } @empty {
+              <div class="craft-param-col">
+                <label class="craft-count-control">
+                  <span class="control-label-text">Maestria ({{ primarySkillLabel() }})</span>
+                  <div class="craft-input-box">
+                    <input
+                      type="number"
+                      min="0"
+                      max="3000"
+                      step="10"
+                      class="craft-count-input"
+                      placeholder="Ex: 1250"
+                      aria-label="Maestria da profissão"
+                      disabled
+                      [ngModel]="displayedMastery()"
+                    />
+                    <span class="craft-count-unit">pts</span>
+                  </div>
+                </label>
+                <div class="craft-param-hint" i18n>Maestria sem efeito nesta fórmula</div>
+              </div>
+            }
+          </div>
+          @if (masterySkills().length) {
+            <p class="craft-param-hint" i18n>
+              Ajustes só para esta simulação. Usados nas etapas produzidas e nas alternativas do
+              otimizador.
+            </p>
+          }
+        </div>
+
         <details class="production-options recipe-settings-disclosure">
           <summary i18n>Ajustes de produção, estoque e mercado</summary>
-          <div class="recipe-mastery-settings">
-            <p class="eyebrow" i18n>MAESTRIA E RENDIMENTO</p>
-            <div class="craft-parameters-grid">
-              @for (skill of masterySkills(); track skill) {
-                <div class="craft-param-col">
-                  <label class="craft-count-control">
-                    <span class="control-label-text">
-                      Maestria ({{ masterySkillLabel(skill) }})
-                    </span>
-                    <div class="craft-input-box">
-                      <input
-                        type="number"
-                        min="0"
-                        max="3000"
-                        step="10"
-                        class="craft-count-input"
-                        placeholder="Ex: 1250"
-                        [attr.aria-label]="'Maestria de ' + masterySkillLabel(skill)"
-                        [ngModel]="displayedMasteryForSkill(skill)"
-                        (ngModelChange)="setMasteryForSkill(skill, $event)"
-                      />
-                      <span class="craft-count-unit">pts</span>
-                    </div>
-                  </label>
-                  <div class="craft-param-hint" i18n>
-                    Usada no rendimento das receitas produzidas e nas alternativas do otimizador.
-                  </div>
-                </div>
-              } @empty {
-                <div class="craft-param-col">
-                  <label class="craft-count-control">
-                    <span class="control-label-text">Maestria ({{ primarySkillLabel() }})</span>
-                    <div class="craft-input-box">
-                      <input
-                        type="number"
-                        min="0"
-                        max="3000"
-                        step="10"
-                        class="craft-count-input"
-                        placeholder="Ex: 1250"
-                        aria-label="Maestria da profissão"
-                        disabled
-                        [ngModel]="displayedMastery()"
-                      />
-                      <span class="craft-count-unit">pts</span>
-                    </div>
-                  </label>
-                  <div class="craft-param-hint" i18n>Maestria sem efeito nesta fórmula</div>
-                </div>
-              }
-            </div>
-          </div>
           @if (!store.data().characters.length) {
             <p class="help">
               Insumos sem receita são comprados por padrão. Coleta exige rendimento e tempo

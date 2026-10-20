@@ -1060,7 +1060,11 @@
 }
 
 .recipe-mastery-settings .craft-parameters-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+
+.recipe-mastery-settings > .craft-param-hint {
+  margin: var(--bm-space-2) 0 0;
 }
 
 .recipe-settings-disclosure > .help {

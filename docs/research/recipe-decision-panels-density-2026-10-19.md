@@ -46,3 +46,22 @@ Capturas e métricas locais ficam fora do Git em `C:/Users/Bellussi/.codex/visua
 Build de produção e `pnpm test:ssr` passaram. Inicial 504,37 kB/135,53 kB estimados em transferência; árvore 19,06 kB ante aviso de 16 kB e catálogo 16,03 kB. Avisos de tamanho, locale pt-BR→pt e CommonJS do OCR permanecem; budgets intactos. Não foram criados testes unitários para espelhar a alteração de CSS: foi atualizado o contrato existente, complementado pela medição no browser.
 
 Servidor temporário de QA 4202 encerrado antes dos testes; 4200 e os outros checkouts preservados. Sem push/merge/deploy ou mudanças de conta/banco.
+
+## Continuação de 20/10/2026 — maestrias visíveis
+
+Na receita Acompanhamentos Variados (`5670a9e98801c39fb5b8114c0915fca0d456d61b2f7f6e97473da1808c31cab0`), os campos existentes de Culinária e Processamento estavam habilitados, mas ocultos dentro do disclosure fechado. Foram movidos para o painel principal, junto da quantidade. A grade compacta mantém os campos lado a lado quando há espaço e empilha no mobile; uma explicação compartilhada informa que os ajustes pertencem à simulação. Tributos e calibração continuam nos ajustes secundários.
+
+O conjunto de profissões, as fórmulas, alternativas do otimizador e a persistência existentes não foram alterados. Não foram adicionados efeitos de Coleta ou de outras profissões sem modelo de cálculo. A indicação desativada de fórmula sem efeito permanece.
+
+Consulta pública em 20/10/2026, sem login ou coleta de cotações:
+
+| Fonte                                                                                                                             | Observação e limite                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [BDO Workshop](https://bdoworkshop.com/)                                                                                          | Superfície pública apresenta ferramentas de crafting/mercado; shell JavaScript não permitiu verificar campos de maestria.                                                        |
+| [BDO Codex — Acompanhamentos Variados](https://bdocodex.com/us/item/9209/)                                                        | Descrição, ingredientes e requisito de culinária observáveis; não foi identificado um controle equivalente de simulação com várias maestrias. Preços de outra região não usados. |
+| [BDOLytics — Cooking Market SA](https://bdolytics.com/en/SA/cooking/market)                                                       | Leitor indisponível; não foi possível verificar o formulário, sem concluir ausência da funcionalidade.                                                                           |
+| [Garmoth — Cooking](https://garmoth.com/mastery-brackets/cooking) e [Processing](https://garmoth.com/mastery-brackets/processing) | Tabelas públicas por maestria; a consulta orienta a apresentação dos campos e não certifica nem substitui os coeficientes existentes.                                            |
+
+QA com a receita real e API local em contexto descartável: ambos os campos visíveis e editáveis, disclosure secundário fechado, sem overflow horizontal em 1920, 1366, 390 e 320 px e sem `pageerror`. No cenário fazer/coletar, trocar Culinária de 0 para 1250 e Processamento de 0 para 1000 atualizou as estimativas das respectivas etapas; a ficha do visitante permaneceu ausente. Os números são premissas do planejador, não homologação de rendimento no jogo. O teste existente de várias profissões apresentou RED para o acesso oculto e passou após a mudança; os 75 testes do componente passaram, incluindo preservação da ficha.
+
+Limpar Culinária no browser retomou o valor-base e preservou o override de Processamento. Revisão independente sem achados acionáveis. `pnpm check`, `pnpm test` integral (**1.304 aprovados/1 ignorado**), build de produção e `pnpm test:ssr` passaram. Árvore em 18,34 kB, ainda acima do aviso existente de 16 kB; budgets preservados. Permanecem os avisos de locale e CommonJS do OCR. Prévia `4200` e API `3000` continuam no checkout principal `main`, sem mudanças no banco ou na conta.

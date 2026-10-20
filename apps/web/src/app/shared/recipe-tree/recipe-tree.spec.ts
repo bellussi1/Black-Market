@@ -1049,6 +1049,14 @@ describe('Interactive recipe tree', () => {
     expect(
       fixture.nativeElement.querySelector('input[aria-label="Maestria de Processamento"]'),
     ).not.toBeNull();
+    for (const control of fixture.nativeElement.querySelectorAll(
+      '.recipe-mastery-settings input',
+    )) {
+      expect(
+        control.closest('details'),
+        'mastery must be editable without opening advanced settings',
+      ).toBeNull();
+    }
 
     vi.useFakeTimers();
     tree.setMasteryForSkill('alchemy', 3000);
@@ -2101,7 +2109,9 @@ describe('Interactive recipe tree', () => {
 
     expect(settings).not.toBeNull();
     expect(settings?.open).toBe(false);
-    expect(settings?.querySelector('input[aria-label="Maestria de Alquimia"]')).toBeTruthy();
+    const masteryInput = el.querySelector('input[aria-label="Maestria de Alquimia"]');
+    expect(masteryInput).not.toBeNull();
+    expect(masteryInput?.closest('details')).toBeNull();
     expect(settings?.querySelector('.tax-config-panel')).toBeTruthy();
     expect(
       el.querySelector('.craft-count-card input[type="number"]')?.closest('.production-options'),

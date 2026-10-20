@@ -15,7 +15,7 @@ O catálogo foi reextraído após a atualização do cliente em 9/10. Veja a [au
 - Fontes conhecidas aparecem no grafo como método de obtenção → localização. Trabalhadores e combate convencional são métodos separados. Cada método mostra até três locais e agrupa os demais em um acesso ao painel, mantendo o limite global de 200 nós.
 - Spots de grind são consultados pelo vínculo explícito `zones.loot.urns`. O painel mostra território da base associada, AP/DP do catálogo e monstros registrados no spot. Não atribui o item a uma criatura específica, não informa taxas ausentes e não confunde combate com Hunting ou coleta de criaturas abatidas.
 - Pan, zoom e filtro de ramificação sobrevivem à alternância entre grafo e lista. Respostas de sub-receitas de outra versão e expansões pendentes de caminhos substituídos são descartadas.
-- Campos ausentes e preços desconhecidos são sinalizados. Rendimento por operação é um cenário informado, sem coeficiente de maestria presumido.
+- Campos ausentes e preços desconhecidos são sinalizados. As maestrias modeladas de Culinária, Alquimia e Processamento aparecem no painel principal conforme as receitas e alternativas carregadas. Os campos usam a ficha como base e permitem ajustes locais da simulação, sem alterar o personagem. Fórmulas sem efeito modelado mostram o campo desativado; rendimento/calibração explícitos continuam disponíveis nos ajustes. [Verificação dos controles em 20/10](research/recipe-decision-panels-density-2026-10-19.md#continuação-de-20102026--maestrias-visíveis).
 - Nenhuma simulação modifica os itens importados. Impostos usam a configuração existente. Preferências de imposto só são salvas quando o usuário as altera.
 - Outras calculadoras, mundo/império completo e demais módulos continuam suspensos.
 
