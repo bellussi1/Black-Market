@@ -41,3 +41,22 @@ Esta revisão orienta a organização da interface. Não comprova fórmulas inte
 ## Limites
 
 As rotas e idiomas abertos não cobrem toda a superfície pública: Workshop em inglês e dependente de JavaScript; Codex em `/us`; BDOLytics em `/en`; Garmoth público em páginas de grind. A consulta não coleta telemetria privada, não usa API não documentada e não permite concluir fórmulas internas.
+
+## Ranking personalizado — revisão de 20/10/2026
+
+Pedido: revisar `/lifeskills?tab=production`, pois as receitas recomendadas não estavam ajudando com as informações do personagem. A sessão Google do usuário não está compartilhada com o navegador de QA; a superfície disponível mostra a guarda de acesso. Não foram acessados credenciais, workspace privado ou dados da conta para alegar uma reprodução pessoal.
+
+Quatro falhas reproduzidas em testes antes da correção:
+
+- Uma seleção local mantinha o personagem anterior mesmo após mudar o personagem ativo do workspace. O ranking agora usa a mesma fonte da Família, restaura tempos do personagem atual e descarta ajustes específicos de receita do personagem anterior. Atualizações dos tempos salvos também invalidam o resultado.
+- O filtro de atividades excluía intermediários de outras profissões do grafo. As preferências agora filtram as candidatas; a cadeia mantém as profissões secundárias e suas maestrias. Cotações ficam restritas às atividades selecionadas e aos intermediários alcançáveis, incluindo alternativas e proteção contra ciclos, sem varrer atividades desconectadas.
+- Cards principais deduplicavam cenários por fórmula, repetindo produtos com ingredientes alternativos. Agora mostram a melhor variante por produto após os filtros da aba e de atividade conhecida. A aba Armazém escolhe entre as variantes que usam estoque; um cenário sem estoque não elimina essa oportunidade antes do filtro.
+- A busca alterava o sinal de filtro, mas não disparava comparação. Agora busca/método disparam automaticamente após 250 ms; se mudarem durante um cálculo, o resultado antigo é descartado e a comparação é refeita com o filtro atual. Fechar/trocar uma receita em foco mantém seu contrato anterior de descarte, sem forçar nova otimização.
+
+Identificação de receita por Map reutilizado evita buscas lineares por cenário na deduplicação. Fórmulas, impostos, custo econômico do estoque, reservas e limites de orçamento/tempo/peso permanecem no calculador existente; não há promessa de venda nem um ótimo universal além do catálogo e dos cenários comparados.
+
+Consulta pública em 20/10/2026: [Workshop Crafting](https://bdoworkshop.com/crafting-workshop), [Codex Recipes](https://bdocodex.com/us/recipes/) e [BDOLytics Cooking SA](https://bdolytics.com/en/SA/cooking/market) indisponíveis no leitor. [Garmoth Cooking](https://garmoth.com/mastery-brackets/cooking) exibiu tabela pública de maestria. Isso não certifica algoritmos concorrentes; nenhum coeficiente ou preço foi importado para ajustar o ranking.
+
+Os três testes iniciais e a regressão adicional da busca falharam no comportamento anterior; após as correções, 35 testes da área passaram. Cenário controlado adicional manteve preços e condições e elevou Culinária de 0 para 3000: o líder passou de Alquimia para Culinária. Testes conferem troca de personagem, atualização de calibração, cadeia secundária, deduplicação por produto, variantes com estoque e busca modificada durante uma comparação. São fixtures explícitas, sem comprovação das cotações ou do resultado específico da conta Google. Revisão independente sem achados acionáveis; homologação do perfil real e desempenho do ranking com todos os dados desse usuário continuam dependentes da sessão autenticada.
+
+Verificação final sequencial: `pnpm check`, `pnpm test` (**1.310 aprovados/1 ignorado**), produção e `pnpm test:ssr` passaram. Uma execução anterior concorrente de testes apresentou timeouts em telas não alteradas e foi interrompida; a repetição isolada não reproduziu essas falhas. Inicial de produção em 499,84 kB, budgets intactos; avisos existentes de estilo da árvore, locale e CommonJS do OCR permanecem. Prévia `4200` mantida no checkout principal, sem alteração de autenticação, banco ou dados pessoais.

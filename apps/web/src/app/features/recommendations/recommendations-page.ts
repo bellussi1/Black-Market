@@ -294,7 +294,6 @@ export class RecommendationsPage implements OnDestroy {
     }
     return items;
   });
-  readonly selected = signal('');
   readonly message = signal('');
   readonly busy = signal(false);
   readonly quotes = signal<Quotes>({});
@@ -325,25 +324,27 @@ export class RecommendationsPage implements OnDestroy {
   readonly profiles = computed(() =>
     this.store.data().characters.filter((row) => row.region === this.store.data().region),
   );
-  readonly profile = computed(
-    () => this.profiles().find((row) => row.id === this.selected()) ?? this.store.activeCharacter(),
-  );
+  readonly profile = computed(() => this.store.activeCharacter());
   readonly viewTab = signal<'all' | 'storage' | 'missing'>('all');
   readonly requireLiquidity = signal(true);
   readonly minTradeVolume = signal(100);
   readonly recipes = computed(() =>
-    productionRecipes(
-      this.snapshot()?.recipes ?? [],
-      this.profile()?.mastery,
-      this.itemsById(),
-    ).filter((row) => {
+    productionRecipes(this.snapshot()?.recipes ?? [], this.profile()?.mastery, this.itemsById()),
+  );
+  private readonly recipesById = computed(
+    () => new Map(this.recipes().map((recipe) => [recipe.id, recipe])),
+  );
+  readonly activityRecipes = computed(() =>
+    this.recipes().filter((row) => {
       const skill = activitySkillForRecipe(row.method);
       return this.preferredSkills().includes(skill as (typeof this.activityOptions)[number]['id']);
     }),
   );
-  readonly methods = computed(() => [...new Set(this.recipes().map((row) => row.method))].sort());
+  readonly methods = computed(() =>
+    [...new Set(this.activityRecipes().map((row) => row.method))].sort(),
+  );
   readonly candidates = computed(() =>
-    this.recipes().filter(
+    this.activityRecipes().filter(
       (row) =>
         (!this.method() || row.method === this.method()) &&
         (!this.search() ||
@@ -359,47 +360,49 @@ export class RecommendationsPage implements OnDestroy {
             )),
     ),
   );
-  readonly focused = computed(() => this.recipes().find((row) => row.id === this.focus()));
+  readonly focused = computed(() => this.recipesById().get(this.focus() ?? ''));
   readonly visiblePlans = computed(
     () => this.plans()?.ranked.slice((this.page() - 1) * 20, this.page() * 20) ?? [],
   );
-  readonly deduplicatedPlans = computed(() => {
+  private bestPlansPerProduct(plans: ProductionPlan[]): ProductionPlan[] {
     const seen = new Set<string>();
-    return (this.plans()?.ranked ?? []).filter((row) => {
-      if (seen.has(row.recipeId)) return false;
-      seen.add(row.recipeId);
+    return plans.filter((row) => {
+      const itemId = this.producersName(row.recipeId);
+      const key = itemId ? `item:${itemId}` : `recipe:${row.recipeId}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
-  });
-  readonly liquidPlans = computed(() =>
-    this.deduplicatedPlans().filter((row) =>
+  }
+  readonly deduplicatedPlans = computed(() => this.bestPlansPerProduct(this.plans()?.ranked ?? []));
+  private readonly liquidCandidates = computed(() =>
+    (this.plans()?.ranked ?? []).filter((row) =>
       this.requireLiquidity() ? this.hasLiquidity(row) : true,
     ),
   );
+  readonly liquidPlans = computed(() => this.bestPlansPerProduct(this.liquidCandidates()));
   readonly topPlans = computed(() => {
-    const base = this.liquidPlans();
+    const base = this.liquidCandidates();
     const tab = this.viewTab();
-    if (tab === 'storage') {
-      return base
-        .filter((row) => row.materials.some((material) => material.owned > 0))
-        .slice(0, 12);
-    }
-    if (tab === 'missing') {
-      return base
-        .filter((row) =>
-          row.materials.some((material) => material.bought > 0 || material.produced > 0),
-        )
-        .slice(0, 12);
-    }
-    return base.slice(0, 12);
+    const eligible = base.filter((row) =>
+      tab === 'storage'
+        ? row.materials.some((material) => material.owned > 0)
+        : tab === 'missing'
+          ? row.materials.some((material) => material.bought > 0 || material.produced > 0)
+          : true,
+    );
+    return this.bestPlansPerProduct(eligible).slice(0, 12);
   });
   readonly storageReadyCount = computed(
     () =>
-      this.liquidPlans().filter((row) => row.materials.some((material) => material.owned > 0))
-        .length,
+      this.bestPlansPerProduct(
+        this.liquidCandidates().filter((row) =>
+          row.materials.some((material) => material.owned > 0),
+        ),
+      ).length,
   );
   readonly pendingActions = computed(() => {
-    const recipesById = new Map(this.recipes().map((recipe) => [recipe.id, recipe]));
+    const recipesById = this.recipesById();
     const grouped = new Map<
       string,
       {
@@ -475,13 +478,26 @@ export class RecommendationsPage implements OnDestroy {
     return this.pendingActions().slice(start, start + this.pendingPageSize);
   });
   readonly materialItems = computed(() => {
-    const ids = new Set(
-      this.recipes().flatMap((row) => [
-        row.output.itemId,
-        ...row.ingredients.map((part) => part.itemId),
-        ...(row.byproducts ?? []).map((part) => part.itemId),
-      ]),
-    );
+    const producers = new Map<number, ProductionRecipe[]>();
+    for (const recipe of this.recipes()) {
+      const rows = producers.get(recipe.output.itemId) ?? [];
+      rows.push(recipe);
+      producers.set(recipe.output.itemId, rows);
+    }
+    const pending = [...this.activityRecipes()];
+    const visited = new Set<string>();
+    const ids = new Set<number>();
+    while (pending.length) {
+      const recipe = pending.pop()!;
+      if (visited.has(recipe.id)) continue;
+      visited.add(recipe.id);
+      ids.add(recipe.output.itemId);
+      for (const part of recipe.byproducts ?? []) ids.add(part.itemId);
+      for (const part of recipe.ingredients) {
+        ids.add(part.itemId);
+        pending.push(...(producers.get(part.itemId) ?? []));
+      }
+    }
     return (this.snapshot()?.items ?? []).filter((item) => ids.has(item.id));
   });
   readonly filteredPrices = computed(() =>
@@ -514,6 +530,7 @@ export class RecommendationsPage implements OnDestroy {
   private quoteQueue: number[] = [];
   private loadInFlight: Promise<void> | null = null;
   private manualPriceTimer: ReturnType<typeof setTimeout> | null = null;
+  private filterTimer: ReturnType<typeof setTimeout> | null = null;
   private loadedRegion = '';
   private loadedNpcContext = '';
   private marketDataInFlight: Promise<void> | null = null;
@@ -522,6 +539,7 @@ export class RecommendationsPage implements OnDestroy {
   constructor() {
     let previousContext = '';
     let previousProfileId = this.profile()?.id ?? '';
+    let previousCalibrationContext = '';
     let previousDemo = this.store.demoActive();
     effect(() => {
       const currentDemo = this.store.demoActive();
@@ -534,7 +552,6 @@ export class RecommendationsPage implements OnDestroy {
         this.choices = {};
         this.customRecipes = {};
         this.recipeCalibration = {};
-        this.selected.set('');
       }
       previousDemo = currentDemo;
       const context = JSON.stringify({
@@ -542,9 +559,19 @@ export class RecommendationsPage implements OnDestroy {
         player: this.profile(),
         inventory: this.store.data().inventory,
         reservations: this.store.data().personalPlans,
+        calibrations: this.store.data().activityCoach.calibrations,
       });
       const currentProfileId = this.profile()?.id ?? '';
       const profileBecameAvailable = !previousProfileId && !!currentProfileId;
+      const calibrationContext = JSON.stringify({
+        playerId: currentProfileId,
+        calibrations: this.store.data().activityCoach.calibrations,
+      });
+      if (previousCalibrationContext !== calibrationContext) {
+        this.restoreCalibrations();
+        previousCalibrationContext = calibrationContext;
+      }
+      if (currentProfileId !== previousProfileId) this.recipeCalibration = {};
       if (previousContext && previousContext !== context) {
         this.plans.set(null);
         this.message.set(
@@ -558,6 +585,17 @@ export class RecommendationsPage implements OnDestroy {
         queueMicrotask(() => void this.loadMarketInputs());
       previousProfileId = currentProfileId;
       previousContext = context;
+    });
+    let previousFilters = this.filterContext();
+    effect(() => {
+      const filters = this.filterContext();
+      if (filters === previousFilters) return;
+      previousFilters = filters;
+      if (this.filterTimer) clearTimeout(this.filterTimer);
+      this.filterTimer = setTimeout(() => {
+        this.filterTimer = null;
+        void this.compare();
+      }, 250);
     });
     void this.load();
   }
@@ -600,7 +638,9 @@ export class RecommendationsPage implements OnDestroy {
         this.methods().map((method) => [method, { seconds: null }]),
       );
       this.restoreCalibrations();
-      this.message.set(`${this.recipes().length} receitas das atividades selecionadas carregadas.`);
+      this.message.set(
+        `${this.activityRecipes().length} receitas das atividades selecionadas carregadas.`,
+      );
     } catch {
       this.message.set('Não foi possível carregar as receitas. Tente novamente.');
     } finally {
@@ -722,8 +762,8 @@ export class RecommendationsPage implements OnDestroy {
   selectProfile(id: string) {
     if (!this.profiles().some((row) => row.id === id)) return;
     this.store.update((state) => ({ ...state, activeCharacterId: id }));
-    this.selected.set(id);
     this.restoreCalibrations();
+    this.recipeCalibration = {};
     this.plans.set(null);
     void this.compare();
   }
@@ -792,7 +832,7 @@ export class RecommendationsPage implements OnDestroy {
     const player = this.profile();
     if (!player) return;
     this.calibration = Object.fromEntries(
-      this.methods().map((method) => {
+      [...new Set(this.recipes().map((recipe) => recipe.method))].map((method) => {
         const stored = this.store
           .data()
           .activityCoach.calibrations.find(
@@ -825,6 +865,10 @@ export class RecommendationsPage implements OnDestroy {
   }
   async compare() {
     if (this.busy()) return;
+    if (this.filterTimer) {
+      clearTimeout(this.filterTimer);
+      this.filterTimer = null;
+    }
     const player = this.profile();
     if (!player || !this.snapshot() || this.loadedRegion !== this.store.data().region) {
       this.message.set('Selecione um personagem para calcular as atividades desta região.');
@@ -855,6 +899,7 @@ export class RecommendationsPage implements OnDestroy {
     }));
     const context = this.comparisonContext();
     const workspaceContext = this.workspaceComparisonContext();
+    const filterContext = this.filterContext();
     const run = ++this.comparisonRun;
     const input: ProductionPlannerInput = {
       recipes,
@@ -890,7 +935,7 @@ export class RecommendationsPage implements OnDestroy {
         if (run !== this.comparisonRun || context !== this.comparisonContext()) {
           if (run === this.comparisonRun)
             this.message.set(
-              'Os dados mudaram durante a comparação. Confira as condições e compare novamente.',
+              'Os dados mudaram durante a comparação. O resultado anterior foi descartado.',
             );
           return;
         }
@@ -916,7 +961,8 @@ export class RecommendationsPage implements OnDestroy {
       if (run === this.comparisonRun) this.busy.set(false);
       if (
         run === this.comparisonRun &&
-        workspaceContext !== this.workspaceComparisonContext() &&
+        (workspaceContext !== this.workspaceComparisonContext() ||
+          filterContext !== this.filterContext()) &&
         this.profile() &&
         this.snapshot()
       )
@@ -1017,6 +1063,9 @@ export class RecommendationsPage implements OnDestroy {
     }
     return quotes;
   }
+  private filterContext() {
+    return JSON.stringify([this.search(), this.method()]);
+  }
   private comparisonContext() {
     return JSON.stringify({
       workspace: this.store.data(),
@@ -1046,6 +1095,7 @@ export class RecommendationsPage implements OnDestroy {
   ngOnDestroy() {
     this.comparisonRun++;
     if (this.manualPriceTimer) clearTimeout(this.manualPriceTimer);
+    if (this.filterTimer) clearTimeout(this.filterTimer);
   }
   name(itemId: number) {
     return this.itemsById().get(itemId)?.name ?? `Item ${itemId}`;
@@ -1061,7 +1111,7 @@ export class RecommendationsPage implements OnDestroy {
     return this.recipes().filter((row) => row.output.itemId === itemId);
   }
   producersName(recipeId: string) {
-    return this.recipes().find((row) => row.id === recipeId)?.output.itemId ?? 0;
+    return this.recipesById().get(recipeId)?.output.itemId ?? 0;
   }
   choose(itemId: number, choice: ProductionChoice) {
     this.choices[itemId] = choice;

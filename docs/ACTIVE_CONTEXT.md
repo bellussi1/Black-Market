@@ -4,7 +4,7 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Checkout e continuidade
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `83bda14` publicadas em `origin/main`.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `1af0fb8` publicadas em `origin/main`.
 - Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
 - Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
@@ -14,6 +14,7 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Receitas: [boxes compactos e maestrias visíveis](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
 - Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
 - Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
+- Ranking personalizado: personagem ativo/tempos sincronizados, intermediários secundários preservados, melhores variantes por produto após filtros e busca recalculada automaticamente. [Diagnóstico e limites](research/home-recommendations-competitive-review-2026-10-16.md#ranking-personalizado--revisão-de-20102026). Sessão Google real indisponível no QA; não anunciar homologação pessoal.
 - PERF-01: imports compartilhados isolados e CSS/ícone sem uso removidos; produção abaixo do budget inicial. [Medição, testes e limites](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
 
 ## Trabalho desta retomada
@@ -29,4 +30,4 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Limpeza atual concluída: seletores sem uso e 25 declarações sobrescritas removidos; comparação Sass/PostCSS e revisão independente preservaram a cascata. Aviso do catálogo eliminado; árvore ainda acima do aviso. Check, suíte completa, produção e SSR passaram; evidência no relatório de performance acima.
 - Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.
 - Alinhamento atual: quantidade/maestrias na mesma linha quando há espaço, gutters e títulos equivalentes; configuração e resultado com a mesma altura na linha, conforme o maior conteúdo, por orientação posterior do usuário. Empilhados mantêm alturas próprias. Campos de 44 px e compactos de 36 px nos controles locais. Evidência no relatório de receitas acima; conteúdo privado preenchido exige QA autenticada, fórmulas preservadas.
-- Check, suíte integral (1.304 aprovados/1 ignorado), produção e SSR passaram após a padronização; revisão independente sem pendências. Servidores continuam no checkout principal em watch.
+- Verificação do ranking: 35 testes da área e suíte integral (1.310 aprovados/1 ignorado), check, produção e SSR passaram em execução sequencial; revisão independente concluída. A sessão Google do usuário não foi homologada. Servidores continuam no checkout principal em watch.

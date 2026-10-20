@@ -474,7 +474,7 @@ describe('production recommendations', () => {
         },
       ],
     }));
-    page.selected.set(profile.id);
+    page.store.update((state) => ({ ...state, activeCharacterId: profile.id }));
     await page.load();
 
     expect(page.recipes().find((row) => row.id === 'elixir')?.output.quantity).toBe(3.438);
@@ -991,6 +991,234 @@ describe('production recommendations', () => {
         ),
       ),
     ).toBe(false);
+  });
+
+  it('keeps secondary professions in the production chain without recommending unrelated activities', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    vi.spyOn(page, 'compare').mockResolvedValue();
+    page.snapshot.set({
+      ...snapshot,
+      recipes: [
+        ...snapshot.recipes,
+        {
+          key: 'dish',
+          type: 'COOK',
+          station: null,
+          inputs: [{ itemId: 2, name: 'Elixir de teste', quantity: '1' }],
+          outputs: [{ itemId: 3, name: 'Prato', quantity: '1' }],
+        },
+        {
+          key: 'unrelated',
+          type: 'DRY',
+          station: null,
+          inputs: [{ itemId: 5, name: 'Outro material', quantity: '1' }],
+          outputs: [{ itemId: 4, name: 'Outro produto', quantity: '1' }],
+        },
+      ],
+      items: [1, 2, 3, 4, 5].map((id) => ({ ...snapshot.items[0], id })),
+    });
+    page.store.update((state) => ({
+      ...state,
+      activityCoach: { ...state.activityCoach, preferredSkills: ['cooking'] },
+    }));
+    expect(page.candidates().map((row) => row.id)).toEqual(['dish']);
+    expect(page.recipes().some((row) => row.id === 'elixir')).toBe(true);
+    expect(
+      page
+        .materialItems()
+        .map((item) => item.id)
+        .sort(),
+    ).toEqual([1, 2, 3]);
+  });
+
+  it('follows the active character and restores that character method calibration', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    vi.spyOn(page, 'compare').mockResolvedValue();
+    page.store.update((state) => ({
+      ...state,
+      characters: ['first', 'second'].map((id) =>
+        characterSchema.parse({ id, name: id, region: 'sa' }),
+      ),
+      activeCharacterId: 'first',
+      activityCoach: {
+        ...state.activityCoach,
+        calibrations: [
+          {
+            characterId: 'first',
+            method: 'ALCHEMY',
+            seconds: 3,
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            characterId: 'second',
+            method: 'ALCHEMY',
+            seconds: 7,
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      },
+    }));
+    await page.load();
+    page.selectProfile('first');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    page.store.update((state) => ({ ...state, activeCharacterId: 'second' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(page.profile()?.id).toBe('second');
+    expect(page.calibration['ALCHEMY'].seconds).toBe(7);
+    page.store.update((state) => ({
+      ...state,
+      activityCoach: {
+        ...state.activityCoach,
+        calibrations: state.activityCoach.calibrations.map((row) =>
+          row.characterId === 'second' ? { ...row, seconds: 9 } : row,
+        ),
+      },
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(page.calibration['ALCHEMY'].seconds).toBe(9);
+  });
+
+  it('changes the leading product when the active character cooking mastery changes', async () => {
+    const catalog: ProductionCatalogResponse = {
+      ...snapshot,
+      recipes: [
+        ...snapshot.recipes,
+        {
+          key: 'dish',
+          type: 'COOK',
+          station: null,
+          inputs: [{ itemId: 1, name: 'Material', quantity: '2' }],
+          outputs: [{ itemId: 3, name: 'Prato', quantity: '1' }],
+        },
+      ],
+      items: [...snapshot.items, { ...snapshot.items[1], id: 3, name: 'Prato' }],
+    };
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: { ...api(), catalog: () => of(catalog) } },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'main',
+          name: 'Main',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 1,
+          weightLimit: 100,
+          mastery: {
+            ...characterSchema.parse({ id: 'defaults', name: 'Defaults', region: 'sa' }).mastery,
+            cooking: 0,
+            alchemy: 3000,
+            processing: 0,
+          },
+        }),
+      ],
+      activeCharacterId: 'main',
+    }));
+    await page.load();
+    page.quotes.set(
+      Object.fromEntries(
+        [1, 2, 3].map((id) => [
+          id,
+          {
+            unitPrice: id === 1 ? '10' : '100',
+            available: null,
+            source: 'manual' as const,
+            observedAt: new Date().toISOString(),
+          },
+        ]),
+      ),
+    );
+    await page.compare();
+    expect(page.topPlans()[0]?.recipeId).toBe('elixir');
+    page.updateMastery('cooking', 3000);
+    await page.compare();
+    expect(page.topPlans()[0]?.recipeId).toBe('dish');
+  });
+
+  it('automatically compares again when the recipe search changes', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    const compare = vi.spyOn(page, 'compare').mockResolvedValue();
+    vi.useFakeTimers();
+    try {
+      page.search.set('Elixir');
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(300);
+      expect(compare).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('restarts an in-flight comparison with the latest recipe search', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [characterSchema.parse({ id: 'main', name: 'Main', region: 'sa' })],
+      activeCharacterId: 'main',
+    }));
+    await page.load();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    vi.useFakeTimers();
+    try {
+      const firstRun = page.compare();
+      expect(page.busy()).toBe(true);
+      page.search.set('produto inexistente');
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(300);
+      await firstRun;
+      expect(page.busy()).toBe(false);
+      expect(page.plans()?.ranked).toEqual([]);
+      expect(page.message()).toContain('0 receitas comparadas');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows the best variant per product and preserves stock opportunities in the storage tab', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.snapshot.set({
+      ...snapshot,
+      recipes: [
+        ...snapshot.recipes,
+        { ...snapshot.recipes[0], key: 'alternative' },
+        {
+          ...snapshot.recipes[0],
+          key: 'other',
+          outputs: [{ itemId: 3, name: 'Outro', quantity: '1' }],
+        },
+      ],
+    });
+    const owned = {
+      ...completePlan('alternative'),
+      materials: [{ itemId: 1, required: 1, owned: 1, bought: 0, produced: 0, substituted: 0 }],
+    };
+    page.plans.set({ ranked: [completePlan(), owned, completePlan('other')], incomplete: [] });
+    expect(page.topPlans().map((row) => row.recipeId)).toEqual(['elixir', 'other']);
+    page.viewTab.set('storage');
+    expect(page.topPlans().map((row) => row.recipeId)).toEqual(['alternative']);
+    expect(page.storageReadyCount()).toBe(1);
   });
 
   it('ranks recipes out-of-the-box using default method seconds without manual time calibration and supports storage/liquidity filters', async () => {
