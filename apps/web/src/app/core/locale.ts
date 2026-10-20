@@ -1,4 +1,4 @@
-import { dataLocaleForUi, DEFAULT_UI_LOCALE } from '@bdo/shared';
+import { dataLocaleForUi, DEFAULT_UI_LOCALE } from '@bdo/shared/markets';
 
 /** Angular replaces $localize.locale when generating a translated build. */
 export function uiLocale(): string {

@@ -42,6 +42,8 @@ O Cloudflare Pages entrega apenas os arquivos estáticos do Angular. A API Nest 
 - `packages/calculators`: aritmética exata reutilizável. `percentageOf` opera em `bigint` e pontos-base; não codifica fórmula de mercado ou regra de jogo.
 - `packages/database`: schema Drizzle, migrations e cliente tipado.
 
+O pacote `@bdo/shared` publica ESM para o navegador e CommonJS para Node. O shell importa constantes regionais por `@bdo/shared/markets` e escopo por `@bdo/shared/mvp-scope`, evitando ligar a entrada geral aos tutoriais e perfis sintéticos de ferramentas carregadas sob demanda. A entrada geral permanece compatível. Os módulos do pacote só exportam dados e funções, por isso declaram `sideEffects: false`; qualquer futura inicialização com efeito externo exige rever essa declaração. `scripts/shared-browser-bundle.test.mjs` verifica os dois ambientes e o isolamento dos chunks.
+
 As regras completas de cada calculadora serão criadas junto com suas fontes verificadas. Cálculos de resposta rápida podem rodar no browser, mas tipos e regras determinísticas devem ser compartilhados e conferidos no servidor antes de persistir resultados.
 
 ## Caminho de uma requisição

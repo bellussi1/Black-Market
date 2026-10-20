@@ -10,7 +10,7 @@ import {
   signal,
   TransferState,
 } from '@angular/core';
-import { DEFAULT_REGION, REGION_CODES } from '@bdo/shared';
+import { DEFAULT_REGION, REGION_CODES } from '@bdo/shared/markets';
 export const regions = REGION_CODES;
 export type Region = (typeof regions)[number];
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024;

@@ -2,6 +2,7 @@
   "name": "@bdo/shared",
   "version": "0.1.0",
   "private": true,
+  "sideEffects": false,
   "type": "commonjs",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,6 +12,18 @@
       "browser": "./dist/browser/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./markets": {
+      "types": "./dist/markets.d.ts",
+      "browser": "./dist/browser/markets.js",
+      "require": "./dist/markets.js",
+      "default": "./dist/markets.js"
+    },
+    "./mvp-scope": {
+      "types": "./dist/mvp-scope.d.ts",
+      "browser": "./dist/browser/mvp-scope.js",
+      "require": "./dist/mvp-scope.js",
+      "default": "./dist/mvp-scope.js"
     }
   },
   "scripts": {

@@ -1,4 +1,4 @@
-import { MARKET_ROLLOUT, REGION_CODES, type RegionCode } from '@bdo/shared';
+import { MARKET_ROLLOUT, REGION_CODES, type RegionCode } from '@bdo/shared/markets';
 
 export function regionLabel(region: RegionCode): string {
   const labels: Record<RegionCode, string> = {
