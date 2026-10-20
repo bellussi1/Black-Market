@@ -6,7 +6,7 @@ Atualizado em **8 de outubro de 2026**. Público inicial: jogadores do mercado *
 
 **Escopo ativo em 9/10/2026:** importação e gerenciamento de capturas, mercado e [exploração de receitas](recipe-explorer.md). A árvore reutiliza os estoques revisados; outras funcionalidades abaixo permanecem planejamento preservado, sem reativação automática.
 
-Este roadmap parte do código e da [cobertura atual](feature-coverage.md), da [visão do produto](product-vision.md), da [pesquisa das referências](research/README.md) e da [auditoria de produção](production-audit.md). Não existe analytics externo validado: frequência, alcance e ordem de uso abaixo são **hipóteses de produto**, não números de audiência dos concorrentes ou do Black Market.
+Este roadmap parte do código e da [cobertura atual](project-feature-checklist.md), da [visão do produto](product-vision.md), da [pesquisa das referências](research/README.md) e da [auditoria de produção](production-audit.md). Não existe analytics externo validado: frequência, alcance e ordem de uso abaixo são **hipóteses de produto**, não números de audiência dos concorrentes ou do Black Market.
 
 O objetivo inicial é completar esta jornada:
 

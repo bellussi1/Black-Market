@@ -74,7 +74,7 @@ As revisões locais indicam restrições não comerciais no `bdo-viewer` e no `b
 
 - [Inventário das extrações](../extracted-data-inventory.md)
 - [Procedência e atualização de dados](../data-pipeline.md)
-- [Cobertura do produto](../feature-coverage.md)
+- [Cobertura do produto](../project-feature-checklist.md)
 - [Análise de calculadoras e mapas](repository-review-calculators-maps.md)
 - [Análise dos extractors](repository-review-extraction.md)
 - [Base de conhecimento dos repositórios e sites](master-bdo-knowledge-base.md)

@@ -34,15 +34,14 @@ Editar `packages/database/src/schema.ts`, rodar `pnpm db:generate`, revisar o SQ
 ## Verificações
 
 ```powershell
-pnpm lint
-pnpm format:check
-pnpm typecheck
+pnpm check
 pnpm test
 pnpm build
+pnpm test:ssr
 pnpm db:check
 ```
 
-CI roda essas verificações para pull requests e pushes. O lint da API compila primeiro os pacotes compartilhados para disponibilizar seus tipos em uma instalação limpa. Use `pnpm lint:fix` e depois `pnpm format` para aplicar correções; `pnpm check` executa lint, formatação e tipos. Regras e abrangência estão em [qualidade do código](code-quality.md). Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
+CI roda essas verificações para pull requests e pushes. O lint da API compila primeiro os pacotes compartilhados para disponibilizar seus tipos em uma instalação limpa. Use `pnpm lint:fix` e depois `pnpm format` para aplicar correções; lint focado Angular usa `pnpm --filter @bdo/web exec ng lint` (ou `ng lint --fix`); `pnpm check` executa lint, formatação e tipos. Regras e abrangência estão em [Qualidade de código](#qualidade-de-código). Ao adicionar funcionalidade, incluir teste de domínio, teste de endpoint/contrato e, se houver schema, verificar SQL e downgrade/recuperação operacional quando aplicável.
 
 ## Ambiente
 
@@ -58,8 +57,33 @@ O conector GitHub pode ter permissões diferentes do Git Credential Manager. O r
 
 O Docker Compose usa o projeto black-market e o volume nomeado black-market-postgres-data por padrão. Para aproveitar uma instalação local anterior, defina POSTGRES_DATA_VOLUME com o nome exato do volume existente e POSTGRES_DATA_EXTERNAL=true no seu .env antes de iniciar. Volumes externos são preservados pelo Compose, inclusive ao usar down -v. Neste ambiente, o valor local aponta para sitedebdo_postgres_data; a mudança de nome não criou outro banco nem apagou o volume.
 
-Verificação desta entrega: lint, typecheck, testes e build completos em Node 24.21.0 no Docker; 54 testes aprovados (13 nas regras, 15 na API, 26 no Angular). Consulta HTTP real ao Arsha via API validou preço/estoque de um item negociado em SA, cache na segunda chamada, readiness e resultado de imposto com Value Pack. O build de produção registrou 327,30 kB brutos e 85,60 kB de transferência estimada no pacote inicial. As rotas de ferramentas são lazy.
+## Qualidade de código
 
-A inspeção visual automatizada da aba de prévia foi rejeitada pela política da ferramenta por protocolo de URL não permitido. Não foi substituída por outra automação de navegador. Testes de componentes verificaram preenchimento/cálculo, captura de cotação/procedência, separação regional do estoque, expiração de buffs e confirmação de importação de backup.
+### Ferramentas
 
-Os padrões do frontend, os módulos SCSS e os comandos separados de Vitest estão em [arquitetura Angular](angular-architecture.md). A validação dos grupos confirmou 11 testes unitários e 15 testes de componentes no frontend.
+- ESLint 10.12.0: regras de código no frontend, API e pacotes compartilhados.
+- angular-eslint 22.5.0: regras Angular e acessibilidade em templates externos e inline.
+- typescript-eslint 8.71.1: regras TypeScript; a API também usa análise baseada em tipos.
+- simple-import-sort: organização automática de imports e exports.
+- unused-imports: detecção e remoção automática de imports sem uso.
+- Prettier 3.8.1: formatação de TypeScript, templates Angular, SCSS/CSS, JSON, YAML e Markdown.
+
+Escolhemos ESLint/angular-eslint pela cobertura específica de Angular, incluindo seus templates e convenções. O Biome tem formatação HTML experimental e suporte a SCSS ainda incompleto conforme sua [matriz oficial de linguagens](https://biomejs.dev/introduction/language-support/). Usamos Prettier como comando separado do lint, seguindo sua [orientação de integração](https://prettier.io/docs/integrating-with-linters).
+
+### Regras e alcance
+
+`config/eslint-shared.mjs` concentra regras comuns. `eslint.config.mjs` na raiz cobre fontes e configurações dos pacotes e configurações JavaScript da raiz. Cada aplicação mantém sua configuração específica: Angular no frontend; Node/NestJS com análise de tipos na API.
+
+Imports e exports devem estar ordenados. Imports sem uso, `any` explícito, variáveis sem uso, `var` e comparações frouxas são rejeitados. Imports exclusivamente de tipos usam `import type`; o typescript-eslint considera os metadados de decorators ao analisar arquivos NestJS. Parâmetros intencionalmente não utilizados podem começar com `_`.
+
+O Angular exige prefixo `app`, componentes OnPush, injeção por `inject()` e controle de fluxo atual nos templates. As regras de acessibilidade incluem rótulos e interação por teclado. Uma regra de imports impede que o frontend importe `@bdo/database` ou arquivos da API/infraestrutura PostgreSQL diretamente; a comunicação passa pela API e contratos compartilhados.
+
+Na API, promises sem tratamento e argumentos de tipo inseguro são erros. Os pacotes necessários são compilados antes do lint da API para que a análise encontre suas declarações em uma instalação limpa. Todos os comandos ESLint exigem zero warnings.
+
+Prettier define largura de 100 colunas, aspas simples, vírgulas finais e LF. `.editorconfig` aplica UTF-8, dois espaços e LF; `.gitattributes` normaliza texto no Git. Os estilos SCSS são formatados pelo Prettier, sem um linter semântico de estilos nesta configuração.
+
+Dependências, build, cache, coverage, migrations geradas, extrações locais e arquivos de ambiente são excluídos quando aplicável. Excluir arquivos gerados evita alterar dados de migration ou arquivos do jogo ao executar `format`.
+
+### CI
+
+A CI verifica instalação pelo lockfile, lint, formatação, tipos, testes Vitest, build e migrations. `lint` e `format:check` apenas verificam arquivos. Configurações são versionadas para manter o mesmo resultado no editor, desenvolvimento e CI. Supressões de regras devem ser locais, justificadas e revisadas; não desative uma regra globalmente apenas para ocultar um erro.

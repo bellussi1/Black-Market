@@ -40,10 +40,12 @@ Se os quatro sites não oferecerem uma função comparável, documente isso e co
 
 ## Checklist curto para o handoff
 
-Ao finalizar a feature, atualize `docs/ACTIVE_CONTEXT.md` e, se o próximo agente precisar, `docs/ANTIGRAVITY_HANDOFF.md` com:
+Ao finalizar a feature, registre uma vez no relatório pertinente:
 
 - os quatro sites consultados e páginas úteis;
 - evidências observadas versus hipóteses e regras confirmadas;
 - premissas pareadas e limitações de dados;
 - quais decisões de UI ou cálculo mudaram no Black Market;
 - fontes inacessíveis e validações que continuam pendentes.
+
+No `docs/ACTIVE_CONTEXT.md`, mantenha somente o próximo passo/limite e um link para essa evidência. Não replique o relatório em handoff ou prompt; a passagem de contexto é única para os agentes, conforme `AGENTS.md`.

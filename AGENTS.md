@@ -1,63 +1,30 @@
-# AGENTS.md — Instruções para Agentes de IA (Codex & Antigravity)
+# Black Market — instruções para agentes
 
-Este repositório é desenvolvido de forma colaborativa e contínua alternando entre **OpenAI Codex** e **Antigravity**. Ambos os agentes devem seguir rigorosamente as diretrizes abaixo para manter consistência, qualidade e continuidade de contexto.
+## Retomada curta
 
----
+1. Leia [o estado atual](docs/ACTIVE_CONTEXT.md), execute `git status` e `git log -n 3 --oneline`.
+2. Use [o índice por assunto](docs/README.md) e leia somente as fontes necessárias à tarefa.
+3. Confirme o código e o checkout antes de implementar. Outros worktrees podem conter entregas posteriores; não sobrescreva alterações locais ou reinicie serviços de outro checkout.
+4. Histórico não é backlog executável nem autorização atual. Consulte-o apenas para recuperar uma decisão ou evidência específica.
 
-## 1. Visão Geral do Projeto
+## Fontes e manutenção de contexto
 
-- **Nome**: Black Market · Planejador de Black Desert Online (BDO).
-- **Stack**: Monorepo gerenciado com `pnpm` (Node ^24.15.0).
-  - `apps/web`: Frontend Angular com SSR, rodando em `http://localhost:4200`.
-  - `apps/api`: Backend / BFF rodando na porta `3000`.
-  - `packages/calculators`: Lógica de receitas, maestrias, impostos e mercado.
-  - `packages/database`: Modelos e migrações (Neon / PostgreSQL).
-  - `packages/domain`: Contratos e tipagens de domínio.
-  - `packages/shared`: Utilitários compartilhados.
+- `AGENTS.md`: protocolo permanente; `docs/ACTIVE_CONTEXT.md`: próximo passo e limites do checkout; `docs/README.md`: mapa de fontes. Esses três arquivos não duplicam o conteúdo técnico.
+- Ao terminar, **substitua** o resumo do estado atual. Não acrescente um diário de sessões nem copie resultados em vários handoffs. Evidências detalhadas ficam no documento da tarefa; commits conservam a evolução.
+- Limites de manutenção: AGENTS e ACTIVE_CONTEXT até 80 linhas/6 KiB cada; índice até 200 linhas/12 KiB. Leia detalhes por links, não por carga integral de `docs/`.
+- Uma informação tem um dono. Atualize a fonte existente; crie documento novo somente quando houver assunto, decisão ou evidência independente. Para correção pontual, commit e resultado dos testes podem bastar; não gere relatório só para repeti-los. Arquivos históricos ficam congelados e fora da leitura inicial.
+- Preferências globais e mapas locais em `~/.codex/context/` ajudam a localizar conversas; não substituem o código e o estado verificado deste checkout.
 
----
+## Desenvolvimento
 
-## 2. Protocolo de Handoff e Continuidade de Contexto
+- Stack, inicialização e comandos: [README](README.md), [arquitetura](docs/architecture.md), [desenvolvimento e qualidade](docs/development.md). Monorepo pnpm: Web Angular/SSR, API NestJS e pacotes de domínio, calculadoras, banco e utilitários.
+- Mantenha mudanças coesas e arquivos íntegros; preserve dados, credenciais, extratos e arquivos locais não rastreados. Não publique, migre banco ou substitua outro ambiente por conveniência de QA.
+- Antes de concluir uma funcionalidade: `pnpm check` e `pnpm test`; build/SSR e QA de navegador quando afetados. Em mudanças só documentais, confira formatação, links, preservação e coerência; não simule testes de produto como prova documental.
 
-Para que você (Codex ou Antigravity) saiba exatamente o que o outro agente fez sem perda de contexto:
+## UI e pesquisa de produto
 
-1. **Ao Iniciar Uma Tarefa**:
-   - Leia o arquivo [`docs/ACTIVE_CONTEXT.md`](docs/ACTIVE_CONTEXT.md) para entender a última decisão, tarefa em andamento e próximos passos.
-   - Execute `git status` e `git log -n 3 --oneline` para checar o estado exato da branch.
-2. **Durante o Desenvolvimento**:
-   - Mantenha alterações coesas e evite deixar arquivos quebrados ao terminar um turno.
-   - Antes de criar ou modificar componentes visuais, consultar o Design System e a Skill de UI/UX do projeto. Reutilizar os componentes e tokens existentes. Qualquer novo padrão visual precisa ter justificativa explícita e ser incorporado à documentação compartilhada.
-   - Use `.agents/skills/bdo-ui-design/SKILL.md` como fonte canônica da identidade BDO, paleta, tokens, tamanhos e exceções de componentes; confira o catálogo técnico em `docs/design-system/bdo-ui.md`.
-   - Use `.agents/skills/ui-design/SKILL.md` e `.agents/skills/ui-design/agents/design-ui.md` para hierarquia, composição e revisão. Eles não definem um segundo tema nem substituem os tokens da fonte canônica.
-   - Para implementação Angular e primitivas, consulte as skills oficiais `angular-developer` e `spartan`; preserve os contratos documentados do catálogo BDO.
-   - **Pesquisa competitiva obrigatória para funcionalidades**: antes de desenhar ou alterar uma feature visível ao usuário, consulte a superfície pública relevante de BDO Workshop, BDO Codex, BDOLytics e Garmoth. Registre em `docs/research/` o que cada um oferece, o que não tem equivalente ou não pôde ser verificado, a data da consulta e as fontes. Para cálculos, compare entradas e saídas com premissas pareadas e separe observação da interface, hipótese de algoritmo e regra confirmada do jogo. Siga `docs/research/competitor-review-playbook.md`.
-   - Use essa pesquisa para entender alternativas de fluxo e cobertura, não para copiar implementação ou transformar métricas/snapshots de concorrentes em dados ou fórmulas do Black Market. Consulte apenas páginas públicas e APIs documentadas/autorizadas; respeite licença, termos, rate limits e controles de acesso. Se uma fonte estiver indisponível, registre a tentativa e continue com o código e as fontes verificáveis.
-3. **Ao Finalizar o Turno (ou quando o limite de mensagens estiver próximo)**:
-   - Atualize [`docs/ACTIVE_CONTEXT.md`](docs/ACTIVE_CONTEXT.md) documentando:
-     - O que foi concluído.
-     - O que ficou em andamento ou pendente.
-     - Arquivos modificados/criados.
-     - Instrução clara para o próximo agente (Codex ou Antigravity) continuar.
-
----
-
-## 3. Skills, Plugins e MCPs
-
-- **Skills do Projeto**: Localizadas em `.agents/skills/`. Ambos os agentes têm suporte nativo a essa pasta.
-- **Skills Globais**: As skills em `~/.codex/skills` e `~/.gemini/config/skills` estão sincronizadas via junção de diretório no sistema.
-- **MCP Servers Habilitados**:
-  - `Neon`: Conexão direta com banco serverless Neon.
-  - `playwright`: Navegador automatizado para testes de interface e captura.
-  - `context7`: Consulta a documentações e bibliotecas.
-
----
-
-## 4. Comandos e Verificação de Qualidade
-
-Antes de considerar uma funcionalidade pronta:
-
-- `pnpm check`: Executa lint, format check e typecheck.
-- `pnpm test`: Executa testes unitários.
-- Para rodar servidores:
-  - Web: `pnpm dev:web` (porta 4200)
-  - API: `pnpm dev:api` (porta 3000)
+- Consulte [bdo-ui-design](.agents/skills/bdo-ui-design/SKILL.md) e [catálogo BDO](docs/design-system/bdo-ui.md) antes de alterar UI. Reutilize tokens e primitivas; padrão visual novo precisa de justificativa e registro no catálogo.
+- Composição: [ui-design](.agents/skills/ui-design/SKILL.md) e seu [agente de design](.agents/skills/ui-design/agents/design-ui.md). Implementação: skills locais `angular-developer` e `spartan`.
+- Antes de desenhar ou alterar funcionalidade visível, consulte as superfícies públicas relevantes de BDO Workshop, BDO Codex, BDOLytics e Garmoth. Registre observações, lacunas, data e fontes em `docs/research/`, conforme o [protocolo competitivo](docs/research/competitor-review-playbook.md).
+- Para cálculos, compare entradas e saídas pareadas e diferencie UI observada, hipótese de algoritmo e regra confirmada do jogo. Não transforme snapshots concorrentes em preços/fórmulas do produto.
+- Use somente páginas públicas e APIs autorizadas/documentadas; respeite licença, termos e controles de acesso. Registre fontes indisponíveis e continue com evidência verificável.

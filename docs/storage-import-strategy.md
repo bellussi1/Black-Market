@@ -1,4 +1,4 @@
-> Atualização em 08/10/2026: reconhecimento assistido de prints está implementado no navegador com recorte/grade, números e candidatos de itens, revisão obrigatória. Ver [tutorial atual](print-import-tutorial.md) e [cobertura](feature-coverage.md). A proposta de pipeline remoto/captura passiva abaixo é pesquisa futura, não infraestrutura instalada nem funcionalidade concluída.
+> Atualização em 08/10/2026: reconhecimento assistido de prints está implementado no navegador com recorte/grade, números e candidatos de itens, revisão obrigatória. Ver [tutorial atual](print-import-tutorial.md) e [cobertura](project-feature-checklist.md). A proposta de pipeline remoto/captura passiva abaixo é pesquisa futura, não infraestrutura instalada nem funcionalidade concluída.
 
 # Importação de armazéns, inventários e perfil
 

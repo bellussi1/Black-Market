@@ -8,7 +8,7 @@ Audite o produto e o repositório Black Market BDO. Nesta etapa, investigue, doc
 
 Antes de começar:
 
-1. Leia `AGENTS.md`, `docs/ACTIVE_CONTEXT.md`, `docs/ANTIGRAVITY_HANDOFF.md` e `docs/project-feature-checklist.md`.
+1. Leia `AGENTS.md`, `docs/ACTIVE_CONTEXT.md` e o índice `docs/README.md`. Nesta auditoria integral, consulte também `docs/project-feature-checklist.md`; o handoff não tem uma cópia paralela de estado.
 2. Confira a branch, os últimos commits e `git status`. Preserve as alterações existentes. Não limpe, sobrescreva ou inclua arquivos que não pertençam a esta auditoria.
 3. Leia os documentos de produto e planejamento, incluindo `docs/roadmap.md`, `docs/implementation-queue.md`, `docs/implementation-status.md`, `docs/product-redesign.md` e as especificações da Roadmap.
 4. Faça um inventário da documentação em `docs/` e das skills relevantes em `.agents/skills/`. Leia os documentos de referência completos para cada área auditada. Identifique conteúdo antigo ou conflitante e confirme o estado atual no código.

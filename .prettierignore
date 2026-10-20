@@ -25,3 +25,6 @@ tmp/pdfs/
 
 **/.nx/
 .superpowers/sdd/
+
+# Frozen historical documentation snapshots (links relocated once).
+docs/archive/**

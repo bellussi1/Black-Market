@@ -1,0 +1,97 @@
+{
+  "sourceRevision": "792bc11a1c4be9de8b7b41412a0e258f0827e5f8",
+  "archivedOn": "2026-10-20",
+  "files": [
+    {
+      "source": "docs/ACTIVE_CONTEXT.md",
+      "archive": "docs/archive/2026-10-20/ACTIVE_CONTEXT.md",
+      "sourceBytes": 480112,
+      "sourceSha256": "12cb96b181aa177e7ccfa0485d7bcc578ae1c58018048b95b59578817ecb5139",
+      "archiveSha256": "c6dc699ad3c8775957fbe0e826636bdb785c98d70c35b719cf5265cf7b24242a"
+    },
+    {
+      "source": "docs/ANTIGRAVITY_HANDOFF.md",
+      "archive": "docs/archive/2026-10-20/ANTIGRAVITY_HANDOFF.md",
+      "sourceBytes": 77924,
+      "sourceSha256": "95c2fe159ec68c373ecf217dc91fff97dec916daf171dcb9d0f2a6a4d78c5143",
+      "archiveSha256": "013968adc694e1130389dde798e52c8c865ead138aeee914750770834544d401"
+    },
+    {
+      "source": "docs/ANTIGRAVITY_CONTINUATION_PROMPT.md",
+      "archive": "docs/archive/2026-10-20/ANTIGRAVITY_CONTINUATION_PROMPT.md",
+      "sourceBytes": 21097,
+      "sourceSha256": "37e6a62624eaac022385fcebc9f4b68df1bb542a3c000eb9c0b8b0602bb3680c",
+      "archiveSha256": "8f7f3b7594c6a578fa6cadb7a81018e36932d0b2bea78b692f07749a385ff755"
+    },
+    {
+      "source": "docs/implementation-status.md",
+      "archive": "docs/archive/2026-10-20/implementation-status.md",
+      "sourceBytes": 4186,
+      "sourceSha256": "8e42f77a72bd40f961c60be8e221b15d1f172faef4494ba468dff9fcd63d6c86",
+      "archiveSha256": "9ef53c5d441c25988c46efd66c14c378660b5b41798fd0ee991ac886311eb1ee"
+    },
+    {
+      "source": "docs/implementation-queue.md",
+      "archive": "docs/archive/2026-10-20/implementation-queue.md",
+      "sourceBytes": 13677,
+      "sourceSha256": "4788e908e0e1b52cba17e65f8fc79923ee6a7bcdd1fe7b370a599d4f1e5f5b8a",
+      "archiveSha256": "94040c4d0b12230d3b81a6446bd189da050a4660610739f0163d742c4eee4b42"
+    },
+    {
+      "source": "docs/feature-coverage.md",
+      "archive": "docs/archive/2026-10-20/feature-coverage.md",
+      "sourceBytes": 16570,
+      "sourceSha256": "3939917547546699152e8eb27b5a8fc5ad31ca9c9c9f05069aff947653072953",
+      "archiveSha256": "6f34b8fbcfa09c86bac9ead6d80779e1a11d28f4a7be3fc1336dc1cf941d8f8b"
+    },
+    {
+      "source": "docs/changed-files.md",
+      "archive": "docs/archive/2026-10-20/changed-files.md",
+      "sourceBytes": 14762,
+      "sourceSha256": "5a6b5f5e572995c6d357f6a9091f7df9f37e43774943d9c2b6e624df057474ce",
+      "archiveSha256": "a7f4052ac4ad9c2ac4795ac5187c15dabea06956d2a48ee71c5aa40e794e3cc2"
+    },
+    {
+      "source": "docs/project-feature-checklist.md",
+      "archive": "docs/archive/2026-10-20/project-feature-checklist.md",
+      "sourceBytes": 109582,
+      "sourceSha256": "6e59ef22e94c848f5873703f6b4da448326d77ef16662e506fd882c59de12c73",
+      "archiveSha256": "7cea97f7c8fb3535d63ca4fd5717ba1ecdb3a8ea1948bb5b717a97037922e3de"
+    },
+    {
+      "source": "docs/architecture.md",
+      "archive": "docs/archive/2026-10-20/architecture.md",
+      "sourceBytes": 10628,
+      "sourceSha256": "01b2f8bc9a7c19db9c63bbeda50faf05756c4f5a26a9349ef19d7f7db6159250",
+      "archiveSha256": "b0c78e7b1755e3519532a243ef1b8ca9147dd5be86cc7dc6083a463b30bfe824"
+    },
+    {
+      "source": "docs/angular-architecture.md",
+      "archive": "docs/archive/2026-10-20/angular-architecture.md",
+      "sourceBytes": 5188,
+      "sourceSha256": "bbd11bc068108ca61ee76de167dbf048f0451ae2106674dbea053013b6ceede1",
+      "archiveSha256": "c9d45087902db1eb23f1e24b5a2e9fc9a73d68a960aeaeb4389eff109d732419"
+    },
+    {
+      "source": "docs/development.md",
+      "archive": "docs/archive/2026-10-20/development.md",
+      "sourceBytes": 5062,
+      "sourceSha256": "720bebed2e3b82712c34277c910df59ea4907c3f0c3b54e6b18292c2b7a11959",
+      "archiveSha256": "94b29866a09f7be57f5c929be8257616385ba0ce355b9e2411931a562ac6ff77"
+    },
+    {
+      "source": "docs/code-quality.md",
+      "archive": "docs/archive/2026-10-20/code-quality.md",
+      "sourceBytes": 3884,
+      "sourceSha256": "6721fb6c340fb24a313c16e03ae9545ba7d96a1e655be840ebf3d0d28097a3f3",
+      "archiveSha256": "dcc0b25d556306d7ce422dc5dbce82b0042b3f4077234509a01f3ed1ab6fa9b3"
+    },
+    {
+      "source": "README.md",
+      "archive": "docs/archive/2026-10-20/README-project.md",
+      "sourceBytes": 21629,
+      "sourceSha256": "bbd4afe1b683b3ff5d41be73607c1601434ef9e8f14df136a7cce66f30bb9b82",
+      "archiveSha256": "331d416fdc6326320ba457c5a9ae98ada5bd9c3892e94a3f5e4bebe40840a089"
+    }
+  ]
+}

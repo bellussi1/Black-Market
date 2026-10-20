@@ -131,7 +131,7 @@ Build final após compatibilizar CSP com a hidratação Angular: 422,16 kB inici
 
 ## Ensaio local do Compose de produção e CI
 
-CI GitHub [37781129190](https://github.com/bellussi1/Black-Market/actions/runs/37781129190) passou na revisão 2f2dc3f, incluindo 95 testes, build, lint, format, tipos, extração i18n, migrações e smoke SSR sem scripts inline incompatíveis. [Lista de arquivos](changed-files.md).
+CI GitHub [37781129190](https://github.com/bellussi1/Black-Market/actions/runs/37781129190) passou na revisão 2f2dc3f, incluindo 95 testes, build, lint, format, tipos, extração i18n, migrações e smoke SSR sem scripts inline incompatíveis. [Lista de arquivos daquela entrega](archive/2026-10-20/changed-files.md).
 
 O Compose de produção foi executado em projeto/volume **temporários e separados**, com dump restaurado e segredo de teste, flags de mercado/analytics OFF e domínio reservado black-market.example somente como cabeçalho de teste HTTP local. Migração 0006 terminou, API ficou healthy e web/gateway iniciaram. /health, /ready, Home, Harmonia, receitas, NPCs, contato, perfil, sitemap e /sobre/ responderam 200. Páginas públicas emitiram canonical HTTPS e HSTS; perfil emitia noindex/nofollow. API/web executaram como usuário node e filesystem somente leitura conforme Compose. O banco original não foi reutilizado como volume desse ensaio.
 
