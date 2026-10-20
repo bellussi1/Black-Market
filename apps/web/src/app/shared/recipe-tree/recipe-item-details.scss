@@ -150,7 +150,7 @@
   }
 
   .context-close {
-    min-height: 32px;
+    min-height: var(--bm-control-height-compact);
     padding: 4px 12px;
     font-size: 12px;
     color: var(--bm-muted);

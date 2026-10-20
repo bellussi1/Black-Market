@@ -225,7 +225,7 @@ summary:focus-visible {
 }
 .combat-attributes summary {
   cursor: pointer;
-  min-height: 32px;
+  min-height: var(--bm-control-height-compact);
   color: var(--bm-muted);
   font-size: 12px;
 }

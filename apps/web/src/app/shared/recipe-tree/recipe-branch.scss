@@ -216,10 +216,10 @@ summary:focus-visible,
 .ingredient select {
   width: 100%;
   min-width: 0;
-  min-height: 40px;
+  min-height: var(--bm-control-height);
 }
 .step-ready {
-  min-height: 40px;
+  min-height: var(--bm-control-height);
   padding: 8px 12px;
   color: var(--bm-text);
   background: transparent;

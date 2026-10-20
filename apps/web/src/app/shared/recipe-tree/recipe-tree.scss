@@ -90,6 +90,7 @@
   }
 }
 .production-settings {
+  container: recipe-settings / inline-size;
   border: 1px solid var(--bm-border);
 }
 .product-identity,
@@ -277,7 +278,7 @@
   border-top: 1px solid var(--bm-border);
 
   summary {
-    min-height: 40px;
+    min-height: var(--bm-control-height-compact);
     display: flex;
     align-items: center;
     font-size: 13px;
@@ -430,8 +431,8 @@
 }
 
 .craft-input-box:focus-within {
-  border-color: var(--bm-accent);
-  box-shadow: 0 0 0 1px var(--bm-accent);
+  border-color: var(--bm-focus);
+  box-shadow: 0 0 0 var(--bm-border-width) var(--bm-focus);
 }
 
 .craft-count-input {
@@ -456,7 +457,7 @@
 .craft-quick-multipliers {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--bm-space-2);
 }
 
 .btn-multiplier {
@@ -520,7 +521,7 @@
 .calibration-control input,
 .gather-calibration-row input {
   width: 110px;
-  min-height: 34px;
+  min-height: var(--bm-control-height);
   padding: 6px 8px;
   border: 1px solid var(--bm-border);
   background: var(--bm-background);
@@ -640,13 +641,13 @@
 
 .production-settings .panel-heading {
   margin: 0;
-  padding: 8px 14px;
+  padding: var(--bm-space-3) var(--bm-panel-padding);
 }
 
 .production-configuration {
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--bm-space-3);
+  padding: var(--bm-space-3) var(--bm-panel-padding);
 }
 
 .production-method {
@@ -655,19 +656,16 @@
 }
 
 .scenario-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bm-space-3);
   min-width: 0;
 }
 
 :host(:not(.summary-only)) {
   .production-configuration {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-
-  .scenario-settings {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+    gap: var(--bm-space-3);
   }
 
   .craft-count-card.craft-parameters-card {
@@ -707,12 +705,14 @@
 }
 
 .control-label-text {
-  font-size: 11px;
+  font-size: var(--bm-text-meta);
 }
 
 .craft-count-input {
   min-width: 0;
-  font-size: 15px;
+  min-height: 0;
+  height: calc(var(--bm-control-height) - 2 * var(--bm-border-width));
+  font-size: var(--bm-text-body);
   padding: 7px 9px;
 }
 
@@ -736,7 +736,7 @@
 }
 
 .btn-multiplier {
-  min-height: 32px;
+  min-height: var(--bm-control-height-compact);
   flex: 0 0 auto;
 }
 
@@ -749,7 +749,7 @@
 }
 
 .production-configuration .craft-input-box {
-  height: 40px;
+  min-height: var(--bm-control-height);
 }
 
 .craft-yield-meta {
@@ -774,13 +774,25 @@
 
 .economic-summary-header {
   border-bottom: 1px solid var(--bm-border);
-  border-left: 2px solid var(--bm-accent);
+  border-top: var(--bm-border-width) solid var(--bm-accent);
   background: var(--bm-surface-raised);
 }
 
-.economic-summary-header h3 {
-  margin: 0 0 2px;
-  font: 600 14px/1.25 var(--bm-font-body);
+.economic-summary-heading {
+  width: calc(100% + 2 * var(--bm-panel-padding));
+  margin: calc(0px - var(--bm-space-3)) calc(0px - var(--bm-panel-padding)) 0;
+  padding: var(--bm-space-3) var(--bm-panel-padding);
+  border-bottom: var(--bm-border-width) solid var(--bm-border);
+}
+
+.economic-summary-heading .eyebrow {
+  margin: 0 0 3px;
+  color: var(--bm-muted);
+}
+
+.economic-summary-heading h2 {
+  margin: 0;
+  font: 600 var(--bm-text-section)/1.35 var(--bm-font-body);
 }
 
 .economic-summary-header .help {
@@ -1022,10 +1034,10 @@
 
 .recipe-settings-disclosure > summary {
   display: flex;
-  min-height: 36px;
+  min-height: var(--bm-control-height-compact);
   align-items: center;
-  gap: 12px;
-  padding: 7px 10px;
+  gap: var(--bm-space-3);
+  padding: var(--bm-space-2) var(--bm-space-3);
   color: var(--bm-accent);
   cursor: pointer;
   list-style: none;
@@ -1047,20 +1059,12 @@
 }
 
 .recipe-mastery-settings {
-  padding: 12px 14px;
-  border-top: 1px solid var(--bm-border);
-  border-bottom: 1px solid var(--bm-border);
-}
-
-.recipe-mastery-settings > .eyebrow {
-  margin: 0 0 10px;
-  color: var(--bm-muted);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  min-width: 0;
 }
 
 .recipe-mastery-settings .craft-parameters-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  align-items: end;
 }
 
 .recipe-mastery-settings > .craft-param-hint {
@@ -1092,8 +1096,8 @@
 }
 
 .economic-summary-header {
-  gap: 6px 10px;
-  padding: 8px 10px;
+  gap: var(--bm-space-3);
+  padding: var(--bm-space-3) var(--bm-panel-padding);
 }
 
 .economic-summary-header .help {
@@ -1118,6 +1122,7 @@
   line-height: 1.4;
   white-space: normal;
   align-items: flex-start;
+  justify-content: flex-start;
 
   small {
     font-size: var(--bm-text-meta);
@@ -1155,14 +1160,14 @@
 
 .economic-dashboard .metric-card {
   min-height: 62px;
-  padding: 7px 10px;
+  padding: var(--bm-space-2) var(--bm-panel-padding);
 }
 
 .economic-summary-footer {
   height: auto;
   min-height: 0;
   overflow: visible;
-  padding: 7px 10px;
+  padding: var(--bm-space-2) var(--bm-panel-padding);
 }
 
 @media (max-width: 640px) {
@@ -1180,5 +1185,28 @@
 
   .economic-summary-header [role='group'] button {
     flex: 1 1 auto;
+  }
+}
+
+/* Essential fields share a baseline; the summary and disclosure span the group. */
+:host(:not(.summary-only)) .craft-count-card.craft-parameters-card {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+:host(:not(.summary-only)) .scenario-settings > .craft-yield-meta {
+  display: flex;
+  gap: var(--bm-space-1) var(--bm-space-3);
+  grid-column: 1 / -1;
+}
+
+@container recipe-settings (min-width: 480px) {
+  :host(:not(.summary-only)) .scenario-settings {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.6fr);
+    gap: var(--bm-space-3);
+  }
+
+  .scenario-settings > .recipe-settings-disclosure {
+    grid-column: 1 / -1;
   }
 }

@@ -87,26 +87,16 @@
               </div>
             </div>
           </div>
-
-          <div class="craft-yield-meta">
-            <span class="yield-badge">{{ yieldDescription() }}</span>
-            <span class="produced-badge" i18n>
-              Estimativa do produto: <strong>{{ formattedProducedQuantity() }}</strong> unidades
-            </span>
-            <span class="produced-badge" i18n>
-              Tempo estimado: <strong>{{ formattedCraftTime() }}</strong>
-            </span>
-          </div>
         </div>
 
         <div class="recipe-mastery-settings">
-          <p class="eyebrow" i18n>MAESTRIAS DA RECEITA</p>
+          <p class="sr-only" i18n>MAESTRIAS DA RECEITA</p>
           <div class="craft-parameters-grid">
             @for (skill of masterySkills(); track skill) {
               <div class="craft-param-col">
                 <label class="craft-count-control">
                   <span class="control-label-text">
-                    {{ masterySkillLabel(skill) }}
+                    Maestria ({{ masterySkillLabel(skill) }})
                   </span>
                   <div class="craft-input-box">
                     <input
@@ -153,6 +143,16 @@
               otimizador.
             </p>
           }
+        </div>
+
+        <div class="craft-yield-meta">
+          <span class="yield-badge">{{ yieldDescription() }}</span>
+          <span class="produced-badge" i18n>
+            Estimativa do produto: <strong>{{ formattedProducedQuantity() }}</strong> unidades
+          </span>
+          <span class="produced-badge" i18n>
+            Tempo estimado: <strong>{{ formattedCraftTime() }}</strong>
+          </span>
         </div>
 
         <details class="production-options recipe-settings-disclosure">
@@ -289,17 +289,18 @@
         i18n-aria-label
       >
         <div class="economic-summary-header">
-          <div>
-            <h3 i18n>Resultado da receita</h3>
-            <p
-              class="help"
-              title="Usa o preço corrente do mercado; sem oferta, considera o preço máximo anunciado."
-              i18n
-            >
-              Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou
-              preço-base de referência. A cotação não garante compra nem venda.
-            </p>
+          <div class="economic-summary-heading">
+            <p class="eyebrow" i18n>SIMULAÇÃO</p>
+            <h2 i18n>Resultado da receita</h2>
           </div>
+          <p
+            class="help"
+            title="Usa o preço corrente do mercado; sem oferta, considera o preço máximo anunciado."
+            i18n
+          >
+            Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou
+            preço-base de referência. A cotação não garante compra nem venda.
+          </p>
           <div
             class="flex flex-wrap gap-2 scenario-actions"
             role="group"

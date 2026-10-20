@@ -357,7 +357,7 @@
   select,
   input {
     width: 100%;
-    min-height: 42px;
+    min-height: var(--bm-control-height);
     padding: 0.4rem 0.65rem;
     background: #111417;
     border: 1px solid var(--bm-border);
@@ -390,7 +390,7 @@
 
 .btn-quick-fill {
   flex-shrink: 0;
-  min-height: 42px;
+  min-height: var(--bm-control-height);
   padding: 0 0.75rem;
   font-size: 12px;
   font-weight: 600;

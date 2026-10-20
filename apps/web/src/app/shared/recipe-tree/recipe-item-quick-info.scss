@@ -48,9 +48,9 @@
 }
 
 .quick-info-close {
-  flex: 0 0 32px;
-  width: 32px;
-  min-height: 32px;
+  flex: 0 0 var(--bm-control-height-compact);
+  width: var(--bm-control-height-compact);
+  min-height: var(--bm-control-height-compact);
   border: 1px solid transparent;
   background: transparent;
   color: #c9c4b5;

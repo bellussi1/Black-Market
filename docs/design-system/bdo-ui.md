@@ -36,6 +36,8 @@ O hub de Profissões usa `LifeSkillsHubNav` para distinguir planejamento e sess�
 
 O grafo especializado de crafting e a roda/slots de equipamento mantêm SCSS para posicionamento e interação do jogo. Reutilize tokens, foco e tipografia quando isso não prejudicar a geometria. Não converter posições em utilities sem testes de medição, pan e zoom nem remover estilos ativos só para declarar uma migração completa de sintaxe.
 
+Na configuração de receitas, quantidade e maestrias compartilham a linha quando há largura; estimativas e ajustes ocupam o grupo completo. O modo resumido do Mercado mantém o mesmo espaçamento entre grupos, em coluna única. Cabeçalhos e métricas usam os gutters de painel, campos usam 44 px e controles compactos 36 px; altura dos painéis continua determinada pelo conteúdo. [Evidência de alinhamento](../research/recipe-decision-panels-density-2026-10-19.md#alinhamento-e-medidas-compartilhadas--20102026).
+
 ## Mapa de implementação
 
 | Responsabilidade                           | Origem real                                                      | Uso                                                                                                 |

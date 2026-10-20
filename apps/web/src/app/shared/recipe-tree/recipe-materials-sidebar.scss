@@ -579,7 +579,7 @@
   grid-column: 1 / -1;
   justify-content: flex-start;
   gap: 7px;
-  min-height: 30px;
+  min-height: var(--bm-control-height-compact);
   font-size: 12px;
 }
 
