@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   batchAlternatives,
   ingredientAlternatives,
+  preferMarketIngredientRecipe,
   recipeFamilies,
   verifiedIngredientSubstitutionItemIds,
   withVerifiedIngredientSubstitutions,
@@ -19,6 +20,42 @@ const make = (key: string, meat: number, amount = '5', extra = 4): CatalogRecipe
   outputs: [{ itemId: 10, name: 'Prato', quantity: null }],
 });
 describe('Ingredient equivalences from actual recipes', () => {
+  it('offers real dried market SKUs for fish and seafood cooking, preserving the fresh option', () => {
+    const fresh = make('seafood', 8211, '1');
+    const expanded = withVerifiedIngredientSubstitutions([fresh]);
+    expect(
+      ingredientAlternatives(fresh, expanded, fresh.inputs[0]).map(({ part }) => [
+        part.itemId,
+        part.quantity,
+      ]),
+    ).toEqual([
+      [8211, '1'],
+      [8511, '1'],
+      [8515, '1'],
+    ]);
+    expect(fresh.inputs[0].itemId).toBe(8211);
+    expect(verifiedIngredientSubstitutionItemIds([fresh])).toEqual([8511, 8515]);
+    expect(withVerifiedIngredientSubstitutions(expanded)).toEqual(expanded);
+    expect(preferMarketIngredientRecipe(fresh, expanded).inputs[0].itemId).toBe(8511);
+    expect(recipeFamilies(expanded)[0][0].inputs[0].itemId).toBe(8511);
+    const fish = make('fish', 8201, '1');
+    expect(
+      withVerifiedIngredientSubstitutions([fish]).some((r) => r.inputs[0].itemId === 8501),
+    ).toBe(true);
+    expect(withVerifiedIngredientSubstitutions([{ ...fresh, type: 'DRY' }])).toHaveLength(1);
+    expect(withVerifiedIngredientSubstitutions([make('lobster', 6511)])).toHaveLength(1);
+    const databaseQuantity = make('database-quantity', 8211, '1.0000');
+    expect(
+      preferMarketIngredientRecipe(
+        databaseQuantity,
+        withVerifiedIngredientSubstitutions([databaseQuantity]),
+      ).inputs[0],
+    ).toMatchObject({ itemId: 8511, quantity: '1.0000' });
+    expect(withVerifiedIngredientSubstitutions([make('unknown', 8211, '1.5')])).toHaveLength(1);
+    expect(
+      withVerifiedIngredientSubstitutions([make('unreviewed-quantity', 8211, '3')]),
+    ).toHaveLength(1);
+  });
   it('unifies Edania batches while keeping their actual catalysts and Ibellab quantities', () => {
     const recipes: CatalogRecipe[] = [1, 10, 100].map((quantity) => ({
       key: 'edania-' + quantity,

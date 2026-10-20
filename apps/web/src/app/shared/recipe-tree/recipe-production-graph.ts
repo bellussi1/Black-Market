@@ -3,7 +3,10 @@ import { catchError, EMPTY, expand, filter, from, map, mergeMap, of, take, toArr
 
 import type { CatalogApiService } from '../../core/catalog-api.service';
 import { isCookingRareProductItemId } from './recipe-bonus-products';
-import { withVerifiedIngredientSubstitutions } from './recipe-equivalents';
+import {
+  compareMarketIngredientRecipes,
+  withVerifiedIngredientSubstitutions,
+} from './recipe-equivalents';
 
 export interface RecipeProductionGraphIssue {
   itemId: number;
@@ -41,6 +44,7 @@ const compareRecipeKeys = (left: CatalogRecipe, right: CatalogRecipe) =>
 const compareRecipeCandidates = (left: CatalogRecipe, right: CatalogRecipe) =>
   left.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length -
     right.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length ||
+  compareMarketIngredientRecipes(left, right) ||
   compareRecipeKeys(left, right);
 
 /** Loads all reached formulas in one catalog version, retaining selected producers for display. */

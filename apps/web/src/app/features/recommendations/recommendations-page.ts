@@ -41,6 +41,7 @@ import type { Region } from '../../core/region-preferences';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { silver } from '../../shared/formatters';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
+import { withVerifiedIngredientSubstitutions } from '../../shared/recipe-tree/recipe-equivalents';
 import { fixedRecipeYield } from '../../shared/recipe-tree/recipe-fixed-yields';
 import { recipeMarketPrice } from '../../shared/recipe-tree/recipe-market-price';
 import {
@@ -227,7 +228,7 @@ export function productionRecipes(
   mastery?: Partial<CharacterProfile['mastery']>,
   itemsById?: ReadonlyMap<number, CatalogItemDetail>,
 ): ProductionRecipe[] {
-  return rows
+  return withVerifiedIngredientSubstitutions(rows)
     .filter((row) => isEligibleLifeSkillRecipe(row, itemsById))
     .map((row) => {
       const primary = row.outputs[0];
@@ -1143,6 +1144,12 @@ export class RecommendationsPage implements OnDestroy {
   }
   producersName(recipeId: string) {
     return this.recipesById().get(recipeId)?.output.itemId ?? 0;
+  }
+  recipeRoute(recipeId: string) {
+    return ['/recipes', recipeId.split('~verified-')[0]];
+  }
+  recipeRouteParams(recipeId: string) {
+    return recipeId.includes('~verified-') ? { recipe: recipeId } : null;
   }
   choose(itemId: number, choice: ProductionChoice) {
     this.choices[itemId] = choice;

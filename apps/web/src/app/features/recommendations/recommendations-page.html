@@ -314,7 +314,11 @@
                   />
                   <div>
                     <h3>
-                      <a [routerLink]="['/recipes', row.recipeId]">{{ row.name }}</a>
+                      <a
+                        [routerLink]="recipeRoute(row.recipeId)"
+                        [queryParams]="recipeRouteParams(row.recipeId)"
+                        >{{ row.name }}</a
+                      >
                     </h3>
                     <p>{{ recommendationReason(row) }}</p>
                     <div class="opportunity-badges">
@@ -377,8 +381,11 @@
                                 <a
                                   [routerLink]="
                                     part.plan
-                                      ? ['/recipes', part.plan.recipeId]
+                                      ? recipeRoute(part.plan.recipeId)
                                       : ['/recipes/items', part.itemId]
+                                  "
+                                  [queryParams]="
+                                    part.plan ? recipeRouteParams(part.plan.recipeId) : null
                                   "
                                   >{{ name(part.itemId) }}</a
                                 >

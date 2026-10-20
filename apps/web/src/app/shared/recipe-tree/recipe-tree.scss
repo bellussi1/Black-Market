@@ -971,12 +971,22 @@
 }
 
 .economic-summary-footer .production-issues-notice {
-  flex: 1 1 auto;
+  flex: 1 0 100%;
+  min-width: 0;
+  text-align: left;
 }
 
 .economic-summary-footer .production-issues-notice summary {
   cursor: pointer;
   color: var(--bm-warning, var(--bm-accent));
+  overflow-wrap: anywhere;
+}
+
+.economic-summary-footer .production-issues {
+  padding-left: var(--bm-space-4);
+  text-align: left;
+  overflow-wrap: anywhere;
+  list-style: disc;
 }
 
 .economic-summary-footer .is-stale {

@@ -21,6 +21,49 @@ const dataset = {
 };
 describe('Universal recipe explorer', () => {
   useMemoryStorage();
+  it('starts cooking with dried seafood and honors a fresh choice from the URL', async () => {
+    const key = 'a'.repeat(64);
+    const params = new BehaviorSubject(convertToParamMap({}));
+    const fixture = await renderComponent(RecipesPage, {}, [
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          paramMap: of(convertToParamMap({ key })),
+          queryParamMap: params,
+        },
+      },
+    ]);
+    const http = TestBed.inject(HttpTestingController);
+    const recipe = {
+      key,
+      type: 'COOK',
+      station: null,
+      inputs: [{ itemId: 8211, name: 'Lula', quantity: '1.0000' }],
+      outputs: [{ itemId: 9209, name: 'Acompanhamentos Variados', quantity: null }],
+    };
+    http.expectOne((r) => r.url.endsWith('/recipes/' + key)).flush({ recipe, dataset });
+    http
+      .expectOne((r) => r.url.endsWith('/items/9209'))
+      .flush({
+        item: {
+          id: 9209,
+          name: 'Acompanhamentos Variados',
+          categories: [],
+          sourceData: {},
+        },
+        dataset,
+      });
+    http
+      .expectOne((r) => r.url.endsWith('/items/9209/recipes'))
+      .flush({ recipes: [recipe], total: 1, dataset, direction: 'produces' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.recipe()?.inputs[0].itemId).toBe(8511);
+    params.next(convertToParamMap({ recipe: key }));
+    expect(fixture.componentInstance.recipe()?.inputs[0].itemId).toBe(8211);
+    params.next(convertToParamMap({ recipe: key + '~verified-seafood-8515' }));
+    expect(fixture.componentInstance.recipe()?.inputs[0].itemId).toBe(8515);
+    http.verify();
+  });
   useTutorialGuideStub();
   it('uses the shared page container and keeps search and result content under one heading', async () => {
     const fixture = await renderComponent(RecipesPage);

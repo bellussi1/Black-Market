@@ -35,54 +35,110 @@ const ORGANIC_FEED_SUBSTITUTIONS = [
   },
 ] as const;
 
-/** Adds the 1:1 meat and fish substitutes used in the checked Organic Feed comparison. */
-export function withVerifiedIngredientSubstitutions(recipes: CatalogRecipe[]): CatalogRecipe[] {
-  return recipes.flatMap((recipe) => {
-    const isOrganicFeed =
-      recipe.type === 'COOK' && recipe.outputs.some((output) => output.itemId === 54018);
-    const applicable = ORGANIC_FEED_SUBSTITUTIONS.filter((substitution) =>
-      recipe.inputs.some((part) => part.itemId === substitution.itemId),
-    );
-    if (!isOrganicFeed || applicable.length === 0) return [recipe];
+// Reviewed pairs only; DRY yields and item grade do not define cooking equivalence.
+// Sources and SA client inspection: docs/research/fish-price-equivalence-review-2026-10-16.md.
+const COOKING_DRIED_SUBSTITUTIONS = [
+  { itemId: 8201, substituteItemId: 8501, name: 'Gobião Desidratado', label: 'fish' },
+  { itemId: 8211, substituteItemId: 8511, name: 'Calamar Desidratado', label: 'seafood' },
+  { itemId: 8211, substituteItemId: 8515, name: 'Marisco Desidratado', label: 'seafood' },
+] as const;
+type Substitution =
+  | (typeof ORGANIC_FEED_SUBSTITUTIONS)[number]
+  | (typeof COOKING_DRIED_SUBSTITUTIONS)[number];
+const substitutionsFor = (recipe: CatalogRecipe): readonly Substitution[] => {
+  if (recipe.type !== 'COOK') return [];
+  return recipe.outputs.some((output) => output.itemId === 54018)
+    ? ORGANIC_FEED_SUBSTITUTIONS
+    : COOKING_DRIED_SUBSTITUTIONS;
+};
 
-    const variants = [recipe];
-    for (let mask = 1; mask < 1 << applicable.length; mask++) {
-      const selected = applicable.filter((_, index) => mask & (1 << index));
-      const suffix = selected.map(
-        (substitution) => `${substitution.label}-${substitution.substituteItemId}`,
+/** Keeps the original formula and exposes reviewed substitutions as concrete SKU variants. */
+export function withVerifiedIngredientSubstitutions(recipes: CatalogRecipe[]): CatalogRecipe[] {
+  const expanded = recipes.flatMap((recipe) => {
+    if (recipe.key.includes('~verified-')) return [recipe];
+    let combinations: Substitution[][] = [[]];
+    for (const part of recipe.inputs) {
+      if (
+        !part.quantity ||
+        !/^\d+(?:\.0+)?$/.test(part.quantity) ||
+        BigInt(part.quantity.split('.')[0]) <= 0n
+      )
+        continue;
+      const choices = substitutionsFor(recipe).filter(
+        (entry) =>
+          entry.itemId === part.itemId &&
+          (entry.label === 'meat' || /^0*1(?:\.0+)?$/.test(part.quantity!)),
       );
-      variants.push({
-        ...recipe,
-        key: `${recipe.key}~verified-${suffix.join('-')}`,
-        inputs: recipe.inputs.map((part) => {
-          const substitution = selected.find((entry) => entry.itemId === part.itemId);
-          return substitution
-            ? {
-                ...part,
-                itemId: substitution.substituteItemId,
-                name: substitution.name,
-                iconUrl: undefined,
-              }
-            : part;
-        }),
-      });
+      const previous = combinations;
+      combinations = [
+        ...previous,
+        ...previous.flatMap((selected) => choices.map((choice) => [...selected, choice])),
+      ];
     }
-    return variants;
+    return combinations.map((selected) =>
+      selected.length === 0
+        ? recipe
+        : {
+            ...recipe,
+            key:
+              recipe.key +
+              '~verified-' +
+              selected.map((entry) => entry.label + '-' + entry.substituteItemId).join('-'),
+            inputs: recipe.inputs.map((part) => {
+              const choice = selected.find((entry) => entry.itemId === part.itemId);
+              return choice
+                ? {
+                    ...part,
+                    itemId: choice.substituteItemId,
+                    name: choice.name,
+                    iconUrl: undefined,
+                  }
+                : part;
+            }),
+          },
+    );
   });
+  return [...new Map(expanded.map((recipe) => [recipe.key, recipe])).values()];
 }
 
 export function verifiedIngredientSubstitutionItemIds(recipes: CatalogRecipe[]): number[] {
   return [
     ...new Set(
-      recipes.flatMap((recipe) => {
-        if (recipe.type !== 'COOK' || !recipe.outputs.some((output) => output.itemId === 54018))
-          return [];
-        return ORGANIC_FEED_SUBSTITUTIONS.filter((substitution) =>
-          recipe.inputs.some((part) => part.itemId === substitution.itemId),
-        ).map((substitution) => substitution.substituteItemId);
-      }),
+      recipes.flatMap((recipe) =>
+        substitutionsFor(recipe)
+          .filter((entry) =>
+            recipe.inputs.some(
+              (part) =>
+                part.itemId === entry.itemId &&
+                (entry.label === 'meat' || /^0*1(?:\.0+)?$/.test(part.quantity ?? '')),
+            ),
+          )
+          .map((entry) => entry.substituteItemId),
+      ),
     ),
   ];
+}
+
+/** Prefer the reviewed dried SKU for an initial choice; explicit user choices remain intact. */
+export function preferMarketIngredientRecipe(
+  recipe: CatalogRecipe,
+  alternatives: CatalogRecipe[],
+): CatalogRecipe {
+  return (
+    alternatives.find((candidate) => candidate.key === recipe.key + '~verified-fish-8501') ??
+    alternatives.find((candidate) => candidate.key === recipe.key + '~verified-seafood-8511') ??
+    recipe
+  );
+}
+
+export function compareMarketIngredientRecipes(left: CatalogRecipe, right: CatalogRecipe): number {
+  const count = (recipe: CatalogRecipe) =>
+    recipe.type === 'COOK'
+      ? recipe.inputs.filter((part) =>
+          COOKING_DRIED_SUBSTITUTIONS.some((entry) => entry.itemId === part.itemId),
+        ).length
+      : 0;
+  return count(left) - count(right);
 }
 
 // Connect actual catalog formulas that differ in one ingredient slot. This
@@ -120,6 +176,7 @@ export function recipeFamilies(recipes: CatalogRecipe[]): CatalogRecipe[][] {
       (a, b) =>
         a.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length -
           b.inputs.filter((part) => isCookingRareProductItemId(part.itemId)).length ||
+        compareMarketIngredientRecipes(a, b) ||
         yieldOf(b) - yieldOf(a) ||
         a.inputs.filter((p) => p.name.startsWith('[Evento]')).length -
           b.inputs.filter((p) => p.name.startsWith('[Evento]')).length ||

@@ -41,6 +41,7 @@ import { recipeTypeLabel } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import {
   batchAlternatives,
+  preferMarketIngredientRecipe,
   recipeFamilies,
   withVerifiedIngredientSubstitutions,
 } from '../../shared/recipe-tree/recipe-equivalents';
@@ -226,11 +227,15 @@ export class RecipesPage {
         this.dataset.set(data.item.dataset);
         const alternatives = withVerifiedIngredientSubstitutions(data.recipes.recipes);
         this.alternatives.set(alternatives);
-        const selectedKey = data.selectedKey ?? this.selectedRecipeKey();
-        this.recipe.set(
+        const selectedKey = this.selectedRecipeKey() ?? data.selectedKey;
+        const selected =
           selectedKey === 'external'
             ? null
-            : (alternatives.find((r) => r.key === selectedKey) ?? this.methods()[0] ?? null),
+            : (alternatives.find((r) => r.key === selectedKey) ?? this.methods()[0] ?? null);
+        this.recipe.set(
+          selected && !this.selectedRecipeKey()
+            ? preferMarketIngredientRecipe(selected, alternatives)
+            : selected,
         );
         this.seo.describe(
           data.item.item.name + ' · Receitas e obtenção',

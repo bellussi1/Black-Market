@@ -14,6 +14,7 @@ import {
   isEligibleLifeSkillRecipe,
   productionCraftSeconds,
   productionQuantity,
+  productionRecipes,
   recommendationMarketQuote,
   RecommendationsPage,
 } from './recommendations-page';
@@ -84,6 +85,19 @@ async function renderComponent<T>(
 }
 describe('production recommendations', () => {
   useMemoryStorage();
+  it('uses concrete dried seafood quantities while preserving the fresh formula', () => {
+    const raw = {
+      key: 'squid-dish',
+      type: 'COOK',
+      station: null,
+      inputs: [{ itemId: 8211, name: 'Lula', quantity: '1.0000' }],
+      outputs: [{ itemId: 9209, name: 'Acompanhamentos Variados', quantity: '1' }],
+    };
+    const recipes = productionRecipes([raw]);
+    const dried = recipes.find((row) => row.id === 'squid-dish~verified-seafood-8511')!;
+    expect(dried.ingredients).toEqual([{ itemId: 8511, quantity: 1 }]);
+    expect(recipes.find((row) => row.id === 'squid-dish')?.ingredients[0].itemId).toBe(8211);
+  });
   it('embeds production without another page heading or navigation', async () => {
     const fixture = await renderComponent(RecommendationsPage, { embedded: true }, [
       { provide: ProductionApi, useValue: api() },
