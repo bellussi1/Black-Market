@@ -19,7 +19,7 @@
 - Limitar a busca global a 10.000 estados. Busca truncada retorna “melhor encontrado” e nunca certifica o ótimo.
 - Não inferir preço, rendimento, tempo, liquidez ou regra do jogo; não consultar endpoints privados nem persistir dados pessoais.
 - Preservar a prévia confirmar/descartar, a invalidação por mudança de cenário, a acessibilidade e o cancelamento do worker.
-- Atualizar `docs/project-feature-checklist.md`, `docs/ACTIVE_CONTEXT.md` e `docs/ANTIGRAVITY_HANDOFF.md`; commits separados por entrega.
+- Atualizar `docs/project-feature-checklist.md` e `docs/ACTIVE_CONTEXT.md`; commits separados por entrega.
 
 ## Foco de revisão
 
@@ -96,7 +96,7 @@
 
 **Arquivos:**
 
-- Modificar `docs/project-feature-checklist.md`, `docs/ACTIVE_CONTEXT.md`, `docs/ANTIGRAVITY_HANDOFF.md` e, se necessário, `docs/research/market-recipe-competitive-review-2026-10-16.md`.
+- Modificar `docs/project-feature-checklist.md`, `docs/ACTIVE_CONTEXT.md` e, se necessário, `docs/research/market-recipe-competitive-review-2026-10-16.md`.
 - Não alterar migrations, preços, dataset, credenciais nem seeds persistentes.
 
 - [ ] **Passo 1: Executar verificações focadas de ponta a ponta.** Repetir specs do calculador, adapter, graph, worker e árvore; esperado: todos passam sem teste ignorado novo.

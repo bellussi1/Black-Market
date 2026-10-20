@@ -77,7 +77,6 @@
 
 - Create: `docs/research/home-recommendations-competitive-review-2026-10-16.md`
 - Modify: `docs/ACTIVE_CONTEXT.md`
-- Modify: `docs/ANTIGRAVITY_HANDOFF.md`
 - Modify: `docs/superpowers/plans/2026-10-16-backlog-execution.md`
 
 **Interfaces:**

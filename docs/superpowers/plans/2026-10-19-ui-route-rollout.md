@@ -206,7 +206,6 @@
 - Modify: `docs/research/ui-route-inventory-2026-10-19.md`
 - Modify: `docs/project-feature-checklist.md`
 - Modify: `docs/ACTIVE_CONTEXT.md`
-- Modify: `docs/ANTIGRAVITY_HANDOFF.md`
 - Modify: `docs/research/README.md`
 
 - [x] **Step 1: Re-audit the complete route matrix against current source**

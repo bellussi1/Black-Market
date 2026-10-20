@@ -160,7 +160,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[~]` Ajudar o jogador a decidir o que produzir, comprar, coletar, vender ou fazer
 
 - **Estado e escopo (base 18/10):** Mercado, receitas, perfil, armazém e recomendações existem. O Coach atual se concentra em produção; não há cálculo geral confiável de prata/h para atividades externas.
-- **Evidência e lacuna:** `docs/product-vision.md`, `docs/feature-coverage.md`, `docs/research/implementation-gap-matrix.md`. Fechar lacunas de dados/modelos antes de prometer comparações completas.
+- **Evidência e lacuna:** `docs/product-vision.md`, `docs/archive/2026-10-20/feature-coverage.md`, `docs/research/implementation-gap-matrix.md`. Fechar lacunas de dados/modelos antes de prometer comparações completas.
 - **Origem:** Resumo do projeto; Análise consolidada; Checklist plataforma web; Analisar respostas do formulário
 
 ### `[~]` Pesquisa da comunidade e necessidades de Life Skills
@@ -260,7 +260,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[!]` Ordenar Explorar Receitas/mercado por lucro e vendas confiáveis
 
 - **Estado e escopo (base 18/10):** Pedido reiterado em 16/10/2026: identificar consumíveis de Culinária/Alquimia com maior lucro atual e maior volume. Na consulta de 16/10, a página BDOLytics indexada usava região North America e snapshot de semanas atrás; Garmoth exibiu EU com campos agregados vazios; o histórico SA local não tem cobertura/unidade confirmada e `production-quotes` respondeu 503 pelo bloqueio do upstream. Não é possível declarar os vencedores atuais de SA com evidência disponível.
-- **Evidência e lacuna:** `docs/implementation-queue.md`, `docs/market-item-review-2026-10-11.md`, `docs/research/market-source-policy.md`, `docs/research/cooking-alchemy-catalog-market-audit-2026-10-16.md`. Manter lucro líquido/hora e demanda em dimensões separadas, com região, timestamp, unidade/janela, cobertura e estados desconhecidos; usar somente uma fonte permitida e atual para ordenar.
+- **Evidência e lacuna:** `docs/archive/2026-10-20/implementation-queue.md`, `docs/market-item-review-2026-10-11.md`, `docs/research/market-source-policy.md`, `docs/research/cooking-alchemy-catalog-market-audit-2026-10-16.md`. Manter lucro líquido/hora e demanda em dimensões separadas, com região, timestamp, unidade/janela, cobertura e estados desconhecidos; usar somente uma fonte permitida e atual para ordenar.
 - **Origem:** Refinar prompt de melhorias BDO; Auditoria do Coach; novo pedido Codex (16/10/2026)
 
 ## 4. Oficina, receitas e cálculo financeiro
@@ -330,7 +330,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[~]` Recomendar plano executável e explicar por quê
 
 - **Estado e escopo (base 18/10):** Planos, materiais faltantes, reserva de estoque e justificativa básica existem. Conclusão de plano não debita estoque fisicamente; recomendações dependem de dados presentes.
-- **Evidência e lacuna:** `docs/feature-coverage.md`, `docs/roadmap.md`. Validar o caminho perfil→opção→plano→sessão e explicar preços/dados insuficientes.
+- **Evidência e lacuna:** `docs/archive/2026-10-20/feature-coverage.md`, `docs/roadmap.md`. Validar o caminho perfil→opção→plano→sessão e explicar preços/dados insuficientes.
 - **Origem:** Análise consolidada; checklist plataforma web; Refinar prompt de melhorias BDO
 
 ### `[~]` Caso de Refeição de Valência e divergência com concorrentes
@@ -374,7 +374,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[!]` Sincronizar e recuperar dados em nuvem
 
 - **Estado e escopo (base 18/10):** Backup local funciona sem login, inclusive exportação do original corrupto, com QA em 16/10; sync remoto real segue sem certificação; configuração de R2 permanece pendente. Login social está configurado em local/staging, mas ainda falta validar sessão interativa.
-- **Evidência e lacuna:** `docs/backup-recovery.md`, `docs/staging-local.md`, `docs/ANTIGRAVITY_HANDOFF.md`. Configurar somente ambiente dedicado, com cifragem, restore validado e retenção definida.
+- **Evidência e lacuna:** `docs/backup-recovery.md`, `docs/staging-local.md`, `docs/archive/2026-10-20/ANTIGRAVITY_HANDOFF.md`. Configurar somente ambiente dedicado, com cifragem, restore validado e retenção definida.
 - **Origem:** Custo de infraestrutura; Login Google/Steam; staging
 
 ## 7. Armazém, inventário e OCR
@@ -420,7 +420,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[~]` Aprimoramento, failstack, Caphras e Cron Stones
 
 - **Estado e escopo (base 18/10):** Calculadoras e tabelas/referências existem com entradas explícitas, horizonte e probabilidades onde suportados. Não modelam automaticamente todas as regras de downgrade, destruição e chances do jogo.
-- **Evidência e lacuna:** `docs/calculators.md`, `docs/feature-coverage.md`, `docs/research/useful-links.md`. Revalidar regras por patch; não inventar curva de failstack.
+- **Evidência e lacuna:** `docs/calculators.md`, `docs/archive/2026-10-20/feature-coverage.md`, `docs/research/useful-links.md`. Revalidar regras por patch; não inventar curva de failstack.
 - **Origem:** Fontes úteis por função; checklist plataforma web
 
 ### `[~]` Nós, workers, império e contribuição/CP
@@ -432,13 +432,13 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### `[~]` XP e progresso de profissões, buffs/cristais e outros planejadores
 
 - **Estado e escopo (base 18/10):** Sessões observadas e algumas referências/calculadoras existem; timers/bibliotecas são em parte manuais. Curvas universais de XP, breeding/cavalos, caps e efeitos combinados não estão completos.
-- **Evidência e lacuna:** `docs/feature-coverage.md`, `docs/calculators.md`, `docs/research/useful-links.md`. Listar cada calculadora existente antes de adicionar outra e indicar fonte/unidade.
+- **Evidência e lacuna:** `docs/archive/2026-10-20/feature-coverage.md`, `docs/calculators.md`, `docs/research/useful-links.md`. Listar cada calculadora existente antes de adicionar outra e indicar fonte/unidade.
 - **Origem:** Fontes úteis por função; pesquisa e prompts de funcionalidades
 
 ### `[!]` Mapa de coleta, grind spots e comparação de atividades
 
 - **Estado e escopo (base 18/10):** Aparece nas respostas da comunidade, no fluxo de árvore de receitas e na visão do produto. Não há conjunto de dados completo e validado para retorno/hora comparável em todos os spots.
-- **Evidência e lacuna:** `docs/implementation-queue.md` itens 9–10, `docs/product-research.md`. Definir observação, amostra, patch, gear, buffs, duração e proveniência antes de abrir ranking.
+- **Evidência e lacuna:** `docs/archive/2026-10-20/implementation-queue.md` itens 9–10, `docs/product-research.md`. Definir observação, amostra, patch, gear, buffs, duração e proveniência antes de abrir ranking.
 - **Origem:** Analisar respostas do formulário; árvore interativa; Garmoth/BDOLytics
 
 ## 9. Navegação, tutorial, UI/UX e acessibilidade

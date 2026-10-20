@@ -10,7 +10,7 @@ Antes de começar:
 
 1. Leia `AGENTS.md`, `docs/ACTIVE_CONTEXT.md` e o índice `docs/README.md`. Nesta auditoria integral, consulte também `docs/project-feature-checklist.md`; o handoff não tem uma cópia paralela de estado.
 2. Confira a branch, os últimos commits e `git status`. Preserve as alterações existentes. Não limpe, sobrescreva ou inclua arquivos que não pertençam a esta auditoria.
-3. Leia os documentos de produto e planejamento, incluindo `docs/roadmap.md`, `docs/implementation-queue.md`, `docs/implementation-status.md`, `docs/product-redesign.md` e as especificações da Roadmap.
+3. Leia os documentos de produto e planejamento, incluindo `docs/roadmap.md`, `docs/product-redesign.md` e as especificações pertinentes. Fila e estado de implementação estão centralizados no catálogo de pedidos já consultado.
 4. Faça um inventário da documentação em `docs/` e das skills relevantes em `.agents/skills/`. Leia os documentos de referência completos para cada área auditada. Identifique conteúdo antigo ou conflitante e confirme o estado atual no código.
 5. Consulte auditorias existentes em `docs/research/` para evitar repetir trabalho. Não considere uma feature concluída ou pendente sem conferir código e evidências atuais.
 

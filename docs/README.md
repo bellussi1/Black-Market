@@ -29,7 +29,7 @@ Documentos temáticos restantes são referências especializadas. Planos e audit
 
 - Estado atual: substitua o resumo, sem anexar sessões. Decisão durável: atualize sua fonte técnica. Evidência de uma tarefa: registre uma vez no relatório pertinente e linke. Evolução: Git.
 - Não copie stack, comandos, filas, números de testes e limites entre README, handoff, prompt e contexto. Atualize o dono indicado na tabela.
-- Handoffs Codex/Antigravity usam o mesmo estado atual; os nomes antigos são atalhos de compatibilidade, sem conteúdo paralelo para sincronizar.
+- Handoffs Codex/Antigravity usam o mesmo estado atual. Oito atalhos documentais redundantes foram removidos após migrar as referências; os originais permanecem acessíveis pelo índice histórico e pelo Git.
 - Para buscas comuns: `rg "termo" docs`. Snapshots de `docs/archive/` ficam fora da busca padrão por `.ignore`; para investigação histórica explícita: `rg --no-ignore "termo" docs/archive`.
 - Arquivar não conclui uma pendência. Preserve IDs/origens, data e limitações; confirme código/ambiente antes de reutilizar uma recomendação antiga.
 - Orçamento inicial: AGENTS + estado atual, até 12 KiB combinados. O índice é consultado por necessidade; detalhes não entram automaticamente no prompt. Tamanho em bytes é mensurável, tokens variam por modelo.

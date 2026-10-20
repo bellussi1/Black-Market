@@ -124,14 +124,14 @@ Expected: all repository tests, lint, format, typecheck and build pass.
 
 - [x] **Step 3: Update the handoff and reusable UI guidance**
 
-Record the cache key/TTL behavior and any market information that remains unavailable from the current source in `docs/ACTIVE_CONTEXT.md`; update `docs/feature-coverage.md` and `docs/research/implementation-gap-matrix.md` with verified status, without claiming a new source or broader coverage. Update `.agents/skills/bdo-ui-design/SKILL.md` only with reusable visual/interaction patterns confirmed by this implementation.
+Record the cache key/TTL behavior and any market information that remains unavailable from the current source in `docs/ACTIVE_CONTEXT.md`; update `docs/project-feature-checklist.md` and `docs/research/implementation-gap-matrix.md` with verified status, without claiming a new source or broader coverage. Update `.agents/skills/bdo-ui-design/SKILL.md` only with reusable visual/interaction patterns confirmed by this implementation.
 
 - [x] **Step 4: Commit final documentation and merge locally**
 
 Review `git status` for unrelated changes, commit only the intended handoff/coverage/skill changes, confirm the feature branch is clean, then merge it into `develop` only after all plan checks pass.
 
 ```bash
-git add docs/ACTIVE_CONTEXT.md docs/feature-coverage.md docs/research/implementation-gap-matrix.md .agents/skills/bdo-ui-design/SKILL.md
+git add docs/ACTIVE_CONTEXT.md docs/project-feature-checklist.md docs/research/implementation-gap-matrix.md .agents/skills/bdo-ui-design/SKILL.md
 git commit -m "docs(market): record cache-first market delivery"
 git switch develop
 git merge --no-ff codex/recipe-market-autoresolver

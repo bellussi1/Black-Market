@@ -76,7 +76,7 @@ A entrega Black Market adiciona módulos calculators e market no NestJS e rotas 
 
 O shell inicial carrega apenas navegação, região e contagens de metadados pessoais. A validação completa dos dados e as regras entram com as rotas de ferramenta, reduzindo o pacote inicial. RegionPreferences mantém a seleção regional; WorkspaceStore carrega e valida o backup local ao abrir uma ferramenta.
 
-Dados pessoais começam no navegador com backup versionado, sem login. O PostgreSQL continua persistindo o catálogo. MarketService consulta Arsha por ID, com cache em memória; não guarda histórico global nem cria jobs. A matriz de recursos implementados e pendentes está em feature-coverage.md.
+Dados pessoais começam no navegador com backup versionado, sem login. O PostgreSQL continua persistindo o catálogo. MarketService consulta Arsha por ID, com cache em memória; não guarda histórico global nem cria jobs. A matriz de recursos implementados e pendentes está no [catálogo de pedidos](project-feature-checklist.md).
 
 Isso descreve o estado da implementação, não o destino da plataforma. Local storage evolui para cache/rascunho e modo visitante. A migração para conta deve ter prévia e resolução de conflitos, sem sobrescrever silenciosamente dados do servidor.
 

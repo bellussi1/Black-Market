@@ -18,7 +18,7 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Trabalho desta retomada
 
-- Documentação de continuidade centralizada neste arquivo e no [índice](README.md); arquivos de handoff antigos viraram atalhos. Cobertura/fila centralizadas no [catálogo de pedidos](project-feature-checklist.md); frontend e qualidade incorporados às fontes técnicas existentes.
+- Documentação de continuidade centralizada neste arquivo e no [índice](README.md). Oito atalhos antigos removidos após migrar referências; cobertura/fila no [catálogo de pedidos](project-feature-checklist.md), frontend e qualidade nas fontes técnicas existentes.
 - Originais preservados em [arquivo datado](archive/README.md), com hashes e revisão Git. Antigos “ACTIVE_CONTEXT §N” pertencem ao snapshot, não a este resumo.
 - `ai-memory` baixado em `C:\Users\Bellussi\Documents\ChatGPT\ai-memory`, revisão `11ab100`. Clone para avaliação; sem instalação de binário, serviço, MCP, hooks ou captura de conversas. Critérios e fonte no [índice](README.md#ai-memory).
 
@@ -27,4 +27,4 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Continuar pela tarefa solicitada, consultando somente a área relevante no índice; não reimplementar entregas a partir de checkboxes históricos.
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
 - Bundle inicial ainda acima do aviso; budgets mantidos. Não tratar o contexto antigo de staging como estado implantado atual: conferir ambiente/versão antes de operar.
-- Fusão documental verificada: 13 snapshots, 62 registros de pedidos e 28 IDs preservados; links/atalhos e orçamentos de leitura conferidos; formatação passou. Código de produto e banco não alterados.
+- Fusão documental verificada: 13 snapshots, 62 registros de pedidos e 28 IDs preservados; referências e orçamentos de leitura conferidos; formatação passou. Binário/processo/porta padrão do ai-memory não encontrados nesta retomada; clone ainda sem integração. Código de produto e banco não alterados.

@@ -120,7 +120,6 @@
 
 - Create: `docs/research/storage-profile-gear-competitive-review-2026-10-16.md`
 - Modify: `docs/project-feature-checklist.md`
-- Modify: `docs/ANTIGRAVITY_HANDOFF.md`
 - Modify: `docs/ACTIVE_CONTEXT.md`
 
 - [x] **Step 1: Record the public comparison**
