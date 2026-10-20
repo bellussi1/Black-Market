@@ -4,9 +4,9 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Checkout e continuidade
 
-- Branch: `codex/ui-ux-audit-completion`; worktree: `C:\Users\Bellussi\.codex\worktrees\ui-ux-audit-completion\Site de BDO`.
-- Base anterior à consolidação documental: `792bc11`. O checkout principal em `Documents/ChatGPT/Site de BDO` estava em `d98ad07`, com arquivos locais não rastreados; não representa as últimas entregas desta branch.
-- Runtime confirmado em 20/10: Web `4200` e API `3000` executam deste worktree (código `aba2267`); Home/Profissões, readiness e catálogo responderam HTTP 200. Sessões gerenciadas: Web `47754`, API `24264`. A API usa o `.env` e assets do checkout principal, coletores desativados e PostgreSQL existente; sem migrações ou seeds.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Todas as entregas até `054f865` integradas por fast-forward e publicadas em `origin/main`.
+- Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
+- Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
 ## Últimas entregas verificadas
 
@@ -19,12 +19,12 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 ## Trabalho desta retomada
 
 - Documentação de continuidade centralizada neste arquivo e no [índice](README.md). Oito atalhos antigos removidos após migrar referências; cobertura/fila no [catálogo de pedidos](project-feature-checklist.md), frontend e qualidade nas fontes técnicas existentes.
-- Auditoria de branches após `git fetch origin`: `main`/`origin/main` em `1f2bb52`; `aba2267` contém 28 commits de entrega posteriores e todas as branches locais/remotas são suas ancestrais. Branches antigas não têm trabalho divergente. Sem merge, push ou exclusão de branches; commits documentais posteriores aumentam a distância, sem mudar o código servido.
+- Todas as branches locais/remotas verificadas são ancestrais da entrega integrada; não há trabalho divergente a recuperar. Usuário autorizou commits/push em `main` e manter a prévia atualizada. Nenhuma branch foi apagada.
 - `ai-memory` baixado em `C:\Users\Bellussi\Documents\ChatGPT\ai-memory`, revisão `11ab100`. Clone para avaliação; sem instalação de binário, serviço, MCP, hooks ou captura de conversas. Critérios e fonte no [índice](README.md#ai-memory).
 
 ## Próximo passo e limites
 
 - Continuar pela tarefa solicitada, consultando somente a área relevante no índice; não reimplementar entregas a partir de checkboxes históricos.
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
-- Próxima limpeza técnica: avisos independentes dos estilos da árvore/catálogo. Margem do bundle inicial é pequena; manter budgets. Não tratar contexto histórico de staging como estado implantado atual.
-- Gates anteriores de produto passaram; nesta auditoria: fetch/ancestralidade, build API e smoke HTTP reais. Docker Desktop foi iniciado; PostgreSQL usa `sitedebdo_postgres_data`. Staging `8081` reiniciou com a imagem antiga e não foi atualizado. Não confundir esse ambiente com o desenvolvimento `4200`. Nenhuma escrita de dados para QA.
+- Limpeza atual concluída: seletores sem uso e 25 declarações sobrescritas removidos; comparação Sass/PostCSS e revisão independente preservaram a cascata. Aviso do catálogo eliminado; árvore ainda acima do aviso. Check, suíte completa, produção e SSR passaram; evidência no relatório de performance acima.
+- Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.

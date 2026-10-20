@@ -15,6 +15,12 @@ pnpm db:migrate
 
 Em terminais separados, executar `pnpm dev:api` e `pnpm dev:web`. O Angular usa `http://localhost:4200`; a API usa `http://localhost:3000`. `/ready` consulta o banco.
 
+## Prévia visual de referência
+
+O checkout principal em `main` é a fonte de `localhost:4200`. Execute os dois comandos de desenvolvimento dessa pasta: o Angular recompila alterações salvas e a API usa watch. Não inicie a porta 4200 a partir de um worktree antigo; para QA isolado, use outra porta, como 4202. Antes de iniciar, confira `git branch --show-current`, `git status` e os processos que já ocupam as portas.
+
+Após integrar uma entrega, confirme `git rev-list --left-right --count origin/main...main` (esperado `0 0` depois do push autorizado), readiness da API e a página alterada. Alterações feitas em outro worktree só chegam à prévia depois de integradas. Não use pull/reset automático durante edição nem reinicie a aplicação a partir de outro checkout para contornar problemas. O caminho e os processos atuais ficam em `ACTIVE_CONTEXT.md`.
+
 ## Importar catálogo local
 
 Instale e execute o [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor) contra a instalação legítima do jogo. Com a API e o banco ativos, informe o diretório que contém `items.json`, `recipes.json` e `marketcategories.json`:

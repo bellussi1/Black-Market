@@ -18,6 +18,7 @@
 ## Desenvolvimento
 
 - Stack, inicialização e comandos: [README](README.md), [arquitetura](docs/architecture.md), [desenvolvimento e qualidade](docs/development.md). Monorepo pnpm: Web Angular/SSR, API NestJS e pacotes de domínio, calculadoras, banco e utilitários.
+- Prévia visual de referência: `localhost:4200` acompanha o checkout principal em `main`, com recarga automática. Worktrees de QA usam outra porta. Antes de encerrar, confira o caminho dos processos e a sincronização com `origin/main` quando o push estiver autorizado; siga o [fluxo local](docs/development.md#prévia-visual-de-referência).
 - Mantenha mudanças coesas e arquivos íntegros; preserve dados, credenciais, extratos e arquivos locais não rastreados. Não publique, migre banco ou substitua outro ambiente por conveniência de QA.
 - Antes de concluir uma funcionalidade: `pnpm check` e `pnpm test`; build/SSR e QA de navegador quando afetados. Em mudanças só documentais, confira formatação, links, preservação e coerência; não simule testes de produto como prova documental.
 
