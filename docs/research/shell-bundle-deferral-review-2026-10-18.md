@@ -1,5 +1,7 @@
 # Redução do bundle inicial do shell — 18/10/2026
 
+Estado mais recente: [continuação de 20/10/2026](#continuação-de-20102026--entrypoints-e-css-sem-consumidores). As medições abaixo conservam suas datas.
+
 ## Escopo e resultado local
 
 Esta fatia reduz o JavaScript carregado na abertura do shell, preservando as rotas e os controles existentes. O menu e a barra superior usam os estilos locais que já definiam sua aparência; as preferências de privacidade só carregam quando há uma escolha necessária ou quando a pessoa abre o painel pelo rodapé.
@@ -65,3 +67,13 @@ O build Angular final após a rodada de UI mediu **503,37 kB** brutos e **135,47
 ## Snapshot após separar bootstrap de analytics — 18/10/2026
 
 O `main` incluía analytics por dois caminhos: inicialização da raiz e o classificador importado pelos logs operacionais. A raiz passou a usar import dinâmico após renderização; o classificador puro foi movido para um módulo independente. Build medido de **500,75 kB/134,88 kB** (bruto/transferência) contra **503,37/135,47 kB** anteriores. Continua acima do aviso de 500 kB; budget preservado. O registro de tutoriais permanece no `main` devido ao grafo do pacote compartilhado, e uma experiência de anotações de pureza não reduziu o inicial e foi revertida. Não afirmar lazy-loading integral de tutoriais nem PERF-01 concluído. Próxima investigação: consumidores e entrypoints do pacote compartilhado, antes de alterar a arquitetura.
+
+## Continuação de 20/10/2026 — entrypoints e CSS sem consumidores
+
+Retomada de PERF-01 no checkout `codex/ui-ux-audit-completion`. Produção com o mesmo budget e `--stats-json`: **504,83 → 499,84 kB iniciais**, transferência estimada **135,52 → 134,98 kB**. O aviso inicial desapareceu; a margem é de apenas cerca de 160 bytes. Isso mede artefatos, não tempo de navegação ou Core Web Vitals.
+
+O metafile confirmou que tutoriais e perfis sintéticos não pertencem mais ao grafo inicial. A [arquitetura](../architecture.md) registra os entrypoints focados; a entrada geral e os consumidores explícitos continuam funcionando. Quatro regressões de empacotamento verificam import mínimo, fronteira dinâmica, resolução Node e as 27 telas/âncoras dos tutoriais. O caso mínimo falhou antes e passou depois. A revisão independente não encontrou problemas nos exports ou efeitos de inicialização.
+
+Também foram removidos o registro não utilizado de `lucideCompass` no MVP (alternativa completa preservada) e seletores sem consumidores: `.bdo-window`, `.bdo-meter`, `.bdo-meter-fill`, `.item-description-panel`, `.player-workbench` e `.market-item-name`, incluindo a referência responsiva. Nenhum controle ou token ativo foi removido. O teste existente do menu agora confere que os ícones visíveis têm SVG. Adiar os slots de publicidade foi medido, não compensou em transferência e foi revertido; não faz parte da entrega.
+
+`pnpm check` e `pnpm test` passaram: 1.304 aprovados/1 ignorado (78 Calculators, 270 API +1 ignorado, 871 Web, 85 scripts). Produção foi reconstruída após o check (que gera desenvolvimento); a repetição final de SSR sobre produção também passou. O metafile final confirmou 499.842 bytes iniciais e ausência dos módulos de tutoriais/perfis sintéticos nesse grafo. Código dos entrypoints em `c79f963`; limpeza/estado em commit próprio. Avisos independentes permanecem nos estilos da árvore (19,06 kB), catálogo (16,03 kB), fallback de locale e CommonJS do OCR. Sem alteração de banco, sessão real, serviços existentes, push, merge ou deploy.

@@ -1,7 +1,6 @@
 @layer components {
   @media (max-width: 1100px) {
     .item-detail-layout,
-    .player-workbench,
     .shopping-workbench {
       grid-template-columns: minmax(0, 1fr);
     }

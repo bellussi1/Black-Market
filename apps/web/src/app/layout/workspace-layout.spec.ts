@@ -218,6 +218,11 @@ describe('workspace navigation', () => {
       ...layout.navGroups().flatMap((g) => g.links.map((l) => l.icon)),
     ].filter(Boolean);
     expect(new Set(allIconNames).size).toBe(allIconNames.length);
+    const icons = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      '#workspace-navigation ng-icon',
+    );
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) expect(icon.querySelector('svg')).not.toBeNull();
   });
 
   it('keeps the non-affiliation disclosure beside the game name in the shell', async () => {

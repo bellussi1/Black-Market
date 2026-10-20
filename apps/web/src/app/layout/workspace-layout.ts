@@ -93,7 +93,6 @@ type NavigationGroup = { title: string; icon: string; links: NavigationLink[] };
             lucideBookOpenText,
             lucideBoxes,
             lucideChevronDown,
-            lucideCompass,
             lucideHammer,
             lucideHouse,
             lucideListChecks,

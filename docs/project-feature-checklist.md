@@ -12,11 +12,11 @@ Consolidado em 20/10/2026. Uma fonte para status/fila/cobertura; não é leitura
 
 Atualize a entrada do domínio ou ID existente, preservando origem, data, evidência e limite. Crie ID apenas para demanda distinta; não replique a fila noutro documento. Mudança de estado exige conferir o código/ambiente e apontar a fonte técnica. Detalhes de execução ficam no relatório pertinente; o contexto recebe somente um link e o próximo passo.
 
-## Atualizações verificadas em 19/10
+## Atualizações verificadas em 19–20/10
 
 - Unificação de Profissões/Família e fundação BDO entregues; [estado atual](ACTIVE_CONTEXT.md) aponta os relatórios. Família preenchida/administração e zoom equivalente tiveram [35 amostras sintéticas](research/ui-filled-zoom-controls-2026-10-19.md); isso não homologa login, persistência ou zoom nativo.
 - [Receitas compactas](research/recipe-decision-panels-density-2026-10-19.md), [foco/detalhes](research/recipe-expansion-focus-details-2026-10-19.md), [Home](research/home-hierarchy-refresh-2026-10-19.md) e [Profissões](research/lifeskills-visual-refresh-2026-10-19.md) implementados nesta branch. Não reabrir esses pedidos como tarefas novas.
-- UI-STD-04/07: novas matrizes complementam a amostra autenticada vazia anterior, sem convertê-la em QA real de conta preenchida. PERF-01: última produção documentada em 19/10 tem 504,83 kB iniciais; aviso de 500 kB permanece.
+- UI-STD-04/07: novas matrizes complementam a amostra autenticada vazia anterior, sem convertê-la em QA real de conta preenchida. PERF-01: fechada em 20/10; produção abaixo do aviso de 500 kB. Evidências no relatório do shell indicado na prioridade.
 - DATA-01/02/03/04 continuam dependendo das fontes/corpus descritos abaixo. Autorização de serviço externo, importação, coleta, migração ou deploy deve ser conferida na sessão/ambiente, não inferida de um documento antigo.
 
 ## Prioridades e decisões com ID
@@ -78,8 +78,8 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 
 ### PERF-01 — Bundle inicial abaixo do aviso de 500 kB
 
-- **Estado da execução:** Parcial: última produção registrada em 19/10 tem 504,83 kB iniciais; budgets preservados. Ver relatório de Profissões.
-- **Próxima entrega / dependência concreta:** Budget intacto; não confundir melhorias de navegação/SSR com redução de JS. Registro compartilhado de tutoriais ainda no grafo inicial. ACTIVE_CONTEXT §186.
+- **Estado da execução:** Concluída em 20/10 no build local de produção, com budgets preservados. [Medição e verificação](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
+- **Próxima entrega / dependência concreta:** Acompanhar o budget, cuja margem é pequena. Tutoriais e dados sintéticos saíram do grafo inicial; imports focados e quatro testes protegem a separação. Avisos independentes de CSS da árvore/catálogo, locale e CommonJS do OCR permanecem; não alegar ganho de Core Web Vitals a partir de bytes.
 
 ### OPS-01 — Observabilidade local da aplicação e visão read-only do PostgreSQL
 

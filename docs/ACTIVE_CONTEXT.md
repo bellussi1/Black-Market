@@ -14,7 +14,7 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Receitas: [boxes compactos](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
 - Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
 - Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
-- Últimos gates de produto registrados no relatório de Profissões: check, suíte completa, produção e SSR passaram. Fixtures não homologam persistência/autenticação reais ou zoom nativo. Não repetir testes antigos sem mudança ou preocupação nova.
+- PERF-01: imports compartilhados isolados e CSS/ícone sem uso removidos; produção abaixo do budget inicial. [Medição, testes e limites](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
 
 ## Trabalho desta retomada
 
@@ -26,5 +26,5 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 - Continuar pela tarefa solicitada, consultando somente a área relevante no índice; não reimplementar entregas a partir de checkboxes históricos.
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
-- Bundle inicial ainda acima do aviso; budgets mantidos. Não tratar o contexto antigo de staging como estado implantado atual: conferir ambiente/versão antes de operar.
-- Fusão documental verificada: 13 snapshots, 62 registros de pedidos e 28 IDs preservados; referências e orçamentos de leitura conferidos; formatação passou. Binário/processo/porta padrão do ai-memory não encontrados nesta retomada; clone ainda sem integração. Código de produto e banco não alterados.
+- Próxima limpeza técnica: avisos independentes dos estilos da árvore/catálogo. Margem do bundle inicial é pequena; manter budgets. Não tratar contexto histórico de staging como estado implantado atual.
+- Gates desta entrega: `pnpm check`, suíte completa, produção e SSR final passaram. Revisão independente sem findings. Fixtures anteriores não homologam persistência/autenticação reais ou zoom nativo. Sem alterações de banco, outros checkouts ou serviços existentes.

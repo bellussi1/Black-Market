@@ -89,12 +89,6 @@
     margin-top: 20px;
     align-items: start;
   }
-  .item-description-panel p {
-    white-space: pre-line;
-    line-height: 1.8;
-    font-size: 14px;
-    margin: 0;
-  }
   .item-identity {
     display: flex;
     align-items: center;
@@ -117,12 +111,6 @@
   }
   .player-selector label {
     width: 260px;
-  }
-  .player-workbench {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-    gap: 20px;
-    align-items: start;
   }
   .player-page .form-grid {
     margin-bottom: 16px;
@@ -152,11 +140,6 @@
   }
   .shopping-page .data-table td.numeric {
     font-size: 15px;
-  }
-  .market-item-name {
-    display: flex;
-    align-items: center;
-    gap: 12px;
   }
   .save-feedback {
     min-height: 24px;

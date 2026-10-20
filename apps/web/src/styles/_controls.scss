@@ -85,12 +85,6 @@
     transform: translateY(-1px);
     user-select: none;
   }
-  .bdo-window {
-    background: var(--bm-surface);
-    border: var(--bm-border-width) solid var(--bm-border);
-    border-radius: var(--bm-radius);
-    box-shadow: var(--bm-shadow-window);
-  }
   .bdo-slot {
     width: var(--bm-slot-size);
     height: var(--bm-slot-size);
@@ -123,19 +117,6 @@
       1px 1px 1px #000;
     font-variant-numeric: tabular-nums;
     pointer-events: none;
-  }
-  .bdo-meter {
-    height: 6px;
-    background: var(--bm-input);
-    border: var(--bm-border-width) solid var(--bm-border);
-    border-radius: var(--bm-radius-inset);
-    overflow: hidden;
-    position: relative;
-  }
-  .bdo-meter-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--bm-titlebar), var(--bm-accent));
-    transition: width 200ms ease-out;
   }
   .workspace-tabs {
     display: flex;
