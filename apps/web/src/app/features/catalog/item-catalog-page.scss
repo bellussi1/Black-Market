@@ -14,24 +14,6 @@
   width: 100%;
 }
 
-.breadcrumb {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin: 25px 0 0;
-  color: var(--bm-muted);
-  font-size: 12px;
-}
-
-.breadcrumb a {
-  color: var(--bm-muted);
-  text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  color: var(--bm-accent);
-}
-
 .catalog-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -102,30 +84,6 @@
   color: var(--bm-text);
   font-family: var(--bm-font-display);
   font-size: 14px;
-}
-
-.source-emblem {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  margin: 22px 0 14px;
-  display: grid;
-  place-items: center;
-}
-
-.emblem-ring {
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--bm-accent);
-  transform: rotate(45deg);
-}
-
-.emblem-core {
-  width: 11px;
-  height: 11px;
-  border: 1px solid var(--bm-accent);
-  border-radius: 50%;
 }
 
 .source-card > strong {
@@ -984,11 +942,6 @@
   .source-card-head {
     grid-column: 1 / -1;
     margin: -13px -13px 12px;
-  }
-  .source-emblem {
-    grid-column: 1;
-    grid-row: 2 / 5;
-    margin: 17px 0 0;
   }
   .source-card > strong {
     align-self: end;

@@ -79,7 +79,7 @@ Atualize a entrada do domínio ou ID existente, preservando origem, data, evidê
 ### PERF-01 — Bundle inicial abaixo do aviso de 500 kB
 
 - **Estado da execução:** Concluída em 20/10 no build local de produção, com budgets preservados. [Medição e verificação](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
-- **Próxima entrega / dependência concreta:** Acompanhar o budget, cuja margem é pequena. Tutoriais e dados sintéticos saíram do grafo inicial; imports focados e quatro testes protegem a separação. Avisos independentes de CSS da árvore/catálogo, locale e CommonJS do OCR permanecem; não alegar ganho de Core Web Vitals a partir de bytes.
+- **Próxima entrega / dependência concreta:** Acompanhar o budget, cuja margem é pequena. Tutoriais e dados sintéticos saíram do grafo inicial; imports focados e quatro testes protegem a separação. Aviso do catálogo eliminado na limpeza seguinte; CSS da árvore ainda acima do aviso, junto de locale e CommonJS do OCR. Evidências no mesmo relatório; não alegar ganho de Core Web Vitals a partir de bytes.
 
 ### OPS-01 — Observabilidade local da aplicação e visão read-only do PostgreSQL
 

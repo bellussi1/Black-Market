@@ -122,8 +122,6 @@
 }
 .production-configuration {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 20px;
   align-items: start;
 }
 .production-configuration:has(> .production-method:empty) {
@@ -134,14 +132,11 @@
 }
 .production-method {
   min-width: 0;
-  padding-right: 20px;
-  border-right: 1px solid var(--bm-border);
 }
 
 .economic-dashboard {
   container-type: inline-size;
   container-name: economic-dashboard;
-  margin-block: 16px;
   border: 1px solid var(--bm-border);
   background: var(--bm-surface);
   transition: border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -292,8 +287,6 @@
 }
 
 .production-settings .panel-heading {
-  margin: -20px -20px 16px;
-  padding: 12px 20px;
 }
 .production-settings > .panel-heading {
   border-top: 1px solid var(--bm-accent);
@@ -306,14 +299,6 @@
 .production-settings details > summary {
   font-size: 13px;
 }
-.text-button {
-  padding: 0.2rem;
-  background: transparent;
-  border: 0;
-  color: var(--bm-accent);
-  text-align: left;
-  min-height: 44px;
-}
 .mobile-tree {
   display: none;
 }
@@ -322,8 +307,6 @@
 }
 .product-details {
   margin-left: auto;
-}
-@media (max-width: 1200px) {
 }
 @media (max-width: 600px) {
   .production-configuration {
@@ -382,8 +365,6 @@
     opacity: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-}
 
 /* --- Black Market: Craft Count & Single Quantity Field --- */
 .craft-count-card {
@@ -403,8 +384,6 @@
 
 .craft-parameters-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
   align-items: start;
 }
 
@@ -427,7 +406,6 @@
   gap: 6px;
   font-size: 11px;
   color: var(--bm-muted);
-  min-height: 28px;
 }
 
 .craft-count-control {
@@ -437,7 +415,6 @@
 }
 
 .control-label-text {
-  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -450,7 +427,6 @@
   background: var(--bm-input);
   border: 1px solid var(--bm-border);
   border-radius: 2px;
-  max-width: 280px;
 }
 
 .craft-input-box:focus-within {
@@ -463,9 +439,7 @@
   background: transparent;
   border: none;
   color: var(--bm-text);
-  font-size: 18px;
   font-weight: 700;
-  padding: 8px 12px;
   font-variant-numeric: tabular-nums;
   outline: none;
 }
@@ -481,10 +455,8 @@
 
 .craft-quick-multipliers {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
 }
 
 .btn-multiplier {
@@ -502,17 +474,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  font-size: 12px;
   color: var(--bm-muted);
 }
 
 .yield-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--bm-border);
   border-radius: 2px;
   color: var(--bm-text);
 }
@@ -524,9 +491,6 @@
 .produced-badge strong {
   color: var(--bm-accent);
   font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 1100px) {
 }
 
 /* --- Material Decisions Quick Matrix --- */
@@ -603,13 +567,6 @@
 
 .material-source-checkbox:has(input:checked) span {
   color: var(--bm-accent);
-}
-.material-substitution-note {
-  display: block;
-  color: var(--bm-accent);
-  font-size: 11px;
-  line-height: 1.4;
-  white-space: nowrap;
 }
 
 .production-issues {
@@ -828,7 +785,6 @@
 
 .economic-summary-header .help {
   margin: 0;
-  font-size: 11px;
   max-width: 64ch;
 }
 .economic-summary-header [role='group'] button[aria-pressed='true'] {
@@ -959,8 +915,6 @@
 }
 
 .economic-dashboard .metric-card {
-  min-height: 68px;
-  padding: 8px 14px;
   border: 0;
   border-right: 1px solid var(--bm-border);
   border-radius: 0;
@@ -986,7 +940,6 @@
 
 .economic-summary-footer {
   border-top: 1px solid var(--bm-border);
-  min-height: 48px;
   align-content: start;
   align-items: flex-start;
 }
