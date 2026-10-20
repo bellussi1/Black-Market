@@ -201,12 +201,13 @@ function configureProduction(tree: RecipeTree, prices: Record<number, string>) {
 }
 
 describe('Interactive recipe tree', () => {
-  it('balances compact decision panels without stretching and stacks them at 900px', () => {
+  it('balances decision panels with matching row heights and stacks them at 900px', () => {
     const styles = (
       RecipeTree as unknown as { ɵcmp: { styles: readonly string[] } }
     ).ɵcmp.styles.join('\n');
     expect(styles).toMatch(/grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     expect(styles).toMatch(/align-items:\s*start/);
+    expect(styles).toMatch(/align-self:\s*stretch/);
     expect(styles).toContain('@media (max-width: 900px)');
     expect(styles).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
   });

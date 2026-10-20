@@ -4,7 +4,7 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 
 ## Checkout e continuidade
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `9c514a3` publicadas em `origin/main`.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `83bda14` publicadas em `origin/main`.
 - Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
 - Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
@@ -28,5 +28,5 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
 - Limpeza atual concluída: seletores sem uso e 25 declarações sobrescritas removidos; comparação Sass/PostCSS e revisão independente preservaram a cascata. Aviso do catálogo eliminado; árvore ainda acima do aviso. Check, suíte completa, produção e SSR passaram; evidência no relatório de performance acima.
 - Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.
-- Alinhamento atual: quantidade/maestrias na mesma linha quando há espaço, gutters e títulos equivalentes nos dois painéis; campos de 44 px e compactos de 36 px também nos controles locais de OCR/Armazém/equipamento/árvore. Reflow da receita em oito larguras e resumo do Mercado conferidos; conteúdo privado preenchido exige QA autenticada. Evidência e limites no relatório de receitas acima; fórmulas preservadas.
+- Alinhamento atual: quantidade/maestrias na mesma linha quando há espaço, gutters e títulos equivalentes; configuração e resultado com a mesma altura na linha, conforme o maior conteúdo, por orientação posterior do usuário. Empilhados mantêm alturas próprias. Campos de 44 px e compactos de 36 px nos controles locais. Evidência no relatório de receitas acima; conteúdo privado preenchido exige QA autenticada, fórmulas preservadas.
 - Check, suíte integral (1.304 aprovados/1 ignorado), produção e SSR passaram após a padronização; revisão independente sem pendências. Servidores continuam no checkout principal em watch.

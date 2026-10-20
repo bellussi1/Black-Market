@@ -49,6 +49,11 @@
     min-width: 0;
   }
 
+  > .production-settings,
+  > .economic-dashboard {
+    align-self: stretch;
+  }
+
   > .production-settings {
     grid-column: 1;
     grid-row: 1;
