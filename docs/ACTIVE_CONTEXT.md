@@ -6,7 +6,8 @@ Atualizado em 21/10/2026. Resumo substituível deste checkout; histórico comple
 
 - Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas integradas em `origin/main`; revisão exata em `git log`.
 - Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `5759`, API `82638`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
-- Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
+
+- Staging gratuito atualizado para `13e4661`, imagem e assets isolados; túnel restrito aos convidados ativo em segundo plano. URL/estado somente em `data/staging/` e `.env.staging` ignorados. [Operação e validação](staging-local.md#compartilhamento-verificado-em-21102026).
 
 ## Últimas entregas verificadas
 

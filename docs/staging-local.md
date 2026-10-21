@@ -61,7 +61,7 @@ O staging foi reconstruído com `scripts/staging.ps1 -Action Update`; o script f
 
 Os testes confirmam configuração e início dos fluxos, mas não completam o consentimento real do Google nem a autenticação interativa da Steam. Para validar a sessão até `/identity/me`, `/workspace` e retorno protegido, abra `/account` em `http://localhost:4200` e `http://localhost:8081` e conclua um login Google ou Steam em cada ambiente. Só então configure `STAGING_TEST_FIREBASE_UID` e execute o seed de perfil sintético, se necessário.
 
-O build Web mantém avisos conhecidos: bundle inicial 553,57 kB (53,57 kB acima do limite de aviso), fallback de locale `pt-BR`→`pt` e dependências CommonJS do Tesseract.
+O build Web mantém avisos de estilos da árvore, fallback de locale `pt-BR`→`pt` e dependências CommonJS do Tesseract. Medições atuais do bundle ficam no relatório de performance indicado em `ACTIVE_CONTEXT.md`.
 
 Ao compartilhar por Quick Tunnel, o script atualiza o callback Steam para a origem HTTPS temporária, recria API/web, verifica o staging e informa o hostname a adicionar em Firebase Authentication → Settings → Authorized domains. No cliente OAuth Google, mantenha o redirect handler do Firebase configurado: `https://<FIREBASE_AUTH_DOMAIN>/__/auth/handler`. A documentação do Firebase exige que o domínio do app esteja autorizado e usa o auth domain como redirect de OAuth ([Google sign-in no Firebase](https://firebase.google.com/docs/auth/web/google-signin)). O hostname de Quick Tunnel muda a cada sessão; adicione o novo domínio em cada sessão que exigir Google.
 
@@ -143,3 +143,11 @@ Mensalidade de hospedagem: zero nesta opção. Energia, internet e limites do Gi
 - Tarefa diária registrada para o usuário atual, às 12:00 de Brasília, sem privilégios elevados. O helper de backup executou com status OK.
 
 Os avisos existentes de bundle, locale e dependências CommonJS permanecem. O workflow do GitHub inclui validação do Compose de staging e sintaxe dos scripts PowerShell; consulte Actions para acompanhar a execução remota após cada push.
+
+## Compartilhamento verificado em 21/10/2026
+
+Staging reconstruído da revisão `13e4661`, com backup prévio do banco exclusivo e assets sincronizados pelo script existente. `pnpm test:staging` e `pnpm test:auth:staging` passaram; o template da receita dentro da imagem corresponde ao checkout. Desenvolvimento `4200/3000` preservado.
+
+Quick Tunnel iniciado em processo PowerShell oculto independente do terminal, restrito aos dois e-mails informados pelo mantenedor. URL, logs, PIDs e imagem ficam somente em `data/staging/`/`.env.staging`, ignorados; não registrar convidados nem endereço efêmero no Git. A URL pública respondeu com a tela Cloudflare Access, sem liberar a aplicação anonimamente. O hostname foi acrescentado e conferido nos domínios autorizados do Firebase de staging, preservando os demais. A configuração de Google/Steam passou; o login interativo com PIN e consentimento deve ser concluído por cada convidado, sem alegar homologação dessas sessões.
+
+O processo desta sessão continua após fechar o terminal de execução. Computador, Docker e internet precisam permanecer ativos. `staging.cmd Stop` encerra túnel/staging e preserva dados; uma nova sessão exige novo endereço e autorização correspondente no Firebase. Não executar Start/Update durante Share: encerre o compartilhamento antes de mudar a origem.
