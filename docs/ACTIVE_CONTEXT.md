@@ -1,17 +1,17 @@
 # Estado atual — Black Market
 
-Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico completo não deve ser carregado no início.
+Atualizado em 21/10/2026. Resumo substituível deste checkout; histórico completo não deve ser carregado no início.
 
 ## Checkout e continuidade
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas anteriores até `d354640` publicadas em `origin/main`.
-- Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `72973`, API `40945`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
+- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas integradas em `origin/main`; revisão exata em `git log`.
+- Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `5759`, API `82638`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
 - Plano local não rastreado preservado com SHA-256 conferido em `tmp/preserved-before-main-20261020/2026-10-16-roadmap-visual-phase-3.md`; imagem `lifeskills-sessions-desktop.png` mantida. `.env`, assets, banco e demais worktrees preservados.
 
 ## Últimas entregas verificadas
 
 - UI compartilhada, Família/administração/zoom e tokens: [evidências](research/ui-filled-zoom-controls-2026-10-19.md).
-- Receitas: [boxes compactos, maestrias visíveis e plano lateral alinhado](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
+- Receitas: [boxes compactos, maestrias, plano lateral e prévia do otimizador alinhados](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
 - Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
 - Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
 - Ranking personalizado: personagem ativo/tempos sincronizados, intermediários secundários preservados, melhores variantes por produto após filtros e busca recalculada automaticamente. [Diagnóstico e limites](research/home-recommendations-competitive-review-2026-10-16.md#ranking-personalizado--revisão-de-20102026). Sessão Google real indisponível no QA; não anunciar homologação pessoal.
@@ -31,4 +31,5 @@ Atualizado em 20/10/2026. Resumo substituível deste checkout; histórico comple
 - Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
 - Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.
 - Alinhamento atual: quantidade/maestrias na mesma linha quando há espaço, gutters e títulos equivalentes; configuração e resultado com a mesma altura na linha, conforme o maior conteúdo, por orientação posterior do usuário. Empilhados mantêm alturas próprias. Campos de 44 px e compactos de 36 px nos controles locais. Evidência no relatório de receitas acima; conteúdo privado preenchido exige QA autenticada, fórmulas preservadas.
-- Verificação atual: check, suíte integral (1.318 aprovados/1 ignorado), produção e SSR aprovados; revisão independente sem achados. Inicial 499,84 kB; estilo da árvore 19,85 kB sob o limite de erro de 20 kB, com aviso existente de 16 kB. Receita pública conferida em cinco resoluções e reflow 125%/150%, incluindo escolhas fresca/desidratada por URL; conta Google real não homologada. Servidores continuam no checkout principal em watch.
+- Otimizador: prévia com métricas no topo, decisões abertas em colunas, etapas e detalhes secundários; cabeçalho/ações sticky. Escape/cancel devolvem foco ao acionador sem scroll. Estilos encapsulados em `recipe-optimization-dialog.scss`; fórmulas e aplicação preservadas. QA real limitada + fixture de certificado/sem plano, sem alegar homologação global. Evidências no relatório de receitas.
+- Verificação: check final, suíte integral (1.318 aprovados/1 ignorado), 75 testes da árvore após foco, produção e SSR aprovados. Inicial 499,84 kB; CSS da árvore 18,66 kB, budgets preservados. Diálogo sem overflow em 1920/1536/1280/390/320, cabeçalho/ações visíveis e retorno de foco conferido. Revisão independente sem achados. Servidores continuam no checkout principal em watch.

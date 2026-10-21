@@ -150,7 +150,7 @@ function usableOptimizedPlan(
     HlmButton,
   ],
   templateUrl: './recipe-tree.html',
-  styleUrl: './recipe-tree.scss',
+  styleUrls: ['./recipe-tree.scss', './recipe-optimization-dialog.scss'],
   host: { '[class.summary-only]': 'summaryOnly()' },
 })
 export class RecipeTree {
@@ -933,6 +933,7 @@ export class RecipeTree {
   readonly view = signal<'graph' | 'tree'>('graph');
   readonly selectedPath = signal('root');
   readonly graph = viewChild(RecipeGraph);
+  readonly optimizationTrigger = viewChild<ElementRef<HTMLButtonElement>>('optimizationTrigger');
   readonly optimizationDialog = viewChild<ElementRef<HTMLDialogElement>>('optimizationDialog');
   readonly excludedLocations = signal<string[]>([]);
   readonly livePrices = signal(new Map<number, string>());
@@ -1614,7 +1615,11 @@ export class RecipeTree {
       const dialog = this.optimizationDialog()?.nativeElement;
       if (!dialog) return;
       if (this.optimizationPreview() && !dialog.open) dialog.showModal?.();
-      else if (!this.optimizationPreview() && dialog.open) dialog.close?.();
+      else if (!this.optimizationPreview() && dialog.open) {
+        const restoreFocus = dialog.contains(dialog.ownerDocument.activeElement);
+        dialog.close?.();
+        if (restoreFocus) this.optimizationTrigger()?.nativeElement.focus({ preventScroll: true });
+      }
     });
     effect(() => {
       if (this.acquisitionStrategy() !== 'gather_all') return;

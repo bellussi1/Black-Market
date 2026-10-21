@@ -834,11 +834,6 @@
   max-width: none;
 }
 
-.optimization-preview {
-  margin: 12px;
-  border: 1px solid var(--bm-accent);
-}
-
 .optimize-action {
   width: 190px;
   min-width: 190px;
@@ -852,83 +847,6 @@
   overflow-wrap: anywhere;
   font-size: 12px;
   line-height: 16px;
-}
-
-.optimization-dialog {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  width: min(720px, calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
-  overflow: auto;
-  padding: 0;
-  border: 1px solid var(--bm-accent);
-  background: var(--bm-surface);
-  color: var(--bm-text);
-}
-
-.optimization-dialog::backdrop {
-  background: var(--bm-overlay-scrim);
-}
-
-.optimization-dialog .optimization-preview {
-  margin: 0;
-  border: 0;
-}
-
-.optimization-dialog .optimization-incomplete {
-  padding: 20px;
-}
-
-.optimization-incomplete ul {
-  margin-block: 16px;
-  line-height: 1.7;
-}
-
-.preview-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--bm-border);
-}
-
-.preview-decisions {
-  padding: 10px 14px;
-  border-top: 1px solid var(--bm-border);
-  font-size: 13px;
-}
-
-.preview-decisions summary {
-  cursor: pointer;
-}
-
-.preview-decisions ul {
-  margin: 8px 0;
-  padding-left: 16px;
-  line-height: 1.6;
-}
-
-.preview-material-row,
-.preview-step-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  margin-block: 6px;
-}
-
-.preview-material-row app-item-icon,
-.preview-step-row app-item-icon {
-  --item-icon-size: 44px;
-}
-
-.preview-material-row > span,
-.preview-step-row > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 .economic-dashboard .metric-card {

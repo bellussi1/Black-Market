@@ -333,6 +333,7 @@
               hlmBtn
               type="button"
               variant="outline"
+              #optimizationTrigger
               class="optimize-action h-auto flex-col items-start whitespace-normal text-left gap-1"
               [attr.aria-pressed]="acquisitionStrategy() === 'optimized'"
               (click)="optimizing() ? cancelOptimization(true) : optimizeAcquisition()"
@@ -347,57 +348,136 @@
           #optimizationDialog
           class="optimization-dialog"
           tabindex="-1"
-          (keydown.escape)="discardOptimizationPreview()"
-          aria-label="Prévia da combinação otimizada"
-          (cancel)="discardOptimizationPreview()"
+          (keydown.escape)="$event.preventDefault(); discardOptimizationPreview()"
+          aria-labelledby="optimization-title"
+          (cancel)="$event.preventDefault(); discardOptimizationPreview()"
           (click)="$event.target === optimizationDialog && discardOptimizationPreview()"
         >
+          <header class="preview-heading">
+            <div>
+              <h2 id="optimization-title">Otimizar lucro por hora</h2>
+              <p>{{ product.part.name }} · {{ requestedOperations() }} receitas</p>
+            </div>
+            <span class="preview-tag">Prévia</span>
+          </header>
           @if (previewPlan(); as preview) {
             <section class="optimization-preview" aria-label="Prévia da combinação otimizada">
-              <div class="preview-heading">
-                <strong>
-                  {{
-                    previewSearchLimited()
-                      ? 'Melhor encontrado · ótimo não certificado'
-                      : optimizationPreview()?.optimization
-                        ? 'Ótimo certificado nos dados recebidos'
-                        : 'Combinação proposta'
-                  }}
-                  · {{ requestedOperations() }} receitas
-                </strong>
-                <div class="flex flex-wrap gap-2">
-                  <button hlmBtn type="button" size="sm" (click)="applyOptimizationPreview()">
-                    Aplicar combinação
-                  </button>
-                  <button
-                    hlmBtn
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    (click)="discardOptimizationPreview()"
-                  >
-                    Fechar prévia
-                  </button>
+              <div class="preview-result" role="status">
+                <strong>{{
+                  previewSearchLimited()
+                    ? 'Melhor encontrado · ótimo não certificado'
+                    : optimizationPreview()?.optimization
+                      ? 'Ótimo certificado nos dados recebidos'
+                      : 'Combinação proposta'
+                }}</strong>
+                @if (previewSearchLimited()) {
+                  <p>
+                    Este é o melhor resultado encontrado nas premissas disponíveis. O ótimo global
+                    ainda não está certificado.
+                  </p>
+                }
+                @if (optimizationPreview()?.optimization; as search) {
+                  <p>{{ optimizationReasonLabel(search.reason) }}.</p>
+                }
+              </div>
+              <div class="preview-metrics" aria-label="Resultado estimado do lote">
+                <div class="preview-metric preview-profit">
+                  <span>Lucro/hora</span><strong>{{ silver(preview.profitPerHour) }}</strong>
+                </div>
+                <div class="preview-metric">
+                  <span>Lucro total</span><strong>{{ silver(preview.profit) }}</strong>
+                </div>
+                <div class="preview-metric">
+                  <span>Custo dos materiais</span
+                  ><strong>{{ silver(preview.economicCost) }}</strong>
+                </div>
+                <div class="preview-metric">
+                  <span>Tempo de produção</span
+                  ><strong>{{ productionTimeLabel(preview.seconds) }}</strong>
                 </div>
               </div>
-              @if (previewSearchLimited()) {
-                <p class="notice" role="status">
-                  Este é o melhor resultado encontrado nas premissas disponíveis. O ótimo global
-                  ainda não está certificado.
-                </p>
-              }
-              @if (optimizationPreview()?.optimization; as search) {
-                <p class="help">{{ optimizationReasonLabel(search.reason) }}.</p>
-                <ul>
-                  @for (choice of previewRecipeChoices(); track choice.itemId) {
-                    <li class="preview-recipe-choice">
-                      Fórmula de {{ productionStepName(choice.recipeId) }}
+              <details class="preview-decisions" open>
+                <summary>
+                  Escolhas por item <span>{{ preview.materials.length }} materiais</span>
+                </summary>
+                <ul class="preview-materials">
+                  @for (material of preview.materials; track material.itemId) {
+                    <li class="preview-material-row">
+                      <div class="preview-item">
+                        <app-item-icon
+                          [url]="
+                            catalog.resolveIconUrl(
+                              parts().get(material.itemId) ?? { itemId: material.itemId }
+                            )
+                          "
+                          [name]="productionMaterialName(material.itemId)"
+                        />
+                        <div>
+                          <strong>{{ productionMaterialName(material.itemId) }}</strong>
+                          @if (material.substituted > 0) {
+                            <small>{{ material.substituted }} equivalentes via procs raros</small>
+                          }
+                        </div>
+                      </div>
+                      <dl class="preview-quantities">
+                        <div>
+                          <dt>Comprar</dt>
+                          <dd>{{ material.bought }}</dd>
+                        </div>
+                        <div>
+                          <dt>Fazer</dt>
+                          <dd>{{ material.produced }}</dd>
+                        </div>
+                        <div>
+                          <dt>Estoque</dt>
+                          <dd>{{ material.owned }}</dd>
+                        </div>
+                      </dl>
                     </li>
                   }
                 </ul>
+                <h3>Etapas de produção</h3>
+                <ol class="preview-steps">
+                  @for (step of preview.steps; track $index) {
+                    <li class="preview-step-row">
+                      <span class="preview-step-number">{{ $index + 1 }}</span>
+                      <div class="preview-item">
+                        <app-item-icon
+                          [url]="
+                            catalog.resolveIconUrl(
+                              productionStepPart(step.recipeId) ?? { iconUrl: null }
+                            )
+                          "
+                          [name]="productionStepName(step.recipeId)"
+                        />
+                        <strong>{{ productionStepName(step.recipeId) }}</strong>
+                      </div>
+                      <span class="preview-step-time"
+                        >{{ step.crafts }} operações · {{ productionTimeLabel(step.seconds) }}</span
+                      >
+                    </li>
+                  }
+                </ol>
+              </details>
+              @if (previewIssues().length) {
+                <details class="preview-issues">
+                  <summary>
+                    Pendências e exclusões <span>{{ previewIssues().length }}</span>
+                  </summary>
+                  <ul>
+                    @for (issue of previewIssues(); track issue.key) {
+                      <li class="preview-data-issue">
+                        <strong>{{ issue.itemName }}</strong
+                        >: {{ issue.message }}
+                      </li>
+                    }
+                  </ul>
+                </details>
+              }
+              @if (optimizationPreview()?.optimization; as search) {
                 <details class="preview-coverage">
-                  <summary>Ver alcance da comparação</summary>
-                  <p class="help">
+                  <summary>Alcance da comparação</summary>
+                  <p>
                     Fórmulas finais: {{ search.rootRecipesEvaluated }}/{{
                       search.rootRecipesTotal
                     }}
@@ -405,83 +485,16 @@
                     estados: {{ search.statesVisited }}/10.000 · excluídos:
                     {{ search.statesPruned }}
                   </p>
+                  <ul>
+                    @for (choice of previewRecipeChoices(); track choice.itemId) {
+                      <li class="preview-recipe-choice">
+                        Fórmula de {{ productionStepName(choice.recipeId) }}
+                      </li>
+                    }
+                  </ul>
                 </details>
-                @if (previewIssues().length) {
-                  <details>
-                    <summary>Pendências e exclusões ({{ previewIssues().length }})</summary>
-                    <ul>
-                      @for (issue of previewIssues(); track issue.key) {
-                        <li class="preview-data-issue">
-                          <strong>{{ issue.itemName }}</strong
-                          >: {{ issue.message }}
-                        </li>
-                      }
-                    </ul>
-                  </details>
-                }
               }
-              <div class="economic-metrics-grid">
-                <div class="metric-card">
-                  <span class="metric-label">Lucro/hora</span
-                  ><strong class="metric-value">{{ silver(preview.profitPerHour) }}</strong>
-                </div>
-                <div class="metric-card">
-                  <span class="metric-label">Lucro total</span
-                  ><strong class="metric-value">{{ silver(preview.profit) }}</strong>
-                </div>
-                <div class="metric-card">
-                  <span class="metric-label">Materiais</span
-                  ><strong class="metric-value">{{ silver(preview.economicCost) }}</strong>
-                </div>
-                <div class="metric-card">
-                  <span class="metric-label">Tempo de produção</span
-                  ><strong class="metric-value">{{ productionTimeLabel(preview.seconds) }}</strong>
-                </div>
-              </div>
-              <details class="preview-decisions">
-                <summary>Ver escolhas por item e etapas de produção</summary>
-                <ul>
-                  @for (material of preview.materials; track material.itemId) {
-                    <li class="preview-material-row">
-                      <app-item-icon
-                        [url]="
-                          catalog.resolveIconUrl(
-                            parts().get(material.itemId) ?? { itemId: material.itemId }
-                          )
-                        "
-                        [name]="productionMaterialName(material.itemId)"
-                      />
-                      <span>
-                        <strong>{{ productionMaterialName(material.itemId) }}</strong> · comprar
-                        {{ material.bought }} · fazer {{ material.produced }} · estoque
-                        {{ material.owned }}
-                        @if (material.substituted > 0) {
-                          · {{ material.substituted }} equivalentes via procs raros
-                        }
-                      </span>
-                    </li>
-                  }
-                </ul>
-                <ul>
-                  @for (step of preview.steps; track $index) {
-                    <li class="preview-step-row">
-                      <app-item-icon
-                        [url]="
-                          catalog.resolveIconUrl(
-                            productionStepPart(step.recipeId) ?? { iconUrl: null }
-                          )
-                        "
-                        [name]="productionStepName(step.recipeId)"
-                      />
-                      <span>
-                        <strong>{{ productionStepName(step.recipeId) }}</strong> ·
-                        {{ step.crafts }} operações · {{ productionTimeLabel(step.seconds) }}
-                      </span>
-                    </li>
-                  }
-                </ul>
-              </details>
-              <details>
+              <details class="preview-assumptions">
                 <summary>Premissas do lucro estimado</summary>
                 <ul>
                   @for (assumption of preview.assumptions; track $index) {
@@ -495,10 +508,23 @@
               class="optimization-preview optimization-incomplete"
               aria-label="Dados pendentes da otimização"
             >
-              <strong>Nenhum plano econômico completo encontrado</strong>
-              <p>{{ optimizationReasonLabel(search.reason) }}.</p>
+              <div class="preview-result" role="status">
+                <strong>Nenhum plano econômico completo encontrado</strong>
+                <p>{{ optimizationReasonLabel(search.reason) }}.</p>
+              </div>
+              <div class="preview-pending">
+                <h3>Dados que precisam de atenção</h3>
+                <ul>
+                  @for (issue of previewIssues(); track issue.key) {
+                    <li class="preview-data-issue">
+                      <strong>{{ issue.itemName }}</strong
+                      >: {{ issue.message }}
+                    </li>
+                  }
+                </ul>
+              </div>
               <details class="preview-coverage">
-                <summary>Ver alcance da comparação</summary>
+                <summary>Alcance da comparação</summary>
                 <p>
                   Fórmulas avaliadas: {{ search.rootRecipesEvaluated }}/{{
                     search.rootRecipesTotal
@@ -506,19 +532,18 @@
                   · estados: {{ search.statesVisited }}
                 </p>
               </details>
-              <ul>
-                @for (issue of previewIssues(); track issue.key) {
-                  <li class="preview-data-issue">
-                    <strong>{{ issue.itemName }}</strong
-                    >: {{ issue.message }}
-                  </li>
-                }
-              </ul>
-              <button hlmBtn type="button" variant="outline" (click)="discardOptimizationPreview()">
-                Fechar prévia
-              </button>
             </section>
           }
+          <footer class="preview-actions">
+            <button hlmBtn type="button" variant="outline" (click)="discardOptimizationPreview()">
+              Fechar prévia
+            </button>
+            @if (previewPlan()) {
+              <button hlmBtn type="button" (click)="applyOptimizationPreview()">
+                Aplicar combinação
+              </button>
+            }
+          </footer>
         </dialog>
 
         <div class="economic-metrics-grid">

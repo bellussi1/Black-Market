@@ -156,3 +156,7 @@ Em Produção, a comparação de subreceitas usa `details` contextual no card, i
 Os checklists obrigatórios de criação e revisão ficam na [skill canônica](../../.agents/skills/bdo-ui-design/SKILL.md). Matriz: 1920×1080, 2560×1440, 1600×900, 1366×768 e 390×844; avaliar zoom 125%/150% e conteúdo longo quando alterados. Testar navegação direta, refresh, histórico, teclado, foco, loading/erro/vazio, reduced-motion e tutorial afetado. Medir overflow e observar a renderização, sem confundir build/specs com QA autenticada.
 
 O [inventário de rotas](../research/ui-route-inventory-2026-10-19.md) separa páginas, aliases, conteúdo suspenso pelo MVP e guardas. O [relatório de reconciliação](../research/ui-standardization-completion-2026-10-19.md) registra correções, evidências e validações ainda necessárias. Não declarar conformidade completa de acessibilidade ou de todas as combinações de dados a partir da amostra visual.
+
+### Prévia de otimização de receitas
+
+No diálogo nativo, manter título/contexto e ações visíveis durante a rolagem interna. Priorizar lucro/h, lucro do lote, custo e tempo; escolhas por item abertas com colunas Comprar/Fazer/Estoque, seguidas das etapas. Alcance/fórmulas, pendências e premissas usam disclosures. Distinguir melhor encontrado de ótimo certificado; sem plano completo, exibir pendências e somente fechar. Usar estilos encapsulados `recipe-optimization-dialog.scss`, sem alterar os budgets ou o comportamento do grafo.
