@@ -580,7 +580,7 @@ export class ScansPage implements OnDestroy {
       !cell.quantityUncertain &&
       cell.quantityEstimate === null &&
       (cell.quantityConfidence ?? 0) >= 70 &&
-      this.integer(cell.quantity) !== null
+      this.stockQuantity(cell.quantity) !== null
     );
   }
   isValidatedForImport(
@@ -595,8 +595,7 @@ export class ScansPage implements OnDestroy {
     if (mode === 'life-gear')
       return this.canValidateLifeEquipment(cell, lifeSkill, lifeSkillConfirmed, mode);
     if (mode === 'storage' || mode === 'inventory') {
-      const quantity = this.integer(cell.quantity);
-      return !cell.quantityUncertain && quantity !== null && quantity > 0;
+      return !cell.quantityUncertain && this.stockQuantity(cell.quantity) !== null;
     }
     return false;
   }
@@ -1580,12 +1579,16 @@ export class ScansPage implements OnDestroy {
     const parsed = parseVisibleQuantity(value);
     return parsed && !parsed.approximate ? Number(parsed.value) : null;
   }
+  stockQuantity(value: string) {
+    const quantity = this.integer(value);
+    return quantity !== null && quantity > 0 && quantity <= 1_000_000_000 ? quantity : null;
+  }
   edited(cell: CellDraft) {
     // Keep a correction in the editor until explicit inclusion, even between keystrokes.
     cell.autoExcluded = true;
     cell.ignored = false;
     if (this.mode === 'storage' || this.mode === 'inventory') {
-      cell.quantityUncertain = this.integer(cell.quantity) === null;
+      cell.quantityUncertain = this.stockQuantity(cell.quantity) === null;
       cell.quantityEstimate = null;
       cell.quantityConfidence = cell.quantityUncertain ? 0 : 100;
     }
@@ -1633,8 +1636,7 @@ export class ScansPage implements OnDestroy {
     if (mode === 'life-gear')
       return this.canValidateLifeEquipment(cell, this.lifeSkill, this.lifeSkillConfirmed, mode);
     if (mode === 'storage' || mode === 'inventory') {
-      const quantity = this.integer(cell.quantity);
-      return quantity !== null && quantity > 0;
+      return this.stockQuantity(cell.quantity) !== null;
     }
     return false;
   }
@@ -1677,7 +1679,8 @@ export class ScansPage implements OnDestroy {
       (!cell.item ||
         (this.mode === 'gear' && !this.slots.includes(cell.slot as (typeof gearSlots)[number])) ||
         (this.mode === 'life-gear' && !this.canValidateLifeEquipment(cell)) ||
-        (['storage', 'inventory'].includes(this.mode) && this.integer(cell.quantity) === null))
+        (['storage', 'inventory'].includes(this.mode) &&
+          this.stockQuantity(cell.quantity) === null))
     )
       return;
     cell.ignored = false;
@@ -1730,7 +1733,9 @@ export class ScansPage implements OnDestroy {
     if (
       !this.location.trim() ||
       !entries.length ||
-      entries.some((cell) => !cell.item || !cell.reviewed || this.integer(cell.quantity) === null)
+      entries.some(
+        (cell) => !cell.item || !cell.reviewed || this.stockQuantity(cell.quantity) === null,
+      )
     ) {
       this.message.set('Confira item, quantidade, local e a revisão de cada espaço incluído.');
       return;
@@ -1795,7 +1800,7 @@ export class ScansPage implements OnDestroy {
             itemId: item.id,
             name: item.name,
             location,
-            quantity: this.integer(cell.quantity)!,
+            quantity: this.stockQuantity(cell.quantity)!,
             target: previous?.target ?? 0,
             price: previous?.price ?? '0',
           };
@@ -1881,11 +1886,11 @@ export class ScansPage implements OnDestroy {
           .map((cell) => ({ job, cell })),
       )
       .filter(({ job }) => job.mode === 'storage' || job.mode === 'inventory')
-      .filter(({ cell }) => cell.item && this.integer(cell.quantity) !== null)
+      .filter(({ cell }) => cell.item && this.stockQuantity(cell.quantity) !== null)
       .map(({ job, cell }) => ({
         itemId: cell.item!.id,
         name: cell.item!.name,
-        quantity: this.integer(cell.quantity)!,
+        quantity: this.stockQuantity(cell.quantity)!,
         kind: job.mode as 'storage' | 'inventory',
         location:
           job.mode === 'inventory'
@@ -1931,7 +1936,8 @@ export class ScansPage implements OnDestroy {
       selected.some(
         ({ job, cell }) =>
           !cell.item ||
-          (['storage', 'inventory'].includes(job.mode) && this.integer(cell.quantity) === null) ||
+          (['storage', 'inventory'].includes(job.mode) &&
+            this.stockQuantity(cell.quantity) === null) ||
           (!job.location.trim() && job.mode === 'storage') ||
           (['inventory', 'gear'].includes(job.mode) &&
             !this.profiles().some((profile) => profile.id === job.profileId)),

@@ -474,6 +474,59 @@ describe('Screenshot entry', () => {
     expect(page.cells().map((row) => row.include)).toEqual([true, false, false]);
     expect(page.reviewCells()).toHaveLength(2);
   });
+  it.each(['0', '1000000001'])(
+    'keeps invalid stock quantity %s pending in automatic and manual review',
+    async (quantity) => {
+      images();
+      const fixture = await renderComponent(ScansPage),
+        page = fixture.componentInstance;
+      page.mode = 'storage';
+      await page.file({
+        target: { files: [new File(['scan'], 'scan.png', { type: 'image/png' })] },
+      } as unknown as Event);
+      const item = { id: 1, name: 'Material', icon: null } as CatalogItem;
+      const cell = {
+        id: 0,
+        preview: '',
+        options: [item],
+        item,
+        score: 1,
+        quantity,
+        quantityText: quantity,
+        quantityEstimate: null,
+        quantityUncertain: false,
+        quantityConfidence: 95,
+        include: false,
+        reviewed: false,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      };
+      const job = page.jobs()[0];
+      job.status = 'ready';
+      job.location = 'Velia';
+      job.cells = [cell];
+      page.jobs.set([...page.jobs()]);
+      page.activeJobId.set(job.id);
+
+      expect(page.stockQuantity('1')).toBe(1);
+      expect(page.stockQuantity('1000000000')).toBe(1_000_000_000);
+      expect(page.reliable(cell, 'storage')).toBe(false);
+      expect(page.canValidate(cell, 'storage')).toBe(false);
+      page.cells.set([cell]);
+      page.confirmReliable();
+      page.review(cell, true);
+      await fixture.whenStable();
+
+      expect(cell).toMatchObject({ include: false, reviewed: false });
+      expect(page.isValidatedForImport({ ...cell, include: true, reviewed: true }, 'storage')).toBe(
+        false,
+      );
+      expect(fixture.nativeElement.textContent).toContain(
+        'Corrija para um inteiro entre 1 e 1.000.000.000; esta leitura não será importada.',
+      );
+    },
+  );
   it('saves confident results across captures after one approval and leaves ambiguous items out', async () => {
     images();
     const fixture = await renderComponent(ScansPage),

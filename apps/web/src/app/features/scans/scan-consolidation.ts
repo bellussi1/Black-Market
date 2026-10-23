@@ -33,10 +33,10 @@ export function consolidateOccurrences(
   return [...occurrenceGroups(rows)].map(([key, group]) => {
     if (
       group.some(
-        (row) => !Number.isSafeInteger(row.quantity) || row.quantity < 0 || row.quantity > 1e9,
+        (row) => !Number.isSafeInteger(row.quantity) || row.quantity < 1 || row.quantity > 1e9,
       )
     )
-      throw new Error('Confira as quantidades: use inteiros entre zero e um bilhão.');
+      throw new Error('Confira as quantidades: use inteiros de 1 a 1 bilhão.');
     const choice = choices[key] ?? 'unresolved';
     if (group.length > 1 && choice === 'unresolved')
       throw new Error('Escolha como tratar cada item repetido.');

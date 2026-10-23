@@ -1027,6 +1027,11 @@
                       Quantidade não identificada com segurança. Digite o valor exato.
                     }
                   </p>
+                } @else if (cell.quantity && stockQuantity(cell.quantity) === null) {
+                  <p class="quantity-caution" [id]="'scan-qty-warning-' + cell.id" i18n>
+                    Corrija para um inteiro entre 1 e 1.000.000.000; esta leitura não será
+                    importada.
+                  </p>
                 }
               } @else if (mode === 'life-gear') {
                 <div class="life-gear-fields">

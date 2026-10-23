@@ -62,6 +62,9 @@ describe('Screenshot consolidation', () => {
       ),
     ).toThrow('limite');
   });
+  it('rejects zero as a stock stack quantity', () => {
+    expect(() => consolidateOccurrences([row({ quantity: 0 })], {})).toThrow('quantidades');
+  });
   it('matches legacy storage and avoids merging with character inventory', () => {
     expect(stockMatches({ itemId: 6201, location: 'VELIA' }, row())).toBe(true);
     expect(
