@@ -122,14 +122,86 @@ describe('production recommendations', () => {
     page.setCalibrationDraft('GRIND', 60);
     await page.compare();
     expect(page.plans()?.ranked.length).toBeGreaterThan(0);
-    expect(
-      page
-        .plans()
-        ?.ranked[0].assumptions.some((row) => row.includes('tempo padrão estimado, não medido')),
-    ).toBe(true);
     expect(page.plans()?.ranked[0].assumptions.some((row) => row.includes('tempo informado'))).toBe(
       true,
     );
+  });
+  it('does not treat an unrecorded weight limit as zero capacity', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'weight-limit',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+        }),
+      ],
+    }));
+    await page.load();
+    page.manualPrice(1, '10');
+    page.manualPrice(2, '100');
+    await page.compare();
+
+    expect(page.profile()?.weightLimit).toBe(0);
+    expect(page.plans()?.ranked.some((plan) => plan.recipeId === 'elixir')).toBe(true);
+
+    page.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((character) =>
+        character.id === 'weight-limit' ? { ...character, weightLimit: 0.1 } : character,
+      ),
+    }));
+    await page.compare();
+    expect(
+      page.plans()?.incomplete.some((plan) => plan.issues.some((issue) => issue.code === 'weight')),
+    ).toBe(true);
+    fixture.destroy();
+  });
+  it('lets the player edit carried weight and the weight limit in the Coach profile', async () => {
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: api() },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'weight-fields',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+        }),
+      ],
+    }));
+    await page.load();
+    fixture.detectChanges();
+    const fields = [...fixture.nativeElement.querySelectorAll('.coach-inline-profile label.field')];
+    const carriedWeightField = fields.find((field: Element) =>
+      field.textContent?.includes('Peso carregado'),
+    );
+    const weightLimitField = fields.find((field: Element) =>
+      field.textContent?.includes('Limite de peso'),
+    );
+    expect(carriedWeightField).toBeDefined();
+    expect(weightLimitField).toBeDefined();
+
+    const carriedWeight = carriedWeightField!.querySelector('input') as HTMLInputElement;
+    carriedWeight.value = '25.5';
+    carriedWeight.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const weightLimit = weightLimitField!.querySelector('input') as HTMLInputElement;
+    weightLimit.value = '1500';
+    weightLimit.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(page.profile()).toMatchObject({ carriedWeight: 25.5, weightLimit: 1500 });
+    fixture.destroy();
   });
   it('uses concrete dried seafood quantities while preserving the fresh formula', () => {
     const raw = {
@@ -1410,6 +1482,11 @@ describe('production recommendations', () => {
     await page.compare();
 
     expect(page.plans()?.ranked.length).toBeGreaterThan(0);
+    expect(
+      page
+        .plans()
+        ?.ranked[0].assumptions.some((row) => row.includes('tempo padrão estimado, não medido')),
+    ).toBe(true);
     const customPlan = page.plans()?.ranked.find((row) => row.scenario === 'produce-all');
     expect(customPlan).toBeDefined();
     expect(page.ownedMaterials(customPlan!).length).toBe(1);

@@ -59,8 +59,8 @@
       <section class="coach-context panel" aria-label="Perfil usado nas recomendações">
         <div class="panel-heading coach-context-header">
           <div>
-            <p class="tool-kicker">1. SEU PERSONAGEM & MAESTRIA</p>
-            <h2>Ajuste rápido de maestria e sessão</h2>
+            <p class="tool-kicker">1. SEU PERSONAGEM & CONFIGURAÇÃO</p>
+            <h2>Ajuste rápido do perfil de produção</h2>
           </div>
           <a class="coach-family-link" routerLink="/family">Editar perfil completo e gear</a>
         </div>
@@ -132,6 +132,38 @@
             />
           </label>
           <label class="field">
+            <span>Peso carregado (LT)</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="10000"
+              step="0.1"
+              [ngModel]="player.carriedWeight"
+              (change)="updateWeight('carriedWeight', $any($event.target).value)"
+              [disabled]="busy()"
+            />
+          </label>
+          <label class="field">
+            <span>Limite de peso (LT)</span>
+            <input
+              hlmInput
+              type="number"
+              min="0"
+              max="10000"
+              step="0.1"
+              [ngModel]="player.weightLimit > 0 ? player.weightLimit : null"
+              (change)="updateWeight('weightLimit', $any($event.target).value)"
+              placeholder="Não informado"
+              aria-describedby="coach-weight-limit-hint"
+              [disabled]="busy()"
+            />
+            <small id="coach-weight-limit-hint"
+              >Deixe vazio enquanto não souber; sem limite informado, peso não filtra o
+              ranking.</small
+            >
+          </label>
+          <label class="field">
             <span>Orçamento livre (prata)</span>
             <input
               hlmInput
@@ -149,7 +181,6 @@
           <span><small>Culinária</small>{{ player.mastery.cooking }} maestria</span>
           <span><small>Alquimia</small>{{ player.mastery.alchemy }} maestria</span>
           <span><small>Processamento</small>{{ player.mastery.processing }} maestria</span>
-          <span><small>Peso</small>{{ player.carriedWeight }} / {{ player.weightLimit }} LT</span>
         </div>
         <details class="gear-context">
           <summary>Gear do personagem e premissas automáticas</summary>

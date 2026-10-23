@@ -824,6 +824,33 @@ export class RecommendationsPage implements OnDestroy {
       ),
     }));
   }
+  updateWeight(field: 'carriedWeight' | 'weightLimit', raw: number | string) {
+    const player = this.profile();
+    if (!player) return;
+    const text = String(raw ?? '').trim();
+    const value = text === '' && field === 'weightLimit' ? 0 : Number(text);
+    if (
+      (text === '' && field === 'carriedWeight') ||
+      !Number.isFinite(value) ||
+      value < 0 ||
+      value > 10000
+    ) {
+      this.message.set(
+        field === 'carriedWeight'
+          ? 'Informe o peso carregado entre 0 e 10.000 LT.'
+          : 'Informe o limite de peso entre 0 e 10.000 LT.',
+      );
+      return;
+    }
+    if (player[field] === value) return;
+    this.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((row) =>
+        row.id === player.id ? { ...row, [field]: value } : row,
+      ),
+    }));
+    this.message.set('');
+  }
   defaultSecondsFor(method: string): number | undefined {
     return defaultRecipeMethodSeconds(method, productionMastery(method, this.profile()?.mastery));
   }
@@ -943,8 +970,9 @@ export class RecommendationsPage implements OnDestroy {
       profile: {
         budget: player.silver,
         activeMinutes: player.activeMinutes,
-        maxWeight: player.weightLimit,
-        currentWeight: player.carriedWeight,
+        ...(player.weightLimit > 0
+          ? { maxWeight: player.weightLimit, currentWeight: player.carriedWeight }
+          : {}),
       },
       itemWeights: weights,
       customChoices: { ...this.choices },
