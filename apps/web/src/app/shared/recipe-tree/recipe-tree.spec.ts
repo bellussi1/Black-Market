@@ -1463,6 +1463,62 @@ describe('Interactive recipe tree', () => {
     expect(tree.find('root/0')?.expanded).toBe(true);
     expect(tree.detailsOpen()).toBe(false);
   });
+  it('expands a nested recipe through the rendered step button', async () => {
+    const mocks = providers();
+    const saltRecipe: CatalogRecipe = {
+      ...recipe,
+      key: 'salt',
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+      inputs: [{ itemId: 4, name: 'Material', quantity: '2' }],
+    };
+    mocks.knowledge.produces.mockImplementation((...args: unknown[]) =>
+      of({ recipes: args[0] === 9001 ? [saltRecipe] : [] }),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.view.set('tree');
+    fixture.detectChanges();
+
+    const saltToggle = [...fixture.nativeElement.querySelectorAll('.step-toggle')].find(
+      (button: HTMLButtonElement) => button.getAttribute('aria-label') === 'Ver como obter Sal',
+    ) as HTMLButtonElement | undefined;
+    expect(saltToggle).toBeDefined();
+    saltToggle!.click();
+    fixture.detectChanges();
+
+    expect(tree.find('root/0')?.recipe?.key).toBe('salt');
+    expect(fixture.nativeElement.textContent).toContain('Material');
+    expect(tree.detailsOpen()).toBe(false);
+    fixture.destroy();
+  });
+  it('runs bulk expansion through the rendered Expandir todos button', async () => {
+    const mocks = providers();
+    const saltRecipe: CatalogRecipe = {
+      ...recipe,
+      key: 'salt',
+      outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+      inputs: [{ itemId: 4, name: 'Material', quantity: '2' }],
+    };
+    mocks.knowledge.produces.mockImplementation((...args: unknown[]) =>
+      of({ recipes: args[0] === 9001 ? [saltRecipe] : [] }),
+    );
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, mocks.list);
+    const tree = fixture.componentInstance;
+    tree.view.set('tree');
+    fixture.detectChanges();
+
+    const expandAll = [...fixture.nativeElement.querySelectorAll('.tree-expansion-controls button')]
+      .map((button: HTMLButtonElement) => button)
+      .find((button) => button.textContent?.trim() === 'Expandir todos');
+    expect(expandAll).toBeDefined();
+    expandAll!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(tree.find('root/0')?.recipe?.key).toBe('salt');
+    expect(fixture.nativeElement.textContent).toContain('Material');
+    fixture.destroy();
+  });
   it('multiplies each ingredient by the requested recipe count without yield rounding extra operations', async () => {
     const multiInputRecipe: CatalogRecipe = {
       ...recipe,
