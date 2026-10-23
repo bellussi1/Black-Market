@@ -1836,6 +1836,25 @@ describe('Interactive recipe tree', () => {
     ]);
   });
 
+  it('calculates profit margin against net revenue and leaves zero revenue undefined', async () => {
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.setCraftCount(100);
+    const profit = Number(tree.profit());
+    const revenue = Number(tree.netRevenue());
+    expect(revenue).toBeGreaterThan(0);
+    expect(tree.profitMargin()).toBeCloseTo((100 * profit) / revenue);
+    vi.spyOn(tree, 'netRevenue').mockReturnValue('0');
+    tree.setCraftCount(101);
+    expect(tree.profitMargin()).toBeNull();
+  });
+
   it('hides and blocks shopping-list persistence for signed-out visitors', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, [
@@ -2396,7 +2415,7 @@ describe('Interactive recipe tree', () => {
     fixture.detectChanges();
     expect(tree.effectiveMaterialCost()).toBe('0');
     expect(tree.profit()).toBe(tree.netRevenue());
-    expect(tree.profitMargin()).toBeNull();
+    expect(tree.profitMargin()).toBe(100);
 
     // The per-item checkbox reverses the bulk selection.
     tree.toggleMaterialSource(9001);

@@ -1258,16 +1258,12 @@ export class RecipeTree {
 
   readonly profitMargin = computed(() => {
     const p = this.profit();
-    const economicCost = this.effectiveMaterialCost();
-    if (p === null || economicCost === null || economicCost === '0') return null;
-    try {
-      const costNum = Number(economicCost);
-      const profitNum = Number(p);
-      if (costNum <= 0 || !Number.isFinite(profitNum)) return 100.0;
-      return (profitNum / costNum) * 100;
-    } catch {
-      return null;
-    }
+    const revenue = this.netRevenue();
+    if (p === null || revenue === null) return null;
+    const revenueNum = Number(revenue);
+    const profitNum = Number(p);
+    if (revenueNum <= 0 || !Number.isFinite(revenueNum) || !Number.isFinite(profitNum)) return null;
+    return (profitNum / revenueNum) * 100;
   });
 
   readonly primaryMethod = computed(() => this.root()?.recipe?.type ?? '');
