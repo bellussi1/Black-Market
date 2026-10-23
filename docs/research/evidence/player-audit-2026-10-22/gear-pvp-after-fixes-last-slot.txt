@@ -1,0 +1,91 @@
+CAPTURA EM REVISÃO
+
+Revisar captura
+Importar outra tela
+Como corrigir dados reconhecidos incorretamente
+
+LOTE EM REVISÃO
+
+Revisar capturas
+1 capturas no lote
+
+Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+
+Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+
+Adicionar personagem sem sair da importação
+Adicionar capturas ao lote
+Imagens e destinos · 1 capturas
+Imagem e ajustes da leitura · 1 × 1 espaços
+
+Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.
+
+Revisar itens
+13 pendentes
+
+Compare com a captura, corrija as dúvidas e inclua os itens conferidos.
+
+13 espaços
+6 com sugestões
+0 conferidos e incluídos
+Salvar itens conferidos
+
+0 itens prontos ou validados podem ser salvos. 13 pendentes ficam fora até a validação.
+
+Salvar 0 itens de equipamento
+Personagem
+Escolha seu personagem
+QA Auditoria 22-10
+QA OCR 22-10
+PA e PD da ficha
+
+Confira os números no jogo. Campos vazios preservam os valores anteriores; os atributos não são calculados pelos ícones.
+
+PA principal
+PA de despertar
+PD
+Conferi PA e PD. Atualizar os campos preenchidos junto com os equipamentos.
+A corrigir
+Todos os itens
+Anterior
+Espaços 13 a 13 de 13
+Próximos espaços
+Espaço 13
+Não identificado
+NA CAPTURA
+NO CATÁLOGO
+?
+Selecione o item
+Buscar outro item pelo nome
+Buscar outro item
+Categoria
+Todas
+Posição
+Escolha a posição
+Arma principal
+Arma secundária
+Despertar
+Elmo
+Armadura
+Luvas
+Sapatos
+Colar
+Cinto
+Anel 1
+Anel 2
+Brinco 1
+Brinco 2
+Ferramenta
+Traje de profissão
+Pedra alquímica
+Tomo do aventureiro
+
+Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um número ausente não confirma nível base.
+
+Nível de aprimoramento (0 a 30)
+Nível de Caphras
+Ver leitura original
+Validar
+Remover
+Ver meu armazém →
+Resumo e opções da importação

@@ -1,0 +1,36 @@
+FICHA DO PERSONAGEM (P)
+
+QA OCR 22-10
+Classe opcional · Nv. 1
+Nome
+Classe
+Especialização
+Sucessão / Talento
+Despertar
+MAESTRIA POR PROFISSÃO (FICHA P)
+Salva automaticamente ao sair do campo (0 a 3000)
+Coleta
+Culinária
+Alquimia
+Processamento
+Pesca
+Caça
+Treinamento
+Comércio
+Cultivo
+Navegação
+Permuta
+Atributos, peso, energia e combate
+Valores informados
+CONJUNTOS E COMPLEMENTOS
+Artefatos, Pedras de Luz, Cristais e Trajes
+Artefatos
+0 / 2
+Pedras de luz
+0 / 4
+Cristais
+0 / 20
+Trajes de pérola
+0 / 20
+Presets de equipamentos e cristais
+0 salvos

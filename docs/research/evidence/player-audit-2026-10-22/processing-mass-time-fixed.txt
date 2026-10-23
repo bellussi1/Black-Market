@@ -1,0 +1,109 @@
+PRODUTO
+
+Farinha de Trigo
+Moagem
+FÓRMULA
+Obter pronto / consultar fontes
+Moagem · método 1 · 1 materiais
+QUANTIA DE RECEITAS
+RECEITAS
+1x
+10x
+100x
+
+MAESTRIAS DA RECEITA
+
+MAESTRIA (PROCESSAMENTO)
+PTS
+
+Ajustes só para esta simulação. Usados nas etapas produzidas e nas alternativas do otimizador.
+
+Lote de processamento · maestria 1200 · média 310.00 un/ação
+Estimativa do produto: 31.000 unidades
+Tempo estimado: 1h 40m
+Ajustes de produção, estoque e mercado
+Produção por operação (ajuste fino)
+Calibrar tempo por método
+Moagem · lote em massa
+seg/operação
+
+Tempos padrão são estimativas de referência, não medições do seu equipamento. Informe seu tempo por método para ajustar o lucro estimado por hora. Para processamento em massa, informe os segundos por lote completo; o tempo fica pendente até esse ajuste.
+
+Calibrar rendimento e tempo de coleta
+Quais estoques entram no cálculo?
+Opções de impostos e buffs do mercado
+
+SIMULAÇÃO
+
+Resultado da receita
+
+Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda.
+
+Comprar subreceitas
+Produzir só a receita final
+Fazer / coletar tudo
+Produzir intermediários quando possível
+Otimizar lucro por hora
+Comparar compra e produção com sua maestria
+LUCRO POR HORA
+Pendente
+LUCRO LÍQUIDO
+Pendente
+CUSTO DOS MATERIAIS
+Pendente
+FATURAMENTO LÍQUIDO
+109.757.050
+Preço un.: 4.190
+Bruto: 129.890.000
+100 receitas · tempo total: 1h 40m · inclui a etapa final
+Atualizada há 9 min
+Resultado incompleto · 2 itens ou etapas a conferir
+
+Árvore visual
+Etapas expansíveis
+Expandir todos
+Recolher todos
++
+72%
+−
+Ajustar árvore
+Centralizar seleção
+Restaurar vista
+Só esta ramificação
+
+Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+
+Tier 0 · PRODUTO FINAL
+Farinha de Trigo
+
+Precisa 31000 · estoque usado 0
+Faltam 31000
+
+Material
+− Recolher
+Tier 1 · OBTER / EXPLORAR
+Trigo
+
+Precisa 12400 · estoque usado 100
+Faltam 12300
+
+Ingrediente equivalente
+Trigo
+1 por operação
+Trigo de Alta Qualidade
+1 por operação
+Trigo Especial
+1 por operação
++ Explorar produção
+Plano da receita
+1 insumos · 0 retornos
+
+Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote.
+
+Materiais da receita
+1
+Trigo
+Referência · 2.800
+· Est: 0
+12.400 un
+Obter pronto

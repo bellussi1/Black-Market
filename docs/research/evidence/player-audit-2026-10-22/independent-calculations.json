@@ -1,0 +1,80 @@
+{
+  "convention": "Inteiros em prata; coleta floor(bruto*845/1000). Independente dos módulos de cálculo do produto.",
+  "beerDefault": {
+    "cost": "1399000",
+    "gross": "1503791",
+    "net": "1270703",
+    "profit": "-128297",
+    "seconds": 29.563924719407556,
+    "plannerSeconds": 29.6,
+    "profitHour": -15603689
+  },
+  "beerControlled": {
+    "cost": "1399000",
+    "gross": "610000",
+    "net": "515450",
+    "profit": "-883550",
+    "seconds": 246.3660393283963,
+    "plannerSeconds": 246.4,
+    "profitHour": -12909009
+  },
+  "alchemyControlled": {
+    "cost": "1540400",
+    "gross": "2200000",
+    "net": "1859000",
+    "profit": "318600",
+    "seconds": 120,
+    "profitHour": 9558000,
+    "marginRevenue": 17.1382463690156,
+    "markupCost": 20.682939496234745
+  },
+  "alchemyChain": {
+    "cost": 2422000,
+    "gross": 3313000,
+    "net": "2799485",
+    "profit": "377485",
+    "seconds": 132,
+    "profitHour": 10295045.454545455
+  },
+  "processing": {
+    "mastery": 1200,
+    "batch": 124,
+    "operations": 100,
+    "inputs": 12400,
+    "output": 31000,
+    "cost": 34100000,
+    "gross": 129890000,
+    "net": "109757050",
+    "profit": "75657050",
+    "defaultSeconds": 600,
+    "defaultProfitHour": 453942300,
+    "comparisonSeconds": 6000,
+    "comparisonProfitHour": 45394230
+  },
+  "shopping": {
+    "requiredFlour": 12400,
+    "requiredBeer": 5,
+    "stock": 100,
+    "expectedMissing": 12305,
+    "observedBeforeOptimization": 12305,
+    "observedAfterOptimization": 12205,
+    "error": 100
+  },
+  "market": {
+    "gross": 100000,
+    "net": "84500",
+    "cost": 50000,
+    "profit": "34500",
+    "breakEvenUnit": 5918
+  },
+  "observedSession": {
+    "gross": 100000,
+    "expense": 20000,
+    "profit": 80000,
+    "minutes": 15,
+    "profitHour": 320000,
+    "energy": 20,
+    "profitEnergy": 4000
+  },
+  "rounding": "Tempo por ação arredondado ao milissegundo antes de multiplicar o lote; taxa inteira trunca a divisão."
+}

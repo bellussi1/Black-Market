@@ -1,0 +1,215 @@
+- link "Ir para o conteúdo":
+  - /url: /scans#workspace-main
+- complementary:
+  - link "Black Market — início":
+    - /url: /
+    - generic: BLACK
+    - generic: MARKET
+  - paragraph: ESPAÇO DO AVENTUREIRO
+  - navigation "Navegação principal do Black Market":
+    - link "Início":
+      - /url: /
+      - generic: Início
+    - link "Profissões e produção":
+      - /url: /lifeskills
+      - generic: Profissões e produção
+    - link "Mercado":
+      - /url: /market
+      - generic: Mercado
+    - link "Explorar receitas":
+      - /url: /recipes
+      - generic: Explorar receitas
+    - link "Calcular produção":
+      - /url: /crafting
+      - generic: Calcular produção
+    - generic "Materiais e planos":
+      - generic: Materiais e planos
+    - link "Armazém":
+      - /url: /storage
+      - generic: Armazém
+    - link "Importar capturas":
+      - /url: /scans
+      - generic: Importar capturas
+    - link "Família":
+      - /url: /family
+      - generic: Família
+    - link "Lista de materiais":
+      - /url: /shopping
+      - generic: Lista de materiais
+    - link "Meus planos":
+      - /url: /plans
+      - generic: Meus planos
+    - generic "Guias e conta":
+      - generic: Guias e conta
+  - paragraph: Ferramentas independentes
+  - generic: BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS
+- banner:
+  - navigation "Localização atual":
+    - list:
+      - link "Black Market":
+        - /url: /
+      - listitem: /
+      - listitem: Importar capturas
+  - button "Buscar item":
+    - text: Buscar item
+    - generic: ⌕
+  - link "QA OCR 22-10":
+    - /url: /family
+  - link "Configurações":
+    - /url: /settings
+  - text: Região do mercado
+  - combobox "Região do mercado":
+- main:
+  - main:
+    - generic "Revisar captura":
+      - paragraph: CAPTURA EM REVISÃO
+      - heading "Revisar captura" [level=1]
+      - button "Importar outra tela"
+    - region "Ajuda para revisão":
+      - generic "Como corrigir dados reconhecidos incorretamente"
+    - region "Revisão de captura":
+      - main:
+        - generic "Revisar dados do personagem":
+          - paragraph: SEUS DADOS, COM SUA REVISÃO
+          - heading "Revisar dados do personagem" [level=1]
+          - paragraph: Confira a captura, selecione os campos válidos e confirme antes de aplicar qualquer dado ao personagem.
+          - link "Voltar à importação de itens":
+            - /url: /scans
+        - list "Etapas da importação":
+          - generic: "01"
+          - generic: Escolher captura
+          - generic: "02"
+          - generic: Reconhecer e revisar
+          - generic: "03"
+          - generic: Aplicar campos
+        - generic "Captura original e substituição"
+        - generic "Tipo de tela e ajustes da leitura"
+        - region "Revisar dados do personagem":
+          - paragraph: CONFIRMAÇÃO MANUAL
+          - heading "Revisar dados do personagem" [level=2]
+          - generic: 7 campos selecionados
+          - generic: Personagem existente
+          - combobox "Personagem existente":
+          - generic "Criar personagem para esta importação"
+          - button "Selecionar campos válidos para importar" [active]
+          - article:
+            - checkbox "Maestria · Alquimia" [checked]
+            - generic: Maestria · Alquimia
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2995"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Alquimia · Maestria 2995
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria · Comércio" [checked]
+            - generic: Maestria · Comércio
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2115"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Comércio · Maestria 2115
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria · Culinária" [checked]
+            - generic: Maestria · Culinária
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2790"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Culinária · Maestria 2790
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria · Cultivo" [checked]
+            - generic: Maestria · Cultivo
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2245"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Cultivo · Maestria 2245
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria · Pesca" [checked]
+            - generic: Maestria · Pesca
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2880"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Pesca · Maestria 2880
+            - paragraph: Revisar · Pontuação OCR bruta 93/100
+          - article:
+            - checkbox "Maestria · Processamento" [checked]
+            - generic: Maestria · Processamento
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "800"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Processamento · Maestria 800
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria · Treinamento" [checked]
+            - generic: Maestria · Treinamento
+            - paragraph:
+              - generic: Valor atual no personagem
+              - generic: "0"
+            - generic: Valor revisável
+            - textbox "Valor revisável": "2835"
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Treinamento · Maestria 2835
+            - paragraph: Revisar · Pontuação OCR bruta 94/100
+          - article:
+            - checkbox "Maestria não identificada · prévia" [disabled]
+            - generic: Maestria não identificada · prévia
+            - paragraph:
+              - generic: Maestria 3080
+              - generic: Prévia
+            - paragraph:
+              - text: "Texto lido:"
+              - code: Maestria 3080
+            - paragraph: Somente leitura · Pontuação OCR bruta 94/100
+          - generic: Adicionar campo do perfil
+          - combobox "Adicionar campo do perfil":
+          - button "Adicionar" [disabled]
+          - status: Confira o tipo de tela e revise cada campo antes de aplicar.
+          - generic: 7 campo(s) selecionado(s)
+          - button "Aplicar campos selecionados"
+- contentinfo "Informações do Black Market":
+  - link "Black Market — início":
+    - /url: /
+    - generic: ◇
+    - generic: BLACK MARKET
+  - paragraph: Ferramenta independente para a comunidade brasileira de Black Desert Online, sem afiliação com a Pearl Abyss.
+  - link "Sobre a plataforma":
+    - /url: /sobre/
+  - navigation "Documentos da plataforma":
+    - link "Termos de Uso":
+      - /url: /termos
+    - link "Política de Privacidade":
+      - /url: /privacidade
+    - link "Cookies e armazenamento":
+      - /url: /cookies
+  - navigation "Suporte e escolhas":
+    - link "Contato e suporte":
+      - /url: /contato
+    - button "Preferências de privacidade"
+  - paragraph: © 2026 Black Market
+  - paragraph: Marcas e imagens do jogo pertencem aos respectivos titulares.

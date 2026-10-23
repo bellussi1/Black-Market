@@ -1,0 +1,39 @@
+CAPTURA EM REVISÃO
+
+Revisar captura
+Importar outra tela
+Como corrigir dados reconhecidos incorretamente
+
+LOTE EM REVISÃO
+
+Revisar capturas
+1 capturas no lote
+
+Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+
+Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+
+Adicionar personagem sem sair da importação
+Adicionar capturas ao lote
+Imagens e destinos · 1 capturas
+Imagem e ajustes da leitura · 1 × 1 espaços
+Selecionar área manualmente
+
+Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos campos abaixo.
+
+446 × 880 pixels. O contorno mostra a área que será lida.
+Preparar leitura
+Ajustar área e tamanho da grade
+Distância da esquerda
+Distância do topo
+Largura
+Altura
+
+Tentaremos detectar molduras de equipamentos na área selecionada. Se não funcionar, recorte um ícone e use uma linha e uma coluna. Posições e símbolos de aprimoramento são sugestões para revisar. Caphras precisa ser informado no jogo.
+
+Corrigir tipo da captura
+Ler itens e valores
+
+Falha em 1 de 1 capturas. gear-lifeskill.jpeg: Não reconhecemos as posições deste equipamento com segurança. Use o cadastro manual ou recorte um único ícone; a roda de profissões ainda precisa de calibração.
+
+Ver meu armazém →

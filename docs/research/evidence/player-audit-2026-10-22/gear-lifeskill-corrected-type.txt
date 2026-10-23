@@ -1,0 +1,187 @@
+- link "Ir para o conteúdo":
+  - /url: /scans#workspace-main
+- complementary:
+  - link "Black Market — início":
+    - /url: /
+    - generic: BLACK
+    - generic: MARKET
+  - paragraph: ESPAÇO DO AVENTUREIRO
+  - navigation "Navegação principal do Black Market":
+    - link "Início":
+      - /url: /
+      - generic: Início
+    - link "Profissões e produção":
+      - /url: /lifeskills
+      - generic: Profissões e produção
+    - link "Mercado":
+      - /url: /market
+      - generic: Mercado
+    - link "Explorar receitas":
+      - /url: /recipes
+      - generic: Explorar receitas
+    - link "Calcular produção":
+      - /url: /crafting
+      - generic: Calcular produção
+    - generic "Materiais e planos":
+      - generic: Materiais e planos
+    - link "Armazém":
+      - /url: /storage
+      - generic: Armazém
+    - link "Importar capturas":
+      - /url: /scans
+      - generic: Importar capturas
+    - link "Família":
+      - /url: /family
+      - generic: Família
+    - link "Lista de materiais":
+      - /url: /shopping
+      - generic: Lista de materiais
+    - link "Meus planos":
+      - /url: /plans
+      - generic: Meus planos
+    - generic "Guias e conta":
+      - generic: Guias e conta
+  - paragraph: Ferramentas independentes
+  - generic: BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS
+- banner:
+  - navigation "Localização atual":
+    - list:
+      - link "Black Market":
+        - /url: /
+      - listitem: /
+      - listitem: Importar capturas
+  - button "Buscar item":
+    - text: Buscar item
+    - generic: ⌕
+  - link "QA OCR 22-10":
+    - /url: /family
+  - link "Configurações":
+    - /url: /settings
+  - text: Região do mercado
+  - combobox "Região do mercado":
+- main:
+  - main:
+    - generic "Revisar captura":
+      - paragraph: CAPTURA EM REVISÃO
+      - heading "Revisar captura" [level=1]
+      - button "Importar outra tela"
+    - region "Ajuda para revisão":
+      - generic "Como corrigir dados reconhecidos incorretamente"
+    - region "Revisão de captura":
+      - region "Revisar capturas":
+        - paragraph: LOTE EM REVISÃO
+        - heading "Revisar capturas" [level=2]
+        - generic: 1 capturas no lote
+        - status: Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+        - paragraph: Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+      - generic "Adicionar capturas ao lote"
+      - region "Capturas do lote":
+        - generic "Imagens e destinos · 1 capturas"
+      - generic "Imagem e ajustes da leitura · 1 × 1 espaços"
+      - status: 2 ícones preparados. Confira item, posição e aprimoramento. Trajes e artefatos podem aparecer sem posição; ignore o que não faz parte do conjunto de combate. Caphras não é visível nesta ficha.
+      - heading "Revisar itens" [level=2]
+      - generic: 2 pendentes
+      - paragraph: Compare com a captura, corrija as dúvidas e inclua os itens conferidos.
+      - strong: "2"
+      - text: espaços
+      - strong: "2"
+      - text: com sugestões
+      - strong: "0"
+      - text: conferidos e incluídos
+      - heading "Salvar itens conferidos" [level=3]
+      - paragraph:
+        - strong: "0"
+        - text: itens prontos ou validados podem ser salvos.
+        - strong: "2"
+        - text: pendentes ficam fora até a validação.
+      - button "Salvar 0 itens de equipamento" [disabled]
+      - text: Personagem
+      - combobox "Personagem":
+      - group "PA e PD da ficha":
+        - generic: PA e PD da ficha
+        - paragraph: Confira os números no jogo. Campos vazios preservam os valores anteriores; os atributos não são calculados pelos ícones.
+        - generic: PA principal
+        - textbox "PA principal"
+        - generic: PA de despertar
+        - textbox "PA de despertar"
+        - generic: PD
+        - textbox "PD"
+        - checkbox "Conferi PA e PD. Atualizar os campos preenchidos junto com os equipamentos."
+        - text: Conferi PA e PD. Atualizar os campos preenchidos junto com os equipamentos.
+      - navigation "Páginas da revisão da captura":
+        - group "Filtro da revisão":
+          - button "A corrigir"
+          - button "Todos os itens" [pressed]
+        - button "Anterior" [disabled]
+        - generic: Espaços 1 a 2 de 2
+        - button "Próximos espaços" [disabled]
+      - article:
+        - heading "Espaço 1" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Cerca Lua Minguante de Clow"
+        - strong: Cerca Lua Minguante de Clow
+        - generic: "#58018"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Posição
+        - combobox "Posição":
+        - paragraph: Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um número ausente não confirma nível base.
+        - text: Nível de aprimoramento (0 a 30)
+        - spinbutton "Nível de aprimoramento (0 a 30)"
+        - text: Nível de Caphras
+        - spinbutton "Nível de Caphras"
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 2" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - 'generic "Item #3678 (sem nome no cliente)"'
+        - strong: "Item #3678 (sem nome no cliente)"
+        - generic: "#3678"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Posição
+        - combobox "Posição":
+        - paragraph: Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um número ausente não confirma nível base.
+        - text: Nível de aprimoramento (0 a 30)
+        - spinbutton "Nível de aprimoramento (0 a 30)"
+        - text: Nível de Caphras
+        - spinbutton "Nível de Caphras"
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - link "Ver meu armazém →":
+        - /url: /storage
+      - generic "Resumo e opções da importação"
+- contentinfo "Informações do Black Market":
+  - link "Black Market — início":
+    - /url: /
+    - generic: ◇
+    - generic: BLACK MARKET
+  - paragraph: Ferramenta independente para a comunidade brasileira de Black Desert Online, sem afiliação com a Pearl Abyss.
+  - link "Sobre a plataforma":
+    - /url: /sobre/
+  - navigation "Documentos da plataforma":
+    - link "Termos de Uso":
+      - /url: /termos
+    - link "Política de Privacidade":
+      - /url: /privacidade
+    - link "Cookies e armazenamento":
+      - /url: /cookies
+  - navigation "Suporte e escolhas":
+    - link "Contato e suporte":
+      - /url: /contato
+    - button "Preferências de privacidade"
+  - paragraph: © 2026 Black Market
+  - paragraph: Marcas e imagens do jogo pertencem aos respectivos titulares.

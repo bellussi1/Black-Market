@@ -1,0 +1,214 @@
+[
+  {
+    "capture": 2,
+    "quantities": [
+      {
+        "space": "Espaço 1",
+        "quantity": "67100"
+      },
+      {
+        "space": "Espaço 2",
+        "quantity": "8200"
+      },
+      {
+        "space": "Espaço 3",
+        "quantity": "587000"
+      },
+      {
+        "space": "Espaço 4",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 5",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 6",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 7",
+        "quantity": "263"
+      },
+      {
+        "space": "Espaço 8",
+        "quantity": "152000"
+      },
+      {
+        "space": "Espaço 9",
+        "quantity": "161900"
+      },
+      {
+        "space": "Espaço 10",
+        "quantity": "5274"
+      },
+      {
+        "space": "Espaço 11",
+        "quantity": "3626"
+      },
+      {
+        "space": "Espaço 12",
+        "quantity": ""
+      }
+    ]
+  },
+  {
+    "capture": 3,
+    "quantities": [
+      {
+        "space": "Espaço 1",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 2",
+        "quantity": "1"
+      },
+      {
+        "space": "Espaço 3",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 4",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 5",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 6",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 7",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 8",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 9",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 10",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 11",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 12",
+        "quantity": ""
+      }
+    ]
+  },
+  {
+    "capture": 4,
+    "quantities": [
+      {
+        "space": "Espaço 1",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 2",
+        "quantity": "45800"
+      },
+      {
+        "space": "Espaço 3",
+        "quantity": "80200"
+      },
+      {
+        "space": "Espaço 4",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 5",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 6",
+        "quantity": "32512"
+      },
+      {
+        "space": "Espaço 7",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 8",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 9",
+        "quantity": "2680"
+      },
+      {
+        "space": "Espaço 10",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 11",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 12",
+        "quantity": ""
+      }
+    ]
+  },
+  {
+    "capture": 5,
+    "quantities": [
+      {
+        "space": "Espaço 1",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 2",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 3",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 4",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 5",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 6",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 7",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 8",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 9",
+        "quantity": ""
+      },
+      {
+        "space": "Espaço 10",
+        "quantity": "562"
+      },
+      {
+        "space": "Espaço 11",
+        "quantity": "192"
+      },
+      {
+        "space": "Espaço 12",
+        "quantity": ""
+      }
+    ]
+  }
+]

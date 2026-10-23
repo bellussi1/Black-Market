@@ -1,0 +1,381 @@
+- link "Ir para o conteúdo":
+  - /url: /scans#workspace-main
+- complementary:
+  - link "Black Market — início":
+    - /url: /
+    - generic: BLACK
+    - generic: MARKET
+  - paragraph: ESPAÇO DO AVENTUREIRO
+  - navigation "Navegação principal do Black Market":
+    - link "Início":
+      - /url: /
+      - generic: Início
+    - link "Profissões e produção":
+      - /url: /lifeskills
+      - generic: Profissões e produção
+    - link "Mercado":
+      - /url: /market
+      - generic: Mercado
+    - link "Explorar receitas":
+      - /url: /recipes
+      - generic: Explorar receitas
+    - link "Calcular produção":
+      - /url: /crafting
+      - generic: Calcular produção
+    - generic "Materiais e planos":
+      - generic: Materiais e planos
+    - link "Armazém":
+      - /url: /storage
+      - generic: Armazém
+    - link "Importar capturas":
+      - /url: /scans
+      - generic: Importar capturas
+    - link "Família":
+      - /url: /family
+      - generic: Família
+    - link "Lista de materiais":
+      - /url: /shopping
+      - generic: Lista de materiais
+    - link "Meus planos":
+      - /url: /plans
+      - generic: Meus planos
+    - generic "Guias e conta":
+      - generic: Guias e conta
+  - paragraph: Ferramentas independentes
+  - generic: BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS
+- banner:
+  - navigation "Localização atual":
+    - list:
+      - link "Black Market":
+        - /url: /
+      - listitem: /
+      - listitem: Importar capturas
+  - button "Buscar item":
+    - text: Buscar item
+    - generic: ⌕
+  - link "QA Auditoria 22-10":
+    - /url: /family
+  - link "Configurações":
+    - /url: /settings
+  - text: Região do mercado
+  - combobox "Região do mercado":
+- main:
+  - main [active]:
+    - generic "Revisar captura":
+      - paragraph: CAPTURA EM REVISÃO
+      - heading "Revisar captura" [level=1]
+      - button "Importar outra tela"
+    - region "Ajuda para revisão":
+      - generic "Como corrigir dados reconhecidos incorretamente"
+    - region "Revisão de captura":
+      - region "Revisar capturas":
+        - paragraph: LOTE EM REVISÃO
+        - heading "Revisar capturas" [level=2]
+        - generic: 1 capturas no lote
+        - status: Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+        - paragraph: Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+      - generic "Adicionar personagem sem sair da importação"
+      - generic "Adicionar capturas ao lote"
+      - region "Capturas do lote":
+        - generic "Imagens e destinos · 1 capturas"
+      - generic "Imagem e ajustes da leitura · 9 × 10 espaços"
+      - status: Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.
+      - heading "Revisar itens" [level=2]
+      - generic: 90 pendentes
+      - paragraph: Compare com a captura, corrija as dúvidas e inclua os itens conferidos.
+      - strong: "90"
+      - text: espaços
+      - strong: "90"
+      - text: com sugestões
+      - strong: "0"
+      - text: conferidos e incluídos
+      - strong: "17"
+      - text: quantidades abreviadas
+      - heading "Salvar itens conferidos" [level=3]
+      - paragraph:
+        - strong: "0"
+        - text: itens prontos ou validados podem ser salvos.
+        - strong: "90"
+        - text: pendentes ficam fora até a validação.
+      - button "Salvar 0 itens no armazém" [disabled]
+      - text: Local deste estoque
+      - textbox "Local deste estoque": QA Auditoria 22-10
+      - navigation "Páginas da revisão da captura":
+        - group "Filtro da revisão":
+          - button "A corrigir"
+          - button "Todos os itens" [pressed]
+        - button "Anterior" [disabled]
+        - generic: Espaços 1 a 12 de 90
+        - button "Próximos espaços"
+      - article:
+        - heading "Espaço 1" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - 'generic "Imortalidade: Perfume de Coragem"'
+        - strong: "Imortalidade: Perfume de Coragem"
+        - generic: "#1167"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "1"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 2" [level=3]
+        - generic: Corrigir quant.
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir Robusto de Tendão de Baleia"
+        - strong: Elixir Robusto de Tendão de Baleia
+        - generic: "#733"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "1"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 3" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Cogumelo Amanita"
+        - strong: Cogumelo Amanita
+        - generic: "#5419"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 4" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Cogumelo Ancestral"
+        - strong: Cogumelo Ancestral
+        - generic: "#5418"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 5" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Cogumelo Blefista"
+        - strong: Cogumelo Blefista
+        - generic: "#5417"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 6" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Mochila de Aventura Leve de Lulupi"
+        - strong: Mochila de Aventura Leve de Lulupi
+        - generic: "#45711"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 7" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir do Céu Impiedoso"
+        - strong: Elixir do Céu Impiedoso
+        - generic: "#721"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 8" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir Perfeito de Caça a Humano"
+        - strong: Elixir Perfeito de Caça a Humano
+        - generic: "#671"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 9" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir de Concentração Avançada"
+        - strong: Elixir de Concentração Avançada
+        - generic: "#701"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "1"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 10" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir de Tendão de Baleia"
+        - strong: Elixir de Tendão de Baleia
+        - generic: "#732"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "1"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 11" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir de Detecção Afiada"
+        - strong: Elixir de Detecção Afiada
+        - generic: "#699"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 12" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Elixir da Rapidez Intrépida"
+        - strong: Elixir da Rapidez Intrépida
+        - generic: "#691"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - link "Ver meu armazém →":
+        - /url: /storage
+      - generic "Resumo e opções da importação"
+- contentinfo "Informações do Black Market":
+  - link "Black Market — início":
+    - /url: /
+    - generic: ◇
+    - generic: BLACK MARKET
+  - paragraph: Ferramenta independente para a comunidade brasileira de Black Desert Online, sem afiliação com a Pearl Abyss.
+  - link "Sobre a plataforma":
+    - /url: /sobre/
+  - navigation "Documentos da plataforma":
+    - link "Termos de Uso":
+      - /url: /termos
+    - link "Política de Privacidade":
+      - /url: /privacidade
+    - link "Cookies e armazenamento":
+      - /url: /cookies
+  - navigation "Suporte e escolhas":
+    - link "Contato e suporte":
+      - /url: /contato
+    - button "Preferências de privacidade"
+  - paragraph: © 2026 Black Market
+  - paragraph: Marcas e imagens do jogo pertencem aos respectivos titulares.

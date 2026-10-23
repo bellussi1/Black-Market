@@ -1,0 +1,140 @@
+Pesquisar item
+Cerveja
+
+PRODUTO
+
+Cerveja
+Culinária
+FÓRMULA
+Obter pronto / consultar fontes
+Culinária · método 1 · 4 materiais
+QUANTIA DE RECEITAS
+RECEITAS
+1x
+10x
+100x
+
+MAESTRIAS DA RECEITA
+
+MAESTRIA (CULINÁRIA)
+PTS
+
+Ajustes só para esta simulação. Usados nas etapas produzidas e nas alternativas do otimizador.
+
+Média estimada: 2.77 un / receita (Culinária maestria: 1000)
+Estimativa do produto: 276,7 unidades
+Tempo estimado: 29.6s
+Ajustes de produção, estoque e mercado
+
+SIMULAÇÃO
+
+Resultado da receita
+
+Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda.
+
+Comprar subreceitas
+Produzir só a receita final
+Fazer / coletar tudo
+Produzir intermediários quando possível
+Otimizar lucro por hora
+Comparar compra e produção com sua maestria
+LUCRO POR HORA
+-15.603.689
+LUCRO LÍQUIDO
+-128.297
+-9.2% de margem
+CUSTO DOS MATERIAIS
+1.399.000
+FATURAMENTO LÍQUIDO
+1.270.703
+Preço un.: 3.050
+Bruto: 1.503.791
+100 receitas · tempo total: 29.6s · inclui a etapa final
+Atualizada há 2 min
+
+Árvore visual
+Etapas expansíveis
+Expandir todos
+Recolher todos
++
+89%
+−
+Ajustar árvore
+Centralizar seleção
+Restaurar vista
+Só esta ramificação
+
+Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+
+Tier 0 · PRODUTO FINAL
+Cerveja
+
+Precisa 276.7 · estoque usado 0
+Faltam 276.7
+
+Consumíveis
+− Recolher
+Tier 1 · OBTER / EXPLORAR
+Trigo
+
+Precisa 500 · estoque usado 100
+Faltam 400
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Água Mineral
+
+Precisa 600 · estoque usado 0
+Faltam 600
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Fermento
+
+Precisa 200 · estoque usado 0
+Faltam 200
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Açúcar
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Plano da receita
+4 insumos · 1 retornos
+
+Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote.
+
+Materiais da receita
+4
+Trigo
+Referência · 2.750
+· Est: 0
+500 un
+Obter pronto
+Açúcar
+NPC · 20
+100 un
+Obter pronto
+Fermento
+NPC · 20
+200 un
+Obter pronto
+Água Mineral
+NPC · 30
+600 un
+Obter pronto
+Retornos previstos
+1
+
+Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda.
+
+Leite
+Quantidade esperada no lote: 28,32
+Preço un.: 23.300 · Atualizada há 2 min
+Incluir venda
+Salvar lista de compras
+Abrir planejamento
+Fonte e versão do catálogo · SA

@@ -1,0 +1,22 @@
+{
+  "source": "arsha",
+  "region": "sa",
+  "locale": "pt",
+  "fetchedAt": "2026-10-22T13:27:40.63Z",
+  "cacheStatus": "fetched",
+  "upstreamCacheMinutes": 30,
+  "items": [
+    {
+      "itemId": 9213,
+      "subId": 0,
+      "name": "Cerveja",
+      "price": "3050",
+      "stock": 10000,
+      "totalTrades": "1112081181",
+      "minPrice": "328",
+      "maxPrice": "3270",
+      "lastSoldPrice": "3270",
+      "lastSoldAt": "2026-10-22T13:25:37Z"
+    }
+  ]
+}

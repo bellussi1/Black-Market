@@ -1,0 +1,131 @@
+- link "Ir para o conteúdo":
+  - /url: /scans#workspace-main
+- complementary:
+  - link "Black Market — início":
+    - /url: /
+    - generic: BLACK
+    - generic: MARKET
+  - paragraph: ESPAÇO DO AVENTUREIRO
+  - navigation "Navegação principal do Black Market":
+    - link "Início":
+      - /url: /
+      - generic: Início
+    - link "Profissões e produção":
+      - /url: /lifeskills
+      - generic: Profissões e produção
+    - link "Mercado":
+      - /url: /market
+      - generic: Mercado
+    - link "Explorar receitas":
+      - /url: /recipes
+      - generic: Explorar receitas
+    - link "Calcular produção":
+      - /url: /crafting
+      - generic: Calcular produção
+    - generic "Materiais e planos":
+      - generic: Materiais e planos
+    - link "Armazém":
+      - /url: /storage
+      - generic: Armazém
+    - link "Importar capturas":
+      - /url: /scans
+      - generic: Importar capturas
+    - link "Família":
+      - /url: /family
+      - generic: Família
+    - link "Lista de materiais":
+      - /url: /shopping
+      - generic: Lista de materiais
+    - link "Meus planos":
+      - /url: /plans
+      - generic: Meus planos
+    - generic "Guias e conta":
+      - generic: Guias e conta
+  - paragraph: Ferramentas independentes
+  - generic: BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS
+- banner:
+  - navigation "Localização atual":
+    - list:
+      - link "Black Market":
+        - /url: /
+      - listitem: /
+      - listitem: Importar capturas
+  - button "Buscar item":
+    - text: Buscar item
+    - generic: ⌕
+  - link "QA OCR 22-10":
+    - /url: /family
+  - link "Configurações":
+    - /url: /settings
+  - text: Região do mercado
+  - combobox "Região do mercado":
+- main:
+  - main:
+    - generic "Revisar captura":
+      - paragraph: CAPTURA EM REVISÃO
+      - heading "Revisar captura" [level=1]
+      - button "Importar outra tela"
+    - region "Ajuda para revisão":
+      - generic "Como corrigir dados reconhecidos incorretamente"
+    - region "Revisão de captura":
+      - region "Revisar capturas":
+        - paragraph: LOTE EM REVISÃO
+        - heading "Revisar capturas" [level=2]
+        - generic: 1 capturas no lote
+        - status: Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+        - paragraph: Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+      - generic "Adicionar capturas ao lote"
+      - region "Capturas do lote":
+        - generic "Imagens e destinos · 1 capturas"
+      - generic "Imagem e ajustes da leitura · 8 × 4 espaços"
+      - checkbox "Ignorar espaços com o cadeado conhecido do armazém" [checked]
+      - text: Ignorar espaços com o cadeado conhecido do armazém
+      - paragraph: Se um item não aparecer na revisão, desmarque esta opção e analise novamente. Espaços com aparência incerta continuam para conferência.
+      - paragraph: 8 colunas × 4 linhas · 32 espaços. Confira se o contorno cobre todos os itens e deixa os menus de fora.
+      - button "Encontrar grade de itens"
+      - button "Selecionar área manualmente"
+      - paragraph: Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos campos abaixo.
+      - figure "444 × 884 pixels. O contorno mostra a área que será lida.":
+        - img "Captura selecionada para revisão"
+        - generic: 444 × 884 pixels. O contorno mostra a área que será lida.
+      - group "Preparar leitura":
+        - generic: Preparar leitura
+        - generic "Ajustar área e tamanho da grade"
+        - text: Distância da esquerda
+        - spinbutton "Distância da esquerda": "0"
+        - text: Distância do topo
+        - spinbutton "Distância do topo": "0"
+        - text: Largura
+        - spinbutton "Largura": "444"
+        - text: Altura
+        - spinbutton "Altura": "884"
+        - text: Colunas da grade
+        - spinbutton "Colunas da grade": "8"
+        - text: Linhas da grade
+        - spinbutton "Linhas da grade": "4"
+        - paragraph: O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de 400 espaços por leitura.
+        - generic "Corrigir tipo da captura"
+        - button "Ler itens e valores"
+      - link "Ver meu armazém →":
+        - /url: /storage
+- contentinfo "Informações do Black Market":
+  - link "Black Market — início":
+    - /url: /
+    - generic: ◇
+    - generic: BLACK MARKET
+  - paragraph: Ferramenta independente para a comunidade brasileira de Black Desert Online, sem afiliação com a Pearl Abyss.
+  - link "Sobre a plataforma":
+    - /url: /sobre/
+  - navigation "Documentos da plataforma":
+    - link "Termos de Uso":
+      - /url: /termos
+    - link "Política de Privacidade":
+      - /url: /privacidade
+    - link "Cookies e armazenamento":
+      - /url: /cookies
+  - navigation "Suporte e escolhas":
+    - link "Contato e suporte":
+      - /url: /contato
+    - button "Preferências de privacidade"
+  - paragraph: © 2026 Black Market
+  - paragraph: Marcas e imagens do jogo pertencem aos respectivos titulares.

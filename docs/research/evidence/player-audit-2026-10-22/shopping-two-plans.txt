@@ -1,0 +1,40 @@
+PLANEJAMENTO INTEGRADO
+
+Lista de materiais
+
+Reúna seus planos de produção. O estoque confirmado e as reservas são considerados novamente a cada atualização.
+
+Explorar uma receita
+PLANOS DE PRODUÇÃO
+2 planos
+MATERIAIS A OBTER
+4 de 4
+ESTOQUE CONSIDERADO
+SA · confirmado
+Atualizar por captura
+Materiais consolidados
+ESTOQUE ALOCADO
+Material	Necessário	Do estoque	Falta obter	Próximo passo
+
+Trigo
+	12.405	100	12.305	Preço · Produzir / obter
+
+Água Mineral
+	6	0	6	Preço · Produzir / obter
+
+Fermento
+	2	0	2	Preço · Produzir / obter
+
+Açúcar
+	1	0	1	Preço · Produzir / obter
+Anterior
+Página 1
+Próxima
+
+Esta lista não reserva nem consome seus itens. Alterações na árvore precisam ser salvas novamente. Quantidades dependem dos rendimentos informados no cenário.
+
+Planos incluídos
+1 receitas de Cerveja
+Remover da lista
+100 receitas de Farinha de Trigo
+Remover da lista

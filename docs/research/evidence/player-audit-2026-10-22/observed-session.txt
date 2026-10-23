@@ -1,0 +1,76 @@
+PROFISSÕES & O QUE FAZER
+
+Profissões e produção.
+
+Planeje o que produzir com sua maestria e armazém ou registre sessões para comparar seu rendimento observado.
+
+Sessões sem conta · Registros neste navegador, com sincronização ao entrar.
+
+O que fazer
+Receitas e produção
+→
+Sessões em campo
+Seu rendimento observado
+→
+
+REGISTRAR ATIVIDADE
+
+Dados observados da sessão
+SA
+Contexto da atividade
+Uso do tempo
+Ativo
+AFK
+Profissão desta sessão
+Não informada
+Coleta
+Culinária
+Alquimia
+Processamento
+Pesca
+Caça
+Treino
+Cultivo
+Navegação
+Permuta
+Comércio
+Maestria usada na sessão
+
+As comparações agrupam apenas sessões com o mesmo contexto informado. Maestria vazia significa “não informada”; zero é um valor registrado.
+
+Atividade / rota
+Duração (minutos)
+Energia consumida
+Prata direta / venda em NPC
+Despesas da sessão
+Itens para vender no mercado
+Adicionar item
+Coleta da venda
+Value Pack (+30% sobre a coleta)
+Venda isenta
+Regras e bônus avançados
+Registrar sessão
+Nome do preset
+Salvar preset
+Presets desta região
+Escolher preset
+Carregar
+Excluir preset
+Conferir resultado
+Resultado desta sessão
+Lucro líquido por hora
+320.000
+Lucro da sessão
+80.000
+Prata por energia
+4.000
+Receita total líquida
+100.000
+Venda de mercado líquida
+0
+
+Os resultados descrevem seus drops e preços informados. Efeitos de mastery, pets, Agris e buffs ficam refletidos nos valores observados; a ferramenta não prevê drops sem uma tabela validada.
+
+Comparações e histórico
+
+1 sessões salvas · 1 grupos comparáveis

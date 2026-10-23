@@ -1,0 +1,492 @@
+- link "Ir para o conteúdo":
+  - /url: /scans#workspace-main
+- complementary:
+  - link "Black Market — início":
+    - /url: /
+    - generic: BLACK
+    - generic: MARKET
+  - paragraph: ESPAÇO DO AVENTUREIRO
+  - navigation "Navegação principal do Black Market":
+    - link "Início":
+      - /url: /
+      - generic: Início
+    - link "Profissões e produção":
+      - /url: /lifeskills
+      - generic: Profissões e produção
+    - link "Mercado":
+      - /url: /market
+      - generic: Mercado
+    - link "Explorar receitas":
+      - /url: /recipes
+      - generic: Explorar receitas
+    - link "Calcular produção":
+      - /url: /crafting
+      - generic: Calcular produção
+    - generic "Materiais e planos":
+      - generic: Materiais e planos
+    - link "Armazém":
+      - /url: /storage
+      - generic: Armazém
+    - link "Importar capturas":
+      - /url: /scans
+      - generic: Importar capturas
+    - link "Família":
+      - /url: /family
+      - generic: Família
+    - link "Lista de materiais":
+      - /url: /shopping
+      - generic: Lista de materiais
+    - link "Meus planos":
+      - /url: /plans
+      - generic: Meus planos
+    - generic "Guias e conta":
+      - generic: Guias e conta
+  - paragraph: Ferramentas independentes
+  - generic: BLACK DESERT ONLINE · SEM AFILIAÇÃO COM A PEARL ABYSS
+- banner:
+  - navigation "Localização atual":
+    - list:
+      - link "Black Market":
+        - /url: /
+      - listitem: /
+      - listitem: Importar capturas
+  - button "Buscar item":
+    - text: Buscar item
+    - generic: ⌕
+  - link "QA OCR 22-10":
+    - /url: /family
+  - link "Configurações":
+    - /url: /settings
+  - text: Região do mercado
+  - combobox "Região do mercado":
+- main:
+  - main:
+    - generic "Revisar captura":
+      - paragraph: CAPTURA EM REVISÃO
+      - heading "Revisar captura" [level=1]
+      - button "Importar outra tela"
+    - region "Ajuda para revisão":
+      - generic "Como corrigir dados reconhecidos incorretamente"
+    - region "Revisão de captura":
+      - region "Revisar capturas":
+        - paragraph: LOTE EM REVISÃO
+        - heading "Revisar capturas" [level=2]
+        - generic: 5 capturas no lote
+        - status: Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente.
+        - paragraph: Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados.
+      - generic "Adicionar capturas ao lote"
+      - heading "1. Escolha a captura" [level=2]
+      - generic "Como preparar uma boa captura"
+      - group "Área para colar ou arrastar uma captura do jogo":
+        - strong: Cole ou arraste seu print aqui
+        - paragraph: No Windows, capture com Win + Shift + S. Depois, clique nesta área ou chegue até ela com Tab e pressione Ctrl + V.
+        - paragraph: Até oito capturas por lote. PNG, JPG ou WebP, até 10 MB e 12 megapixels por imagem.
+      - generic: Escolher imagem PNG, JPG ou WebP — até 10 MB
+      - button "Escolher imagem PNG, JPG ou WebP — até 10 MB"
+      - paragraph: A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A leitura pode confundir itens e números.
+      - checkbox "Analisar automaticamente quando a área de leitura estiver clara" [checked]
+      - text: Analisar automaticamente quando a área de leitura estiver clara
+      - region "Capturas do lote":
+        - heading "Capturas do lote · 5 / 8" [level=2]
+        - generic "Imagens e destinos · 5 capturas"
+        - article:
+          - button "Abrir captura 1":
+            - generic: Captura 1
+          - strong: armazem-1.jpeg
+          - status: Disponível para revisão · 9.3 s
+          - group "Destino da captura 1":
+            - generic: Destino da captura 1
+            - generic: Tipo
+            - combobox "Tipo":
+            - text: Cidade ou armazém
+            - textbox "Cidade ou armazém": QA Auditoria 22-10
+            - button "Remover"
+            - text: Substituir imagem
+            - button "Substituir imagem"
+          - paragraph: 20 espaços para revisão · 70 vazios ignorados
+        - article:
+          - button "Abrir captura 2":
+            - generic: Captura 2
+          - strong: armazem-2.jpeg
+          - status: Disponível para revisão · 38.5 s
+          - group "Destino da captura 2":
+            - generic: Destino da captura 2
+            - generic: Tipo
+            - combobox "Tipo":
+            - text: Cidade ou armazém
+            - textbox "Cidade ou armazém": QA Auditoria 22-10
+            - button "Remover"
+            - text: Substituir imagem
+            - button "Substituir imagem"
+          - paragraph: 90 espaços para revisão · 0 vazios ignorados
+        - article:
+          - button "Abrir captura 3":
+            - generic: Captura 3
+          - strong: armazem-3.jpeg
+          - status: Disponível para revisão · 39.5 s
+          - group "Destino da captura 3":
+            - generic: Destino da captura 3
+            - generic: Tipo
+            - combobox "Tipo":
+            - text: Cidade ou armazém
+            - textbox "Cidade ou armazém": QA Auditoria 22-10
+            - button "Remover"
+            - text: Substituir imagem
+            - button "Substituir imagem"
+          - paragraph: 90 espaços para revisão · 0 vazios ignorados
+        - article:
+          - button "Abrir captura 4":
+            - generic: Captura 4
+          - strong: armazem-4.jpeg
+          - status: Disponível para revisão · 20.0 s
+          - group "Destino da captura 4":
+            - generic: Destino da captura 4
+            - generic: Tipo
+            - combobox "Tipo":
+            - text: Cidade ou armazém
+            - textbox "Cidade ou armazém": QA Auditoria 22-10
+            - button "Remover"
+            - text: Substituir imagem
+            - button "Substituir imagem"
+          - paragraph: 45 espaços para revisão · 0 vazios ignorados
+        - article:
+          - button "Abrir captura 5":
+            - generic: Captura 5
+          - strong: armazem-5.jpeg
+          - status: Disponível para revisão · 38.1 s
+          - group "Destino da captura 5":
+            - generic: Destino da captura 5
+            - generic: Tipo
+            - combobox "Tipo":
+            - text: Cidade ou armazém
+            - textbox "Cidade ou armazém": QA Auditoria 22-10
+            - button "Remover"
+            - text: Substituir imagem
+            - button "Substituir imagem"
+          - paragraph: 90 espaços para revisão · 0 vazios ignorados
+        - navigation "Revisar capturas":
+          - button "Captura 1 · 20 itens"
+          - button "Captura 2 · 90 itens" [pressed]
+          - button "Captura 3 · 90 itens"
+          - button "Captura 4 · 45 itens"
+          - button "Captura 5 · 90 itens"
+        - button "Analisar lote"
+        - paragraph: "Última análise do lote: 136.8 segundos. O tempo depende dos recortes e da qualidade das imagens."
+      - generic "Imagem e ajustes da leitura · 9 × 10 espaços"
+      - status: Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.
+      - heading "Revisar itens" [level=2]
+      - generic: 334 pendentes
+      - paragraph: Compare com a captura, corrija as dúvidas e inclua os itens conferidos.
+      - strong: "90"
+      - text: espaços
+      - strong: "90"
+      - text: com sugestões
+      - strong: "0"
+      - text: conferidos e incluídos
+      - strong: "20"
+      - text: quantidades abreviadas
+      - heading "Salvar itens conferidos" [level=3]
+      - paragraph:
+        - strong: "1"
+        - text: itens prontos ou validados podem ser salvos.
+        - strong: "334"
+        - text: pendentes ficam fora até a validação.
+      - button "Salvar 1 item no armazém"
+      - button "Incluir 1 confiáveis"
+      - text: Local deste estoque
+      - textbox "Local deste estoque": QA Auditoria 22-10
+      - navigation "Páginas da revisão da captura":
+        - group "Filtro da revisão":
+          - button "A corrigir"
+          - button "Todos os itens" [pressed]
+        - button "Anterior" [disabled]
+        - generic: Espaços 1 a 12 de 90
+        - button "Próximos espaços"
+      - article:
+        - heading "Espaço 1" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "[Evento] Presente Simples da Família Leight"
+        - strong: "[Evento] Presente Simples da Família Leight"
+        - generic: "#45716"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "67100"
+        - paragraph:
+          - text: "Lido na captura:"
+          - code: 67.1k
+          - text: "(estimativa aplicada: 67100)."
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 2" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Pó Magico Desbotado"
+        - strong: Pó Magico Desbotado
+        - generic: "#44256"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "8200"
+        - paragraph:
+          - text: "Lido na captura:"
+          - code: 08.2K
+          - text: "(estimativa aplicada: 8200)."
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 3" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Marca de Hadum"
+        - strong: Marca de Hadum
+        - generic: "#65826"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "587000"
+        - paragraph:
+          - text: "Lido na captura:"
+          - code: 587k
+          - text: "(estimativa aplicada: 587000)."
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 4" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Marca de Hadum"
+        - strong: Marca de Hadum
+        - generic: "#65826"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 5" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "[Feiticeira] Amuleto Millen Fedora"
+        - strong: "[Feiticeira] Amuleto Millen Fedora"
+        - generic: "#22169"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 6" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Raiz de Ente"
+        - strong: Raiz de Ente
+        - generic: "#55031"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 7" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - 'generic "Baú de Luvas Nunborah: Espirito Negro"'
+        - strong: "Baú de Luvas Nunborah: Espirito Negro"
+        - generic: "#619735"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "263"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 8" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Baú Prata Encharcado pelas Ondas"
+        - strong: Baú Prata Encharcado pelas Ondas
+        - generic: "#767698"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "152000"
+        - paragraph:
+          - text: "Lido na captura:"
+          - code: 152K
+          - text: "(estimativa aplicada: 152000)."
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 9" [level=3]
+        - generic: Corrigir quant.
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Linho"
+        - strong: Linho
+        - generic: "#5802"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "161900"
+        - paragraph:
+          - text: "Lido na captura:"
+          - code: 161.9k
+          - text: "(estimativa aplicada: 161900)."
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 10" [level=3]
+        - generic: Confirmar
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "[Evento] Presente Simples da Família Leight"
+        - strong: "[Evento] Presente Simples da Família Leight"
+        - generic: "#45716"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "5274"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 11" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "[Mansão] Donut de Labirinto de Arbusto"
+        - strong: "[Mansão] Donut de Labirinto de Arbusto"
+        - generic: "#3875"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+          - text: "3626"
+        - generic "Ver leitura original"
+        - button "Validar":
+          - generic: Validar
+        - button "Remover"
+      - article:
+        - heading "Espaço 12" [level=3]
+        - generic: Item incerto
+        - generic: Na captura
+        - img "Espaço recortado do print"
+        - generic: No catálogo
+        - generic "Pó Magico Desbotado"
+        - strong: Pó Magico Desbotado
+        - generic: "#44256"
+        - generic: Item
+        - combobox "Item":
+        - generic "Buscar outro item pelo nome"
+        - generic: Quantidade
+        - textbox "Quantidade":
+          - /placeholder: Não lida
+        - button "Definir 1 un."
+        - paragraph: Quantidade não identificada com segurança. Digite o valor exato.
+        - generic "Ver leitura original"
+        - button "Validar" [disabled]:
+          - generic: Validar
+        - button "Remover"
+      - link "Ver meu armazém →":
+        - /url: /storage
+      - generic "Resumo e opções da importação"
+- contentinfo "Informações do Black Market":
+  - link "Black Market — início":
+    - /url: /
+    - generic: ◇
+    - generic: BLACK MARKET
+  - paragraph: Ferramenta independente para a comunidade brasileira de Black Desert Online, sem afiliação com a Pearl Abyss.
+  - link "Sobre a plataforma":
+    - /url: /sobre/
+  - navigation "Documentos da plataforma":
+    - link "Termos de Uso":
+      - /url: /termos
+    - link "Política de Privacidade":
+      - /url: /privacidade
+    - link "Cookies e armazenamento":
+      - /url: /cookies
+  - navigation "Suporte e escolhas":
+    - link "Contato e suporte":
+      - /url: /contato
+    - button "Preferências de privacidade"
+  - paragraph: © 2026 Black Market
+  - paragraph: Marcas e imagens do jogo pertencem aos respectivos titulares.

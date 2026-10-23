@@ -1,5 +1,7 @@
 # Mapa público das referências de BDO
 
+- [Auditoria de uso como jogador — 22/10/2026](player-journey-audit-2026-10-22.md): sessão Google real, personagem/estoque QA, OCR com capturas fornecidas, cálculos independentes, persistência, achados priorizados, correções J01–J09 e evidências/limites de cobertura.
+
 - [Atividade de mercado e bootstrap — 18/10/2026](market-activity-and-bootstrap-review-2026-10-18.md): contador acumulado, estoque desconhecido e separação de dependências iniciais.
 
 - [Receitas, Mercado e consistência de navegação — 18/10/2026](recipe-market-flow-review-2026-10-18.md): fluxo público dos quatro concorrentes, decisões de UI e limites de validação numérica.
