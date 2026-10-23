@@ -824,8 +824,8 @@ export class RecommendationsPage implements OnDestroy {
       ),
     }));
   }
-  defaultSecondsFor(method: string): number {
-    return defaultRecipeMethodSeconds(method);
+  defaultSecondsFor(method: string): number | undefined {
+    return defaultRecipeMethodSeconds(method, productionMastery(method, this.profile()?.mastery));
   }
   saveCalibration(method: string) {
     const player = this.profile();
@@ -901,10 +901,15 @@ export class RecommendationsPage implements OnDestroy {
       const config = this.calibration[recipe.method];
       const specific = this.recipeCalibration[recipe.id];
       const explicitSeconds = specific?.seconds ?? config?.seconds ?? undefined;
-      const baseSeconds = explicitSeconds ?? defaultRecipeMethodSeconds(recipe.method);
+      const validExplicitSeconds =
+        explicitSeconds !== undefined && Number.isFinite(explicitSeconds) && explicitSeconds > 0
+          ? explicitSeconds
+          : undefined;
+      const baseSeconds = validExplicitSeconds ?? this.defaultSecondsFor(recipe.method);
+      const timeSource = validExplicitSeconds === undefined ? 'default' : 'informed';
       estimates[recipe.id] = {
-        source: 'informed',
-        timeSource: 'informed',
+        source: specific?.yield ? 'informed' : timeSource,
+        timeSource,
         craftSeconds: productionCraftSeconds(recipe.method, baseSeconds, player.mastery),
         expectedYield: specific?.yield ?? undefined,
       };

@@ -32,6 +32,7 @@ import {
   alchemySpecialProductExpectedYield,
   cookingMassProduceRate,
   cookingRareProductExpectedYield,
+  DEFAULT_RECIPE_MASTERY,
   processingBatchCount,
 } from './recipe-mastery';
 import type { RecipeProductionGraph } from './recipe-production-graph';
@@ -67,7 +68,17 @@ function positiveNumber(value: string | number | null | undefined): number | und
 }
 
 /** Baseline duration assumptions in seconds; these are not measurements of the player. */
-export function defaultRecipeMethodSeconds(type: string): number {
+export function defaultRecipeMethodSeconds(
+  type: string,
+  processingMastery = DEFAULT_RECIPE_MASTERY,
+): number | undefined {
+  // A normal action's duration cannot be applied to a mastery-sized mass batch.
+  // The published 60–90 s interval is not a verified duration for every method/setup.
+  if (
+    lifeSkillForRecipe(type.toUpperCase()) === 'processing' &&
+    processingBatchCount(processingMastery) > 1
+  )
+    return undefined;
   const norm = (type || '').toLowerCase();
   if (norm === 'cook' || norm.includes('cooking') || norm.includes('culinaria')) return 1.2;
   if (norm.includes('alchemy') || norm.includes('alquimia')) {

@@ -85,6 +85,52 @@ async function renderComponent<T>(
 }
 describe('production recommendations', () => {
   useMemoryStorage();
+  it('requires a mass-processing duration and identifies defaults separately from informed times', async () => {
+    const data = structuredClone(snapshot);
+    data.recipes[0].type = 'GRIND';
+    const fixture = await renderComponent(RecommendationsPage, {}, [
+      { provide: ProductionApi, useValue: { ...api(), catalog: () => of(data) } },
+    ]);
+    const page = fixture.componentInstance;
+    page.store.update((state) => ({
+      ...state,
+      characters: [
+        characterSchema.parse({
+          id: 'person',
+          name: 'Aventureiro',
+          region: 'sa',
+          silver: '100000',
+          activeMinutes: 60,
+          weightLimit: 100,
+          mastery: {
+            ...characterSchema.parse({ id: 'base', name: 'Base', region: 'sa' }).mastery,
+            processing: 1200,
+          },
+        }),
+      ],
+    }));
+    await page.load();
+    page.manualPrice(1, '10');
+    page.manualPrice(2, '100');
+    await page.compare();
+    expect(page.plans()?.ranked).toHaveLength(0);
+    expect(
+      page
+        .plans()
+        ?.incomplete.some((plan) => plan.issues.some((issue) => issue.code === 'missing-time')),
+    ).toBe(true);
+    page.setCalibrationDraft('GRIND', 60);
+    await page.compare();
+    expect(page.plans()?.ranked.length).toBeGreaterThan(0);
+    expect(
+      page
+        .plans()
+        ?.ranked[0].assumptions.some((row) => row.includes('tempo padrão estimado, não medido')),
+    ).toBe(true);
+    expect(page.plans()?.ranked[0].assumptions.some((row) => row.includes('tempo informado'))).toBe(
+      true,
+    );
+  });
   it('uses concrete dried seafood quantities while preserving the fresh formula', () => {
     const raw = {
       key: 'squid-dish',

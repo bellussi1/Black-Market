@@ -58,6 +58,25 @@ function quote(itemId: number, price = '100'): MarketItemQuote {
 }
 
 describe('recipe production planner adapter', () => {
+  it('keeps mass processing pending until its action duration is informed', () => {
+    const root = recipe('grind-wheat', 304, [{ itemId: 201, quantity: '1' }], null, 'GRIND');
+    const seconds = defaultRecipeMethodSeconds('GRIND');
+    const result = buildRecipeProductionInput(
+      graph(root),
+      100,
+      emptyWorkspace(),
+      new Map(),
+      seconds === undefined ? new Map() : new Map([['GRIND', seconds]]),
+      new Map(),
+      new Map(),
+      now,
+      { masteryOverride: 1200, masterySkill: 'processing', defaultTimeMethods: new Set(['GRIND']) },
+    );
+    expect(result.recipes[0]?.ingredients).toEqual([{ itemId: 201, quantity: 124 }]);
+    expect(result.estimates['grind-wheat']?.expectedYield).toBe(310);
+    expect(result.estimates['grind-wheat']?.craftSeconds).toBeUndefined();
+  });
+
   it('uses the cooking action duration for the COOK catalog type', () => {
     expect(defaultRecipeMethodSeconds('COOK')).toBe(1.2);
   });

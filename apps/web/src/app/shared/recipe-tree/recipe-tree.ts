@@ -1106,7 +1106,12 @@ export class RecipeTree {
     const methods = [...new Set(recipes.map((recipe) => recipe.type))].sort();
     return methods.map((method) => ({
       method,
-      label: this.typeLabel(method),
+      label:
+        this.typeLabel(method) +
+        (lifeSkillForRecipe(method) === 'processing' &&
+        processingBatchCount(this.simulationMasteryForSkill('processing')) > 1
+          ? ' · lote em massa'
+          : ''),
       seconds: this.methodTimes().get(method) ?? null,
     }));
   });
@@ -1326,7 +1331,10 @@ export class RecipeTree {
   readonly primaryMethodSeconds = computed(() => {
     const method = this.primaryMethod();
     if (!method) return 1.2;
-    return this.methodTimes().get(method) ?? defaultRecipeMethodSeconds(method);
+    return (
+      this.methodTimes().get(method) ??
+      defaultRecipeMethodSeconds(method, this.simulationMasteryForSkill('processing'))
+    );
   });
 
   readonly effectiveMethodTimes = computed(() => {
@@ -1337,19 +1345,23 @@ export class RecipeTree {
     const map = new Map<string, number>(custom);
     for (const r of recipes) {
       if (!map.has(r.type)) {
-        map.set(r.type, defaultRecipeMethodSeconds(r.type));
+        const seconds = defaultRecipeMethodSeconds(
+          r.type,
+          this.simulationMasteryForSkill('processing'),
+        );
+        if (seconds !== undefined) map.set(r.type, seconds);
       }
     }
     return map;
   });
 
   readonly totalCraftTimeSeconds = computed(() => {
-    const fromPlan = this.currentProductionPlan()?.seconds;
-    if (fromPlan !== null && fromPlan !== undefined && fromPlan > 0) return fromPlan;
+    const plan = this.currentProductionPlan();
+    if (plan) return plan.seconds !== null && plan.seconds > 0 ? plan.seconds : null;
     if (this.productPrice() === null) return null;
     const count = this.requestedOperations();
     const sec = this.primaryMethodSeconds();
-    return count > 0 && sec > 0 ? count * sec : null;
+    return count > 0 && sec !== undefined && sec > 0 ? count * sec : null;
   });
 
   applyDefaultMethodTimes(): void {

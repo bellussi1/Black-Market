@@ -12,6 +12,10 @@ Insumos têm quantidade por craft, estoque e preço unitário. O custo econômic
 
 Lucro = receita líquida − custo econômico. Margem = lucro / receita líquida; prata/hora usa o tempo total informado. Yield, mastery, subprodutos e procs precisam de dados do usuário; não há rendimento automático de todas as receitas.
 
+Na oficina e no ranking, o tempo padrão é uma estimativa identificada como tal. Processamento em massa exige segundos por lote completo informados pelo usuário; sem esse dado, duração e lucro/hora ficam pendentes. Não se aplica o tempo normal de 6 segundos ao lote ampliado pela maestria.
+
+A lista integrada salva a demanda externa antes de abater o estoque (`bought + owned`), incluindo materiais totalmente cobertos por itens próprios. Ao reunir planos, distribui o estoque disponível uma única vez e respeita locais excluídos e reservas. A lista não guarda a simulação completa; abrir seu link não restaura lote, rendimentos e tempos anteriores.
+
 ## Cadeias de produção
 
 Receitas manuais têm produto, yield inteiro e ingredientes que podem ser comprados ou produzidos por outra receita. Estoque é identificado pelo nome normalizado, na região selecionada. Um plano consome uma cópia lógica do estoque, aproveita excedentes entre ramos e arredonda para cima o número de crafts. Detecta ciclos, IDs duplicados, referências ausentes e profundidade acima de 30. Cada demanda é limitada a 10^12 unidades. Saída inclui compras, estoque inicial usado, excedente usado, produtos e tarefas em ordem de dependência. Não altera o armazém real nem reserva materiais para outros projetos.

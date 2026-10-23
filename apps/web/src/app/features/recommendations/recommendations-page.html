@@ -641,22 +641,31 @@
       <details class="calibration-section panel">
         <summary>Ajuste fino: revisar tempos medidos por atividade</summary>
         <p>
-          Por padrão assumimos 1,2s para Culinária/Alquimia e 6,0s para Culinária/Alquimia Simples e
-          Processamento. Se o seu setup for mais rápido (ex.: 1,0s), ajuste abaixo.
+          Tempos padrão são estimativas: 1,2s para Culinária/Alquimia e 6,0s para Culinária/Alquimia
+          Simples e processamento normal. Para processamento em massa, informe os segundos por lote
+          completo; sem esse tempo, o lucro por hora fica pendente.
         </p>
         <div class="calibration-fields">
           @for (type of methods(); track type) {
             <label class="field">
               <span>
-                {{ methodLabel(type) }} · segundos por operação (padrão:
-                {{ defaultSecondsFor(type) }}s)
+                {{ methodLabel(type) }} · segundos por operação
+                @if (defaultSecondsFor(type); as seconds) {
+                  (padrão estimado: {{ seconds }}s)
+                } @else {
+                  (lote em massa · tempo pendente)
+                }
               </span>
               <input
                 hlmInput
                 type="number"
                 min="0.001"
                 step="0.1"
-                [placeholder]="defaultSecondsFor(type) + 's'"
+                [placeholder]="
+                  defaultSecondsFor(type) === undefined
+                    ? 'Informe segundos por lote'
+                    : defaultSecondsFor(type) + 's'
+                "
                 [ngModel]="calibration[type]?.seconds ?? null"
                 (ngModelChange)="setCalibrationDraft(type, $event)"
                 (blur)="saveCalibration(type)"
