@@ -1696,6 +1696,233 @@ describe('Screenshot entry', () => {
     expect(page.message()).toContain('local inteiro');
   });
 
+  it('merges new stock while preserving existing quantities and unseen destinations', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['merge'], 'merge.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const existing = [
+      {
+        id: 'existing-wheat',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7001,
+        name: 'Trigo',
+        location: 'Velia',
+        quantity: 100,
+        target: 250,
+        price: '37',
+        sources: [{ hash: 'f'.repeat(64), slot: 2, capture: 1 }],
+      },
+      {
+        id: 'unseen-velia',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7002,
+        name: 'Cevada',
+        location: 'Velia',
+        quantity: 12,
+        target: 0,
+        price: '0',
+      },
+      {
+        id: 'other-city',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7003,
+        name: 'Milho',
+        location: 'Heidel',
+        quantity: 8,
+        target: 0,
+        price: '0',
+      },
+    ];
+    page.store.update((state) => ({ ...state, inventory: existing }));
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    const job = page.jobs()[0]!;
+    const wheat = { id: 7001, name: 'Trigo', icon: null } as CatalogItem;
+    const flour = { id: 7004, name: 'Farinha de Trigo', icon: null } as CatalogItem;
+    Object.assign(job, {
+      mode: 'storage',
+      location: 'Velia',
+      hash: 'a'.repeat(64),
+      status: 'ready',
+      cells: [wheat, flour].map((item, id) => ({
+        id,
+        preview: '',
+        options: [item],
+        item,
+        itemUncertain: false,
+        quantity: id === 0 ? '999' : '5',
+        quantityText: id === 0 ? '999' : '5',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      })),
+    });
+    page.jobs.set([job]);
+    page.cells.set(job.cells);
+    page.mode = 'storage';
+    page.updateMode.set('merge');
+    page.batchConfirmed.set(true);
+
+    await page.saveBatch();
+
+    const inventory = page.store.data().inventory;
+    expect(inventory).toHaveLength(4);
+    expect(inventory.find((row) => row.id === 'existing-wheat')).toMatchObject({
+      quantity: 100,
+      target: 250,
+      price: '37',
+      sources: [{ hash: 'f'.repeat(64), slot: 2, capture: 1 }],
+    });
+    expect(inventory.find((row) => row.id === 'unseen-velia')?.quantity).toBe(12);
+    expect(inventory.find((row) => row.id === 'other-city')?.quantity).toBe(8);
+    expect(inventory.find((row) => row.itemId === 7004)).toMatchObject({
+      region: 'sa',
+      kind: 'storage',
+      name: 'Farinha de Trigo',
+      location: 'Velia',
+      quantity: 5,
+      target: 0,
+      price: '0',
+    });
+    expect(page.store.data().screenshotImports).toMatchObject([
+      { mode: 'merge', itemCount: 2, locations: ['Velia'] },
+    ]);
+  });
+
+  it('replaces only the confirmed full storage location and preserves other inventory', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['replace'], 'replace.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const existing = [
+      {
+        id: 'retained-velia',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7001,
+        name: 'Trigo',
+        location: 'Velia',
+        quantity: 100,
+        target: 250,
+        price: '37',
+      },
+      {
+        id: 'removed-velia',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7002,
+        name: 'Cevada',
+        location: 'Velia',
+        quantity: 12,
+        target: 0,
+        price: '0',
+      },
+      {
+        id: 'other-city',
+        region: 'sa' as const,
+        kind: 'storage' as const,
+        itemId: 7003,
+        name: 'Milho',
+        location: 'Heidel',
+        quantity: 8,
+        target: 0,
+        price: '0',
+      },
+      {
+        id: 'character-inventory',
+        region: 'sa' as const,
+        kind: 'inventory' as const,
+        characterId: 'qa-character',
+        itemId: 7004,
+        name: 'Farinha de Trigo',
+        location: 'QA Shai',
+        quantity: 4,
+        target: 0,
+        price: '0',
+      },
+      {
+        id: 'other-region',
+        region: 'eu' as const,
+        kind: 'storage' as const,
+        itemId: 7005,
+        name: 'Cevada',
+        location: 'Velia',
+        quantity: 3,
+        target: 0,
+        price: '0',
+      },
+    ];
+    page.store.update((state) => ({ ...state, inventory: existing }));
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    const item = { id: 7001, name: 'Trigo', icon: null } as CatalogItem;
+    const job = page.jobs()[0]!;
+    Object.assign(job, {
+      mode: 'storage',
+      location: 'Velia',
+      hash: 'b'.repeat(64),
+      status: 'ready',
+      cells: [
+        {
+          id: 0,
+          preview: '',
+          options: [item],
+          item,
+          itemUncertain: false,
+          quantity: '46',
+          quantityText: '46',
+          quantityEstimate: null,
+          quantityUncertain: false,
+          include: true,
+          reviewed: true,
+          slot: '',
+          level: 0,
+          caphras: 0,
+        },
+      ],
+    });
+    page.jobs.set([job]);
+    page.cells.set(job.cells);
+    page.mode = 'storage';
+    page.updateMode.set('replace');
+    page.fullLocationConfirmed.set(true);
+    page.batchConfirmed.set(true);
+
+    await page.saveBatch();
+
+    const inventory = page.store.data().inventory;
+    expect(inventory).toHaveLength(4);
+    expect(inventory.find((row) => row.id === 'retained-velia')).toMatchObject({
+      region: 'sa',
+      itemId: 7001,
+      location: 'Velia',
+      quantity: 46,
+      target: 250,
+      price: '37',
+      updatedAt: expect.any(String),
+      sources: [expect.objectContaining({ hash: 'b'.repeat(64), slot: 0, capture: 1 })],
+    });
+    expect(inventory.some((row) => row.id === 'removed-velia')).toBe(false);
+    expect(inventory.find((row) => row.id === 'other-city')?.quantity).toBe(8);
+    expect(inventory.find((row) => row.id === 'character-inventory')?.quantity).toBe(4);
+    expect(inventory.find((row) => row.id === 'other-region')?.quantity).toBe(3);
+    expect(page.store.data().screenshotImports).toMatchObject([
+      { mode: 'replace', itemCount: 1, locations: ['Velia'] },
+    ]);
+  });
+
   it('saves only confirmed life equipment to the family and can undo that family-only change', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
