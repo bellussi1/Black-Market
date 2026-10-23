@@ -1,0 +1,54 @@
+{
+  "source": "user-provided",
+  "date": "2026-10-22",
+  "files": [
+    {
+      "file": "armazem-1.jpeg",
+      "sha256": "b791380acab1e6ae533454e28b92f98e09ea144352830cd49f347d5fc1f4e084",
+      "width": 520,
+      "height": 567
+    },
+    {
+      "file": "armazem-2.jpeg",
+      "sha256": "531ef0f23e8e9265a17cc3704622f7e7eed46c1afdba24e740d04051aeb57b84",
+      "width": 518,
+      "height": 560
+    },
+    {
+      "file": "armazem-3.jpeg",
+      "sha256": "23adbe24d80449e3dfa0f3b25742e934f7d5887fcde734b86c0e4c7b03dcfc50",
+      "width": 517,
+      "height": 564
+    },
+    {
+      "file": "armazem-4.jpeg",
+      "sha256": "cae047f1d3c49fef0ad2aca127294696d749e4d192cdfefeb5f46d3f2ea0852b",
+      "width": 513,
+      "height": 294
+    },
+    {
+      "file": "armazem-5.jpeg",
+      "sha256": "b8baab324fe7ef50004d33ad31bb36258197824d7dc9a351f69f2c0b760b4d14",
+      "width": 516,
+      "height": 568
+    },
+    {
+      "file": "gear-lifeskill.jpeg",
+      "sha256": "011a788a4e2034c1728624fd067506406efd17e542b0bddf29d772c160b6b09a",
+      "width": 446,
+      "height": 880
+    },
+    {
+      "file": "gear-pvp.jpeg",
+      "sha256": "7b41b1abc854d36bb06ff72195f80fc8d79a6be9398bdb824d151fbcda5e713d",
+      "width": 444,
+      "height": 884
+    },
+    {
+      "file": "maestrias.jpeg",
+      "sha256": "4b483153256f2acc1d6fb90f198a13f9784c250af3e601998cf6a7a43b601def",
+      "width": 832,
+      "height": 933
+    }
+  ]
+}
