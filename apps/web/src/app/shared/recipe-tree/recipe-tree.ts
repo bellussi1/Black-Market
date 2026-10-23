@@ -176,11 +176,11 @@ export class RecipeTree {
       sourceItemId: root.part.itemId,
       excludedStockLocations: this.excludedLocations(),
       materials: result.materials
-        .filter((row) => row.bought > 0)
+        .filter((row) => row.bought + row.owned > 0)
         .map((row) => ({
           itemId: row.itemId,
           name: this.productionMaterialName(row.itemId),
-          quantity: Math.ceil(row.bought),
+          quantity: Math.ceil(row.bought + row.owned),
         })),
     });
     if (!parsed.success) {

@@ -1792,6 +1792,50 @@ describe('Interactive recipe tree', () => {
     expect(tree.store.data().personalPlans).toHaveLength(1);
     expect(tree.store.data().personalPlans[0].materials[0].quantity).toBe(200);
   });
+  it('saves gross external demand after optimization, including fully owned materials', async () => {
+    const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, [
+      ...providers().list,
+      { provide: IdentityService, useValue: { authenticated: signal(true) } },
+    ]);
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '1000', 9001: '5' });
+    tree.setMethodTime('ALCHEMY', 1);
+    tree.setCraftCount(100);
+    tree.store.update((state) => ({
+      ...state,
+      familySilver: '1000000000',
+      inventory: [
+        {
+          id: 'salt',
+          region: 'sa',
+          itemId: 9001,
+          name: 'Sal',
+          quantity: 60,
+          target: 0,
+          price: '0',
+          location: 'Velia',
+          kind: 'storage',
+        },
+      ],
+    }));
+    tree.optimizeAcquisition();
+    tree.applyOptimizationPreview();
+    expect(
+      tree.currentProductionPlan()?.materials.find((row) => row.itemId === 9001),
+    ).toMatchObject({ required: 200, bought: 140, owned: 60 });
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans[0].materials).toEqual([
+      { itemId: 9001, name: 'Sal', quantity: 200 },
+    ]);
+    tree.setCraftCount(10);
+    tree.optimizeAcquisition();
+    tree.applyOptimizationPreview();
+    tree.saveShoppingList();
+    expect(tree.store.data().personalPlans[0].materials).toEqual([
+      { itemId: 9001, name: 'Sal', quantity: 20 },
+    ]);
+  });
+
   it('hides and blocks shopping-list persistence for signed-out visitors', async () => {
     const dependencies = providers();
     const fixture = await renderComponent(RecipeTree, { recipe, selectedItem: item }, [
