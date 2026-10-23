@@ -231,6 +231,9 @@ export class RecipeTree {
   readonly acquisitionStrategy = signal<AcquisitionStrategy>('buy_all');
   readonly optimizationMessage = signal('');
   readonly customMaterialSource = signal(new Map<number, ProductionChoice>());
+  readonly branchSourceChoices = computed(
+    () => new Map(this.materialItemIds().map((itemId) => [itemId, this.materialSource(itemId)])),
+  );
   readonly customItemPrices = signal(new Map<number, string>());
   readonly returnProductSales = signal(new Map<number, boolean>());
   readonly showAllReturnedProducts = signal(false);

@@ -2761,10 +2761,33 @@ it('displays step action badge, required quantity, stock used, and missing statu
 
   const childBranch = branches[1]!;
   const childBadge = childBranch.querySelector('.step-action-badge');
-  expect(childBadge?.textContent?.trim()).toBe('Obter pronto');
+  expect(childBadge?.textContent?.trim()).toBe('Comprar');
   expect(childBadge?.getAttribute('data-kind')).toBe('acquire');
   expect(childBranch.querySelector('.step-quantity strong')?.textContent?.trim()).toBe('20');
   expect(childBranch.querySelector('.step-stock-used')?.textContent?.trim()).toBe('Estoque: 6');
   expect(childBranch.querySelector('.step-stock')?.textContent?.trim()).toBe('Faltam 14');
+  tree.root.update((root) => ({
+    ...root!,
+    children: root!.children.map((child) => ({
+      ...child,
+      recipe: {
+        key: 'salt',
+        type: 'HEAT',
+        station: null,
+        outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+        inputs: [],
+      },
+    })),
+  }));
+  fixture.detectChanges();
+  expect(tree.currentProductionPlan()?.scenario).toBe('buy-all');
+  expect(childBadge?.textContent?.trim()).toBe('Comprar');
+  tree.setMaterialSource(9001, 'produce');
+  fixture.detectChanges();
+  expect(childBadge?.textContent?.trim()).toBe('Produzir');
+  expect(childBadge?.getAttribute('data-kind')).toBe('produce');
+  tree.setMaterialSource(9001, 'buy');
+  fixture.detectChanges();
+  expect(childBadge?.textContent?.trim()).toBe('Comprar');
   fixture.destroy();
 });

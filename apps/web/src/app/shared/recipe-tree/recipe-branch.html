@@ -92,6 +92,7 @@
         <app-recipe-branch
           [node]="child"
           [allocations]="allocations()"
+          [sourceChoices]="sourceChoices()"
           (action)="action.emit($event)"
         />
       }

@@ -704,6 +704,7 @@
               <app-recipe-branch
                 [node]="product"
                 [allocations]="result.value?.allocations ?? []"
+                [sourceChoices]="branchSourceChoices()"
                 (action)="action($event)"
               />
             </div>
