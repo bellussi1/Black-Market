@@ -13,7 +13,7 @@ function context() {
   } as unknown as CanvasRenderingContext2D);
 }
 describe('Numeric reader lifecycle', () => {
-  it('tries independent OCR for a weak native result and replaces it with stronger exact evidence', async () => {
+  it('keeps a weak-to-strong disagreement pending across later matching reads', async () => {
     context();
     const worker = {
       setParameters: vi.fn().mockResolvedValue(undefined),
@@ -41,7 +41,7 @@ describe('Numeric reader lifecycle', () => {
     ]);
     expect(worker.recognize).toHaveBeenCalledTimes(2);
     expect(result[0]).toMatchObject({
-      value: '72',
+      value: null,
       confidence: 84,
       approximate: false,
       evidence: 'conflict',

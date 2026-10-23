@@ -51,9 +51,11 @@
         <label for="capture-type"
           >O que está na imagem?
           <select appBdoSelect id="capture-type" [(ngModel)]="captureMode" [disabled]="locked()">
+            <option value="unknown">Escolha o tipo da captura</option>
             <option value="storage">Armazém</option>
             <option value="inventory">Inventário do personagem</option>
             <option value="gear">Equipamentos do personagem</option>
+            <option value="life-gear">Equipamento de Vida da Família</option>
           </select>
         </label>
         @if (captureMode === 'storage') {
@@ -64,7 +66,7 @@
               maxlength="120"
               [disabled]="locked()"
           /></label>
-        } @else {
+        } @else if (captureMode === 'gear' || captureMode === 'inventory') {
           <label
             >Personagem de destino<select
               appBdoSelect
@@ -87,6 +89,16 @@
         <p class="help">
           Use a janela com os ícones dos equipamentos. A ficha de atributos sozinha não contém os
           itens. Nível e Caphras precisam ser conferidos separadamente.
+        </p>
+      } @else if (captureMode === 'life-gear') {
+        <p class="help">
+          Esta captura será revisada como equipamento de Vida da Família nesta região, sem alterar
+          personagem ou conjunto PvP.
+        </p>
+      } @else if (captureMode === 'unknown') {
+        <p class="help">
+          Escolha um tipo antes de analisar. A captura não será interpretada como armazém por
+          padrão.
         </p>
       }
     </section>
@@ -506,8 +518,13 @@
                   funcionar, recorte um ícone e use uma linha e uma coluna. Posições e símbolos de
                   aprimoramento são sugestões para revisar. Caphras precisa ser informado no jogo.
                 </p>
+              } @else if (mode === 'life-gear') {
+                <p>
+                  Tentaremos segmentar as molduras sem atribuir posição. Se nenhuma for encontrada,
+                  ajuste a área a um ícone e use a leitura manual única abaixo.
+                </p>
               }
-              @if (mode !== 'gear') {
+              @if (mode !== 'gear' && mode !== 'life-gear' && mode !== 'unknown') {
                 <label i18n
                   >Colunas da grade<input
                     hlmInput
@@ -541,12 +558,14 @@
             <summary>Corrigir tipo da captura</summary>
             <label for="scan-mode" i18n>O que deseja ler?</label
             ><select appBdoSelect id="scan-mode" [(ngModel)]="mode" (ngModelChange)="changeMode()">
+              <option value="unknown">Escolha o tipo da captura</option>
               <option value="storage" i18n>Itens do armazém</option>
               <option value="inventory" i18n>Itens do inventário do personagem</option>
               @if (!screenshotMvp) {
                 <option value="number" i18n>Um número do personagem</option>
               }
               <option value="gear" i18n>Equipamento do personagem</option>
+              <option value="life-gear">Equipamento de Vida da Família</option>
             </select>
           </details>
           <button
@@ -559,6 +578,22 @@
           >
             Ler itens e valores
           </button>
+          @if (mode === 'life-gear') {
+            <div class="life-gear-manual-actions">
+              <button
+                hlmBtn
+                variant="outline"
+                type="button"
+                (click)="readSingleLifeIcon()"
+                [disabled]="!validCrop() || locked()"
+              >
+                Ler este recorte como um único ícone
+              </button>
+              <a routerLink="/family" [queryParams]="{ tab: 'equipment' }">
+                Cadastrar equipamento de Vida manualmente na Família
+              </a>
+            </div>
+          }
         </fieldset>
       </section>
     </details>
@@ -610,6 +645,34 @@
           <span class="badge" i18n>{{ pendingBatchCount() }} pendentes</span>
         </div>
         <p i18n>Compare com a captura, corrija as dúvidas e inclua os itens conferidos.</p>
+        @if (mode === 'life-gear') {
+          <div class="life-skill-confirmation">
+            <label for="scan-life-skill" class="field">
+              <span>Profissão sugerida pela captura</span>
+              <select
+                appBdoSelect
+                id="scan-life-skill"
+                [ngModel]="lifeSkill ?? ''"
+                (ngModelChange)="lifeSkillChanged($event)"
+              >
+                <option value="">Escolha a profissão</option>
+                @for (skill of lifeSkills; track skill) {
+                  <option [value]="skill">{{ lifeSkillLabels[skill] }}</option>
+                }
+              </select>
+            </label>
+            @if (lifeSkill) {
+              <label class="life-skill-confirm-label">
+                <input
+                  type="checkbox"
+                  [ngModel]="lifeSkillConfirmed"
+                  (ngModelChange)="confirmLifeSkill($event)"
+                />
+                Confirmei a profissão desta captura para itens por profissão.
+              </label>
+            }
+          </div>
+        }
         <div class="scan-summary" aria-live="polite">
           <span i18n
             ><strong>{{ cells().length }}</strong> espaços</span
@@ -791,7 +854,7 @@
               animate.leave="scan-card-leave"
             >
               <div class="scan-cell-head">
-                <h3 i18n>Espaço {{ cell.id + 1 }}</h3>
+                <h3>{{ mode === 'life-gear' ? 'Recorte' : 'Espaço' }} {{ cell.id + 1 }}</h3>
                 <span
                   class="scan-status"
                   [class.badge-success]="cell.reviewed"
@@ -803,17 +866,25 @@
                       ? 'Removido'
                       : cell.reviewed
                         ? 'Incluído'
-                        : reliable(cell)
-                          ? 'Pronto para importar'
-                          : cell.itemUncertain && cell.item
-                            ? 'Item incerto'
-                            : cell.quantityUncertain || cell.quantityEstimate !== null
-                              ? 'Corrigir quant.'
-                              : cell.item
-                                ? 'Confirmar'
-                                : cell.options.length
-                                  ? 'Ambíguo'
-                                  : 'Não identificado'
+                        : mode === 'life-gear'
+                          ? cell.item
+                            ? canValidateLifeEquipment(cell)
+                              ? 'Pronto para validar'
+                              : 'Confirme tipo e escopo'
+                            : cell.options.length
+                              ? 'Escolha o item'
+                              : 'Não identificado'
+                          : reliable(cell)
+                            ? 'Pronto para importar'
+                            : cell.itemUncertain && cell.item
+                              ? 'Item incerto'
+                              : cell.quantityUncertain || cell.quantityEstimate !== null
+                                ? 'Corrigir quant.'
+                                : cell.item
+                                  ? 'Confirmar'
+                                  : cell.options.length
+                                    ? 'Ambíguo'
+                                    : 'Não identificado'
                   }}</span
                 >
               </div>
@@ -935,14 +1006,103 @@
                 </div>
                 @if (cell.quantityEstimate !== null) {
                   <p class="quantity-note" i18n>
-                    Lido na captura: <code>{{ cell.quantityText }}</code> (estimativa aplicada:
+                    Lido na captura: <code>{{ cell.quantityText }}</code> (estimativa:
                     {{ cell.quantityEstimate }}).
+                  </p>
+                } @else if (cell.quantityConflict && !cell.quantity) {
+                  <p class="quantity-caution" i18n>
+                    Leituras OCR divergiram.
+                    @if (cell.quantityText) {
+                      Leitura de referência: <code>{{ cell.quantityText }}</code
+                      >.
+                    }
+                    Confira a captura e digite a quantidade exata.
                   </p>
                 } @else if (cell.quantityUncertain && !cell.quantity) {
                   <p class="quantity-caution" i18n>
-                    Quantidade não identificada com segurança. Digite o valor exato.
+                    @if (cell.quantityText) {
+                      Leitura OCR sem confirmação: <code>{{ cell.quantityText }}</code
+                      >. Confira a captura e digite a quantidade exata.
+                    } @else {
+                      Quantidade não identificada com segurança. Digite o valor exato.
+                    }
                   </p>
                 }
+              } @else if (mode === 'life-gear') {
+                <div class="life-gear-fields">
+                  <label class="field" [for]="'life-kind-' + cell.id">
+                    <span>Tipo do item</span>
+                    <select
+                      appBdoSelect
+                      [id]="'life-kind-' + cell.id"
+                      [ngModel]="cell.lifeEquipmentKind ?? ''"
+                      (ngModelChange)="cell.lifeEquipmentKind = $event || null; edited(cell)"
+                    >
+                      <option value="">Escolha o tipo</option>
+                      @for (
+                        kind of cell.lifeEquipmentScope === 'shared'
+                          ? sharedLifeEquipmentKinds
+                          : lifeEquipmentKinds;
+                        track kind
+                      ) {
+                        <option [value]="kind">{{ lifeEquipmentKindLabels[kind] }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field" [for]="'life-scope-' + cell.id">
+                    <span>Onde o item é usado?</span>
+                    <select
+                      appBdoSelect
+                      [id]="'life-scope-' + cell.id"
+                      [ngModel]="cell.lifeEquipmentScope ?? ''"
+                      (ngModelChange)="cell.lifeEquipmentScope = $event || null; edited(cell)"
+                    >
+                      <option value="">Escolha o escopo</option>
+                      <option value="shared">Comum à Família</option>
+                      <option value="skill">Profissão selecionada</option>
+                    </select>
+                  </label>
+                  <label class="field" [for]="'life-slot-label-' + cell.id">
+                    <span>Rótulo da posição (opcional)</span>
+                    <input
+                      hlmInput
+                      [id]="'life-slot-label-' + cell.id"
+                      [ngModel]="cell.lifeSlotLabel ?? ''"
+                      maxlength="80"
+                      (ngModelChange)="cell.lifeSlotLabel = $event; edited(cell)"
+                    />
+                  </label>
+                  <label class="life-field-confirm-label">
+                    <input
+                      type="checkbox"
+                      [ngModel]="cell.lifeSlotConfirmed"
+                      (ngModelChange)="cell.lifeSlotConfirmed = $event; edited(cell)"
+                    />
+                    Confirmei o rótulo da posição.
+                  </label>
+                  <label class="field" [for]="'life-enhancement-' + cell.id">
+                    <span>Aprimoramento (opcional, texto)</span>
+                    <input
+                      hlmInput
+                      [id]="'life-enhancement-' + cell.id"
+                      [ngModel]="cell.lifeEnhancementText ?? ''"
+                      maxlength="100"
+                      (ngModelChange)="cell.lifeEnhancementText = $event; edited(cell)"
+                    />
+                  </label>
+                  <label class="life-field-confirm-label">
+                    <input
+                      type="checkbox"
+                      [ngModel]="cell.lifeEnhancementConfirmed"
+                      (ngModelChange)="cell.lifeEnhancementConfirmed = $event; edited(cell)"
+                    />
+                    Conferi este texto no jogo.
+                  </label>
+                </div>
+                <p class="help">
+                  Tipo e escopo precisam ser escolhidos. Posição e aprimoramento só serão salvos
+                  quando você marcar a confirmação correspondente.
+                </p>
               } @else {
                 <div class="cell-form-row">
                   <label [for]="'gear-slot-' + cell.id" i18n>Posição</label>

@@ -23,15 +23,17 @@ export function findEquipmentFrames(frame: PixelFrame): Crop[] {
       while (end < width && edge(end, y)) end++;
       const size = end - x;
       if (size < 22 || size > 80 || y + size >= height) continue;
-      // Try square frame heights within two pixels; cropped frames stay manual.
-      for (let h = size - 2; h <= size + 2; h++) {
+      // JPEG antialiasing can extend a horizontal border by a few pixels.
+      for (let h = size - 5; h <= size + 2; h++) {
         if (y + h >= height) continue;
         let left = 0,
           right = 0,
           bottom = 0;
         for (let d = 0; d < h; d++) {
-          left += Number(edge(x, y + d));
-          right += Number(edge(end - 1, y + d));
+          left += Number(
+            [0, 1, 2, 3].some((offset) => edge(Math.min(width - 1, x + offset), y + d)),
+          );
+          right += Number([1, 2, 3, 4].some((offset) => edge(end - offset, y + d)));
         }
         for (let d = x; d < end; d++) bottom += Number(edge(d, y + h - 1));
         if (left / h < 0.75 || right / h < 0.75 || bottom / size < 0.75) continue;
@@ -42,12 +44,9 @@ export function findEquipmentFrames(frame: PixelFrame): Crop[] {
       }
       x = end - 1;
     }
-  const sizes = boxes.map((box) => box.width).sort((a, b) => a - b);
-  const median = sizes[Math.floor(sizes.length / 2)] ?? 0;
   return boxes
     .filter(
       (box) =>
-        (boxes.length < 8 || (box.width >= median * 0.8 && box.width <= median * 1.2)) &&
         !boxes.some(
           (outer) =>
             outer !== box &&
@@ -56,20 +55,21 @@ export function findEquipmentFrames(frame: PixelFrame): Crop[] {
             Math.abs(outer.top + outer.height / 2 - box.top - box.height / 2) < outer.height * 0.4,
         ),
     )
-    .slice(0, 32);
+    .sort((a, b) => b.width - a.width)
+    .slice(0, 64);
 }
 
 const combatLayout = [
   ['helmet', 0, 0],
   ['armor', 3, 0],
-  ['gloves', -1.2, 1.1],
-  ['shoes', 4.2, 1.1],
-  ['earring1', -2, 2.45],
-  ['earring2', 5, 2.45],
-  ['ring1', -2.25, 3.75],
-  ['ring2', 5.25, 3.75],
-  ['necklace', -1.2, 6.3],
-  ['belt', 4.2, 6.3],
+  ['earring1', -1.2, 1.1],
+  ['ring1', 4.2, 1.1],
+  ['earring2', -2, 2.45],
+  ['ring2', 5, 2.45],
+  ['shoes', -2, 5.1],
+  ['gloves', 5, 5.1],
+  ['belt', -1.2, 6.3],
+  ['necklace', 4.2, 6.3],
   ['mainhand', 0, 7.3],
   ['awakening', 1.5, 7.6],
   ['offhand', 3, 7.3],
@@ -91,7 +91,10 @@ export function suggestEquipmentLayout(frames: readonly Crop[], bounds: Crop): E
       )
         continue;
       const unit = (armor.left - helmet.left) / 3;
-      const sizes = frames.map((frame) => frame.width).sort((a, b) => a - b);
+      const sizes = frames
+        .filter((frame) => Math.abs(frame.width - size) < size * 0.2)
+        .map((frame) => frame.width)
+        .sort((a, b) => a - b);
       const verticalUnit = sizes[Math.floor(sizes.length / 2)] ?? size;
       const x = helmet.left + helmet.width / 2;
       const y = (helmet.top + armor.top) / 2 + size / 2;
@@ -116,9 +119,9 @@ export function suggestEquipmentLayout(frames: readonly Crop[], bounds: Crop): E
       const statistics: EquipmentLayout['statistics'] = [];
       for (const [i, field] of (['mainAp', 'awakeAp', 'dp'] as const).entries()) {
         const crop = {
-          left: x + unit * 4.5,
+          left: x + unit * 4.2,
           top: y + verticalUnit * (10.25 + i * 0.67),
-          width: unit * 1.05,
+          width: unit * 1.4,
           height: verticalUnit * 0.55,
         };
         if (

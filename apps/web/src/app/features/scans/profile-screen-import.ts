@@ -377,6 +377,7 @@ export class ProfileScreenImportComponent implements OnDestroy {
       'character-roster': 'Personagens',
       'character-status': 'Status do personagem',
       equipment: 'Equipamento',
+      'life-equipment': 'Equipamento de Vida',
       market: 'Mercado',
       unknown: 'Não identificado',
     };

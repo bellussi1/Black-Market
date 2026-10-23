@@ -2,8 +2,10 @@ import { type Workspace, workspaceSchema } from '../../core/workspace-models';
 
 type Snapshot = Pick<
   Workspace,
-  'inventory' | 'characters' | 'screenshotImports' | 'region' | 'demonstration'
+  'inventory' | 'characters' | 'screenshotImports' | 'region' | 'demonstration' | 'families'
 >;
+type FamilyProfiles = NonNullable<Workspace['families']>;
+type FamilyProfile = NonNullable<FamilyProfiles[keyof FamilyProfiles]>;
 type Stock = Workspace['inventory'][number];
 const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
 const stockIdentity = (row: Stock) =>
@@ -38,6 +40,7 @@ export function createScanImportUndo(before: Workspace, after: Workspace): ScanI
       inventory: state.inventory,
       characters: state.characters,
       screenshotImports: state.screenshotImports,
+      families: state.families,
     });
   return { region: after.region, before: snapshot(before), after: snapshot(after) };
 }
@@ -105,10 +108,61 @@ export function undoScanImport(current: Workspace, token: ScanImportUndo): Works
     }
     characters[characters.findIndex((row) => row.id === id)] = restored;
   }
+  let families: FamilyProfiles | undefined = current.families
+    ? structuredClone(current.families)
+    : undefined;
+  const oldFamilies = before.families ?? {};
+  const importedFamilies = after.families ?? {};
+  const familyRegions = new Set([
+    ...(Object.keys(oldFamilies) as Array<keyof FamilyProfiles>),
+    ...(Object.keys(importedFamilies) as Array<keyof FamilyProfiles>),
+  ]);
+  for (const region of familyRegions) {
+    const oldProfile = oldFamilies[region];
+    const importedProfile = importedFamilies[region];
+    if (same(oldProfile?.lifeEquipment, importedProfile?.lifeEquipment)) continue;
+
+    const currentProfile = families?.[region];
+    if (!currentProfile || !same(currentProfile.lifeEquipment, importedProfile?.lifeEquipment))
+      throw conflict();
+
+    if (oldProfile) {
+      families ??= {};
+      families[region] = {
+        ...currentProfile,
+        lifeEquipment: structuredClone(oldProfile.lifeEquipment),
+      };
+      continue;
+    }
+
+    const withoutLifeEquipment = (profile: FamilyProfile) => {
+      const { lifeEquipment: _lifeEquipment, ...fields } = profile;
+      return fields;
+    };
+    if (
+      importedProfile &&
+      same(withoutLifeEquipment(currentProfile), withoutLifeEquipment(importedProfile))
+    ) {
+      if (families) delete families[region];
+      continue;
+    }
+
+    const emptyLifeEquipment = structuredClone(currentProfile.lifeEquipment);
+    emptyLifeEquipment.sharedItems = [];
+    for (const skill of Object.keys(emptyLifeEquipment.bySkill) as Array<
+      keyof typeof emptyLifeEquipment.bySkill
+    >)
+      emptyLifeEquipment.bySkill[skill] = [];
+    families ??= {};
+    families[region] = { ...currentProfile, lifeEquipment: emptyLifeEquipment };
+  }
+  if (before.families === undefined && families && Object.keys(families).length === 0)
+    families = undefined;
   const candidate = {
     ...current,
     inventory,
     characters,
+    families,
     screenshotImports: structuredClone(before.screenshotImports),
   };
   const parsed = workspaceSchema.safeParse(candidate);

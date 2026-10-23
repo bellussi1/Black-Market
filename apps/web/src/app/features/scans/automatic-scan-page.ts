@@ -11,8 +11,25 @@ import { HlmButton } from '@bdo/ui/button';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { ProfileScreenImportComponent } from './profile-screen-import';
 import { ScansPage } from './scans-page';
-import { detectScreenPanes, type ScreenKind } from './screen-recognition';
+import { detectScreenPanes, lifeEquipmentSkill, type ScreenKind } from './screen-recognition';
 import { ScreenTextReader } from './screen-text-reader';
+
+export type AutomaticScanMode = 'storage' | 'inventory' | 'gear' | 'life-gear' | 'unknown';
+
+export function scanModeForScreenKind(kind: ScreenKind): AutomaticScanMode {
+  switch (kind) {
+    case 'storage':
+      return 'storage';
+    case 'inventory':
+      return 'inventory';
+    case 'equipment':
+      return 'gear';
+    case 'life-equipment':
+      return 'life-gear';
+    default:
+      return 'unknown';
+  }
+}
 
 @Component({
   selector: 'app-automatic-scan-page',
@@ -55,6 +72,7 @@ export class AutomaticScanPage {
       const lines = await this.reader.read(bitmap, () => {});
       const panes = detectScreenPanes(lines, bitmap.width, bitmap.height);
       const kind = panes[0]?.kind ?? 'unknown';
+      const mode = scanModeForScreenKind(kind);
       this.profile.set(['mastery', 'character-roster', 'character-status'].includes(kind));
       this.kind.set(kind);
       // Mount the detected review component before forwarding the selected file.
@@ -65,10 +83,16 @@ export class AutomaticScanPage {
           const scans = this.scans();
           if (!scans) return;
           scans.detectedScreenPanes = panes;
-          scans.captureMode =
-            kind === 'inventory' ? 'inventory' : kind === 'equipment' ? 'gear' : 'storage';
-          scans.autoRead.set(true);
-          void scans.file(forwarded);
+          scans.captureLifeSkill =
+            kind === 'life-equipment' && panes[0] ? lifeEquipmentSkill(panes[0], lines) : null;
+          scans.captureMode = mode;
+          scans.autoRead.set(mode !== 'unknown');
+          void scans.file(forwarded).then(() => {
+            if (mode === 'unknown')
+              scans.message.set(
+                'Tipo da captura não identificado. Escolha o tipo manualmente; nenhuma leitura de armazém foi iniciada.',
+              );
+          });
         }
       }, 0);
     } catch {

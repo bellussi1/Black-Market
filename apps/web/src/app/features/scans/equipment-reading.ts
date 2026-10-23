@@ -1,4 +1,28 @@
 const roman = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+/** Catalog categories are stronger evidence than a visual resemblance. */
+export function isEquipmentCandidateForSlot(
+  item: { category: string | null },
+  slot: string,
+): boolean {
+  const categories: Record<string, string> = {
+    mainhand: 'mainweapon',
+    offhand: 'subweapon',
+    awakening: 'awakenweapon',
+    helmet: 'armor',
+    armor: 'armor',
+    gloves: 'armor',
+    shoes: 'armor',
+    ring1: 'accessory',
+    ring2: 'accessory',
+    earring1: 'accessory',
+    earring2: 'accessory',
+    necklace: 'accessory',
+    belt: 'accessory',
+  };
+  const category = item.category?.toLowerCase();
+  if (!slot) return Boolean(category && Object.values(categories).includes(category));
+  return Boolean(categories[slot] && category === categories[slot]);
+}
 export interface EnhancementReading {
   text: string;
   rank: number | null;

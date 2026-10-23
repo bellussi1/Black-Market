@@ -1,4 +1,4 @@
-import { characterSchema, personalPlanSchema } from '@bdo/calculators';
+import { characterSchema, familyProfileSchema, personalPlanSchema } from '@bdo/calculators';
 import { describe, expect, it } from 'vitest';
 
 import { emptyWorkspace, type Workspace } from '../../core/workspace-models';
@@ -49,6 +49,108 @@ describe('Safe screenshot import undo', () => {
     const restored = undoScanImport(current, createScanImportUndo(before, after));
     expect(restored.familySilver).toBe('123');
     expect(restored.inventory).toEqual([row('elsewhere', 9, 999)]);
+  });
+  it('restores only imported family life equipment and preserves later family edits', () => {
+    const originalFamily = familyProfileSchema.parse({ name: 'Família original' });
+    const otherFamily = familyProfileSchema.parse({ name: 'Família EU' });
+    const before = {
+      ...emptyWorkspace(),
+      families: { sa: originalFamily, eu: otherFamily },
+    };
+    const after = imported(before);
+    const item = {
+      id: 'life-item',
+      catalogItemId: 16479,
+      name: 'Enxada Manos',
+      kind: 'tool' as const,
+      enhancementText: null,
+    };
+    after.families = {
+      ...before.families,
+      sa: {
+        ...originalFamily,
+        lifeEquipment: {
+          ...originalFamily.lifeEquipment,
+          bySkill: { ...originalFamily.lifeEquipment.bySkill, gathering: [item] },
+        },
+      },
+    };
+    const current = {
+      ...after,
+      familySilver: '123',
+      families: {
+        ...after.families,
+        sa: { ...after.families.sa!, name: 'Família renomeada depois' },
+        eu: { ...otherFamily, name: 'Família EU atualizada depois' },
+      },
+    };
+
+    const restored = undoScanImport(current, createScanImportUndo(before, after));
+
+    expect(restored.families?.sa).toMatchObject({
+      name: 'Família renomeada depois',
+      lifeEquipment: { sharedItems: [], bySkill: { gathering: [] } },
+    });
+    expect(restored.families?.eu?.name).toBe('Família EU atualizada depois');
+    expect(restored.familySilver).toBe('123');
+  });
+  it('removes the family profile created solely by the first life equipment import', () => {
+    const before = emptyWorkspace();
+    const after = imported(before);
+    const emptyFamily = familyProfileSchema.parse({});
+    const item = {
+      id: 'life-item',
+      catalogItemId: 16479,
+      name: 'Enxada Manos',
+      kind: 'tool' as const,
+      enhancementText: null,
+    };
+    after.families = {
+      sa: {
+        ...emptyFamily,
+        lifeEquipment: {
+          ...emptyFamily.lifeEquipment,
+          bySkill: { ...emptyFamily.lifeEquipment.bySkill, gathering: [item] },
+        },
+      },
+    };
+
+    expect(undoScanImport(after, createScanImportUndo(before, after)).families).toBeUndefined();
+  });
+  it('rejects undo when imported family life equipment changed afterward', () => {
+    const originalFamily = familyProfileSchema.parse({ name: 'Família' });
+    const before = { ...emptyWorkspace(), families: { sa: originalFamily } };
+    const after = imported(before);
+    after.families = {
+      ...before.families,
+      sa: {
+        ...originalFamily,
+        lifeEquipment: {
+          ...originalFamily.lifeEquipment,
+          sharedItems: [
+            {
+              id: 'shared-life-item',
+              catalogItemId: 500,
+              name: 'Acessório',
+              kind: 'accessory',
+              enhancementText: null,
+            },
+          ],
+        },
+      },
+    };
+    const current = {
+      ...after,
+      families: {
+        ...after.families,
+        sa: {
+          ...after.families.sa!,
+          lifeEquipment: { ...after.families.sa!.lifeEquipment, sharedItems: [] },
+        },
+      },
+    };
+
+    expect(() => undoScanImport(current, createScanImportUndo(before, after))).toThrow(/alterad/i);
   });
   it('rejects later changes to an imported quantity without mutating current state', () => {
     const before = emptyWorkspace();

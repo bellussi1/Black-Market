@@ -179,7 +179,7 @@ export const workspaceSchema = z
           id,
           region,
           createdAt: timestamp,
-          mode: z.enum(['reviewed', 'merge', 'replace', 'gear']),
+          mode: z.enum(['reviewed', 'merge', 'replace', 'gear', 'life-gear', 'mixed']),
           itemCount: z.number().int().min(1).max(3200),
           locations: z.array(labelSchema).max(8),
           sourceHashes: z.array(z.string().regex(/^[a-f0-9]{64}$/)).max(8),

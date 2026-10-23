@@ -14,13 +14,12 @@ describe('Visible game quantities', () => {
   ])('keeps %s as an approximation', (text, value) => {
     expect(parseVisibleQuantity(text)).toMatchObject({ value, approximate: true });
   });
-  it.each([
-    ['1444K', '144.4K', '144400'],
-    ['3905k', '390.5k', '390500'],
-    ['3110K', '311.0K', '311000'],
-  ])('restores a missing BDO decimal in %s', (text, normalized, value) => {
-    expect(parseVisibleQuantity(text)).toEqual({ text: normalized, value, approximate: true });
-  });
+  it.each(['1444K', '3905k', '3110K', '1698k'])(
+    'refuses ambiguous four-digit abbreviated quantity %s',
+    (text) => {
+      expect(parseVisibleQuantity(text)).toBeNull();
+    },
+  );
   it.each([
     ['23567', '23567'],
     ['23.567', '23567'],
@@ -39,6 +38,7 @@ describe('Visible game quantities', () => {
     '-1',
     '2kk',
     '14994K',
+    '14M',
     '1.234,5',
     '9007199254740992',
     '99999999999999M',

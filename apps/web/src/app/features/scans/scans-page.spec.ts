@@ -1,14 +1,21 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { characterSchema } from '@bdo/calculators';
+import { By } from '@angular/platform-browser';
+import { characterSchema, familyProfileSchema } from '@bdo/calculators';
 import type { CatalogItem, CatalogPage } from '@bdo/shared';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { IconRefiner } from './print-reader';
-import { hasConfidentIconMatch, rankIconSuggestions, ScansPage } from './scans-page';
+import {
+  hasConfidentIconMatch,
+  pendingLifeEquipmentReviewFields,
+  rankIconSuggestions,
+  ScansPage,
+} from './scans-page';
 
 describe('Icon suggestion ranking', () => {
   const item = (id: number, name: string, category: string | null) =>
@@ -115,6 +122,190 @@ describe('Icon suggestion ranking', () => {
 
 describe('Screenshot entry', () => {
   useMemoryStorage();
+  it('starts each life equipment suggestion completely pending and without a combat slot', () => {
+    expect(pendingLifeEquipmentReviewFields()).toEqual({
+      item: null,
+      itemUncertain: true,
+      slot: '',
+      lifeEquipmentKind: null,
+      lifeEquipmentScope: null,
+      lifeSlotLabel: '',
+      lifeSlotConfirmed: false,
+      lifeEnhancementText: '',
+      lifeEnhancementConfirmed: false,
+      include: false,
+      reviewed: false,
+    });
+  });
+  it('offers family life equipment as a manual type without a character destination', async () => {
+    const fixture = await renderComponent(ScansPage);
+    const select = fixture.nativeElement.querySelector('#capture-type') as HTMLSelectElement;
+
+    expect([...select.options].map((option) => option.value)).toContain('life-gear');
+    select.value = 'life-gear';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.mode).toBe('life-gear');
+    expect(fixture.nativeElement.textContent).toContain('Equipamento de Vida da Família');
+    expect(fixture.nativeElement.textContent).not.toContain('Personagem de destino');
+    expect(fixture.nativeElement.textContent).not.toContain('Nome do personagem');
+  });
+  it('keeps manual life equipment searches unrestricted to recipe items', async () => {
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.mode = 'life-gear';
+    page.preview.set('data:image/png;base64,');
+    page.cells.set([
+      {
+        id: 0,
+        preview: '',
+        options: [],
+        item: null,
+        quantity: '',
+        quantityText: '',
+        quantityEstimate: null,
+        quantityUncertain: true,
+        include: false,
+        reviewed: false,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const picker = fixture.debugElement.query(By.directive(CatalogItemPicker));
+    expect(picker.componentInstance.scope()).toBeUndefined();
+  });
+  it('does not treat a zero-frame Life capture as one whole-screen item', async () => {
+    images();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () =>
+        ({
+          drawImage: vi.fn(),
+          getImageData: (_x: number, _y: number, width: number, height: number) => ({
+            data: new Uint8ClampedArray(width * height * 4),
+          }),
+        }) as unknown as CanvasRenderingContext2D,
+    );
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.captureMode = 'life-gear';
+    page.captureLifeSkill = 'gathering';
+    await page.file({
+      target: { files: [new File(['life'], 'life.png', { type: 'image/png' })] },
+    } as unknown as Event);
+
+    expect(page.jobs()[0]).toMatchObject({
+      mode: 'life-gear',
+      lifeSkill: 'gathering',
+      profileId: '',
+    });
+    expect(page.jobs()[0]?.autoArea).toBe(false);
+    await page.read();
+    fixture.detectChanges();
+
+    expect(page.cells()).toEqual([]);
+    expect(page.message()).toContain('Nenhuma moldura foi segmentada');
+    expect(fixture.nativeElement.textContent).toContain('Ler este recorte como um único ícone');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Cadastrar equipamento de Vida manualmente',
+    );
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.includes('icon-index'),
+    );
+  });
+  it('uses detected Life frames as pending icon suggestions without combat metadata', async () => {
+    images();
+    const pixelFrame = (width: number, height: number) => {
+      const data = new Uint8ClampedArray(width * height * 4);
+      for (let index = 0; index < width * height; index++) {
+        data[index * 4] = width === 100 && height === 100 ? 0 : 150;
+        data[index * 4 + 1] = width === 100 && height === 100 ? 0 : 30;
+        data[index * 4 + 2] = width === 100 && height === 100 ? 0 : 30;
+        data[index * 4 + 3] = 255;
+      }
+      if (width === 100 && height === 100) {
+        const setWhite = (x: number, y: number) => {
+          const index = (y * width + x) * 4;
+          data[index] = data[index + 1] = data[index + 2] = 230;
+        };
+        for (let offset = 20; offset <= 49; offset++) {
+          setWhite(offset, 20);
+          setWhite(offset, 49);
+          setWhite(20, offset);
+          setWhite(49, offset);
+        }
+      }
+      return data;
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () =>
+        ({
+          drawImage: vi.fn(),
+          fillRect: vi.fn(),
+          getImageData: (_x: number, _y: number, width: number, height: number) => ({
+            data: pixelFrame(width, height),
+          }),
+        }) as unknown as CanvasRenderingContext2D,
+    );
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.captureMode = 'life-gear';
+    page.captureLifeSkill = 'gathering';
+    await page.file({
+      target: { files: [new File(['life-frame'], 'life.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const suggestion = {
+      id: 16479,
+      name: 'Enxada Manos',
+      description: null,
+      grade: 'yellow',
+      weight: null,
+      category: 'Ferramenta de Vida',
+      icon: null,
+      categories: [],
+    } as CatalogItem;
+    vi.spyOn(page.catalog, 'getItems').mockReturnValue(of({ items: [suggestion] } as CatalogPage));
+    const readEnhancements = vi.fn();
+    const readQuantities = vi.fn();
+    Object.defineProperty(page, 'reader', {
+      value: { readEnhancements, readQuantities, close: vi.fn() },
+    });
+
+    const reading = page.read();
+    const rgb = btoa(
+      String.fromCharCode(
+        ...Uint8Array.from({ length: 192 }, (_, index) => [150, 30, 30][index % 3]),
+      ),
+    );
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.includes('icon-index'))
+      .flush({
+        algorithm: 'rgb-top-v2',
+        checksum: 'a'.repeat(64),
+        entries: [{ rgb, ids: [16479] }],
+      });
+    await reading;
+
+    expect(page.cells()).toHaveLength(1);
+    expect(page.cells()[0]).toMatchObject({
+      options: [suggestion],
+      item: null,
+      itemUncertain: true,
+      slot: '',
+      lifeEquipmentKind: null,
+      lifeEquipmentScope: null,
+      lifeSlotLabel: '',
+      lifeSlotConfirmed: false,
+      lifeEnhancementText: '',
+      lifeEnhancementConfirmed: false,
+      include: false,
+      reviewed: false,
+    });
+    expect(readEnhancements).not.toHaveBeenCalled();
+    expect(readQuantities).not.toHaveBeenCalled();
+  });
   it('exposes the OCR processing region as busy while keeping progress announced', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
@@ -812,6 +1003,73 @@ describe('Screenshot entry', () => {
     expect(fixture.componentInstance.store.data().inventory).toEqual([]);
   });
 
+  it('keeps a manual equipment icon readable without assigning an inferred slot', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.captureMode = 'gear';
+    await page.file({
+      target: { files: [new File(['image'], 'item.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const items = [
+      {
+        id: 1,
+        name: 'Armadura',
+        category: 'Armor',
+        description: null,
+        grade: null,
+        weight: null,
+        icon: null,
+        categories: [],
+      },
+      {
+        id: 2,
+        name: 'Cerca',
+        category: 'Housing',
+        description: null,
+        grade: null,
+        weight: null,
+        icon: null,
+        categories: [],
+      },
+      {
+        id: 3,
+        name: 'Enxada',
+        category: 'Etc',
+        description: null,
+        grade: null,
+        weight: null,
+        icon: 'New_Icon/06_PC_EquipItem/00_Common/00_ETC/00016113.dds',
+        categories: [],
+      },
+    ];
+    vi.spyOn(page.catalog, 'getItems').mockReturnValue(
+      of({ items, total: 3, page: 1, pageSize: 3, dataset: null }),
+    );
+    Object.defineProperty(page, 'reader', {
+      value: { readEnhancements: vi.fn().mockResolvedValue([null]), close: vi.fn() },
+    });
+    const reading = page.read();
+    const rgb = btoa(
+      String.fromCharCode(...Uint8Array.from({ length: 192 }, (_, i) => [150, 30, 30][i % 3])),
+    );
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.includes('icon-index'))
+      .flush({
+        algorithm: 'rgb-top-v2',
+        checksum: 'a'.repeat(64),
+        entries: [{ rgb, ids: [1, 2, 3] }],
+      });
+    await reading;
+    expect(page.cells()).toHaveLength(1);
+    expect(page.cells()[0].options.map((item) => item.id)).toEqual(
+      expect.arrayContaining([1, 2, 3]),
+    );
+    expect(page.cells()[0].item?.id).toBe(1);
+    expect(page.cells()[0].slot).toBe('');
+    expect(page.cells()[0].include).toBe(false);
+  });
+
   it('shows the best shared icon candidate without auto-importing an uncertain item', async () => {
     images();
     const fixture = await renderComponent(ScansPage);
@@ -843,7 +1101,13 @@ describe('Screenshot entry', () => {
         readQuantities: vi.fn().mockResolvedValue([
           { text: '370.3k', value: '370300', approximate: true, confidence: 80 },
           { text: '123', value: '123', approximate: false, confidence: 90 },
-          { text: '1.3M', value: '1300000', approximate: true, confidence: 80 },
+          {
+            text: '1.3M',
+            value: '1300000',
+            approximate: true,
+            confidence: 80,
+            evidence: 'conflict',
+          },
         ]),
         close: vi.fn(),
       },
@@ -866,7 +1130,7 @@ describe('Screenshot entry', () => {
     expect(page.cells()[0]).toMatchObject({
       item: { id: 6201, name: 'Item 6201' },
       itemUncertain: true,
-      quantity: '370300',
+      quantity: '',
       quantityUncertain: true,
       quantityEstimate: '370300',
       reviewed: false,
@@ -885,6 +1149,9 @@ describe('Screenshot entry', () => {
     expect(cardActions[1].textContent).toContain('Remover');
     expect(suggestedCard.querySelector('.btn-item-confirm')).toBeNull();
     expect(suggestedCard.querySelector('.btn-cell-ignore')).toBeNull();
+    expect((cardActions[0] as HTMLButtonElement).disabled).toBe(true);
+    page.useEstimate(page.cells()[0]);
+    fixture.detectChanges();
     (cardActions[0] as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(page.cells()[0]).toMatchObject({
@@ -925,13 +1192,20 @@ describe('Screenshot entry', () => {
       quantity: '123',
     });
     expect(page.cells()[2]).toMatchObject({
-      quantity: '1300000',
+      quantity: '',
       quantityUncertain: true,
-      quantityEstimate: '1300000',
+      quantityEstimate: null,
+      quantityConflict: true,
     });
     expect(fixture.nativeElement.querySelectorAll('.scan-cell')).toHaveLength(3);
-    expect(fixture.nativeElement.querySelector('.quantity-note').textContent).toContain(
-      'estimativa aplicada: 370300',
+    expect(
+      [...fixture.nativeElement.querySelectorAll('.quantity-note')]
+        .map((note: Element) => note.textContent)
+        .join(' '),
+    ).not.toContain('estimativa: 1300000');
+    const conflictedCell = fixture.nativeElement.querySelectorAll('.scan-cell')[2] as HTMLElement;
+    expect(conflictedCell.querySelector('.quantity-caution')?.textContent).toContain(
+      'Leituras OCR divergiram',
     );
     page.confirmStock = true;
     page.applyStock();
@@ -967,6 +1241,32 @@ describe('Screenshot entry', () => {
     expect(page.store.data().inventory).toHaveLength(1);
     expect(page.store.data().inventory[0].id).toBe(savedId);
     TestBed.inject(HttpTestingController).verify();
+
+    const unreadQuantity = {
+      ...page.cells()[2],
+      id: 3,
+      quantity: '',
+      quantityText: '14M',
+      quantityEstimate: null,
+      quantityConflict: false,
+      quantityUncertain: true,
+      include: false,
+      reviewed: false,
+      ignored: false,
+    };
+    const ambiguousKQuantity = {
+      ...unreadQuantity,
+      id: 4,
+      quantityText: '1698k',
+    };
+    page.cells.set([...page.cells(), unreadQuantity, ambiguousKQuantity]);
+    fixture.detectChanges();
+    const cells = fixture.nativeElement.querySelectorAll('.scan-cell');
+    const unreadCell = cells[3] as HTMLElement;
+    expect(unreadCell.querySelector('.quantity-caution')?.textContent).toContain('14M');
+    const ambiguousKCell = cells[4] as HTMLElement;
+    expect(ambiguousKCell.querySelector('.quantity-caution')?.textContent).toContain('1698k');
+    expect(ambiguousKCell.querySelector('.quantity-note')).toBeNull();
   });
   it('does not mark an uncertain gear suggestion as reliable for batch import', async () => {
     const fixture = await renderComponent(ScansPage);
@@ -1013,6 +1313,31 @@ describe('Screenshot entry', () => {
     await fixture.componentInstance.drop(drop(Array(6).fill(file)) as unknown as DragEvent);
     expect(decode).not.toHaveBeenCalled();
     expect(fixture.componentInstance.message()).toContain('8 capturas');
+  });
+  it('keeps an unsupported equipment layout visible after the batch finishes', async () => {
+    const decode = images();
+    decode.mockResolvedValue({ width: 446, height: 880, close: vi.fn() });
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    page.captureMode = 'gear';
+    await page.file({
+      target: { files: [new File(['gear'], 'gear.png', { type: 'image/png' })] },
+    } as unknown as Event);
+    const batch = page.readBatch();
+    const http = TestBed.inject(HttpTestingController);
+    let indexRequest: ReturnType<typeof http.expectOne> | undefined;
+    await vi.waitFor(() => {
+      indexRequest = http.expectOne((request) => request.url.includes('icon-index'));
+    });
+    indexRequest!.flush({ algorithm: 'rgb-top-v2', checksum: 'a'.repeat(64), entries: [] });
+    await batch;
+    fixture.detectChanges();
+    expect(page.jobs()[0].status).toBe('failed');
+    expect(page.message()).toContain('Não reconhecemos as posições');
+    expect(page.message()).not.toContain('Lote analisado');
+    expect(fixture.nativeElement.querySelector('.scan-feedback').textContent).toContain(
+      'Não reconhecemos as posições',
+    );
   });
   it('preserves the review on invalid files and refuses new files during recognition', async () => {
     const decode = images();
@@ -1317,4 +1642,481 @@ describe('Screenshot entry', () => {
     expect(page.store.data().inventory).toHaveLength(2);
     expect(page.message()).toContain('local inteiro');
   });
+
+  it('saves only confirmed life equipment to the family and can undo that family-only change', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['life'], 'life-capture.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const item = { id: 16479, name: 'Enxada Manos', icon: null } as CatalogItem;
+    const confirmed = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: false,
+      lifeEquipmentKind: 'tool' as const,
+      lifeEquipmentScope: 'skill' as const,
+      lifeSlotLabel: '',
+      lifeSlotConfirmed: false,
+      lifeEnhancementText: '',
+      lifeEnhancementConfirmed: false,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      include: true,
+      reviewed: true,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    const discarded = {
+      ...confirmed,
+      id: 1,
+      item: { ...item, id: 16480, name: 'Ferramenta não confirmada' },
+      lifeEquipmentKind: null,
+      include: false,
+      reviewed: false,
+    };
+    const job = page.jobs()[0]!;
+    job.mode = 'life-gear';
+    job.lifeSkill = 'gathering';
+    job.lifeSkillConfirmed = true;
+    job.hash = 'a'.repeat(64);
+    job.status = 'ready';
+    job.cells = [confirmed, discarded];
+    page.jobs.set([job]);
+    page.activeJobId.set(job.id);
+    page.mode = 'life-gear';
+    page.lifeSkill = 'gathering';
+    page.lifeSkillConfirmed = true;
+    page.cells.set(job.cells);
+    expect(page.isValidatedForImport(confirmed, 'life-gear', 'gathering', true)).toBe(true);
+    expect(page.allReviewed()).toHaveLength(1);
+
+    const combatProfile = characterSchema.parse({
+      id: 'hero',
+      name: 'Aventureiro',
+      region: 'sa',
+      gear: [{ slot: 'mainhand', itemId: 100, name: 'Espada', level: 15, caphras: 2 }],
+      activityPresets: [
+        {
+          id: 'combat',
+          name: 'Combate',
+          gear: [{ slot: 'mainhand', itemId: 100, name: 'Espada', level: 15, caphras: 2 }],
+          crystals: [],
+        },
+      ],
+    });
+    const stock = {
+      id: 'existing-stock',
+      region: 'sa' as const,
+      itemId: 212,
+      name: 'Corda',
+      location: 'Velia',
+      quantity: 2,
+      target: 0,
+      price: '1',
+    };
+    page.store.update((state) => ({
+      ...state,
+      inventory: [stock],
+      characters: [combatProfile],
+      families: {
+        sa: familyProfileSchema.parse({ name: 'Família SA' }),
+        eu: familyProfileSchema.parse({ name: 'Família EU' }),
+      },
+    }));
+    const beforeInventory = page.store.data().inventory;
+    const beforeCharacters = page.store.data().characters;
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+
+    await page.saveBatch();
+
+    const state = page.store.data();
+    const savedRows = state.families?.sa?.lifeEquipment?.bySkill.gathering ?? [];
+    expect(savedRows).toHaveLength(1);
+    expect(savedRows[0]).toMatchObject({
+      catalogItemId: 16479,
+      name: 'Enxada Manos',
+      kind: 'tool',
+      enhancementText: null,
+    });
+    expect(savedRows[0]).not.toHaveProperty('slotLabel');
+    expect(state.families?.eu?.name).toBe('Família EU');
+    expect(state.inventory).toEqual(beforeInventory);
+    expect(state.characters).toEqual(beforeCharacters);
+    expect(state.screenshotImports).toMatchObject([
+      { mode: 'life-gear', itemCount: 1, sourceHashes: ['a'.repeat(64)] },
+    ]);
+    expect(localStorage.getItem('black-market.workspace.v1')).not.toContain('life-capture.png');
+
+    page.undoLastImport();
+    expect(page.store.data().families?.sa?.lifeEquipment?.bySkill.gathering ?? []).toEqual([]);
+    expect(page.store.data().inventory).toEqual(beforeInventory);
+    expect(page.store.data().characters).toEqual(beforeCharacters);
+  });
+
+  it('labels a storage and life equipment batch as mixed in import history', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: {
+        files: [
+          new File(['stock'], 'stock.png', { type: 'image/png' }),
+          new File(['life'], 'life.png', { type: 'image/png' }),
+        ],
+      },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const [stockJob, lifeJob] = page.jobs();
+    const stockItem = { id: 212, name: 'Corda', icon: null } as CatalogItem;
+    const lifeItem = { id: 16479, name: 'Enxada Manos', icon: null } as CatalogItem;
+    stockJob!.mode = 'storage';
+    stockJob!.location = 'Velia';
+    stockJob!.hash = 'a'.repeat(64);
+    stockJob!.status = 'ready';
+    stockJob!.cells = [
+      {
+        id: 0,
+        preview: '',
+        options: [stockItem],
+        item: stockItem,
+        quantity: '3',
+        quantityText: '3',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ];
+    lifeJob!.mode = 'life-gear';
+    lifeJob!.lifeSkill = 'gathering';
+    lifeJob!.lifeSkillConfirmed = true;
+    lifeJob!.hash = 'b'.repeat(64);
+    lifeJob!.status = 'ready';
+    lifeJob!.cells = [
+      {
+        id: 0,
+        preview: '',
+        options: [lifeItem],
+        item: lifeItem,
+        itemUncertain: false,
+        lifeEquipmentKind: 'tool',
+        lifeEquipmentScope: 'skill',
+        lifeSlotLabel: '',
+        lifeSlotConfirmed: false,
+        lifeEnhancementText: '',
+        lifeEnhancementConfirmed: false,
+        quantity: '',
+        quantityText: '',
+        quantityEstimate: null,
+        quantityUncertain: true,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      },
+    ];
+    page.jobs.set([stockJob!, lifeJob!]);
+    page.cells.set(stockJob!.cells);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+
+    await page.saveBatch();
+
+    expect(page.store.data().inventory).toHaveLength(1);
+    expect(page.store.data().families?.sa?.lifeEquipment.bySkill.gathering).toHaveLength(1);
+    expect(page.store.data().screenshotImports).toMatchObject([
+      { mode: 'mixed', itemCount: 2, locations: ['Velia', 'Coleta'] },
+    ]);
+  });
+
+  it('keeps life equipment pending until the catalog fields and profession are confirmed', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['life'], 'life-capture.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const item = { id: 16479, name: 'Enxada Manos', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: false,
+      lifeEquipmentKind: 'tool' as const,
+      lifeEquipmentScope: 'skill' as const,
+      lifeSlotLabel: '',
+      lifeSlotConfirmed: false,
+      lifeEnhancementText: '',
+      lifeEnhancementConfirmed: false,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      include: true,
+      reviewed: true,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    expect(page.canValidateLifeEquipment({ ...cell, item: null }, 'gathering', true)).toBe(false);
+    expect(page.canValidateLifeEquipment({ ...cell, itemUncertain: true }, 'gathering', true)).toBe(
+      false,
+    );
+    expect(
+      page.canValidateLifeEquipment({ ...cell, lifeEquipmentKind: null }, 'gathering', true),
+    ).toBe(false);
+    expect(
+      page.canValidateLifeEquipment({ ...cell, lifeEquipmentScope: null }, 'gathering', true),
+    ).toBe(false);
+    expect(page.canValidateLifeEquipment(cell, null, false)).toBe(false);
+    expect(
+      page.canValidateLifeEquipment(
+        { ...cell, lifeEquipmentScope: 'shared', lifeEquipmentKind: 'tool' },
+        null,
+        false,
+      ),
+    ).toBe(false);
+    expect(
+      page.canValidateLifeEquipment(
+        { ...cell, lifeSlotLabel: 'Slot', lifeSlotConfirmed: false },
+        'gathering',
+        true,
+      ),
+    ).toBe(false);
+    expect(
+      page.canValidateLifeEquipment(
+        { ...cell, lifeEnhancementText: 'TET', lifeEnhancementConfirmed: false },
+        'gathering',
+        true,
+      ),
+    ).toBe(false);
+    const job = page.jobs()[0]!;
+    job.mode = 'life-gear';
+    job.lifeSkill = null;
+    job.lifeSkillConfirmed = false;
+    job.hash = 'b'.repeat(64);
+    job.status = 'ready';
+    job.cells = [cell];
+    page.jobs.set([job]);
+    page.activeJobId.set(job.id);
+    page.mode = 'life-gear';
+    page.cells.set(job.cells);
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().families?.sa?.lifeEquipment?.bySkill.gathering ?? []).toEqual([]);
+    expect(page.store.data().screenshotImports).toHaveLength(0);
+
+    page.lifeSkillChanged('gathering');
+    const corrected = page.cells()[0]!;
+    expect(corrected.reviewed).toBe(false);
+    corrected.include = true;
+    corrected.reviewed = true;
+    page.cells.set([corrected]);
+    page.batchConfirmed.set(true);
+    await page.saveBatch();
+    expect(page.store.data().families?.sa?.lifeEquipment?.bySkill.gathering).toHaveLength(1);
+  });
+
+  it('rejects a life equipment item already saved in the other family scope', async () => {
+    images();
+    const fixture = await renderComponent(ScansPage);
+    const page = fixture.componentInstance;
+    await page.drop({
+      dataTransfer: { files: [new File(['life'], 'life-capture.png', { type: 'image/png' })] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent);
+    const item = { id: 16479, name: 'Enxada Manos', icon: null } as CatalogItem;
+    const cell = {
+      id: 0,
+      preview: '',
+      options: [item],
+      item,
+      itemUncertain: false,
+      lifeEquipmentKind: 'tool' as const,
+      lifeEquipmentScope: 'skill' as const,
+      lifeSlotLabel: '',
+      lifeSlotConfirmed: false,
+      lifeEnhancementText: '',
+      lifeEnhancementConfirmed: false,
+      quantity: '',
+      quantityText: '',
+      quantityEstimate: null,
+      quantityUncertain: true,
+      include: true,
+      reviewed: true,
+      slot: '',
+      level: 0,
+      caphras: 0,
+    };
+    const job = page.jobs()[0]!;
+    job.mode = 'life-gear';
+    job.lifeSkill = 'gathering';
+    job.lifeSkillConfirmed = true;
+    job.hash = 'c'.repeat(64);
+    job.status = 'ready';
+    job.cells = [cell];
+    page.jobs.set([job]);
+    page.activeJobId.set(job.id);
+    page.mode = 'life-gear';
+    page.lifeSkill = 'gathering';
+    page.lifeSkillConfirmed = true;
+    page.cells.set(job.cells);
+    page.store.update((state) => ({
+      ...state,
+      families: {
+        sa: familyProfileSchema.parse({
+          name: 'Família SA',
+          lifeEquipment: {
+            sharedItems: [
+              {
+                id: 'shared',
+                catalogItemId: 16479,
+                name: 'Enxada Manos',
+                kind: 'accessory',
+                enhancementText: null,
+              },
+            ],
+          },
+        }),
+      },
+    }));
+    const before = page.store.data().families?.sa;
+    Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+    page.batchConfirmed.set(true);
+
+    await page.saveBatch();
+
+    expect(page.store.data().families?.sa).toEqual(before);
+    expect(page.store.data().screenshotImports).toHaveLength(0);
+    expect(page.message()).toMatch(/mesmo item|listas comum e de profissão/i);
+  });
+
+  it.each([
+    { scope: 'skill' as const, kind: 'tool' as const, expectedMessage: /lista de Coleta/i },
+    {
+      scope: 'shared' as const,
+      kind: 'accessory' as const,
+      expectedMessage: /lista comum da Família/i,
+    },
+  ])(
+    'rejects an over-limit $scope equipment batch before saving mixed changes',
+    async ({ scope, kind, expectedMessage }) => {
+      images();
+      const fixture = await renderComponent(ScansPage);
+      const page = fixture.componentInstance;
+      await page.drop({
+        dataTransfer: { files: [new File(['life'], 'life-capture.png', { type: 'image/png' })] },
+        preventDefault: vi.fn(),
+      } as unknown as DragEvent);
+      const lifeItem = { id: 999999, name: 'Ferramenta nova', icon: null } as CatalogItem;
+      const stockItem = { id: 212, name: 'Corda', icon: null } as CatalogItem;
+      const lifeCell = {
+        id: 0,
+        preview: '',
+        options: [lifeItem],
+        item: lifeItem,
+        itemUncertain: false,
+        lifeEquipmentKind: kind,
+        lifeEquipmentScope: scope,
+        lifeSlotLabel: '',
+        lifeSlotConfirmed: false,
+        lifeEnhancementText: '',
+        lifeEnhancementConfirmed: false,
+        quantity: '',
+        quantityText: '',
+        quantityEstimate: null,
+        quantityUncertain: true,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      };
+      const stockCell = {
+        id: 1,
+        preview: '',
+        options: [stockItem],
+        item: stockItem,
+        itemUncertain: false,
+        quantity: '5',
+        quantityText: '5',
+        quantityEstimate: null,
+        quantityUncertain: false,
+        include: true,
+        reviewed: true,
+        slot: '',
+        level: 0,
+        caphras: 0,
+      };
+      const lifeJob = page.jobs()[0]!;
+      Object.assign(lifeJob, {
+        mode: 'life-gear',
+        lifeSkill: 'gathering',
+        lifeSkillConfirmed: true,
+        hash: 'd'.repeat(64),
+        status: 'ready',
+        cells: [lifeCell],
+      });
+      const stockJob = {
+        ...lifeJob,
+        id: 'stock-job',
+        mode: 'storage' as const,
+        location: 'Velia',
+        hash: 'e'.repeat(64),
+        cells: [stockCell],
+      };
+      page.jobs.set([lifeJob, stockJob]);
+      page.activeJobId.set(lifeJob.id);
+      page.mode = 'life-gear';
+      page.lifeSkill = 'gathering';
+      page.lifeSkillConfirmed = true;
+      page.cells.set([lifeCell]);
+      const existingItems = Array.from({ length: 50 }, (_, index) => ({
+        id: `life-equipment-${index}`,
+        catalogItemId: 3000 + index,
+        name: `Equipamento ${index}`,
+        kind,
+        enhancementText: null,
+      }));
+      page.store.update((state) => ({
+        ...state,
+        families: {
+          sa: familyProfileSchema.parse({
+            name: 'Família SA',
+            lifeEquipment:
+              scope === 'shared'
+                ? { sharedItems: existingItems }
+                : { bySkill: { gathering: existingItems } },
+          }),
+        },
+      }));
+      const beforeFamily = page.store.data().families?.sa;
+      const beforeInventory = page.store.data().inventory;
+      Object.defineProperty(page, 'readingRegion', { value: 'sa', writable: true });
+      page.batchConfirmed.set(true);
+
+      await page.saveBatch();
+
+      expect(page.store.data().families?.sa).toEqual(beforeFamily);
+      expect(page.store.data().inventory).toEqual(beforeInventory);
+      expect(page.store.data().screenshotImports).toHaveLength(0);
+      expect(page.message()).toMatch(expectedMessage);
+    },
+  );
 });

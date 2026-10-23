@@ -11,7 +11,16 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { characterSchema, gearSlots } from '@bdo/calculators';
+import {
+  characterSchema,
+  gearSlots,
+  type LifeEquipment,
+  lifeEquipmentItemLimit,
+  type LifeEquipmentKind,
+  lifeEquipmentKinds,
+  type LifeSkill,
+  lifeSkills,
+} from '@bdo/calculators';
 import type { CatalogItem } from '@bdo/shared';
 import { HlmButton } from '@bdo/ui/button';
 import { HlmCard } from '@bdo/ui/card';
@@ -24,6 +33,7 @@ import { CatalogApiService } from '../../core/catalog-api.service';
 import { SCREENSHOT_MVP } from '../../core/mvp-scope';
 import { WorkspaceStore } from '../../core/workspace-store';
 import { CatalogItemPicker } from '../../shared/catalog-item-picker/catalog-item-picker';
+import { lifeSkillLabels } from '../../shared/game-labels';
 import { ItemIcon } from '../../shared/item-icon/item-icon';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import {
@@ -33,9 +43,11 @@ import {
   type EnhancementReading,
   equipmentStatFields,
   type EquipmentStatistics,
+  isEquipmentCandidateForSlot,
 } from './equipment-reading';
 import { detectEquipmentFrames, suggestEquipmentLayout } from './equipment-slots';
 import { groupItemOptions } from './item-option-groups';
+import { pendingLifeEquipmentReviewFields } from './life-equipment-candidates';
 import {
   type Crop,
   type IconIndex,
@@ -58,7 +70,7 @@ import { createScanImportUndo, type ScanImportUndo, undoScanImport } from './sca
 import { type DetectedScreenPane, selectGridCaptureKind } from './screen-recognition';
 import { isDefinitelyEmptySlot, isKnownLockedSlot } from './slot-visibility';
 import { detectStorageGrids, type GridDetection } from './storage-grid';
-import { parseVisibleQuantity } from './visible-quantity';
+import { parseVisibleQuantity, quantityTextCrop } from './visible-quantity';
 
 export interface CellDraft {
   enhancementSuggestion?: EnhancementReading | null;
@@ -69,6 +81,12 @@ export interface CellDraft {
   ignored?: boolean;
   itemUncertain?: boolean;
   autoExcluded?: boolean;
+  lifeEquipmentKind?: LifeEquipmentKind | null;
+  lifeEquipmentScope?: 'shared' | 'skill' | null;
+  lifeSlotLabel?: string;
+  lifeSlotConfirmed?: boolean;
+  lifeEnhancementText?: string;
+  lifeEnhancementConfirmed?: boolean;
   id: number;
   preview: string;
   options: CatalogItem[];
@@ -77,6 +95,7 @@ export interface CellDraft {
   quantityText: string;
   quantityEstimate: string | null;
   quantityUncertain: boolean;
+  quantityConflict?: boolean;
   quantityConfidence?: number;
   include: boolean;
   reviewed: boolean;
@@ -84,7 +103,9 @@ export interface CellDraft {
   level: number;
   caphras: number;
 }
-type ScanMode = 'storage' | 'inventory' | 'gear' | 'number';
+export type ScanMode = 'unknown' | 'storage' | 'inventory' | 'gear' | 'life-gear' | 'number';
+const unsupportedEquipmentLayoutMessage =
+  'Não reconhecemos as posições deste equipamento com segurança. Use o cadastro manual ou recorte um único ícone; a roda de profissões ainda precisa de calibração.';
 interface ScanJob {
   autoArea?: boolean;
   equipmentStatistics?: EquipmentStatistics;
@@ -98,6 +119,8 @@ interface ScanJob {
   width: number;
   height: number;
   mode: ScanMode;
+  lifeSkill: LifeSkill | null;
+  lifeSkillConfirmed: boolean;
   location: string;
   profileId: string;
   bounds: Crop;
@@ -111,6 +134,8 @@ interface ScanJob {
   elapsedMs: number;
   emptySlots: number;
 }
+
+export { pendingLifeEquipmentReviewFields } from './life-equipment-candidates';
 
 export function rankIconSuggestions(
   items: CatalogItem[],
@@ -210,7 +235,9 @@ export class ScansPage implements OnDestroy {
   readonly allReviewed = computed(() =>
     this.jobs().flatMap((job) =>
       job.cells
-        .filter((cell) => this.isValidatedForImport(cell, job.mode))
+        .filter((cell) =>
+          this.isValidatedForImport(cell, job.mode, job.lifeSkill, job.lifeSkillConfirmed),
+        )
         .map((cell) => ({ job, cell })),
     ),
   );
@@ -230,7 +257,7 @@ export class ScansPage implements OnDestroy {
         count +
         job.cells.filter(
           (cell) =>
-            !this.isValidatedForImport(cell, job.mode) &&
+            !this.isValidatedForImport(cell, job.mode, job.lifeSkill, job.lifeSkillConfirmed) &&
             !cell.ignored &&
             !this.reliable(cell, job.mode),
         ).length,
@@ -258,6 +285,7 @@ export class ScansPage implements OnDestroy {
       if (mode === 'storage') return `Salvar ${count} ${itemLabel} no armazém`;
       if (mode === 'inventory') return `Salvar ${count} ${itemLabel} no inventário`;
       if (mode === 'gear') return `Salvar ${count} ${itemLabel} de equipamento`;
+      if (mode === 'life-gear') return `Salvar ${count} ${itemLabel} de Vida na Família`;
     }
     return `Salvar ${count} ${itemLabel} do lote`;
   });
@@ -286,6 +314,24 @@ export class ScansPage implements OnDestroy {
   readonly picking = signal(false);
   private cropStart?: { x: number; y: number };
   readonly cells = signal<CellDraft[]>([]);
+  readonly lifeSkills = lifeSkills;
+  readonly lifeSkillLabels = lifeSkillLabels;
+  readonly lifeEquipmentKinds = lifeEquipmentKinds;
+  readonly sharedLifeEquipmentKinds = ['accessory', 'alchemyStone', 'purityOrb'] as const;
+  readonly lifeEquipmentKindLabels: Record<LifeEquipmentKind, string> = {
+    tool: 'Ferramenta',
+    costume: 'Traje',
+    accessory: 'Acessório',
+    artifact: 'Artefato',
+    lightstone: 'Pedra de luz',
+    huntingMusket: 'Mosquete de caça',
+    node: 'Nó',
+    alchemyStone: 'Pedra alquímica',
+    purityOrb: 'Orbe da Pureza',
+    other: 'Outro',
+  };
+  lifeSkill: LifeSkill | null = null;
+  lifeSkillConfirmed = false;
   equipmentStatistics = emptyEquipmentStatistics();
   statisticsConfirmed = false;
   readonly equipmentStatFields = equipmentStatFields;
@@ -366,12 +412,20 @@ export class ScansPage implements OnDestroy {
   private uploadMode: ScanMode | null = null;
   private uploadLocation: string | null = null;
   private uploadProfileId: string | null = null;
+  private uploadLifeSkill: LifeSkill | null = null;
+  private singleLifeIconRequested = false;
   get captureMode() {
     return this.uploadMode ?? this.mode;
   }
   set captureMode(value: ScanMode) {
     this.uploadMode = value;
-    if (!this.jobs().length) this.mode = value;
+    if (!this.jobs().length) {
+      this.mode = value;
+      if (value === 'gear' || value === 'life-gear' || value === 'unknown') {
+        this.columns = 1;
+        this.rows = 1;
+      }
+    }
   }
   get captureLocation() {
     return this.uploadLocation ?? this.location;
@@ -387,7 +441,17 @@ export class ScansPage implements OnDestroy {
     this.uploadProfileId = value;
     if (!this.jobs().length) this.profileId = value;
   }
-  mode: ScanMode = (['storage', 'inventory', 'gear'].includes(
+  get captureLifeSkill() {
+    return this.uploadLifeSkill;
+  }
+  set captureLifeSkill(value: LifeSkill | null) {
+    this.uploadLifeSkill = value;
+    if (!this.jobs().length) {
+      this.lifeSkill = value;
+      this.lifeSkillConfirmed = false;
+    }
+  }
+  mode: ScanMode = (['unknown', 'storage', 'inventory', 'gear', 'life-gear'].includes(
     inject(ActivatedRoute).snapshot.queryParamMap.get('type') ?? '',
   )
     ? inject(ActivatedRoute).snapshot.queryParamMap.get('type')
@@ -444,7 +508,9 @@ export class ScansPage implements OnDestroy {
     this.profileId = parsed.data.id;
     this.jobs.update((jobs) =>
       jobs.map((job) =>
-        job.mode !== 'storage' && !job.profileId ? { ...job, profileId: parsed.data.id } : job,
+        ['inventory', 'gear'].includes(job.mode) && !job.profileId
+          ? { ...job, profileId: parsed.data.id }
+          : job,
       ),
     );
     this.destinationChanged();
@@ -501,7 +567,7 @@ export class ScansPage implements OnDestroy {
   }
   reliable(cell: CellDraft, mode: ScanMode = this.mode) {
     if (cell.reviewed || cell.ignored || cell.autoExcluded || !cell.item) return false;
-    if (mode === 'number') return false;
+    if (mode === 'number' || mode === 'unknown' || mode === 'life-gear') return false;
     if (mode === 'gear') {
       return (
         !cell.itemUncertain && Boolean(cell.slot) && (cell.score === undefined || cell.score <= 18)
@@ -517,10 +583,17 @@ export class ScansPage implements OnDestroy {
       this.integer(cell.quantity) !== null
     );
   }
-  isValidatedForImport(cell: CellDraft, mode: ScanMode = this.mode) {
+  isValidatedForImport(
+    cell: CellDraft,
+    mode: ScanMode = this.mode,
+    lifeSkill: LifeSkill | null = this.lifeSkill,
+    lifeSkillConfirmed = this.lifeSkillConfirmed,
+  ) {
     if (!cell.include || !cell.reviewed || cell.ignored || cell.itemUncertain || !cell.item)
       return false;
     if (mode === 'gear') return this.slots.includes(cell.slot as (typeof gearSlots)[number]);
+    if (mode === 'life-gear')
+      return this.canValidateLifeEquipment(cell, lifeSkill, lifeSkillConfirmed, mode);
     if (mode === 'storage' || mode === 'inventory') {
       const quantity = this.integer(cell.quantity);
       return !cell.quantityUncertain && quantity !== null && quantity > 0;
@@ -599,7 +672,7 @@ export class ScansPage implements OnDestroy {
     this.gridSuggested.set(false);
     this.gridAreas.set([]);
     this.reviewPage.set(0);
-    if (this.mode === 'gear') {
+    if (this.mode === 'gear' || this.mode === 'life-gear' || this.mode === 'unknown') {
       this.columns = 1;
       this.rows = 1;
     } else if (['storage', 'inventory'].includes(this.mode) && this.image) {
@@ -694,7 +767,7 @@ export class ScansPage implements OnDestroy {
             !exact &&
             this.jobs().find((job) => imageHashDistance(job.fingerprint, fingerprint) <= 5);
           let areas: GridDetection[] = [];
-          if (this.captureMode !== 'gear')
+          if (!['gear', 'life-gear', 'unknown'].includes(this.captureMode))
             try {
               areas = detectStorageGrids(image, image.width, image.height);
             } catch {
@@ -719,6 +792,18 @@ export class ScansPage implements OnDestroy {
             } catch {
               autoArea = false;
             }
+          } else if (captureMode === 'life-gear') {
+            try {
+              autoArea =
+                detectEquipmentFrames(image, {
+                  left: 0,
+                  top: 0,
+                  width: image.width,
+                  height: image.height,
+                }).length > 0;
+            } catch {
+              autoArea = false;
+            }
           }
           const job: ScanJob = {
             autoArea,
@@ -731,11 +816,14 @@ export class ScansPage implements OnDestroy {
             width: image.width,
             height: image.height,
             mode: captureMode,
-            location: this.captureLocation,
-            profileId: this.captureProfileId,
+            lifeSkill: this.captureLifeSkill,
+            lifeSkillConfirmed: false,
+            location: ['life-gear', 'unknown'].includes(captureMode) ? '' : this.captureLocation,
+            profileId: ['inventory', 'gear'].includes(captureMode) ? this.captureProfileId : '',
             bounds: first?.bounds ?? { left: 0, top: 0, width: image.width, height: image.height },
-            columns: first?.columns ?? (captureMode === 'gear' ? 1 : 8),
-            rows: first?.rows ?? (captureMode === 'gear' ? 1 : 4),
+            columns:
+              first?.columns ?? (['gear', 'life-gear', 'unknown'].includes(captureMode) ? 1 : 8),
+            rows: first?.rows ?? (['gear', 'life-gear', 'unknown'].includes(captureMode) ? 1 : 4),
             areas,
             cells: [],
             status: exact ? 'duplicate' : 'queued',
@@ -777,6 +865,8 @@ export class ScansPage implements OnDestroy {
       columns: this.columns,
       rows: this.rows,
       cells: this.cells(),
+      lifeSkill: this.lifeSkill,
+      lifeSkillConfirmed: this.lifeSkillConfirmed,
       areas: this.gridAreas(),
       emptySlots: this.emptySlots(),
       equipmentStatistics: { ...this.equipmentStatistics },
@@ -815,6 +905,8 @@ export class ScansPage implements OnDestroy {
     this.mode = job.mode;
     this.location = job.location;
     this.profileId = job.profileId;
+    this.lifeSkill = job.lifeSkill ?? null;
+    this.lifeSkillConfirmed = job.lifeSkillConfirmed ?? false;
     this.bounds = { ...job.bounds };
     this.columns = job.columns;
     this.rows = job.rows;
@@ -892,13 +984,15 @@ export class ScansPage implements OnDestroy {
       this.mode = job.mode;
       this.location = job.location;
       this.profileId = job.profileId;
+      this.lifeSkill = job.lifeSkill ?? null;
+      this.lifeSkillConfirmed = job.lifeSkillConfirmed ?? false;
       this.cells.set([]);
       this.resetEquipmentStatistics();
-      if (this.mode === 'gear') {
+      if (this.mode === 'gear' || this.mode === 'life-gear' || this.mode === 'unknown') {
         this.bounds = { left: 0, top: 0, width: this.width, height: this.height };
         this.columns = 1;
         this.rows = 1;
-      } else this.suggestGrid();
+      } else if (this.mode === 'storage' || this.mode === 'inventory') this.suggestGrid();
     }
   }
   jobDestinationChanged(job: ScanJob) {
@@ -912,6 +1006,33 @@ export class ScansPage implements OnDestroy {
     this.batchConfirmed.set(false);
     this.fullLocationConfirmed.set(false);
     this.duplicateChoices.set({});
+  }
+  lifeSkillChanged(value: string) {
+    const selected = value ? (value as LifeSkill) : null;
+    const changed = selected !== this.lifeSkill;
+    this.lifeSkill = selected;
+    if (!selected) this.lifeSkillConfirmed = false;
+    else if (changed) this.lifeSkillConfirmed = true;
+    this.recheckLifeSkillRows();
+  }
+  confirmLifeSkill(checked: boolean) {
+    this.lifeSkillConfirmed = checked;
+    this.recheckLifeSkillRows();
+  }
+  private recheckLifeSkillRows() {
+    const rows = this.cells().map((cell) =>
+      cell.lifeEquipmentScope === 'skill'
+        ? { ...cell, include: false, reviewed: false, autoExcluded: true }
+        : cell,
+    );
+    this.cells.set(rows);
+    const job = this.activeJob();
+    if (job) {
+      job.lifeSkill = this.lifeSkill;
+      job.lifeSkillConfirmed = this.lifeSkillConfirmed;
+    }
+    this.saveActiveJob();
+    this.batchConfirmed.set(false);
   }
   destinationChanged() {
     this.statisticsConfirmed = false;
@@ -948,10 +1069,15 @@ export class ScansPage implements OnDestroy {
       this.batchElapsedMs.set(Math.round(performance.now() - batchStarted));
       this.batchRunning.set(false);
       this.batchProgress.set('');
+      const failed = pending.filter((job) => job.status === 'failed');
       this.message.set(
         this.batchCancelled
           ? 'Lote cancelado. Resultados anteriores continuam disponíveis.'
-          : 'Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.',
+          : failed.length
+            ? `Falha em ${failed.length} de ${pending.length} capturas. ${failed.map((job) => `${job.file.name}: ${job.error}`).join(' ')}${failed.length < pending.length ? ' Resultados das demais capturas continuam disponíveis.' : ''}`
+            : !pending.length
+              ? 'Não há capturas pendentes para analisar.'
+              : 'Lote analisado. Aceite os itens identificados e corrija apenas as pendências que deseja importar.',
       );
     }
   }
@@ -1008,14 +1134,41 @@ export class ScansPage implements OnDestroy {
       this.bounds.top + this.bounds.height <= this.height
     );
   }
+  async readSingleLifeIcon() {
+    if (this.mode !== 'life-gear' || this.busy()) return;
+    this.singleLifeIconRequested = true;
+    await this.read();
+  }
   async read() {
     this.picking.set(false);
     this.cropStart = undefined;
     if (this.busy() || !this.image) return;
+    if (this.mode === 'unknown') {
+      this.message.set('Escolha o tipo da captura antes de iniciar a leitura.');
+      return;
+    }
     if (!this.validCrop()) {
       this.message.set('Ajuste o recorte para ficar dentro da imagem.');
       return;
     }
+    let lifeEquipmentFrames: Crop[] = [];
+    if (this.mode === 'life-gear') {
+      if (this.singleLifeIconRequested) lifeEquipmentFrames = [{ ...this.bounds }];
+      else {
+        try {
+          lifeEquipmentFrames = detectEquipmentFrames(this.image, this.bounds);
+        } catch {
+          lifeEquipmentFrames = [];
+        }
+      }
+      if (!lifeEquipmentFrames.length) {
+        this.message.set(
+          'Nenhuma moldura foi segmentada. Ajuste o recorte a um único ícone e use “Ler este recorte como um único ícone”, ou cadastre o item na Família.',
+        );
+        return;
+      }
+    }
+    this.singleLifeIconRequested = false;
     if (
       this.mode !== 'number' &&
       (!Number.isInteger(this.rows) ||
@@ -1076,18 +1229,30 @@ export class ScansPage implements OnDestroy {
         this.cachedIndex = { region: this.readingRegion, index };
         const positions: { cell: Crop; matches: ReturnType<typeof rankCandidates> }[] = [];
         const gearFrames = mode === 'gear' ? detectEquipmentFrames(image, bounds) : [];
-        const equipmentLayout = suggestEquipmentLayout(gearFrames, bounds);
-        if (mode === 'gear' && !gearFrames.length && (bounds.width > 160 || bounds.height > 160)) {
-          throw new Error('Recorte um ícone de equipamento para leitura manual.');
+        const equipmentLayout =
+          mode === 'gear'
+            ? suggestEquipmentLayout(gearFrames, bounds)
+            : { slots: new Map<number, string>(), statistics: [] };
+        if (
+          mode === 'gear' &&
+          !equipmentLayout.slots.size &&
+          (bounds.width > 160 || bounds.height > 160)
+        ) {
+          throw new Error(unsupportedEquipmentLayoutMessage);
         }
-        const slotCrops = gearFrames.length
-          ? gearFrames
-          : Array.from({ length: rows * columns }, (_, i) => ({
-              left: bounds.left + ((i % columns) * bounds.width) / columns,
-              top: bounds.top + (Math.floor(i / columns) * bounds.height) / rows,
-              width: bounds.width / columns,
-              height: bounds.height / rows,
-            }));
+        const slotCrops =
+          mode === 'life-gear'
+            ? lifeEquipmentFrames
+            : equipmentLayout.slots.size
+              ? gearFrames.filter((_, index) => equipmentLayout.slots.has(index))
+              : mode === 'gear'
+                ? [bounds]
+                : Array.from({ length: rows * columns }, (_, i) => ({
+                    left: bounds.left + ((i % columns) * bounds.width) / columns,
+                    top: bounds.top + (Math.floor(i / columns) * bounds.height) / rows,
+                    width: bounds.width / columns,
+                    height: bounds.height / rows,
+                  }));
         for (const [slotIndex, cell] of slotCrops.entries()) {
           if (generation !== this.generation) return;
           this.progress.set(
@@ -1154,10 +1319,22 @@ export class ScansPage implements OnDestroy {
           const options = rankIconSuggestions(
             matches
               .map((match) => items.get(match.id))
-              .filter((item): item is CatalogItem => Boolean(item)),
+              .filter(
+                (item): item is CatalogItem =>
+                  Boolean(item) &&
+                  (mode !== 'gear' ||
+                    !equipmentLayout.slots.has(gearFrames.indexOf(cell)) ||
+                    isEquipmentCandidateForSlot(
+                      item!,
+                      equipmentLayout.slots.get(gearFrames.indexOf(cell)) ?? '',
+                    )),
+              ),
             matches,
           );
-          const suggestedItem = options[0] ?? null;
+          const suggestedItem =
+            mode === 'gear' && !equipmentLayout.slots.has(gearFrames.indexOf(cell))
+              ? (options.find((item) => isEquipmentCandidateForSlot(item, '')) ?? null)
+              : (options[0] ?? null);
           const best = matches.find((match) => match.id === suggestedItem?.id) ?? matches[0];
           const uniqueSuggestion = hasConfidentIconMatch(best, matches);
           const canvas = document.createElement('canvas');
@@ -1183,8 +1360,9 @@ export class ScansPage implements OnDestroy {
             sourceRect: { ...cell },
             preview: canvas.toDataURL(),
             options,
-            item: suggestedItem,
-            itemUncertain: !uniqueSuggestion,
+            ...(mode === 'life-gear' ? pendingLifeEquipmentReviewFields() : {}),
+            item: mode === 'life-gear' ? null : suggestedItem,
+            itemUncertain: mode === 'life-gear' || !uniqueSuggestion,
             quantity: '',
             quantityText: '',
             quantityEstimate: null,
@@ -1231,12 +1409,7 @@ export class ScansPage implements OnDestroy {
         }
         if (mode === 'storage' || mode === 'inventory') {
           this.progress.set(`Lendo quantidades de ${drafts.length} espaços…`);
-          const crops = positions.map(({ cell }) => ({
-            left: cell.left + cell.width * 0.03,
-            top: cell.top + cell.height * (mode === 'inventory' ? 0.45 : 0.57),
-            width: cell.width * 0.94,
-            height: cell.height * (mode === 'inventory' ? 0.5 : 0.37),
-          }));
+          const crops = positions.map(({ cell }) => quantityTextCrop(cell, mode));
           const quantities: QuantityReading[] = [];
           // Bounded contact sheets avoid very tall canvases on wide warehouses.
           for (let start = 0; start < crops.length; start += 50) {
@@ -1258,34 +1431,27 @@ export class ScansPage implements OnDestroy {
               const hasExactReading = Boolean(
                 reading?.value && !reading.approximate && reading.confidence >= 85,
               );
-              const isApproximate = Boolean(reading?.approximate);
-              const hasNoText = !reading?.text || reading.text.trim() === '';
-
               let qty = '';
               let uncertain = true;
-              let confidence = reading?.confidence ?? 0;
+              const confidence = reading?.confidence ?? 0;
 
               if (hasExactReading && reading?.value) {
                 qty = reading.value;
                 uncertain = false;
-              } else if (isApproximate && reading?.value) {
-                // The abbreviated stack is rounded by the game; apply that visible estimate,
-                // while keeping it marked for review before it can be batch-confirmed.
-                qty = reading.value;
-                uncertain = true;
-              } else if (draft.item && hasNoText) {
-                // Missing OCR text is not proof that the visible stack contains one unit.
-                qty = '1';
-                uncertain = true;
-                confidence = 0;
               }
 
               return {
                 ...draft,
                 quantity: qty,
                 quantityText: reading?.text ?? '',
-                quantityEstimate: reading?.approximate ? reading.value : null,
+                quantityEstimate:
+                  reading?.evidence === 'conflict'
+                    ? null
+                    : reading?.approximate
+                      ? reading.value
+                      : null,
                 quantityUncertain: uncertain,
+                quantityConflict: reading?.evidence === 'conflict',
                 quantityConfidence: confidence,
               };
             }),
@@ -1295,7 +1461,9 @@ export class ScansPage implements OnDestroy {
         this.message.set(
           mode === 'gear'
             ? `${drafts.length} ícones preparados. Confira item, posição e aprimoramento. Trajes e artefatos podem aparecer sem posição; ignore o que não faz parte do conjunto de combate. Caphras não é visível nesta ficha.`
-            : `${drafts.length} espaços analisados. Resultados confiáveis estão prontos para importar; corrija somente os casos duvidosos que deseja incluir.`,
+            : mode === 'life-gear'
+              ? `${drafts.length} recortes preparados para Equipamento de Vida. Escolha o item, o tipo e o escopo de cada linha; nada será importado sem revisão.`
+              : `${drafts.length} espaços analisados. Resultados confiáveis estão prontos para importar; corrija somente os casos duvidosos que deseja incluir.`,
         );
       }
       if (job) {
@@ -1313,10 +1481,16 @@ export class ScansPage implements OnDestroy {
         status: 'success',
         result: hasResult ? 'matches' : 'no_matches',
       });
-    } catch {
+    } catch (error) {
+      const failureMessage =
+        error instanceof Error && error.message === unsupportedEquipmentLayoutMessage
+          ? unsupportedEquipmentLayoutMessage
+          : mode === 'gear'
+            ? 'Não encontramos molduras confiáveis. Recorte um ícone de equipamento e use uma linha e uma coluna.'
+            : 'Não foi possível concluir a leitura. Tente um recorte menor ou preencha manualmente.';
       if (job) {
         job.status = generation === this.generation ? 'failed' : 'cancelled';
-        job.error = 'A leitura falhou. Tente novamente ou ajuste o recorte.';
+        job.error = failureMessage;
         if (previousCells.length) this.cells.set(previousCells);
         this.saveActiveJob();
       }
@@ -1326,11 +1500,7 @@ export class ScansPage implements OnDestroy {
           action: 'read_print',
           status: 'failed',
         });
-        this.message.set(
-          mode === 'gear'
-            ? 'Não encontramos molduras confiáveis. Recorte um ícone de equipamento e use uma linha e uma coluna.'
-            : 'Não foi possível concluir a leitura. Tente um recorte menor ou preencha manualmente.',
-        );
+        this.message.set(failureMessage);
       }
     } finally {
       if (job?.status === 'processing') {
@@ -1460,11 +1630,39 @@ export class ScansPage implements OnDestroy {
   canValidate(cell: CellDraft, mode: ScanMode = this.mode) {
     if (!cell.item) return false;
     if (mode === 'gear') return this.slots.includes(cell.slot as (typeof gearSlots)[number]);
+    if (mode === 'life-gear')
+      return this.canValidateLifeEquipment(cell, this.lifeSkill, this.lifeSkillConfirmed, mode);
     if (mode === 'storage' || mode === 'inventory') {
       const quantity = this.integer(cell.quantity);
       return quantity !== null && quantity > 0;
     }
     return false;
+  }
+  canValidateLifeEquipment(
+    cell: CellDraft,
+    lifeSkill: LifeSkill | null = this.lifeSkill,
+    lifeSkillConfirmed = this.lifeSkillConfirmed,
+    mode: ScanMode = this.mode,
+  ): boolean {
+    if (
+      mode !== 'life-gear' ||
+      !cell.item ||
+      cell.itemUncertain ||
+      !cell.lifeEquipmentKind ||
+      !cell.lifeEquipmentScope
+    )
+      return false;
+    if (
+      cell.lifeEquipmentScope === 'shared' &&
+      !this.sharedLifeEquipmentKinds.includes(
+        cell.lifeEquipmentKind as (typeof this.sharedLifeEquipmentKinds)[number],
+      )
+    )
+      return false;
+    if (cell.lifeEquipmentScope === 'skill' && (!lifeSkill || !lifeSkillConfirmed)) return false;
+    if (cell.lifeSlotLabel?.trim() && !cell.lifeSlotConfirmed) return false;
+    if (cell.lifeEnhancementText?.trim() && !cell.lifeEnhancementConfirmed) return false;
+    return true;
   }
   validateCell(cell: CellDraft) {
     if (!this.canValidate(cell)) return;
@@ -1478,6 +1676,7 @@ export class ScansPage implements OnDestroy {
       checked &&
       (!cell.item ||
         (this.mode === 'gear' && !this.slots.includes(cell.slot as (typeof gearSlots)[number])) ||
+        (this.mode === 'life-gear' && !this.canValidateLifeEquipment(cell)) ||
         (['storage', 'inventory'].includes(this.mode) && this.integer(cell.quantity) === null))
     )
       return;
@@ -1675,7 +1874,9 @@ export class ScansPage implements OnDestroy {
       .flatMap((job) =>
         job.cells
           .filter(
-            (cell) => this.isValidatedForImport(cell, job.mode) || this.reliable(cell, job.mode),
+            (cell) =>
+              this.isValidatedForImport(cell, job.mode, job.lifeSkill, job.lifeSkillConfirmed) ||
+              this.reliable(cell, job.mode),
           )
           .map((cell) => ({ job, cell })),
       )
@@ -1742,6 +1943,32 @@ export class ScansPage implements OnDestroy {
     try {
       const stock = consolidateOccurrences(this.reviewedOccurrences(), this.duplicateChoices());
       const gear = selected.filter(({ job }) => job.mode === 'gear');
+      const lifeEquipmentSelected = selected.filter(({ job }) => job.mode === 'life-gear');
+      const incomingShared: LifeEquipment['sharedItems'] = [];
+      const incomingBySkill = Object.fromEntries(
+        lifeSkills.map((skill) => [skill, []]),
+      ) as unknown as LifeEquipment['bySkill'];
+      for (const { job, cell } of lifeEquipmentSelected) {
+        if (!cell.item || !cell.lifeEquipmentKind || !cell.lifeEquipmentScope)
+          throw new Error('Confira item, tipo e escopo dos equipamentos de Vida incluídos.');
+        const entry: LifeEquipment['sharedItems'][number] = {
+          id: crypto.randomUUID(),
+          catalogItemId: cell.item.id,
+          name: cell.item.name,
+          kind: cell.lifeEquipmentKind,
+          ...(cell.lifeSlotLabel?.trim() && cell.lifeSlotConfirmed
+            ? { slotLabel: cell.lifeSlotLabel.trim() }
+            : {}),
+          enhancementText:
+            cell.lifeEnhancementText?.trim() && cell.lifeEnhancementConfirmed
+              ? cell.lifeEnhancementText.trim()
+              : null,
+        };
+        if (cell.lifeEquipmentScope === 'shared') incomingShared.push(entry);
+        else if (job.lifeSkill && job.lifeSkillConfirmed)
+          incomingBySkill[job.lifeSkill].push(entry);
+        else throw new Error('Confirme a profissão antes de incluir itens por profissão.');
+      }
       const statisticJobs = this.jobs().filter(
         (job) => job.mode === 'gear' && job.status === 'ready' && job.statisticsConfirmed,
       );
@@ -1753,6 +1980,13 @@ export class ScansPage implements OnDestroy {
           confirmedEquipmentStatistics(job.equipmentStatistics ?? emptyEquipmentStatistics()),
         ]),
       );
+      const historyModes = [
+        ...(stock.length ? [this.updateMode()] : []),
+        ...(gear.length ? (['gear'] as const) : []),
+        ...(lifeEquipmentSelected.length ? (['life-gear'] as const) : []),
+      ];
+      const historyMode: 'reviewed' | 'merge' | 'replace' | 'gear' | 'life-gear' | 'mixed' =
+        historyModes.length === 1 ? historyModes[0]! : 'mixed';
       const gearKeys = gear.map(({ job, cell }) => JSON.stringify([job.profileId, cell.slot]));
       if (new Set(gearKeys).size !== gearKeys.length)
         throw new Error(
@@ -1771,6 +2005,23 @@ export class ScansPage implements OnDestroy {
         )
       )
         throw new Error('Confira posição, aprimoramento e Caphras de cada equipamento.');
+      const currentLifeEquipment = this.store.data().families?.[this.readingRegion]?.lifeEquipment;
+      if (
+        (currentLifeEquipment?.sharedItems.length ?? 0) + incomingShared.length >
+        lifeEquipmentItemLimit
+      )
+        throw new Error(
+          `Limite de ${lifeEquipmentItemLimit} itens na lista comum da Família. Remova itens antes de salvar o lote.`,
+        );
+      for (const skill of lifeSkills) {
+        if (
+          (currentLifeEquipment?.bySkill[skill].length ?? 0) + incomingBySkill[skill].length >
+          lifeEquipmentItemLimit
+        )
+          throw new Error(
+            `Limite de ${lifeEquipmentItemLimit} itens na lista de ${lifeSkillLabels[skill]}. Remova itens antes de salvar o lote.`,
+          );
+      }
       if (
         this.updateMode() === 'replace' &&
         (!this.fullLocationConfirmed() ||
@@ -1781,7 +2032,12 @@ export class ScansPage implements OnDestroy {
                 job.cells.some(
                   (cell) =>
                     !cell.ignored &&
-                    !this.isValidatedForImport(cell, job.mode) &&
+                    !this.isValidatedForImport(
+                      cell,
+                      job.mode,
+                      job.lifeSkill,
+                      job.lifeSkillConfirmed,
+                    ) &&
                     !this.reliable(cell, job.mode),
                 )),
           ))
@@ -1794,6 +2050,51 @@ export class ScansPage implements OnDestroy {
       let beforeImport = this.store.data();
       const saved = this.store.update((state) => {
         beforeImport = state;
+        const existingFamily = state.families?.[region];
+        const emptyLifeEquipment: LifeEquipment = {
+          sharedItems: [],
+          bySkill: Object.fromEntries(
+            lifeSkills.map((skill) => [skill, []]),
+          ) as unknown as LifeEquipment['bySkill'],
+        };
+        const previousLifeEquipment = existingFamily?.lifeEquipment ?? emptyLifeEquipment;
+        const existingSkillItemIds = new Set(
+          lifeSkills.flatMap((skill) =>
+            previousLifeEquipment.bySkill[skill].map((entry) => entry.catalogItemId),
+          ),
+        );
+        const finalSharedItemIds = new Set([
+          ...previousLifeEquipment.sharedItems.map((entry) => entry.catalogItemId),
+          ...incomingShared.map((entry) => entry.catalogItemId),
+        ]);
+        const incomingSkillItemIds = lifeSkills.flatMap((skill) =>
+          incomingBySkill[skill].map((entry) => entry.catalogItemId),
+        );
+        if (
+          incomingShared.some((entry) => existingSkillItemIds.has(entry.catalogItemId)) ||
+          incomingSkillItemIds.some((itemId) => finalSharedItemIds.has(itemId))
+        )
+          throw new Error(
+            'Um mesmo item não pode ser salvo como comum à Família e por profissão. Revise o escopo antes de incluir.',
+          );
+        const families = lifeEquipmentSelected.length
+          ? {
+              ...state.families,
+              [region]: {
+                ...existingFamily,
+                lifeEquipment: {
+                  ...previousLifeEquipment,
+                  sharedItems: [...previousLifeEquipment.sharedItems, ...incomingShared],
+                  bySkill: Object.fromEntries(
+                    lifeSkills.map((skill) => [
+                      skill,
+                      [...previousLifeEquipment.bySkill[skill], ...incomingBySkill[skill]],
+                    ]),
+                  ) as LifeEquipment['bySkill'],
+                },
+              },
+            }
+          : state.families;
         let inventory = [...state.inventory];
         const sameLocation = (row: (typeof inventory)[number], incoming: ReviewedOccurrence) =>
           row.region === region &&
@@ -1881,7 +2182,11 @@ export class ScansPage implements OnDestroy {
             selected.map(({ job }) =>
               job.mode === 'storage'
                 ? job.location.trim()
-                : this.profiles().find((profile) => profile.id === job.profileId)!.name,
+                : job.mode === 'life-gear'
+                  ? job.lifeSkill
+                    ? lifeSkillLabels[job.lifeSkill]
+                    : 'Família'
+                  : this.profiles().find((profile) => profile.id === job.profileId)!.name,
             ),
           ),
         ];
@@ -1889,14 +2194,15 @@ export class ScansPage implements OnDestroy {
           ...state,
           inventory,
           characters,
+          families,
           screenshotImports: [
             ...state.screenshotImports,
             {
               id: crypto.randomUUID(),
               region,
               createdAt: now,
-              mode: stock.length ? this.updateMode() : ('gear' as const),
-              itemCount: stock.length + gear.length,
+              mode: historyMode,
+              itemCount: stock.length + gear.length + lifeEquipmentSelected.length,
               locations,
               sourceHashes: [...new Set(selected.map(({ job }) => job.hash))],
             },

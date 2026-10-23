@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
-import { AutomaticScanPage } from './automatic-scan-page';
+import { AutomaticScanPage, scanModeForScreenKind } from './automatic-scan-page';
 
 describe('Automatic capture loading state', () => {
   useMemoryStorage();
+
+  it('routes life equipment to its own mode and unknown screens to a manual choice', () => {
+    expect(scanModeForScreenKind('life-equipment')).toBe('life-gear');
+    expect(scanModeForScreenKind('equipment')).toBe('gear');
+    expect(scanModeForScreenKind('unknown')).toBe('unknown');
+    expect(scanModeForScreenKind('market')).toBe('unknown');
+  });
 
   it('keeps capture setup under the shared page heading', async () => {
     const fixture = await renderComponent(AutomaticScanPage);

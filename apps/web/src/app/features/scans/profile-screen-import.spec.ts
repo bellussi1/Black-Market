@@ -72,6 +72,51 @@ describe('Profile screen import destination', () => {
     expect(fixture.componentInstance.store.data().characters).toHaveLength(0);
   });
 
+  it('requires manual correction and selection before importing an ambiguous zero mastery', async () => {
+    const fixture = await renderComponent(ProfileScreenImportComponent);
+    const page = fixture.componentInstance;
+    page.newCharacterName.set('QA OCR');
+    page.createTarget();
+    const character = page.targetCharacter!;
+    page.store.update((state) => ({
+      ...state,
+      characters: state.characters.map((row) =>
+        row.id === character.id ? { ...row, mastery: { ...row.mastery, barter: 1500 } } : row,
+      ),
+    }));
+    page.imageUrl.set('blob:maestria');
+    page.imageName.set('maestrias.jpeg');
+    page.imageSize.set({ width: 832, height: 933 });
+    const candidate = {
+      field: 'mastery.barter',
+      rawText: 'Permuta · Maestria O',
+      value: null,
+      confidence: 94,
+      bounds: { left: 412, top: 713, width: 399, height: 20 },
+      status: 'ambiguous' as const,
+    };
+    page.candidates.set([candidate]);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const checkbox = host.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    const value = host.querySelector('input[id="candidate-mastery.barter"]') as HTMLInputElement;
+    expect(value.value).toBe('—');
+    expect(checkbox.disabled).toBe(true);
+    expect(page.selectedFields()).toEqual([]);
+    page.apply();
+    expect(page.targetCharacter?.mastery.barter).toBe(1500);
+
+    page.editCandidate(candidate, '0');
+    fixture.detectChanges();
+    expect(checkbox.disabled).toBe(false);
+    expect(page.candidates()[0]).toMatchObject({ value: 0, status: 'candidate' });
+    page.toggleField('mastery.barter', true);
+    page.apply();
+
+    expect(page.targetCharacter?.mastery.barter).toBe(0);
+  });
+
   it('keeps preview, field selection and apply action grouped under the shared heading', async () => {
     const fixture = await renderComponent(ProfileScreenImportComponent);
     const component = fixture.componentInstance;

@@ -352,6 +352,8 @@ export class StockPage {
           merge: 'Itens novos acrescentados',
           replace: 'Local completo substituído',
           gear: 'Equipamentos atualizados',
+          'life-gear': 'Equipamento de Vida',
+          mixed: 'Importação mista',
         } as Record<string, string>
       )[mode] ?? mode
     );

@@ -8,6 +8,13 @@ import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { StockPage } from './stock-page';
 describe('Reviewed stock management', () => {
   useMemoryStorage();
+  it('labels family life equipment imports in the recent history', async () => {
+    const fixture = await renderComponent(StockPage);
+
+    expect(fixture.componentInstance.modeLabel('life-gear')).toBe('Equipamento de Vida');
+    expect(fixture.componentInstance.modeLabel('mixed')).toBe('Importação mista');
+  });
+
   it('groups the stock heading and item list with accessible names', async () => {
     const fixture = await renderComponent(StockPage);
     const element: HTMLElement = fixture.nativeElement;

@@ -8,12 +8,18 @@ const reading = (value: string, confidence: number) => ({
   approximate: false,
 });
 describe('Independent quantity recognition', () => {
-  it('replaces weak local recognition with a stronger exact reading', () => {
-    expect(reconcileQuantity(reading('12', 40), reading('72', 92)).value).toBe('72');
+  it('keeps the numeric candidate empty when weak local evidence disagrees with OCR', () => {
+    expect(reconcileQuantity(reading('12', 40), reading('72', 92))).toMatchObject({
+      value: null,
+      text: '72',
+      confidence: 84,
+      evidence: 'conflict',
+    });
   });
   it('requires correction when two confident recognizers disagree', () => {
     expect(reconcileQuantity(reading('12', 90), reading('72', 92))).toMatchObject({
-      value: '72',
+      value: null,
+      text: '72',
       confidence: 84,
       evidence: 'conflict',
     });
@@ -31,6 +37,7 @@ describe('Independent quantity recognition', () => {
     });
     const conflict = reconcileQuantity(reading('12', 90), reading('72', 95));
     expect(reconcileQuantity(conflict, reading('72', 99))).toMatchObject({
+      value: null,
       confidence: 84,
       evidence: 'conflict',
     });

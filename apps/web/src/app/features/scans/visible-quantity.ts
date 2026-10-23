@@ -1,3 +1,24 @@
+import type { Crop } from './print-reader';
+
+/** Grid valleys sit to the right of long quantity prefixes in the game font. */
+export function quantityTextCrop(cell: Crop, mode: 'storage' | 'inventory'): Crop {
+  if (mode === 'inventory')
+    return {
+      left: cell.left + cell.width * 0.03,
+      top: cell.top + cell.height * 0.45,
+      width: cell.width * 0.94,
+      height: cell.height * 0.5,
+    };
+  const left = Math.max(0, cell.left - cell.width * 0.12);
+  const right = cell.left + cell.width * 0.86;
+  return {
+    left,
+    top: cell.top + cell.height * 0.57,
+    width: right - left,
+    height: cell.height * 0.37,
+  };
+}
+
 export interface VisibleQuantity {
   text: string;
   value: string;
@@ -11,13 +32,13 @@ export function parseVisibleQuantity(raw: string): VisibleQuantity | null {
     .replace(/\s+/g, '')
     .replace(/([kKmM])[.,:;_\-]+$/, '$1');
   if (!rawText || rawText.length > 30) return null;
-  // BDO renders sub-million stacks with one decimal, such as 390.5k.
-  // Restore that decimal when OCR drops the tiny separator, and reject longer
-  // K-suffixed strings that cannot be displayed in this format.
-  const omittedKDecimal = /^(\d{3})(\d)([kK])$/.exec(rawText);
-  const text = omittedKDecimal
-    ? `${omittedKDecimal[1]}.${omittedKDecimal[2]}${omittedKDecimal[3]}`
-    : rawText;
+  // A multi-digit M value without a separator could have lost the decimal,
+  // such as the real 1.4M capture read as 14M. Keep it for manual correction.
+  if (/^\d{2,}[mM]$/.test(rawText)) return null;
+  // A four-digit K value may have lost the display decimal, such as the real
+  // 169.2k capture read as 1698k. Keep it for manual correction.
+  if (/^\d{4}[kK]$/.test(rawText)) return null;
+  const text = rawText;
   if (/^\d{5,}[kK]$/i.test(text)) return null;
   const compact = /^(\d+)(?:[.,](\d{1,3}))?([kKmM])$/.exec(text);
   let value: number;

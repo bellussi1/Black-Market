@@ -2,6 +2,46 @@
   display: block;
 }
 
+.life-skill-confirmation,
+.life-gear-fields,
+.life-gear-manual-actions {
+  display: grid;
+  min-width: 0;
+  gap: var(--bm-space-3);
+}
+
+.life-skill-confirmation {
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--bm-space-3);
+  border: var(--bm-border-width) solid var(--bm-border);
+  background: var(--bm-surface);
+}
+
+.life-skill-confirm-label,
+.life-field-confirm-label {
+  display: flex;
+  min-height: var(--bm-control-height);
+  align-items: center;
+  gap: var(--bm-space-2);
+  color: var(--bm-text);
+}
+
+.life-gear-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+}
+
+.life-gear-manual-actions {
+  justify-items: start;
+  padding-top: var(--bm-space-3);
+}
+
+@media (max-width: 620px) {
+  .life-gear-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .capture-drop {
   margin-block: 1rem;
   padding: 1.5rem;

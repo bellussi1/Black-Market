@@ -1,4 +1,4 @@
-import type { lifeSkills } from '@bdo/calculators';
+import type { LifeSkill, lifeSkills } from '@bdo/calculators';
 
 import type { Crop } from './print-reader';
 
@@ -15,6 +15,7 @@ export type ScreenKind =
   | 'character-roster'
   | 'character-status'
   | 'equipment'
+  | 'life-equipment'
   | 'market'
   | 'unknown';
 
@@ -97,6 +98,7 @@ const titlePatterns: [ScreenKind, RegExp][] = [
   ['market', /^(?:mercado|market)(?:\s+central)?$/],
   ['mastery', /^(?:minhas informacoes|my information)$/],
   ['character-roster', /^(?:fechar o jogo|character selection)$/],
+  ['life-equipment', /^(?:equipamento de vida|life equipment)$/],
   ['equipment', /^(?:equipamento|equipment)$/],
   ['storage', /^armazem(?:\s+de\s+(?!mercado\b).+)?$|^storage(?:\s+of\s+.+)?$/],
   ['inventory', /^(?:inventario|inventory)(?:\b.*)?$/],
@@ -163,6 +165,34 @@ export function detectScreenPanes(
     .map((line) => ({ line, kind: classifyTitle(line.text) }))
     .filter((entry): entry is { line: OcrTextLine; kind: ScreenKind } => entry.kind !== null)
     .sort((a, b) => centerX(a.line) - centerX(b.line));
+  // Sparse OCR can join the gold header to the adjacent icon. Two distinct
+  // equipment-only controls remain reliable evidence when the title is lost.
+  if (!detectedAnchors.length) {
+    const equipmentControls = lines.filter(
+      (line) =>
+        validLine(line, imageWidth, imageHeight) &&
+        line.confidence >= 70 &&
+        /(?:bonus de artefato|bonus de conjunto|ver cristal equipado|artifact bonus|view equipped crystals)/.test(
+          normalize(line.text),
+        ),
+    );
+    const controls = new Set(
+      equipmentControls.map(
+        (line) =>
+          normalize(line.text).match(
+            /bonus de artefato|bonus de conjunto|ver cristal equipado|artifact bonus|view equipped crystals/,
+          )?.[0],
+      ),
+    );
+    if (controls.size >= 2)
+      return [
+        {
+          kind: 'equipment',
+          bounds: { left: 0, top: 0, width: imageWidth, height: imageHeight },
+          confidence: Math.min(...equipmentControls.map((line) => line.confidence)) / 100,
+        },
+      ];
+  }
   if (!detectedAnchors.some((anchor) => anchor.kind === 'mastery')) {
     const masteryLines = lines.filter((line) =>
       /(?:maestria|mastery)\s*[:\-]?\s*\d{1,4}\b/i.test(normalize(line.text)),
@@ -220,7 +250,7 @@ export function detectScreenPanes(
     ...unique.slice(1).map((entry) => entry.line.bounds.left),
     imageWidth,
   ];
-  return unique.map((anchor, index) => {
+  const panes = unique.map((anchor, index) => {
     const left = boundaries[index];
     const right = boundaries[index + 1];
     const paneLines = lines.filter(
@@ -242,6 +272,10 @@ export function detectScreenPanes(
       bounds: { left: minX, top: minY, width: maxX - minX, height: maxY - minY },
       confidence: Math.max(0, Math.min(1, anchor.line.confidence / 100)),
     };
+  });
+  return panes.map((pane) => {
+    if (pane.kind !== 'equipment' || hasCombatEquipmentControls(pane, lines)) return pane;
+    return lifeEquipmentSkill(pane, lines) ? { ...pane, kind: 'life-equipment' as const } : pane;
   });
 }
 
@@ -320,6 +354,43 @@ function paneContains(pane: DetectedScreenPane, line: OcrTextLine): boolean {
     y >= pane.bounds.top &&
     y <= pane.bounds.top + pane.bounds.height
   );
+}
+
+const combatEquipmentControl =
+  /(?:bonus de artefato|bonus de conjunto|ver cristal equipado|artifact bonus|view equipped crystals)/;
+
+function hasCombatEquipmentControls(
+  pane: DetectedScreenPane,
+  lines: readonly OcrTextLine[],
+): boolean {
+  return lines.some(
+    (line) =>
+      line.confidence >= 70 &&
+      paneContains(pane, line) &&
+      combatEquipmentControl.test(normalize(line.text)),
+  );
+}
+
+/** Returns one unambiguous profession label visible inside the detected pane. */
+export function lifeEquipmentSkill(
+  pane: DetectedScreenPane,
+  lines: readonly OcrTextLine[],
+): LifeSkill | null {
+  const detected = new Set<LifeSkill>();
+  for (const line of lines) {
+    if (
+      line.confidence < 70 ||
+      !Number.isFinite(line.confidence) ||
+      ![line.bounds.left, line.bounds.top, line.bounds.width, line.bounds.height].every(
+        Number.isFinite,
+      ) ||
+      !paneContains(pane, line)
+    )
+      continue;
+    const skill = skillAliases[normalize(line.text)];
+    if (skill) detected.add(skill);
+  }
+  return detected.size === 1 ? [...detected][0] : null;
 }
 
 function masterySkill(text: string): (typeof lifeSkills)[number] | null {
@@ -428,10 +499,12 @@ function parseMastery(
   visibleLines: readonly OcrTextLine[],
 ): ScreenFieldCandidate | null {
   const value = normalize(line.text);
-  const amount = value.match(/(?:maestria|mastery)\s*[:\-]?\s*(\d{1,4})\b/);
+  const amount = value.match(/(?:maestria|mastery)\s*[:\-]?\s*(\d{1,4}|o)\b/);
   if (!amount) return null;
+  const numeric = /^\d+$/.test(amount[1]) ? Number(amount[1]) : null;
+  const status = numeric === null ? 'ambiguous' : undefined;
   const directSkill = masterySkill(value);
-  if (directSkill) return candidate(line, `mastery.${directSkill}`, Number(amount[1]));
+  if (directSkill) return candidate(line, `mastery.${directSkill}`, numeric, undefined, status);
 
   if (unknownMasteryLabel(value))
     return candidate(line, 'mastery.unknown', null, undefined, 'unsupported');
@@ -444,7 +517,7 @@ function parseMastery(
       const verticalGap = Math.abs(amountY - (labelLine.bounds.top + labelLine.bounds.height / 2));
       return (
         horizontalGap > 0 &&
-        horizontalGap <= 240 &&
+        horizontalGap <= Math.max(240, line.bounds.height * 24) &&
         verticalGap <= 12 &&
         unknownMasteryLabel(labelLine.text)
       );
@@ -465,7 +538,9 @@ function parseMastery(
       if (!skill) return [];
       const horizontalGap = amountX - centerX(skillLine);
       const verticalGap = Math.abs(amountY - (skillLine.bounds.top + skillLine.bounds.height / 2));
-      return horizontalGap > 0 && horizontalGap <= 320 && verticalGap <= 28
+      return horizontalGap > 0 &&
+        horizontalGap <= Math.max(320, line.bounds.height * 24) &&
+        verticalGap <= Math.max(12, line.bounds.height * 0.8)
         ? [{ skill, line: skillLine, horizontalGap, verticalGap }]
         : [];
     })
@@ -481,7 +556,7 @@ function parseMastery(
   )
     return candidate(line, 'mastery.unknown', null, undefined, 'ambiguous');
   const source = combineSourceLines(nearest.line, line);
-  return candidate(source, `mastery.${nearest.skill}`, Number(amount[1]));
+  return candidate(source, `mastery.${nearest.skill}`, numeric, undefined, status);
 }
 
 function parseCharacter(line: OcrTextLine): ScreenFieldCandidate[] {
