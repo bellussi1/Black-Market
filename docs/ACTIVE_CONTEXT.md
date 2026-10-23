@@ -1,36 +1,25 @@
 # Estado atual — Black Market
 
-Atualizado em 21/10/2026. Resumo substituível deste checkout; histórico completo não deve ser carregado no início.
+Atualizado em 23/10/2026. Resumo substituível deste checkout; detalhes e evidências estão no [relatório da jornada](research/player-journey-audit-2026-10-22.md).
 
-## Checkout e continuidade
+## Checkout
 
-- Branch de referência: `main`; checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`. Entregas integradas em `origin/main`; revisão exata em `git log`.
-- Web `4200` e API `3000` agora executam deste checkout em watch; sessões gerenciadas Web `5759`, API `82638`. Comandos/cuidado de sincronização em [desenvolvimento](development.md#prévia-visual-de-referência). QA de outros worktrees usa outra porta.
+- Checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`, branch `main`. Correções da auditoria e evidências citadas foram commitadas localmente em commits separados por responsabilidade; não houve push.
+- Os originais em `prints-reais-ocr/` continuam privados, locais e fora do stage; padrão `/prints-reais-ocr/` adicionado somente a `.git/info/exclude`. Não reiniciei nem substituí `localhost:4200` ou a API; sem migração, seed, alteração de staging ou push.
 
-- Staging gratuito atualizado para `13e4661`, imagem e assets isolados; túnel restrito aos convidados ativo em segundo plano. URL/estado somente em `data/staging/` e `.env.staging` ignorados. [Operação e validação](staging-local.md#compartilhamento-verificado-em-21102026).
+## Estado
 
-## Últimas entregas verificadas
+- Correções J01–J09 e seus limites estão documentados no relatório. Equipamento de Vida fica separado por Família/profissão, busca no catálogo sem filtro de receitas e não se mistura com gear PvP. Histórico marca lotes heterogêneos como “Importação mista”.
+- J07 abstém de sugerir `14M` sem separador, mantém vazio o valor quando leituras divergem mesmo após novas tentativas, e mostra o texto OCR para revisão manual. `Permuta: O` não vira zero; importar `0` exige edição, seleção e aplicação explícitas.
+- No Coach, limite de peso `0` significa não informado e deixa de bloquear cenários como se fosse `0 LT`; peso carregado e limite agora podem ser editados na configuração rápida. O botão de expandir de uma etapa aninhada está coberto por teste de clique.
 
-- UI compartilhada, Família/administração/zoom e tokens: [evidências](research/ui-filled-zoom-controls-2026-10-19.md).
-- Receitas: [boxes compactos, maestrias, plano lateral e prévia do otimizador alinhados](research/recipe-decision-panels-density-2026-10-19.md) e [enquadramento/scroll dos detalhes](research/recipe-expansion-focus-details-2026-10-19.md). Culinária/Alquimia/Processamento modelados aparecem conforme a cadeia, fora dos ajustes recolhidos; overrides continuam locais à simulação. Expansão manual preserva zoom; atualizações e recolhimento não reenquadram.
-- Home: busca/atalhos no topo; [relatório](research/home-hierarchy-refresh-2026-10-19.md), código `8786b9f`.
-- Profissões: navegação visual, formulário agrupado, resumo sticky e acesso público preservado; [relatório](research/lifeskills-visual-refresh-2026-10-19.md), código `127b1be`.
-- Ranking personalizado: personagem ativo/tempos sincronizados, intermediários secundários preservados, melhores variantes por produto após filtros e busca recalculada automaticamente. [Diagnóstico e limites](research/home-recommendations-competitive-review-2026-10-16.md#ranking-personalizado--revisão-de-20102026). Sessão Google real indisponível no QA; não anunciar homologação pessoal.
-- Comparação recursiva em Produção: venda independente da final e de todos os intermediários fabricáveis, com cenário, lucro/h, lucro e tempo de cada lote; ciclos/alternativas tratados, pendências e baixa atividade explícitas. Primeira lista aberta. [Contrato e QA sintética](research/home-recommendations-competitive-review-2026-10-16.md#venda-independente-das-subreceitas--20102026). Não somar lucros nem anunciar ótimo global ou homologação da conta real.
-- Desidratados: variantes concretas de Gobião, Calamar e Marisco para receitas COOK unitárias revisadas, mantendo a opção fresca e escolhas por URL; ranking e grafo usam seus IDs/pesos/estoques. Aviso de pendências em linha própria, alinhado à esquerda. [Fontes, inspeção do cliente e limites](research/fish-price-equivalence-review-2026-10-16.md). Não generalizar razões para outros peixes/quantidades ou Lagosta; não confundir cotação ausente com custo zero.
-- PERF-01: imports compartilhados isolados e CSS/ícone sem uso removidos; produção abaixo do budget inicial. [Medição, testes e limites](research/shell-bundle-deferral-review-2026-10-18.md#continuação-de-20102026--entrypoints-e-css-sem-consumidores).
+## Verificação e limites
 
-## Trabalho desta retomada
+- `pnpm check`, `pnpm test`, `pnpm --filter @bdo/web build` e `pnpm test:ssr` passaram em 23/10. Suíte integral: 85 calculadoras, 270 API, 933 Web e 85 scripts; 1 skip da API. A suíte cobre expansão individual/em lote, massa sem duração informada, margem, OCR, importação de Vida e limite de peso.
+- As 5 regressões privadas passaram após conferir os SHA-256 das 8 imagens do manifesto. O novo caso do armazém recusa `1698k` (OCR de `169.2k`) sem sugerir número; os originais não foram modificados.
+- Avisos conhecidos: fallback locale `pt-BR` para `pt`, orçamento de `recipe-tree.scss` e dependências CommonJS do Tesseract.
+- QA visual de `localhost:4200` não foi concluída: a conexão foi recusada nesta rodada; o componente foi verificado por teste de clique. O OCR ainda não tem holdout independente nem taxa global de acerto; `1.4M` continua sujeito a revisão manual.
 
-- Documentação de continuidade centralizada neste arquivo e no [índice](README.md). Oito atalhos antigos removidos após migrar referências; cobertura/fila no [catálogo de pedidos](project-feature-checklist.md), frontend e qualidade nas fontes técnicas existentes.
-- Todas as branches locais/remotas verificadas são ancestrais da entrega integrada; não há trabalho divergente a recuperar. Usuário autorizou commits/push em `main` e manter a prévia atualizada. Nenhuma branch foi apagada.
-- `ai-memory` baixado em `C:\Users\Bellussi\Documents\ChatGPT\ai-memory`, revisão `11ab100`. Clone para avaliação; sem instalação de binário, serviço, MCP, hooks ou captura de conversas. Critérios e fonte no [índice](README.md#ai-memory).
+## Próximo passo
 
-## Próximo passo e limites
-
-- Continuar pela tarefa solicitada, consultando somente a área relevante no índice; não reimplementar entregas a partir de checkboxes históricos.
-- Pendências externas persistentes: corpus OCR independente, dados pós-patch/fontes temporais permitidas e homologação real específica. Detalhes e prioridades no catálogo de pedidos; não inventar dados para fechar lacunas.
-- Receitas conferidas ao vivo em 1920/1366/390 px: sem overflow horizontal ou pageerror. API readiness HTTP 200. PostgreSQL usa `sitedebdo_postgres_data`, coletores desativados; sem migrações/seeds. Staging `8081` conserva imagem antiga e não é a prévia `4200`.
-- Alinhamento atual: quantidade/maestrias na mesma linha quando há espaço, gutters e títulos equivalentes; configuração e resultado com a mesma altura na linha, conforme o maior conteúdo, por orientação posterior do usuário. Empilhados mantêm alturas próprias. Campos de 44 px e compactos de 36 px nos controles locais. Evidência no relatório de receitas acima; conteúdo privado preenchido exige QA autenticada, fórmulas preservadas.
-- Otimizador: prévia com métricas no topo, decisões abertas em colunas, etapas e detalhes secundários; cabeçalho/ações sticky. Escape/cancel devolvem foco ao acionador sem scroll. Estilos encapsulados em `recipe-optimization-dialog.scss`; fórmulas e aplicação preservadas. QA real limitada + fixture de certificado/sem plano, sem alegar homologação global. Evidências no relatório de receitas.
-- Verificação: check final, suíte integral (1.318 aprovados/1 ignorado), 75 testes da árvore após foco, produção e SSR aprovados. Inicial 499,84 kB; CSS da árvore 18,66 kB, budgets preservados. Diálogo sem overflow em 1920/1536/1280/390/320, cabeçalho/ações visíveis e retorno de foco conferido. Revisão independente sem achados. Servidores continuam no checkout principal em watch.
+- QA visual quando o preview da porta 4200 voltar a responder; nesta rodada a aba ativa retornou erro de acesso. Preservar os 22 arquivos de evidência sem citação e o plano local sem adicioná-los ao Git. Manter `prints-reais-ocr/` fora do Git e não reiniciar serviços de outro checkout.
