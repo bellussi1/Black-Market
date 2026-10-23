@@ -32,6 +32,7 @@ import { TaxOptionsComponent } from '../../shared/tax-options';
 import { TutorialSurfaceDirective } from '../../shared/tutorials/tutorial-surface.directive';
 import { BdoSelect } from '../../ui/native-select/bdo-select';
 import { GearInventoryPage } from '../gear/gear-inventory-page';
+import { LifeEquipmentEditor } from './life-equipment-editor';
 
 @Component({
   selector: 'app-player-page',
@@ -47,6 +48,7 @@ import { GearInventoryPage } from '../gear/gear-inventory-page';
     ItemIcon,
     TaxOptionsComponent,
     GearInventoryPage,
+    LifeEquipmentEditor,
     TutorialSurfaceDirective,
   ],
   templateUrl: './player-page.html',

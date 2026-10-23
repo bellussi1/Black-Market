@@ -359,7 +359,7 @@
 
   <!-- 3. DADOS COMPARTILHADOS DA FAMÍLIA, IMPOSTOS & GRADUAÇÃO DE PROFISSÕES -->
   @if (tab() === 'equipment') {
-    <section id="equipment-panel" aria-label="Roda de equipamentos do personagem">
+    <section id="equipment-panel" aria-label="Equipamentos do personagem e da Família">
       @if (current()) {
         <div id="bdo-equipment-section" class="bdo-i-window">
           <app-gear-inventory-page [embedded]="true" />
@@ -373,6 +373,10 @@
           </p>
         </section>
       }
+      <app-life-equipment-editor
+        [value]="family().lifeEquipment"
+        (changed)="saveFamily({ lifeEquipment: $event })"
+      />
     </section>
   }
 

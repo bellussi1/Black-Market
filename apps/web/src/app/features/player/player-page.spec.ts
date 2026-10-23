@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -109,6 +110,69 @@ describe('Progressive player workspace', () => {
     expect(page.current()?.name).toBe('Aventureiro Revisado');
     expect(page.current()?.gear[0]?.name).toBe('Ferramenta de coleta');
     expect(fixture.nativeElement.textContent).toContain('Conjuntos e complementos');
+  });
+  it('shows family life equipment even when no character is active', async () => {
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'equipment' }));
+    const fixture = await renderComponent(PlayerPage, {}, [
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+
+    expect(fixture.componentInstance.current()).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-life-equipment-editor')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-gear-inventory-page')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Equipamento de Vida da Família');
+  });
+  it('saves life equipment to the selected family region and preserves character gear', async () => {
+    const params = new BehaviorSubject(convertToParamMap({ tab: 'equipment' }));
+    const fixture = await renderComponent(PlayerPage, {}, [
+      { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+    ]);
+    const page = fixture.componentInstance;
+    page.name = 'Aventureiro';
+    page.create();
+    page.saveCharacter({
+      gear: [{ slot: 'mainhand', itemId: 100, name: 'Arma PvP', level: 20, caphras: 4 }],
+      activityPresets: [
+        {
+          id: 'preset-pvp',
+          name: 'PvP',
+          gear: [{ slot: 'mainhand', itemId: 100, name: 'Arma PvP', level: 20, caphras: 4 }],
+          crystals: [],
+        },
+      ],
+    });
+    page.store.setRegion('na');
+    page.saveFamily({ name: 'Família NA' });
+    page.store.setRegion('sa');
+    fixture.detectChanges();
+
+    const editor = fixture.debugElement.query(
+      By.css('app-life-equipment-editor'),
+    )!.componentInstance;
+    const value = page.family().lifeEquipment;
+    editor.changed.emit({
+      ...value,
+      bySkill: {
+        ...value.bySkill,
+        gathering: [
+          {
+            id: 'life-tool',
+            catalogItemId: 16479,
+            name: 'Enxada Manos',
+            kind: 'tool',
+            enhancementText: null,
+          },
+        ],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(page.family().lifeEquipment.bySkill.gathering[0]?.catalogItemId).toBe(16479);
+    expect(page.store.data().families?.na?.lifeEquipment.bySkill.gathering).toEqual([]);
+    expect(page.current()?.gear).toEqual([
+      { slot: 'mainhand', itemId: 100, name: 'Arma PvP', level: 20, caphras: 4 },
+    ]);
+    expect(page.current()?.activityPresets?.[0]?.name).toBe('PvP');
   });
   it('creates with only a name and rejects invalid edits without mutating saved mastery', async () => {
     const fixture = await renderComponent(PlayerPage),

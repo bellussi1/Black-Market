@@ -1,0 +1,245 @@
+<section hlmCard class="panel life-equipment-editor" aria-labelledby="life-equipment-title">
+  <div class="panel-heading">
+    <div>
+      <p class="tool-kicker">EQUIPAMENTO COMPARTILHADO</p>
+      <h2 id="life-equipment-title">Equipamento de Vida da Família</h2>
+    </div>
+    <span class="badge">{{ value().sharedItems.length }} comuns</span>
+  </div>
+  <p class="help">
+    Cadastre itens pelo catálogo para esta região. Eles ficam separados do equipamento de combate
+    dos personagens.
+  </p>
+
+  <section class="life-equipment-group" aria-labelledby="life-equipment-shared-title">
+    <div class="life-equipment-group-heading">
+      <div>
+        <h3 id="life-equipment-shared-title">Itens comuns à Família</h3>
+        <p class="help">Acessórios, pedra alquímica e Orbe da Pureza podem ser compartilhados.</p>
+      </div>
+      <span class="badge">{{ value().sharedItems.length }} itens</span>
+    </div>
+
+    @if (value().sharedItems.length) {
+      <div class="life-equipment-list">
+        @for (item of value().sharedItems; track item.id) {
+          <article class="life-equipment-item">
+            <app-item-icon [name]="item.name" />
+            <div class="life-equipment-item-main">
+              <strong>{{ item.name }}</strong>
+              <small>#{{ item.catalogItemId }}</small>
+            </div>
+            <div class="life-equipment-item-fields">
+              <label class="field">
+                <span>Tipo</span>
+                <select
+                  appBdoSelect
+                  [ngModel]="item.kind"
+                  (ngModelChange)="updateSharedItem(item.id, { kind: $event })"
+                >
+                  @for (kind of sharedKinds; track kind) {
+                    <option [value]="kind">{{ kindLabels[kind] }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span>Rótulo da posição (opcional)</span>
+                <input
+                  hlmInput
+                  [ngModel]="item.slotLabel ?? ''"
+                  maxlength="80"
+                  (ngModelChange)="updateSharedItem(item.id, { slotLabel: $event || undefined })"
+                />
+              </label>
+              <label class="field">
+                <span>Aprimoramento conferido (opcional)</span>
+                <input
+                  hlmInput
+                  [ngModel]="item.enhancementText ?? ''"
+                  maxlength="100"
+                  (ngModelChange)="updateSharedItem(item.id, { enhancementText: $event || null })"
+                />
+              </label>
+            </div>
+            <button
+              hlmBtn
+              variant="destructive"
+              size="sm"
+              type="button"
+              [attr.aria-label]="'Remover ' + item.name + ' dos itens comuns'"
+              (click)="removeSharedItem(item.id)"
+            >
+              Remover
+            </button>
+          </article>
+        }
+      </div>
+    } @else {
+      <p class="life-equipment-empty">Nenhum item comum cadastrado.</p>
+    }
+
+    <div class="life-equipment-add">
+      <app-catalog-item-picker
+        label="Buscar item comum no catálogo"
+        [selectionName]="sharedItem?.name ?? ''"
+        (selected)="sharedItem = $event"
+      />
+      <div class="life-equipment-add-fields">
+        <label class="field">
+          <span>Tipo do item comum</span>
+          <select id="life-equipment-shared-kind" appBdoSelect [(ngModel)]="sharedKind">
+            @for (kind of sharedKinds; track kind) {
+              <option [value]="kind">{{ kindLabels[kind] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Rótulo da posição (opcional)</span>
+          <input hlmInput [(ngModel)]="sharedSlotLabel" maxlength="80" />
+        </label>
+        <label class="field">
+          <span>Aprimoramento conferido (opcional)</span>
+          <input hlmInput [(ngModel)]="sharedEnhancementText" maxlength="100" />
+        </label>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          [disabled]="!sharedItem || sharedAtLimit()"
+          (click)="addSharedItem()"
+        >
+          Adicionar item comum
+        </button>
+      </div>
+      @if (sharedAtLimit()) {
+        <p class="life-equipment-limit" role="note">
+          Limite de {{ itemLimit }} itens por lista. Remova um item comum para liberar espaço.
+        </p>
+      }
+    </div>
+  </section>
+
+  <section class="life-equipment-group" aria-labelledby="life-equipment-skill-title">
+    <div class="life-equipment-group-heading">
+      <div>
+        <h3 id="life-equipment-skill-title">Itens por profissão</h3>
+        <p class="help">Cada profissão mantém seu próprio conjunto de equipamento de Vida.</p>
+      </div>
+      <label class="field life-equipment-skill-select">
+        <span>Profissão</span>
+        <select appBdoSelect [(ngModel)]="skill">
+          @for (key of skills; track key) {
+            <option [value]="key">{{ skillLabels[key] }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (value().bySkill[skill].length) {
+      <div class="life-equipment-list">
+        @for (item of value().bySkill[skill]; track item.id) {
+          <article class="life-equipment-item">
+            <app-item-icon [name]="item.name" />
+            <div class="life-equipment-item-main">
+              <strong>{{ item.name }}</strong>
+              <small>#{{ item.catalogItemId }}</small>
+            </div>
+            <div class="life-equipment-item-fields">
+              <label class="field">
+                <span>Tipo</span>
+                <select
+                  appBdoSelect
+                  [ngModel]="item.kind"
+                  (ngModelChange)="updateSkillItem(skill, item.id, { kind: $event })"
+                >
+                  @for (kind of kinds; track kind) {
+                    <option [value]="kind">{{ kindLabels[kind] }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span>Rótulo da posição (opcional)</span>
+                <input
+                  hlmInput
+                  [ngModel]="item.slotLabel ?? ''"
+                  maxlength="80"
+                  (ngModelChange)="
+                    updateSkillItem(skill, item.id, { slotLabel: $event || undefined })
+                  "
+                />
+              </label>
+              <label class="field">
+                <span>Aprimoramento conferido (opcional)</span>
+                <input
+                  hlmInput
+                  [ngModel]="item.enhancementText ?? ''"
+                  maxlength="100"
+                  (ngModelChange)="
+                    updateSkillItem(skill, item.id, { enhancementText: $event || null })
+                  "
+                />
+              </label>
+            </div>
+            <button
+              hlmBtn
+              variant="destructive"
+              size="sm"
+              type="button"
+              [attr.aria-label]="'Remover ' + item.name + ' de ' + skillLabels[skill]"
+              (click)="removeSkillItem(skill, item.id)"
+            >
+              Remover
+            </button>
+          </article>
+        }
+      </div>
+    } @else {
+      <p class="life-equipment-empty">Nenhum item cadastrado para {{ skillLabels[skill] }}.</p>
+    }
+
+    <div class="life-equipment-add">
+      <app-catalog-item-picker
+        label="Buscar equipamento de Vida no catálogo"
+        [selectionName]="skillItem?.name ?? ''"
+        (selected)="skillItem = $event"
+      />
+      <div class="life-equipment-add-fields">
+        <label class="field">
+          <span>Tipo do item</span>
+          <select appBdoSelect [(ngModel)]="skillKind">
+            @for (kind of kinds; track kind) {
+              <option [value]="kind">{{ kindLabels[kind] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Rótulo da posição (opcional)</span>
+          <input hlmInput [(ngModel)]="skillSlotLabel" maxlength="80" />
+        </label>
+        <label class="field">
+          <span>Aprimoramento conferido (opcional)</span>
+          <input hlmInput [(ngModel)]="skillEnhancementText" maxlength="100" />
+        </label>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          [disabled]="!skillItem || isSkillAtLimit()"
+          (click)="addSkillItem()"
+        >
+          Adicionar à profissão
+        </button>
+      </div>
+      @if (isSkillAtLimit()) {
+        <p class="life-equipment-limit" role="note">
+          Limite de {{ itemLimit }} itens por lista. Remova um item de {{ skillLabels[skill] }} para
+          liberar espaço.
+        </p>
+      }
+    </div>
+  </section>
+
+  @if (message()) {
+    <p class="save-feedback notice" role="status" aria-live="polite">{{ message() }}</p>
+  }
+</section>
