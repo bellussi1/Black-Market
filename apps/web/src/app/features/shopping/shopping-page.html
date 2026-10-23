@@ -100,7 +100,10 @@
         </nav>
         <p class="help">
           Esta lista não reserva nem consome seus itens. Alterações na árvore precisam ser salvas
-          novamente. Quantidades dependem dos rendimentos informados no cenário.
+          novamente. Quantidades dependem dos rendimentos informados no cenário. O plano guarda a
+          lista de materiais, sem salvar a simulação completa. O link do produto abre a receita com
+          os ajustes atuais do navegador; não restaura o lote, rendimentos ou tempos usados para
+          salvar esta lista.
         </p>
       </section>
       <section hlmCard class="panel" data-tour="shopping.actions">
@@ -110,6 +113,9 @@
             <a
               class="inline-flex items-center gap-2.5"
               [routerLink]="['/recipes/items', plan.sourceItemId]"
+              [attr.aria-label]="
+                'Abrir receita de ' + plan.name + '; não restaura a simulação salva'
+              "
             >
               @if (plan.sourceItemId) {
                 <app-item-icon
