@@ -39,22 +39,45 @@ export class TutorialSurfaceDirective {
   private targetTimeout?: ReturnType<typeof setTimeout>;
   private targetObserver?: MutationObserver;
   private generation = 0;
+  private automaticStart?: AbortController;
+  private interactionStarted = false;
+  private readonly interactionEvents = ['pointerdown', 'keydown', 'input', 'focusin'];
+  private readonly onInteraction = () => {
+    this.interactionStarted = true;
+    ++this.generation;
+    this.request?.unsubscribe();
+    this.request = undefined;
+    this.stopWaitingForTarget();
+    this.automaticStart?.abort();
+  };
 
   constructor() {
+    if (this.browser) {
+      for (const event of this.interactionEvents) {
+        this.host.nativeElement.addEventListener(event, this.onInteraction, true);
+      }
+    }
     effect(() => {
       this.activate(this.appTutorialSurface(), this.ready());
     });
-    this.destroyRef.onDestroy(() => this.cancel());
+    this.destroyRef.onDestroy(() => {
+      this.cancel();
+      for (const event of this.interactionEvents) {
+        this.host.nativeElement.removeEventListener(event, this.onInteraction, true);
+      }
+    });
   }
 
   private activate(screenKey: TutorialScreenKey, ready: boolean): void {
     const generation = ++this.generation;
+    this.automaticStart?.abort();
     this.request?.unsubscribe();
     this.request = undefined;
     this.stopWaitingForTarget();
     this.runtime.destroyTour('navigation');
 
-    if (!this.browser || !ready) return;
+    if (!this.browser || !ready || this.interactionStarted) return;
+    this.automaticStart = new AbortController();
 
     try {
       this.request = this.api.getPublished(screenKey).subscribe({
@@ -82,9 +105,11 @@ export class TutorialSurfaceDirective {
       if (!hasVisibleTutorialTarget(this.document, screenKey, guide.steps)) return false;
 
       this.stopWaitingForTarget();
-      void this.runtime.startTour(guide, this.host.nativeElement).catch(() => {
-        // Keep the screen usable if the optional Driver.js chunk cannot load.
-      });
+      void this.runtime
+        .startTour(guide, this.host.nativeElement, this.automaticStart?.signal)
+        .catch(() => {
+          // Keep the screen usable if the optional Driver.js chunk cannot load.
+        });
       return true;
     };
 
@@ -117,6 +142,7 @@ export class TutorialSurfaceDirective {
 
   private cancel(): void {
     ++this.generation;
+    this.automaticStart?.abort();
     this.request?.unsubscribe();
     this.request = undefined;
     this.stopWaitingForTarget();

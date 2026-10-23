@@ -66,15 +66,16 @@ export class TutorialService {
   async startTour(
     guide: TutorialPublicGuide,
     returnFocusTo: HTMLElement | null = null,
+    signal?: AbortSignal,
   ): Promise<string> {
-    if (!this.browser) return '';
+    if (!this.browser || signal?.aborted) return '';
     this.destroyTour('navigation');
     const generation = this.generation;
     const resolved = resolveTutorialSteps(this.document, guide.screenKey, guide.steps);
     if (!resolved.steps.length)
       return $localize`Este tutorial precisa de atualização. Nenhuma etapa está disponível nesta tela.`;
     const { driver } = await this.loader();
-    if (generation !== this.generation) return '';
+    if (generation !== this.generation || signal?.aborted) return '';
     this.guide = guide;
     this.returnFocusTo = returnFocusTo;
     this.steps = resolved.steps;
