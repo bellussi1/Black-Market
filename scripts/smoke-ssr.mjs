@@ -277,7 +277,7 @@ try {
   assert.equal(lifeskills.headers.get('cache-control'), 'private, max-age=0, must-revalidate');
   const lifeskillsHtml = await lifeskills.text();
   assert.ok(lifeskillsHtml.includes('Profissões e produção.'));
-  assert.ok(lifeskillsHtml.includes('Sessões sem conta'));
+  assert.ok(lifeskillsHtml.includes('Sessões salvas neste navegador.'));
   const productionHub = await request('/lifeskills?tab=production');
   assert.equal(productionHub.status, 200);
   const productionHubHtml = await productionHub.text();

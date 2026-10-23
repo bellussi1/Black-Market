@@ -13,8 +13,11 @@
       </ng-container>
     </p>
     @if (tab() === 'sessions') {
-      <p class="help lifeskills-local-note" i18n>
-        Sessões sem conta · Registros neste navegador, com sincronização ao entrar.
+      <p class="help lifeskills-local-note">
+        <ng-container i18n>
+          Sessões salvas neste navegador. Entrar não sincroniza os registros automaticamente.
+        </ng-container>
+        <a routerLink="/settings" i18n>Gerencie a cópia manual da conta em Configurações.</a>
       </p>
     }
   </header>
