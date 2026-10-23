@@ -3,12 +3,172 @@ import { describe, expect, it } from 'vitest';
 import {
   availableInventory,
   characterSchema,
+  familyProfileSchema,
   gearSlots,
+  lifeSkills,
   personalPlanSchema,
   reservationIssues,
 } from './personal';
 import { emptyWorkspace, workspaceSchema } from './workspace';
 describe('Personal planning', () => {
+  const emptyLifeEquipment = () => ({
+    sharedItems: [],
+    bySkill: Object.fromEntries(lifeSkills.map((skill) => [skill, []])),
+  });
+  const lifeItem = (overrides: Record<string, unknown> = {}) => ({
+    id: 'life-item-1',
+    catalogItemId: 16479,
+    name: 'Enxada Manos',
+    kind: 'tool',
+    ...overrides,
+  });
+  const familyWithLifeEquipment = (lifeEquipment: unknown) =>
+    familyProfileSchema.safeParse({ lifeEquipment });
+
+  it('defaults old family profiles to empty life equipment for all skills', () => {
+    const family = familyProfileSchema.parse({ name: 'Família antiga' });
+    expect(family.lifeEquipment?.sharedItems).toEqual([]);
+    expect(Object.keys(family.lifeEquipment?.bySkill ?? {})).toEqual([...lifeSkills]);
+    expect(family.lifeEquipment?.bySkill.gathering).toEqual([]);
+    expect(family.lifeEquipment?.bySkill.barter).toEqual([]);
+  });
+
+  it('validates a complete old workspace without changing version or character equipment', () => {
+    const gear = [
+      { slot: 'mainhand' as const, itemId: 1, name: 'Arma antiga', level: 7, caphras: 2 },
+    ];
+    const character = characterSchema.parse({
+      id: 'main',
+      name: 'Personagem antigo',
+      region: 'sa',
+      gear,
+      activityPresets: [{ id: 'p', name: 'Coleta', gear, crystals: [] }],
+    });
+    const oldWorkspace = {
+      ...emptyWorkspace(),
+      characters: [character],
+      families: { sa: { name: 'Família antiga' } },
+    };
+
+    const restored = workspaceSchema.parse(oldWorkspace);
+
+    expect(restored.schemaVersion).toBe(1);
+    expect(restored.characters[0]).toEqual(character);
+    expect(restored.characters[0]?.gear).toEqual(gear);
+    expect(restored.characters[0]?.activityPresets?.[0]?.gear).toEqual(gear);
+    expect(restored.families?.sa?.lifeEquipment?.bySkill.gathering).toEqual([]);
+  });
+
+  it('accepts life equipment screenshot import provenance without changing the workspace version', () => {
+    const parsed = workspaceSchema.safeParse({
+      ...emptyWorkspace(),
+      screenshotImports: [
+        {
+          id: 'life-import',
+          region: 'sa',
+          createdAt: '2026-10-23T12:00:00.000Z',
+          mode: 'life-gear',
+          itemCount: 1,
+          locations: ['Família'],
+          sourceHashes: ['a'.repeat(64)],
+        },
+        {
+          id: 'mixed-import',
+          region: 'sa',
+          createdAt: '2026-10-23T12:01:00.000Z',
+          mode: 'mixed',
+          itemCount: 2,
+          locations: ['Velia', 'Família'],
+          sourceHashes: ['b'.repeat(64)],
+        },
+      ],
+    });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.schemaVersion).toBe(1);
+  });
+
+  it('accepts only the three shared life equipment kinds and defaults missing enhancement to null', () => {
+    for (const kind of ['accessory', 'alchemyStone', 'purityOrb']) {
+      const parsed = familyWithLifeEquipment({
+        ...emptyLifeEquipment(),
+        sharedItems: [lifeItem({ kind })],
+      });
+      expect(parsed.success).toBe(true);
+      expect(Reflect.get(parsed.data, 'lifeEquipment')).toMatchObject({ sharedItems: [{ kind }] });
+    }
+
+    const parsed = familyWithLifeEquipment({
+      ...emptyLifeEquipment(),
+      bySkill: { ...emptyLifeEquipment().bySkill, gathering: [lifeItem()] },
+    });
+    expect(Reflect.get(parsed.data, 'lifeEquipment')).toMatchObject({
+      bySkill: {
+        gathering: [
+          {
+            id: 'life-item-1',
+            catalogItemId: 16479,
+            name: 'Enxada Manos',
+            kind: 'tool',
+            enhancementText: null,
+          },
+        ],
+      },
+    });
+  });
+
+  it('rejects non-shareable kinds and more than fifty items in any list', () => {
+    expect(
+      familyWithLifeEquipment({
+        ...emptyLifeEquipment(),
+        sharedItems: [lifeItem({ kind: 'tool' })],
+      }).success,
+    ).toBe(false);
+
+    const tooMany = Array.from({ length: 51 }, (_, index) =>
+      lifeItem({ id: `item-${index}`, catalogItemId: index + 1 }),
+    );
+    expect(familyWithLifeEquipment({ ...emptyLifeEquipment(), sharedItems: tooMany }).success).toBe(
+      false,
+    );
+    expect(
+      familyWithLifeEquipment({
+        ...emptyLifeEquipment(),
+        bySkill: { ...emptyLifeEquipment().bySkill, gathering: tooMany },
+      }).success,
+    ).toBe(false);
+  });
+
+  it('rejects duplicate internal IDs and duplicate catalogue items across shared and skill lists', () => {
+    const duplicateId = familyWithLifeEquipment({
+      ...emptyLifeEquipment(),
+      bySkill: {
+        ...emptyLifeEquipment().bySkill,
+        gathering: [lifeItem(), lifeItem({ catalogItemId: 42 })],
+      },
+    });
+    expect(duplicateId.success).toBe(false);
+
+    const duplicateCatalogueItem = familyWithLifeEquipment({
+      ...emptyLifeEquipment(),
+      sharedItems: [lifeItem({ kind: 'accessory' })],
+      bySkill: { ...emptyLifeEquipment().bySkill, gathering: [lifeItem({ id: 'skill-copy' })] },
+    });
+    expect(duplicateCatalogueItem.success).toBe(false);
+  });
+
+  it('allows the same catalogue item in different life skills', () => {
+    const parsed = familyWithLifeEquipment({
+      ...emptyLifeEquipment(),
+      bySkill: {
+        ...emptyLifeEquipment().bySkill,
+        gathering: [lifeItem()],
+        cooking: [lifeItem({ id: 'cooking-copy' })],
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
   it('supports alchemy stone and adventurer tome without discarding existing gear or presets', () => {
     const gear = [...gearSlots, 'alchemyStone', 'tome']
       .filter((slot, index, all) => all.indexOf(slot) === index)

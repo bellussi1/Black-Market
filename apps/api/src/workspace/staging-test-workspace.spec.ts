@@ -1,3 +1,4 @@
+import { familyProfileSchema } from '@bdo/calculators';
 import { emptyWorkspace } from '@bdo/calculators/workspace';
 import type { CatalogItem, CatalogRecipe } from '@bdo/shared';
 import { describe, expect, it } from 'vitest';
@@ -179,6 +180,7 @@ describe('staging test workspace fixture', () => {
     const initial = emptyWorkspace();
     initial.families = {
       sa: {
+        ...familyProfileSchema.parse({}),
         name: '',
         contribution: null,
         energyMax: null,

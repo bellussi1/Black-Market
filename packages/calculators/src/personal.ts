@@ -15,6 +15,88 @@ export const lifeSkills = [
   'sailing',
   'barter',
 ] as const;
+export type LifeSkill = (typeof lifeSkills)[number];
+
+export const lifeEquipmentKinds = [
+  'tool',
+  'costume',
+  'accessory',
+  'artifact',
+  'lightstone',
+  'huntingMusket',
+  'node',
+  'alchemyStone',
+  'purityOrb',
+  'other',
+] as const;
+export type LifeEquipmentKind = (typeof lifeEquipmentKinds)[number];
+
+export const lifeEquipmentItemLimit = 50;
+
+export const lifeEquipmentItemSchema = z.object({
+  id: z.string().trim().min(1).max(64),
+  catalogItemId: z.number().int().positive(),
+  name: z.string().trim().min(1).max(140),
+  kind: z.enum(lifeEquipmentKinds),
+  slotLabel: z.string().trim().max(80).optional(),
+  enhancementText: z.string().trim().max(100).nullable().default(null),
+});
+export type LifeEquipmentItem = z.infer<typeof lifeEquipmentItemSchema>;
+
+const lifeEquipmentItemListSchema = z
+  .array(lifeEquipmentItemSchema)
+  .max(lifeEquipmentItemLimit)
+  .default([]);
+const lifeEquipmentBySkillShape = Object.fromEntries(
+  lifeSkills.map((skill) => [skill, lifeEquipmentItemListSchema]),
+) as Record<LifeSkill, typeof lifeEquipmentItemListSchema>;
+const lifeEquipmentBySkillSchema = z.object(lifeEquipmentBySkillShape).prefault({});
+
+export const lifeEquipmentSchema = z
+  .object({
+    sharedItems: lifeEquipmentItemListSchema,
+    bySkill: lifeEquipmentBySkillSchema,
+  })
+  .superRefine((equipment, context) => {
+    const internalIds = new Set<string>();
+    const sharedCatalogIds = new Set(equipment.sharedItems.map((item) => item.catalogItemId));
+
+    for (const [index, item] of equipment.sharedItems.entries()) {
+      if (!(['accessory', 'alchemyStone', 'purityOrb'] as LifeEquipmentKind[]).includes(item.kind))
+        context.addIssue({
+          code: 'custom',
+          message: 'Somente acessórios, pedras alquímicas e Orbes da Pureza são itens comuns.',
+          path: ['sharedItems', index, 'kind'],
+        });
+      if (internalIds.has(item.id))
+        context.addIssue({
+          code: 'custom',
+          message: 'IDs internos de equipamento de Vida devem ser únicos.',
+          path: ['sharedItems', index, 'id'],
+        });
+      internalIds.add(item.id);
+    }
+
+    for (const skill of lifeSkills) {
+      for (const [index, item] of equipment.bySkill[skill].entries()) {
+        if (internalIds.has(item.id))
+          context.addIssue({
+            code: 'custom',
+            message: 'IDs internos de equipamento de Vida devem ser únicos.',
+            path: ['bySkill', skill, index, 'id'],
+          });
+        internalIds.add(item.id);
+        if (sharedCatalogIds.has(item.catalogItemId))
+          context.addIssue({
+            code: 'custom',
+            message: 'Um item não pode estar nas listas comum e de profissão ao mesmo tempo.',
+            path: ['bySkill', skill, index, 'catalogItemId'],
+          });
+      }
+    }
+  });
+export type LifeEquipment = z.infer<typeof lifeEquipmentSchema>;
+
 export const gearSlots = [
   'mainhand',
   'offhand',
@@ -133,6 +215,7 @@ export const characterSchema = z
 export type CharacterProfile = z.infer<typeof characterSchema>;
 export const familyProfileSchema = z.object({
   name: z.string().trim().max(80).default(''),
+  lifeEquipment: lifeEquipmentSchema.prefault({}),
   contribution: z.number().int().min(0).max(2000).nullable().default(null),
   energyMax: z.number().int().min(0).max(2000).nullable().default(null),
   lifeSkills: z
