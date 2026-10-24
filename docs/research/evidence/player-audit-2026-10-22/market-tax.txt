@@ -1,0 +1,40 @@
+02 / MERCADO CENTRAL
+
+Mercado Central
+
+Consulte observações de preço e estoque por região, simule o líquido de uma venda e guarde cotações pessoais com histórico. Preços e atividade são estimativas baseadas nas consultas disponíveis; não representam garantia de venda nem unidades negociadas.
+
+Mercado
+Buscar, conferir e simular venda
+Cotações pessoais
+Seus registros e histórico
+Voltar ao mercado
+Calculadora de imposto
+
+Simule o recebimento líquido para uma quantidade e um custo de aquisição. A cotação só é preenchida quando você veio de um item consultado ou escolheu uma cotação pessoal; revise região, horário e taxas antes de usar o valor como premissa.
+
+Preço por unidade
+Quantidade
+Custo total de aquisição
+Taxas, benefícios e configurações salvas
+
+Regra padrão: 65% da venda, com bônus de coleta aplicados sobre esse valor. Guia oficial. Ajuste imposto e isenção para o tipo de venda.
+
+Conferir resultado
+Resultado conferido.
+Prata líquida
+84.500
+84,5% do valor bruto
+Imposto efetivo
+15.500
+Lucro após aquisição
+34.500
+Sem Value Pack
+65.000
+Com Value Pack
+84.500
+Venda bruta
+100.000
+Preço mínimo para empatar
+5.918
+Por unidade

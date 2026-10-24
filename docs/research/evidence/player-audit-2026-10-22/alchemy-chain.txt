@@ -1,0 +1,274 @@
+Pesquisar item
+Reagente Líquido Limpo
+
+PRODUTO
+
+Reagente Líquido Limpo
+Alquimia
+FÓRMULA
+Obter pronto / consultar fontes
+Alquimia · método 1 · 4 materiais
+QUANTIA DE RECEITAS
+RECEITAS
+1x
+10x
+100x
+
+MAESTRIAS DA RECEITA
+
+MAESTRIA (PROCESSAMENTO)
+PTS
+
+Ajustes só para esta simulação. Usados nas etapas produzidas e nas alternativas do otimizador.
+
+Rendimento ajustado: 2 un / receita
+Estimativa do produto: 200 unidades
+Tempo estimado: 2m 12s
+Ajustes de produção, estoque e mercado
+Produção por operação (ajuste fino)
+Calibrar tempo por método
+Calibrar rendimento e tempo de coleta
+Quais estoques entram no cálculo?
+Opções de impostos e buffs do mercado
+
+SIMULAÇÃO
+
+Resultado da receita
+
+Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda.
+
+Comprar subreceitas
+Produzir só a receita final
+Fazer / coletar tudo
+Produzir intermediários quando possível
+Otimizar lucro por hora
+Comparar compra e produção com sua maestria
+LUCRO POR HORA
+10.295.045
+LUCRO LÍQUIDO
+377.485
+15.6% de margem
+CUSTO DOS MATERIAIS
+2.422.000
+FATURAMENTO LÍQUIDO
+2.799.485
+Preço un.: 11.000
+Bruto: 3.313.000
+100 receitas · tempo total: 2m 12s · inclui a etapa final
+Atualizada há 1 min
+
+Árvore visual
+Etapas expansíveis
+Expandir todos
+Recolher todos
++
+89%
+−
+Ajustar árvore
+Centralizar seleção
+Restaurar vista
+Só esta ramificação
+
+Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+
+Tier 0 · PRODUTO FINAL
+Reagente Líquido Limpo
+
+Precisa 200 · estoque usado 0
+Faltam 200
+
+Material
+− Recolher
+Tier 1 · OBTER / EXPLORAR
+Sal
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Erva Aurora
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Água Purificada
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Grama Selvagem
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Plano da receita
+6 insumos · 30 retornos
+
+Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote.
+
+Materiais da receita
+6
+Erva Aurora
+384
+· Est: 9.137
+100 un
+Obter pronto
+Grama Selvagem
+Referência · 9.700
+· Est: 0
+100 un
+Obter pronto
+Garrafa com Água do Mar
+Referência · 5.550
+· Est: 0
+124 un
+Obter pronto
+Garrafa Cheia de Água do Rio
+Referência · 5.850
+· Est: 0
+124 un
+Obter pronto
+Água Purificada
+Referência · 5.300
+· Est: 0
+100 un
+Produzir
+Sal
+NPC · 20
+100 un
+Produzir
+Retornos previstos
+30
+
+Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda.
+
+Reagente Líquido Limpo
+Quantidade esperada no lote: 524,04
+Preço un.: 11.000 · Atualizada há 1 min
+Incluir venda
+Solvente de Metal
+Quantidade esperada no lote: 0,05
+Preço un.: 725.000 · Atualizada há 1 min
+Incluir venda
+Polidor de Gema
+Quantidade esperada no lote: 0,05
+Preço un.: 416.000 · Atualizada há 1 min
+Incluir venda
+Endurecedor de Madeira
+Quantidade esperada no lote: 0,02
+Preço un.: 695.000 · Atualizada há 1 min
+Incluir venda
+Pó Maravilhoso de Espírito
+Quantidade esperada no lote: 0,12
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Fragmento Afiado de Cristal Negro
+Quantidade esperada no lote: 0,03
+Preço un.: 5.100.000 · Atualizada há 1 min
+Incluir venda
+Essência de Árvore Morta
+Quantidade esperada no lote: 0,02
+Preço un.: 302.000 · Atualizada há 1 min
+Incluir venda
+Reagente em pó Puro
+Quantidade esperada no lote: 0,12
+Preço un.: 13.300 · Atualizada há 1 min
+Incluir venda
+Cristal Variegado Bruto
+Quantidade esperada no lote: 0,04
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Reagente da Amizade com Espírito
+Quantidade esperada no lote: 0,01
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Vestígio do Espírito Queimado
+Quantidade esperada no lote: 0,01
+Preço un.: 7.550.000 · Atualizada há 1 min
+Incluir venda
+Esmalte de Couro
+Quantidade esperada no lote: 0,02
+Preço un.: 935.000 · Atualizada há 1 min
+Incluir venda
+Óleo de Regeneração
+Quantidade esperada no lote: 0,12
+Preço un.: 143.000 · Atualizada há 1 min
+Incluir venda
+Óleo da Tempestade
+Quantidade esperada no lote: 0,12
+Preço un.: 198.000 · Atualizada há 1 min
+Incluir venda
+Óleo de Coragem
+Quantidade esperada no lote: 0,12
+Preço un.: 172.000 · Atualizada há 1 min
+Incluir venda
+Óleo da Corrupção
+Quantidade esperada no lote: 0,12
+Preço un.: 102.000 · Atualizada há 1 min
+Incluir venda
+Óleo de Tranquilidade
+Quantidade esperada no lote: 0,12
+Preço un.: 219.000 · Atualizada há 1 min
+Incluir venda
+Pedra Negra
+Quantidade esperada no lote: 0,25
+Preço un.: 129.000 · Atualizada há 1 min
+Incluir venda
+Pedra Cron
+Quantidade esperada no lote: 0
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Estilhaço de Memória
+Quantidade esperada no lote: 0,04
+Preço un.: 2.570.000 · Atualizada há 1 min
+Incluir venda
+Fragmento de Pedra de Alquimia
+Quantidade esperada no lote: 0,04
+Preço un.: 194.000 · Atualizada há 1 min
+Incluir venda
+Pedra Robusta de Alquimia da Destruição
+Quantidade esperada no lote: 0
+Preço un.: 66.000.000 · Atualizada há 1 min
+Incluir venda
+Pedra Robusta de Alquimia da Proteção
+Quantidade esperada no lote: 0
+Preço un.: 64.500.000 · Atualizada há 1 min
+Incluir venda
+Pedra Robusta de Alquimia da Vida
+Quantidade esperada no lote: 0
+Preço un.: 64.500.000 · Atualizada há 1 min
+Incluir venda
+Pó do Espírito Ancestral
+Quantidade esperada no lote: 0,04
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Pedra de Caphras
+Quantidade esperada no lote: 0,01
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Pedra da Luz da Grama Incompleta
+Quantidade esperada no lote: 0,02
+Preço un.: 11.200.000 · Atualizada há 1 min
+Incluir venda
+Semente Desconhecida
+Quantidade esperada no lote: 0,01
+Preço un.: 18.700.000 · Atualizada há 1 min
+Incluir venda
+Sal
+Quantidade esperada no lote: 210
+Sem cotação de mercado; venda não incluída.
+Incluir venda
+Água Purificada
+Quantidade esperada no lote: 210
+Preço un.: 5.300 · Atualizada há 1 min
+Incluir venda
+Mostrar menos
+Salvar lista de compras
+Abrir planejamento
+Fonte e versão do catálogo · SA

@@ -1,0 +1,149 @@
+Pesquisar item
+Reagente Líquido Limpo
+
+PRODUTO
+
+Reagente Líquido Limpo
+Alquimia
+FÓRMULA
+Obter pronto / consultar fontes
+Alquimia · método 1 · 4 materiais
+QUANTIA DE RECEITAS
+RECEITAS
+1x
+10x
+100x
+
+MAESTRIAS DA RECEITA
+
+MAESTRIA (ALQUIMIA)
+PTS
+MAESTRIA (PROCESSAMENTO)
+PTS
+
+Ajustes só para esta simulação. Usados nas etapas produzidas e nas alternativas do otimizador.
+
+Média estimada: 2.77 un / receita (Alquimia maestria: 800)
+Estimativa do produto: 276,5 unidades
+Tempo estimado: 2m
+Ajustes de produção, estoque e mercado
+
+SIMULAÇÃO
+
+Resultado da receita
+
+Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda.
+
+Comprar subreceitas
+Produzir só a receita final
+Fazer / coletar tudo
+Produzir intermediários quando possível
+Otimizar lucro por hora
+Comparar compra e produção com sua maestria
+LUCRO POR HORA
+204.109.350
+LUCRO LÍQUIDO
+6.803.645
+441.7% de margem
+CUSTO DOS MATERIAIS
+1.540.400
+FATURAMENTO LÍQUIDO
+8.344.045
+Preço un.: 11.000
+Bruto: 9.874.619
+100 receitas · tempo total: 2m · inclui a etapa final
+Atualizada há menos de 1 min
+
+Árvore visual
+Etapas expansíveis
+Expandir todos
+Recolher todos
++
+89%
+−
+Ajustar árvore
+Centralizar seleção
+Restaurar vista
+Só esta ramificação
+
+Organização por tiers: itens do mesmo nível ficam na mesma linha. As conexões usam os espaços entre níveis. A roda amplia a árvore. Arraste para navegar. Clique no item para selecionar; use os botões para detalhes ou expansão. Use as setas com a área selecionada; + e − ampliam, 0 ajusta a árvore.
+
+Tier 0 · PRODUTO FINAL
+Reagente Líquido Limpo
+
+Precisa 276.5 · estoque usado 0
+Faltam 276.5
+
+Material
+− Recolher
+Tier 1 · OBTER / EXPLORAR
+Sal
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Erva Aurora
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Água Purificada
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Tier 1 · OBTER / EXPLORAR
+Grama Selvagem
+
+Precisa 100 · estoque usado 0
+Faltam 100
+
++ Explorar produção
+Plano da receita
+4 insumos · 28 retornos
+
+Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote.
+
+Materiais da receita
+4
+Erva Aurora
+384
+· Est: 9.137
+100 un
+Obter pronto
+Grama Selvagem
+Referência · 9.700
+· Est: 0
+100 un
+Obter pronto
+Água Purificada
+Referência · 5.300
+· Est: 0
+100 un
+Produzir
+Sal
+NPC · 20
+100 un
+Produzir
+Retornos previstos
+28
+
+Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda.
+
+Reagente Líquido Limpo
+Quantidade esperada no lote: 524,04
+Preço un.: 11.000 · Atualizada há menos de 1 min
+Incluir venda
+Solvente de Metal
+Quantidade esperada no lote: 0,05
+Preço un.: 725.000 · Atualizada há menos de 1 min
+Incluir venda
+Mostrar mais (26)
+Salvar lista de compras
+Abrir planejamento
+Fonte e versão do catálogo · SA

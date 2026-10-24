@@ -225,6 +225,10 @@ Exemplos adicionais: armazém 2, espaço 1, `167.1k` → 67.100; espaço 2, `708
 
 **Persistência da ficha OCR:** ao sair da importação e abrir Família, os sete valores e Caça 3080 continuaram no personagem QA OCR. [Conferência](evidence/player-audit-2026-10-22/mastery-after-reload.txt). Coleta/Navegação/Permuta continuaram em seus valores iniciais, sem preenchimento fabricado dos campos ausentes.
 
+### Evidências suplementares da interface QA
+
+As capturas e leituras de texto restantes do percurso foram revisadas e catalogadas no [índice de evidências suplementares](evidence/player-audit-2026-10-22/README.md). São snapshots da interface local com o perfil de teste “QA Auditoria 22-10”; números de mercado e resultados de simulação documentam aquele estado, não preços atuais nem regras confirmadas do jogo. As capturas originais fornecidas para OCR continuam no diretório privado `prints-reais-ocr/` e não fazem parte deste conjunto.
+
 ## Memória dos cálculos
 
 Contas independentes em [JSON](evidence/player-audit-2026-10-22/independent-calculations.json), sem importar os calculadores do produto. Região SA, observações de 22/10/2026; fonte de mercado própria apresentada como Arsha; preços abaixo são o snapshot do teste, não preços garantidos para compra/venda. [Consulta pública de Cerveja](evidence/player-audit-2026-10-22/beer-public-quote.json) registra preço 3050, fonte, instante e estoque; foi coletada depois do primeiro cenário e não comprova o estoque exato naquele primeiro instante.
