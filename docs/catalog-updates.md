@@ -47,7 +47,7 @@ Esses passos de implantação/agendamento não estão configurados nesta versão
 
 ## Dados que ainda precisam de integração
 
-O [inventário dos 23 conjuntos](extracted-data-inventory.md) lista campos, quantidades e checksums reais. `manufacture.json` contém 7.066 entradas com `group`, `type`, `success` e `inputs`, sem resultados declarados. A extração atual não relaciona automaticamente essas entradas aos produtos finais. O item 1399, por exemplo, existe, mas não tem receita de produção nas relações importadas. Não inferir resultados pelo número do grupo.
+O [inventário dos 23 conjuntos](extracted-data-inventory.md) lista campos, quantidades e checksums reais. `manufacture.json` contém entradas com `group`, `type`, `success` e `inputs`, sem resultados declarados. A extração não relaciona automaticamente todas elas aos produtos finais. Os itens #1399 e #1407 agora têm relações de produção verificadas; a correção de Edania está em [Fármaco da Harmonia — Edania](edania-recipe-correction.md). Esses casos curados não autorizam inferir resultados para outros grupos de manufatura.
 
 Os 730 registros sem nome localizado, itens sem imagem e demais relações pendentes precisam de curadoria e diagnóstico por patch. Para inglês é necessário um cliente/arquivo de localização inglês válido; a instalação atual só fornece português e espanhol. Não usar tradução automática como se fosse nome oficial do jogo.
 

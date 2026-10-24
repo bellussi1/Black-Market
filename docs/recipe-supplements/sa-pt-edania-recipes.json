@@ -2,9 +2,10 @@
   "region": "sa",
   "locale": "pt",
   "extractorChecksum": "dae590a980d234ded0de347590b853facdf8175202a4186197917f017cc6a917",
-  "reviewedAt": "2026-10-18",
+  "reviewedAt": "2026-10-24",
   "sourceUrls": [
     "https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639",
+    "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8511",
     "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8694",
     "https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=8726",
     "https://github.com/iDevelopThings/bdo-data-extractor/blob/5bf11bd7bc60dcbb6126be34bf3d76633abdd8b2/internal/tables/recipexml.go"
@@ -23,7 +24,7 @@
       16581,
       16582
     ],
-    "note": "Composições simples confirmadas nas descrições do cliente atualizado. A composição em lote com Catalisador Mágico Concentrado consta no grupo 16582; seu rendimento não consta nessa tabela e permanece desconhecido. A receita histórica com Catalisador Mágico x10 e Essência de Ibellab x1 não foi republicada. Rendimentos de alquimia e probabilidade do subproduto permanecem desconhecidos."
+    "note": "Este suplemento acrescenta quatro composições unitárias e quatro lotes atuais de 10 unidades. As notas oficiais de 27/08/2026 definem o lote de 10 com Catalisador Mágico Concentrado x1, sem Essência de Ibellab, e o novo lote de 100 com Catalisador Mágico Concentrado x10 e Essência de Ibellab x1; as quatro composições de 100 constam no catálogo ativo fora deste suplemento. As quantidades de rendimento variável da alquimia comum e a probabilidade do Elixir de Edania Poderoso permanecem desconhecidas."
   },
   "items": [
     {
