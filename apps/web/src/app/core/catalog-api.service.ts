@@ -311,6 +311,60 @@ export class CatalogApiService {
     ).pipe(tap((response) => this.rememberRecipeIcons(response.recipes, response.dataset)));
   }
 
+  getProductionProducers(itemIds: readonly number[], expectedDatasetVersion: string) {
+    const uniqueIds = [...new Set(itemIds.filter((id) => Number.isSafeInteger(id) && id > 0))];
+    if (!uniqueIds.length)
+      return of<CatalogRecipesResponse>({
+        recipes: [],
+        total: 0,
+        direction: 'produces',
+        dataset: null,
+      });
+    const batches = Array.from({ length: Math.ceil(uniqueIds.length / 100) }, (_, index) =>
+      uniqueIds.slice(index * 100, (index + 1) * 100),
+    );
+    return forkJoin(
+      batches.map((ids) => {
+        const params = new HttpParams()
+          .set('ids', ids.join(','))
+          .set('region', this.preferences.region())
+          .set('preferredLocale', preferredDataLocale());
+        return this.cachedPublicRead(
+          '/production/producers',
+          params,
+          () =>
+            this.http.get<CatalogRecipesResponse>(`${this.baseUrl}/production/producers`, {
+              params,
+            }),
+          (response) => response.dataset,
+        );
+      }),
+    ).pipe(
+      map((responses) => {
+        if (responses.some((response) => response.dataset?.version !== expectedDatasetVersion))
+          throw new Error('O catálogo mudou durante a busca de produtores. Tente novamente.');
+        if (responses.some((response) => response.recipes.length !== response.total))
+          throw new Error('Consulta de produtores incompleta. Atualize e tente novamente.');
+        const recipes = [
+          ...new Map(
+            responses.flatMap((response) => response.recipes).map((recipe) => [recipe.key, recipe]),
+          ).values(),
+        ].sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+        const response = responses[0]!;
+        const result = {
+          ...response,
+          recipes,
+          total: recipes.length,
+          direction: 'produces' as const,
+          page: 1,
+          pageSize: recipes.length,
+        };
+        this.rememberRecipeIcons(result.recipes, result.dataset);
+        return result;
+      }),
+    );
+  }
+
   getByproductRecipes(
     baseItemIds: readonly number[],
     expectedDatasetVersion: string,

@@ -47,6 +47,34 @@ function apiFor(entries: ReadonlyMap<number, CatalogRecipe[]>) {
 }
 
 describe('resolveRecipeProductionGraph', () => {
+  it('loads producer alternatives in batches instead of one request per item', () => {
+    const root = recipe('root', 100, [1, 2]);
+    const api = {
+      getProductionProducers: vi.fn((itemIds: readonly number[]) =>
+        of({
+          recipes: itemIds.flatMap((itemId) =>
+            itemId === 1 ? [recipe('producer-1', 1, [3])] : [],
+          ),
+          total: 1,
+          direction: 'produces' as const,
+          dataset,
+        }),
+      ),
+      getItemRecipes: vi.fn(),
+    } as unknown as CatalogApiService;
+
+    let graph: RecipeProductionGraph | undefined;
+    resolveRecipeProductionGraph(root, api, new Map(), 'dataset-v1').subscribe(
+      (value) => (graph = value),
+    );
+
+    expect(api.getProductionProducers).toHaveBeenNthCalledWith(1, [100, 1, 2], 'dataset-v1');
+    expect(api.getProductionProducers).toHaveBeenNthCalledWith(2, [3], 'dataset-v1');
+    expect(api.getItemRecipes).not.toHaveBeenCalled();
+    expect(graph?.itemIds).toEqual([1, 2, 3, 100]);
+    expect(graph?.producerRecipes.map(({ key }) => key)).toEqual(['producer-1']);
+  });
+
   it('resolves all reachable unique item IDs', () => {
     const api = apiFor(
       new Map([

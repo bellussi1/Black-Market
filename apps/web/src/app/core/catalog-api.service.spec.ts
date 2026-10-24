@@ -5,6 +5,7 @@ import type {
   ActiveDatasetSummary,
   CatalogPage,
   CatalogRecipe,
+  CatalogRecipesResponse,
   ProductionCatalogResponse,
 } from '@bdo/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -141,6 +142,62 @@ describe('Cached production catalog', () => {
     service.getProductionCatalog('sa').subscribe((value) => (cached = value));
     expect(cached).toEqual(response);
     http.expectNone((row) => row.url.endsWith('/production/catalog'));
+  });
+});
+
+describe('Batched production producers', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }),
+  );
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    TestBed.resetTestingModule();
+  });
+
+  it('splits large item sets into bounded requests and combines one catalog version', () => {
+    const service = TestBed.inject(CatalogApiService);
+    const http = TestBed.inject(HttpTestingController);
+    let result: CatalogRecipesResponse | undefined;
+    const ids = Array.from({ length: 101 }, (_, index) => index + 1);
+    service.getProductionProducers(ids, 'v1').subscribe((response) => (result = response));
+
+    const requests = http.match((request) => request.url.endsWith('/production/producers'));
+    expect(requests).toHaveLength(2);
+    expect(requests[0]!.request.params.get('ids')).toBe(ids.slice(0, 100).join(','));
+    expect(requests[1]!.request.params.get('ids')).toBe('101');
+    requests[0]!.flush({
+      recipes: [recipes(1, 1)[0]!],
+      total: 1,
+      direction: 'produces',
+      dataset: { version: 'v1' },
+    });
+    requests[1]!.flush({
+      recipes: [recipes(2, 1)[0]!],
+      total: 1,
+      direction: 'produces',
+      dataset: { version: 'v1' },
+    });
+
+    expect(result).toMatchObject({
+      recipes: [{ key: '1' }, { key: '2' }],
+      total: 2,
+      direction: 'produces',
+      dataset: { version: 'v1' },
+    });
+  });
+
+  it('rejects a producer batch if its dataset differs from the requested graph version', () => {
+    let message = '';
+    TestBed.inject(CatalogApiService)
+      .getProductionProducers([1, 2], 'v1')
+      .subscribe({ error: (error: Error) => (message = error.message) });
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.endsWith('/production/producers'))
+      .flush({ recipes: [], total: 0, direction: 'produces', dataset: { version: 'v2' } });
+
+    expect(message).toContain('catálogo mudou');
   });
 });
 

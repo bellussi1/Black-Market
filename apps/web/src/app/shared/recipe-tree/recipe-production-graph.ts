@@ -47,6 +47,35 @@ const compareRecipeCandidates = (left: CatalogRecipe, right: CatalogRecipe) =>
   compareMarketIngredientRecipes(left, right) ||
   compareRecipeKeys(left, right);
 
+function loadProducerBatch(
+  itemIds: readonly number[],
+  api: CatalogApiService,
+  expectedDatasetVersion: string,
+) {
+  if (api.getProductionProducers) {
+    return api.getProductionProducers(itemIds, expectedDatasetVersion).pipe(
+      map((response) =>
+        itemIds.map((itemId) => {
+          const recipes = response.recipes.filter((recipe) => recipe.outputs[0]?.itemId === itemId);
+          return { itemId, response: { ...response, recipes, total: recipes.length } };
+        }),
+      ),
+      catchError(() => of(itemIds.map((itemId) => ({ itemId, response: null })))),
+    );
+  }
+  return from(itemIds).pipe(
+    mergeMap(
+      (itemId) =>
+        api.getItemRecipes(itemId, 'produces').pipe(
+          map((response) => ({ itemId, response })),
+          catchError(() => of({ itemId, response: null })),
+        ),
+      6,
+    ),
+    toArray(),
+  );
+}
+
 /** Loads all reached formulas in one catalog version, retaining selected producers for display. */
 export function resolveRecipeProductionGraph(
   root: CatalogRecipe,
@@ -82,16 +111,7 @@ export function resolveRecipeProductionGraph(
       const visitedItemIds = new Set(state.visitedItemIds);
       batch.forEach((itemId) => visitedItemIds.add(itemId));
 
-      return from(batch).pipe(
-        mergeMap(
-          (itemId) =>
-            api.getItemRecipes(itemId, 'produces').pipe(
-              map((response) => ({ itemId, response })),
-              catchError(() => of({ itemId, response: null })),
-            ),
-          6,
-        ),
-        toArray(),
+      return loadProducerBatch(batch, api, expectedDatasetVersion).pipe(
         map((results) => {
           const itemIds = new Set(state.itemIds);
           const recipesByItemId = new Map(state.recipesByItemId);

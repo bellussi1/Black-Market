@@ -111,6 +111,69 @@ describe('Paginated item recipes', () => {
   });
 });
 
+describe('Batched production producer lookup', () => {
+  it('returns all life-skill producers of up to 100 primary product IDs in one dataset', async () => {
+    const recipeRows = query([
+      { key: 'producer-a', type: 'ALCHEMY', station: null, byproductOfItemId: null },
+    ]);
+    const inputRows = query([
+      { recipeKey: 'producer-a', itemId: 10, name: 'Material', quantity: '2.0000' },
+    ]);
+    const outputRows = query([
+      { recipeKey: 'producer-a', itemId: 1, name: 'Produto', quantity: '1.0000' },
+    ]);
+    const db = {
+      select: vi
+        .fn()
+        .mockReturnValueOnce(recipeRows)
+        .mockReturnValueOnce(inputRows)
+        .mockReturnValueOnce(outputRows),
+    };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      { getIconUrl: vi.fn(() => null) } as unknown as CatalogAssetsService,
+    );
+    vi.spyOn(instance, 'getActiveDataset').mockResolvedValue({
+      id: 'dataset',
+      version: 'same',
+      region: 'sa',
+      locale: 'pt',
+      checksum: null,
+      finishedAt: new Date('2026-10-24T00:00:00Z'),
+    } as never);
+
+    const result = await instance.productionProducers({ ids: '1,2', region: 'sa' });
+
+    expect(result).toMatchObject({
+      direction: 'produces',
+      total: 1,
+      dataset: { version: 'same' },
+      recipes: [
+        {
+          key: 'producer-a',
+          inputs: [{ itemId: 10, quantity: '2.0000' }],
+          outputs: [{ itemId: 1, quantity: '1.0000' }],
+        },
+      ],
+    });
+    const compiled = new PgDialect().sqlToQuery(recipeRows.where.mock.calls[0][0] as SQL);
+    expect(compiled.params).toContain('dataset');
+    expect(compiled.params).toContain(1);
+    expect(compiled.params).toContain(2);
+  });
+
+  it('requires a bounded list of product IDs before querying the database', async () => {
+    const db = { select: vi.fn() };
+    const instance = new CatalogService(
+      { db } as unknown as DatabaseService,
+      {} as CatalogAssetsService,
+    );
+
+    await expect(instance.productionProducers({ region: 'sa' })).rejects.toThrow();
+    expect(db.select).not.toHaveBeenCalled();
+  });
+});
+
 describe('Alchemy byproduct recipe lookup', () => {
   it('returns recipes attached to base outputs in one dataset-bound query', async () => {
     const recipeRows = query([

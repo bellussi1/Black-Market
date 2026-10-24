@@ -187,6 +187,52 @@ export class CatalogService {
     };
   }
 
+  async productionProducers(rawQuery: Record<string, unknown>): Promise<CatalogRecipesResponse> {
+    const query = parseCatalogQuery(rawQuery, { pagination: false });
+    if (!query.ids?.length)
+      throw new BadRequestException({
+        code: 'MISSING_PRODUCER_ITEMS',
+        message: 'Informe de 1 a 100 IDs de produtos para buscar as receitas.',
+        field: 'ids',
+      });
+    const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);
+    if (!dataset) return { recipes: [], total: 0, direction: 'produces', dataset: null };
+
+    const recipeRows = await this.database.db
+      .select({
+        key: recipes.recipeKey,
+        type: recipes.recipeType,
+        station: recipes.station,
+        byproductOfItemId: recipes.byproductOfItemId,
+      })
+      .from(recipes)
+      .innerJoin(
+        recipeOutputs,
+        and(
+          eq(recipeOutputs.datasetVersionId, recipes.datasetVersionId),
+          eq(recipeOutputs.recipeKey, recipes.recipeKey),
+          eq(recipeOutputs.position, 0),
+        ),
+      )
+      .where(
+        and(
+          eq(recipes.datasetVersionId, dataset.id),
+          inArray(recipes.recipeType, LIFE_SKILL_RECIPE_TYPES),
+          inArray(recipeOutputs.itemId, query.ids),
+        ),
+      )
+      .orderBy(asc(recipes.recipeType), asc(recipes.recipeKey));
+    const productionRecipes = await this.loadRecipeDetails(dataset, recipeRows);
+    return {
+      recipes: productionRecipes,
+      total: productionRecipes.length,
+      direction: 'produces',
+      dataset: this.toSummary(dataset),
+      page: 1,
+      pageSize: productionRecipes.length,
+    };
+  }
+
   async listRecipes(rawQuery: Record<string, unknown>) {
     const query = parseCatalogQuery(rawQuery);
     const dataset = await this.getActiveDataset(query.region, query.locale, query.preferredLocale);

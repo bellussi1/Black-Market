@@ -64,6 +64,17 @@ export class CatalogController {
   productionCatalog(@Query() query: Record<string, unknown>) {
     return this.catalog.productionCatalog(query);
   }
+  @Get('production/producers')
+  @Header('Cache-Control', 'public, max-age=300')
+  @ApiOperation({ summary: 'Busca produtores de vários itens em uma consulta para planejamento' })
+  @ApiQuery({
+    name: 'ids',
+    required: true,
+    description: 'Até 100 IDs de produtos separados por vírgula',
+  })
+  productionProducers(@Query() query: Record<string, unknown>) {
+    return this.catalog.productionProducers(query);
+  }
   @Get('recipes/byproducts')
   @Header('Cache-Control', 'public, max-age=300')
   @ApiOperation({ summary: 'Lista receitas de subproduto ligadas a vários produtos-base' })
