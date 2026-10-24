@@ -1,27 +1,24 @@
 # Estado atual — Black Market
 
-Atualizado em 24/10/2026. Resumo substituível deste checkout; detalhes da jornada estão no [relatório da auditoria](research/player-journey-audit-2026-10-22.md) e os dados de receita/custos de Edania no [relatório específico](research/edania-harmony-audit-2026-10-24.md).
+Atualizado em 24/10/2026. Este resumo substitui handoffs anteriores; decisões e evidências detalhadas ficam nas fontes do projeto.
 
-## Checkout
+## Checkout e preservação
 
-- Checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`, branch `main`. Correções estão em commits locais separados por responsabilidade; sem push. Commits recentes: `cea99e1`, `74b822e`, `304caf6`.
-- `pnpm dev:web` e `pnpm dev:api` estão ativos neste checkout. A prévia responde em `http://localhost:4200/`; API `/ready` responde 200. PostgreSQL local permanece saudável. Nenhuma migração, seed ou push foi executado.
-- Originais em `prints-reais-ocr/` seguem privados e fora do Git por `/prints-reais-ocr/` em `.git/info/exclude`. Preservar os 22 arquivos de evidência sem citação e o plano local sem adicioná-los ao stage.
+- Checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`, branch `main`. Commits desta auditoria são locais e atômicos; sem push.
+- `pnpm dev:web` e `pnpm dev:api` seguem ativos neste checkout; a prévia é `http://localhost:4200/`. Não reiniciar serviços de outro checkout.
+- Preservar os 22 arquivos não rastreados em `docs/research/evidence/player-audit-2026-10-22/` e o plano `docs/superpowers/plans/2026-10-23-family-life-equipment.md`; não os adicionar ao stage.
+- Originais em `prints-reais-ocr/` seguem privados e fora do Git.
 
 ## Estado
 
-- Correções J01–J09 e seus limites estão documentados no relatório. Equipamento de Vida fica separado por Família/profissão, busca no catálogo sem filtro de receitas e não se mistura com gear PvP. Histórico marca lotes heterogêneos como “Importação mista”. Importação de estoque tem regressões para mesclagem e substituição integral de um destino.
-- J07 abstém de sugerir `14M` sem separador e mantém texto OCR para revisão manual. Estoque/inventário só confirma inteiros de 1 a 1.000.000.000; zero e valores acima do limite ficam pendentes com aviso. `Permuta: O` não vira zero; Maestria `0` exige edição, seleção e aplicação explícitas.
-- No Coach, limite de peso `0` significa não informado e deixa de bloquear cenários como se fosse `0 LT`; peso carregado e limite agora podem ser editados na configuração rápida. O botão de expandir de uma etapa aninhada está coberto por teste de clique.
-- Edania: #1407 tem composições e rendimentos fixos verificados para lotes 1/10/100, com 12 variantes catalogadas; ícones conferidos. A auditoria não achou falha de runtime. Custos e limites dos snapshots estão no relatório específico; não houve reimportação nem rebuild nesta revisão.
+- J01–J09, Família/equipamentos de Vida, OCR revisável e correções do Coach continuam descritos em [auditoria da jornada](research/player-journey-audit-2026-10-22.md); não reabrir sem evidência nova.
+- Edania #1407/#1408: receitas 1/10/100 e custos conferidos em [auditoria do Fármaco da Harmonia](research/edania-harmony-audit-2026-10-24.md).
+- Produção #1408: corrigida a busca item a item que excedia limites e gerava HTTP 429; produção agora consulta produtores em lotes. Pendências de produção mostram os nomes dos materiais/receitas. Fórmula de custo, imposto, saída fixa do #1408 e lucro/hora foram reproduzidos sem divergência; retornos vendidos explicam receita bruta acima do produto final. Comparação de Buy All/Craft All/Best Profit, preços, maestria e quatro concorrentes em [auditoria de produção](research/production-calculation-audit-2026-10-24.md).
+- Dados faltantes permanecem explícitos: seis rendimentos de receitas intermediárias e três durações de Processamento. Não preencher até validar por fonte atual ou medição reproduzível. Próxima melhoria de transparência é separar receita do produto final e venda de retornos.
 
-## Verificação e limites
+## Validação
 
-- `pnpm build` passou em 24/10 com Node 24.21.0, incluindo os bundles browser e SSR. `pnpm test:ssr` passou nesta data. Avisos conhecidos: fallback locale `pt-BR` para `pt`, orçamento de `recipe-tree.scss` e dependências CommonJS do Tesseract.
-- `pnpm check` e `pnpm test` passaram em 23/10. Suíte integral: 85 calculadoras, 270 API, 938 Web e 85 scripts; 1 skip da API. As 5 regressões privadas passaram após conferir os SHA-256 das 8 imagens do manifesto; originais não foram modificados.
-- A auditoria de Edania passou em 73 testes focados (5 arquivos); JSON do suplemento, Prettier e `git diff --check` passaram. Não houve mudança de código de aplicação.
-- A Web agora responde, mas a inspeção visual da conta QA ainda precisa ser concluída pela aba do navegador. O aviso de quantidades inválidas foi verificado pelo teste Angular renderizado; merge/replace foram verificados em armazenamento isolado. OCR ainda não tem holdout independente nem taxa global de acerto; `1.4M` continua sujeito a revisão manual.
-
-## Próximo passo
-
-- Atualizar a aba `http://localhost:4200/recipes/items/5301` para conferir visualmente o checkout reconstruído e continuar a QA da auditoria. Homologar OCR de todas as páginas com gabarito e gear completo continuam pendentes. Manter `prints-reais-ocr/` fora do Git e não reiniciar serviços de outro checkout.
+- `pnpm check`, `pnpm test`, `pnpm build` e `pnpm test:ssr` passaram em 24/10/2026. Suítes: 85 calculadoras, 272 API (1 skip), 942 Web e 85 scripts.
+- QA da rota local #1408: oito chamadas em lote responderam HTTP 200, sem 429; “Fazer / coletar tudo” listou as nove pendências pelo nome.
+- Avisos de build: fallback de locale `pt-BR` para `pt`, orçamento de `recipe-tree.scss` e dependências CommonJS do Tesseract.
+- OCR ainda não tem holdout independente nem taxa global de acerto; manter revisão manual.
