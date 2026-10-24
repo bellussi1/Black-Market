@@ -1441,6 +1441,26 @@ describe('Interactive recipe tree', () => {
     fixture.destroy();
   });
 
+  it('names the recipe when its yield is missing from the production result', async () => {
+    const simpleAlchemyRecipe: CatalogRecipe = {
+      ...recipe,
+      key: 'simple-clear-reagent',
+      type: 'SIMPLE_ALCHEMY',
+    };
+    const fixture = await renderComponent(
+      RecipeTree,
+      { recipe: simpleAlchemyRecipe, selectedItem: item },
+      providers().list,
+    );
+    const tree = fixture.componentInstance;
+    configureProduction(tree, { 5301: '100', 9001: '10' });
+
+    expect(tree.productionIssueGroups()).toMatchObject([
+      { name: item.name, messages: ['Informe o rendimento esperado desta receita.'] },
+    ]);
+    fixture.destroy();
+  });
+
   it('opens known production ingredients inline in steps without opening the details panel', async () => {
     const mocks = providers();
     mocks.knowledge.produces.mockReturnValue(

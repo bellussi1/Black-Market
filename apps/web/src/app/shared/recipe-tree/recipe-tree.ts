@@ -1087,7 +1087,12 @@ export class RecipeTree {
           : `recipe:${issue.recipeId ?? issue.code}`;
       const group = groups.get(key) ?? {
         key,
-        name: issue.itemId !== undefined ? this.productionMaterialName(issue.itemId) : 'Produção',
+        name:
+          issue.itemId !== undefined
+            ? this.productionMaterialName(issue.itemId)
+            : issue.recipeId !== undefined
+              ? this.productionStepName(issue.recipeId)
+              : 'Produção',
         messages: [],
       };
       if (!group.messages.includes(issue.message)) group.messages.push(issue.message);
