@@ -4,9 +4,9 @@ Atualizado em 24/10/2026. Este resumo substitui handoffs anteriores; decisões e
 
 ## Checkout e preservação
 
-- Checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`, branch `main`. Commits desta auditoria são locais e atômicos; sem push.
-- `pnpm dev:web` e `pnpm dev:api` seguem ativos neste checkout; a prévia é `http://localhost:4200/`. Não reiniciar serviços de outro checkout.
-- Preservar os 22 arquivos não rastreados em `docs/research/evidence/player-audit-2026-10-22/` e o plano `docs/superpowers/plans/2026-10-23-family-life-equipment.md`; não os adicionar ao stage.
+- Checkout principal: `C:\Users\Bellussi\Documents\ChatGPT\Site de BDO`, branch `main`. Os commits desta auditoria são locais; sem push.
+- `http://localhost:4200/` está atendendo por `ng serve` deste checkout (PID 21628). A porta 3000 estava sem listener; não reiniciei serviços.
+- As 22 evidências QA e o plano concluído de equipamento de Vida foram registrados nos commits `210a2fe` e `21f3ef6`; o índice está em `research/evidence/player-audit-2026-10-22/README.md`.
 - Originais em `prints-reais-ocr/` seguem privados e fora do Git.
 
 ## Estado
@@ -22,3 +22,4 @@ Atualizado em 24/10/2026. Este resumo substitui handoffs anteriores; decisões e
 - QA da rota local #1408: oito chamadas em lote responderam HTTP 200, sem 429; “Fazer / coletar tudo” listou as nove pendências pelo nome.
 - Avisos de build: fallback de locale `pt-BR` para `pt`, orçamento de `recipe-tree.scss` e dependências CommonJS do Tesseract.
 - OCR ainda não tem holdout independente nem taxa global de acerto; manter revisão manual.
+- Nesta atualização documental, `git diff --check` e a conferência dos links relativos do relatório/índice passaram; testes de produto não foram repetidos.
