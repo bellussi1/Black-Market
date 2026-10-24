@@ -21,6 +21,8 @@ Pesquisa em **7 de outubro de 2026**, dividida entre três subagentes. Foram con
 
 ## Relatórios e cobertura
 
+- [Auditoria de receitas, cálculos e lucro por hora — 24/10/2026](production-calculation-audit-2026-10-24.md): #1408 pareado, preços de referência, Buy All/Craft All/otimizador, maestria e comparação pública dos quatro concorrentes.
+
 - [Auditoria do Fármaco da Harmonia — Edania — 24/10/2026](edania-harmony-audit-2026-10-24.md): receitas/rendimentos 1/10/100, ícones, custos pareados de mercado e de produção do #1399, e limites das cotações.
 
 - [Correção dos alvos do tutorial de Família — 19/10/2026](family-tutorial-target-fix-2026-10-19.md): âncoras compactas, orientação inicial sem personagem e validação de navegação do guia.
