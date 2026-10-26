@@ -81,48 +81,6 @@ summary:focus-visible,
   border-color: color-mix(in srgb, var(--bm-accent) 45%, var(--bm-border));
   color: var(--bm-accent);
 }
-.step-subrecipe-profit {
-  display: inline-flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 3px;
-  padding: 3px 9px;
-  border: 1px solid rgba(197, 160, 89, 0.4);
-  border-left: 3px solid var(--bm-accent);
-  border-radius: 2px;
-  background: rgba(197, 160, 89, 0.1);
-  color: var(--bm-accent);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
-  font-variant-numeric: tabular-nums;
-
-  strong {
-    font-size: 12.5px;
-    font-weight: 700;
-  }
-
-  .step-subrecipe-mastery {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--bm-muted);
-  }
-}
-.step-subrecipe-profit.is-positive {
-  border-color: rgba(124, 216, 156, 0.4);
-  border-left-color: #7cd89c;
-  background: rgba(124, 216, 156, 0.1);
-  color: #7cd89c;
-}
-.step-subrecipe-profit.is-negative {
-  border-color: rgba(239, 134, 123, 0.4);
-  border-left-color: #ef867b;
-  background: rgba(239, 134, 123, 0.1);
-  color: #ef867b;
-}
-.step-subrecipe-profit.is-better {
-  box-shadow: inset 0 0 8px rgba(197, 160, 89, 0.15);
-}
 .step-hint {
   font-size: 12px;
   color: var(--bm-accent);

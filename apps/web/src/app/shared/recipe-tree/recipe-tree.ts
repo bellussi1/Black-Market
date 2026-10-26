@@ -580,15 +580,6 @@ export class RecipeTree {
     },
   );
 
-  readonly subRecipeProfitPerHourByItemId = computed<ReadonlyMap<number, string | null>>(() => {
-    const summaries = this.subRecipeSummariesByItemId();
-    const result = new Map<number, string | null>();
-    for (const [itemId, summary] of summaries) {
-      result.set(itemId, summary.profitPerHour);
-    }
-    return result;
-  });
-
   readonly subRecipeComparisons = computed<readonly SubRecipeProfitSummary[]>(() => {
     const rows = [...this.subRecipeSummariesByItemId().values()];
     return rows.sort((left, right) => {
@@ -624,8 +615,6 @@ export class RecipeTree {
         const iconUrl = this.catalog.resolveIconUrl(part ?? { itemId });
         const canProduce = this.makeChoice(itemId) !== 'buy';
         const subRecipeSummary = subRecipeSummaries.get(itemId) ?? null;
-        const hasSubRecipe = subRecipeSummary !== null;
-        const subRecipeProfitPerHour = subRecipeSummary?.profitPerHour ?? null;
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
         const required = plannerRow?.required ?? 0;
@@ -659,8 +648,6 @@ export class RecipeTree {
           source,
           sourceLabel,
           canProduce,
-          hasSubRecipe,
-          subRecipeProfitPerHour,
           subRecipeSummary,
           unitPrice,
           unitPriceSource: materialPrice?.source ?? null,

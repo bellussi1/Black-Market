@@ -2919,9 +2919,9 @@ it('shows sub-recipe profit per hour once, in the collapsed result comparison', 
   tree.view.set('tree');
   fixture.detectChanges();
 
-  const subProfitMap = tree.subRecipeProfitPerHourByItemId();
-  expect(subProfitMap.has(9001)).toBe(true);
-  const saltProfitPerHour = subProfitMap.get(9001);
+  const saltSummary = tree.subRecipeSummariesByItemId().get(9001);
+  expect(saltSummary).toBeDefined();
+  const saltProfitPerHour = saltSummary?.profitPerHour;
   expect(saltProfitPerHour).not.toBeNull();
   expect(BigInt(saltProfitPerHour!)).toBeGreaterThan(0n);
 
@@ -2941,10 +2941,10 @@ it('shows sub-recipe profit per hour once, in the collapsed result comparison', 
   expect(dashboardCard?.textContent).toContain('Culinária · Maestria 1000');
   expect(dashboardCard?.textContent).toContain('/h');
 
-  const profitAt1000 = BigInt(tree.subRecipeProfitPerHourByItemId().get(9001)!);
+  const profitAt1000 = BigInt(tree.subRecipeSummariesByItemId().get(9001)!.profitPerHour!);
   tree.setMasteryForSkill('cooking', 2000);
   fixture.detectChanges();
-  const profitAt2000 = BigInt(tree.subRecipeProfitPerHourByItemId().get(9001)!);
+  const profitAt2000 = BigInt(tree.subRecipeSummariesByItemId().get(9001)!.profitPerHour!);
   expect(profitAt2000).toBeGreaterThan(profitAt1000);
   expect(
     fixture.nativeElement.querySelector('.subrecipe-profit-card[data-subrecipe-id="9001"]')

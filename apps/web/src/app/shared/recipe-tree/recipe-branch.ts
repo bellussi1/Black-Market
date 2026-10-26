@@ -3,11 +3,9 @@ import { inject } from '@angular/core';
 import type { calculateProduction, ProductionChoice } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import { recipeFamilies } from './recipe-equivalents';
-import type { SubRecipeProfitSummary } from './recipe-tree';
 import type { RecipeNode } from './recipe-tree-model';
 export interface BranchAction {
   path: string;
@@ -35,29 +33,6 @@ export class RecipeBranch {
   readonly node = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
   readonly sourceChoices = input<ReadonlyMap<number, ProductionChoice>>(new Map());
-  readonly subRecipeProfits = input<ReadonlyMap<number, string | null>>(new Map());
-  readonly subRecipeSummaries = input<ReadonlyMap<number, SubRecipeProfitSummary>>(new Map());
-  readonly silver = silver;
-  readonly subRecipeSummary = computed(() =>
-    this.node().path === 'root'
-      ? null
-      : (this.subRecipeSummaries().get(this.node().part.itemId) ?? null),
-  );
-  readonly hasSubRecipe = computed(
-    () =>
-      this.node().path !== 'root' &&
-      (this.subRecipeProfits().has(this.node().part.itemId) || this.subRecipeSummary() !== null),
-  );
-  readonly subRecipeProfitPerHour = computed(() =>
-    this.node().path === 'root'
-      ? null
-      : (this.subRecipeSummary()?.profitPerHour ??
-        this.subRecipeProfits().get(this.node().part.itemId) ??
-        null),
-  );
-  quantityLabel(value: number): string {
-    return value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-  }
   private readonly plannedSource = computed(() =>
     this.node().path === 'root' ? undefined : this.sourceChoices().get(this.node().part.itemId),
   );

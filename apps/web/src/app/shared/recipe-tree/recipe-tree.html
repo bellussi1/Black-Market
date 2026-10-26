@@ -793,8 +793,6 @@
                 [root]="product"
                 [advanced]="true"
                 [allocations]="result.value?.allocations ?? []"
-                [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
-                [subRecipeSummaries]="subRecipeSummariesByItemId()"
                 [selected]="selectedPath()"
                 [origins]="origins()"
                 [quickInfo]="quickItemInfo()"
@@ -809,8 +807,6 @@
                 [node]="product"
                 [allocations]="result.value?.allocations ?? []"
                 [sourceChoices]="branchSourceChoices()"
-                [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
-                [subRecipeSummaries]="subRecipeSummariesByItemId()"
                 (action)="action($event)"
               />
             </div>

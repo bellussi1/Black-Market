@@ -17,7 +17,6 @@ import {
 import type { calculateProduction } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
-import { silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
@@ -28,7 +27,6 @@ import { type GraphLayoutState, isGraphAncestor, layoutRecipeGraph } from './rec
 import { RecipeIngredientAlternatives } from './recipe-ingredient-alternatives';
 import { RecipeItemQuickInfo, type RecipeItemQuickInfoState } from './recipe-item-quick-info';
 import type { ItemSources } from './recipe-knowledge';
-import type { SubRecipeProfitSummary } from './recipe-tree';
 import type { RecipeNode } from './recipe-tree-model';
 
 @Component({
@@ -41,12 +39,6 @@ import type { RecipeNode } from './recipe-tree-model';
 export class RecipeGraph {
   readonly root = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
-  readonly subRecipeProfits = input<ReadonlyMap<number, string | null>>(new Map());
-  readonly subRecipeSummaries = input<ReadonlyMap<number, SubRecipeProfitSummary>>(new Map());
-  readonly silver = silver;
-  quantityLabel(value: number): string {
-    return value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-  }
   readonly selected = input('root');
   private readonly localSelection = signal<{ path: string; ownerPath: string } | null>(null);
   readonly selection = computed(() => this.localSelection()?.path ?? this.selected());
