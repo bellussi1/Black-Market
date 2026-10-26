@@ -382,7 +382,7 @@
     </unit>
     <unit id="6941001320832444478">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:75</note>
+        <note category="location">src/app/core/tutorial.service.ts:76</note>
       </notes>
       <segment>
         <source>Este tutorial precisa de atualização. Nenhuma etapa está disponível nesta tela.</source>
@@ -390,7 +390,7 @@
     </unit>
     <unit id="2999661061662499456">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:99</note>
+        <note category="location">src/app/core/tutorial.service.ts:100</note>
       </notes>
       <segment>
         <source>{{current}} de {{total}}</source>
@@ -398,7 +398,7 @@
     </unit>
     <unit id="2669123423965991515">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:100</note>
+        <note category="location">src/app/core/tutorial.service.ts:101</note>
       </notes>
       <segment>
         <source>Próximo</source>
@@ -406,7 +406,7 @@
     </unit>
     <unit id="452830638458584000">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:101</note>
+        <note category="location">src/app/core/tutorial.service.ts:102</note>
       </notes>
       <segment>
         <source>Anterior</source>
@@ -414,7 +414,7 @@
     </unit>
     <unit id="2755460153096662088">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:102</note>
+        <note category="location">src/app/core/tutorial.service.ts:103</note>
       </notes>
       <segment>
         <source>Concluir</source>
@@ -422,7 +422,7 @@
     </unit>
     <unit id="6017173522282135199">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:103</note>
+        <note category="location">src/app/core/tutorial.service.ts:104</note>
       </notes>
       <segment>
         <source>Sair do tutorial</source>
@@ -430,7 +430,7 @@
     </unit>
     <unit id="8274483009532659223">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:122</note>
+        <note category="location">src/app/core/tutorial.service.ts:123</note>
       </notes>
       <segment>
         <source>Algumas etapas não estão disponíveis no estado atual desta tela.</source>
@@ -438,7 +438,7 @@
     </unit>
     <unit id="89775847726946602">
       <notes>
-        <note category="location">src/app/core/tutorial.service.ts:172</note>
+        <note category="location">src/app/core/tutorial.service.ts:173</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="PH" disp="index + 1"/> de <ph id="1" equiv="PH_1" disp="this.steps.length"/></source>
@@ -453,8 +453,8 @@
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:83,84</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:95,98</note>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:411,413</note>
-        <note category="location">src/app/features/scans/scans-page.html:647,648</note>
-        <note category="location">src/app/features/scans/scans-page.html:1204,1205</note>
+        <note category="location">src/app/features/scans/scans-page.html:710,711</note>
+        <note category="location">src/app/features/scans/scans-page.html:1369,1370</note>
         <note category="location">src/app/features/stock/stock-page.html:150,152</note>
         <note category="location">src/app/features/stock/stock-page.html:376,383</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.html:52,54</note>
@@ -741,7 +741,7 @@
     <unit id="4575018329748168256">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:59</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:125</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:128</note>
       </notes>
       <segment>
         <source>Duração (minutos)</source>
@@ -856,7 +856,7 @@
         <note category="location">src/app/features/buffs/buffs-page.html:155</note>
         <note category="location">src/app/features/crafting/crafting-page.html:551</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:448</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:401</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:404</note>
         <note category="location">src/app/features/market/market-page.html:786</note>
         <note category="location">src/app/features/storage/storage-page.html:477</note>
       </notes>
@@ -883,8 +883,8 @@
     <unit id="1288261701595144951">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:170</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:85,86</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:304</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:88,89</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:307</note>
       </notes>
       <segment>
         <source>Ativo</source>
@@ -909,7 +909,7 @@
     <unit id="6170019178516226599">
       <notes>
         <note category="location">src/app/features/buffs/buffs-page.html:174</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:370</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:373</note>
       </notes>
       <segment>
         <source>Duração</source>
@@ -920,7 +920,7 @@
         <note category="location">src/app/features/buffs/buffs-page.html:175</note>
         <note category="location">src/app/features/crafting/crafting-page.html:525</note>
         <note category="location">src/app/features/enhancement/enhancement-page.html:429</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:372</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:375</note>
         <note category="location">src/app/features/market/market-page.html:712</note>
         <note category="location">src/app/features/storage/storage-page.html:441</note>
       </notes>
@@ -1331,7 +1331,7 @@
     <unit id="7106062251415864615">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:275</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:178</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:181</note>
         <note category="location">src/app/features/market/market-page.html:655</note>
         <note category="location">src/app/features/world/world-page.html:123,124</note>
       </notes>
@@ -1414,7 +1414,7 @@
     <unit id="7366564846379609598">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:356</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:526,527</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:552,553</note>
       </notes>
       <segment>
         <source>Lucro por hora</source>
@@ -1492,6 +1492,8 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:385</note>
         <note category="location">src/app/features/crafting/crafting-page.html:614</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:156,157</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:177,178</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1702,9 +1704,9 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:601</note>
         <note category="location">src/app/features/demo/demo-page.html:198,199</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:170</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:173</note>
         <note category="location">src/app/features/market/market-page.html:554</note>
-        <note category="location">src/app/features/scans/scans-page.html:890,891</note>
+        <note category="location">src/app/features/scans/scans-page.html:961,962</note>
         <note category="location">src/app/features/storage/storage-page.html:150</note>
         <note category="location">src/app/features/storage/storage-page.html:182,183</note>
       </notes>
@@ -1739,6 +1741,7 @@
     <unit id="8708694637993344978">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:613</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:169,170</note>
       </notes>
       <segment>
         <source>Produzir</source>
@@ -2048,7 +2051,7 @@
         <note category="location">src/app/features/dashboard/dashboard-page.html:168,169</note>
         <note category="location">src/app/features/recipes/recipes-page.html:41,42</note>
         <note category="location">src/app/features/roadmap/roadmap-page.html:60,61</note>
-        <note category="location">src/app/features/scans/scans-page.html:294</note>
+        <note category="location">src/app/features/scans/scans-page.html:306</note>
         <note category="location">src/app/shared/catalog-item-picker/catalog-item-picker.html:79</note>
       </notes>
       <segment>
@@ -2236,9 +2239,9 @@
       <notes>
         <note category="location">src/app/features/demo/demo-page.html:63,64</note>
         <note category="location">src/app/features/gear/gear-inventory-page.html:45,46</note>
-        <note category="location">src/app/features/scans/scans-page.html:262,263</note>
-        <note category="location">src/app/features/scans/scans-page.html:573,574</note>
-        <note category="location">src/app/features/scans/scans-page.html:674,675</note>
+        <note category="location">src/app/features/scans/scans-page.html:274,275</note>
+        <note category="location">src/app/features/scans/scans-page.html:608,609</note>
+        <note category="location">src/app/features/scans/scans-page.html:737,738</note>
         <note category="location">src/app/features/stock/stock-page.html:354,355</note>
       </notes>
       <segment>
@@ -2363,7 +2366,7 @@
         <note category="location">src/app/features/demo/demo-page.html:196,197</note>
         <note category="location">src/app/features/market/market-page.html:649</note>
         <note category="location">src/app/features/market/market-page.html:707</note>
-        <note category="location">src/app/features/scans/scans-page.html:856,857</note>
+        <note category="location">src/app/features/scans/scans-page.html:927,928</note>
         <note category="location">src/app/features/storage/storage-page.html:148</note>
         <note category="location">src/app/features/storage/storage-page.html:180,181</note>
         <note category="location">src/app/features/storage/storage-page.html:284</note>
@@ -2880,7 +2883,7 @@
     <unit id="565555593282790809">
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:417,418</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:347,348</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:350,351</note>
       </notes>
       <segment>
         <source>Meu histórico · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/></source>
@@ -2897,7 +2900,7 @@
     <unit id="146442697456175258">
       <notes>
         <note category="location">src/app/features/enhancement/enhancement-page.html:425</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:369</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:372</note>
         <note category="location">src/app/features/market/market-page.html:834</note>
       </notes>
       <segment>
@@ -3001,7 +3004,7 @@
     <unit id="5541425023812945859">
       <notes>
         <note category="location">src/app/features/gear/gear-inventory-page.html:54,55</note>
-        <note category="location">src/app/features/scans/scans-page.html:579,580</note>
+        <note category="location">src/app/features/scans/scans-page.html:614,615</note>
         <note category="location">src/app/features/stock/stock-page.html:362,363</note>
       </notes>
       <segment>
@@ -3011,7 +3014,7 @@
     <unit id="6313273426602585292">
       <notes>
         <note category="location">src/app/features/gear/gear-inventory-page.html:55,56</note>
-        <note category="location">src/app/features/scans/scans-page.html:129,133</note>
+        <note category="location">src/app/features/scans/scans-page.html:141,145</note>
       </notes>
       <segment>
         <source>Nome do personagem<ph id="0" equiv="TAG_INPUT" disp="&lt;input hlmInput [(ngModel)]=&quot;name&quot; maxlength=&quot;80&quot; /&gt;"/></source>
@@ -3132,7 +3135,7 @@
     <unit id="5449016724233185474">
       <notes>
         <note category="location">src/app/features/gear/gear-inventory-page.html:126,127</note>
-        <note category="location">src/app/features/scans/scans-page.html:948,949</note>
+        <note category="location">src/app/features/scans/scans-page.html:1113,1114</note>
       </notes>
       <segment>
         <source>Posição</source>
@@ -3341,18 +3344,26 @@
         <source>Planeje o que produzir com sua maestria e armazém ou registre sessões para comparar seu rendimento observado. </source>
       </segment>
     </unit>
-    <unit id="7973460899562217174">
+    <unit id="4253094022034977390">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:17,18</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:18,19</note>
       </notes>
       <segment>
-        <source> Sessões sem conta · Registros neste navegador, com sincronização ao entrar. </source>
+        <source> Sessões salvas neste navegador. Entrar não sincroniza os registros automaticamente. </source>
+      </segment>
+    </unit>
+    <unit id="4350702165273389956">
+      <notes>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:20,21</note>
+      </notes>
+      <segment>
+        <source>Gerencie a cópia manual da conta em Configurações.</source>
       </segment>
     </unit>
     <unit id="1496824948872439746">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:25,26</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:32,33</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:28,29</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:35,36</note>
       </notes>
       <segment>
         <source> Preparando recomendações… </source>
@@ -3360,7 +3371,7 @@
     </unit>
     <unit id="2090130207905937027">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:42,43</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:45,46</note>
       </notes>
       <segment>
         <source>PLANEJAMENTO PERSONALIZADO</source>
@@ -3368,7 +3379,7 @@
     </unit>
     <unit id="4123390487279706632">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:43,44</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:46,47</note>
       </notes>
       <segment>
         <source>Recomendações de produção exigem uma conta</source>
@@ -3376,7 +3387,7 @@
     </unit>
     <unit id="8279010060755914599">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:45,46</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:48,49</note>
       </notes>
       <segment>
         <source> O painel de produção usa seu personagem, maestria e armazém. Entre para consultar receitas, cotações e cenários com esses dados privados. </source>
@@ -3384,7 +3395,7 @@
     </unit>
     <unit id="8316929059106271799">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:50,51</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:53,54</note>
       </notes>
       <segment>
         <source>Dados usados no planejamento</source>
@@ -3392,7 +3403,7 @@
     </unit>
     <unit id="4938933195596566599">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:53</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:56</note>
       </notes>
       <segment>
         <source>Sua maestria</source>
@@ -3400,7 +3411,7 @@
     </unit>
     <unit id="7659000812381648379">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:53</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:56</note>
       </notes>
       <segment>
         <source>Rendimento do personagem</source>
@@ -3408,7 +3419,7 @@
     </unit>
     <unit id="8813971035376972342">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:54</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:57</note>
       </notes>
       <segment>
         <source>Seu Armazém</source>
@@ -3416,7 +3427,7 @@
     </unit>
     <unit id="3557955433662453375">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:54</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:57</note>
       </notes>
       <segment>
         <source>Materiais já disponíveis</source>
@@ -3424,7 +3435,7 @@
     </unit>
     <unit id="6393961446548554775">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:55</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:58</note>
         <note category="location">src/app/features/market/market-page.html:21,22</note>
         <note category="location">src/app/layout/workspace-layout.ts:286</note>
       </notes>
@@ -3434,7 +3445,7 @@
     </unit>
     <unit id="8650470182707346742">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:55</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:58</note>
       </notes>
       <segment>
         <source>Custos e cenários de produção</source>
@@ -3442,7 +3453,7 @@
     </unit>
     <unit id="3302499598072514802">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:59</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:62</note>
       </notes>
       <segment>
         <source> Entrar e abrir recomendações </source>
@@ -3450,7 +3461,7 @@
     </unit>
     <unit id="8850867901618411943">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:61,62</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:64,65</note>
       </notes>
       <segment>
         <source>Explorar receitas sem conta</source>
@@ -3458,7 +3469,7 @@
     </unit>
     <unit id="5861347170112872182">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:70,71</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:73,74</note>
       </notes>
       <segment>
         <source>REGISTRAR ATIVIDADE</source>
@@ -3466,7 +3477,7 @@
     </unit>
     <unit id="5449288526138603373">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:71,72</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:74,75</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:73</note>
       </notes>
       <segment>
@@ -3475,7 +3486,7 @@
     </unit>
     <unit id="5915530118484999552">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:76,77</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:79,80</note>
       </notes>
       <segment>
         <source>Contexto da atividade</source>
@@ -3483,7 +3494,7 @@
     </unit>
     <unit id="5112032831894660633">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:79,80</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:82,83</note>
       </notes>
       <segment>
         <source>Uso do tempo</source>
@@ -3491,8 +3502,8 @@
     </unit>
     <unit id="2926416009269379103">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:86,87</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:306</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:89,90</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:309</note>
       </notes>
       <segment>
         <source>AFK</source>
@@ -3500,7 +3511,7 @@
     </unit>
     <unit id="4805990946114630606">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:89,90</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:92,93</note>
       </notes>
       <segment>
         <source>Profissão desta sessão</source>
@@ -3508,7 +3519,7 @@
     </unit>
     <unit id="1976106460259182665">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:95,96</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:98,99</note>
       </notes>
       <segment>
         <source>Não informada</source>
@@ -3516,7 +3527,7 @@
     </unit>
     <unit id="8976911635659923209">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:101,102</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:104,105</note>
       </notes>
       <segment>
         <source>Maestria usada na sessão</source>
@@ -3524,7 +3535,7 @@
     </unit>
     <unit id="4394699588199914947">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:112,113</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:115,116</note>
       </notes>
       <segment>
         <source> As comparações agrupam apenas sessões com o mesmo contexto informado. Maestria vazia significa “não informada”; zero é um valor registrado. </source>
@@ -3532,7 +3543,7 @@
     </unit>
     <unit id="7883160121651379847">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:118</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:121</note>
       </notes>
       <segment>
         <source>Atividade / rota</source>
@@ -3540,7 +3551,7 @@
     </unit>
     <unit id="6064016337829293519">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:134</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:137</note>
       </notes>
       <segment>
         <source>Energia consumida</source>
@@ -3548,7 +3559,7 @@
     </unit>
     <unit id="8246726991651955667">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:142</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:145</note>
       </notes>
       <segment>
         <source>Prata direta / venda em NPC</source>
@@ -3556,7 +3567,7 @@
     </unit>
     <unit id="2512180473130681056">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:149</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:152</note>
       </notes>
       <segment>
         <source>Despesas da sessão</source>
@@ -3564,7 +3575,7 @@
     </unit>
     <unit id="3432471646562986553">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:158</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:161</note>
       </notes>
       <segment>
         <source>Itens para vender no mercado</source>
@@ -3572,7 +3583,7 @@
     </unit>
     <unit id="5983832561333572488">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:188</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:191</note>
       </notes>
       <segment>
         <source>Remover item</source>
@@ -3580,7 +3591,7 @@
     </unit>
     <unit id="2342668515581501852">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:195</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:198</note>
       </notes>
       <segment>
         <source>Adicionar item</source>
@@ -3588,7 +3599,7 @@
     </unit>
     <unit id="346610309881322992">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:205</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:208</note>
       </notes>
       <segment>
         <source>Registrar sessão</source>
@@ -3596,7 +3607,7 @@
     </unit>
     <unit id="670956294023636951">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:218,219</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:221,222</note>
       </notes>
       <segment>
         <source>Resultado desta sessão</source>
@@ -3604,7 +3615,7 @@
     </unit>
     <unit id="2478114331770580390">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:222</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:225</note>
       </notes>
       <segment>
         <source>Lucro líquido por hora</source>
@@ -3612,7 +3623,7 @@
     </unit>
     <unit id="899634115244094127">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:226</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:229</note>
       </notes>
       <segment>
         <source>Lucro da sessão</source>
@@ -3620,7 +3631,7 @@
     </unit>
     <unit id="8719503825127836594">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:230</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:233</note>
       </notes>
       <segment>
         <source>Prata por energia</source>
@@ -3628,7 +3639,7 @@
     </unit>
     <unit id="3696664955721124167">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:234</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:237</note>
       </notes>
       <segment>
         <source>Receita total líquida</source>
@@ -3636,7 +3647,7 @@
     </unit>
     <unit id="7415181193553316789">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:238</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:241</note>
       </notes>
       <segment>
         <source>Venda de mercado líquida</source>
@@ -3644,7 +3655,7 @@
     </unit>
     <unit id="530850466971317706">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:247,249</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:250,252</note>
       </notes>
       <segment>
         <source>Os resultados descrevem seus drops e preços informados. Efeitos de mastery, pets, Agris e buffs ficam refletidos nos valores observados; a ferramenta não prevê drops sem uma tabela validada. </source>
@@ -3652,7 +3663,7 @@
     </unit>
     <unit id="7900444554366131530">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:256,257</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:259,260</note>
       </notes>
       <segment>
         <source>Comparações e histórico</source>
@@ -3660,7 +3671,7 @@
     </unit>
     <unit id="5091904646088555504">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:258,260</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:261,263</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ number(sessions().length) }}"/> sessões salvas · <ph id="1" equiv="INTERPOLATION_1" disp="{{ number(comparisons().length) }}"/> grupos comparáveis </source>
@@ -3668,7 +3679,7 @@
     </unit>
     <unit id="8857583541409574360">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:271,272</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:274,275</note>
       </notes>
       <segment>
         <source> Compare suas atividades · <ph id="0" equiv="INTERPOLATION" disp="{{ store.data().region.toUpperCase() }}"/> </source>
@@ -3676,7 +3687,7 @@
     </unit>
     <unit id="2663929285672502801">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:274,275</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:277,278</note>
       </notes>
       <segment>
         <source> Ordenado por prata líquida/h observada: lucro total dividido pelo tempo total, sem média simples das taxas. Cada linha reúne a mesma rota, profissão, maestria e modo informados. </source>
@@ -3684,7 +3695,7 @@
     </unit>
     <unit id="493479140760411996">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:282,283</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:285,286</note>
       </notes>
       <segment>
         <source>Comparação das sessões observadas</source>
@@ -3692,7 +3703,7 @@
     </unit>
     <unit id="3008360544811291671">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:288,289</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:291,292</note>
       </notes>
       <segment>
         <source>Atividade / contexto</source>
@@ -3700,7 +3711,7 @@
     </unit>
     <unit id="8625139134309972221">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:289,290</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:292,293</note>
       </notes>
       <segment>
         <source>Amostra</source>
@@ -3708,7 +3719,7 @@
     </unit>
     <unit id="8303333585359769006">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:290,291</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:293,294</note>
       </notes>
       <segment>
         <source>Tempo total</source>
@@ -3716,7 +3727,7 @@
     </unit>
     <unit id="8094033910657894192">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:291,292</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:294,295</note>
       </notes>
       <segment>
         <source>Lucro total</source>
@@ -3724,7 +3735,7 @@
     </unit>
     <unit id="3169644854832192947">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:292,293</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:295,296</note>
       </notes>
       <segment>
         <source>Prata líquida / h</source>
@@ -3732,7 +3743,7 @@
     </unit>
     <unit id="7119400882931698896">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:293,294</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:296,297</note>
       </notes>
       <segment>
         <source>Período registrado</source>
@@ -3740,7 +3751,7 @@
     </unit>
     <unit id="2685211449323418741">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:308</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:311</note>
       </notes>
       <segment>
         <source>Modo não informado</source>
@@ -3748,7 +3759,7 @@
     </unit>
     <unit id="1986777558298476711">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:312,313</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:315,316</note>
       </notes>
       <segment>
         <source>Maestria <ph id="0" equiv="INTERPOLATION" disp="{{ number(row.mastery) }}"/></source>
@@ -3756,7 +3767,7 @@
     </unit>
     <unit id="3790163790209472738">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:314</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:317</note>
       </notes>
       <segment>
         <source>Maestria não informada</source>
@@ -3764,7 +3775,7 @@
     </unit>
     <unit id="8101759739015275149">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:319,320</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:322,323</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(row.count) }}"/> sessões</source>
@@ -3772,9 +3783,9 @@
     </unit>
     <unit id="771135449401995553">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:322,323</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:354</note>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:381,382</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:325,326</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:357</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:384,385</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(row.minutes, 3) }}"/> min</source>
@@ -3782,7 +3793,7 @@
     </unit>
     <unit id="7320803800960882205">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:337,339</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:340,342</note>
       </notes>
       <segment>
         <source> São observações pessoais com os preços e impostos registrados, sem atualização para a cotação atual. Patch, equipamento e buffs podem variar dentro da amostra. Não é uma comparação controlada, previsão por maestria ou garantia de drops e vendas. Uma sessão ainda é uma amostra limitada. </source>
@@ -3790,7 +3801,7 @@
     </unit>
     <unit id="5455975752106158525">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:352</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:355</note>
       </notes>
       <segment>
         <source>Tempo registrado</source>
@@ -3798,7 +3809,7 @@
     </unit>
     <unit id="5618241373003643775">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:358</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:361</note>
       </notes>
       <segment>
         <source>Média ponderada por tempo</source>
@@ -3806,7 +3817,7 @@
     </unit>
     <unit id="6444574648585262769">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:360</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:363</note>
       </notes>
       <segment>
         <source>Prata líquida / hora</source>
@@ -3814,7 +3825,7 @@
     </unit>
     <unit id="2243466991987287932">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:368</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:371</note>
         <note category="location">src/app/features/recipes/recipes-page.html:175</note>
       </notes>
       <segment>
@@ -3823,7 +3834,7 @@
     </unit>
     <unit id="4253859887130477233">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:371</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:374</note>
       </notes>
       <segment>
         <source>Lucro</source>
@@ -3831,7 +3842,7 @@
     </unit>
     <unit id="7865357932564430295">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:392</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:395</note>
       </notes>
       <segment>
         <source>Usar cenário </source>
@@ -3839,7 +3850,7 @@
     </unit>
     <unit id="4422929910433764457">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:411</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:414</note>
       </notes>
       <segment>
         <source>Registre uma sessão para comparar o rendimento.</source>
@@ -3847,7 +3858,7 @@
     </unit>
     <unit id="1063528583270611747">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:420,421</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:423,424</note>
       </notes>
       <segment>
         <source> Esta ferramenta continua disponível por links salvos, mas saiu da navegação principal. Os valores e presets existentes foram mantidos. </source>
@@ -3855,7 +3866,7 @@
     </unit>
     <unit id="5614071150706749468">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:424,425</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:427,428</note>
       </notes>
       <segment>
         <source> Voltar para sessões observadas </source>
@@ -3863,7 +3874,7 @@
     </unit>
     <unit id="3577050251951603299">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:432</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:435</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:75</note>
       </notes>
       <segment>
@@ -3872,7 +3883,7 @@
     </unit>
     <unit id="4903747183952962974">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:435</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:438</note>
       </notes>
       <segment>
         <source>Custo líquido do upgrade</source>
@@ -3880,7 +3891,7 @@
     </unit>
     <unit id="7629338369528379700">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:442</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:445</note>
       </notes>
       <segment>
         <source>Lucro atual por hora</source>
@@ -3888,7 +3899,7 @@
     </unit>
     <unit id="147627241420474673">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:449</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:452</note>
       </notes>
       <segment>
         <source>Lucro previsto / medido por hora</source>
@@ -3896,7 +3907,7 @@
     </unit>
     <unit id="798528917459435352">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:456</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:459</note>
       </notes>
       <segment>
         <source>Horas de atividade por dia</source>
@@ -3904,7 +3915,7 @@
     </unit>
     <unit id="5978874357105245757">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:477</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:480</note>
       </notes>
       <segment>
         <source>Tempo para recuperar investimento</source>
@@ -3912,7 +3923,7 @@
     </unit>
     <unit id="6703852925549613439">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:483</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:486</note>
       </notes>
       <segment>
         <source>Ganho por hora</source>
@@ -3920,7 +3931,7 @@
     </unit>
     <unit id="4652564419311027260">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:487</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:490</note>
       </notes>
       <segment>
         <source>Dias de atividade</source>
@@ -3928,7 +3939,7 @@
     </unit>
     <unit id="6224031242259962060">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:496,497</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:499,500</note>
       </notes>
       <segment>
         <source>Uma projeção linear sobre sua diferença de lucro/hora. Não inclui variações de preço, estoque ou tempo de compra do upgrade. </source>
@@ -3936,7 +3947,7 @@
     </unit>
     <unit id="8880706982712317742">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:507</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:510</note>
       </notes>
       <segment>
         <source>Estimador de XP</source>
@@ -3944,7 +3955,7 @@
     </unit>
     <unit id="7895743537841121363">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:510</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:513</note>
       </notes>
       <segment>
         <source>XP que falta para o alvo</source>
@@ -3952,7 +3963,7 @@
     </unit>
     <unit id="4841934776353175570">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:518</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:521</note>
       </notes>
       <segment>
         <source>XP por hora medido</source>
@@ -3960,7 +3971,7 @@
     </unit>
     <unit id="6062062311080852481">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:527</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:530</note>
       </notes>
       <segment>
         <source>Duração de cada sessão (minutos)</source>
@@ -3968,7 +3979,7 @@
     </unit>
     <unit id="6685564502508561749">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:547</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:550</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:78</note>
       </notes>
       <segment>
@@ -3977,7 +3988,7 @@
     </unit>
     <unit id="6056494583249463538">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:549</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:552</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ number(r.hours, 3) }}"/> h</source>
@@ -3985,7 +3996,7 @@
     </unit>
     <unit id="7765396290906459528">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:553</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:556</note>
       </notes>
       <segment>
         <source>Sessões necessárias</source>
@@ -3993,7 +4004,7 @@
     </unit>
     <unit id="5686246151353888710">
       <notes>
-        <note category="location">src/app/features/lifeskills/lifeskills-page.html:562,563</note>
+        <note category="location">src/app/features/lifeskills/lifeskills-page.html:565,566</note>
       </notes>
       <segment>
         <source>Usa sua taxa de XP com os buffs já incluídos. Ainda não há tabela automática de níveis, breeding ou stats de cavalos. </source>
@@ -5181,7 +5192,7 @@
     <unit id="4875107781438253519">
       <notes>
         <note category="location">src/app/features/recipes/recipes-page.html:204,205</note>
-        <note category="location">src/app/features/scans/scans-page.html:760</note>
+        <note category="location">src/app/features/scans/scans-page.html:823</note>
         <note category="location">src/app/features/storage/storage-page.html:209</note>
       </notes>
       <segment>
@@ -5234,7 +5245,7 @@
     </unit>
     <unit id="6085595095726732742">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:215,216</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:246,247</note>
       </notes>
       <segment>
         <source>Ocultar itens com baixa atividade conhecida</source>
@@ -5242,7 +5253,7 @@
     </unit>
     <unit id="3801265823162311633">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:218,219</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:249,250</note>
       </notes>
       <segment>
         <source> Usa negociações acumuladas e registro de última venda. Dados ausentes permanecem visíveis; isso não mede vendas por dia nem garante liquidez. </source>
@@ -5250,7 +5261,7 @@
     </unit>
     <unit id="8822963951110133710">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:358,359</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:389,390</note>
       </notes>
       <segment>
         <source> Comparar lucro/h da receita e das subreceitas (<ph id="0" equiv="INTERPOLATION" disp="{{ chain.length }}"/>) </source>
@@ -5258,7 +5269,7 @@
     </unit>
     <unit id="552536289157314340">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:361,363</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:392,394</note>
       </notes>
       <segment>
         <source> Cada linha simula produzir e vender esse produto separadamente, com o mesmo personagem, preços e limites da sessão. O tempo inclui as etapas produzidas no cenário indicado. Não some os lucros: as alternativas usam os mesmos recursos. </source>
@@ -5266,7 +5277,7 @@
     </unit>
     <unit id="2675230851304212436">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:377,378</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:408,409</note>
       </notes>
       <segment>
         <source>Receita final</source>
@@ -5274,7 +5285,7 @@
     </unit>
     <unit id="2430836280731066806">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:379,380</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:410,411</note>
       </notes>
       <segment>
         <source>Subreceita · nível <ph id="0" equiv="INTERPOLATION" disp="{{ part.depth }}"/></source>
@@ -5282,7 +5293,7 @@
     </unit>
     <unit id="7557033353995670168">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:393,394</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:424,425</note>
       </notes>
       <segment>
         <source>Supera o lucro/h da final</source>
@@ -5290,7 +5301,7 @@
     </unit>
     <unit id="903657676227336926">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:399,400</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:430,431</note>
       </notes>
       <segment>
         <source>Lucro líquido/h</source>
@@ -5298,7 +5309,7 @@
     </unit>
     <unit id="4065306257840930879">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:410,411</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:441,442</note>
       </notes>
       <segment>
         <source>Lucro do lote</source>
@@ -5306,7 +5317,7 @@
     </unit>
     <unit id="1049887966519098090">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:420,421</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:451,452</note>
       </notes>
       <segment>
         <source>Tempo do lote</source>
@@ -5314,7 +5325,7 @@
     </unit>
     <unit id="3281725698593127163">
       <notes>
-        <note category="location">src/app/features/recommendations/recommendations-page.html:438,439</note>
+        <note category="location">src/app/features/recommendations/recommendations-page.html:469,470</note>
       </notes>
       <segment>
         <source>Baixa atividade de venda conhecida</source>
@@ -5847,7 +5858,7 @@
     <unit id="812363076773060252">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:226</note>
-        <note category="location">src/app/features/scans/scans-page.html:1045</note>
+        <note category="location">src/app/features/scans/scans-page.html:1210</note>
         <note category="location">src/app/features/stock/stock-page.html:254</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.html:176</note>
         <note category="location">src/app/features/world/worker-empire.html:193</note>
@@ -5869,7 +5880,7 @@
     <unit id="2759773909798147145">
       <notes>
         <note category="location">src/app/features/roadmap/roadmap-manage-page.html:248,249</note>
-        <note category="location">src/app/features/scans/scans-page.html:245,246</note>
+        <note category="location">src/app/features/scans/scans-page.html:257,258</note>
       </notes>
       <segment>
         <source>Tipo</source>
@@ -6535,7 +6546,7 @@
     </unit>
     <unit id="8873950304158869433">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:102,103</note>
+        <note category="location">src/app/features/scans/scans-page.html:114,115</note>
       </notes>
       <segment>
         <source>Preparando as capturas…</source>
@@ -6543,7 +6554,7 @@
     </unit>
     <unit id="4555479638828962627">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:103</note>
+        <note category="location">src/app/features/scans/scans-page.html:115</note>
       </notes>
       <segment>
         <source>Preparando imagens</source>
@@ -6551,7 +6562,7 @@
     </unit>
     <unit id="1927119469060584789">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:110,111</note>
+        <note category="location">src/app/features/scans/scans-page.html:122,123</note>
       </notes>
       <segment>
         <source>LOTE EM REVISÃO</source>
@@ -6559,8 +6570,8 @@
     </unit>
     <unit id="1133541169935743896">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:111,112</note>
-        <note category="location">src/app/features/scans/scans-page.html:309</note>
+        <note category="location">src/app/features/scans/scans-page.html:123,124</note>
+        <note category="location">src/app/features/scans/scans-page.html:321</note>
       </notes>
       <segment>
         <source>Revisar capturas</source>
@@ -6568,7 +6579,7 @@
     </unit>
     <unit id="7707985063758304620">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:113,114</note>
+        <note category="location">src/app/features/scans/scans-page.html:125,126</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ jobs().length }}"/> capturas no lote</source>
@@ -6576,7 +6587,7 @@
     </unit>
     <unit id="8378134304623099904">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:116,117</note>
+        <note category="location">src/app/features/scans/scans-page.html:128,129</note>
       </notes>
       <segment>
         <source> Aguardando revisão manual. Sugestões de OCR não são aplicadas automaticamente. </source>
@@ -6584,7 +6595,7 @@
     </unit>
     <unit id="3521687388155156840">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:119,120</note>
+        <note category="location">src/app/features/scans/scans-page.html:131,132</note>
       </notes>
       <segment>
         <source> Compare cada resultado com a imagem, corrija os campos e confirme somente os itens revisados. </source>
@@ -6592,7 +6603,7 @@
     </unit>
     <unit id="1504071099218257490">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:126,127</note>
+        <note category="location">src/app/features/scans/scans-page.html:138,139</note>
       </notes>
       <segment>
         <source>Adicionar personagem sem sair da importação</source>
@@ -6600,7 +6611,7 @@
     </unit>
     <unit id="4872212077553293896">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:140,141</note>
+        <note category="location">src/app/features/scans/scans-page.html:152,153</note>
       </notes>
       <segment>
         <source> Criar e usar neste lote </source>
@@ -6608,7 +6619,7 @@
     </unit>
     <unit id="9036110015456201120">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:148,149</note>
+        <note category="location">src/app/features/scans/scans-page.html:160,161</note>
       </notes>
       <segment>
         <source>1. Escolha a captura</source>
@@ -6616,7 +6627,7 @@
     </unit>
     <unit id="4352528382880352415">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:150,151</note>
+        <note category="location">src/app/features/scans/scans-page.html:162,163</note>
       </notes>
       <segment>
         <source>Como preparar uma boa captura</source>
@@ -6624,7 +6635,7 @@
     </unit>
     <unit id="457977840472907338">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:152,153</note>
+        <note category="location">src/app/features/scans/scans-page.html:164,165</note>
       </notes>
       <segment>
         <source>Abra o armazém, inventário ou a ficha do personagem no jogo.</source>
@@ -6632,7 +6643,7 @@
     </unit>
     <unit id="2822644062124123500">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:153,154</note>
+        <note category="location">src/app/features/scans/scans-page.html:165,166</note>
       </notes>
       <segment>
         <source>Faça uma captura nítida, sem janelas cobrindo os itens ou números.</source>
@@ -6640,7 +6651,7 @@
     </unit>
     <unit id="4430271462523776426">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:155,156</note>
+        <note category="location">src/app/features/scans/scans-page.html:167,168</note>
       </notes>
       <segment>
         <source> Você pode usar a janela inteira: tentaremos localizar a grade de itens. Revise cada captura; imagens sobrepostas não são somadas automaticamente. </source>
@@ -6648,7 +6659,7 @@
     </unit>
     <unit id="5308656495984952463">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:164,165</note>
+        <note category="location">src/app/features/scans/scans-page.html:176,177</note>
       </notes>
       <segment>
         <source>Área para colar ou arrastar uma captura do jogo</source>
@@ -6656,7 +6667,7 @@
     </unit>
     <unit id="2651499722490438276">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:170,171</note>
+        <note category="location">src/app/features/scans/scans-page.html:182,183</note>
       </notes>
       <segment>
         <source>Cole ou arraste seu print aqui</source>
@@ -6664,7 +6675,7 @@
     </unit>
     <unit id="6801204218665900747">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:172,173</note>
+        <note category="location">src/app/features/scans/scans-page.html:184,185</note>
       </notes>
       <segment>
         <source> No Windows, capture com Win + Shift + S. Depois, clique nesta área ou chegue até ela com Tab e pressione Ctrl + V. </source>
@@ -6672,7 +6683,7 @@
     </unit>
     <unit id="5840740833984057186">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:176,177</note>
+        <note category="location">src/app/features/scans/scans-page.html:188,189</note>
       </notes>
       <segment>
         <source> Até oito capturas por lote. PNG, JPG ou WebP, até 10 MB e 12 megapixels por imagem. </source>
@@ -6680,7 +6691,7 @@
     </unit>
     <unit id="5914171301035705368">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:179,180</note>
+        <note category="location">src/app/features/scans/scans-page.html:191,192</note>
       </notes>
       <segment>
         <source>Escolher imagem PNG, JPG ou WebP — até 10 MB</source>
@@ -6688,7 +6699,7 @@
     </unit>
     <unit id="2293564707071808604">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:189,190</note>
+        <note category="location">src/app/features/scans/scans-page.html:201,202</note>
       </notes>
       <segment>
         <source> A primeira leitura pode levar mais tempo para preparar os arquivos de reconhecimento. A leitura pode confundir itens e números. </source>
@@ -6696,7 +6707,7 @@
     </unit>
     <unit id="6216653318320892974">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:198</note>
+        <note category="location">src/app/features/scans/scans-page.html:210</note>
       </notes>
       <segment>
         <source>Analisar automaticamente quando a área de leitura estiver clara</source>
@@ -6704,7 +6715,7 @@
     </unit>
     <unit id="8154691243594736993">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:207,208</note>
+        <note category="location">src/app/features/scans/scans-page.html:219,220</note>
       </notes>
       <segment>
         <source>Capturas do lote · <ph id="0" equiv="INTERPOLATION" disp="{{ jobs().length }}"/> / 8</source>
@@ -6712,7 +6723,7 @@
     </unit>
     <unit id="3384165462280606276">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:211,212</note>
+        <note category="location">src/app/features/scans/scans-page.html:223,224</note>
       </notes>
       <segment>
         <source>Imagens e destinos · <ph id="0" equiv="INTERPOLATION" disp="{{ jobs().length }}"/> capturas</source>
@@ -6720,7 +6731,7 @@
     </unit>
     <unit id="5047261573041304562">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:225,226</note>
+        <note category="location">src/app/features/scans/scans-page.html:237,238</note>
       </notes>
       <segment>
         <source>Captura <ph id="0" equiv="INTERPOLATION" disp="{{ i + 1 }}"/></source>
@@ -6728,7 +6739,7 @@
     </unit>
     <unit id="592326334907919733">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:243,244</note>
+        <note category="location">src/app/features/scans/scans-page.html:255,256</note>
       </notes>
       <segment>
         <source>Destino da captura <ph id="0" equiv="INTERPOLATION" disp="{{ i + 1 }}"/></source>
@@ -6736,7 +6747,7 @@
     </unit>
     <unit id="7554741104688909052">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:247,248</note>
+        <note category="location">src/app/features/scans/scans-page.html:259,260</note>
         <note category="location">src/app/features/stock/stock-page.html:4,5</note>
         <note category="location">src/app/features/storage/storage-page.html:23</note>
         <note category="location">src/app/layout/workspace-layout.ts:311</note>
@@ -6748,7 +6759,7 @@
     </unit>
     <unit id="5064270658838391784">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:248,249</note>
+        <note category="location">src/app/features/scans/scans-page.html:260,261</note>
       </notes>
       <segment>
         <source>Inventário</source>
@@ -6756,7 +6767,7 @@
     </unit>
     <unit id="8583936351373065596">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:249,250</note>
+        <note category="location">src/app/features/scans/scans-page.html:261,262</note>
       </notes>
       <segment>
         <source>Equipamentos</source>
@@ -6764,7 +6775,7 @@
     </unit>
     <unit id="8199027669788513292">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:254,260</note>
+        <note category="location">src/app/features/scans/scans-page.html:266,272</note>
         <note category="location">src/app/features/stock/stock-page.html:350,352</note>
       </notes>
       <segment>
@@ -6778,7 +6789,7 @@
     </unit>
     <unit id="1731487217149997950">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:268,269</note>
+        <note category="location">src/app/features/scans/scans-page.html:280,281</note>
         <note category="location">src/app/features/stock/stock-page.html:356,357</note>
       </notes>
       <segment>
@@ -6787,7 +6798,7 @@
     </unit>
     <unit id="2155273575128843224">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:274,275</note>
+        <note category="location">src/app/features/scans/scans-page.html:286,287</note>
       </notes>
       <segment>
         <source>Você pode criar um personagem no início desta página sem perder o lote.</source>
@@ -6795,7 +6806,7 @@
     </unit>
     <unit id="1757585367162070632">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:279</note>
+        <note category="location">src/app/features/scans/scans-page.html:291</note>
       </notes>
       <segment>
         <source> Remover</source>
@@ -6803,7 +6814,7 @@
     </unit>
     <unit id="5799532387019103635">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:281,286</note>
+        <note category="location">src/app/features/scans/scans-page.html:293,298</note>
       </notes>
       <segment>
         <source>Substituir imagem<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6815,7 +6826,7 @@
     </unit>
     <unit id="6968897891593771596">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:300,302</note>
+        <note category="location">src/app/features/scans/scans-page.html:312,314</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ job.cells.length }}"/> espaços para revisão · <ph id="1" equiv="INTERPOLATION_1" disp="{{ job.emptySlots }}"/> vazios ignorados </source>
@@ -6823,7 +6834,7 @@
     </unit>
     <unit id="4830089048371676975">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:320,321</note>
+        <note category="location">src/app/features/scans/scans-page.html:332,333</note>
       </notes>
       <segment>
         <source> Captura <ph id="0" equiv="INTERPOLATION" disp="{{ i + 1 }}"/> · <ph id="1" equiv="INTERPOLATION_1" disp="{{ job.cells.length }}"/> itens </source>
@@ -6831,7 +6842,7 @@
     </unit>
     <unit id="1060288842935396932">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:335,336</note>
+        <note category="location">src/app/features/scans/scans-page.html:347,348</note>
       </notes>
       <segment>
         <source> Analisar lote </source>
@@ -6839,7 +6850,7 @@
     </unit>
     <unit id="7716568487966678047">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:340,342</note>
+        <note category="location">src/app/features/scans/scans-page.html:352,354</note>
       </notes>
       <segment>
         <source> Última análise do lote: <ph id="0" equiv="INTERPOLATION" disp="{{ (batchElapsedMs() / 1000).toFixed(1) }}"/> segundos. O tempo depende dos recortes e da qualidade das imagens. </source>
@@ -6847,7 +6858,7 @@
     </unit>
     <unit id="4530036672257056591">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:351</note>
+        <note category="location">src/app/features/scans/scans-page.html:363</note>
       </notes>
       <segment>
         <source> Cancelar análise </source>
@@ -6855,7 +6866,7 @@
     </unit>
     <unit id="1602933865832806124">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:375,377</note>
+        <note category="location">src/app/features/scans/scans-page.html:387,389</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ columns }}"/> colunas × <ph id="1" equiv="INTERPOLATION_1" disp="{{ rows }}"/> linhas · <ph id="2" equiv="INTERPOLATION_2" disp="{{ columns * rows }}"/> espaços. Confira se o contorno cobre todos os itens e deixa os menus de fora. </source>
@@ -6863,7 +6874,7 @@
     </unit>
     <unit id="646314903556355378">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:386</note>
+        <note category="location">src/app/features/scans/scans-page.html:398</note>
       </notes>
       <segment>
         <source> Encontrar grade de itens </source>
@@ -6871,7 +6882,7 @@
     </unit>
     <unit id="1273998211786483948">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:392,393</note>
+        <note category="location">src/app/features/scans/scans-page.html:404,405</note>
       </notes>
       <segment>
         <source>Grades encontradas na captura</source>
@@ -6879,7 +6890,7 @@
     </unit>
     <unit id="632857356186649426">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:405,406</note>
+        <note category="location">src/app/features/scans/scans-page.html:417,418</note>
       </notes>
       <segment>
         <source> Área <ph id="0" equiv="INTERPOLATION" disp="{{ $index + 1 }}"/> · <ph id="1" equiv="INTERPOLATION_1" disp="{{ area.columns }}"/> × <ph id="2" equiv="INTERPOLATION_2" disp="{{ area.rows }}"/> </source>
@@ -6887,7 +6898,7 @@
     </unit>
     <unit id="8336833134387413563">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:410</note>
+        <note category="location">src/app/features/scans/scans-page.html:422</note>
       </notes>
       <segment>
         <source> Há mais de uma grade. Escolha a área do armazém ou inventário que deseja importar. </source>
@@ -6895,7 +6906,7 @@
     </unit>
     <unit id="8254935622119688065">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:423,424</note>
+        <note category="location">src/app/features/scans/scans-page.html:435,436</note>
       </notes>
       <segment>
         <source> Selecionar área manualmente </source>
@@ -6903,7 +6914,7 @@
     </unit>
     <unit id="481201233565031131">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:426,427</note>
+        <note category="location">src/app/features/scans/scans-page.html:438,439</note>
       </notes>
       <segment>
         <source> Ative a seleção e arraste sobre a área desejada. Você também pode ajustar o recorte pelos campos abaixo. </source>
@@ -6911,7 +6922,7 @@
     </unit>
     <unit id="5309401584729725476">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:444,445</note>
+        <note category="location">src/app/features/scans/scans-page.html:456,457</note>
       </notes>
       <segment>
         <source>Captura selecionada para revisão</source>
@@ -6919,7 +6930,7 @@
     </unit>
     <unit id="2992367835312898641">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:460</note>
+        <note category="location">src/app/features/scans/scans-page.html:472</note>
       </notes>
       <segment>
         <source>pixels. O contorno mostra a área que será lida.</source>
@@ -6927,7 +6938,7 @@
     </unit>
     <unit id="3489349583935352221">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:464,465</note>
+        <note category="location">src/app/features/scans/scans-page.html:476,477</note>
       </notes>
       <segment>
         <source>Preparar leitura</source>
@@ -6935,7 +6946,7 @@
     </unit>
     <unit id="454621098722173648">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:466,467</note>
+        <note category="location">src/app/features/scans/scans-page.html:478,479</note>
       </notes>
       <segment>
         <source>Ajustar área e tamanho da grade</source>
@@ -6943,7 +6954,7 @@
     </unit>
     <unit id="8465199387263079426">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:469,476</note>
+        <note category="location">src/app/features/scans/scans-page.html:481,488</note>
       </notes>
       <segment>
         <source>Distância da esquerda<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6957,7 +6968,7 @@
     </unit>
     <unit id="275754189731370309">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:477,484</note>
+        <note category="location">src/app/features/scans/scans-page.html:489,496</note>
       </notes>
       <segment>
         <source>Distância do topo<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6971,7 +6982,7 @@
     </unit>
     <unit id="2348311108727912387">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:485,492</note>
+        <note category="location">src/app/features/scans/scans-page.html:497,504</note>
       </notes>
       <segment>
         <source>Largura<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -6985,7 +6996,7 @@
     </unit>
     <unit id="3595729035807470825">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:493,501</note>
+        <note category="location">src/app/features/scans/scans-page.html:505,513</note>
       </notes>
       <segment>
         <source>Altura<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -7000,7 +7011,7 @@
     </unit>
     <unit id="8612469198670305253">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:505,507</note>
+        <note category="location">src/app/features/scans/scans-page.html:517,519</note>
       </notes>
       <segment>
         <source> Tentaremos detectar molduras de equipamentos na área selecionada. Se não funcionar, recorte um ícone e use uma linha e uma coluna. Posições e símbolos de aprimoramento são sugestões para revisar. Caphras precisa ser informado no jogo. </source>
@@ -7008,7 +7019,7 @@
     </unit>
     <unit id="3295962296271023545">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:512,519</note>
+        <note category="location">src/app/features/scans/scans-page.html:529,536</note>
       </notes>
       <segment>
         <source>Colunas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -7022,7 +7033,7 @@
     </unit>
     <unit id="7047093881134054108">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:520,528</note>
+        <note category="location">src/app/features/scans/scans-page.html:537,545</note>
       </notes>
       <segment>
         <source>Linhas da grade<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -7037,7 +7048,7 @@
     </unit>
     <unit id="2994322465678969257">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:529,530</note>
+        <note category="location">src/app/features/scans/scans-page.html:546,547</note>
       </notes>
       <segment>
         <source> O recorte deve começar e terminar nas bordas dos espaços, com tamanhos iguais. Máximo de 400 espaços por leitura. </source>
@@ -7045,7 +7056,7 @@
     </unit>
     <unit id="1838635548008242722">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:535,536</note>
+        <note category="location">src/app/features/scans/scans-page.html:552,553</note>
       </notes>
       <segment>
         <source> Recorte somente os dígitos de um valor, sem o nome do campo. Valores abreviados, como “1,2 M”, precisam ser digitados por completo. </source>
@@ -7053,7 +7064,7 @@
     </unit>
     <unit id="6822143513731283223">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:542,543</note>
+        <note category="location">src/app/features/scans/scans-page.html:559,560</note>
       </notes>
       <segment>
         <source>O que deseja ler?</source>
@@ -7061,7 +7072,7 @@
     </unit>
     <unit id="8136888903455916850">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:544,545</note>
+        <note category="location">src/app/features/scans/scans-page.html:562,563</note>
         <note category="location">src/app/features/stock/stock-page.html:28</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:63</note>
       </notes>
@@ -7071,7 +7082,7 @@
     </unit>
     <unit id="2271731069847673952">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:545,546</note>
+        <note category="location">src/app/features/scans/scans-page.html:563,564</note>
       </notes>
       <segment>
         <source>Itens do inventário do personagem</source>
@@ -7079,7 +7090,7 @@
     </unit>
     <unit id="2524505700813305496">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:547,548</note>
+        <note category="location">src/app/features/scans/scans-page.html:565,566</note>
       </notes>
       <segment>
         <source>Um número do personagem</source>
@@ -7087,7 +7098,7 @@
     </unit>
     <unit id="3142703807081676478">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:549,550</note>
+        <note category="location">src/app/features/scans/scans-page.html:567,568</note>
       </notes>
       <segment>
         <source>Equipamento do personagem</source>
@@ -7095,7 +7106,7 @@
     </unit>
     <unit id="5720859242498472532">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:560</note>
+        <note category="location">src/app/features/scans/scans-page.html:579</note>
       </notes>
       <segment>
         <source> Ler itens e valores </source>
@@ -7103,7 +7114,7 @@
     </unit>
     <unit id="2964952329552063086">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:572,573</note>
+        <note category="location">src/app/features/scans/scans-page.html:607,608</note>
       </notes>
       <segment>
         <source>3. Confira o valor</source>
@@ -7111,8 +7122,8 @@
     </unit>
     <unit id="1281581865498556620">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:575,576</note>
-        <note category="location">src/app/features/scans/scans-page.html:681,682</note>
+        <note category="location">src/app/features/scans/scans-page.html:610,611</note>
+        <note category="location">src/app/features/scans/scans-page.html:744,745</note>
       </notes>
       <segment>
         <source>Escolha seu personagem</source>
@@ -7120,7 +7131,7 @@
     </unit>
     <unit id="5969162379260698013">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:580,581</note>
+        <note category="location">src/app/features/scans/scans-page.html:615,616</note>
       </notes>
       <segment>
         <source>Campo a atualizar</source>
@@ -7128,7 +7139,7 @@
     </unit>
     <unit id="4319224908287478286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:590,591</note>
+        <note category="location">src/app/features/scans/scans-page.html:625,626</note>
       </notes>
       <segment>
         <source>Valor inteiro, sem abreviações</source>
@@ -7136,7 +7147,7 @@
     </unit>
     <unit id="5575606554895118761">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:600</note>
+        <note category="location">src/app/features/scans/scans-page.html:635</note>
       </notes>
       <segment>
         <source>Conferi o personagem, o campo e o valor no jogo.</source>
@@ -7144,7 +7155,7 @@
     </unit>
     <unit id="7637283586747146162">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:603,604</note>
+        <note category="location">src/app/features/scans/scans-page.html:638,639</note>
       </notes>
       <segment>
         <source> Atualizar personagem </source>
@@ -7152,7 +7163,7 @@
     </unit>
     <unit id="5896165678541159952">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:609,610</note>
+        <note category="location">src/app/features/scans/scans-page.html:644,645</note>
       </notes>
       <segment>
         <source>Revisar itens</source>
@@ -7160,7 +7171,7 @@
     </unit>
     <unit id="6288362718535968428">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:610,611</note>
+        <note category="location">src/app/features/scans/scans-page.html:645,646</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="INTERPOLATION" disp="{{ pendingBatchCount() }}"/> pendentes</source>
@@ -7168,7 +7179,7 @@
     </unit>
     <unit id="7586384595609631291">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:612,613</note>
+        <note category="location">src/app/features/scans/scans-page.html:647,648</note>
       </notes>
       <segment>
         <source>Compare com a captura, corrija as dúvidas e inclua os itens conferidos.</source>
@@ -7176,7 +7187,7 @@
     </unit>
     <unit id="4548753312160863314">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:615,617</note>
+        <note category="location">src/app/features/scans/scans-page.html:678,680</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ cells().length }}"/></pc> espaços</source>
@@ -7184,7 +7195,7 @@
     </unit>
     <unit id="8035658332526107896">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:618,620</note>
+        <note category="location">src/app/features/scans/scans-page.html:681,683</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ suggestionCount() }}"/></pc> com sugestões</source>
@@ -7192,7 +7203,7 @@
     </unit>
     <unit id="7873561528728802317">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:621,623</note>
+        <note category="location">src/app/features/scans/scans-page.html:684,686</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ includedCount() }}"/></pc> conferidos e incluídos</source>
@@ -7200,7 +7211,7 @@
     </unit>
     <unit id="6035680699048106286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:625,626</note>
+        <note category="location">src/app/features/scans/scans-page.html:688,689</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ abbreviatedCount() }}"/></pc> quantidades abreviadas</source>
@@ -7208,7 +7219,7 @@
     </unit>
     <unit id="4327248618256060">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:631,632</note>
+        <note category="location">src/app/features/scans/scans-page.html:694,695</note>
         <note category="location">src/app/features/tutorials/tutorials-manage-page.ts:60</note>
       </notes>
       <segment>
@@ -7217,7 +7228,7 @@
     </unit>
     <unit id="4001653540437124151">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:633,636</note>
+        <note category="location">src/app/features/scans/scans-page.html:696,699</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ importableCount() }}"/></pc> itens prontos ou validados podem ser salvos. <pc id="2" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="3" equiv="INTERPOLATION_1" disp="{{ pendingBatchCount() }}"/></pc> pendentes ficam fora até a validação. </source>
@@ -7225,7 +7236,7 @@
     </unit>
     <unit id="259685059878365951">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:659,660</note>
+        <note category="location">src/app/features/scans/scans-page.html:722,723</note>
       </notes>
       <segment>
         <source> Incluir <ph id="0" equiv="INTERPOLATION" disp="{{ reliableBatchCount() }}"/> confiáveis </source>
@@ -7233,7 +7244,7 @@
     </unit>
     <unit id="2120179952775178005">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:665,666</note>
+        <note category="location">src/app/features/scans/scans-page.html:728,729</note>
       </notes>
       <segment>
         <source>Local deste estoque</source>
@@ -7241,7 +7252,7 @@
     </unit>
     <unit id="7614734107185171452">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:689,690</note>
+        <note category="location">src/app/features/scans/scans-page.html:752,753</note>
       </notes>
       <segment>
         <source>PA e PD da ficha</source>
@@ -7249,7 +7260,7 @@
     </unit>
     <unit id="8447812525986631097">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:691,692</note>
+        <note category="location">src/app/features/scans/scans-page.html:754,755</note>
       </notes>
       <segment>
         <source> Confira os números no jogo. Campos vazios preservam os valores anteriores; os atributos não são calculados pelos ícones. </source>
@@ -7257,7 +7268,7 @@
     </unit>
     <unit id="6698332977808200719">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:713,714</note>
+        <note category="location">src/app/features/scans/scans-page.html:776,777</note>
       </notes>
       <segment>
         <source>Conferi PA e PD. Atualizar os campos preenchidos junto com os equipamentos.</source>
@@ -7265,7 +7276,7 @@
     </unit>
     <unit id="4654189413033101460">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:719</note>
+        <note category="location">src/app/features/scans/scans-page.html:782</note>
       </notes>
       <segment>
         <source>Páginas da revisão da captura</source>
@@ -7273,7 +7284,7 @@
     </unit>
     <unit id="5455003288760134519">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:723,724</note>
+        <note category="location">src/app/features/scans/scans-page.html:786,787</note>
       </notes>
       <segment>
         <source>Filtro da revisão</source>
@@ -7281,7 +7292,7 @@
     </unit>
     <unit id="1192492423747052217">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:734</note>
+        <note category="location">src/app/features/scans/scans-page.html:797</note>
       </notes>
       <segment>
         <source> A corrigir </source>
@@ -7289,7 +7300,7 @@
     </unit>
     <unit id="1721383606312681005">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:744</note>
+        <note category="location">src/app/features/scans/scans-page.html:807</note>
       </notes>
       <segment>
         <source> Todos os itens </source>
@@ -7297,7 +7308,7 @@
     </unit>
     <unit id="6013917526992008602">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:749,750</note>
+        <note category="location">src/app/features/scans/scans-page.html:812,813</note>
       </notes>
       <segment>
         <source> Incluir <ph id="0" equiv="INTERPOLATION" disp="{{ reliableCount() }}"/> itens identificados desta captura </source>
@@ -7305,7 +7316,7 @@
     </unit>
     <unit id="3571748834144183350">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:763,767</note>
+        <note category="location">src/app/features/scans/scans-page.html:826,830</note>
       </notes>
       <segment>
         <source>Espaços <ph id="0" equiv="INTERPOLATION" disp="{{ reviewPage() * reviewPageSize + 1 }}"/> a <ph id="1" equiv="INTERPOLATION_1" disp="{{ reviewPage() * reviewPageSize + visibleCells().length }}"/> de <ph id="2" equiv="INTERPOLATION_2" disp="{{ reviewCells().length }}"/></source>
@@ -7313,7 +7324,7 @@
     </unit>
     <unit id="512839013940185544">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:775</note>
+        <note category="location">src/app/features/scans/scans-page.html:838</note>
       </notes>
       <segment>
         <source> Próximos espaços </source>
@@ -7321,23 +7332,15 @@
     </unit>
     <unit id="6468642040177510804">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:780,781</note>
+        <note category="location">src/app/features/scans/scans-page.html:843,844</note>
       </notes>
       <segment>
         <source> Nenhuma correção pendente nesta captura. Confira o resumo do lote abaixo ou abra “Todos os itens”. </source>
       </segment>
     </unit>
-    <unit id="6379317310832309807">
-      <notes>
-        <note category="location">src/app/features/scans/scans-page.html:794,795</note>
-      </notes>
-      <segment>
-        <source>Espaço <ph id="0" equiv="INTERPOLATION" disp="{{ cell.id + 1 }}"/></source>
-      </segment>
-    </unit>
     <unit id="2354639240905871157">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:823,824</note>
+        <note category="location">src/app/features/scans/scans-page.html:894,895</note>
       </notes>
       <segment>
         <source>Na captura</source>
@@ -7345,7 +7348,7 @@
     </unit>
     <unit id="8891777940858643741">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:829,830</note>
+        <note category="location">src/app/features/scans/scans-page.html:900,901</note>
       </notes>
       <segment>
         <source>Espaço recortado do print</source>
@@ -7353,7 +7356,7 @@
     </unit>
     <unit id="1319647436883836667">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:835,836</note>
+        <note category="location">src/app/features/scans/scans-page.html:906,907</note>
       </notes>
       <segment>
         <source>No catálogo</source>
@@ -7361,7 +7364,7 @@
     </unit>
     <unit id="7346985161107994493">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:864,865</note>
+        <note category="location">src/app/features/scans/scans-page.html:935,936</note>
       </notes>
       <segment>
         <source>Escolha o item correto</source>
@@ -7369,7 +7372,7 @@
     </unit>
     <unit id="8145210443163012521">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:879,880</note>
+        <note category="location">src/app/features/scans/scans-page.html:950,951</note>
       </notes>
       <segment>
         <source>Buscar outro item pelo nome</source>
@@ -7377,7 +7380,7 @@
     </unit>
     <unit id="6172090032287017636">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:881,882</note>
+        <note category="location">src/app/features/scans/scans-page.html:952,953</note>
       </notes>
       <segment>
         <source>Buscar outro item</source>
@@ -7385,31 +7388,49 @@
     </unit>
     <unit id="6607923698167279665">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:928,929</note>
+        <note category="location">src/app/features/scans/scans-page.html:999,1000</note>
       </notes>
       <segment>
         <source>Definir 1 unidade</source>
       </segment>
     </unit>
-    <unit id="2969065228749989073">
+    <unit id="7667209232051816783">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:938,940</note>
+        <note category="location">src/app/features/scans/scans-page.html:1009,1011</note>
       </notes>
       <segment>
-        <source> Lido na captura: <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/></pc> (estimativa aplicada: <ph id="2" equiv="INTERPOLATION_1" disp="{{ cell.quantityEstimate }}"/>). </source>
+        <source> Lido na captura: <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/></pc> (estimativa: <ph id="2" equiv="INTERPOLATION_1" disp="{{ cell.quantityEstimate }}"/>). </source>
       </segment>
     </unit>
-    <unit id="373976233662976120">
+    <unit id="8692530786805155953">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:943</note>
+        <note category="location">src/app/features/scans/scans-page.html:1014,1019</note>
       </notes>
       <segment>
-        <source> Quantidade não identificada com segurança. Digite o valor exato. </source>
+        <source> Leituras OCR divergiram. <pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (cell.quantityText) {" dispEnd="}"> Leitura de referência: <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code
+                      &gt;"><ph id="2" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/></pc>. </pc> Confira a captura e digite a quantidade exata. </source>
+      </segment>
+    </unit>
+    <unit id="4507473015324710475">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:1023,1029</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (cell.quantityText) {" dispEnd="}"> Leitura OCR sem confirmação: <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code
+                      &gt;"><ph id="2" equiv="INTERPOLATION" disp="{{ cell.quantityText }}"/></pc>. Confira a captura e digite a quantidade exata. </pc><pc id="3" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"> Quantidade não identificada com segurança. Digite o valor exato. </pc></source>
+      </segment>
+    </unit>
+    <unit id="6661657180918631467">
+      <notes>
+        <note category="location">src/app/features/scans/scans-page.html:1032,1033</note>
+      </notes>
+      <segment>
+        <source> Corrija para um inteiro entre 1 e 1.000.000.000; esta leitura não será importada. </source>
       </segment>
     </unit>
     <unit id="9111980140701891642">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:955,956</note>
+        <note category="location">src/app/features/scans/scans-page.html:1120,1121</note>
       </notes>
       <segment>
         <source>Escolha a posição</source>
@@ -7417,7 +7438,7 @@
     </unit>
     <unit id="2725185796556448265">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:962,963</note>
+        <note category="location">src/app/features/scans/scans-page.html:1127,1128</note>
       </notes>
       <segment>
         <source>Símbolo sugerido: <ph id="0" equiv="INTERPOLATION" disp="{{ suggestion.text }}"/>. Confira na captura.</source>
@@ -7425,7 +7446,7 @@
     </unit>
     <unit id="5054166447370037087">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:971,972</note>
+        <note category="location">src/app/features/scans/scans-page.html:1136,1137</note>
       </notes>
       <segment>
         <source> Conferi o símbolo. Usar nível <ph id="0" equiv="INTERPOLATION" disp="{{ suggestedLevel(cell) }}"/> </source>
@@ -7433,7 +7454,7 @@
     </unit>
     <unit id="6604024386185406588">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:976,977</note>
+        <note category="location">src/app/features/scans/scans-page.html:1141,1142</note>
       </notes>
       <segment>
         <source> Em armas e armaduras, I a X usam 16 a 25. Em acessórios, I a X usam 1 a 10. Um número ausente não confirma nível base. </source>
@@ -7441,7 +7462,7 @@
     </unit>
     <unit id="5637148238605625286">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:981,993</note>
+        <note category="location">src/app/features/scans/scans-page.html:1146,1158</note>
       </notes>
       <segment>
         <source>Nível de aprimoramento (0 a 30)<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -7460,7 +7481,7 @@
     </unit>
     <unit id="6084004136727606379">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:996,1008</note>
+        <note category="location">src/app/features/scans/scans-page.html:1161,1173</note>
       </notes>
       <segment>
         <source>Nível de Caphras<ph id="0" equiv="TAG_INPUT" disp="&lt;input
@@ -7479,7 +7500,7 @@
     </unit>
     <unit id="6153964784713428386">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1011,1012</note>
+        <note category="location">src/app/features/scans/scans-page.html:1176,1177</note>
       </notes>
       <segment>
         <source>Ver leitura original</source>
@@ -7487,7 +7508,7 @@
     </unit>
     <unit id="2877100325545001863">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1014,1015</note>
+        <note category="location">src/app/features/scans/scans-page.html:1179,1180</note>
       </notes>
       <segment>
         <source> Distância visual <ph id="0" equiv="INTERPOLATION" disp="{{ cell.score.toFixed(1) }}"/> · menor é mais semelhante. Não é uma probabilidade. </source>
@@ -7495,7 +7516,7 @@
     </unit>
     <unit id="6338154963696296119">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1019,1020</note>
+        <note category="location">src/app/features/scans/scans-page.html:1184,1185</note>
       </notes>
       <segment>
         <source> Origem: captura <ph id="0" equiv="INTERPOLATION" disp="{{ activeCaptureNumber() }}"/> · espaço <ph id="1" equiv="INTERPOLATION_1" disp="{{ cell.id + 1 }}"/> </source>
@@ -7503,7 +7524,7 @@
     </unit>
     <unit id="2529488468822148265">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1033,1034</note>
+        <note category="location">src/app/features/scans/scans-page.html:1198,1199</note>
       </notes>
       <segment>
         <source>Validar</source>
@@ -7511,7 +7532,7 @@
     </unit>
     <unit id="3551321110817968486">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1055,1056</note>
+        <note category="location">src/app/features/scans/scans-page.html:1220,1221</note>
       </notes>
       <segment>
         <source>Quero substituir as quantidades dos itens incluídos neste local. Os demais itens serão mantidos.</source>
@@ -7519,7 +7540,7 @@
     </unit>
     <unit id="8792261646630262396">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1066,1067</note>
+        <note category="location">src/app/features/scans/scans-page.html:1231,1232</note>
       </notes>
       <segment>
         <source> Salvar <ph id="0" equiv="INTERPOLATION" disp="{{ includedCount() }}"/> itens no armazém </source>
@@ -7527,7 +7548,7 @@
     </unit>
     <unit id="3991687278263194140">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1071,1072</note>
+        <note category="location">src/app/features/scans/scans-page.html:1236,1237</note>
       </notes>
       <segment>
         <source>Conferi o personagem, as posições e os níveis. Quero atualizar somente os equipamentos incluídos.</source>
@@ -7535,7 +7556,7 @@
     </unit>
     <unit id="807382760292122914">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1075</note>
+        <note category="location">src/app/features/scans/scans-page.html:1240</note>
       </notes>
       <segment>
         <source> Atualizar equipamentos </source>
@@ -7543,7 +7564,7 @@
     </unit>
     <unit id="6007723282262160843">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1082,1083</note>
+        <note category="location">src/app/features/scans/scans-page.html:1247,1248</note>
       </notes>
       <segment>
         <source>Ver meu armazém →</source>
@@ -7551,7 +7572,7 @@
     </unit>
     <unit id="4720815640748787802">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1090,1091</note>
+        <note category="location">src/app/features/scans/scans-page.html:1255,1256</note>
       </notes>
       <segment>
         <source>Confirmar importação</source>
@@ -7559,7 +7580,7 @@
     </unit>
     <unit id="7330893756852698432">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1093,1096</note>
+        <note category="location">src/app/features/scans/scans-page.html:1258,1261</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ importableCount() }}"/> itens prontos para salvar em <ph id="1" equiv="INTERPOLATION_1" disp="{{ jobs().length }}"/> capturas. Os reconhecimentos confiáveis serão incluídos na confirmação. Resultados duvidosos ficam fora até você corrigir e incluir. </source>
@@ -7567,7 +7588,7 @@
     </unit>
     <unit id="3033322572481281125">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1099,1101</note>
+        <note category="location">src/app/features/scans/scans-page.html:1264,1266</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ pendingBatchCount() }}"/> resultados pendentes ficarão fora desta importação. Você pode corrigir e incluir os que desejar antes de confirmar. </source>
@@ -7575,7 +7596,7 @@
     </unit>
     <unit id="4672996728368237435">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1112,1113</note>
+        <note category="location">src/app/features/scans/scans-page.html:1277,1278</note>
       </notes>
       <segment>
         <source> Incluir <ph id="0" equiv="INTERPOLATION" disp="{{ reliableBatchCount() }}"/> itens identificados de todo o lote </source>
@@ -7583,7 +7604,7 @@
     </unit>
     <unit id="5940771814023226123">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1121</note>
+        <note category="location">src/app/features/scans/scans-page.html:1286</note>
       </notes>
       <segment>
         <source> Podem ser capturas sobrepostas ou pilhas separadas. Não somaremos sem sua escolha. </source>
@@ -7591,7 +7612,7 @@
     </unit>
     <unit id="2234968505338763855">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1126,1128</note>
+        <note category="location">src/app/features/scans/scans-page.html:1291,1293</note>
       </notes>
       <segment>
         <source> Captura <ph id="0" equiv="INTERPOLATION" disp="{{ row.source.capture }}"/> · espaço <ph id="1" equiv="INTERPOLATION_1" disp="{{ row.source.slot + 1 }}"/> · <ph id="2" equiv="INTERPOLATION_2" disp="{{ row.quantity }}"/> unidades </source>
@@ -7599,7 +7620,7 @@
     </unit>
     <unit id="6064585001723220242">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1132,1133</note>
+        <note category="location">src/app/features/scans/scans-page.html:1297,1298</note>
       </notes>
       <segment>
         <source>Tratamento do item repetido</source>
@@ -7607,7 +7628,7 @@
     </unit>
     <unit id="3132748291123459351">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1138,1139</note>
+        <note category="location">src/app/features/scans/scans-page.html:1303,1304</note>
       </notes>
       <segment>
         <source>Escolha após conferir</source>
@@ -7615,7 +7636,7 @@
     </unit>
     <unit id="4665255088832510077">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1139,1140</note>
+        <note category="location">src/app/features/scans/scans-page.html:1304,1305</note>
       </notes>
       <segment>
         <source>Usar o valor da última captura no lote</source>
@@ -7623,7 +7644,7 @@
     </unit>
     <unit id="7904431082616813114">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1140,1141</note>
+        <note category="location">src/app/features/scans/scans-page.html:1305,1306</note>
       </notes>
       <segment>
         <source>Manter a maior quantidade observada</source>
@@ -7631,7 +7652,7 @@
     </unit>
     <unit id="2453571937318279830">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1142</note>
+        <note category="location">src/app/features/scans/scans-page.html:1307</note>
       </notes>
       <segment>
         <source> São pilhas distintas: somar uma vez cada espaço </source>
@@ -7639,7 +7660,7 @@
     </unit>
     <unit id="4358536548732494165">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1149,1150</note>
+        <note category="location">src/app/features/scans/scans-page.html:1314,1315</note>
       </notes>
       <segment>
         <source>Como atualizar o estoque?</source>
@@ -7647,7 +7668,7 @@
     </unit>
     <unit id="6625481764816538802">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1157,1158</note>
+        <note category="location">src/app/features/scans/scans-page.html:1322,1323</note>
       </notes>
       <segment>
         <source>Atualizar apenas os itens incluídos</source>
@@ -7655,7 +7676,7 @@
     </unit>
     <unit id="2495622148760869748">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1158,1159</note>
+        <note category="location">src/app/features/scans/scans-page.html:1323,1324</note>
       </notes>
       <segment>
         <source>Acrescentar itens novos, manter quantidades existentes</source>
@@ -7663,7 +7684,7 @@
     </unit>
     <unit id="3733116623919275416">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1159,1160</note>
+        <note category="location">src/app/features/scans/scans-page.html:1324,1325</note>
       </notes>
       <segment>
         <source>Substituir os locais completos enviados</source>
@@ -7671,7 +7692,7 @@
     </unit>
     <unit id="3492423000283156767">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1164,1165</note>
+        <note category="location">src/app/features/scans/scans-page.html:1329,1330</note>
       </notes>
       <segment>
         <source> Itens ausentes serão removidos somente dos locais importados. Não use com capturas parciais. Planos que reservam esses itens podem impedir a substituição. </source>
@@ -7679,7 +7700,7 @@
     </unit>
     <unit id="472634769385094770">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1173,1174</note>
+        <note category="location">src/app/features/scans/scans-page.html:1338,1339</note>
       </notes>
       <segment>
         <source>Enviei todos os itens desses locais, incluindo os que exigiram mais de uma captura.</source>
@@ -7687,7 +7708,7 @@
     </unit>
     <unit id="7437378986617066342">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1179,1180</note>
+        <note category="location">src/app/features/scans/scans-page.html:1344,1345</note>
       </notes>
       <segment>
         <source> Itens que não aparecem nas capturas serão mantidos. Equipamentos atualizam apenas as posições conferidas. </source>
@@ -7695,7 +7716,7 @@
     </unit>
     <unit id="7989360651457914842">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1190,1191</note>
+        <note category="location">src/app/features/scans/scans-page.html:1355,1356</note>
       </notes>
       <segment>
         <source>Quero salvar os itens prontos nos destinos indicados, incluindo os reconhecimentos confiáveis.</source>
@@ -7703,7 +7724,7 @@
     </unit>
     <unit id="6777268278527844757">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1215,1216</note>
+        <note category="location">src/app/features/scans/scans-page.html:1380,1381</note>
       </notes>
       <segment>
         <source> Salvar apenas <ph id="0" equiv="INTERPOLATION" disp="{{ importableCount() }}"/> revisados </source>
@@ -7711,7 +7732,7 @@
     </unit>
     <unit id="8458646117611245188">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1218</note>
+        <note category="location">src/app/features/scans/scans-page.html:1383</note>
       </notes>
       <segment>
         <source>Consultar itens salvos</source>
@@ -7719,7 +7740,7 @@
     </unit>
     <unit id="1054264543647929689">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1219,1220</note>
+        <note category="location">src/app/features/scans/scans-page.html:1384,1385</note>
       </notes>
       <segment>
         <source>Ver armazéns</source>
@@ -7727,7 +7748,7 @@
     </unit>
     <unit id="6987302899702860676">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1220,1221</note>
+        <note category="location">src/app/features/scans/scans-page.html:1385,1386</note>
       </notes>
       <segment>
         <source>Ver inventários</source>
@@ -7735,7 +7756,7 @@
     </unit>
     <unit id="9079282225734244927">
       <notes>
-        <note category="location">src/app/features/scans/scans-page.html:1221,1222</note>
+        <note category="location">src/app/features/scans/scans-page.html:1386,1387</note>
       </notes>
       <segment>
         <source>Ver equipamentos</source>
@@ -11856,7 +11877,7 @@
     <unit id="3383907643333341583">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:74,75</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:190,191</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:214,215</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -11894,34 +11915,42 @@
         <source>Sem cotação de mercado; venda não incluída.</source>
       </segment>
     </unit>
-    <unit id="6607875018331464152">
+    <unit id="8032717281324704933">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:27,28</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:32,33</note>
       </notes>
       <segment>
-        <source>Incluir venda</source>
+        <source>Vender</source>
+      </segment>
+    </unit>
+    <unit id="1372173599787735409">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:42,43</note>
+      </notes>
+      <segment>
+        <source>Guardar</source>
       </segment>
     </unit>
     <unit id="385550784261308218">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:35,36</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:40,41</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:51,52</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:56,57</note>
       </notes>
       <segment>
         <source>Plano da receita</source>
       </segment>
     </unit>
-    <unit id="2598220245359085864">
+    <unit id="8495983490435134099">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:46,47</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:62,65</note>
       </notes>
       <segment>
-        <source> Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é abatido do lote. </source>
+        <source> Escolha, para cada material, se vai <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">comprar</pc> ou <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">produzir</pc>. O que você já tem no armazém é descontado antes da compra. </source>
       </segment>
     </unit>
     <unit id="8776558155521885715">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:52,53</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:68,69</note>
       </notes>
       <segment>
         <source>Materiais da receita</source>
@@ -11929,23 +11958,15 @@
     </unit>
     <unit id="1051153516446623837">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:103,104</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:119,120</note>
       </notes>
       <segment>
         <source>Sem cotação</source>
       </segment>
     </unit>
-    <unit id="4164884994895329083">
-      <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:154,155</note>
-      </notes>
-      <segment>
-        <source>Obter pronto</source>
-      </segment>
-    </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:159,161</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:183,185</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -11953,24 +11974,24 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:164</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:166,167</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:188</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:190,191</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
       </segment>
     </unit>
-    <unit id="6431746344747902792">
+    <unit id="2890356988144271644">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:170,171</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:194,197</note>
       </notes>
       <segment>
-        <source> Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e não gera receita de venda. </source>
+        <source> Itens extras que a receita devolve. <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Vender</pc> soma ao faturamento; <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guardar</pc> mantém o item e não entra no lucro. </source>
       </segment>
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:192,193</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:216,217</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returns().length - 2 }}"/>)</source>
@@ -11978,7 +11999,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:203,204</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:227,228</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -11986,7 +12007,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:210,212</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:234,236</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>
@@ -12087,17 +12108,17 @@
         <source>Calibrar tempo por método</source>
       </segment>
     </unit>
-    <unit id="7196749174676191846">
+    <unit id="703467325663617691">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:194,195</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:194,196</note>
       </notes>
       <segment>
-        <source> Tempos padrão são estimativas de referência, não medições do seu equipamento. Informe seu tempo por método para ajustar o lucro estimado por hora. </source>
+        <source> Tempos padrão são estimativas de referência, não medições do seu equipamento. Informe seu tempo por método para ajustar o lucro estimado por hora. Para processamento em massa, informe os segundos por lote completo; o tempo fica pendente até esse ajuste. </source>
       </segment>
     </unit>
     <unit id="5014662677324532253">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:199,200</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:200,201</note>
       </notes>
       <segment>
         <source>Calibrar rendimento e tempo de coleta</source>
@@ -12105,7 +12126,7 @@
     </unit>
     <unit id="6329862782664996071">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:207,208</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:208,209</note>
       </notes>
       <segment>
         <source>Unidades por coleta</source>
@@ -12113,7 +12134,7 @@
     </unit>
     <unit id="1901726087411554246">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:217,218</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:218,219</note>
       </notes>
       <segment>
         <source>Segundos por coleta</source>
@@ -12121,7 +12142,7 @@
     </unit>
     <unit id="2550053618591954345">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:228,229</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:229,230</note>
       </notes>
       <segment>
         <source>Não há materiais sem receita selecionada para calibrar.</source>
@@ -12129,7 +12150,7 @@
     </unit>
     <unit id="2454596933103451245">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:232,233</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:233,234</note>
       </notes>
       <segment>
         <source>Quais estoques entram no cálculo?</source>
@@ -12137,7 +12158,7 @@
     </unit>
     <unit id="4270778276314579823">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:247,251</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:248,252</note>
       </notes>
       <segment>
         <source> Nenhum estoque importado. <pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (identity.authenticated()) {" dispEnd="}"><pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/scans&quot;&gt;" dispEnd="&lt;/a&gt;">Importar capturas</pc></pc></source>
@@ -12145,7 +12166,7 @@
     </unit>
     <unit id="7092909747677956978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:255,256</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:256,257</note>
       </notes>
       <segment>
         <source> Contamos apenas IDs vinculados na região selecionada, descontando reservas. Capturas parciais e antigas podem não refletir o estoque atual. Não consumimos seus itens ao simular. </source>
@@ -12153,7 +12174,7 @@
     </unit>
     <unit id="4696046538802796110">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:261,262</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:262,263</note>
       </notes>
       <segment>
         <source>Opções de impostos e buffs do mercado</source>
@@ -12161,7 +12182,7 @@
     </unit>
     <unit id="5750081564931381342">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:288,289</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:289,290</note>
       </notes>
       <segment>
         <source>Rentabilidade e mercado central</source>
@@ -12169,7 +12190,7 @@
     </unit>
     <unit id="2921630090921471948">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:293,294</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:294,295</note>
       </notes>
       <segment>
         <source>SIMULAÇÃO</source>
@@ -12177,7 +12198,7 @@
     </unit>
     <unit id="3774037176376749074">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:294,295</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:295,296</note>
       </notes>
       <segment>
         <source>Resultado da receita</source>
@@ -12185,7 +12206,7 @@
     </unit>
     <unit id="2461749574255285012">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:301,302</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:302,303</note>
       </notes>
       <segment>
         <source> Preço de venda estimado: cotação com estoque; sem estoque, máxima quando informada ou preço-base de referência. A cotação não garante compra nem venda. </source>
@@ -12193,7 +12214,7 @@
     </unit>
     <unit id="2445384171965660751">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:536,537</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:562,563</note>
       </notes>
       <segment>
         <source>Lucro líquido</source>
@@ -12201,7 +12222,7 @@
     </unit>
     <unit id="7628283421798864413">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:545,546</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:571,572</note>
       </notes>
       <segment>
         <source>Custo dos materiais</source>
@@ -12209,7 +12230,7 @@
     </unit>
     <unit id="5254134715645515364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:551,552</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:577,578</note>
       </notes>
       <segment>
         <source>Faturamento líquido</source>
@@ -12217,7 +12238,7 @@
     </unit>
     <unit id="5783330943194905505">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:576,577</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:620,621</note>
       </notes>
       <segment>
         <source>Atualizando cotações</source>
@@ -12225,7 +12246,7 @@
     </unit>
     <unit id="8638566115687747364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:626</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:670</note>
       </notes>
       <segment>
         <source>Visualização da produção</source>
@@ -12233,7 +12254,7 @@
     </unit>
     <unit id="3423527547728662625">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:633</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:677</note>
       </notes>
       <segment>
         <source> Árvore visual </source>
@@ -12241,7 +12262,7 @@
     </unit>
     <unit id="1596513412557859561">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:641</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:685</note>
       </notes>
       <segment>
         <source> Etapas expansíveis </source>
@@ -12249,7 +12270,7 @@
     </unit>
     <unit id="5764736619878600212">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:647</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:691</note>
       </notes>
       <segment>
         <source> Expandir todos </source>
@@ -12257,7 +12278,7 @@
     </unit>
     <unit id="2016013543679738291">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:649,650</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:693,694</note>
       </notes>
       <segment>
         <source>Recolher todos</source>
@@ -12265,7 +12286,7 @@
     </unit>
     <unit id="6761593809530292978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:651,652</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:695,696</note>
       </notes>
       <segment>
         <source>Interromper expansão</source>

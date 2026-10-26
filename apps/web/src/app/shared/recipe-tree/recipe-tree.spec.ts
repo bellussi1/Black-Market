@@ -411,14 +411,14 @@ describe('Interactive recipe tree', () => {
       '.returned-product-toggle',
     ) as HTMLButtonElement;
     expect(list.querySelectorAll('.returned-product-row')).toHaveLength(2);
-    expect(list.querySelectorAll('.returned-product-choice input')).toHaveLength(2);
+    expect(list.querySelectorAll('.returned-product-choice')).toHaveLength(2);
     expect(toggle.textContent).toContain('Mostrar mais');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
 
     toggle.click();
     fixture.detectChanges();
     expect(list.querySelectorAll('.returned-product-row')).toHaveLength(28);
-    expect(list.querySelectorAll('.returned-product-choice input')).toHaveLength(28);
+    expect(list.querySelectorAll('.returned-product-choice')).toHaveLength(28);
     expect(toggle.textContent).toContain('Mostrar menos');
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
 
@@ -1415,15 +1415,37 @@ describe('Interactive recipe tree', () => {
     expect(text).not.toContain('Pré-ordens');
     expect(tree.materialPrice(5301)).toEqual({ price: '1100', source: 'maximum' });
     expect(tree.materialPrice(9001)).toEqual({ price: '60', source: 'maximum' });
+    tree.recipeGraph.set({
+      rootRecipe: recipe,
+      producerRecipes: [
+        {
+          key: 'salt-recipe',
+          type: 'PROCESSING',
+          station: null,
+          inputs: [],
+          outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+        },
+      ],
+      itemIds: [5301, 9001],
+      issues: [],
+      datasetVersion: 'dataset-v1',
+    });
     expect(tree.productionInput()?.enforcePurchaseLimits).toBe(false);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.sidebar-price')?.textContent).toContain('Máxima');
-    const sourceCheckbox = fixture.nativeElement.querySelector(
-      '.material-source-checkbox input[type="checkbox"]',
+    const makeRadio = fixture.nativeElement.querySelector(
+      '.source-switch input[value="make"]',
     ) as HTMLInputElement;
-    expect(sourceCheckbox).not.toBeNull();
-    expect(sourceCheckbox.checked).toBe(false);
-    sourceCheckbox.click();
+    const buyRadio = fixture.nativeElement.querySelector(
+      '.source-switch input[value="buy"]',
+    ) as HTMLInputElement;
+    expect(makeRadio).not.toBeNull();
+    expect(makeRadio.checked).toBe(false);
+    expect(buyRadio.checked).toBe(true);
+    makeRadio.click();
+    fixture.detectChanges();
+    expect(tree.materialSource(9001)).toBe('produce');
+    buyRadio.click();
     fixture.detectChanges();
     expect(tree.materialSource(9001)).toBe('buy');
     fixture.destroy();
@@ -2334,17 +2356,22 @@ describe('Interactive recipe tree', () => {
       sell: true,
     });
     expect(fixture.nativeElement.textContent).toContain('Retornos previstos');
+    expect(fixture.nativeElement.textContent).toContain('Produto:');
+    expect(fixture.nativeElement.textContent).toContain('Retornos: +');
     const beforeKeep = Number(tree.netRevenue());
-    const checkbox = fixture.nativeElement.querySelector(
-      '.returned-product-choice input',
+    const beforeReturnsNet = Number(tree.returnsNetRevenue());
+    expect(beforeReturnsNet).toBeGreaterThan(0);
+    const keepRadio = fixture.nativeElement.querySelector(
+      '.returned-product-choice input[value="keep"]',
     ) as HTMLInputElement;
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new Event('change'));
+    keepRadio.checked = true;
+    keepRadio.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
     expect(tree.returnedProductRows().find((product) => product.itemId === 750)?.sell).toBe(false);
     expect(Number(tree.netRevenue())).toBeLessThan(beforeKeep);
-    expect(fixture.nativeElement.textContent).toContain('guardado');
+    expect(Number(tree.returnsNetRevenue() ?? '0')).toBeLessThan(beforeReturnsNet);
+    expect(fixture.nativeElement.textContent).toContain('Guardar');
     fixture.destroy();
   });
 

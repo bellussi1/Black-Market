@@ -620,3 +620,69 @@
 .workspace-materials-sidebar .sidebar-footer:empty {
   display: none;
 }
+
+/* Explicit two-option choice (Comprar | Produzir, Vender | Guardar) instead of a checkbox
+   whose unchecked state carried an implicit second meaning. */
+.source-switch {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  flex: none;
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
+  background: var(--bm-input);
+}
+
+.source-switch label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  min-height: 30px;
+  padding: 2px 8px;
+  color: var(--bm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--bm-motion-fast) ease,
+    color var(--bm-motion-fast) ease;
+}
+
+.source-switch label + label {
+  border-left: 1px solid var(--bm-control-border);
+}
+
+.source-switch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.source-switch label:hover {
+  color: var(--bm-text);
+}
+
+.source-switch label.is-active {
+  background: var(--bm-accent-soft);
+  color: var(--bm-accent);
+  box-shadow: inset 0 -2px 0 var(--bm-accent);
+}
+
+.source-switch label:has(input:focus-visible) {
+  outline: 2px solid var(--bm-focus);
+  outline-offset: 1px;
+}
+
+.workspace-materials-sidebar .returned-product-choice.source-switch {
+  padding: 0;
+  border: 1px solid var(--bm-control-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .source-switch label {
+    transition: none;
+  }
+}

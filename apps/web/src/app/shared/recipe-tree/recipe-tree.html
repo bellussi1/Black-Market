@@ -579,10 +579,28 @@
               netRevenue() !== null ? silver(netRevenue()) : 'Sem cotação'
             }}</strong>
             <small class="metric-sub"
-              >Preço un.: {{ productPrice() !== null ? silver(productPrice()) : '—' }}</small
+              >Preço un.: {{ productPrice() !== null ? silver(productPrice()) : '—'
+              }}{{ productPriceContextLabel() ? ' · ' + productPriceContextLabel() : '' }}</small
             >
+            @if (returnsNetRevenue(); as returnsNet) {
+              <small class="metric-sub"
+                >Produto: {{ productNetRevenue() !== null ? silver(productNetRevenue()) : '—' }} ·
+                Retornos: +{{ silver(returnsNet) }}</small
+              >
+            }
             @if (currentProductionPlan()?.grossRevenue; as gross) {
-              <small class="metric-sub">Bruto: {{ silver(gross) }}</small>
+              <small class="metric-sub"
+                >Bruto: {{ silver(gross)
+                }}{{
+                  returnsGrossRevenue()
+                    ? ' (produto ' +
+                      silver(productGrossRevenue()) +
+                      ' + retornos ' +
+                      silver(returnsGrossRevenue()) +
+                      ')'
+                    : ''
+                }}</small
+              >
             }
           </div>
         </div>

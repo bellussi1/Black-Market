@@ -16,16 +16,32 @@
         <small i18n>Sem cotação de mercado; venda não incluída.</small>
       }
     </div>
-    <label class="returned-product-choice">
-      <input
-        type="checkbox"
-        [checked]="returned.sell"
-        (change)="
-          returnSaleChanged.emit({ itemId: returned.itemId, sell: $any($event.target).checked })
-        "
-      />
-      <span i18n>Incluir venda</span>
-    </label>
+    <div
+      class="source-switch returned-product-choice"
+      role="radiogroup"
+      [attr.aria-label]="'Destino de ' + returned.name"
+    >
+      <label [class.is-active]="returned.sell">
+        <input
+          type="radio"
+          value="sell"
+          [name]="'return-' + returned.itemId"
+          [checked]="returned.sell"
+          (change)="returnSaleChanged.emit({ itemId: returned.itemId, sell: true })"
+        />
+        <span i18n>Vender</span>
+      </label>
+      <label [class.is-active]="!returned.sell">
+        <input
+          type="radio"
+          value="keep"
+          [name]="'return-' + returned.itemId"
+          [checked]="!returned.sell"
+          (change)="returnSaleChanged.emit({ itemId: returned.itemId, sell: false })"
+        />
+        <span i18n>Guardar</span>
+      </label>
+    </div>
   </div>
 </ng-template>
 
@@ -43,8 +59,8 @@
       >
     </div>
     <p class="sidebar-hint" i18n>
-      Marque Produzir para fazer o material. Desmarcado, ele entra na compra. O estoque disponível é
-      abatido do lote.
+      Escolha, para cada material, se vai <strong>comprar</strong> ou <strong>produzir</strong>. O
+      que você já tem no armazém é descontado antes da compra.
     </p>
   </div>
 
@@ -127,31 +143,43 @@
               {{ item.required.toLocaleString('pt-BR') }} un
             }
           </span>
-          <label
-            class="material-source-checkbox bdo-checkbox-container"
-            [title]="
-              !item.canProduce
-                ? 'Sem método de produção conhecido; obter pronto'
-                : item.source === 'buy'
-                  ? 'Comprar no Mercado Central'
-                  : 'Fazer ou coletar por conta própria'
-            "
-          >
-            <input
-              type="checkbox"
-              [checked]="item.source !== 'buy'"
-              [disabled]="!item.canProduce"
-              (change)="toggleSource.emit(item.itemId)"
-              [attr.aria-label]="
-                (item.source === 'buy' ? 'Marcar fazer ou coletar: ' : 'Marcar comprar: ') +
-                item.name
-              "
-            />
-            <span class="bdo-checkbox-visual"></span>
-            <span class="source-choice-label">Produzir</span>
-          </label>
-          @if (!item.canProduce) {
-            <span class="sidebar-source-badge is-buy" i18n>Obter pronto</span>
+          @if (item.canProduce) {
+            <div
+              class="source-switch"
+              role="radiogroup"
+              [attr.aria-label]="'Origem de ' + item.name"
+            >
+              <label [class.is-active]="item.source === 'buy'" title="Comprar no Mercado Central">
+                <input
+                  type="radio"
+                  value="buy"
+                  [name]="'source-' + item.itemId"
+                  [checked]="item.source === 'buy'"
+                  (change)="item.source !== 'buy' && toggleSource.emit(item.itemId)"
+                />
+                <span i18n>Comprar</span>
+              </label>
+              <label
+                [class.is-active]="item.source !== 'buy'"
+                title="Fazer ou coletar por conta própria"
+              >
+                <input
+                  type="radio"
+                  value="make"
+                  [name]="'source-' + item.itemId"
+                  [checked]="item.source !== 'buy'"
+                  (change)="item.source === 'buy' && toggleSource.emit(item.itemId)"
+                />
+                <span i18n>Produzir</span>
+              </label>
+            </div>
+          } @else {
+            <span
+              class="sidebar-source-badge is-buy"
+              title="Sem método de produção conhecido; obter pronto"
+              i18n
+              >Comprar</span
+            >
           }
         </div>
       </div>
@@ -167,8 +195,8 @@
         <span>{{ returns().length }}</span>
       </div>
       <p class="sidebar-hint" i18n>
-        Marque Incluir venda para somar o retorno ao faturamento. Desmarcado, o item fica guardado e
-        não gera receita de venda.
+        Itens extras que a receita devolve. <strong>Vender</strong> soma ao faturamento;
+        <strong>Guardar</strong> mantém o item e não entra no lucro.
       </p>
       <div class="returned-product-list" id="returned-product-list">
         @for (returned of visibleReturns(); track returned.itemId) {

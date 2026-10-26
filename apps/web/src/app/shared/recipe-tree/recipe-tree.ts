@@ -25,6 +25,7 @@ import {
   type ProductionEstimate,
   type ProductionOptimizationResult,
   type ProductionPlan,
+  retention,
   type TaxOptions,
 } from '@bdo/calculators';
 import type {
@@ -1191,6 +1192,61 @@ export class RecipeTree {
   readonly productPrice = computed(() => {
     const root = this.root();
     return root ? this.price(root.part.itemId) : null;
+  });
+
+  readonly productPriceContextLabel = computed(() => {
+    const root = this.root();
+    if (!root) return null;
+    const itemId = root.part.itemId;
+    if (this.customItemPrices().has(itemId)) return 'Manual';
+    const quote = this.marketQuotes().get(itemId);
+    if (!quote) return null;
+    const resolved = recipeMarketPrice(quote);
+    if (!resolved) return null;
+    const sourceLabel =
+      resolved.source === 'maximum'
+        ? 'Máxima'
+        : resolved.source === 'reference'
+          ? 'Referência'
+          : 'Mercado';
+    return typeof quote.stock === 'number'
+      ? `${sourceLabel} · Est: ${quote.stock.toLocaleString('pt-BR')}`
+      : sourceLabel;
+  });
+
+  readonly productGrossRevenue = computed(() => {
+    const unitPrice = this.productPrice();
+    const output = this.producedQuantity();
+    if (unitPrice === null || !/^\d{1,24}$/.test(unitPrice) || !(output > 0)) return null;
+    const scaledOutput = BigInt(Math.round(output * 1_000_000));
+    return String((scaledOutput * BigInt(unitPrice)) / 1_000_000n);
+  });
+
+  readonly productNetRevenue = computed(() => {
+    const gross = this.productGrossRevenue();
+    if (gross === null) return null;
+    try {
+      const r = retention(this.store.data().taxOptions);
+      return String((BigInt(gross) * r.numerator) / r.denominator);
+    } catch {
+      return null;
+    }
+  });
+
+  readonly returnsGrossRevenue = computed(() => {
+    const totalGross = this.grossRevenue();
+    const mainGross = this.productGrossRevenue();
+    if (totalGross === null || mainGross === null) return null;
+    const diff = BigInt(totalGross) - BigInt(mainGross);
+    return diff > 0n ? String(diff) : null;
+  });
+
+  readonly returnsNetRevenue = computed(() => {
+    const totalNet = this.netRevenue();
+    const mainNet = this.productNetRevenue();
+    if (totalNet === null || mainNet === null) return null;
+    const diff = BigInt(totalNet) - BigInt(mainNet);
+    return diff > 0n ? String(diff) : null;
   });
 
   readonly returnedProductRows = computed(() => {
