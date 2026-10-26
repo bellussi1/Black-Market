@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Preserve the existing eight dirty recipe-tree files and unrelated changes within them.
+- Preserve pre-existing recipe-tree work and unrelated changes; stage only the hunks owned by this plan.
 - Keep source choices and stock aggregation keyed by `itemId`; do not calculate prices, yields, or stock in the presentation layer.
 - For inactive recipe references, show per-operation input quantities and clearly mark that those inputs are excluded while the parent is bought.
 - Render aggregate plan quantity once per item; repeated occurrences must not add controls or duplicate totals.
@@ -34,7 +34,7 @@
 - `apps/web/src/app/shared/recipe-tree/recipe-materials-sidebar.ts`: disclosure state and event bridge for recursive plan nodes.
 - `apps/web/src/app/shared/recipe-tree/recipe-materials-sidebar.html` / `.scss`: recursive sidebar hierarchy and compact reference rows.
 - `apps/web/src/app/shared/recipe-tree/recipe-tree.ts` / `.html`: supply current hierarchy and render the single sub-recipe comparison.
-- `apps/web/src/app/shared/recipe-tree/recipe-branch.ts` / `.html` and `recipe-graph.ts` / `.html`: remove repeated sub-recipe profit/hour badges.
+- `apps/web/src/app/shared/recipe-tree/recipe-branch.ts` / `.html`, `recipe-branch.scss`, `recipe-graph.ts`, and `recipe-graph.scss`: remove repeated sub-recipe profit/hour badges and styles.
 - `apps/web/src/app/shared/recipe-tree/recipe-tree.spec.ts`: integration behavior for expansion, source changes, and unique comparison placement.
 - `docs/README.md`: add the focused research/spec link to the source map.
 - `docs/design-system/bdo-ui.md`: document the approved hierarchy and single comparison placement.
@@ -42,7 +42,7 @@
 
 ## Interfaces
 
-`buildRecipePlanHierarchy<TMaterial extends { itemId: number; name: string; iconUrl: string | null }>(input: RecipePlanHierarchyInput<TMaterial>): RecipePlanHierarchy<TMaterial>` accepts `rootRecipe: ProductionRecipe`, `producerRecipes: readonly ProductionRecipe[]`, `plan: Pick<ProductionPlan, 'steps' | 'recipeChoices'> | null`, `materials: readonly TMaterial[]`, `parts: ReadonlyMap<number, CatalogRecipePart>`, and `productQuantity: number | null`. It returns `{ product: { itemId, name, iconUrl, quantity }, materials: readonly RecipePlanNode<TMaterial>[] }`. Each node contains `key`, `itemId`, `part`, `material: TMaterial | null`, `displayQuantity: number | null`, `quantityMode: 'planned' | 'reference' | 'pending'`, `referenceKey: string | null`, `planned: boolean`, `producerRecipe: ProductionRecipe | null`, and recursive `children`. Planned child totals come from the one aggregated material row; inactive branches use normalized per-operation input quantity. Repeated IDs return a reference node to the canonical row. Traversal stops at cycles and depth 12.
+`buildRecipePlanHierarchy<TMaterial>(input: RecipePlanHierarchyInput<TMaterial>): RecipePlanHierarchy<TMaterial>` accepts the catalog root and all producer candidates, normalized `ProductionRecipe[]`, the active plan (`steps`, `recipeChoices`, `materials`, `output`), display material rows, and an optional depth limit. It returns a product context and recursive material nodes. Each node carries `path`, `itemId`, `part`, `state`, `quantityMode`, `displayQuantity`, `material`, normalized `perOperation`, optional `canonicalPath`, `producerRecipe`, `planned`, `producible`, `depthLimited`, and `children`. Produced totals come from the aggregate planner row; bought branches use normalized per-operation references. Repeated active item IDs link to their canonical row. Cycles and traversal deeper than 12 are bounded.
 
 Before Task 1, commit only the spec and this plan as `docs(recipes): specify hierarchical recipe plan`. For code tasks, commit each completed task under one responsibility: `feat(recipes): build recipe plan hierarchy`, `feat(recipes): render nested recipe plan`, `fix(recipes): centralize sub-recipe profit comparison`, and `docs(recipes): document hierarchical recipe plan`. Never stage the existing unrelated dirty hunks.
 
@@ -50,32 +50,32 @@ Before Task 1, commit only the spec and this plan as `docs(recipes): specify hie
 
 ### 1. Prove hierarchy projection behavior with failing tests
 
-- [ ] Add `buildRecipePlanHierarchy` tests for direct inputs, produced nested inputs using aggregate plan quantities, bought sub-recipes showing per-operation reference quantities, duplicate item IDs pointing to one canonical row, and cycle/depth protection.
-- [ ] Run `pnpm --filter @bdo/web exec ng test --watch=false --include=app/shared/recipe-tree/recipe-plan-hierarchy.spec.ts`; confirm failures are missing builder behavior, not test setup errors.
+- [x] Add `buildRecipePlanHierarchy` tests for direct inputs, produced nested inputs using aggregate plan quantities, bought sub-recipes showing per-operation reference quantities, duplicate item IDs pointing to one canonical row, and cycle/depth protection.
+- [x] Run the helper spec red/green; the implementation gap was the missing projection behavior, and the completed helper suite passes.
 
 ### 2. Implement the pure hierarchy projection
 
-- [ ] Implement `RecipePlanHierarchyInput`, recursive node/result types, and `buildRecipePlanHierarchy` in `recipe-plan-hierarchy.ts`.
-- [ ] Run the helper spec and require all assertions to pass without modifying planner calculation rules.
-- [ ] Commit the helper and its tests as `feat(recipes): build recipe plan hierarchy`.
+- [x] Implement `RecipePlanHierarchyInput`, recursive node/result types, and `buildRecipePlanHierarchy` in `recipe-plan-hierarchy.ts`.
+- [x] Run the helper spec and require all assertions to pass without modifying planner calculation rules.
+- [x] Commit the helper and its tests as `feat(recipes): build recipe plan hierarchy` (`d1b9636`); follow-up invalid producer-choice behavior is in `df3adb0`.
 
 ### 3. Render the recursive sidebar plan
 
-- [ ] Replace the flat material loop with product context plus recursive nodes; active rows keep current selection, price, stock, and source events; inactive children are read-only per-operation references.
-- [ ] Add path-stable expand/collapse buttons with `aria-expanded` and `aria-controls`; handle repeated-item references without duplicate totals/actions.
-- [ ] Update integration tests for 1407-style nested production, source-toggle synchronization, collapsed/open state, and pending calculations.
-- [ ] Commit the sidebar hierarchy as `feat(recipes): render nested recipe plan`.
+- [x] Replace the flat material loop with product context plus recursive nodes; active rows keep current selection, price, stock, and source events; inactive children are read-only per-operation references.
+- [x] Add path-stable expand/collapse buttons with `aria-expanded` and `aria-controls`; handle repeated-item references without duplicate totals/actions.
+- [x] Update integration tests for nested production, source-toggle synchronization and collapsed/open state.
+- [x] Commit the sidebar hierarchy as `feat(recipes): render nested recipe plan` (`6723d66`).
 
 ### 4. Keep sub-recipe profit/hour in one place
 
-- [ ] Restore a compact, initially collapsed comparison disclosure in `Resultado da receita`, using `subRecipeComparisons()` and existing summary values.
-- [ ] Remove sub-recipe profit/hour markup and unused input plumbing from the sidebar, graph nodes, and expandable steps.
-- [ ] Update tests to assert the comparison exists once and repeated badges are absent.
-- [ ] Commit the single comparison placement as `fix(recipes): centralize sub-recipe profit comparison`.
+- [x] Preserve the existing compact, initially collapsed comparison disclosure in `Resultado da receita`, using `subRecipeComparisons()` and existing summary values.
+- [x] Remove sub-recipe profit/hour markup, styles and input plumbing from the sidebar, graph nodes, and expandable steps.
+- [x] Update tests to assert the comparison exists once and repeated badges are absent.
+- [x] Commit the comparison cleanup as `fix(recipes): centralize sub-recipe profit comparison` (`29d6c83`).
 
 ### 5. Record design and verify the complete change
 
-- [ ] Add the research document to `docs/README.md`, update the BDO UI catalog, and replace `docs/ACTIVE_CONTEXT.md` with the new state and evidence link.
-- [ ] Run focused specs, `pnpm check`, `pnpm test`, `pnpm build`, and `pnpm test:ssr` as required for the Angular UI change.
-- [ ] Inspect the diff and browser evidence for `/recipes/items/1407`, including expanded and collapsed branches and a narrow viewport; preserve unrelated dirty work and report any pre-existing failures.
-- [ ] Commit the docs and handoff updates as `docs(recipes): document hierarchical recipe plan`.
+- [x] Add the research link to `docs/README.md`, update the BDO UI catalog, and replace `docs/ACTIVE_CONTEXT.md` with the new state and evidence link.
+- [x] Run focused specs, `pnpm check`, `pnpm test`, `pnpm build`, and `pnpm test:ssr` as required for the Angular UI change.
+- [x] Inspect `/recipes/items/1407` in expanded/bought states and a narrow viewport; preserve unrelated work and report the known build warnings.
+- [x] Commit the docs and handoff updates as `docs(recipes): document hierarchical recipe plan`.
