@@ -133,12 +133,39 @@
             >
           </p>
         }
-        @if (entry.depth > 0 && subRecipeProfits().has(entry.node.part.itemId)) {
-          @let subProfit = subRecipeProfits().get(entry.node.part.itemId) ?? null;
-          <p class="node-subrecipe-profit">
-            <span i18n>Lucro/h sub-receita:</span>
-            <strong>{{ subProfit !== null ? silver(subProfit) + '/h' : 'Pendente' }}</strong>
-          </p>
+        @if (
+          entry.depth > 0 &&
+          (subRecipeProfits().has(entry.node.part.itemId) ||
+            subRecipeSummaries().has(entry.node.part.itemId))
+        ) {
+          @let subSummary = subRecipeSummaries().get(entry.node.part.itemId) ?? null;
+          @let subProfit =
+            subSummary?.profitPerHour ?? subRecipeProfits().get(entry.node.part.itemId) ?? null;
+          <div
+            class="node-subrecipe-profit"
+            [class.is-positive]="
+              subProfit !== null && !subProfit.startsWith('-') && subProfit !== '0'
+            "
+            [class.is-negative]="subProfit !== null && subProfit.startsWith('-')"
+            [class.is-better]="subSummary?.betterThanRoot"
+          >
+            <div class="node-subrecipe-profit-row">
+              <span class="node-subrecipe-label" i18n>Lucro/h sub-receita:</span>
+              <strong class="node-subrecipe-value">{{
+                subProfit !== null ? silver(subProfit) + '/h' : 'Pendente'
+              }}</strong>
+            </div>
+            @if (subSummary) {
+              <small class="node-subrecipe-meta">
+                @if (subSummary.skill) {
+                  {{ subSummary.skillLabel }} {{ subSummary.mastery }} ·
+                  {{ quantityLabel(subSummary.expectedYield) }} un/op
+                } @else {
+                  {{ subSummary.methodLabel }} · {{ quantityLabel(subSummary.expectedYield) }} un/op
+                }
+              </small>
+            }
+          </div>
         }
         @if (entry.node.category) {
           <span class="node-category">{{ entry.node.category }}</span>

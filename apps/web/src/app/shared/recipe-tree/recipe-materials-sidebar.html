@@ -131,14 +131,31 @@
                   item.subRecipeProfitPerHour !== null &&
                   item.subRecipeProfitPerHour.startsWith('-')
                 "
-                title="Lucro por hora estimado ao produzir esta sub-receita comprando seus ingredientes diretos"
+                [class.is-better]="item.subRecipeSummary?.betterThanRoot"
+                title="Lucro por hora estimado ao produzir esta sub-receita com a sua maestria ativa"
               >
-                <span i18n>Lucro/h sub-receita:</span>
-                <strong>{{
-                  item.subRecipeProfitPerHour !== null
-                    ? silver(item.subRecipeProfitPerHour) + '/h'
-                    : 'Pendente'
-                }}</strong>
+                <span class="sidebar-subrecipe-main">
+                  <span class="sidebar-subrecipe-label" i18n>Lucro/h sub-receita:</span>
+                  <strong class="sidebar-subrecipe-value">{{
+                    item.subRecipeProfitPerHour !== null
+                      ? silver(item.subRecipeProfitPerHour) + '/h'
+                      : 'Pendente'
+                  }}</strong>
+                  @if (item.subRecipeSummary?.betterThanRoot) {
+                    <span class="sidebar-subrecipe-better" i18n>Supera a final</span>
+                  }
+                </span>
+                @if (item.subRecipeSummary; as subSummary) {
+                  <span class="sidebar-subrecipe-meta">
+                    @if (subSummary.skill) {
+                      {{ subSummary.skillLabel }} {{ subSummary.mastery }} ·
+                      {{ quantityLabel(subSummary.expectedYield) }} un/op
+                    } @else {
+                      {{ subSummary.methodLabel }} ·
+                      {{ quantityLabel(subSummary.expectedYield) }} un/op
+                    }
+                  </span>
+                }
               </span>
             }
             @if (item.equivalentItem; as equivalent) {

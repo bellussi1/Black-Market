@@ -2939,5 +2939,64 @@ it('displays standalone profit per hour for craftable sub-recipes in sidebar and
   expect(stepSubProfit).not.toBeNull();
   expect(stepSubProfit?.textContent).toContain('Lucro/h:');
   expect(stepSubProfit?.textContent).toContain('/h');
+  expect(stepSubProfit?.textContent).toContain('Culinária 1000');
+
+  const dashboardCard = fixture.nativeElement.querySelector(
+    '.subrecipe-profit-card[data-subrecipe-id="9001"]',
+  ) as HTMLElement | null;
+  expect(dashboardCard).not.toBeNull();
+  expect(dashboardCard?.textContent).toContain('Culinária · Maestria 1000');
+  expect(dashboardCard?.textContent).toContain('/h');
+
+  const profitAt1000 = BigInt(tree.subRecipeProfitPerHourByItemId().get(9001)!);
+  tree.setMasteryForSkill('cooking', 2000);
+  fixture.detectChanges();
+  const profitAt2000 = BigInt(tree.subRecipeProfitPerHourByItemId().get(9001)!);
+  expect(profitAt2000).toBeGreaterThan(profitAt1000);
+  expect(
+    fixture.nativeElement.querySelector('.subrecipe-profit-card[data-subrecipe-id="9001"]')
+      ?.textContent,
+  ).toContain('Culinária · Maestria 2000');
+  fixture.destroy();
+});
+
+it('always computes profit per hour for processing sub-recipes using active processing mastery', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  const cheeseRecipe: CatalogRecipe = {
+    key: 'cheese-dry',
+    type: 'DRY',
+    station: null,
+    inputs: [{ itemId: 8002, name: 'Leite', quantity: '1' }],
+    outputs: [{ itemId: 9001, name: 'Sal', quantity: null }],
+  };
+  configureProduction(tree, { 5301: '5000', 9001: '2000', 8002: '200' });
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    producerRecipes: [cheeseRecipe],
+    itemIds: [5301, 8002, 9001],
+  }));
+  tree.setCraftCount(10);
+  fixture.detectChanges();
+
+  const summaryAt1000 = tree.subRecipeSummariesByItemId().get(9001);
+  expect(summaryAt1000).toBeDefined();
+  expect(summaryAt1000?.skill).toBe('processing');
+  expect(summaryAt1000?.mastery).toBe(1000);
+  expect(summaryAt1000?.profitPerHour).not.toBeNull();
+  expect(BigInt(summaryAt1000!.profitPerHour!)).toBeGreaterThan(0n);
+
+  tree.setMasteryForSkill('processing', 2000);
+  fixture.detectChanges();
+  const summaryAt2000 = tree.subRecipeSummariesByItemId().get(9001);
+  expect(summaryAt2000?.mastery).toBe(2000);
+  expect(summaryAt2000!.expectedYield).toBeGreaterThan(summaryAt1000!.expectedYield);
+  expect(BigInt(summaryAt2000!.profitPerHour!)).toBeGreaterThan(
+    BigInt(summaryAt1000!.profitPerHour!),
+  );
   fixture.destroy();
 });

@@ -605,6 +605,116 @@
           </div>
         </div>
 
+        @if (subRecipeComparisons().length) {
+          <details class="subrecipes-profit-panel" open>
+            <summary class="subrecipes-profit-summary">
+              <div class="subrecipes-profit-heading">
+                <strong i18n>Lucro por hora das sub-receitas</strong>
+                <span class="subrecipes-count-badge"
+                  >{{ subRecipeComparisons().length }} intermediários com maestria</span
+                >
+              </div>
+              <small i18n>
+                Calculado sempre com a sua maestria ativa. Compare produzir vs. comprar cada etapa.
+              </small>
+            </summary>
+            <div class="subrecipes-profit-grid" role="list">
+              @for (sub of subRecipeComparisons(); track sub.itemId) {
+                <article
+                  class="subrecipe-profit-card"
+                  role="listitem"
+                  [attr.data-subrecipe-id]="sub.itemId"
+                  [class.is-positive]="
+                    sub.profitPerHour !== null &&
+                    !sub.profitPerHour.startsWith('-') &&
+                    sub.profitPerHour !== '0'
+                  "
+                  [class.is-negative]="
+                    sub.profitPerHour !== null && sub.profitPerHour.startsWith('-')
+                  "
+                  [class.is-better]="sub.betterThanRoot"
+                >
+                  <div class="subrecipe-card-identity">
+                    <app-item-icon [url]="sub.iconUrl" [name]="sub.name" />
+                    <div class="subrecipe-card-titles">
+                      <div class="subrecipe-card-name-row">
+                        <button
+                          type="button"
+                          class="subrecipe-name-btn"
+                          (click)="selectMaterial(sub.itemId)"
+                        >
+                          {{ sub.name }}
+                        </button>
+                        @if (sub.betterThanRoot) {
+                          <span class="subrecipe-better-badge" i18n>Supera a receita final</span>
+                        }
+                      </div>
+                      <span class="subrecipe-mastery-meta">
+                        @if (sub.skill) {
+                          {{ sub.skillLabel }} · Maestria {{ sub.mastery }} ·
+                          {{ quantityLabel(sub.expectedYield) }} un/op
+                        } @else {
+                          {{ sub.methodLabel }} · {{ quantityLabel(sub.expectedYield) }} un/op
+                        }
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="subrecipe-card-metrics">
+                    <div class="subrecipe-hourly-metric">
+                      <span class="subrecipe-metric-label" i18n>Lucro/hora</span>
+                      <strong class="subrecipe-hourly-value">{{
+                        sub.profitPerHour !== null ? silver(sub.profitPerHour) + '/h' : 'Pendente'
+                      }}</strong>
+                    </div>
+                    <div class="subrecipe-unit-comparison">
+                      <span>
+                        <ng-container i18n>Custo prod.:</ng-container>
+                        <strong>{{
+                          sub.unitProductionCost !== null ? silver(sub.unitProductionCost) : '—'
+                        }}</strong>
+                      </span>
+                      <span>
+                        <ng-container i18n>Mercado:</ng-container>
+                        <strong>{{
+                          sub.unitMarketPrice !== null ? silver(sub.unitMarketPrice) : 'Sem cotação'
+                        }}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="source-switch subrecipe-source-switch"
+                    role="radiogroup"
+                    [attr.aria-label]="'Origem de ' + sub.name"
+                  >
+                    <label [class.is-active]="sub.source === 'buy'">
+                      <input
+                        type="radio"
+                        value="buy"
+                        [name]="'dashboard-sub-source-' + sub.itemId"
+                        [checked]="sub.source === 'buy'"
+                        (change)="sub.source !== 'buy' && toggleMaterialSource(sub.itemId)"
+                      />
+                      <span i18n>Comprar</span>
+                    </label>
+                    <label [class.is-active]="sub.source !== 'buy'">
+                      <input
+                        type="radio"
+                        value="make"
+                        [name]="'dashboard-sub-source-' + sub.itemId"
+                        [checked]="sub.source !== 'buy'"
+                        (change)="sub.source === 'buy' && toggleMaterialSource(sub.itemId)"
+                      />
+                      <span i18n>Produzir</span>
+                    </label>
+                  </div>
+                </article>
+              }
+            </div>
+          </details>
+        }
+
         <div class="economic-summary-footer">
           <span
             >{{ requestedOperations() }} receitas · tempo total: {{ formattedCraftTime() }} · inclui
@@ -711,6 +821,7 @@
                 [advanced]="true"
                 [allocations]="result.value?.allocations ?? []"
                 [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
+                [subRecipeSummaries]="subRecipeSummariesByItemId()"
                 [selected]="selectedPath()"
                 [origins]="origins()"
                 [quickInfo]="quickItemInfo()"
@@ -726,6 +837,7 @@
                 [allocations]="result.value?.allocations ?? []"
                 [sourceChoices]="branchSourceChoices()"
                 [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
+                [subRecipeSummaries]="subRecipeSummariesByItemId()"
                 (action)="action($event)"
               />
             </div>

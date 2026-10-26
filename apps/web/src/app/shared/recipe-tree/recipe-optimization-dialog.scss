@@ -280,3 +280,232 @@
     flex: 1;
   }
 }
+
+.subrecipes-profit-panel {
+  margin-top: 12px;
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(197, 160, 89, 0.06), rgba(20, 22, 27, 0.92));
+  overflow: hidden;
+}
+
+.subrecipes-profit-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: rgba(197, 160, 89, 0.08);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+
+  strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bm-accent);
+  }
+
+  small {
+    font-size: 11px;
+    color: var(--bm-muted);
+  }
+}
+
+.subrecipes-profit-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subrecipes-count-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bm-text);
+  background: var(--bm-input);
+  border: 1px solid var(--bm-border);
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.subrecipes-profit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.subrecipe-profit-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--bm-border);
+  border-left: 3px solid var(--bm-control-border);
+  border-radius: 2px;
+  background: var(--bm-surface);
+
+  &.is-positive {
+    border-left-color: #7cd89c;
+  }
+
+  &.is-negative {
+    border-left-color: #ef867b;
+  }
+
+  &.is-better {
+    border-color: rgba(197, 160, 89, 0.55);
+    border-left-color: var(--bm-accent);
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.12), var(--bm-surface) 75%);
+  }
+}
+
+.subrecipe-card-identity {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  app-item-icon {
+    --item-icon-size: 36px;
+    flex-shrink: 0;
+  }
+}
+
+.subrecipe-card-titles {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subrecipe-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.subrecipe-name-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bm-text);
+  font: 600 13px/1.3 var(--bm-font-body);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    color: var(--bm-accent);
+    text-decoration: underline;
+  }
+}
+
+.subrecipe-better-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bm-background);
+  background: var(--bm-accent);
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+}
+
+.subrecipe-mastery-meta {
+  font-size: 11px;
+  color: #d6c5a3;
+  font-variant-numeric: tabular-nums;
+}
+
+.subrecipe-card-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.subrecipe-hourly-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.subrecipe-metric-label {
+  font-size: 11px;
+  color: var(--bm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.subrecipe-hourly-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--bm-accent);
+
+  .subrecipe-profit-card.is-positive & {
+    color: #7cd89c;
+  }
+
+  .subrecipe-profit-card.is-negative & {
+    color: #ef867b;
+  }
+}
+
+.subrecipe-unit-comparison {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11px;
+  color: var(--bm-muted);
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    color: #ded9d1;
+    font-weight: 600;
+  }
+}
+
+.subrecipe-source-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, auto);
+  border: 1px solid var(--bm-control-border);
+  border-radius: 2px;
+  background: var(--bm-input);
+  overflow: hidden;
+  flex-shrink: 0;
+
+  label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bm-muted);
+    cursor: pointer;
+
+    &:first-child {
+      border-right: 1px solid var(--bm-border);
+    }
+
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &.is-active {
+      background: rgba(197, 160, 89, 0.18);
+      color: var(--bm-accent);
+    }
+  }
+}

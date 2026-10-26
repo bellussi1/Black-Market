@@ -109,6 +109,30 @@ import {
 
 export type AcquisitionStrategy = 'buy_all' | 'gather_all' | 'custom' | 'optimized';
 
+export interface SubRecipeProfitSummary {
+  itemId: number;
+  recipeKey: string;
+  name: string;
+  iconUrl: string | null;
+  method: string;
+  methodLabel: string;
+  skill: RecipeMasterySkill | null;
+  skillLabel: string;
+  mastery: number;
+  expectedYield: number;
+  craftSeconds: number | null;
+  profitPerHour: string | null;
+  profit: string | null;
+  netRevenue: string | null;
+  economicCost: string | null;
+  unitMarketPrice: string | null;
+  unitProductionCost: string | null;
+  betterThanRoot: boolean;
+  source: ProductionChoice;
+}
+
+const DEFAULT_SUBRECIPE_MASS_PROCESSING_SECONDS = 75;
+
 function hasOnlyOptimizationLimit(plan: ProductionPlan | null): boolean {
   return (
     !!plan &&
@@ -430,31 +454,143 @@ export class RecipeTree {
     return this.customItemPrices().get(itemId) ?? '';
   }
 
+  readonly subRecipeSummariesByItemId = computed<ReadonlyMap<number, SubRecipeProfitSummary>>(
+    () => {
+      const graph = this.recipeGraph();
+      const input = this.productionInput();
+      if (!graph || !input) return new Map();
+      const rootProfitPerHour = this.profitPerHour();
+      const partsMap = this.parts();
+      const subEstimates: Record<string, ProductionEstimate> = { ...input.estimates };
+      for (const recipe of this.allGraphRecipes(graph)) {
+        const current = subEstimates[recipe.key];
+        if (current && current.craftSeconds === undefined) {
+          const skill = lifeSkillForRecipe(recipe.type);
+          if (skill === 'processing') {
+            subEstimates[recipe.key] = {
+              ...current,
+              craftSeconds: DEFAULT_SUBRECIPE_MASS_PROCESSING_SECONDS,
+            };
+          }
+        }
+      }
+
+      const result = new Map<number, SubRecipeProfitSummary>();
+      for (const producer of graph.producerRecipes) {
+        const outputItemId = producer.outputs[0]?.itemId;
+        if (outputItemId === undefined || result.has(outputItemId)) continue;
+        const evaluation = planProduction({
+          ...input,
+          estimates: subEstimates,
+          recipeAlternativesByItemId: undefined,
+          customChoices: {},
+          candidates: [{ recipeId: producer.key, crafts: 100 }],
+        });
+        const buyAllPlan =
+          evaluation.ranked.find((plan) => plan.scenario === 'buy-all') ??
+          evaluation.incomplete.find((plan) => plan.scenario === 'buy-all') ??
+          null;
+        const completeBuyAll =
+          buyAllPlan && (buyAllPlan.issues.length === 0 || hasOnlyOptimizationLimit(buyAllPlan))
+            ? buyAllPlan
+            : null;
+        const selectedPlan = completeBuyAll ?? evaluation.ranked[0] ?? buyAllPlan;
+        const profitPerHour =
+          selectedPlan &&
+          (selectedPlan.issues.length === 0 || hasOnlyOptimizationLimit(selectedPlan))
+            ? selectedPlan.profitPerHour
+            : null;
+        const profit =
+          selectedPlan &&
+          (selectedPlan.issues.length === 0 || hasOnlyOptimizationLimit(selectedPlan))
+            ? selectedPlan.profit
+            : null;
+        const netRevenue = selectedPlan?.netRevenue ?? null;
+        const economicCost = selectedPlan?.economicCost ?? null;
+        const unitProductionCost =
+          economicCost !== null &&
+          /^\d+$/.test(economicCost) &&
+          selectedPlan?.output !== null &&
+          selectedPlan?.output !== undefined &&
+          selectedPlan.output > 0
+            ? String(
+                (BigInt(economicCost) * 1_000_000n) /
+                  BigInt(Math.max(1, Math.round(selectedPlan.output * 1_000_000))),
+              )
+            : null;
+        const rawSkill = lifeSkillForRecipe(producer.type);
+        const skill: RecipeMasterySkill | null =
+          rawSkill === 'cooking' || rawSkill === 'alchemy' || rawSkill === 'processing'
+            ? rawSkill
+            : null;
+        const mastery = skill ? this.simulationMasteryForSkill(skill) : 0;
+        const skillLabel = skill ? this.masterySkillLabel(skill) : this.typeLabel(producer.type);
+        const estimate = subEstimates[producer.key];
+        const expectedYield =
+          estimate?.expectedYield ??
+          (skill ? resolveDefaultYield(producer, outputItemId, mastery) : 1);
+        const craftSeconds = estimate?.craftSeconds ?? null;
+        const part = partsMap.get(outputItemId) ?? producer.outputs[0];
+        const name = this.productionMaterialName(outputItemId);
+        const iconUrl = this.catalog.resolveIconUrl(part ?? { itemId: outputItemId });
+        const unitMarketPrice = this.materialPrice(outputItemId)?.price ?? null;
+        let betterThanRoot = false;
+        if (
+          profitPerHour !== null &&
+          rootProfitPerHour !== null &&
+          /^-?\d+$/.test(profitPerHour) &&
+          /^-?\d+$/.test(rootProfitPerHour)
+        ) {
+          betterThanRoot = BigInt(profitPerHour) > BigInt(rootProfitPerHour);
+        }
+        result.set(outputItemId, {
+          itemId: outputItemId,
+          recipeKey: producer.key,
+          name,
+          iconUrl,
+          method: producer.type,
+          methodLabel: this.typeLabel(producer.type),
+          skill,
+          skillLabel,
+          mastery,
+          expectedYield,
+          craftSeconds,
+          profitPerHour,
+          profit,
+          netRevenue,
+          economicCost,
+          unitMarketPrice,
+          unitProductionCost,
+          betterThanRoot,
+          source: this.materialSource(outputItemId),
+        });
+      }
+      return result;
+    },
+  );
+
   readonly subRecipeProfitPerHourByItemId = computed<ReadonlyMap<number, string | null>>(() => {
-    const graph = this.recipeGraph();
-    const input = this.productionInput();
-    if (!graph || !input) return new Map();
+    const summaries = this.subRecipeSummariesByItemId();
     const result = new Map<number, string | null>();
-    for (const producer of graph.producerRecipes) {
-      const outputItemId = producer.outputs[0]?.itemId;
-      if (outputItemId === undefined || result.has(outputItemId)) continue;
-      const evaluation = planProduction({
-        ...input,
-        recipeAlternativesByItemId: undefined,
-        customChoices: {},
-        candidates: [{ recipeId: producer.key, crafts: 100 }],
-      });
-      const buyAllPlan =
-        evaluation.ranked.find((plan) => plan.scenario === 'buy-all') ??
-        evaluation.incomplete.find((plan) => plan.scenario === 'buy-all') ??
-        null;
-      const profitPerHour =
-        buyAllPlan && (buyAllPlan.issues.length === 0 || hasOnlyOptimizationLimit(buyAllPlan))
-          ? buyAllPlan.profitPerHour
-          : null;
-      result.set(outputItemId, profitPerHour);
+    for (const [itemId, summary] of summaries) {
+      result.set(itemId, summary.profitPerHour);
     }
     return result;
+  });
+
+  readonly subRecipeComparisons = computed<readonly SubRecipeProfitSummary[]>(() => {
+    const rows = [...this.subRecipeSummariesByItemId().values()];
+    return rows.sort((left, right) => {
+      if (left.profitPerHour !== null && right.profitPerHour !== null) {
+        const diff = BigInt(right.profitPerHour) - BigInt(left.profitPerHour);
+        if (diff !== 0n) return diff > 0n ? 1 : -1;
+      } else if (left.profitPerHour !== null) {
+        return -1;
+      } else if (right.profitPerHour !== null) {
+        return 1;
+      }
+      return left.name.localeCompare(right.name, 'pt-BR');
+    });
   });
 
   readonly materialDecisions = computed(() => {
@@ -462,7 +598,7 @@ export class RecipeTree {
     const plannerRows = this.plannerMaterials();
     const quotes = this.marketQuotes();
     const partsMap = this.parts();
-    const subRecipeProfits = this.subRecipeProfitPerHourByItemId();
+    const subRecipeSummaries = this.subRecipeSummariesByItemId();
     const pendingQuantityIds = new Set(
       this.currentProductionPlan()
         ?.issues.filter((issue) => issue.code === 'missing-quantity' && issue.itemId !== undefined)
@@ -476,8 +612,9 @@ export class RecipeTree {
         const part = partsMap.get(itemId);
         const iconUrl = this.catalog.resolveIconUrl(part ?? { itemId });
         const canProduce = this.makeChoice(itemId) !== 'buy';
-        const hasSubRecipe = subRecipeProfits.has(itemId);
-        const subRecipeProfitPerHour = subRecipeProfits.get(itemId) ?? null;
+        const subRecipeSummary = subRecipeSummaries.get(itemId) ?? null;
+        const hasSubRecipe = subRecipeSummary !== null;
+        const subRecipeProfitPerHour = subRecipeSummary?.profitPerHour ?? null;
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
         const required = plannerRow?.required ?? 0;
@@ -513,6 +650,7 @@ export class RecipeTree {
           canProduce,
           hasSubRecipe,
           subRecipeProfitPerHour,
+          subRecipeSummary,
           unitPrice,
           unitPriceSource: materialPrice?.source ?? null,
           equivalentPriceSource:

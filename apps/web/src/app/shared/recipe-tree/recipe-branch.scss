@@ -83,23 +83,45 @@ summary:focus-visible,
 }
 .step-subrecipe-profit {
   display: inline-flex;
-  align-items: center;
-  padding: 2px 7px;
-  border: 1px solid var(--bm-border);
-  background: var(--bm-surface-raised, var(--bm-surface));
-  color: var(--bm-muted);
-  font-size: 11px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px 9px;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  border-left: 3px solid var(--bm-accent);
+  border-radius: 2px;
+  background: rgba(197, 160, 89, 0.1);
+  color: var(--bm-accent);
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
   font-variant-numeric: tabular-nums;
+
+  strong {
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  .step-subrecipe-mastery {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--bm-muted);
+  }
 }
 .step-subrecipe-profit.is-positive {
-  border-color: color-mix(in srgb, var(--bm-success, #92b59a) 45%, var(--bm-border));
-  color: var(--bm-success, #92b59a);
+  border-color: rgba(124, 216, 156, 0.4);
+  border-left-color: #7cd89c;
+  background: rgba(124, 216, 156, 0.1);
+  color: #7cd89c;
 }
 .step-subrecipe-profit.is-negative {
-  border-color: color-mix(in srgb, var(--bm-danger, #d98276) 45%, var(--bm-border));
-  color: var(--bm-danger, #d98276);
+  border-color: rgba(239, 134, 123, 0.4);
+  border-left-color: #ef867b;
+  background: rgba(239, 134, 123, 0.1);
+  color: #ef867b;
+}
+.step-subrecipe-profit.is-better {
+  box-shadow: inset 0 0 8px rgba(197, 160, 89, 0.15);
 }
 .step-hint {
   font-size: 12px;

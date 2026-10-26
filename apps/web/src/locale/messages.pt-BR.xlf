@@ -1492,8 +1492,9 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:385</note>
         <note category="location">src/app/features/crafting/crafting-page.html:614</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:182,183</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:203,204</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:199,200</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:220,221</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:699,700</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1741,7 +1742,8 @@
     <unit id="8708694637993344978">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:613</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:195,196</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:212,213</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:709,710</note>
       </notes>
       <segment>
         <source>Produzir</source>
@@ -11473,7 +11475,7 @@
     </unit>
     <unit id="740486470890843312">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:61,62</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:74,75</note>
       </notes>
       <segment>
         <source>Buscando receita…</source>
@@ -11481,7 +11483,7 @@
     </unit>
     <unit id="4436841969464801105">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:70</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:83</note>
       </notes>
       <segment>
         <source>Ver como obter</source>
@@ -11570,8 +11572,8 @@
     </unit>
     <unit id="2299724517944553924">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:139,140</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:136,137</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:153,154</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:138,139</note>
       </notes>
       <segment>
         <source>Lucro/h sub-receita:</source>
@@ -11579,7 +11581,7 @@
     </unit>
     <unit id="7256196059812036695">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:235,236</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:262,263</note>
       </notes>
       <segment>
         <source>LOCALIZAÇÃO · ALTERNATIVA</source>
@@ -11587,7 +11589,7 @@
     </unit>
     <unit id="1642053073000478618">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:250</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:277</note>
       </notes>
       <segment>
         <source> Ver localização e recursos </source>
@@ -11595,7 +11597,7 @@
     </unit>
     <unit id="5263876161393259227">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:261,262</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:288,289</note>
       </notes>
       <segment>
         <source>LOCAIS AGRUPADOS</source>
@@ -11603,7 +11605,7 @@
     </unit>
     <unit id="2821737020222245448">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:265,266</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:292,293</note>
       </notes>
       <segment>
         <source>Consulte todos os locais no painel do item.</source>
@@ -11611,7 +11613,7 @@
     </unit>
     <unit id="4466085967947328193">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:272</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:299</note>
       </notes>
       <segment>
         <source> Ver todas as fontes </source>
@@ -11619,7 +11621,7 @@
     </unit>
     <unit id="4669609318960501516">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:289,290</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:316,317</note>
       </notes>
       <segment>
         <source>MÉTODO DE OBTENÇÃO</source>
@@ -11627,7 +11629,7 @@
     </unit>
     <unit id="577284102864482629">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:295,296</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:322,323</note>
       </notes>
       <segment>
         <source>Escolha um dos locais vinculados.<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/>Não é necessário usar todos.</source>
@@ -11886,7 +11888,7 @@
     <unit id="3383907643333341583">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:74,75</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:240,241</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:257,258</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -11973,9 +11975,17 @@
         <source>Sem cotação</source>
       </segment>
     </unit>
+    <unit id="8077776456918565927">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:145,146</note>
+      </notes>
+      <segment>
+        <source>Supera a final</source>
+      </segment>
+    </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:209,211</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:226,228</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -11983,8 +11993,8 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:214</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:216,217</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:231</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:233,234</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
@@ -11992,7 +12002,7 @@
     </unit>
     <unit id="2890356988144271644">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:220,223</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:237,240</note>
       </notes>
       <segment>
         <source> Itens extras que a receita devolve. <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Vender</pc> soma ao faturamento; <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guardar</pc> mantém o item e não entra no lucro. </source>
@@ -12000,7 +12010,7 @@
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:242,243</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:259,260</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returns().length - 2 }}"/>)</source>
@@ -12008,7 +12018,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:253,254</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:270,271</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -12016,7 +12026,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:260,262</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:277,279</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>
@@ -12245,9 +12255,57 @@
         <source>Faturamento líquido</source>
       </segment>
     </unit>
+    <unit id="4872239012867377923">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:612,613</note>
+      </notes>
+      <segment>
+        <source>Lucro por hora das sub-receitas</source>
+      </segment>
+    </unit>
+    <unit id="567018180733086315">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:618</note>
+      </notes>
+      <segment>
+        <source> Calculado sempre com a sua maestria ativa. Compare produzir vs. comprar cada etapa. </source>
+      </segment>
+    </unit>
+    <unit id="4240303660390042265">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:649,650</note>
+      </notes>
+      <segment>
+        <source>Supera a receita final</source>
+      </segment>
+    </unit>
+    <unit id="373462906473406784">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:665,666</note>
+      </notes>
+      <segment>
+        <source>Lucro/hora</source>
+      </segment>
+    </unit>
+    <unit id="404873583880344304">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:672</note>
+      </notes>
+      <segment>
+        <source>Custo prod.:</source>
+      </segment>
+    </unit>
+    <unit id="700395907297736522">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:678</note>
+      </notes>
+      <segment>
+        <source>Mercado:</source>
+      </segment>
+    </unit>
     <unit id="5783330943194905505">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:620,621</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:730,731</note>
       </notes>
       <segment>
         <source>Atualizando cotações</source>
@@ -12255,7 +12313,7 @@
     </unit>
     <unit id="8638566115687747364">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:670</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:780</note>
       </notes>
       <segment>
         <source>Visualização da produção</source>
@@ -12263,7 +12321,7 @@
     </unit>
     <unit id="3423527547728662625">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:677</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:787</note>
       </notes>
       <segment>
         <source> Árvore visual </source>
@@ -12271,7 +12329,7 @@
     </unit>
     <unit id="1596513412557859561">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:685</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:795</note>
       </notes>
       <segment>
         <source> Etapas expansíveis </source>
@@ -12279,7 +12337,7 @@
     </unit>
     <unit id="5764736619878600212">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:691</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:801</note>
       </notes>
       <segment>
         <source> Expandir todos </source>
@@ -12287,7 +12345,7 @@
     </unit>
     <unit id="2016013543679738291">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:693,694</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:803,804</note>
       </notes>
       <segment>
         <source>Recolher todos</source>
@@ -12295,7 +12353,7 @@
     </unit>
     <unit id="6761593809530292978">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:695,696</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-tree.html:805,806</note>
       </notes>
       <segment>
         <source>Interromper expansão</source>

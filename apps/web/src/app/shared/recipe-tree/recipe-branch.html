@@ -43,14 +43,27 @@
             [class.is-negative]="
               subRecipeProfitPerHour() !== null && subRecipeProfitPerHour()!.startsWith('-')
             "
-            title="Lucro por hora estimado ao produzir esta sub-receita comprando seus ingredientes diretos"
+            [class.is-better]="subRecipeSummary()?.betterThanRoot"
+            title="Lucro por hora estimado ao produzir esta sub-receita com a sua maestria ativa"
           >
-            Lucro/h:
-            {{
-              subRecipeProfitPerHour() !== null
-                ? silver(subRecipeProfitPerHour()) + '/h'
-                : 'Pendente'
-            }}
+            <strong>
+              Lucro/h:
+              {{
+                subRecipeProfitPerHour() !== null
+                  ? silver(subRecipeProfitPerHour()) + '/h'
+                  : 'Pendente'
+              }}
+            </strong>
+            @if (subRecipeSummary(); as sub) {
+              <small class="step-subrecipe-mastery">
+                @if (sub.skill) {
+                  · {{ sub.skillLabel }} {{ sub.mastery }} ({{ quantityLabel(sub.expectedYield) }}
+                  un/op)
+                } @else {
+                  · {{ quantityLabel(sub.expectedYield) }} un/op
+                }
+              </small>
+            }
           </span>
         }
       </span>
@@ -115,6 +128,7 @@
           [allocations]="allocations()"
           [sourceChoices]="sourceChoices()"
           [subRecipeProfits]="subRecipeProfits()"
+          [subRecipeSummaries]="subRecipeSummaries()"
           (action)="action.emit($event)"
         />
       }
