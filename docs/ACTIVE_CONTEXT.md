@@ -17,6 +17,7 @@ Atualizado em 26/10/2026. Este resumo substitui handoffs anteriores; decisões e
   - `Etapas expansíveis` funciona como visualização somente leitura da árvore (sem inputs embutidos ao expandir).
   - Sidebar `Plano da receita` (`RecipeMaterialsSidebar`) usa seletores segmentados explícitos `Comprar | Produzir` para insumos e `Vender | Guardar` para retornos previstos (`grid-template-columns: minmax(0, 1fr) auto`, sem overflow horizontal), exibindo também o **Lucro/h sub-receita** individual de cada insumo fabricável (replicado nas `Etapas expansíveis` e na `Árvore visual`).
   - Card `Faturamento líquido` em `RecipeTree` decompõe separadamente a receita do **produto principal** e a venda de **retornos previstos** (líquido e bruto), além da origem do preço e estoque.
+- Catálogo do jogo atualizado em 26/10/2026 (`sa-pt-meta-af2b8344c221-loc-39290c8dddc1-ext-5bf11bd7-bin-60bd5677-catalog-catalog-v3-supp-df1d8958`, checksum `f150e161ae979c533be4e0acb4a7d17c08b4ce09d04a6efa60f6142225c1ff1f`, `74.892` itens, `10.683` receitas e `22.018` ícones publicados tanto no banco local quanto no staging).
 - Staging local (`docs/staging-local.md`, `staging.cmd`, `scripts/staging.ps1`): configurado com `black-market-bdo-staging`, login Google/Steam, catálogo real e compartilhamento via Cloudflare Quick Tunnel (`.\staging.cmd Share -AllowedEmail ...`).
 
 ## Validação

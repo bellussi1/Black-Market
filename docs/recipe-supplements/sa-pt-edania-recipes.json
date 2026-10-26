@@ -1,8 +1,8 @@
 {
   "region": "sa",
   "locale": "pt",
-  "extractorChecksum": "dae590a980d234ded0de347590b853facdf8175202a4186197917f017cc6a917",
-  "reviewedAt": "2026-10-24",
+  "extractorChecksum": "c85a581e9d251ba34297b285d392c976119c94120d228360e986d620bfdc6734",
+  "reviewedAt": "2026-10-26",
   "sourceUrls": [
     "https://www.sa.playblackdesert.com/PT-BR/News/Detail?groupContentNo=6639",
     "https://www.sa.playblackdesert.com/pt-BR/News/Detail?groupContentNo=8511",
@@ -11,7 +11,7 @@
     "https://github.com/iDevelopThings/bdo-data-extractor/blob/5bf11bd7bc60dcbb6126be34bf3d76633abdd8b2/internal/tables/recipexml.go"
   ],
   "clientEvidence": {
-    "extractionVersion": "sa-pt-meta-11e938d92a61-loc-72e54f5dc932-ext-5bf11bd7-bin-60bd5677-catalog",
+    "extractionVersion": "sa-pt-meta-af2b8344c221-loc-39290c8dddc1-ext-5bf11bd7-bin-60bd5677-catalog",
     "itemIds": [
       1407,
       1408,
