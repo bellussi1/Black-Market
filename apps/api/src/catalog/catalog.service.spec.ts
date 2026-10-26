@@ -348,7 +348,15 @@ describe('recipe market equivalents', () => {
       preferredLocale: 'pt',
     });
 
-    expect(response.equivalents).toEqual([]);
+    expect(response.equivalents).toEqual([
+      {
+        sourceItemId: 8211,
+        itemId: 8511,
+        name: 'Calamar Desidratado',
+        iconUrl: '/items/8511.webp',
+        quantityRatio: 1,
+      },
+    ]);
     expect(new PgDialect().sqlToQuery(dryRows.where.mock.calls[0][0] as SQL).params).toContain(
       'DRY',
     );

@@ -72,7 +72,11 @@ import {
   recipeReturnProductItemIds,
 } from './recipe-bonus-products';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
-import { recipeFamilies, verifiedIngredientSubstitutionItemIds } from './recipe-equivalents';
+import {
+  recipeFamilies,
+  verifiedIngredientSubstitutionItemIds,
+  withVerifiedIngredientSubstitutions,
+} from './recipe-equivalents';
 import { fixedRecipeYield } from './recipe-fixed-yields';
 import { RecipeGraph } from './recipe-graph';
 import { RecipeItemDetails } from './recipe-item-details';
@@ -1153,6 +1157,16 @@ export class RecipeTree {
     }
     return [...groups.values()];
   });
+  readonly effectiveLivePrices = computed(() => {
+    const prices = new Map(this.livePrices());
+    for (const itemId of [...this.parts().keys(), ...(this.recipeGraph()?.itemIds ?? [])]) {
+      if (!prices.has(itemId)) {
+        const resolved = this.materialPrice(itemId)?.price;
+        if (resolved !== null && resolved !== undefined) prices.set(itemId, resolved);
+      }
+    }
+    return prices;
+  });
   readonly plan = computed(() => {
     const root = this.root();
     return root
@@ -1163,15 +1177,49 @@ export class RecipeTree {
           {
             rootCrafts: this.requestedOperations(),
             excludedLocations: this.excludedLocations(),
-            prices: this.livePrices(),
+            prices: this.effectiveLivePrices(),
           },
         )
       : null;
   });
   readonly parts = computed(() => {
     const parts = new Map<number, CatalogRecipePart>();
+    for (const equivalents of this.marketEquivalentInputs().values()) {
+      for (const equivalent of equivalents) {
+        const current = parts.get(equivalent.itemId);
+        parts.set(equivalent.itemId, {
+          itemId: equivalent.itemId,
+          name: equivalent.name || current?.name || `Item ${equivalent.itemId}`,
+          quantity: current?.quantity ?? null,
+          iconUrl: equivalent.iconUrl ?? current?.iconUrl,
+        });
+      }
+    }
+    for (const [itemId, item] of this.recipeCatalogItems()) {
+      parts.set(itemId, {
+        itemId,
+        name: item.name,
+        quantity: null,
+        iconUrl: item.iconUrl,
+      });
+    }
+    for (const recipe of this.allGraphRecipes(this.recipeGraph())) {
+      for (const part of [...recipe.inputs, ...recipe.outputs]) {
+        const current = parts.get(part.itemId);
+        parts.set(part.itemId, {
+          ...part,
+          name: part.name || current?.name || `Item ${part.itemId}`,
+          iconUrl: part.iconUrl ?? current?.iconUrl,
+        });
+      }
+    }
     const visit = (node: RecipeNode) => {
-      parts.set(node.part.itemId, node.part);
+      const current = parts.get(node.part.itemId);
+      parts.set(node.part.itemId, {
+        ...node.part,
+        name: node.part.name || current?.name || `Item ${node.part.itemId}`,
+        iconUrl: node.part.iconUrl ?? current?.iconUrl,
+      });
       node.children.forEach(visit);
     };
     if (this.root()) visit(this.root()!);
@@ -1309,7 +1357,7 @@ export class RecipeTree {
     return [...parts.keys()]
       .filter((itemId) => itemId !== rootId && !producedIds.has(itemId))
       .map((itemId) => {
-        const part = parts.get(itemId);
+        const part = this.parts().get(itemId) ?? parts.get(itemId);
         const estimate = this.gatherEstimates().get(itemId);
         const draft = this.gatherEstimateDrafts().get(itemId);
         return {
@@ -1686,7 +1734,7 @@ export class RecipeTree {
               ...new Set([
                 ...graph.itemIds,
                 ...recipeReturnProductItemIds(graphRecipes),
-                ...verifiedIngredientSubstitutionItemIds(this.recipes()),
+                ...verifiedIngredientSubstitutionItemIds([...this.recipes(), ...graphRecipes]),
               ]),
             ].sort((left, right) => left - right);
           } else {
@@ -1714,28 +1762,6 @@ export class RecipeTree {
                 : []),
             ]),
           ];
-          const catalogItemIds = [
-            ...new Set([
-              ...itemIds,
-              ...returnItemIds,
-              ...this.recipes().flatMap((recipe) =>
-                [...recipe.inputs, ...recipe.outputs].map((part) => part.itemId),
-              ),
-              ...verifiedIngredientSubstitutionItemIds(this.recipes()),
-            ]),
-          ];
-          const recipeCatalogItems$ = catalogItemIds.length
-            ? this.catalog
-                .getItemsByIds(catalogItemIds, graph?.datasetVersion ?? this.datasetVersion())
-                .pipe(
-                  catchError(() =>
-                    of({
-                      items: new Map<number, CatalogItem>(),
-                      dataset: null,
-                    }),
-                  ),
-                )
-            : of({ items: new Map<number, CatalogItem>(), dataset: null });
           const marketEquivalents$ = graph
             ? this.catalog
                 .getRecipeMarketEquivalents(graph.itemIds, graph.datasetVersion)
@@ -1749,6 +1775,28 @@ export class RecipeTree {
                 inputs.push(equivalent);
                 equivalentInputs.set(equivalent.sourceItemId, inputs);
               }
+              const catalogItemIds = [
+                ...new Set([
+                  ...itemIds,
+                  ...returnItemIds,
+                  ...this.recipes().flatMap((recipe) =>
+                    [...recipe.inputs, ...recipe.outputs].map((part) => part.itemId),
+                  ),
+                  ...verifiedIngredientSubstitutionItemIds([...this.recipes(), ...graphRecipes]),
+                ]),
+              ];
+              const recipeCatalogItems$ = catalogItemIds.length
+                ? this.catalog
+                    .getItemsByIds(catalogItemIds, graph?.datasetVersion ?? this.datasetVersion())
+                    .pipe(
+                      catchError(() =>
+                        of({
+                          items: new Map<number, CatalogItem>(),
+                          dataset: null,
+                        }),
+                      ),
+                    )
+                : of({ items: new Map<number, CatalogItem>(), dataset: null });
               const quoteItemIds = [
                 ...new Set([...itemIds, ...marketEquivalents.map((item) => item.itemId)]),
               ].sort((left, right) => left - right);
@@ -2183,8 +2231,10 @@ export class RecipeTree {
             if (!active()) break;
             if (this.datasetVersion() && response.dataset?.version !== this.datasetVersion())
               throw new Error('Catalog version changed');
-            const recipes = response.recipes.filter((r) =>
-              r.outputs.some((part) => part.itemId === node!.part.itemId),
+            const recipes = withVerifiedIngredientSubstitutions(
+              response.recipes.filter((r) =>
+                r.outputs.some((part) => part.itemId === node!.part.itemId),
+              ),
             );
             this.patch(path, (n) => ({ ...n, options: recipes, loading: false }));
             const families = recipeFamilies(recipes);
@@ -2333,8 +2383,8 @@ export class RecipeTree {
         this.patch(node.path, (n) => withRecipe({ ...n, loading: false }, recipe));
         if (node.path === 'root') {
           this.rootMethod.emit(recipe);
-          this.consultAllTreePrices(true);
         }
+        this.consultAllTreePrices(true);
       }
       return;
     }
@@ -2379,7 +2429,8 @@ export class RecipeTree {
             }));
             return;
           }
-          const families = recipeFamilies(response.recipes);
+          const recipes = withVerifiedIngredientSubstitutions(response.recipes);
+          const families = recipeFamilies(recipes);
           const preferred = families[0]?.[0];
           if (
             families.length === 1 &&
@@ -2392,9 +2443,9 @@ export class RecipeTree {
           this.patch(node.path, (n) => {
             const ready = {
               ...n,
-              options: response.recipes,
+              options: recipes,
               loading: false,
-              message: response.recipes.length
+              message: recipes.length
                 ? ''
                 : 'Sem receita vinculada. Consulte as fontes conhecidas em Onde obter.',
             };
@@ -2534,7 +2585,7 @@ export class RecipeTree {
           node,
           item: result.item?.item ?? null,
           origins: result.origins ?? { nodes: [], updatedAt: null },
-          recipes: result.recipes?.recipes ?? [],
+          recipes: withVerifiedIngredientSubstitutions(result.recipes?.recipes ?? []),
           uses: result.uses?.recipes ?? [],
           incomplete: Object.values(result).some((v) => v === null),
         });

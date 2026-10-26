@@ -3,11 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { deriveRecipeMarketEquivalents } from './recipe-market-equivalents';
 
 describe('recipe market equivalents', () => {
-  it('does not treat a drying relation as a verified culinary substitution ratio', () => {
+  it('derives a marketable dried-fish input from the catalog drying relation', () => {
     const equivalents = deriveRecipeMarketEquivalents(
       [
         {
           id: 8201,
+          category: 'Fish',
+          sourceData: { forTrade: true, marketable: false },
+        },
+        {
+          id: 6511,
           category: 'Fish',
           sourceData: { forTrade: true, marketable: false },
         },
@@ -18,6 +23,11 @@ describe('recipe market equivalents', () => {
           inputs: [{ itemId: 8201 }],
           outputs: [{ itemId: 8501 }],
         },
+        {
+          type: 'DRY',
+          inputs: [{ itemId: 6511 }],
+          outputs: [{ itemId: 6521 }],
+        },
       ],
       [
         {
@@ -27,10 +37,32 @@ describe('recipe market equivalents', () => {
           category: 'Fish',
           sourceData: { marketable: true },
         },
+        {
+          id: 6521,
+          name: 'Lagosta Desidratada',
+          iconUrl: '/market/lagosta.webp',
+          category: 'Fish',
+          sourceData: { marketable: true },
+        },
       ],
     );
 
-    expect(equivalents).toEqual([]);
+    expect(equivalents).toEqual([
+      {
+        sourceItemId: 6511,
+        itemId: 6521,
+        name: 'Lagosta Desidratada',
+        iconUrl: '/market/lagosta.webp',
+        quantityRatio: 1,
+      },
+      {
+        sourceItemId: 8201,
+        itemId: 8501,
+        name: 'Gobião Desidratado',
+        iconUrl: '/market/gobiao.webp',
+        quantityRatio: 1,
+      },
+    ]);
   });
 
   it('does not infer equivalents from names, non-fish inputs, or nonmarketable outputs', () => {

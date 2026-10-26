@@ -153,7 +153,8 @@ export class CatalogApiService {
     const iconUrl =
       item.iconUrl ??
       (itemId && this.activeIconChecksum
-        ? this.itemIconUrls.get(`${this.activeIconChecksum}:${itemId}`)
+        ? (this.itemIconUrls.get(`${this.activeIconChecksum}:${itemId}`) ??
+          `${this.baseUrl}/items/${itemId}/icon?dataset=${this.activeIconChecksum}`)
         : null);
     return iconUrl ? new URL(iconUrl, environment.apiBaseUrl || this.document.baseURI).href : null;
   }

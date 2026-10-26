@@ -3000,3 +3000,134 @@ it('always computes profit per hour for processing sub-recipes using active proc
   );
   fixture.destroy();
 });
+
+it('resolves icons and dried market prices for fish, mollusks, and dried items across root and sub-recipes', async () => {
+  const lobsterDish: CatalogRecipe = {
+    key: 'butter-roasted-lobster',
+    type: 'COOK',
+    station: null,
+    inputs: [
+      {
+        itemId: 6511,
+        name: 'Lagosta',
+        quantity: '1',
+        iconUrl: '/api/v1/items/6511/icon?dataset=ds',
+      },
+      {
+        itemId: 9419,
+        name: 'Salada de Frutos do Mar e Cogumelo',
+        quantity: '1',
+        iconUrl: '/api/v1/items/9419/icon?dataset=ds',
+      },
+    ],
+    outputs: [
+      {
+        itemId: 9477,
+        name: 'Lagosta Assada em Manteiga',
+        quantity: null,
+        iconUrl: '/api/v1/items/9477/icon?dataset=ds',
+      },
+    ],
+  };
+  const seafoodSaladFresh: CatalogRecipe = {
+    key: 'seafood-salad',
+    type: 'COOK',
+    station: null,
+    inputs: [
+      { itemId: 8211, name: 'Lula', quantity: '1', iconUrl: '/api/v1/items/8211/icon?dataset=ds' },
+    ],
+    outputs: [
+      {
+        itemId: 9419,
+        name: 'Salada de Frutos do Mar e Cogumelo',
+        quantity: null,
+        iconUrl: '/api/v1/items/9419/icon?dataset=ds',
+      },
+    ],
+  };
+  const seafoodSaladDried: CatalogRecipe = {
+    key: 'seafood-salad~verified-seafood-8511',
+    type: 'COOK',
+    station: null,
+    inputs: [{ itemId: 8511, name: 'Calamar Desidratado', quantity: '1', iconUrl: undefined }],
+    outputs: [
+      {
+        itemId: 9419,
+        name: 'Salada de Frutos do Mar e Cogumelo',
+        quantity: null,
+        iconUrl: '/api/v1/items/9419/icon?dataset=ds',
+      },
+    ],
+  };
+  const lobsterItem: CatalogItemDetail = {
+    ...item,
+    id: 9477,
+    name: 'Lagosta Assada em Manteiga',
+    iconUrl: '/api/v1/items/9477/icon?dataset=ds',
+  };
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe: lobsterDish, recipes: [lobsterDish], selectedItem: lobsterItem },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 9477: '52500', 9419: '825', 6521: '117000', 8511: '7550' });
+  tree.recipeCatalogItems.set(
+    new Map([
+      [
+        8511,
+        {
+          id: 8511,
+          name: 'Calamar Desidratado',
+          description: null,
+          grade: 'white',
+          weight: '0.5',
+          category: 'Fish',
+          icon: null,
+          iconUrl: '/api/v1/items/8511/icon?dataset=ds',
+          categories: [],
+        },
+      ],
+    ]),
+  );
+  tree.marketEquivalentInputs.set(
+    new Map([
+      [
+        6511,
+        [
+          {
+            sourceItemId: 6511,
+            itemId: 6521,
+            name: 'Lagosta Desidratada',
+            iconUrl: '/api/v1/items/6521/icon?dataset=ds',
+            quantityRatio: 1,
+          },
+        ],
+      ],
+    ]),
+  );
+  tree.recipeGraph.set({
+    rootRecipe: lobsterDish,
+    producerRecipes: [seafoodSaladDried],
+    producerAlternativesByItemId: new Map([[9419, [seafoodSaladDried, seafoodSaladFresh]]]),
+    itemIds: [6511, 8211, 8511, 9419, 9477],
+    issues: [],
+    datasetVersion: 'v1',
+  });
+  tree.setMaterialSource(9419, 'produce');
+  fixture.detectChanges();
+
+  const decisions = tree.materialDecisions();
+  const lobsterDecision = decisions.find((row) => row.itemId === 6511);
+  const driedSquidDecision = decisions.find((row) => row.itemId === 8511);
+
+  expect(lobsterDecision?.unitPrice).toBe('117000');
+  expect(lobsterDecision?.unitPriceSource).toBe('equivalent');
+  expect(lobsterDecision?.equivalentItem?.itemId).toBe(6521);
+  expect(lobsterDecision?.iconUrl).toContain('/api/v1/items/6511/icon');
+  expect(driedSquidDecision?.unitPrice).toBe('7550');
+  expect(driedSquidDecision?.iconUrl).toContain('/api/v1/items/8511/icon');
+  expect(tree.plan()?.unknownPrices).toEqual([]);
+  expect(tree.subRecipeSummariesByItemId().get(9419)?.profitPerHour).not.toBeNull();
+  fixture.destroy();
+});
