@@ -710,6 +710,7 @@
                 [root]="product"
                 [advanced]="true"
                 [allocations]="result.value?.allocations ?? []"
+                [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
                 [selected]="selectedPath()"
                 [origins]="origins()"
                 [quickInfo]="quickItemInfo()"
@@ -724,6 +725,7 @@
                 [node]="product"
                 [allocations]="result.value?.allocations ?? []"
                 [sourceChoices]="branchSourceChoices()"
+                [subRecipeProfits]="subRecipeProfitPerHourByItemId()"
                 (action)="action($event)"
               />
             </div>

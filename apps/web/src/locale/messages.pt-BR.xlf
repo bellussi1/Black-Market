@@ -1492,8 +1492,8 @@
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:385</note>
         <note category="location">src/app/features/crafting/crafting-page.html:614</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:156,157</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:177,178</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:182,183</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:203,204</note>
       </notes>
       <segment>
         <source>Comprar</source>
@@ -1741,7 +1741,7 @@
     <unit id="8708694637993344978">
       <notes>
         <note category="location">src/app/features/crafting/crafting-page.html:613</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:169,170</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:195,196</note>
       </notes>
       <segment>
         <source>Produzir</source>
@@ -11473,7 +11473,7 @@
     </unit>
     <unit id="740486470890843312">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:40,41</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:61,62</note>
       </notes>
       <segment>
         <source>Buscando receita…</source>
@@ -11481,7 +11481,7 @@
     </unit>
     <unit id="4436841969464801105">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:49</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-branch.html:70</note>
       </notes>
       <segment>
         <source>Ver como obter</source>
@@ -11568,9 +11568,18 @@
         <source>Quantidade total a calcular</source>
       </segment>
     </unit>
+    <unit id="2299724517944553924">
+      <notes>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:139,140</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:136,137</note>
+      </notes>
+      <segment>
+        <source>Lucro/h sub-receita:</source>
+      </segment>
+    </unit>
     <unit id="7256196059812036695">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:228,229</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:235,236</note>
       </notes>
       <segment>
         <source>LOCALIZAÇÃO · ALTERNATIVA</source>
@@ -11578,7 +11587,7 @@
     </unit>
     <unit id="1642053073000478618">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:243</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:250</note>
       </notes>
       <segment>
         <source> Ver localização e recursos </source>
@@ -11586,7 +11595,7 @@
     </unit>
     <unit id="5263876161393259227">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:254,255</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:261,262</note>
       </notes>
       <segment>
         <source>LOCAIS AGRUPADOS</source>
@@ -11594,7 +11603,7 @@
     </unit>
     <unit id="2821737020222245448">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:258,259</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:265,266</note>
       </notes>
       <segment>
         <source>Consulte todos os locais no painel do item.</source>
@@ -11602,7 +11611,7 @@
     </unit>
     <unit id="4466085967947328193">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:265</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:272</note>
       </notes>
       <segment>
         <source> Ver todas as fontes </source>
@@ -11610,7 +11619,7 @@
     </unit>
     <unit id="4669609318960501516">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:282,283</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:289,290</note>
       </notes>
       <segment>
         <source>MÉTODO DE OBTENÇÃO</source>
@@ -11618,7 +11627,7 @@
     </unit>
     <unit id="577284102864482629">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:288,289</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-graph.html:295,296</note>
       </notes>
       <segment>
         <source>Escolha um dos locais vinculados.<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/>Não é necessário usar todos.</source>
@@ -11877,7 +11886,7 @@
     <unit id="3383907643333341583">
       <notes>
         <note category="location">src/app/shared/recipe-tree/recipe-item-quick-info.html:74,75</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:214,215</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:240,241</note>
       </notes>
       <segment>
         <source>Mostrar menos</source>
@@ -11966,7 +11975,7 @@
     </unit>
     <unit id="622431752386976692">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:183,185</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:209,211</note>
       </notes>
       <segment>
         <source>Nenhum material na receita ativa.</source>
@@ -11974,8 +11983,8 @@
     </unit>
     <unit id="2532879485628263637">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:188</note>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:190,191</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:214</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:216,217</note>
       </notes>
       <segment>
         <source>Retornos previstos</source>
@@ -11983,7 +11992,7 @@
     </unit>
     <unit id="2890356988144271644">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:194,197</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:220,223</note>
       </notes>
       <segment>
         <source> Itens extras que a receita devolve. <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Vender</pc> soma ao faturamento; <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guardar</pc> mantém o item e não entra no lucro. </source>
@@ -11991,7 +12000,7 @@
     </unit>
     <unit id="8596648948059760377">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:216,217</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:242,243</note>
       </notes>
       <segment>
         <source>Mostrar mais (<ph id="0" equiv="INTERPOLATION" disp="{{ returns().length - 2 }}"/>)</source>
@@ -11999,7 +12008,7 @@
     </unit>
     <unit id="358002705055638239">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:227,228</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:253,254</note>
       </notes>
       <segment>
         <source> Salvar lista de compras </source>
@@ -12007,7 +12016,7 @@
     </unit>
     <unit id="6090757872994725535">
       <notes>
-        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:234,236</note>
+        <note category="location">src/app/shared/recipe-tree/recipe-materials-sidebar.html:260,262</note>
       </notes>
       <segment>
         <source>Abrir planejamento</source>

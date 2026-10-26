@@ -15,11 +15,11 @@ Atualizado em 26/10/2026. Este resumo substitui handoffs anteriores; decisões e
 - Produção #1408 e Oficina de Receitas:
   - Consulta de produtores em lote (`GET /api/v1/production/producers`) e pendências nomeadas em [auditoria de produção](research/production-calculation-audit-2026-10-24.md).
   - `Etapas expansíveis` funciona como visualização somente leitura da árvore (sem inputs embutidos ao expandir).
-  - Sidebar `Plano da receita` (`RecipeMaterialsSidebar`) usa seletores segmentados explícitos `Comprar | Produzir` para insumos e `Vender | Guardar` para retornos previstos, eliminando checkboxes de estado implícito.
+  - Sidebar `Plano da receita` (`RecipeMaterialsSidebar`) usa seletores segmentados explícitos `Comprar | Produzir` para insumos e `Vender | Guardar` para retornos previstos (`grid-template-columns: minmax(0, 1fr) auto`, sem overflow horizontal), exibindo também o **Lucro/h sub-receita** individual de cada insumo fabricável (replicado nas `Etapas expansíveis` e na `Árvore visual`).
   - Card `Faturamento líquido` em `RecipeTree` decompõe separadamente a receita do **produto principal** e a venda de **retornos previstos** (líquido e bruto), além da origem do preço e estoque.
 - Staging local (`docs/staging-local.md`, `staging.cmd`, `scripts/staging.ps1`): configurado com `black-market-bdo-staging`, login Google/Steam, catálogo real e compartilhamento via Cloudflare Quick Tunnel (`.\staging.cmd Share -AllowedEmail ...`).
 
 ## Validação
 
-- `pnpm check` (lint, format:check e typecheck) e os 84 testes de `recipe-tree.spec.ts` + `recipe-branch.spec.ts` passaram em 26/10/2026.
+- `pnpm check` (lint, format:check e typecheck) e os 85 testes de `recipe-tree.spec.ts` + `recipe-branch.spec.ts` passaram em 26/10/2026.
 - Avisos conhecidos de build permanecem: fallback de locale `pt-BR` para `pt`, orçamento de `recipe-tree.scss` e dependências CommonJS do Tesseract.

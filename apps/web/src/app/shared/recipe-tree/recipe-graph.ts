@@ -17,6 +17,7 @@ import {
 import type { calculateProduction } from '@bdo/calculators';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
+import { silver } from '../formatters';
 import { recipeTypeLabel } from '../game-labels';
 import { ItemIcon } from '../item-icon/item-icon';
 import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
@@ -39,6 +40,8 @@ import type { RecipeNode } from './recipe-tree-model';
 export class RecipeGraph {
   readonly root = input.required<RecipeNode>();
   readonly allocations = input<ReturnType<typeof calculateProduction>['allocations']>([]);
+  readonly subRecipeProfits = input<ReadonlyMap<number, string | null>>(new Map());
+  readonly silver = silver;
   readonly selected = input('root');
   private readonly localSelection = signal<{ path: string; ownerPath: string } | null>(null);
   readonly selection = computed(() => this.localSelection()?.path ?? this.selected());

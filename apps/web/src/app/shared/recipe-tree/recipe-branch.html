@@ -32,6 +32,27 @@
         <span class="step-action-badge" [attr.data-kind]="stepActionKind()">
           {{ stepActionLabel() }}
         </span>
+        @if (hasSubRecipe()) {
+          <span
+            class="step-subrecipe-profit"
+            [class.is-positive]="
+              subRecipeProfitPerHour() !== null &&
+              !subRecipeProfitPerHour()!.startsWith('-') &&
+              subRecipeProfitPerHour() !== '0'
+            "
+            [class.is-negative]="
+              subRecipeProfitPerHour() !== null && subRecipeProfitPerHour()!.startsWith('-')
+            "
+            title="Lucro por hora estimado ao produzir esta sub-receita comprando seus ingredientes diretos"
+          >
+            Lucro/h:
+            {{
+              subRecipeProfitPerHour() !== null
+                ? silver(subRecipeProfitPerHour()) + '/h'
+                : 'Pendente'
+            }}
+          </span>
+        }
       </span>
       <span class="step-hint">
         @if (node().loading) {
@@ -93,6 +114,7 @@
           [node]="child"
           [allocations]="allocations()"
           [sourceChoices]="sourceChoices()"
+          [subRecipeProfits]="subRecipeProfits()"
           (action)="action.emit($event)"
         />
       }

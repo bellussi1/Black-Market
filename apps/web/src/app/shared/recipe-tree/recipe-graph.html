@@ -133,6 +133,13 @@
             >
           </p>
         }
+        @if (entry.depth > 0 && subRecipeProfits().has(entry.node.part.itemId)) {
+          @let subProfit = subRecipeProfits().get(entry.node.part.itemId) ?? null;
+          <p class="node-subrecipe-profit">
+            <span i18n>Lucro/h sub-receita:</span>
+            <strong>{{ subProfit !== null ? silver(subProfit) + '/h' : 'Pendente' }}</strong>
+          </p>
+        }
         @if (entry.node.category) {
           <span class="node-category">{{ entry.node.category }}</span>
         }

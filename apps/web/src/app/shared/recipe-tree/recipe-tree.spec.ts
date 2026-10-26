@@ -2894,3 +2894,50 @@ it('displays step action badge, required quantity, stock used, and missing statu
   expect(childBadge?.textContent?.trim()).toBe('Comprar');
   fixture.destroy();
 });
+
+it('displays standalone profit per hour for craftable sub-recipes in sidebar and expandable steps', async () => {
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  const saltRecipe: CatalogRecipe = {
+    key: 'salt-cook',
+    type: 'COOK',
+    station: null,
+    inputs: [{ itemId: 8001, name: 'Água do Mar', quantity: '1' }],
+    outputs: [{ itemId: 9001, name: 'Sal', quantity: null }],
+  };
+  configureProduction(tree, { 5301: '5000', 9001: '1000', 8001: '100' });
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    producerRecipes: [saltRecipe],
+    itemIds: [5301, 8001, 9001],
+  }));
+  tree.setCraftCount(10);
+  tree.view.set('tree');
+  fixture.detectChanges();
+
+  const subProfitMap = tree.subRecipeProfitPerHourByItemId();
+  expect(subProfitMap.has(9001)).toBe(true);
+  const saltProfitPerHour = subProfitMap.get(9001);
+  expect(saltProfitPerHour).not.toBeNull();
+  expect(BigInt(saltProfitPerHour!)).toBeGreaterThan(0n);
+
+  const sidebarProfit = fixture.nativeElement.querySelector(
+    '.sidebar-material-row[data-item-id="9001"] .sidebar-subrecipe-profit',
+  ) as HTMLElement | null;
+  expect(sidebarProfit).not.toBeNull();
+  expect(sidebarProfit?.textContent).toContain('Lucro/h sub-receita:');
+  expect(sidebarProfit?.textContent).toContain('/h');
+  expect(sidebarProfit?.classList.contains('is-positive')).toBe(true);
+
+  const stepSubProfit = fixture.nativeElement.querySelector(
+    'app-recipe-branch .step-subrecipe-profit',
+  ) as HTMLElement | null;
+  expect(stepSubProfit).not.toBeNull();
+  expect(stepSubProfit?.textContent).toContain('Lucro/h:');
+  expect(stepSubProfit?.textContent).toContain('/h');
+  fixture.destroy();
+});

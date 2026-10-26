@@ -430,11 +430,39 @@ export class RecipeTree {
     return this.customItemPrices().get(itemId) ?? '';
   }
 
+  readonly subRecipeProfitPerHourByItemId = computed<ReadonlyMap<number, string | null>>(() => {
+    const graph = this.recipeGraph();
+    const input = this.productionInput();
+    if (!graph || !input) return new Map();
+    const result = new Map<number, string | null>();
+    for (const producer of graph.producerRecipes) {
+      const outputItemId = producer.outputs[0]?.itemId;
+      if (outputItemId === undefined || result.has(outputItemId)) continue;
+      const evaluation = planProduction({
+        ...input,
+        recipeAlternativesByItemId: undefined,
+        customChoices: {},
+        candidates: [{ recipeId: producer.key, crafts: 100 }],
+      });
+      const buyAllPlan =
+        evaluation.ranked.find((plan) => plan.scenario === 'buy-all') ??
+        evaluation.incomplete.find((plan) => plan.scenario === 'buy-all') ??
+        null;
+      const profitPerHour =
+        buyAllPlan && (buyAllPlan.issues.length === 0 || hasOnlyOptimizationLimit(buyAllPlan))
+          ? buyAllPlan.profitPerHour
+          : null;
+      result.set(outputItemId, profitPerHour);
+    }
+    return result;
+  });
+
   readonly materialDecisions = computed(() => {
     const itemIds = this.materialItemIds();
     const plannerRows = this.plannerMaterials();
     const quotes = this.marketQuotes();
     const partsMap = this.parts();
+    const subRecipeProfits = this.subRecipeProfitPerHourByItemId();
     const pendingQuantityIds = new Set(
       this.currentProductionPlan()
         ?.issues.filter((issue) => issue.code === 'missing-quantity' && issue.itemId !== undefined)
@@ -448,6 +476,8 @@ export class RecipeTree {
         const part = partsMap.get(itemId);
         const iconUrl = this.catalog.resolveIconUrl(part ?? { itemId });
         const canProduce = this.makeChoice(itemId) !== 'buy';
+        const hasSubRecipe = subRecipeProfits.has(itemId);
+        const subRecipeProfitPerHour = subRecipeProfits.get(itemId) ?? null;
         const source = this.materialSource(itemId);
         const sourceLabel = this.materialSourceLabel(itemId);
         const required = plannerRow?.required ?? 0;
@@ -481,6 +511,8 @@ export class RecipeTree {
           source,
           sourceLabel,
           canProduce,
+          hasSubRecipe,
+          subRecipeProfitPerHour,
           unitPrice,
           unitPriceSource: materialPrice?.source ?? null,
           equivalentPriceSource:

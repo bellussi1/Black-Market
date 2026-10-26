@@ -119,6 +119,28 @@
                 <span class="sidebar-unlisted" i18n>Sem cotação</span>
               }
             </span>
+            @if (item.hasSubRecipe) {
+              <span
+                class="sidebar-subrecipe-profit"
+                [class.is-positive]="
+                  item.subRecipeProfitPerHour !== null &&
+                  !item.subRecipeProfitPerHour.startsWith('-') &&
+                  item.subRecipeProfitPerHour !== '0'
+                "
+                [class.is-negative]="
+                  item.subRecipeProfitPerHour !== null &&
+                  item.subRecipeProfitPerHour.startsWith('-')
+                "
+                title="Lucro por hora estimado ao produzir esta sub-receita comprando seus ingredientes diretos"
+              >
+                <span i18n>Lucro/h sub-receita:</span>
+                <strong>{{
+                  item.subRecipeProfitPerHour !== null
+                    ? silver(item.subRecipeProfitPerHour) + '/h'
+                    : 'Pendente'
+                }}</strong>
+              </span>
+            }
             @if (item.equivalentItem; as equivalent) {
               <span class="sidebar-equivalent" [title]="'Preço de referência: ' + equivalent.name">
                 <app-item-icon
