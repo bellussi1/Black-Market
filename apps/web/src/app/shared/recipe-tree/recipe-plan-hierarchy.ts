@@ -80,7 +80,9 @@ export function buildRecipePlanHierarchy<
   }
 
   const materialsById = new Map(input.materials.map((material) => [material.itemId, material]));
-  const plannerMaterialsById = new Map(input.plan?.materials.map((material) => [material.itemId, material]) ?? []);
+  const plannerMaterialsById = new Map(
+    input.plan?.materials.map((material) => [material.itemId, material]) ?? [],
+  );
   const plannedRecipeIds = new Set(
     input.plan?.steps
       .filter((step) => step.crafts > 0 && step.output > 0)
@@ -93,11 +95,7 @@ export function buildRecipePlanHierarchy<
     const candidates = producersByItemId.get(itemId) ?? [];
     const chosenId = input.plan?.recipeChoices?.[itemId];
     if (chosenId) return candidates.find((recipe) => recipe.key === chosenId) ?? null;
-    return (
-      candidates.find((recipe) => plannedRecipeIds.has(recipe.key)) ??
-      candidates[0] ??
-      null
-    );
+    return candidates.find((recipe) => plannedRecipeIds.has(recipe.key)) ?? candidates[0] ?? null;
   };
 
   const quantityFor = (recipe: CatalogRecipe, itemId: number): ProductionQuantity => {
@@ -127,9 +125,9 @@ export function buildRecipePlanHierarchy<
       const plannerRow = plannerMaterialsById.get(part.itemId);
       const planned = Boolean(
         producerRecipe &&
-          normalizedProducer &&
-          plannedRecipeIds.has(normalizedProducer.id) &&
-          (plannerRow?.produced ?? 0) > 0,
+        normalizedProducer &&
+        plannedRecipeIds.has(normalizedProducer.id) &&
+        (plannerRow?.produced ?? 0) > 0,
       );
 
       if (ancestors.has(part.itemId)) {
@@ -182,15 +180,16 @@ export function buildRecipePlanHierarchy<
           ? 'active'
           : 'pending';
       const depthLimited = producerRecipe !== null && depth >= maxDepth - 1;
-      const children = producerRecipe && !depthLimited
-        ? buildInputs(
-            producerRecipe,
-            path,
-            new Set(ancestors).add(part.itemId),
-            depth + 1,
-            referenceOnly || !planned,
-          )
-        : [];
+      const children =
+        producerRecipe && !depthLimited
+          ? buildInputs(
+              producerRecipe,
+              path,
+              new Set(ancestors).add(part.itemId),
+              depth + 1,
+              referenceOnly || !planned,
+            )
+          : [];
 
       return {
         path,

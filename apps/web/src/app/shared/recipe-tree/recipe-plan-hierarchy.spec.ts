@@ -114,10 +114,7 @@ describe('buildRecipePlanHierarchy', () => {
     const hierarchy = build({
       rootRecipe: catalogRecipe('root', 100, [[1, '2']]),
       producerRecipes: [processingCatalog],
-      normalizedRecipes: [
-        productionRecipe('root', 100, [[1, 2]]),
-        processingNormalized,
-      ],
+      normalizedRecipes: [productionRecipe('root', 100, [[1, 2]]), processingNormalized],
       plan: planSlice([], [material(1, 20, 0)], { 1: 'mass-process' }),
       materials: [material(1, 20, 0)],
     });

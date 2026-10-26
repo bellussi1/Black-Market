@@ -35,7 +35,12 @@ describe('Recipe material decisions', () => {
 
   it('keeps the recipe tree collapsed by default and exposes its nested controls accessibly', async () => {
     const rootMaterial = { ...material, canProduce: true };
-    const childMaterial = { ...rootMaterial, itemId: 2, name: 'Insumo da sub-receita', required: 6 };
+    const childMaterial = {
+      ...rootMaterial,
+      itemId: 2,
+      name: 'Insumo da sub-receita',
+      required: 6,
+    };
     const child = {
       path: 'plan/0/0',
       itemId: 2,
@@ -94,8 +99,9 @@ describe('Recipe material decisions', () => {
       fixture.nativeElement.ownerDocument.getElementById(openToggle.getAttribute('aria-controls')!),
     ).not.toBeNull();
     expect(fixture.nativeElement.querySelectorAll('.sidebar-material-row')).toHaveLength(2);
-    expect(fixture.nativeElement.querySelectorAll('.sidebar-material-row input[type="radio"]'))
-      .toHaveLength(4);
+    expect(
+      fixture.nativeElement.querySelectorAll('.sidebar-material-row input[type="radio"]'),
+    ).toHaveLength(4);
 
     openToggle.click();
     fixture.detectChanges();
