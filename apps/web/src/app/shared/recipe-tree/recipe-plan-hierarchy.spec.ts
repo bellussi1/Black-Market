@@ -21,7 +21,7 @@ const catalogRecipe = (
 const productionRecipe = (
   id: string,
   output: number,
-  ingredients: [number, number | null | { min: number; max: number }][] ,
+  ingredients: [number, number | null | { min: number; max: number }][],
 ): ProductionRecipe => ({
   id,
   name: `Item ${output}`,
@@ -41,6 +41,7 @@ const material = (itemId: number, required: number, produced: number) => ({
   substituted: 0,
   source: produced > 0 ? ('produce' as const) : ('buy' as const),
 });
+type MaterialRow = ReturnType<typeof material>;
 
 function planSlice(
   recipeIds: string[],
@@ -71,48 +72,36 @@ const normalizedRecipes = [
   productionRecipe('p2', 2, [[10, 1]]),
 ];
 
-// Keep the contract red against the previous intention-only helper while the projection is
-// updated to consume real planner output.
-type ExpectedNode = {
-  itemId: number;
-  path: string;
-  state: string;
-  material: ReturnType<typeof material> | null;
-  displayQuantity: number | null;
-  quantityMode: string;
-  perOperation: number | null;
-  canonicalPath?: string;
-  children: ExpectedNode[];
-};
-
-function build(input: Record<string, unknown>): ExpectedNode[] {
-  return buildRecipePlanHierarchy({
-    ...input,
-    isProduced: (itemId: number) => itemId === 1,
-  } as never) as unknown as ExpectedNode[];
+function build(input: {
+  rootRecipe: CatalogRecipe;
+  producerRecipes: readonly CatalogRecipe[];
+  normalizedRecipes: readonly ProductionRecipe[];
+  plan: PlanSlice | null;
+  materials: readonly MaterialRow[];
+  maxDepth?: number;
+}) {
+  return buildRecipePlanHierarchy(input);
 }
 
 describe('buildRecipePlanHierarchy', () => {
   it('uses aggregated planner material rows and activates only recipes present in plan steps', () => {
+    const materials = [material(1, 20, 20), material(2, 10, 0), material(10, 60, 60)];
     const hierarchy = build({
       rootRecipe: root,
       producerRecipes: catalogProducers,
       normalizedRecipes,
-      plan: planSlice(
-        ['p1'],
-        [material(1, 20, 20), material(2, 10, 0), material(10, 60, 60)],
-        { 1: 'p1', 2: 'p2' },
-      ),
-      materials: [material(1, 20, 20), material(2, 10, 0), material(10, 60, 60)],
+      plan: planSlice(['p1'], materials, { 1: 'p1', 2: 'p2' }),
+      materials,
     });
 
-    expect(hierarchy.map((node) => node.material?.required)).toEqual([20, 10]);
-    expect(hierarchy[0].children[0]).toMatchObject({
+    expect(hierarchy.product).toMatchObject({ itemId: 100, quantity: 100 });
+    expect(hierarchy.materials.map((node) => node.material?.required)).toEqual([20, 10]);
+    expect(hierarchy.materials[0].children[0]).toMatchObject({
       state: 'active',
       material: { itemId: 10, required: 60 },
       perOperation: 3,
     });
-    expect(hierarchy[1].children[0]).toMatchObject({
+    expect(hierarchy.materials[1].children[0]).toMatchObject({
       state: 'reference',
       material: null,
       perOperation: 1,
@@ -133,8 +122,8 @@ describe('buildRecipePlanHierarchy', () => {
       materials: [material(1, 20, 0)],
     });
 
-    expect(hierarchy[0].state).toBe('active');
-    expect(hierarchy[0].children[0]).toMatchObject({
+    expect(hierarchy.materials[0].state).toBe('active');
+    expect(hierarchy.materials[0].children[0]).toMatchObject({
       state: 'reference',
       material: null,
       perOperation: 250,
@@ -151,7 +140,7 @@ describe('buildRecipePlanHierarchy', () => {
       materials: [],
     });
 
-    expect(hierarchy[0]).toMatchObject({
+    expect(hierarchy.materials[0]).toMatchObject({
       state: 'pending',
       material: null,
       displayQuantity: null,
@@ -169,16 +158,19 @@ describe('buildRecipePlanHierarchy', () => {
       materials,
     });
 
-    expect(hierarchy[0].children[0]).toMatchObject({ state: 'active', material: materials[2] });
-    expect(hierarchy[1].children[0]).toMatchObject({
+    expect(hierarchy.materials[0].children[0]).toMatchObject({
+      state: 'active',
+      material: materials[2],
+    });
+    expect(hierarchy.materials[1].children[0]).toMatchObject({
       state: 'duplicate',
       material: null,
-      canonicalPath: hierarchy[0].children[0].path,
+      canonicalPath: hierarchy.materials[0].children[0].path,
       children: [],
     });
   });
 
-  it('stops cycles and respects the depth limit', () => {
+  it('stops cycles and respects the depth limit without hiding the aggregate row', () => {
     const cyclicRoot = catalogRecipe('cycle-root', 100, [[1, '1']]);
     const cyclicProducer = catalogRecipe('cycle-producer', 1, [[100, '1']]);
     const cyclic = build({
@@ -191,7 +183,7 @@ describe('buildRecipePlanHierarchy', () => {
       plan: planSlice(['cycle-producer'], [material(1, 1, 1)], { 1: 'cycle-producer' }),
       materials: [material(1, 1, 1)],
     });
-    expect(cyclic[0].children[0].state).toBe('cycle');
+    expect(cyclic.materials[0].children[0].state).toBe('cycle');
 
     const limited = build({
       rootRecipe: root,
@@ -201,6 +193,10 @@ describe('buildRecipePlanHierarchy', () => {
       materials: [material(1, 2, 2), material(10, 6, 6)],
       maxDepth: 1,
     });
-    expect(limited[0].state).toBe('depth-limit');
+    expect(limited.materials[0]).toMatchObject({
+      state: 'active',
+      depthLimited: true,
+      children: [],
+    });
   });
 });
