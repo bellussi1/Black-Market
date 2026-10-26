@@ -820,7 +820,8 @@
         <!-- Coluna da Direita: Sidebar de Insumos da Receita (30%) -->
         <app-recipe-materials-sidebar
           [materials]="materialDecisions()"
-          [hierarchy]="planHierarchy()"
+          [product]="planHierarchy().product"
+          [hierarchy]="planHierarchy().materials"
           [returns]="returnedProductRows()"
           [selectedItemId]="selectedNode()?.part?.itemId ?? null"
           [expanded]="showAllReturnedProducts()"

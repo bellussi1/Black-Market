@@ -115,7 +115,7 @@
 </ng-template>
 
 <ng-template #planNode let-node="node" let-depth="depth">
-  @let item = materialsById().get(node.itemId);
+  @let item = node.material ?? materialsById().get(node.itemId);
   @let open = expandedPaths().has(node.path);
   <div class="plan-node" [class.is-reference]="node.state !== 'active'" [attr.data-depth]="depth">
     <div class="plan-node-line">
@@ -124,7 +124,7 @@
           type="button"
           class="plan-toggle"
           [attr.aria-expanded]="open"
-          [attr.aria-controls]="'children-' + node.path"
+          [attr.aria-controls]="open ? 'children-' + node.path : null"
           [attr.aria-label]="(open ? 'Recolher insumos de ' : 'Ver insumos de ') + node.part.name"
           (click)="togglePath(node.path)"
         >
@@ -139,6 +139,11 @@
             [ngTemplateOutlet]="materialRow"
             [ngTemplateOutletContext]="{ item: item }"
           />
+          @if (node.depthLimited) {
+            <small class="plan-depth-note" i18n>
+              Etapas seguintes ocultas pelo limite de profundidade.
+            </small>
+          }
         } @else {
           <div class="plan-reference-row" [attr.data-item-id]="node.itemId">
             <app-item-icon [url]="catalog.resolveIconUrl(node.part)" [name]="node.part.name" />
@@ -147,30 +152,33 @@
               <small>
                 @switch (node.state) {
                   @case ('reference') {
-                    Por operação: {{ node.perOperation ?? 'a confirmar' }} · fora do custo e da
-                    compra deste cenário
+                    Por operação: {{ productionQuantityLabel(node.perOperation) }} · somente
+                    referência; fora da compra e do custo deste cenário
                   }
                   @case ('duplicate') {
                     Já listado acima ·
                     <button
                       type="button"
                       class="plan-link"
-                      (click)="selectMaterial.emit(node.itemId)"
+                      (click)="showCanonicalMaterial(node.itemId, node.canonicalPath ?? '')"
+                      i18n
                     >
-                      ver item
+                      ir ao item
                     </button>
                   }
                   @case ('cycle') {
                     Dependência circular: não expandido
                   }
-                  @case ('depth-limit') {
-                    Limite de profundidade atingido
-                  }
-                  @default {
-                    Por operação: {{ node.perOperation ?? 'a confirmar' }} · quantidade pendente
+                  @case ('pending') {
+                    Quantidade do cenário pendente · fórmula não incluída no total
                   }
                 }
               </small>
+              @if (node.depthLimited) {
+                <small class="plan-depth-note" i18n>
+                  Etapas seguintes ocultas pelo limite de profundidade.
+                </small>
+              }
             </span>
           </div>
         }
@@ -259,6 +267,26 @@
     <h4 i18n>Materiais da receita</h4>
     <span>{{ materials().length }}</span>
   </div>
+
+  @if (product(); as finalProduct) {
+    <div class="plan-product-context">
+      <app-item-icon
+        [url]="catalog.resolveIconUrl(finalProduct.part)"
+        [name]="finalProduct.part.name"
+      />
+      <span class="plan-product-details">
+        <strong i18n>Produto final</strong>
+        <span>{{ finalProduct.part.name }}</span>
+        <small>
+          @if (finalProduct.quantity !== null) {
+            {{ quantityLabel(finalProduct.quantity) }} <ng-container i18n>un no plano</ng-container>
+          } @else {
+            <ng-container i18n>Quantidade pendente</ng-container>
+          }
+        </small>
+      </span>
+    </div>
+  }
 
   <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
   <div class="sidebar-materials-list">

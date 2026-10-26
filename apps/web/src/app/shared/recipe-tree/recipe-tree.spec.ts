@@ -2953,6 +2953,65 @@ it('shows sub-recipe profit per hour once, in the collapsed result comparison', 
   fixture.destroy();
 });
 
+it('builds the sidebar hierarchy from actual produced planner steps and aggregate quantities', async () => {
+  const rootRecipe: CatalogRecipe = {
+    key: 'hierarchy-root',
+    type: 'COOK',
+    station: null,
+    inputs: [{ itemId: 9001, name: 'Sal', quantity: '2' }],
+    outputs: [{ itemId: 5301, name: item.name, quantity: '1' }],
+  };
+  const saltRecipe: CatalogRecipe = {
+    key: 'salt-cook',
+    type: 'COOK',
+    station: null,
+    inputs: [{ itemId: 8001, name: 'Água do Mar', quantity: '3' }],
+    outputs: [{ itemId: 9001, name: 'Sal', quantity: '1' }],
+  };
+  const fixture = await renderComponent(
+    RecipeTree,
+    { recipe: rootRecipe, selectedItem: item },
+    providers().list,
+  );
+  const tree = fixture.componentInstance;
+  configureProduction(tree, { 5301: '5000', 9001: '1000', 8001: '100' });
+  tree.recipeGraph.update((graph) => ({
+    ...graph!,
+    producerRecipes: [saltRecipe],
+    itemIds: [5301, 9001, 8001],
+  }));
+  tree.setCraftCount(10);
+  tree.setMaterialSource(9001, 'produce');
+  fixture.detectChanges();
+
+  const produced = tree.planHierarchy();
+  expect(tree.currentProductionPlan()?.steps.some((step) => step.recipeId === 'salt-cook')).toBe(
+    true,
+  );
+  expect(produced.materials[0].material?.required).toBe(20);
+  const plannedWater = tree.currentProductionPlan()?.materials.find((row) => row.itemId === 8001);
+  expect(plannedWater).toBeDefined();
+  expect(produced.materials[0].children[0]).toMatchObject({
+    state: 'active',
+    material: { itemId: 8001, required: plannedWater?.required },
+    perOperation: 3,
+  });
+
+  tree.setMaterialSource(9001, 'buy');
+  fixture.detectChanges();
+  const bought = tree.planHierarchy();
+  expect(tree.currentProductionPlan()?.steps.some((step) => step.recipeId === 'salt-cook')).toBe(
+    false,
+  );
+  expect(bought.materials[0].children[0]).toMatchObject({
+    state: 'reference',
+    material: null,
+    perOperation: 3,
+    quantityMode: 'reference',
+  });
+  fixture.destroy();
+});
+
 it('always computes profit per hour for processing sub-recipes using active processing mastery', async () => {
   const fixture = await renderComponent(
     RecipeTree,

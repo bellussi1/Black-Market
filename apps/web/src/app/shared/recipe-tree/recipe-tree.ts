@@ -680,11 +680,15 @@ export class RecipeTree {
 
   readonly planHierarchy = computed(() => {
     const graph = this.recipeGraph();
-    if (!graph) return [];
+    if (!graph) return { product: null, materials: [] };
     return buildRecipePlanHierarchy({
       rootRecipe: graph.rootRecipe,
-      producerRecipes: graph.producerRecipes,
-      isProduced: (itemId) => this.materialSource(itemId) !== 'buy',
+      producerRecipes: this.allGraphRecipes(graph).filter(
+        (recipe) => recipe.key !== graph.rootRecipe.key,
+      ),
+      normalizedRecipes: this.productionInput()?.recipes ?? [],
+      plan: this.currentProductionPlan(),
+      materials: this.materialDecisions(),
     });
   });
 
