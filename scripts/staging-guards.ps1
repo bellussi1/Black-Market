@@ -1,12 +1,13 @@
 function Normalize-StagingAllowedEmails {
   param([string[]]$Email = @())
 
-  if ($Email.Count -lt 1) { throw 'Informe de 1 a 10 e-mails autorizados antes de compartilhar o staging.' }
-  if ($Email.Count -gt 10) { throw 'O staging aceita no máximo dez e-mails de tester.' }
+  $entries = @($Email | ForEach-Object { $_ -split ',' } | Where-Object { $_ -and $_.Trim() })
+  if ($entries.Count -lt 1) { throw 'Informe de 1 a 10 e-mails autorizados antes de compartilhar o staging.' }
+  if ($entries.Count -gt 10) { throw 'O staging aceita no máximo dez e-mails de tester.' }
 
   $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
   $normalized = [System.Collections.Generic.List[string]]::new()
-  foreach ($value in $Email) {
+  foreach ($value in $entries) {
     $email = $value.Trim().ToLowerInvariant()
     if ($email -notmatch '^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$') {
       throw 'E-mail autorizado inválido.'
