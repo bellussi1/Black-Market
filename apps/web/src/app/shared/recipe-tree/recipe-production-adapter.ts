@@ -148,13 +148,12 @@ export function buildRecipeProductionInput(
       options.masteryOverride !== undefined
     )
       return Math.max(0, Math.min(3000, Math.floor(options.masteryOverride)));
-    return Math.max(
-      0,
-      Math.min(
-        3000,
-        activeCharacter?.mastery[skill as keyof typeof activeCharacter.mastery] ?? 1000,
-      ),
-    );
+    const profileMastery = activeCharacter?.mastery[skill as keyof typeof activeCharacter.mastery];
+    return typeof profileMastery === 'number' &&
+      Number.isFinite(profileMastery) &&
+      profileMastery > 0
+      ? Math.max(0, Math.min(3000, profileMastery))
+      : 1000;
   };
 
   const allRecipes = [

@@ -1,3 +1,194 @@
+<ng-template #materialRow let-item="item">
+  <div
+    class="sidebar-material-row"
+    [attr.data-item-id]="item.itemId"
+    [class.is-crafting]="item.source !== 'buy'"
+    [class.is-buying]="item.source === 'buy'"
+    [class.is-selected]="selectedItemId() === item.itemId"
+  >
+    <button
+      type="button"
+      class="sidebar-material-details"
+      (click)="selectMaterial.emit(item.itemId)"
+      [attr.aria-label]="'Ver detalhes de ' + item.name"
+    >
+      <span class="sidebar-item-slot">
+        <app-item-icon [url]="item.iconUrl" [name]="item.name" />
+      </span>
+      <span class="sidebar-item-info">
+        <span class="sidebar-item-name-line">
+          <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
+        </span>
+        <span class="sidebar-item-price-line">
+          @if (item.unitPrice !== null) {
+            <span class="sidebar-price"
+              >{{
+                item.unitPriceSource === 'npc'
+                  ? 'NPC · '
+                  : item.unitPriceSource === 'equivalent'
+                    ? 'Equivalente' +
+                      (item.equivalentPriceSource === 'maximum'
+                        ? ' · Máxima · '
+                        : item.equivalentPriceSource === 'reference'
+                          ? ' · Referência · '
+                          : ' · ')
+                    : item.unitPriceSource === 'maximum'
+                      ? 'Máxima · '
+                      : item.unitPriceSource === 'reference'
+                        ? 'Referência · '
+                        : 'Mercado · '
+              }}{{ silver(item.unitPrice) }}</span
+            >
+            @if (item.stock !== null) {
+              <span class="sidebar-stock">· Est: {{ item.stock.toLocaleString('pt-BR') }}</span>
+            }
+          } @else {
+            <span class="sidebar-unlisted" i18n>Sem cotação</span>
+          }
+          @if (item.subRecipeSummary?.unitProductionCost; as unitProdCost) {
+            <span class="sidebar-prod-cost">
+              · <ng-container i18n>Custo prod.:</ng-container>
+              <strong>{{ silver(unitProdCost) }}</strong>
+            </span>
+          }
+        </span>
+        @if (item.equivalentItem; as equivalent) {
+          <span class="sidebar-equivalent" [title]="'Preço de referência: ' + equivalent.name">
+            <app-item-icon
+              style="--item-icon-size: 20px"
+              [url]="catalog.resolveIconUrl(equivalent)"
+              [name]="equivalent.name"
+            />
+            <span>
+              {{ equivalent.quantityRatio.toLocaleString('pt-BR') }} un. de
+              {{ equivalent.name }} por unidade
+            </span>
+          </span>
+        }
+      </span>
+    </button>
+
+    <div class="sidebar-material-actions">
+      <span class="sidebar-item-qty">
+        @if (item.quantityPending) {
+          Quantidade pendente
+        } @else {
+          {{ item.required.toLocaleString('pt-BR') }} un
+        }
+      </span>
+      @if (item.canProduce) {
+        <div class="source-switch" role="radiogroup" [attr.aria-label]="'Origem de ' + item.name">
+          <label [class.is-active]="item.source === 'buy'" title="Comprar no Mercado Central">
+            <input
+              type="radio"
+              value="buy"
+              [name]="'source-' + item.itemId"
+              [checked]="item.source === 'buy'"
+              (change)="item.source !== 'buy' && toggleSource.emit(item.itemId)"
+            />
+            <span i18n>Comprar</span>
+          </label>
+          <label
+            [class.is-active]="item.source !== 'buy'"
+            title="Fazer ou coletar por conta própria"
+          >
+            <input
+              type="radio"
+              value="make"
+              [name]="'source-' + item.itemId"
+              [checked]="item.source !== 'buy'"
+              (change)="item.source === 'buy' && toggleSource.emit(item.itemId)"
+            />
+            <span i18n>Produzir</span>
+          </label>
+        </div>
+      } @else {
+        <span
+          class="sidebar-source-badge is-buy"
+          title="Sem método de produção conhecido; obter pronto"
+          i18n
+          >Comprar</span
+        >
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #planNode let-node="node" let-depth="depth">
+  @let item = materialsById().get(node.itemId);
+  @let open = expandedPaths().has(node.path);
+  <div class="plan-node" [class.is-reference]="node.state !== 'active'" [attr.data-depth]="depth">
+    <div class="plan-node-line">
+      @if (node.children.length) {
+        <button
+          type="button"
+          class="plan-toggle"
+          [attr.aria-expanded]="open"
+          [attr.aria-controls]="'children-' + node.path"
+          [attr.aria-label]="(open ? 'Recolher insumos de ' : 'Ver insumos de ') + node.part.name"
+          (click)="togglePath(node.path)"
+        >
+          <span class="plan-chevron" [class.open]="open" aria-hidden="true">›</span>
+        </button>
+      } @else {
+        <span class="plan-toggle-spacer" aria-hidden="true"></span>
+      }
+      <div class="plan-node-body">
+        @if (node.state === 'active' && item) {
+          <ng-container
+            [ngTemplateOutlet]="materialRow"
+            [ngTemplateOutletContext]="{ item: item }"
+          />
+        } @else {
+          <div class="plan-reference-row" [attr.data-item-id]="node.itemId">
+            <app-item-icon [url]="catalog.resolveIconUrl(node.part)" [name]="node.part.name" />
+            <span class="plan-reference-text">
+              <strong>{{ node.part.name }}</strong>
+              <small>
+                @switch (node.state) {
+                  @case ('reference') {
+                    Por operação: {{ node.perOperation ?? 'a confirmar' }} · fora do custo e da
+                    compra deste cenário
+                  }
+                  @case ('duplicate') {
+                    Já listado acima ·
+                    <button
+                      type="button"
+                      class="plan-link"
+                      (click)="selectMaterial.emit(node.itemId)"
+                    >
+                      ver item
+                    </button>
+                  }
+                  @case ('cycle') {
+                    Dependência circular: não expandido
+                  }
+                  @case ('depth-limit') {
+                    Limite de profundidade atingido
+                  }
+                  @default {
+                    Por operação: {{ node.perOperation ?? 'a confirmar' }} · quantidade pendente
+                  }
+                }
+              </small>
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+    @if (node.children.length && open) {
+      <div class="plan-children" [id]="'children-' + node.path">
+        @for (child of node.children; track child.path) {
+          <ng-container
+            [ngTemplateOutlet]="planNode"
+            [ngTemplateOutletContext]="{ node: child, depth: depth + 1 }"
+          />
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
 <ng-template #returnedProductRow let-returned="returned">
   <div class="returned-product-row" animate.enter="returned-product-enter">
     <app-item-icon class="returned-product-icon" [name]="returned.name" [url]="returned.iconUrl" />
@@ -71,159 +262,17 @@
 
   <!-- Lista Compacta de Insumos com Checkbox BDO e Clique para Detalhes -->
   <div class="sidebar-materials-list">
-    @for (item of materials(); track item.itemId) {
-      <div
-        class="sidebar-material-row"
-        [attr.data-item-id]="item.itemId"
-        [class.is-crafting]="item.source !== 'buy'"
-        [class.is-buying]="item.source === 'buy'"
-        [class.is-selected]="selectedItemId() === item.itemId"
-      >
-        <button
-          type="button"
-          class="sidebar-material-details"
-          (click)="selectMaterial.emit(item.itemId)"
-          [attr.aria-label]="'Ver detalhes de ' + item.name"
-        >
-          <span class="sidebar-item-slot">
-            <app-item-icon [url]="item.iconUrl" [name]="item.name" />
-          </span>
-          <span class="sidebar-item-info">
-            <span class="sidebar-item-name-line">
-              <strong class="sidebar-item-name" [title]="item.name">{{ item.name }}</strong>
-            </span>
-            <span class="sidebar-item-price-line">
-              @if (item.unitPrice !== null) {
-                <span class="sidebar-price"
-                  >{{
-                    item.unitPriceSource === 'npc'
-                      ? 'NPC · '
-                      : item.unitPriceSource === 'equivalent'
-                        ? 'Equivalente' +
-                          (item.equivalentPriceSource === 'maximum'
-                            ? ' · Máxima · '
-                            : item.equivalentPriceSource === 'reference'
-                              ? ' · Referência · '
-                              : ' · ')
-                        : item.unitPriceSource === 'maximum'
-                          ? 'Máxima · '
-                          : item.unitPriceSource === 'reference'
-                            ? 'Referência · '
-                            : ''
-                  }}{{ silver(item.unitPrice) }}</span
-                >
-                @if (item.stock !== null) {
-                  <span class="sidebar-stock">· Est: {{ item.stock.toLocaleString('pt-BR') }}</span>
-                }
-              } @else {
-                <span class="sidebar-unlisted" i18n>Sem cotação</span>
-              }
-            </span>
-            @if (item.hasSubRecipe) {
-              <span
-                class="sidebar-subrecipe-profit"
-                [class.is-positive]="
-                  item.subRecipeProfitPerHour !== null &&
-                  !item.subRecipeProfitPerHour.startsWith('-') &&
-                  item.subRecipeProfitPerHour !== '0'
-                "
-                [class.is-negative]="
-                  item.subRecipeProfitPerHour !== null &&
-                  item.subRecipeProfitPerHour.startsWith('-')
-                "
-                [class.is-better]="item.subRecipeSummary?.betterThanRoot"
-                title="Lucro por hora estimado ao produzir esta sub-receita com a sua maestria ativa"
-              >
-                <span class="sidebar-subrecipe-main">
-                  <span class="sidebar-subrecipe-label" i18n>Lucro/h sub-receita:</span>
-                  <strong class="sidebar-subrecipe-value">{{
-                    item.subRecipeProfitPerHour !== null
-                      ? silver(item.subRecipeProfitPerHour) + '/h'
-                      : 'Pendente'
-                  }}</strong>
-                  @if (item.subRecipeSummary?.betterThanRoot) {
-                    <span class="sidebar-subrecipe-better" i18n>Supera a final</span>
-                  }
-                </span>
-                @if (item.subRecipeSummary; as subSummary) {
-                  <span class="sidebar-subrecipe-meta">
-                    @if (subSummary.skill) {
-                      {{ subSummary.skillLabel }} {{ subSummary.mastery }} ·
-                      {{ quantityLabel(subSummary.expectedYield) }} un/op
-                    } @else {
-                      {{ subSummary.methodLabel }} ·
-                      {{ quantityLabel(subSummary.expectedYield) }} un/op
-                    }
-                  </span>
-                }
-              </span>
-            }
-            @if (item.equivalentItem; as equivalent) {
-              <span class="sidebar-equivalent" [title]="'Preço de referência: ' + equivalent.name">
-                <app-item-icon
-                  style="--item-icon-size: 20px"
-                  [url]="catalog.resolveIconUrl(equivalent)"
-                  [name]="equivalent.name"
-                />
-                <span>
-                  {{ equivalent.quantityRatio.toLocaleString('pt-BR') }} un. de
-                  {{ equivalent.name }} por unidade
-                </span>
-              </span>
-            }
-          </span>
-        </button>
-
-        <div class="sidebar-material-actions">
-          <span class="sidebar-item-qty">
-            @if (item.quantityPending) {
-              Quantidade pendente
-            } @else {
-              {{ item.required.toLocaleString('pt-BR') }} un
-            }
-          </span>
-          @if (item.canProduce) {
-            <div
-              class="source-switch"
-              role="radiogroup"
-              [attr.aria-label]="'Origem de ' + item.name"
-            >
-              <label [class.is-active]="item.source === 'buy'" title="Comprar no Mercado Central">
-                <input
-                  type="radio"
-                  value="buy"
-                  [name]="'source-' + item.itemId"
-                  [checked]="item.source === 'buy'"
-                  (change)="item.source !== 'buy' && toggleSource.emit(item.itemId)"
-                />
-                <span i18n>Comprar</span>
-              </label>
-              <label
-                [class.is-active]="item.source !== 'buy'"
-                title="Fazer ou coletar por conta própria"
-              >
-                <input
-                  type="radio"
-                  value="make"
-                  [name]="'source-' + item.itemId"
-                  [checked]="item.source !== 'buy'"
-                  (change)="item.source === 'buy' && toggleSource.emit(item.itemId)"
-                />
-                <span i18n>Produzir</span>
-              </label>
-            </div>
-          } @else {
-            <span
-              class="sidebar-source-badge is-buy"
-              title="Sem método de produção conhecido; obter pronto"
-              i18n
-              >Comprar</span
-            >
-          }
-        </div>
-      </div>
+    @for (node of hierarchy(); track node.path) {
+      <ng-container
+        [ngTemplateOutlet]="planNode"
+        [ngTemplateOutletContext]="{ node: node, depth: 0 }"
+      />
     } @empty {
-      <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
+      @for (item of materials(); track item.itemId) {
+        <ng-container [ngTemplateOutlet]="materialRow" [ngTemplateOutletContext]="{ item: item }" />
+      } @empty {
+        <p class="materials-empty" i18n>Nenhum material na receita ativa.</p>
+      }
     }
   </div>
 

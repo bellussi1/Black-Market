@@ -253,6 +253,16 @@
     color: #ded9d1;
   }
 
+  .sidebar-prod-cost {
+    font-variant-numeric: tabular-nums;
+    color: var(--bm-muted);
+
+    strong {
+      color: #ded9d1;
+      font-weight: 600;
+    }
+  }
+
   .sidebar-equivalent {
     display: flex;
     align-items: center;
@@ -614,83 +624,6 @@
   white-space: nowrap;
 }
 
-.workspace-materials-sidebar .sidebar-subrecipe-profit {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 4px;
-  padding: 5px 8px;
-  border-radius: 2px;
-  border: 1px solid rgba(197, 160, 89, 0.35);
-  border-left: 3px solid var(--bm-accent);
-  background: rgba(197, 160, 89, 0.08);
-  font-size: 11px;
-  line-height: 1.35;
-  color: var(--bm-text);
-  font-variant-numeric: tabular-nums;
-
-  .sidebar-subrecipe-main {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .sidebar-subrecipe-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: #d6c5a3;
-  }
-
-  .sidebar-subrecipe-value {
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--bm-accent);
-  }
-
-  .sidebar-subrecipe-better {
-    font-size: 9.5px;
-    font-weight: 700;
-    color: var(--bm-background);
-    background: var(--bm-accent);
-    padding: 1px 5px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
-  .sidebar-subrecipe-meta {
-    font-size: 10.5px;
-    color: var(--bm-muted);
-  }
-
-  &.is-positive {
-    border-color: rgba(124, 216, 156, 0.35);
-    border-left-color: #7cd89c;
-    background: rgba(124, 216, 156, 0.08);
-
-    .sidebar-subrecipe-value {
-      color: #7cd89c;
-    }
-  }
-
-  &.is-negative {
-    border-color: rgba(239, 134, 123, 0.35);
-    border-left-color: #ef867b;
-    background: rgba(239, 134, 123, 0.08);
-
-    .sidebar-subrecipe-value {
-      color: #ef867b;
-    }
-  }
-
-  &.is-better {
-    border-color: rgba(197, 160, 89, 0.55);
-    border-left-color: var(--bm-accent);
-    box-shadow: inset 0 0 8px rgba(197, 160, 89, 0.12);
-  }
-}
-
 .workspace-materials-sidebar .sidebar-title-row {
   flex-wrap: wrap;
 }
@@ -762,6 +695,100 @@
 
 @media (prefers-reduced-motion: reduce) {
   .source-switch label {
+    transition: none;
+  }
+}
+
+/* Hierarchical recipe plan: toggle gutter + indented children with a guide line. */
+.plan-node-line {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+}
+
+.plan-node-body {
+  min-width: 0;
+}
+
+.plan-toggle,
+.plan-toggle-spacer {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  min-height: 36px;
+}
+
+.plan-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bm-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--bm-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bm-focus);
+    outline-offset: -2px;
+  }
+}
+
+.plan-chevron {
+  display: inline-block;
+  font-size: 16px;
+  transition: transform var(--bm-motion-fast) ease;
+
+  &.open {
+    transform: rotate(90deg);
+  }
+}
+
+.plan-children {
+  margin-left: 14px;
+  border-left: 1px solid var(--bm-border);
+}
+
+.plan-reference-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 12px 6px 0;
+  opacity: 0.85;
+
+  app-item-icon {
+    --item-icon-size: 28px;
+    flex-shrink: 0;
+  }
+}
+
+.plan-reference-text {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+
+  small {
+    color: var(--bm-muted);
+    font-size: 11px;
+  }
+}
+
+.plan-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bm-accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-chevron {
     transition: none;
   }
 }

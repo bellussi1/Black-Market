@@ -32,40 +32,6 @@
         <span class="step-action-badge" [attr.data-kind]="stepActionKind()">
           {{ stepActionLabel() }}
         </span>
-        @if (hasSubRecipe()) {
-          <span
-            class="step-subrecipe-profit"
-            [class.is-positive]="
-              subRecipeProfitPerHour() !== null &&
-              !subRecipeProfitPerHour()!.startsWith('-') &&
-              subRecipeProfitPerHour() !== '0'
-            "
-            [class.is-negative]="
-              subRecipeProfitPerHour() !== null && subRecipeProfitPerHour()!.startsWith('-')
-            "
-            [class.is-better]="subRecipeSummary()?.betterThanRoot"
-            title="Lucro por hora estimado ao produzir esta sub-receita com a sua maestria ativa"
-          >
-            <strong>
-              Lucro/h:
-              {{
-                subRecipeProfitPerHour() !== null
-                  ? silver(subRecipeProfitPerHour()) + '/h'
-                  : 'Pendente'
-              }}
-            </strong>
-            @if (subRecipeSummary(); as sub) {
-              <small class="step-subrecipe-mastery">
-                @if (sub.skill) {
-                  · {{ sub.skillLabel }} {{ sub.mastery }} ({{ quantityLabel(sub.expectedYield) }}
-                  un/op)
-                } @else {
-                  · {{ quantityLabel(sub.expectedYield) }} un/op
-                }
-              </small>
-            }
-          </span>
-        }
       </span>
       <span class="step-hint">
         @if (node().loading) {

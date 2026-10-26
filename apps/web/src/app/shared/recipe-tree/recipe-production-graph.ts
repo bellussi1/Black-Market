@@ -5,6 +5,7 @@ import type { CatalogApiService } from '../../core/catalog-api.service';
 import { isCookingRareProductItemId } from './recipe-bonus-products';
 import {
   compareMarketIngredientRecipes,
+  isCookingDriedSubstituteItemId,
   withVerifiedIngredientSubstitutions,
 } from './recipe-equivalents';
 
@@ -125,7 +126,10 @@ export function resolveRecipeProductionGraph(
               issues.push({ itemId, code: 'incomplete-recipes' });
               continue;
             }
-            if (isCookingRareProductItemId(itemId)) {
+            if (
+              isCookingRareProductItemId(itemId) ||
+              (!rootOutputIds.has(itemId) && isCookingDriedSubstituteItemId(itemId))
+            ) {
               issues.push({ itemId, code: 'missing-producer' });
               continue;
             }

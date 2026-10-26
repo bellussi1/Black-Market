@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import { renderComponent, useMemoryStorage } from '../../testing/test-setup';
 import { RecipeMaterialsSidebar } from './recipe-materials-sidebar';
@@ -16,23 +16,20 @@ const material = {
 };
 describe('Recipe material decisions', () => {
   useMemoryStorage();
-  it('explains the production choice and disables it when no production method is known', async () => {
+  it('offers no production choice when no production method is known', async () => {
     const fixture = await renderComponent(RecipeMaterialsSidebar, { materials: [material] });
-    const checkbox = fixture.nativeElement.querySelector('input') as HTMLInputElement;
-    expect(checkbox.disabled).toBe(true);
-    expect(checkbox.checked).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Desmarcado, ele entra na compra');
-    const emit = vi.spyOn(fixture.componentInstance.toggleSource, 'emit');
-    checkbox.click();
-    expect(emit).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('input')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sidebar-source-badge')?.textContent).toContain(
+      'Comprar',
+    );
   });
   it('changes the shared source decision when a production method exists', async () => {
     const fixture = await renderComponent(RecipeMaterialsSidebar, {
       materials: [{ ...material, canProduce: true }],
     });
     const emit = vi.spyOn(fixture.componentInstance.toggleSource, 'emit');
-    const checkbox = fixture.nativeElement.querySelector('input') as HTMLInputElement;
-    checkbox.click();
+    const make = fixture.nativeElement.querySelector('input[value="make"]') as HTMLInputElement;
+    make.click();
     expect(emit).toHaveBeenCalledWith(1);
   });
 });

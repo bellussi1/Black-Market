@@ -49,3 +49,5 @@ Validação da fusão: 13 snapshots conferidos contra a revisão de origem, 62 r
 O upstream descreve uma wiki Markdown versionada e índice reconstruível para busca/handoff entre agentes, com caminho padrão sem chamadas de LLM. Isso complementa fontes curtas e bem organizadas; não resolve por si só documentos contraditórios. [README](https://github.com/akitaonrails/ai-memory/blob/11ab100/README.md), [tratamento de dados](https://github.com/akitaonrails/ai-memory/blob/11ab100/DATA_HANDLING.md), [Windows](https://github.com/akitaonrails/ai-memory/blob/11ab100/docs/windows.md).
 
 Nesta etapa foi baixado e analisado, sem executar instalador ou ativar binário, serviço, hooks, MCP, importação de históricos ou provedores. O upstream classifica Windows nativo como experimental. Antes de integração futura, conferir a versão, plano de instalação, diretório local, agentes envolvidos e política de captura; manter os documentos canônicos como fonte de verdade e medir se a busca reduz a leitura efetiva.
+
+- [Plano hierárquico da receita](research/recipe-plan-hierarchy-2026-10-26.md) — árvore lateral de sub-receitas e lucro/h único.

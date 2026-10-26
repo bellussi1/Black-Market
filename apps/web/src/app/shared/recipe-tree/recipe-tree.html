@@ -606,7 +606,7 @@
         </div>
 
         @if (subRecipeComparisons().length) {
-          <details class="subrecipes-profit-panel" open>
+          <details class="subrecipes-profit-panel">
             <summary class="subrecipes-profit-summary">
               <div class="subrecipes-profit-heading">
                 <strong i18n>Lucro por hora das sub-receitas</strong>
@@ -681,33 +681,6 @@
                         }}</strong>
                       </span>
                     </div>
-                  </div>
-
-                  <div
-                    class="source-switch subrecipe-source-switch"
-                    role="radiogroup"
-                    [attr.aria-label]="'Origem de ' + sub.name"
-                  >
-                    <label [class.is-active]="sub.source === 'buy'">
-                      <input
-                        type="radio"
-                        value="buy"
-                        [name]="'dashboard-sub-source-' + sub.itemId"
-                        [checked]="sub.source === 'buy'"
-                        (change)="sub.source !== 'buy' && toggleMaterialSource(sub.itemId)"
-                      />
-                      <span i18n>Comprar</span>
-                    </label>
-                    <label [class.is-active]="sub.source !== 'buy'">
-                      <input
-                        type="radio"
-                        value="make"
-                        [name]="'dashboard-sub-source-' + sub.itemId"
-                        [checked]="sub.source !== 'buy'"
-                        (change)="sub.source === 'buy' && toggleMaterialSource(sub.itemId)"
-                      />
-                      <span i18n>Produzir</span>
-                    </label>
                   </div>
                 </article>
               }
@@ -847,6 +820,7 @@
         <!-- Coluna da Direita: Sidebar de Insumos da Receita (30%) -->
         <app-recipe-materials-sidebar
           [materials]="materialDecisions()"
+          [hierarchy]="planHierarchy()"
           [returns]="returnedProductRows()"
           [selectedItemId]="selectedNode()?.part?.itemId ?? null"
           [expanded]="showAllReturnedProducts()"

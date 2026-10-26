@@ -70,7 +70,7 @@ function providers() {
     history: vi.fn(() => of({ points: [] })),
   };
   const catalog = {
-    resolveIconUrl: vi.fn(() => null),
+    resolveIconUrl: vi.fn((item: { iconUrl?: string | null }) => item.iconUrl ?? null),
     getItems: vi.fn((params: { ids?: readonly number[] }) =>
       of({
         items: (params.ids ?? []).map((id) => ({
@@ -2895,7 +2895,7 @@ it('displays step action badge, required quantity, stock used, and missing statu
   fixture.destroy();
 });
 
-it('displays standalone profit per hour for craftable sub-recipes in sidebar and expandable steps', async () => {
+it('shows sub-recipe profit per hour once, in the collapsed result comparison', async () => {
   const fixture = await renderComponent(
     RecipeTree,
     { recipe, selectedItem: item },
@@ -2925,21 +2925,14 @@ it('displays standalone profit per hour for craftable sub-recipes in sidebar and
   expect(saltProfitPerHour).not.toBeNull();
   expect(BigInt(saltProfitPerHour!)).toBeGreaterThan(0n);
 
-  const sidebarProfit = fixture.nativeElement.querySelector(
-    '.sidebar-material-row[data-item-id="9001"] .sidebar-subrecipe-profit',
-  ) as HTMLElement | null;
-  expect(sidebarProfit).not.toBeNull();
-  expect(sidebarProfit?.textContent).toContain('Lucro/h sub-receita:');
-  expect(sidebarProfit?.textContent).toContain('/h');
-  expect(sidebarProfit?.classList.contains('is-positive')).toBe(true);
-
-  const stepSubProfit = fixture.nativeElement.querySelector(
-    'app-recipe-branch .step-subrecipe-profit',
-  ) as HTMLElement | null;
-  expect(stepSubProfit).not.toBeNull();
-  expect(stepSubProfit?.textContent).toContain('Lucro/h:');
-  expect(stepSubProfit?.textContent).toContain('/h');
-  expect(stepSubProfit?.textContent).toContain('Culinária 1000');
+  expect(fixture.nativeElement.querySelector('.sidebar-subrecipe-profit')).toBeNull();
+  expect(fixture.nativeElement.querySelector('.step-subrecipe-profit')).toBeNull();
+  expect(
+    fixture.nativeElement.querySelectorAll('.subrecipe-profit-card[data-subrecipe-id="9001"]'),
+  ).toHaveLength(1);
+  expect(
+    fixture.nativeElement.querySelector('.subrecipes-profit-panel')?.hasAttribute('open'),
+  ).toBe(false);
 
   const dashboardCard = fixture.nativeElement.querySelector(
     '.subrecipe-profit-card[data-subrecipe-id="9001"]',

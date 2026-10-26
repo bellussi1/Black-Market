@@ -42,6 +42,19 @@ const COOKING_DRIED_SUBSTITUTIONS = [
   { itemId: 8211, substituteItemId: 8511, name: 'Calamar Desidratado', label: 'seafood' },
   { itemId: 8211, substituteItemId: 8515, name: 'Marisco Desidratado', label: 'seafood' },
 ] as const;
+
+const COOKING_DRIED_SUBSTITUTE_ITEM_IDS = new Set<number>([
+  ...ORGANIC_FEED_SUBSTITUTIONS.filter((entry) => entry.label === 'fish').map(
+    (entry) => entry.substituteItemId,
+  ),
+  ...COOKING_DRIED_SUBSTITUTIONS.map((entry) => entry.substituteItemId),
+  6520,
+  6521,
+]);
+
+export function isCookingDriedSubstituteItemId(itemId: number): boolean {
+  return COOKING_DRIED_SUBSTITUTE_ITEM_IDS.has(itemId);
+}
 type Substitution =
   | (typeof ORGANIC_FEED_SUBSTITUTIONS)[number]
   | (typeof COOKING_DRIED_SUBSTITUTIONS)[number];

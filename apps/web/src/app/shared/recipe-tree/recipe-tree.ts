@@ -73,6 +73,7 @@ import {
 } from './recipe-bonus-products';
 import { type BranchAction, RecipeBranch } from './recipe-branch';
 import {
+  isCookingDriedSubstituteItemId,
   recipeFamilies,
   verifiedIngredientSubstitutionItemIds,
   withVerifiedIngredientSubstitutions,
@@ -86,6 +87,7 @@ import { resolveRecipeMaterialPrice } from './recipe-market-equivalent-price';
 import { recipeMarketPrice } from './recipe-market-price';
 import { processingBatchCount } from './recipe-mastery';
 import { RecipeMaterialsSidebar } from './recipe-materials-sidebar';
+import { buildRecipePlanHierarchy } from './recipe-plan-hierarchy';
 import {
   buildRecipeProductionInput,
   defaultRecipeMethodSeconds,
@@ -305,7 +307,7 @@ export class RecipeTree {
     const activeChar = this.store.activeCharacter();
     if (!activeChar) return 1000;
     const val = activeChar?.mastery?.[skill as (typeof lifeSkills)[number]];
-    return typeof val === 'number' && Number.isFinite(val)
+    return typeof val === 'number' && Number.isFinite(val) && val > 0
       ? Math.max(0, Math.min(3000, val))
       : 1000;
   });
@@ -318,7 +320,7 @@ export class RecipeTree {
 
   private profileMasteryForSkill(skill: RecipeMasterySkill): number {
     const value = this.store.activeCharacter()?.mastery?.[skill];
-    return typeof value === 'number' && Number.isFinite(value)
+    return typeof value === 'number' && Number.isFinite(value) && value > 0
       ? Math.max(0, Math.min(3000, value))
       : 1000;
   }
@@ -482,7 +484,12 @@ export class RecipeTree {
       const result = new Map<number, SubRecipeProfitSummary>();
       for (const producer of graph.producerRecipes) {
         const outputItemId = producer.outputs[0]?.itemId;
-        if (outputItemId === undefined || result.has(outputItemId)) continue;
+        if (
+          outputItemId === undefined ||
+          result.has(outputItemId) ||
+          isCookingDriedSubstituteItemId(outputItemId)
+        )
+          continue;
         const evaluation = planProduction({
           ...input,
           estimates: subEstimates,
@@ -671,6 +678,16 @@ export class RecipeTree {
       .filter((item) => item.required > 0 || item.quantityPending);
   });
 
+  readonly planHierarchy = computed(() => {
+    const graph = this.recipeGraph();
+    if (!graph) return [];
+    return buildRecipePlanHierarchy({
+      rootRecipe: graph.rootRecipe,
+      producerRecipes: graph.producerRecipes,
+      isProduced: (itemId) => this.materialSource(itemId) !== 'buy',
+    });
+  });
+
   private materialItemIds(): number[] {
     const graph = this.recipeGraph();
     const rootItemId = this.root()?.part.itemId;
@@ -688,6 +705,7 @@ export class RecipeTree {
   }
 
   makeChoice(itemId: number): ProductionChoice {
+    if (isCookingDriedSubstituteItemId(itemId)) return 'buy';
     const producer = this.recipeGraph()?.producerRecipes.some((recipe) =>
       recipe.outputs.some((output) => output.itemId === itemId),
     );
@@ -2116,14 +2134,15 @@ export class RecipeTree {
     const recipe = node.recipe;
     const skill = recipe ? lifeSkillForRecipe(recipe.type) : null;
     const variableYield = recipe !== null && recipeMasteryCanChangeOutput(recipe, node.part.itemId);
+    const rawProfileMastery = skill
+      ? this.store.activeCharacter()?.mastery?.[skill as (typeof lifeSkills)[number]]
+      : undefined;
     const profileMastery = skill
-      ? Math.max(
-          0,
-          Math.min(
-            3000,
-            this.store.activeCharacter()?.mastery?.[skill as (typeof lifeSkills)[number]] ?? 1000,
-          ),
-        )
+      ? typeof rawProfileMastery === 'number' &&
+        Number.isFinite(rawProfileMastery) &&
+        rawProfileMastery > 0
+        ? Math.max(0, Math.min(3000, rawProfileMastery))
+        : 1000
       : 0;
     const mastery =
       skill && variableYield

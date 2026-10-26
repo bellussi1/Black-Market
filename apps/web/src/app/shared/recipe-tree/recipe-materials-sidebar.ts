@@ -1,10 +1,19 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { CatalogApiService } from '../../core/catalog-api.service';
 import { silver } from '../formatters';
 import { ItemIcon } from '../item-icon/item-icon';
+import type { RecipePlanNode } from './recipe-plan-hierarchy';
 import type { RecipeTree } from './recipe-tree';
 
 type MaterialRow = ReturnType<RecipeTree['materialDecisions']>[number];
@@ -19,6 +28,19 @@ type ReturnRow = ReturnType<RecipeTree['returnedProductRows']>[number];
 })
 export class RecipeMaterialsSidebar {
   readonly materials = input<readonly MaterialRow[]>([]);
+  readonly hierarchy = input<readonly RecipePlanNode[]>([]);
+  readonly expandedPaths = signal<ReadonlySet<string>>(new Set());
+  readonly materialsById = computed(
+    () => new Map<number, MaterialRow>(this.materials().map((row) => [row.itemId, row])),
+  );
+
+  togglePath(path: string): void {
+    this.expandedPaths.update((current) => {
+      const next = new Set(current);
+      if (!next.delete(path)) next.add(path);
+      return next;
+    });
+  }
   readonly returns = input<readonly ReturnRow[]>([]);
   readonly selectedItemId = input<number | null>(null);
   readonly expanded = input(false);
