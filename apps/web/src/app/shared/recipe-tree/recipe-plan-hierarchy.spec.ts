@@ -148,6 +148,23 @@ describe('buildRecipePlanHierarchy', () => {
     });
   });
 
+  it('does not preview a different formula when the selected recipe is missing', () => {
+    const hierarchy = build({
+      rootRecipe: catalogRecipe('root', 100, [[1, '2']]),
+      producerRecipes: [producer1],
+      normalizedRecipes: [normalizedRecipes[0], normalizedRecipes[1]],
+      plan: planSlice([], [material(1, 20, 0)], { 1: 'missing-recipe' }),
+      materials: [material(1, 20, 0)],
+    });
+
+    expect(hierarchy.materials[0]).toMatchObject({
+      state: 'active',
+      producerRecipe: null,
+      producible: false,
+      children: [],
+    });
+  });
+
   it('points repeated active items to their single canonical aggregate row', () => {
     const materials = [material(1, 20, 20), material(2, 10, 10), material(10, 90, 90)];
     const hierarchy = build({

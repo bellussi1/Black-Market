@@ -92,10 +92,7 @@ export function buildRecipePlanHierarchy<
   const selectedProducerFor = (itemId: number): CatalogRecipe | null => {
     const candidates = producersByItemId.get(itemId) ?? [];
     const chosenId = input.plan?.recipeChoices?.[itemId];
-    if (chosenId) {
-      const chosen = candidates.find((recipe) => recipe.key === chosenId);
-      if (chosen) return chosen;
-    }
+    if (chosenId) return candidates.find((recipe) => recipe.key === chosenId) ?? null;
     return (
       candidates.find((recipe) => plannedRecipeIds.has(recipe.key)) ??
       candidates[0] ??
