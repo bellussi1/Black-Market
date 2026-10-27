@@ -19,6 +19,7 @@ Para agentes: [protocolo](../AGENTS.md) → [estado atual](ACTIVE_CONTEXT.md) �
 | Como validar OCR e importação?                           | [Validação](ocr-validation.md); [estratégia](storage-import-strategy.md); [uso do armazém](storage-tutorial.md)           |
 | Como operar serviços, releases e recuperação?            | [Operação local](local-operations.md); [staging](staging-local.md); [deploy](deployment.md); [backup](backup-recovery.md) |
 | Como tratar dados e segurança?                           | [Segurança](security.md); [inventário de privacidade](privacy-inventory.md); [contas](production-and-accounts.md)         |
+| O que falta para abrir o código?                         | [Preparação open source](open-source-release.md)                                                                          |
 | Onde estão contratos de API e banco?                     | [API](api.md); [banco](database.md)                                                                                       |
 | Onde estão pesquisa e evidências?                        | [Índice de pesquisa](research/README.md); [protocolo competitivo](research/competitor-review-playbook.md)                 |
 | Preciso recuperar uma decisão antiga?                    | [Arquivo histórico](archive/README.md), plano específico ou `git log`                                                     |

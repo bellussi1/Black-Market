@@ -1,34 +1,74 @@
 # Black Market
 
-Planejador independente para Black Desert Online, com SA e português brasileiro como padrões. Reúne consulta de itens, receitas e mercado, planejamento de produção e revisão de capturas de estoque/equipamento. Não há afiliação com a Pearl Abyss.
+Planejador independente para jogadores de **Black Desert Online**, com foco inicial na região SA e no português brasileiro. Reúne receitas, materiais e cotações para ajudar a planejar a produção e organizar o inventário.
 
-## Começar
+O projeto está em desenvolvimento. Ele não é afiliado à Pearl Abyss, e o código aberto não implica a publicação de um serviço hospedado.
 
-- [Documentação por assunto](docs/README.md): fontes canônicas e recuperação de decisões.
-- [Desenvolvimento local](docs/development.md): requisitos, inicialização, banco, comandos e qualidade.
-- [Visão do produto](docs/product-vision.md) e [escopo MVP](docs/screenshot-mvp.md): objetivos e limites; confirme a disponibilidade das rotas no código atual.
-- [Pedidos e prioridades](docs/project-feature-checklist.md): entregas, dependências e evidências.
+## O que o projeto faz
 
-Agentes: leia [AGENTS.md](AGENTS.md) e [o estado deste checkout](docs/ACTIVE_CONTEXT.md). Consulte detalhes sob demanda; não carregue todos os planos e handoffs.
+- Explora receitas e sub-receitas em uma árvore de produção.
+- Compara compra e produção de materiais, considerando preços, maestrias e tempo informado.
+- Consulta itens e preços de mercado com indicação da origem e da disponibilidade dos dados.
+- Permite organizar materiais e revisar sugestões de leitura de capturas antes de salvá-las.
+- Oferece ferramentas de cálculo e planejamento para diferentes atividades do jogo.
 
-## Estrutura
+Preços, resultados de OCR e cálculos podem depender de dados incompletos ou de fontes externas. Confira as premissas exibidas na aplicação antes de tomar decisões no jogo.
 
-Monorepo pnpm com Angular/SSR, NestJS e PostgreSQL/Drizzle:
+## Arquitetura
 
-| Diretório                             | Responsabilidade        |
-| ------------------------------------- | ----------------------- |
-| `apps/web`                            | Interface e SSR         |
-| `apps/api`                            | API/BFF e integrações   |
-| `packages/calculators`                | Regras de cálculo       |
-| `packages/database`                   | Schema e migrations     |
-| `packages/domain` e `packages/shared` | Contratos e utilitários |
+Monorepo em TypeScript com **Angular e SSR**, **NestJS**, **PostgreSQL**, **Drizzle** e **Docker Compose**. As regras de cálculo compartilhadas são usadas pelo navegador e pela API.
 
-[Arquitetura e frontend](docs/architecture.md) detalham os limites entre essas partes.
+| Diretório                             | Responsabilidade                             |
+| ------------------------------------- | -------------------------------------------- |
+| `apps/web`                            | Interface Angular e renderização no servidor |
+| `apps/api`                            | API, catálogo e integrações                  |
+| `packages/calculators`                | Cálculos compartilhados                      |
+| `packages/database`                   | Schema e migrations                          |
+| `packages/domain` e `packages/shared` | Contratos e utilitários                      |
 
-## Dados e operação
+Consulte [arquitetura](docs/architecture.md) e o [índice da documentação](docs/README.md) para detalhes.
 
-Clonar o código não popula o banco nem transfere os assets locais. Consulte [pipeline](docs/data-pipeline.md), [catálogo](docs/catalog-updates.md) e [validação de OCR](docs/ocr-validation.md). Resultados de capturas continuam sujeitos à revisão; dados ausentes não são presumidos.
+## Rodar localmente
 
-Para ambientes e releases: [operação local](docs/local-operations.md), [staging](docs/staging-local.md), [deploy](docs/deployment.md) e [recuperação](docs/backup-recovery.md). Configurações, credenciais e dados reais dependem do ambiente; nenhum snapshot documental prova a versão atualmente implantada.
+Requisitos: Node.js **24.21.0**, pnpm **10.28.1**, Docker e Docker Compose. Em um clone novo, crie `.env` a partir de `.env.example` e siga as instruções de [desenvolvimento local](docs/development.md). Não substitua um `.env` ou banco existente.
 
-As listas antigas de comandos, releases e métricas deste README estão no [arquivo histórico](docs/archive/README.md). O [índice](docs/README.md) define onde cada informação passa a ser mantida, evitando cópias paralelas.
+```sh
+corepack enable
+corepack prepare pnpm@10.28.1 --activate
+pnpm install --frozen-lockfile
+docker compose up -d postgres
+pnpm db:migrate
+```
+
+Depois, em terminais separados:
+
+```sh
+pnpm dev:api
+pnpm dev:web
+```
+
+A interface fica em `http://localhost:4200` e a API em `http://localhost:3000`. A rota `/ready` verifica a conexão da API com o banco. Para executar a aplicação inteira em containers, consulte a seção de Docker em [desenvolvimento local](docs/development.md).
+
+### Catálogo e dados do jogo
+
+O clone **não inclui um banco populado nem o conjunto de assets extraídos do jogo**. Para carregar o catálogo, consulte o [pipeline de dados](docs/data-pipeline.md) e as [atualizações do catálogo](docs/catalog-updates.md). A extração depende de uma instalação legítima do jogo e de ferramenta comunitária com licença própria; verifique os termos aplicáveis antes de usar ou redistribuir dados e imagens.
+
+As cotações usam integrações comunitárias e podem estar desatualizadas ou indisponíveis. A coleta persistente não deve ser ativada sem revisar as condições da fonte. Capturas e dados pessoais devem permanecer fora do Git.
+
+## Qualidade e contribuição
+
+```sh
+pnpm check
+pnpm test
+pnpm build
+```
+
+Antes de contribuir, consulte [desenvolvimento e qualidade](docs/development.md) e descreva o problema ou a proposta em uma issue. Não inclua credenciais, arquivos do jogo, catálogos extraídos ou capturas privadas em contribuições.
+
+## Licença e conteúdo de terceiros
+
+O código de autoria do projeto está disponível sob a [licença MIT](LICENSE). Nomes, marcas, imagens, dados do jogo e outros conteúdos de terceiros pertencem aos respectivos titulares e não são licenciados por este projeto. Veja [procedência dos dados](docs/data-pipeline.md).
+
+---
+
+**English:** Black Market is an independent, work-in-progress planning tool for Black Desert Online. It combines nested recipes, production costs, market data and screenshot review. The repository does not provide a populated game database or extracted assets. See [local development](docs/development.md) and [data sources](docs/data-pipeline.md).
