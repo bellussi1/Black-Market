@@ -73,6 +73,8 @@ Antes de contribuir, consulte [desenvolvimento e qualidade](docs/development.md)
 
 O código de autoria do projeto está disponível sob a [licença MIT](LICENSE). Nomes, marcas, imagens, dados do jogo e outros conteúdos de terceiros pertencem aos respectivos titulares e não são licenciados por este projeto. Veja [procedência dos dados](docs/data-pipeline.md).
 
+O uso de conteúdo do jogo também está sujeito às [diretrizes de conteúdo de fãs da Pearl Abyss](https://www.pearlabyss.com/en-US/legal/detail?_policyNo=42), que tratam de uso não comercial e das exceções mencionadas pela própria empresa. A licença MIT não concede direitos sobre a propriedade intelectual do jogo.
+
 ---
 
 **English:** Black Market is an independent, work-in-progress planning tool for Black Desert Online. It combines nested recipes, production costs, market data and screenshot review. The repository does not provide a populated game database or extracted assets. See [local development](docs/development.md) and [data sources](docs/data-pipeline.md).
