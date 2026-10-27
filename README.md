@@ -37,6 +37,9 @@ Consulte [arquitetura](docs/architecture.md) e o [índice da documentação](doc
 Requisitos: Node.js **24.21.0**, pnpm **10.28.1**, Docker e Docker Compose. Em um clone novo, crie `.env` a partir de `.env.example` e siga as instruções de [desenvolvimento local](docs/development.md). Não substitua um `.env` ou banco existente.
 
 ```sh
+git clone https://github.com/bellussi1/Black-Market.git
+cd Black-Market
+cp .env.example .env
 corepack enable
 corepack prepare pnpm@10.28.1 --activate
 pnpm install --frozen-lockfile
