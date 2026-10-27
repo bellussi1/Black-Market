@@ -1,6 +1,6 @@
 # Preparação para código aberto
 
-Atualizado em 27/10/2026. O usuário escolheu a licença MIT para o código próprio e pediu a publicação do repositório atual com seu histórico. Consulte o GitHub para a visibilidade atual.
+Atualizado em 27/10/2026. O usuário escolheu a licença MIT para o código próprio e pediu a publicação do repositório atual com seu histórico. O repositório foi tornado público e a leitura sem autenticação foi confirmada.
 
 ## Revisão realizada
 
@@ -14,4 +14,4 @@ Atualizado em 27/10/2026. O usuário escolheu a licença MIT para o código pró
 1. Preservar a distinção entre a autorização declarada pelo usuário e os direitos de terceiros. Apagar imagens em um commit novo não as remove do histórico. Reescrever histórico ou criar uma cópia pública limpa exige decisão específica do responsável.
 2. Confirmar que os conteúdos e direitos de terceiros não são apresentados como licenciados pela MIT. A [política de conteúdo de fãs da Pearl Abyss](https://www.pearlabyss.com/en-US/legal/detail?_policyNo=42) exige caráter não comercial para o uso de sua propriedade intelectual e distingue os direitos do jogo dos direitos do criador. A licença do [bdo-data-extractor](https://github.com/iDevelopThings/bdo-data-extractor/blob/main/LICENSE.md) não concede direitos sobre assets ou dados do jogo.
 3. Revisar novamente refs, resultados da varredura, histórico de Actions e alterações a publicar. Ao mudar a visibilidade, [logs do Actions ficam públicos](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility). O checkout principal estava 11 commits à frente de `origin/main` antes da preparação.
-4. Publicar somente após resolver os itens anteriores. Atualizar o portfólio e o perfil GitHub depois que o link do código puder ser aberto por visitantes.
+4. Antes de mudanças futuras de visibilidade, repetir a revisão dos itens anteriores. Manter o portfólio e o perfil GitHub coerentes com o estado real do repositório e da aplicação.
