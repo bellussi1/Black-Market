@@ -4,6 +4,10 @@ Planejador independente para jogadores de **Black Desert Online**, com foco inic
 
 O projeto está em desenvolvimento. Ele não é afiliado à Pearl Abyss, e o código aberto não implica a publicação de um serviço hospedado.
 
+![Tela de planejamento de uma receita, com materiais e resultado da simulação](docs/research/evidence/player-audit-2026-10-22/alchemy-controlled.jpeg)
+
+_Captura da aplicação em desenvolvimento; os valores apresentados dependem das premissas da simulação._
+
 ## O que o projeto faz
 
 - Explora receitas e sub-receitas em uma árvore de produção.
