@@ -10,7 +10,7 @@ Atualizado em 27/10/2026. Este resumo substitui handoffs anteriores; decisões e
 
 ## Estado
 
-- Abertura do código: README e licença MIT preparados localmente; o repositório remoto continua privado. O usuário escolheu preservar o histórico; revisar a autorização de imagens de terceiros antes da publicação. Evidências e limites: [preparação open source](open-source-release.md).
+- Abertura do código: README e licença MIT preparados; o usuário escolheu preservar o histórico e confirmou ter autorização para as imagens de referência. Conferir CI e visibilidade do remoto. Evidências e limites: [preparação open source](open-source-release.md).
 - J01–J09, Família/equipamentos de Vida na janela contínua BDO, OCR revisável e correções do Coach: `research/player-journey-audit-2026-10-22.md`.
 - Home, Recomendações, Mercado e Receitas compartilham containers de até 1440 px, transições de rota e navegação com ícones exclusivos.
 - Produção #1408 e Oficina de Receitas:
